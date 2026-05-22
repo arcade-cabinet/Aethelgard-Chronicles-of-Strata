@@ -161,10 +161,25 @@ M3 learnings carried into M4:
   component, footmen, goblin/orc enemies, Goblin Portal, attack state machine,
   health billboards (re-scoped from M2), floating combat text, win/loss.
 
-### M4 — Combat
-Plan written at M4 start. Contracts: footmen, goblin/orc enemies, portal, combat
-state machine, health billboards, floating combat text, win/loss. Pillar: `70-rts-systems.md`.
-- [ ] M4.* — decomposed at milestone start
+### M4 — Combat  ✅ COMPLETE
+Plan: `docs/superpowers/plans/2026-05-22-m4-combat.md` (11 tasks)
+- [x] M4.1-8 combat logic — components, damage roll, combat/death/spawn/ai/
+  win-loss systems, GameState wiring (Town Hall + Portal entities, Footman)
+- [x] M4.9 r3f — Units (all-unit render), HealthBillboard, CombatText
+- [x] M4.10 win/loss GameOverModal
+- [x] M4.11 verification — 147 unit + 9 browser + 3 e2e green; 7200-tick
+  combat-integration test passes
+
+M4 learnings carried into M5:
+- M3 review findings folded before M4 finished (harvest loop self-heals on
+  node depletion, run-order fixed, recomputeMaxSupply wired). M4 review runs next.
+- The full RTS loop is closed: economy + combat + win/loss all run in
+  runEconomyTick. The game is PLAYABLE end-to-end.
+- M5 adds the "production feature set": seeded weather (sunny/fog/rain),
+  research/tech upgrades, barracks rally points, the 2D minimap, day/night
+  cycle. These are mostly additive systems on the established ECS + r3f
+  patterns — lower architectural risk than M2/M3/M4.
+- M5 FIRST STEP: write M5 plan + milestone-TDD batch.
 
 ### M5 — Systems
 Plan written at M5 start. Contracts: seeded weather, research/tech, barracks rally
