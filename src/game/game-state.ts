@@ -7,6 +7,7 @@ import { createCharacter } from '@/entities/character-factory';
 import {
   AssignedJob,
   Building,
+  type BuildingType,
   FactionTrait,
   GoblinPortalTrait,
   Health,
@@ -26,6 +27,7 @@ import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { type GameOutcome, evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { type GameEconomy, createEconomy } from './economy';
+import { recomputeMaxSupply } from './supply';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import { createDualPrng } from '@/core/rng';
 
@@ -257,39 +259,53 @@ export function startGame(seedPhrase: string): GameState {
 }
 
 /**
- * Run one economy tick — advances all ECS systems in the fixed order defined
- * by `docs/specs/50-ecs-model.md`. Called once per rendered frame (or once per
- * simulation step in tests).
+ * Run one game tick — advances every ECS system in the fixed order from
+ * `docs/specs/50-ecs-model.md`: spawn → ai → pathFollow → jobRouting → harvest
+ * → build → combat → deposit → death → animation → winLoss. Build runs before
+ * deposit (system #7 before #9) so a freshly-assigned builder advances the same
+ * tick. Called once per rendered frame (or per step in tests).
  */
 export function runEconomyTick(game: GameState, delta: number): void {
   // Skip all ticks once the game has ended.
   if (game.outcome !== 'playing') return;
 
-  pathFollowSystem(game.world, delta);
-  jobRoutingSystem(game.world, game.board, game.navGraph, game.townHallKey);
-  harvestSystem(game.world, delta);
-  depositSystem(game.world, game.economy, game.townHallKey);
-  buildSystem(game.world, game.buildSites, delta);
-  animationSystem(game.world);
-
-  // Combat systems run after the economy loop.
+  // enemy spawning + AI target selection
   spawnSystem(game.world, game.board, delta);
   aiSystem(game.world, game.board, game.navGraph);
 
-  // Track pre-death enemy count to credit kills.
+  // movement + economy
+  pathFollowSystem(game.world, delta);
+  jobRoutingSystem(game.world, game.board, game.navGraph, game.townHallKey);
+  harvestSystem(game.world, delta);
+  buildSystem(game.world, game.buildSites, delta);
+
+  // recompute the supply cap from all complete buildings — a finished Farm
+  // raises max supply.
+  const completeBuildings: BuildingType[] = [];
+  for (const e of game.world.query(Building)) {
+    const b = e.get(Building);
+    if (b?.isComplete) completeBuildings.push(b.buildingType);
+  }
+  recomputeMaxSupply(game.economy, completeBuildings);
+
+  // combat — capture pre-death enemy count to credit kills
   const enemyUnitsBefore = game.world
     .query(Unit, FactionTrait)
     .filter((e) => e.get(FactionTrait)?.faction === 'enemy').length;
-
   game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta);
-  deathSystem(game.world, delta);
 
-  // Credit kills: enemies that died this tick.
+  // resource deposit
+  depositSystem(game.world, game.economy, game.townHallKey);
+
+  // death resolution + kill credit
+  deathSystem(game.world, delta);
   const enemyUnitsAfter = game.world
     .query(Unit, FactionTrait)
     .filter((e) => e.get(FactionTrait)?.faction === 'enemy').length;
   const killed = enemyUnitsBefore - enemyUnitsAfter;
   if (killed > 0) game.economy.kills += killed;
 
+  // animation state + end-condition check
+  animationSystem(game.world);
   game.outcome = evaluateWinLoss(game.world);
 }

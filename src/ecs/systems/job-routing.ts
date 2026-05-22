@@ -1,8 +1,8 @@
 import type { World } from 'koota';
 import type { BoardData } from '@/core/board';
-import { areAdjacent, getHexKey } from '@/core/hex';
+import { areAdjacent, getHexKey, hexDistance, hexNeighbors } from '@/core/hex';
 import { type NavGraph, findPath } from '@/core/pathfinding';
-import { AssignedJob, Carrier, HexPosition, PathQueue } from '@/ecs/components';
+import { AssignedJob, Carrier, HexPosition, PathQueue, ResourceTrait } from '@/ecs/components';
 
 /** Encode a path of tile keys into "q,r,level" steps using board elevation. */
 function leveledSteps(board: BoardData, path: string[]): string[] {
@@ -10,10 +10,14 @@ function leveledSteps(board: BoardData, path: string[]): string[] {
 }
 
 /**
- * Route peon jobs. A SEEKING peon adjacent to its resource flips to HARVESTING;
- * otherwise it is given an A* path toward a tile adjacent to the resource. A
- * CARRYING peon with an empty path is given a path back to the Town Hall.
- * This system makes the harvest loop self-driving.
+ * Route peon jobs — the engine of the autonomous harvest loop:
+ * - IDLE peons (no job, or whose node depleted) are re-assigned to the nearest
+ *   non-empty resource node. Without this the loop would stop after the first
+ *   patch drained.
+ * - SEEKING peons adjacent to their resource flip to HARVESTING; otherwise they
+ *   are given an A* path to a tile *adjacent* to the resource (never onto it,
+ *   so a walkable resource tile does not strand the peon).
+ * - CARRYING peons with an empty path are routed back to the Town Hall.
  */
 export function jobRoutingSystem(
   world: World,
@@ -21,54 +25,76 @@ export function jobRoutingSystem(
   graph: NavGraph,
   townHallKey: string,
 ): void {
+  // index live resource nodes (amount > 0) by hex key
+  const liveNodes: Array<{ key: string; q: number; r: number }> = [];
+  for (const node of world.query(ResourceTrait, HexPosition)) {
+    const res = node.get(ResourceTrait);
+    const hex = node.get(HexPosition);
+    if (res && hex && res.amount > 0) {
+      liveNodes.push({ key: getHexKey(hex.q, hex.r), q: hex.q, r: hex.r });
+    }
+  }
+
   world.query(AssignedJob, HexPosition, PathQueue, Carrier).updateEach(([job, hex, path]) => {
     const peonKey = getHexKey(hex.q, hex.r);
 
+    if (job.state === 'IDLE') {
+      // re-assign to the nearest live resource node
+      let nearest: { key: string; q: number; r: number } | null = null;
+      let nearestDist = Number.POSITIVE_INFINITY;
+      for (const node of liveNodes) {
+        const d = hexDistance(hex.q, hex.r, node.q, node.r);
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearest = node;
+        }
+      }
+      if (nearest) {
+        job.state = 'SEEKING';
+        job.targetKey = nearest.key;
+      }
+      return;
+    }
+
     if (job.state === 'SEEKING') {
-      if (areAdjacent(peonKey, job.targetKey)) {
+      if (areAdjacent(peonKey, job.targetKey) || peonKey === job.targetKey) {
         job.state = 'HARVESTING';
         path.steps = [];
         return;
       }
       if (path.steps.length === 0) {
-        const route = findPathToAdjacent(graph, peonKey, job.targetKey);
-        if (route) path.steps = leveledSteps(board, route);
+        const route = pathToAdjacent(graph, peonKey, job.targetKey);
+        if (route) {
+          path.steps = leveledSteps(board, route);
+        } else {
+          // unreachable node — drop the job so the peon re-assigns next tick
+          job.state = 'IDLE';
+          job.targetKey = '';
+        }
       }
     } else if (job.state === 'CARRYING') {
       if (path.steps.length === 0 && !areAdjacent(peonKey, townHallKey)) {
-        const route = findPathToAdjacent(graph, peonKey, townHallKey);
+        const route = pathToAdjacent(graph, peonKey, townHallKey);
         if (route) path.steps = leveledSteps(board, route);
       }
     }
   });
 }
 
-/** Find a path ending on a tile adjacent to `targetKey` (which may be unwalkable). */
-function findPathToAdjacent(graph: NavGraph, startKey: string, targetKey: string): string[] | null {
-  // if the target itself is walkable, path straight to it
-  if (graph.has(targetKey)) {
-    const direct = findPath(graph, startKey, targetKey);
-    if (direct) return direct.slice(1);
-  }
-  // otherwise path to the nearest walkable neighbor of the target
+/**
+ * Find a path that ends on a walkable tile adjacent to `targetKey`. The target
+ * tile itself is never a destination — a peon must stand *next to* a resource
+ * or the Town Hall to interact with it. Returns null when no adjacent tile is
+ * reachable.
+ */
+function pathToAdjacent(graph: NavGraph, startKey: string, targetKey: string): string[] | null {
   const [tq, tr] = targetKey.split(',').map(Number);
   let best: string[] | null = null;
-  for (const dir of neighborKeys(tq ?? 0, tr ?? 0)) {
-    if (!graph.has(dir)) continue;
-    const route = findPath(graph, startKey, dir);
-    if (route && (best === null || route.length < best.length + 1)) best = route.slice(1);
+  for (const adj of hexNeighbors(tq ?? 0, tr ?? 0)) {
+    if (!graph.has(adj)) continue;
+    if (adj === startKey) return []; // already adjacent — no movement needed
+    const route = findPath(graph, startKey, adj);
+    if (route && (best === null || route.length < best.length)) best = route.slice(1);
   }
   return best;
-}
-
-/** The six neighbor keys of an axial coordinate. */
-function neighborKeys(q: number, r: number): string[] {
-  return [
-    [1, 0],
-    [0, 1],
-    [-1, 1],
-    [-1, 0],
-    [0, -1],
-    [1, -1],
-  ].map(([dq, dr]) => getHexKey(q + (dq ?? 0), r + (dr ?? 0)));
 }
