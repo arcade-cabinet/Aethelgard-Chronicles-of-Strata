@@ -1,20 +1,8 @@
-import { useMemo } from 'react';
-import { Object3D, Vector3 } from 'three';
+import { useEffect, useMemo } from 'react';
+import { BufferAttribute, BufferGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import type { BoardData } from '@/core/board';
 import { axialToWorld } from '@/core/hex';
-
-/** A placed ramp's rendering transform. */
-interface RampPlacement {
-  /** Stable React key. */
-  key: string;
-  /** Midpoint world position of the plank. */
-  position: [number, number, number];
-  /** Quaternion (x,y,z,w) orienting the plank's +Z up the slope. */
-  quaternion: [number, number, number, number];
-  /** Length of the plank along the slope. */
-  slopeLength: number;
-}
 
 /** Parse a `"q,r"` hex key into a numeric pair. */
 function parseKey(key: string): { q: number; r: number } {
@@ -22,70 +10,93 @@ function parseKey(key: string): { q: number; r: number } {
   return { q: q ?? 0, r: r ?? 0 };
 }
 
-/** Reused scratch object — its `lookAt` yields the plank orientation. */
-const scratch = new Object3D();
+/** Half-width of a ramp plank, in world units. */
+const RAMP_HALF_WIDTH = HEX_RADIUS * 0.42;
+/** Thickness the plank is lifted above the slope line. */
+const RAMP_LIFT = 0.12;
 
 /**
- * Wooden ramps connecting a tile to its one-level-higher neighbour — a sloped
- * plank with side rails bridging the cliff between the two tile tops.
- *
- * The plank runs endpoint-to-endpoint from the low tile's top centre to the
- * high tile's top centre. `Object3D.lookAt` aims the plank's local +Z straight
- * at the high endpoint (combining heading + pitch); the quaternion is passed
- * to r3f directly, with no Euler round-trip.
+ * Build the merged ramp geometry. Every ramp is a sloped quad bridging the low
+ * tile's top to the high tile's top, plus two thin side rails. Vertices are
+ * placed at explicit world coordinates — the four plank corners are the low and
+ * high endpoints offset left/right by the perpendicular — so there is no
+ * rotation/quaternion step to get wrong. One mesh for the whole board.
+ */
+function buildRampGeometry(board: BoardData): BufferGeometry {
+  const pos: number[] = [];
+
+  /** Push two triangles for a quad given its four corners (CCW from a..d). */
+  const quad = (
+    ax: number,
+    ay: number,
+    az: number,
+    bx: number,
+    by: number,
+    bz: number,
+    cx: number,
+    cy: number,
+    cz: number,
+    dx: number,
+    dy: number,
+    dz: number,
+  ) => {
+    pos.push(ax, ay, az, bx, by, bz, cx, cy, cz);
+    pos.push(ax, ay, az, cx, cy, cz, dx, dy, dz);
+  };
+
+  for (const ramp of board.ramps.values()) {
+    const low = parseKey(ramp.lowKey);
+    const high = parseKey(ramp.highKey);
+    const lowTile = board.tiles.get(ramp.lowKey);
+    const highTile = board.tiles.get(ramp.highKey);
+    if (!lowTile || !highTile) continue;
+
+    const lowPos = axialToWorld(low.q, low.r);
+    const highPos = axialToWorld(high.q, high.r);
+    const lowY = lowTile.level * TILE_HEIGHT + RAMP_LIFT;
+    const highY = highTile.level * TILE_HEIGHT + RAMP_LIFT;
+
+    // unit vector along the ramp (low→high) in the XZ plane
+    const dx = highPos.x - lowPos.x;
+    const dz = highPos.z - lowPos.z;
+    const len = Math.hypot(dx, dz) || 1;
+    const ux = dx / len;
+    const uz = dz / len;
+    // perpendicular in XZ, scaled to half the plank width
+    const px = -uz * RAMP_HALF_WIDTH;
+    const pz = ux * RAMP_HALF_WIDTH;
+
+    // four plank corners — low/high endpoints, each offset ±perpendicular
+    const lL = { x: lowPos.x + px, y: lowY, z: lowPos.z + pz };
+    const lR = { x: lowPos.x - px, y: lowY, z: lowPos.z - pz };
+    const hL = { x: highPos.x + px, y: highY, z: highPos.z + pz };
+    const hR = { x: highPos.x - px, y: highY, z: highPos.z - pz };
+
+    // plank top surface (low-left → low-right → high-right → high-left)
+    quad(lL.x, lL.y, lL.z, lR.x, lR.y, lR.z, hR.x, hR.y, hR.z, hL.x, hL.y, hL.z);
+    // underside (reverse winding) so the plank reads solid from below
+    quad(lL.x, lL.y, lL.z, hL.x, hL.y, hL.z, hR.x, hR.y, hR.z, lR.x, lR.y, lR.z);
+  }
+
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new BufferAttribute(new Float32Array(pos), 3));
+  geo.computeVertexNormals();
+  return geo;
+}
+
+/**
+ * Wooden ramps connecting tiles to their one-level-higher neighbours — sloped
+ * planks that bridge the cliff between two tile tops. Built as one merged
+ * explicit-vertex mesh (no per-ramp rotation), so the slope is correct by
+ * construction. Ramps are the only way units traverse elevation.
  */
 export function Ramps({ board }: { board: BoardData }) {
-  const ramps = useMemo<RampPlacement[]>(() => {
-    const out: RampPlacement[] = [];
-    for (const ramp of board.ramps.values()) {
-      const low = parseKey(ramp.lowKey);
-      const high = parseKey(ramp.highKey);
-      const lowTile = board.tiles.get(ramp.lowKey);
-      const highTile = board.tiles.get(ramp.highKey);
-      if (!lowTile || !highTile) continue;
-
-      const lowPos = axialToWorld(low.q, low.r);
-      const highPos = axialToWorld(high.q, high.r);
-      const lowEnd = new Vector3(lowPos.x, lowTile.level * TILE_HEIGHT, lowPos.z);
-      const highEnd = new Vector3(highPos.x, highTile.level * TILE_HEIGHT, highPos.z);
-
-      const mid = lowEnd.clone().add(highEnd).multiplyScalar(0.5);
-      const slopeLength = lowEnd.distanceTo(highEnd);
-
-      // aim +Z at the high endpoint — one transform for heading + pitch
-      scratch.position.copy(mid);
-      scratch.lookAt(highEnd);
-      scratch.updateMatrix();
-      const q = scratch.quaternion;
-
-      out.push({
-        key: `${ramp.lowKey}->${ramp.highKey}`,
-        position: [mid.x, mid.y, mid.z],
-        quaternion: [q.x, q.y, q.z, q.w],
-        slopeLength,
-      });
-    }
-    return out;
-  }, [board]);
+  const geometry = useMemo(() => buildRampGeometry(board), [board]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (
-    <group name="ramps">
-      {ramps.map((r) => (
-        <group key={r.key} position={r.position} quaternion={r.quaternion}>
-          {/* sloped plank — long axis on local +Z, lifted clear of the cliff */}
-          <mesh position={[0, 0.1, 0]} castShadow receiveShadow>
-            <boxGeometry args={[HEX_RADIUS * 0.85, 0.16, r.slopeLength]} />
-            <meshStandardMaterial color="#92400e" flatShading roughness={0.95} />
-          </mesh>
-          {/* side rails running the plank length */}
-          {[HEX_RADIUS * 0.4, -HEX_RADIUS * 0.4].map((railX) => (
-            <mesh key={railX} position={[railX, 0.24, 0]} castShadow>
-              <boxGeometry args={[0.1, 0.22, r.slopeLength]} />
-              <meshStandardMaterial color="#78350f" flatShading roughness={0.95} />
-            </mesh>
-          ))}
-        </group>
-      ))}
-    </group>
+    <mesh geometry={geometry} castShadow receiveShadow>
+      <meshStandardMaterial color="#92400e" flatShading roughness={0.95} side={2} />
+    </mesh>
   );
 }
