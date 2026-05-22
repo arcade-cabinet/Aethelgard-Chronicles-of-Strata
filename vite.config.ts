@@ -6,7 +6,23 @@ import staticAssetsPlugin from 'vite-static-assets-plugin';
 export default defineConfig(({ mode }) => ({
   base: mode === 'github-pages' ? '/Aethelgard-Chronicles-of-Strata/' : '/',
   cacheDir: '.vite',
-  build: { chunkSizeWarningLimit: 2000, target: 'es2022' },
+  build: {
+    chunkSizeWarningLimit: 2000,
+    target: 'es2022',
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (
+            id.includes('node_modules/sql.js') ||
+            id.includes('node_modules/jeep-sqlite') ||
+            id.includes('node_modules/@capacitor-community/sqlite')
+          ) {
+            return 'db-vendor';
+          }
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     staticAssetsPlugin({

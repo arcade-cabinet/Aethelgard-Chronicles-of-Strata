@@ -40,15 +40,18 @@ export type StaticAssetPath =
   'assets/characters/rigs/medium-movement.glb' |
   'assets/nature/rock/large-a.glb' |
   'assets/nature/tree/pine-a.glb' |
+  'assets/sql-wasm.wasm' |
   'assets/structures/barracks.glb' |
   'assets/structures/farm.glb' |
-  'assets/structures/town-hall.glb';
+  'assets/structures/town-hall.glb' |
+  'sql-wasm.wasm';
 
 /**
  * Represents the known directories containing static assets.
  * '.' represents the root directory.
  */
 export type StaticAssetDirectory =
+  '.' |
   'assets/' |
   'assets/audio/' |
   'assets/audio/music/' |
@@ -122,13 +125,15 @@ const assets = new Set<string>([
   'assets/characters/rigs/medium-movement.glb',
   'assets/nature/rock/large-a.glb',
   'assets/nature/tree/pine-a.glb',
+  'assets/sql-wasm.wasm',
   'assets/structures/barracks.glb',
   'assets/structures/farm.glb',
-  'assets/structures/town-hall.glb'
+  'assets/structures/town-hall.glb',
+  'sql-wasm.wasm'
 ]);
 
 // Store basePath resolved from Vite config
-const BASE_PATH = "/";
+const BASE_PATH = "/Aethelgard-Chronicles-of-Strata/";
 
 
 /**

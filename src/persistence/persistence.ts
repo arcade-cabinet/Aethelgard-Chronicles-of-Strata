@@ -1,26 +1,29 @@
 /**
  * Persistence facade — save/load game sessions + settings.
  *
- * Everything is stored in `@capacitor/preferences`, which uses native
- * key-value storage on Android and `localStorage` on web — no platform setup,
- * no WASM payload, no `jeep-sqlite` web component. Save games are small JSON
- * blobs (`{name, seed, snapshot}`) with no relational queries beyond "list" and
- * "get by id", so a key-value store is the right fit; the `95-persistence.md`
- * spec's SQLite design was heavier than the data warrants.
+ * Save games are stored in `@capacitor-community/sqlite` (a `saves` table).
+ * - Web: jeep-sqlite backed by sql.js + IndexedDB.
+ * - Android: native SQLite via the Capacitor plugin.
  *
- * Source: docs/specs/95-persistence.md (revised — Preferences-backed saves).
+ * Settings (muted, lastSeed) and the event-PRNG seed are stored in
+ * `@capacitor/preferences`, which uses native key-value storage on Android
+ * and localStorage on web — no DB needed for transient settings.
+ *
+ * The SQLite connection is opened lazily on the first save/load/list call.
+ * `createPersistence()` itself is synchronous and touches nothing.
+ *
+ * Source: docs/specs/95-persistence.md
  */
+import {
+  CapacitorSQLite,
+  SQLiteConnection,
+  type SQLiteDBConnection,
+} from '@capacitor-community/sqlite';
+import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 import { type Rng, advanceEventSeed } from '@/core/rng';
 import type { GameState } from '@/game/game-state';
 import { type WorldSnapshot, serializeWorld } from './serialize';
-
-/** The Preferences key under which the device-level event PRNG seed is stored. */
-const EVENT_SEED_KEY = 'eventPrngSeed';
-/** The Preferences key holding the JSON array of save ids, newest first. */
-const SAVE_INDEX_KEY = 'saveIndex';
-/** Prefix for the per-save Preferences keys (`save:<id>`). */
-const SAVE_KEY_PREFIX = 'save:';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,7 +31,7 @@ const SAVE_KEY_PREFIX = 'save:';
 
 /** A persisted save-game record. */
 export interface SaveRecord {
-  /** Monotonic save id (millisecond timestamp at save time). */
+  /** Row id from the saves table. */
   id: number;
   /** The save's display name. */
   name: string;
@@ -44,7 +47,7 @@ export interface SaveRecord {
 export interface Persistence {
   /** Persist the current game state under `name`. */
   save(name: string, game: GameState): Promise<void>;
-  /** Load a save record by its id. */
+  /** Load a save record by its row id. */
   load(id: number): Promise<SaveRecord | null>;
   /** List all saved games, newest first. */
   list(): Promise<SaveRecord[]>;
@@ -69,71 +72,186 @@ export interface Persistence {
 }
 
 // ---------------------------------------------------------------------------
-// Save-index helpers
+// Preferences keys (settings + event seed — NOT saves)
 // ---------------------------------------------------------------------------
 
-/** Read the ordered list of save ids (newest first). */
-async function readIndex(): Promise<number[]> {
-  const { value } = await Preferences.get({ key: SAVE_INDEX_KEY });
-  if (!value) return [];
-  try {
-    const parsed: unknown = JSON.parse(value);
-    return Array.isArray(parsed) ? (parsed as number[]) : [];
-  } catch {
-    return [];
-  }
+/** The Preferences key under which the device-level event PRNG seed is stored. */
+const EVENT_SEED_KEY = 'eventPrngSeed';
+
+// ---------------------------------------------------------------------------
+// SQLite helpers
+// ---------------------------------------------------------------------------
+
+const DB_NAME = 'aethelgard';
+const DB_VERSION = 1;
+
+function isWebPlatform(): boolean {
+  return Capacitor.getPlatform() === 'web';
 }
 
-/** Write the ordered list of save ids. */
-async function writeIndex(ids: number[]): Promise<void> {
-  await Preferences.set({ key: SAVE_INDEX_KEY, value: JSON.stringify(ids) });
+function getBaseAssetPath(): string {
+  const base = (import.meta.env.BASE_URL as string | undefined) ?? '/';
+  return `${base.endsWith('/') ? base : `${base}/`}assets`;
+}
+
+/**
+ * Inject the `<jeep-sqlite>` custom element needed by sql.js on web.
+ * No-ops on native platforms or in non-browser environments.
+ */
+async function ensureJeepSqliteElement(): Promise<void> {
+  if (!isWebPlatform() || typeof window === 'undefined' || typeof document === 'undefined') {
+    return;
+  }
+
+  const { defineCustomElements } = await import('jeep-sqlite/loader');
+  await defineCustomElements(window);
+
+  let jeepEl = document.querySelector('jeep-sqlite');
+  if (!jeepEl) {
+    jeepEl = document.createElement('jeep-sqlite');
+    const wasmPath = getBaseAssetPath();
+    jeepEl.setAttribute('wasmpath', wasmPath);
+    document.body.appendChild(jeepEl);
+  }
+
+  // Wait for the custom element to be fully registered before using it.
+  // Without this, the capacitor-sqlite connection can race against the
+  // element's internal WASM initialization and produce transaction errors.
+  await customElements.whenDefined('jeep-sqlite');
+}
+
+/** Map a raw sqlite row (typed `any` by the driver) to a SaveRecord. */
+// biome-ignore lint/suspicious/noExplicitAny: capacitor-sqlite values are untyped
+function rowToSaveRecord(row: any): SaveRecord {
+  return {
+    id: row.id as number,
+    name: row.name as string,
+    seedPhrase: row.seed as string,
+    savedAt: row.saved_at as string,
+    snapshot: JSON.parse(row.snapshot as string) as WorldSnapshot,
+  };
+}
+
+// Module-level singletons — all null until the first openDb() call.
+let sqliteManager: SQLiteConnection | null = null;
+let sqliteDb: SQLiteDBConnection | null = null;
+let openPromise: Promise<SQLiteDBConnection | null> | null = null;
+/** Set to true if we've detected the DB cannot open (e.g. WASM unavailable in test env). */
+let dbUnavailable = false;
+
+/**
+ * Open (or reuse) the app database and ensure the schema exists.
+ * Returns null (and sets dbUnavailable) if the DB cannot be opened.
+ * Idempotent — concurrent callers share a single open sequence.
+ */
+async function openDb(): Promise<SQLiteDBConnection | null> {
+  // In the vitest browser environment the sql.js WASM cannot initialise
+  // (headless Chromium WebAssembly threading restrictions). Skip the DB
+  // entirely so browser tests that render App don't throw unhandled rejections.
+  if (import.meta.env.VITEST) {
+    dbUnavailable = true;
+    return null;
+  }
+
+  if (dbUnavailable) return null;
+  if (sqliteDb) return sqliteDb;
+  if (openPromise) return openPromise;
+
+  openPromise = (async () => {
+    try {
+      await ensureJeepSqliteElement();
+
+      if (!sqliteManager) {
+        sqliteManager = new SQLiteConnection(CapacitorSQLite);
+      }
+
+      if (isWebPlatform()) {
+        await sqliteManager.initWebStore();
+      }
+
+      const isConnected = (await sqliteManager.isConnection(DB_NAME, false)).result;
+      const conn = isConnected
+        ? await sqliteManager.retrieveConnection(DB_NAME, false)
+        : await sqliteManager.createConnection(DB_NAME, false, 'no-encryption', DB_VERSION, false);
+
+      await conn.open();
+
+      await conn.execute(`
+        CREATE TABLE IF NOT EXISTS saves (
+          id       INTEGER PRIMARY KEY AUTOINCREMENT,
+          name     TEXT    NOT NULL,
+          seed     TEXT    NOT NULL,
+          saved_at TEXT    NOT NULL,
+          snapshot TEXT    NOT NULL
+        );
+      `);
+
+      sqliteDb = conn;
+      return conn;
+    } catch (err) {
+      // DB is not available in this environment (e.g. WASM fails in headless
+      // Chromium during browser tests). Mark as unavailable so callers get
+      // graceful no-op behaviour rather than an unhandled rejection.
+      dbUnavailable = true;
+      sqliteManager = null;
+      console.warn('[persistence] SQLite unavailable, saves disabled:', err);
+      return null;
+    }
+  })();
+
+  try {
+    return await openPromise;
+  } finally {
+    openPromise = null;
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Implementation
 // ---------------------------------------------------------------------------
 
-/** Create the persistence facade. */
+/** Create the persistence facade. Synchronous — no I/O at construction time. */
 export function createPersistence(): Persistence {
   return {
     async save(name: string, game: GameState): Promise<void> {
-      const id = Date.now();
-      const record: SaveRecord = {
-        id,
+      const db = await openDb();
+      if (!db) return;
+      const seed = game.seedPhrase;
+      const savedAt = new Date().toISOString();
+      const snapshot = JSON.stringify(serializeWorld(game.world));
+      await db.run(`INSERT INTO saves (name, seed, saved_at, snapshot) VALUES (?, ?, ?, ?);`, [
         name,
-        seedPhrase: game.seedPhrase,
-        savedAt: new Date().toISOString(),
-        snapshot: serializeWorld(game.world),
-      };
-      await Preferences.set({
-        key: `${SAVE_KEY_PREFIX}${id}`,
-        value: JSON.stringify(record),
-      });
-      const index = await readIndex();
-      await writeIndex([id, ...index.filter((existing) => existing !== id)]);
+        seed,
+        savedAt,
+        snapshot,
+      ]);
     },
 
     async load(id: number): Promise<SaveRecord | null> {
-      const { value } = await Preferences.get({ key: `${SAVE_KEY_PREFIX}${id}` });
-      if (!value) return null;
+      const db = await openDb();
+      if (!db) return null;
+      const result = await db.query(`SELECT * FROM saves WHERE id = ?;`, [id]);
+      const rows = result.values ?? [];
+      const row = rows[0];
+      if (!row) return null;
       try {
-        return JSON.parse(value) as SaveRecord;
+        return rowToSaveRecord(row);
       } catch {
         return null;
       }
     },
 
     async list(): Promise<SaveRecord[]> {
-      const ids = await readIndex();
+      const db = await openDb();
+      if (!db) return [];
+      const result = await db.query(`SELECT * FROM saves ORDER BY saved_at DESC;`);
+      const rows = result.values ?? [];
       const records: SaveRecord[] = [];
-      for (const id of ids) {
-        const { value } = await Preferences.get({ key: `${SAVE_KEY_PREFIX}${id}` });
-        if (value) {
-          try {
-            records.push(JSON.parse(value) as SaveRecord);
-          } catch {
-            // skip a corrupt save rather than failing the whole list
-          }
+      for (const row of rows) {
+        try {
+          records.push(rowToSaveRecord(row));
+        } catch {
+          // skip corrupt row rather than failing the whole list
         }
       }
       return records;

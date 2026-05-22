@@ -5,6 +5,11 @@
   "type": "module",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
+    "copywasm": "node -e \"const fs=require('fs'),p=require('path');for(const dir of [p.join('public'),p.join('public','assets')]){fs.mkdirSync(dir,{recursive:true});fs.copyFileSync(require.resolve('sql.js/dist/sql-wasm.wasm'),p.join(dir,'sql-wasm.wasm'));}\"",
+    "predev": "pnpm copywasm",
+    "prebuild": "pnpm copywasm",
+    "pretest:browser": "pnpm copywasm",
+    "pretest:e2e": "pnpm copywasm",
     "dev": "vite",
     "build": "tsc && vite build",
     "build:pages": "tsc && vite build --mode github-pages",
@@ -29,6 +34,7 @@
     "verify": "pnpm check && pnpm lint && pnpm format:check && pnpm test"
   },
   "dependencies": {
+    "@capacitor-community/sqlite": "^8.1.0",
     "@capacitor/core": "^8.3.4",
     "@capacitor/device": "^8.0.2",
     "@capacitor/preferences": "^8.0.1",
@@ -40,10 +46,12 @@
     "@react-three/fiber": "^9.6.1",
     "framer-motion": "^12.40.0",
     "howler": "^2.2.4",
+    "jeep-sqlite": "^2.8.0",
     "koota": "^0.6.6",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "seedrandom": "^3.0.5",
+    "sql.js": "^1.14.1",
     "three": "^0.184.0",
     "yuka": "^0.7.8"
   },
@@ -58,6 +66,7 @@
     "@types/react": "^19.2.15",
     "@types/react-dom": "^19.2.3",
     "@types/seedrandom": "^3.0.8",
+    "@types/sql.js": "^1.4.11",
     "@types/three": "^0.184.1",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/browser": "^4.1.7",

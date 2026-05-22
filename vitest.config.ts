@@ -15,6 +15,9 @@ export default defineConfig({
   ],
   optimizeDeps: {
     include: ['three/examples/jsm/utils/SkeletonUtils.js'],
+    // Exclude jeep-sqlite from pre-bundling: its WASM initialises as a
+    // side-effect of being bundled and fails in headless Chromium.
+    exclude: ['jeep-sqlite', 'sql.js'],
   },
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
@@ -44,9 +47,22 @@ export default defineConfig({
       },
       {
         extends: true,
+        resolve: {
+          alias: {
+            '@': path.resolve(__dirname, './src'),
+            // Replace capacitor-sqlite with a no-op stub in browser tests.
+            // The real package triggers jeep-sqlite WASM load as a module
+            // evaluation side-effect, which fails in headless Chromium.
+            '@capacitor-community/sqlite': path.resolve(
+              __dirname,
+              'tests/browser/__mocks__/@capacitor-community/sqlite.ts',
+            ),
+          },
+        },
         test: {
           name: 'browser',
           include: ['tests/browser/**/*.browser.test.{ts,tsx}'],
+          setupFiles: ['tests/browser/setup-sqlite.ts'],
           browser: {
             enabled: true,
             provider: playwright(),
