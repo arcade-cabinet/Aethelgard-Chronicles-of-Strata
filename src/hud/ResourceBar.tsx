@@ -19,8 +19,9 @@ interface Readout {
  * The HUD resource bar — wood, stone, gold, and supply. Polls `game.economy`
  * on an animation frame so the counters track deposits live. Themed with the
  * obsidian/gold HUD palette; slides in from the left on mount (framer-motion).
+ * `compact` tightens spacing and type for narrow (phone-portrait) viewports.
  */
-export function ResourceBar({ game }: { game: GameState }) {
+export function ResourceBar({ game, compact = false }: { game: GameState; compact?: boolean }) {
   const [readouts, setReadouts] = useState<Readout[]>(() => snapshot(game));
 
   useEffect(() => {
@@ -41,24 +42,24 @@ export function ResourceBar({ game }: { game: GameState }) {
       transition={{ duration: 0.4, ease: 'easeOut' }}
       style={{
         position: 'absolute',
-        top: 16,
-        left: 16,
+        top: compact ? 8 : 16,
+        left: compact ? 8 : 16,
         display: 'flex',
-        gap: 16,
-        padding: '10px 16px',
+        gap: compact ? 9 : 16,
+        padding: compact ? '6px 10px' : '10px 16px',
         borderRadius: HUD_THEME.radius,
         background: HUD_THEME.color.panel,
         border: `1px solid ${HUD_THEME.color.border}`,
         color: HUD_THEME.color.text,
         fontFamily: HUD_THEME.font.body,
         fontWeight: 700,
-        fontSize: 14,
+        fontSize: compact ? 12 : 14,
         pointerEvents: 'none',
       }}
     >
       {readouts.map((r) => (
-        <span key={r.id} style={{ display: 'flex', gap: 6, alignItems: 'baseline' }}>
-          <span style={{ color: r.color, fontSize: 11, textTransform: 'uppercase' }}>
+        <span key={r.id} style={{ display: 'flex', gap: compact ? 4 : 6, alignItems: 'baseline' }}>
+          <span style={{ color: r.color, fontSize: compact ? 9 : 11, textTransform: 'uppercase' }}>
             {r.label}
           </span>
           <span id={r.id}>{r.value}</span>

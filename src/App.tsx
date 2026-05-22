@@ -12,6 +12,7 @@ import { SoundToggle } from '@/hud/SoundToggle';
 import { TitleScreen } from '@/hud/TitleScreen';
 import { createPersistence } from '@/persistence/persistence';
 import { createAutoSave } from '@/game/auto-save';
+import { useViewport } from '@/render/useViewport';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
 import { type NewGameConfig, startGame } from '@/game/game-state';
@@ -52,14 +53,15 @@ function GameSession({ config }: { config: NewGameConfig }) {
   }, [config]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const [showCredits, setShowCredits] = useState(false);
+  const viewport = useViewport();
 
   return (
-    <div id="app-shell" style={{ position: 'absolute', inset: 0 }}>
+    <div id="app-shell" data-viewport={viewport.class} style={{ position: 'absolute', inset: 0 }}>
       <ErrorBoundary fallback={<SceneError />}>
         <GameCanvas game={game} buildContext={buildContext} />
       </ErrorBoundary>
-      <ResourceBar game={game} />
-      <Minimap game={game} />
+      <ResourceBar game={game} compact={viewport.isPortrait} />
+      <Minimap game={game} compact={viewport.isPortrait} />
       <SelectionPanel
         game={game}
         onBeginBuild={(ctx) =>

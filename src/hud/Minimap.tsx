@@ -56,7 +56,7 @@ function renderTerrain(game: GameState): HTMLCanvasElement {
  * then draws the live overlay: unit dots, the Town Hall / Portal markers, and a
  * rectangle showing the slice of the board the camera is currently framing.
  */
-export function Minimap({ game }: { game: GameState }) {
+export function Minimap({ game, compact = false }: { game: GameState; compact?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -71,14 +71,18 @@ export function Minimap({ game }: { game: GameState }) {
     return () => cancelAnimationFrame(raf);
   }, [game]);
 
+  // the canvas keeps its internal SIZE resolution (projection math is stable);
+  // only the on-screen CSS size shrinks on narrow viewports.
+  const displaySize = compact ? 96 : SIZE;
+
   return (
     <div
       style={{
         position: 'absolute',
-        bottom: 16,
-        right: 16,
-        width: SIZE,
-        height: SIZE,
+        bottom: compact ? 8 : 16,
+        right: compact ? 8 : 16,
+        width: displaySize,
+        height: displaySize,
         borderRadius: 12,
         overflow: 'hidden',
         border: '2px solid rgba(56, 189, 248, 0.3)',
