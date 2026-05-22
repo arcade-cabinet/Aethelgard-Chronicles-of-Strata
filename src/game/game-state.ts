@@ -182,6 +182,10 @@ export function startGame(seedPhrase: string): GameState {
     },
   };
 
+  // Kick off the autonomous economy — peons begin harvesting immediately so a
+  // fresh game's economic loop is self-running with no player input.
+  game.assignAllPeonsToHarvest();
+
   return game;
 }
 

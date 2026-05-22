@@ -51,7 +51,9 @@ export function ResourceBar({ game }: { game: GameState }) {
     >
       {readouts.map((r) => (
         <span key={r.id} style={{ display: 'flex', gap: 6, alignItems: 'baseline' }}>
-          <span style={{ color: r.color, fontSize: 11, textTransform: 'uppercase' }}>{r.label}</span>
+          <span style={{ color: r.color, fontSize: 11, textTransform: 'uppercase' }}>
+            {r.label}
+          </span>
           <span id={r.id}>{r.value}</span>
         </span>
       ))}
