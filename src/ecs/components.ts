@@ -35,3 +35,40 @@ export const AnimationState = trait({ state: 'IDLE' as AnimState });
 
 /** Whether the entity is currently selected by the player. */
 export const Selectable = trait({ isSelected: false });
+
+/** A harvestable resource type. */
+export type ResourceType = 'wood' | 'stone' | 'gold';
+
+/** A building type. */
+export type BuildingType = 'TownHall' | 'Farm' | 'Barracks';
+
+/** The peon job state machine. */
+export type JobState =
+  | 'IDLE'
+  | 'SEEKING'
+  | 'HARVESTING'
+  | 'CARRYING'
+  | 'DEPOSITING'
+  | 'BUILDING';
+
+/** A harvestable resource node — marks an entity and tracks remaining amount. */
+export const ResourceTrait = trait({ resourceType: 'wood' as ResourceType, amount: 100 });
+
+/** Harvesting capability — drives the harvest progress timer. */
+export const Harvester = trait({ harvestRate: 1, harvestTimer: 0 });
+
+/** A carried resource load. `carryType` is 'none' when empty. */
+export const Carrier = trait({ carryType: 'none' as ResourceType | 'none', amount: 0 });
+
+/** A building — tracks type and construction progress. */
+export const Building = trait({
+  buildingType: 'Farm' as BuildingType,
+  isComplete: false,
+  progress: 0,
+});
+
+/** A peon's current job assignment: the state machine + the target entity id. */
+export const AssignedJob = trait({ state: 'IDLE' as JobState, targetKey: '' });
+
+/** Hit points. */
+export const Health = trait({ current: 50, max: 50 });
