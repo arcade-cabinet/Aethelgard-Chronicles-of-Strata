@@ -1,4 +1,11 @@
+import worldConfigRaw from '@/config/world.json';
 import type { Rng } from '@/core/rng';
+
+interface WorldConfig {
+  weather: { minInterval: number; maxInterval: number };
+}
+
+const worldConfig = worldConfigRaw as WorldConfig;
 
 /** A weather state. */
 export type WeatherState = 'sunny' | 'fog' | 'rain';
@@ -12,8 +19,8 @@ export interface Weather {
 }
 
 /** Minimum and maximum seconds between weather transitions. */
-const MIN_INTERVAL = 90;
-const MAX_INTERVAL = 180;
+const MIN_INTERVAL: number = worldConfig.weather.minInterval;
+const MAX_INTERVAL: number = worldConfig.weather.maxInterval;
 
 /** The HUD label for each weather state. */
 export const WEATHER_LABEL: Record<WeatherState, string> = {

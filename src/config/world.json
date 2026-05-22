@@ -1,0 +1,35 @@
+{
+  "hex": {
+    "hexRadius": 1,
+    "tileHeight": 0.85,
+    "waterLevelFactor": 0.5
+  },
+  "board": {
+    "mapRadius": 20
+  },
+  "mapSizes": {
+    "small": 12,
+    "medium": 20,
+    "large": 28,
+    "huge": 36
+  },
+  "dayLength": 240,
+  "weather": {
+    "minInterval": 90,
+    "maxInterval": 180
+  },
+  "biome": {
+    "heightThresholds": [0.1, 0.25, 0.45, 0.6, 0.75, 0.88],
+    "moistureCutoffDesert": 0.45,
+    "moistureCutoffLake": 0.85,
+    "noiseScale": 0.06,
+    "islandAttenuationFactor": 1.5,
+    "lakeModulo": 0.1,
+    "lakeModuloThreshold": 0.02
+  },
+  "noise": {
+    "octaves": 5,
+    "persistence": 0.5,
+    "lacunarity": 2
+  }
+}
