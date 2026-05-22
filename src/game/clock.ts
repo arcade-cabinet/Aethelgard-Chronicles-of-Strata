@@ -1,0 +1,45 @@
+/** Seconds in one full day/night cycle. */
+export const DAY_LENGTH = 240;
+
+/** The game clock — total elapsed game-seconds. */
+export interface GameClock {
+  /** Total elapsed game seconds. */
+  elapsed: number;
+}
+
+/** Create a clock at game-time zero. */
+export function createClock(): GameClock {
+  return { elapsed: 0 };
+}
+
+/** Advance the clock by `delta` seconds. */
+export function advanceClock(clock: GameClock, delta: number): void {
+  clock.elapsed += delta;
+}
+
+/** The cycle phase in [0, 1): 0 = dawn, 0.25 = noon, 0.5 = dusk, 0.75 = midnight. */
+export function cyclePhase(clock: GameClock): number {
+  return (clock.elapsed % DAY_LENGTH) / DAY_LENGTH;
+}
+
+/**
+ * Directional-light intensity for a cycle phase. A raised cosine peaking at
+ * noon (phase 0.25) and bottoming at midnight (0.75), clamped to [0, 1].
+ */
+export function lightIntensityAt(phase: number): number {
+  // cos peaks at phase 0.25 -> shift so cos(0) aligns there; raised cosine is smooth
+  const v = Math.cos((phase - 0.25) * 2 * Math.PI);
+  return Math.max(0, Math.min(1, (v + 1) / 2));
+}
+
+/** Sky color hex for a cycle phase — day blue through sunset to night navy. */
+export function skyColorAt(phase: number): string {
+  const intensity = lightIntensityAt(phase);
+  // lerp between night navy (#0f172a) and day blue (#bae6fd)
+  const lerp = (a: number, b: number) => Math.round(a + (b - a) * intensity);
+  const r = lerp(0x0f, 0xba);
+  const g = lerp(0x17, 0xe6);
+  const b = lerp(0x2a, 0xfd);
+  const hex = (n: number) => n.toString(16).padStart(2, '0');
+  return `#${hex(r)}${hex(g)}${hex(b)}`;
+}
