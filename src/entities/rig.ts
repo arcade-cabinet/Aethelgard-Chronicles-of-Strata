@@ -5,7 +5,7 @@ export type RigTier = 'medium' | 'large';
 
 /** The rig tier for a unit role. */
 export function rigForRole(role: UnitType): RigTier {
-  return role === 'Orc' ? 'large' : 'medium';
+  return role === 'Orc' || role === 'BlackKnight' ? 'large' : 'medium';
 }
 
 /** The two manifest ids of the animation-library GLBs for a rig tier. */
@@ -33,5 +33,11 @@ export function characterMeshId(role: UnitType): string {
       return 'characters.heroes.rogue';
     case 'Orc':
       return 'characters.enemies.orc';
+    case 'Vampire':
+      return 'characters.enemies.vampire';
+    case 'BlackKnight':
+      return 'characters.enemies.black-knight';
+    case 'Witch':
+      return 'characters.enemies.witch';
   }
 }

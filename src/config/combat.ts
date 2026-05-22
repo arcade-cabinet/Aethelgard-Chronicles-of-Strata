@@ -42,6 +42,12 @@ export interface CombatConfig {
   spawn: {
     /** Game-seconds after which the portal also spawns Orcs. */
     orcThreshold: number;
+    /** Game-seconds after which the portal also spawns Vampires. */
+    vampireThreshold: number;
+    /** Game-seconds after which the portal also spawns Witches. */
+    witchThreshold: number;
+    /** Game-seconds after which the portal also spawns Black Knights. */
+    blackKnightThreshold: number;
     /** Seconds between portal spawns, per difficulty. */
     spawnIntervalByDifficulty: Record<Difficulty, number>;
   };
@@ -57,7 +63,7 @@ export const COMBAT: CombatConfig = combatJson as CombatConfig;
 
 // The accessors below are the single, documented place where the config's
 // total-key Records are read. `noUncheckedIndexedAccess` widens every Record
-// index to `T | undefined`; these keys (the three difficulties, the four unit
+// index to `T | undefined`; these keys (the three difficulties, the seven unit
 // roles) are guaranteed present in combat.json and covered by the config
 // round-trip test, so one assertion here replaces a cast at every call site.
 

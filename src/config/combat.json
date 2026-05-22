@@ -24,6 +24,30 @@
       "attackDamage": 20,
       "attackRange": 1,
       "attackCooldown": 1.5
+    },
+    "Vampire": {
+      "speed": 2.5,
+      "faction": "enemy",
+      "hp": 90,
+      "attackDamage": 14,
+      "attackRange": 1,
+      "attackCooldown": 0.8
+    },
+    "BlackKnight": {
+      "speed": 1.8,
+      "faction": "enemy",
+      "hp": 200,
+      "attackDamage": 25,
+      "attackRange": 1,
+      "attackCooldown": 2.0
+    },
+    "Witch": {
+      "speed": 2.2,
+      "faction": "enemy",
+      "hp": 70,
+      "attackDamage": 18,
+      "attackRange": 2,
+      "attackCooldown": 1.5
     }
   },
   "difficultyMultiplier": {
@@ -38,6 +62,9 @@
   "deathDelay": 2,
   "spawn": {
     "orcThreshold": 600,
+    "vampireThreshold": 300,
+    "witchThreshold": 900,
+    "blackKnightThreshold": 1200,
     "spawnIntervalByDifficulty": {
       "easy": 60,
       "normal": 45,

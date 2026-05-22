@@ -6,6 +6,7 @@ import { CameraRig } from './CameraRig';
 import { type ViewportProfile, useViewport } from './useViewport';
 import { Buildings } from '@/world/Buildings';
 import { CombatText } from '@/world/CombatText';
+import { GoblinPortalBase } from '@/world/GoblinPortalBase';
 import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { Mountains } from '@/world/Mountains';
@@ -41,6 +42,7 @@ function Scene({
       <Suspense fallback={null}>
         <ResourceNodes game={game} />
         <Buildings game={game} />
+        <GoblinPortalBase game={game} />
         <Units game={game} />
       </Suspense>
       <CombatText game={game} />

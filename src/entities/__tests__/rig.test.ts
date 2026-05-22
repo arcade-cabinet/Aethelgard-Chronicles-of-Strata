@@ -6,10 +6,13 @@ describe('rig mapping', () => {
     expect(rigForRole('Peon')).toBe('medium');
     expect(rigForRole('Footman')).toBe('medium');
     expect(rigForRole('Goblin')).toBe('medium');
+    expect(rigForRole('Vampire')).toBe('medium');
+    expect(rigForRole('Witch')).toBe('medium');
   });
 
-  it('maps the Orc to the large tier', () => {
+  it('maps the Orc and BlackKnight to the large tier', () => {
     expect(rigForRole('Orc')).toBe('large');
+    expect(rigForRole('BlackKnight')).toBe('large');
   });
 
   it('resolves the two rig animation library ids for a tier', () => {
@@ -28,5 +31,8 @@ describe('rig mapping', () => {
     expect(characterMeshId('Footman')).toBe('characters.heroes.knight');
     expect(characterMeshId('Goblin')).toBe('characters.heroes.rogue');
     expect(characterMeshId('Orc')).toBe('characters.enemies.orc');
+    expect(characterMeshId('Vampire')).toBe('characters.enemies.vampire');
+    expect(characterMeshId('BlackKnight')).toBe('characters.enemies.black-knight');
+    expect(characterMeshId('Witch')).toBe('characters.enemies.witch');
   });
 });

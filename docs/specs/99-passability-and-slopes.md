@@ -6,58 +6,81 @@ that a sandy rise and a sheer rock cliff are different things.
 
 This supersedes the `placeRamps`-on-every-eligible-edge model.
 
-## The core idea — the biome pair classifies the transition
+## The core idea — every traversable cliff edge has TWO possible forms
 
-A one-level elevation change between two adjacent tiles is not one thing. Its
-**traversal class is determined by the biome pair**:
+A one-level elevation change between two adjacent walkable tiles, where a
+crossing exists, is rendered as **one of two forms — natural or artificial** —
+and the **art of each form is biome-specific**. Both forms are real, visible
+geometry; neither is "just a beveled terrace."
 
-| Transition kind | Example | Traversal |
+| Biome of the transition | Natural form | Artificial form |
 |---|---|---|
-| **Graded slope** | BEACH→GRASS, GRASS→FOREST, GRASS→DESERT | The rise is soft earth — naturally walkable. No ramp prop; the terrain mesh bevels the cliff edge into a slope. Pathfinding treats it as a normal step. |
-| **Rock face** | STONE/HIGHLAND/MOUNTAIN involved on either side | A sheer cliff. **Impassable unless a built stair/ramp is placed**, and only on a few edges (chokepoints). |
-| **Sheer** | level difference > 1, or any cliff with no slope/ramp | Not traversable. |
+| **Stone / Highland** | **rockfall** — tumbled boulders/scree forming a climbable slope | **carved stone stairs** — staggered, individually-visible steps |
+| **Mountain** | rugged **rock ramp** / scree | rough-cut stone steps |
+| **Grass / Forest** | a **graded grassy hill** — a smooth mound blending the two levels | a **wooden ramp** — visible planks + rope rails |
+| **Beach / Desert** | a **sloped sand rise** | a wooden **boardwalk** ramp |
 
-"Soft" biomes: BEACH, GRASS, FOREST, DESERT. "Hard" biomes: STONE/HIGHLAND,
-MOUNTAIN. (LAKE/OCEAN are water — already non-walkable.) A transition is a
-**graded slope** when *both* tiles are soft; it is a **rock face** when *either*
-tile is hard.
+Which form a given crossing gets is a per-edge PRNG choice (map stream), so a
+realm has a deterministic mix of natural and artificial crossings.
 
-## Passability — three classes, not a boolean
+A crossing is keyed off the **higher tile's biome** (the cliff face belongs to
+the upper terrace). LAKE/OCEAN are water — never a crossing.
 
-`tile.walkable` (boolean) is replaced/augmented. A tile-to-tile **edge** has a
-passability class:
+### Crossing vs. no crossing
 
-- `FLAT` — same level, both walkable: free movement.
-- `SLOPE` — one-level change, graded (both-soft): free movement, the edge
-  renders as a beveled slope.
-- `RAMP` — one-level change, rock face, **and** a stair/ramp prop is placed on
-  this edge: movement allowed only across the ramp.
-- `BLOCKED` — everything else (rock face with no ramp, >1 level, water).
+Not every cliff edge gets a crossing. An edge is a **crossing candidate** when
+both tiles are walkable and the level difference is exactly 1. Of the
+candidates, crossings are placed **connectivity-first** (enough that every
+walkable region is reachable) plus a small redundancy fraction — NOT one per
+edge. Edges with no crossing are `BLOCKED` (sheer cliff). This is point A of
+the feedback — far fewer crossings, deliberately placed.
 
-Pathfinding (`core/pathfinding.ts` `buildNavGraph`) adds an edge for `FLAT`,
-`SLOPE`, and `RAMP`; never for `BLOCKED`. This replaces the current
+## Passability — two classes per edge
+
+`tile.walkable` (boolean) is augmented by a per-edge model. A tile-to-tile
+**edge** is either:
+
+- `FLAT` — same level, both walkable: free movement, no geometry.
+- `CROSSING` — a one-level change with a placed crossing (natural or
+  artificial, see the table above): traversable across the crossing.
+- `BLOCKED` — everything else: a cliff edge with no crossing, a >1-level
+  change, or water.
+
+A `Crossing` record carries: `lowKey`, `highKey`, `form` (`natural` |
+`artificial`), and `biomeStyle` (derived from the higher tile's biome — drives
+which mesh renders). Pathfinding (`core/pathfinding.ts` `buildNavGraph`) adds an
+edge for `FLAT` and `CROSSING`, never for `BLOCKED`. This replaces the current
 "walkable + ramp-gates-elevation" logic.
 
-## Ramp placement — sparse, rock-only, contextual
+## Crossing placement — sparse, connectivity-first, contextual
 
-`placeRamps` is rewritten:
+`placeRamps` becomes `placeCrossings`, rewritten:
 
-1. Only **rock-face** transitions are ramp candidates (soft slopes need none).
-2. Of the rock-face edges, place ramps sparsely — enough that every walkable
-   region is reachable, but they read as deliberate chokepoints, not a fringe.
-   Target: connectivity-driven, not a flat 35% — place a ramp where it actually
-   joins two otherwise-separated regions, plus a small extra fraction for
-   redundancy.
-3. The ramp **visual differs by context**: a STONE/HIGHLAND face gets a carved
-   **stone stair**; a MOUNTAIN face gets a rugged **rock ramp**. (Soft slopes
-   get no prop at all — the beveled terrace edge is the "ramp".)
+1. **Candidates** — edges where both tiles are walkable and the level
+   difference is exactly 1.
+2. **Placement** — connectivity-first: place a crossing where it joins two
+   otherwise-separated walkable regions (a union-find pass over candidates),
+   plus a small redundancy fraction. NOT a flat per-edge probability — this is
+   what kills the "ramp on every edge" problem.
+3. **Form** — each placed crossing is `natural` or `artificial` by a map-PRNG
+   draw; `biomeStyle` comes from the higher tile's biome. The renderer maps
+   `(form, biomeStyle)` → the concrete mesh per the table above:
+   - stone/highland: rockfall (natural) | carved stone stairs (artificial)
+   - mountain: rock ramp (natural) | rough stone steps (artificial)
+   - grass/forest: graded grassy hill (natural) | wooden plank-and-rope ramp
+     (artificial)
+   - beach/desert: sloped sand rise (natural) | wooden boardwalk (artificial)
+
+Every form is real, visible geometry — staggered stone steps you can count, an
+actual boulder rockfall, a plank ramp with rope rails. No invisible "graded
+terrace" hand-wave.
 
 ## Decoration / resource exclusion
 
-A tile that is a **ramp landing** (the low or high tile of a placed `RAMP`
-edge) is flagged. Decoration scatter and resource-node placement **skip
-ramp-landing tiles** — no trees, rocks, or props on or blocking a ramp. (This
-is point B of the feedback.)
+A tile that is a **crossing landing** (the low or high tile of a placed
+`CROSSING`) is flagged on the tile. Decoration scatter and resource-node
+placement **skip crossing-landing tiles** — no trees, rocks, or props on or
+blocking a crossing. (Point B of the feedback.)
 
 ## Build order
 
@@ -67,12 +90,18 @@ and the decoration/resource scatter, which several agents are editing. Doing it
 concurrently would collide.
 
 Steps:
-1. `core/biome.ts` — a `biomeHardness(type): 'soft' | 'hard' | 'water'` helper.
-2. `core/ramps.ts` — rewrite: classify edges, place ramps connectivity-first on
-   rock faces only, tag ramp-landing tiles.
-3. `core/board.ts` / `core/pathfinding.ts` — the three-class edge passability;
-   `buildNavGraph` adds FLAT/SLOPE/RAMP edges.
-4. `world/Ramps.tsx` — render stone-stair vs rock-ramp by context; soft slopes
-   render nothing (the terrace edge already beveled).
-5. Decoration + resource scatter — skip ramp-landing tiles.
-6. Terrain mesh — bevel SLOPE edges (soft transitions) so they read as graded.
+1. `core/biome.ts` — a `biomeStyleFor(type)` helper grouping biomes into the
+   four crossing-style families (stone / mountain / grass-forest / beach-desert).
+2. `core/ramps.ts` → `core/crossings.ts` — rewrite: classify candidate edges,
+   place crossings connectivity-first (union-find) + redundancy, pick
+   natural/artificial form per crossing, tag crossing-landing tiles.
+3. `core/board.ts` / `core/pathfinding.ts` — the FLAT/CROSSING/BLOCKED edge
+   model; `buildNavGraph` adds FLAT + CROSSING edges, never BLOCKED.
+4. `world/Ramps.tsx` → `world/Crossings.tsx` — render the eight concrete forms
+   (4 biome styles × natural/artificial): rockfall, stone stairs, rock ramp,
+   rough steps, grassy hill, wooden plank ramp, sand rise, boardwalk. Each is
+   real visible geometry. The natural grassy/sand "hill" form is a small graded
+   mound mesh — not an invisible bevel.
+5. Decoration + resource scatter — skip crossing-landing tiles.
+6. `path-follow` Y-interpolation already handles the elevation change; verify it
+   reads correctly across both crossing forms.

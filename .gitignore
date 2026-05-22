@@ -177,3 +177,5 @@ tests/browser/**/__screenshots__
 
 # brainstorming companion
 .superpowers
+.claude/worktrees/
+.clone/

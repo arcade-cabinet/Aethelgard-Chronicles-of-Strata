@@ -30,8 +30,14 @@ describe('createCharacter', () => {
     const world = createEcsWorld();
     const goblin = createCharacter({ world, role: 'Goblin', q: 0, r: 0, level: 2 });
     const orc = createCharacter({ world, role: 'Orc', q: 1, r: 0, level: 2 });
+    const vampire = createCharacter({ world, role: 'Vampire', q: 2, r: 0, level: 2 });
+    const blackKnight = createCharacter({ world, role: 'BlackKnight', q: 3, r: 0, level: 2 });
+    const witch = createCharacter({ world, role: 'Witch', q: 4, r: 0, level: 2 });
     expect(goblin.get(FactionTrait)?.faction).toBe('enemy');
     expect(orc.get(FactionTrait)?.faction).toBe('enemy');
+    expect(vampire.get(FactionTrait)?.faction).toBe('enemy');
+    expect(blackKnight.get(FactionTrait)?.faction).toBe('enemy');
+    expect(witch.get(FactionTrait)?.faction).toBe('enemy');
   });
 
   it('gives each role its archetype movement speed', () => {
