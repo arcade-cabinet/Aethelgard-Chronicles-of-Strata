@@ -2,17 +2,20 @@ import type { World } from 'koota';
 import { type AnimState, AnimationState, Movement } from '@/ecs/components';
 
 /** The KayKit clip name each animation state maps to. Source: 60-characters.md. */
-const STATE_CLIP: Record<AnimState, string> = {
+const STATE_CLIP = {
   IDLE: 'Idle_A',
   MOVING: 'Walking_A',
   HARVESTING: 'Interact',
   ATTACKING: 'Throw',
   DYING: 'Death_A',
   BUILDING: 'Interact',
-};
+} as const satisfies Record<AnimState, string>;
+
+/** A KayKit clip name that an animation state can map to. */
+export type ClipName = (typeof STATE_CLIP)[AnimState];
 
 /** The clip name for an animation state. */
-export function clipForState(state: AnimState): string {
+export function clipForState(state: AnimState): ClipName {
   return STATE_CLIP[state];
 }
 
@@ -27,9 +30,6 @@ export function animationSystem(world: World): void {
     // only the movement system owns the IDLE <-> MOVING transition
     if (anim.state !== 'IDLE' && anim.state !== 'MOVING') return;
     const next: AnimState = movement.isMoving ? 'MOVING' : 'IDLE';
-    if (anim.state !== next) {
-      anim.state = next;
-      anim.clipName = clipForState(next);
-    }
+    if (anim.state !== next) anim.state = next;
   });
 }

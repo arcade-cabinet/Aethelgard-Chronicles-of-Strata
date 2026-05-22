@@ -1,19 +1,34 @@
 import { useAnimations, useGLTF } from '@react-three/drei';
 import { useEffect, useMemo, useRef } from 'react';
-import type { AnimationClip, Group } from 'three';
+import type { AnimationClip, Group, Mesh } from 'three';
 import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { assets } from '@/assets/assets';
 import type { UnitType } from '@/ecs/components';
+import type { ClipName } from '@/ecs/systems/animation';
 import { characterMeshId, rigAnimationIds, rigForRole } from './rig';
 
 /** Props for an animated KayKit character. */
 export interface AnimatedCharacterProps {
   /** Unit role — selects the mesh GLB and the rig tier. */
   role: UnitType;
-  /** The animation clip name to play (e.g. 'Idle_A', 'Walking_A', 'Running_A'). */
-  clip: string;
+  /** The animation clip to play — a state-mapped KayKit clip name. */
+  clip: ClipName;
   /** Crossfade duration into the clip, in seconds. */
   fade?: number;
+}
+
+/** Dispose every geometry and material under a scene graph (frees GPU memory). */
+function disposeScene(scene: Group): void {
+  scene.traverse((obj) => {
+    const mesh = obj as Mesh;
+    mesh.geometry?.dispose();
+    const mat = mesh.material;
+    if (Array.isArray(mat)) {
+      for (const m of mat) m.dispose();
+    } else {
+      mat?.dispose();
+    }
+  });
 }
 
 /**
@@ -35,6 +50,9 @@ export function AnimatedCharacter({ role, clip, fade = 0.25 }: AnimatedCharacter
   // Clone the character scene so multiple instances of the same role do not
   // share one skeleton (SkeletonUtils.clone preserves skinned-mesh bindings).
   const scene = useMemo(() => cloneSkeleton(charGltf.scene) as Group, [charGltf.scene]);
+
+  // Dispose the cloned scene's GPU resources when this instance unmounts.
+  useEffect(() => () => disposeScene(scene), [scene]);
 
   // The full clip set is the union of both rig libraries.
   const clips = useMemo<AnimationClip[]>(
@@ -61,6 +79,17 @@ export function AnimatedCharacter({ role, clip, fade = 0.25 }: AnimatedCharacter
   );
 }
 
-// Preload the M2 character + rig GLBs so first spawn does not stall a frame.
-useGLTF.preload(assets.url('characters.rigs.medium-movement'));
-useGLTF.preload(assets.url('characters.rigs.medium-general'));
+// Preload every character mesh + both rig tiers so the first spawn of any role
+// does not suspend and jank a frame.
+for (const id of [
+  'characters.heroes.engineer',
+  'characters.heroes.knight',
+  'characters.heroes.rogue',
+  'characters.enemies.orc',
+  'characters.rigs.medium-movement',
+  'characters.rigs.medium-general',
+  'characters.rigs.large-movement',
+  'characters.rigs.large-general',
+]) {
+  useGLTF.preload(assets.url(id));
+}

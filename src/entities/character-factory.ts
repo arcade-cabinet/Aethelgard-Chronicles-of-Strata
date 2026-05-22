@@ -55,7 +55,7 @@ export function createCharacter(params: CreateCharacterParams): Entity {
     FactionTrait({ faction: stats.faction }),
     Movement({ speed: stats.speed, isMoving: false }),
     PathQueue({ steps: [] }),
-    AnimationState({ state: 'IDLE', clipName: 'Idle_A' }),
+    AnimationState({ state: 'IDLE' }),
     Selectable({ isSelected: selected }),
   );
 }

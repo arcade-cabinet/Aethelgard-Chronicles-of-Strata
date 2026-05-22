@@ -27,6 +27,9 @@ export function characterMeshId(role: UnitType): string {
     case 'Footman':
       return 'characters.heroes.knight';
     case 'Goblin':
+      // The KayKit bundle has no dedicated goblin mesh; the hooded Rogue is the
+      // closest small humanoid. Goblins are tinted/scaled distinctly at render
+      // time so they still read as a separate enemy faction.
       return 'characters.heroes.rogue';
     case 'Orc':
       return 'characters.enemies.orc';

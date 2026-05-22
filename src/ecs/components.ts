@@ -27,8 +27,11 @@ export const Movement = trait({ speed: 2, isMoving: false });
 /** Remaining A* path steps (tile keys) to the destination. */
 export const PathQueue = trait((): { steps: string[] } => ({ steps: [] }));
 
-/** Current animation state and the clip name it maps to. */
-export const AnimationState = trait({ state: 'IDLE' as AnimState, clipName: 'Idle_A' });
+/**
+ * Current animation state. The KayKit clip name is derived from this via
+ * `clipForState` (animation.ts) — not stored, so the two cannot drift.
+ */
+export const AnimationState = trait({ state: 'IDLE' as AnimState });
 
 /** Whether the entity is currently selected by the player. */
 export const Selectable = trait({ isSelected: false });
