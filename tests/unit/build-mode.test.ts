@@ -41,9 +41,7 @@ describe('build mode placement validation', () => {
     const eco = createEconomy();
     eco.wood = 1000;
     eco.gold = 1000;
-    expect(
-      canPlaceBuilding(board, new Set(), `${grass.q},${grass.r}`, 'Farm', eco).ok,
-    ).toBe(true);
+    expect(canPlaceBuilding(board, new Set(), `${grass.q},${grass.r}`, 'Farm', eco).ok).toBe(true);
   });
 
   it('defines costs for Farm and Barracks', () => {

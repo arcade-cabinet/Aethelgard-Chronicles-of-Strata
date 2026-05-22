@@ -31,12 +31,12 @@ export function jobRoutingSystem(
         return;
       }
       if (path.steps.length === 0) {
-        const route = findPathToAdjacent(graph, board, peonKey, job.targetKey);
+        const route = findPathToAdjacent(graph, peonKey, job.targetKey);
         if (route) path.steps = leveledSteps(board, route);
       }
     } else if (job.state === 'CARRYING') {
       if (path.steps.length === 0 && !areAdjacent(peonKey, townHallKey)) {
-        const route = findPathToAdjacent(graph, board, peonKey, townHallKey);
+        const route = findPathToAdjacent(graph, peonKey, townHallKey);
         if (route) path.steps = leveledSteps(board, route);
       }
     }
@@ -44,12 +44,7 @@ export function jobRoutingSystem(
 }
 
 /** Find a path ending on a tile adjacent to `targetKey` (which may be unwalkable). */
-function findPathToAdjacent(
-  graph: NavGraph,
-  board: BoardData,
-  startKey: string,
-  targetKey: string,
-): string[] | null {
+function findPathToAdjacent(graph: NavGraph, startKey: string, targetKey: string): string[] | null {
   // if the target itself is walkable, path straight to it
   if (graph.has(targetKey)) {
     const direct = findPath(graph, startKey, targetKey);

@@ -14,7 +14,7 @@ describe('build system', () => {
     );
     // the site entity is keyed by siteKey via a parallel map passed to buildSystem
     buildSystem(world, new Map([[siteKey, site]]), 1);
-    expect((site.get(Building)?.progress ?? 0)).toBeGreaterThan(0);
+    expect(site.get(Building)?.progress ?? 0).toBeGreaterThan(0);
   });
 
   it('completes the building and frees the peon when progress reaches 1', () => {

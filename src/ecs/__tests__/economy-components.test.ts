@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  AssignedJob,
-  Building,
-  Carrier,
-  Harvester,
-  Health,
-  ResourceTrait,
-} from '@/ecs/components';
+import { AssignedJob, Building, Carrier, Harvester, Health, ResourceTrait } from '@/ecs/components';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('economy components', () => {
@@ -38,7 +31,10 @@ describe('economy components', () => {
 
   it('Harvester and Health carry their stats', () => {
     const world = createEcsWorld();
-    const peon = world.spawn(Harvester({ harvestRate: 1, harvestTimer: 0 }), Health({ current: 50, max: 50 }));
+    const peon = world.spawn(
+      Harvester({ harvestRate: 1, harvestTimer: 0 }),
+      Health({ current: 50, max: 50 }),
+    );
     expect(peon.get(Harvester)?.harvestRate).toBe(1);
     expect(peon.get(Health)?.max).toBe(50);
   });

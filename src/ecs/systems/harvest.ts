@@ -1,11 +1,5 @@
 import type { World } from 'koota';
-import {
-  AssignedJob,
-  Carrier,
-  Harvester,
-  HexPosition,
-  ResourceTrait,
-} from '@/ecs/components';
+import { AssignedJob, Carrier, Harvester, HexPosition, ResourceTrait } from '@/ecs/components';
 import { getHexKey } from '@/core/hex';
 
 /** How much one full harvest cycle yields, per resource type. */

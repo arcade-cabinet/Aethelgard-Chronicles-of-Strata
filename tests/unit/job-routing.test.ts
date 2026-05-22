@@ -14,10 +14,11 @@ describe('job-routing system', () => {
     const start = [...graph.keys()][0] as string;
     const neighbor = [...(graph.get(start) ?? [])][0] as string;
     // take a neighbor of the neighbor that is not adjacent to start
-    const twoHop = [...(graph.get(neighbor) ?? [])].find((k) => {
-      const ns = graph.get(start);
-      return k !== start && !(ns?.has(k));
-    }) ?? neighbor;
+    const twoHop =
+      [...(graph.get(neighbor) ?? [])].find((k) => {
+        const ns = graph.get(start);
+        return k !== start && !ns?.has(k);
+      }) ?? neighbor;
     const [sq, sr] = start.split(',').map(Number);
     const peon = world.spawn(
       HexPosition({ q: sq ?? 0, r: sr ?? 0, level: 2 }),
@@ -26,7 +27,7 @@ describe('job-routing system', () => {
       PathQueue({ steps: [] }),
     );
     jobRoutingSystem(world, board, graph, '0,0');
-    expect((peon.get(PathQueue)?.steps.length ?? 0)).toBeGreaterThan(0);
+    expect(peon.get(PathQueue)?.steps.length ?? 0).toBeGreaterThan(0);
   });
 
   it('flips a SEEKING peon adjacent to its resource to HARVESTING', () => {

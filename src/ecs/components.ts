@@ -43,13 +43,7 @@ export type ResourceType = 'wood' | 'stone' | 'gold';
 export type BuildingType = 'TownHall' | 'Farm' | 'Barracks';
 
 /** The peon job state machine. */
-export type JobState =
-  | 'IDLE'
-  | 'SEEKING'
-  | 'HARVESTING'
-  | 'CARRYING'
-  | 'DEPOSITING'
-  | 'BUILDING';
+export type JobState = 'IDLE' | 'SEEKING' | 'HARVESTING' | 'CARRYING' | 'DEPOSITING' | 'BUILDING';
 
 /** A harvestable resource node — marks an entity and tracks remaining amount. */
 export const ResourceTrait = trait({ resourceType: 'wood' as ResourceType, amount: 100 });

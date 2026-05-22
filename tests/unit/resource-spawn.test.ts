@@ -5,8 +5,14 @@ import { spawnResourceNodes } from '@/world/resource-spawn';
 
 describe('resource node spawning', () => {
   it('is deterministic for a given seed', () => {
-    const a = spawnResourceNodes(generateBoard('ancient-silver-forest'), createDualPrng('ancient-silver-forest').map);
-    const b = spawnResourceNodes(generateBoard('ancient-silver-forest'), createDualPrng('ancient-silver-forest').map);
+    const a = spawnResourceNodes(
+      generateBoard('ancient-silver-forest'),
+      createDualPrng('ancient-silver-forest').map,
+    );
+    const b = spawnResourceNodes(
+      generateBoard('ancient-silver-forest'),
+      createDualPrng('ancient-silver-forest').map,
+    );
     expect(a.map((n) => n.key)).toEqual(b.map((n) => n.key));
   });
 
