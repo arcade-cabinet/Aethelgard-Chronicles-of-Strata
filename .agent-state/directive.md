@@ -115,11 +115,29 @@ M1 learnings carried into M2:
   load a KayKit character + Rig_Medium animation GLBs, confirm the skeleton
   retargeting works, lock the approach in `60-characters.md` BEFORE the factory.
 
-### M2 — Characters
-Plan written at M2 start. Contracts: rig-verification harness FIRST, KayKit GLB
-loader, shared-rig retargeting, character factory, koota unit entities, AnimationState
-system. Pillar: `60-characters.md`, `50-ecs-model.md`.
-- [ ] M2.* — decomposed at milestone start
+### M2 — Characters  ✅ COMPLETE
+Pillar: `60-characters.md`, `50-ecs-model.md`.
+- [x] M2.1 rig verification — KayKit shares an identical 23-bone skeleton; bind by name
+- [x] M2.2 ingested 8 KayKit heroes + 4 rig-animation libs + orc enemy (25 assets)
+- [x] M2.3 AnimatedCharacter — drei useGLTF/useAnimations shared-rig retargeting
+- [x] M2.4 character factory — parameterized createCharacter, koota archetypes
+- [x] M2.5 AnimationState component + animationSystem (Movement → clip)
+- [x] M2.6 KayKit Engineer replaces the cone-pawn — visually verified, no T-pose
+- [x] M2.7 milestone verification — 81 unit + 3 browser + 3 e2e tests green
+
+M2 learnings carried into M3:
+- The M2 milestone doc was over-specified (written in M0 from the design table).
+  Health-billboard re-scoped to M4 (needs damage), selection-ring re-scoped to
+  M3 (needs the command loop). Both recorded in the respective milestone docs.
+  LESSON: milestone docs decompose at milestone START, not in M0 — M3+ contracts
+  get their detail when that milestone begins, informed by the prior milestone.
+- The character factory deliberately omits Health/Harvester/Carrier/Combatant —
+  they join the archetype in the milestone that adds the system that reads them
+  (dead components otherwise). M3 adds Harvester + Carrier; M4 adds Health +
+  Combatant.
+- M3 FIRST STEP: write the M3 plan + milestone-TDD batch, then build the peon
+  harvest economy (resource nodes, harvest loop, Town Hall, deposit, build mode,
+  supply) + the re-scoped selection ring.
 
 ### M3 — Economy
 Plan written at M3 start. Contracts: peon harvest loop, resource nodes, Town Hall,

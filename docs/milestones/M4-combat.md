@@ -71,3 +71,9 @@ Detailed test files are written as the first act of M4 (milestone-TDD batch).
   - Trigger win condition.
   - Assert `gameState.resources.gold >= 150` and `gameState.kills == 5`.
   - Ref: `70-rts-systems.md §Win / Loss Conditions`.
+
+- [ ] **Health billboard appears on a damaged unit** [`tests/visual/health-billboard.spec.ts`]
+  - Re-scoped from M2: a health bar is meaningful once units take damage, which
+    is M4's combatSystem. Reduce a unit's Health to 50%; assert a health-bar
+    element renders above the unit in the scene.
+  - Ref: `70-rts-systems.md §Health billboard`.

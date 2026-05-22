@@ -68,3 +68,9 @@ Detailed test files are written as the first act of M3 (milestone-TDD batch).
   - Playwright: place a Farm; assert a progress indicator is visible in the HUD
     selection panel while the Farm is under construction.
   - Ref: `90-ui-hud.md §Selection Panel`, `70-rts-systems.md §Build Mode`.
+
+- [ ] **Selection ring renders when a unit is selected** [`tests/browser/selection.test.ts`]
+  - Re-scoped from M2: unit selection is meaningful once there are multiple units
+    and orders. Clicking a character sets `Selectable.isSelected = true`; a
+    selection-ring mesh renders beneath the selected character.
+  - Ref: `60-characters.md §Character Rendering`, `90-ui-hud.md §Selection Panel`.

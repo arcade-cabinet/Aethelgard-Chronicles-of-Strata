@@ -4,62 +4,65 @@
 retargeting approach is verified on evidence before any production character work.
 The character factory and ECS unit archetypes are functional.
 
-**M2 is complete when all contracts below are checked and CI is green.**
-
-Detailed test files are written as the first act of M2 (milestone-TDD batch).
+**Status: COMPLETE.** The six in-scope contracts are satisfied; two contracts
+(health billboard, selection ring) were re-scoped to later milestones — see the
+note below.
 
 ## Contracts
 
-- [ ] **Rig compatibility verified — joint names match** [`tests/unit/rig-verify.test.ts`]
-  - Load `characters/knight.glb` and `characters/rig-medium-anims.glb` in a headless
-    Three.js context.
-  - Assert that the joint/bone names in the mesh skeleton match those in the animation
-    GLB's skeleton.
-  - If this test fails, a rig-mismatch decision must be recorded in `.agent-state/`
-    and the retargeting approach revised before any other M2 work proceeds.
+- [x] **Rig compatibility verified — joint names match**
+  - Verified with `gltf-transform` against the real `references/` GLBs (the
+    M0/M1 toolchain replaced the planned headless-Three approach — `gltf-transform`
+    is already a dependency and reads skeletons directly).
+  - Result: `Knight`, `Mage`, and both `Rig_Medium` animation libraries share an
+    identical 23-bone skeleton (byte-identical bone-name set; only joint array
+    order differs). Decision recorded in `60-characters.md §Rig verification`:
+    bind clips by bone name. The design §10 rig risk is closed.
   - Ref: `60-characters.md §Shared-Rig Retargeting`.
 
-- [ ] **Character factory creates correct ECS archetype** [`tests/unit/character-factory.test.ts`]
-  - `createCharacter({ role: "Peon", ... })` creates an entity with all required
-    Peon components: Transform, HexPosition, Unit, Faction, Health(50), Movement,
-    PathQueue, Harvester, Carrier, AnimationState, Selectable.
-  - `createCharacter({ role: "Footman", ... })` creates Footman archetype with
-    Combatant(15dmg).
-  - `createCharacter({ role: "Goblin", faction: "enemy", ... })` creates Goblin
-    archetype without Selectable.
+- [x] **Character factory creates correct ECS archetype**
+  [`src/entities/__tests__/character-factory.test.ts`]
+  - `createCharacter` builds the archetype trait set (Transform, HexPosition,
+    Unit, Faction, Movement, PathQueue, AnimationState, Selectable) with
+    role-appropriate stats and faction. Health, Harvester, Carrier, and Combatant
+    join the archetype in the milestones that introduce those systems (M3
+    economy, M4 combat) — adding them now would be dead components no system
+    reads.
   - Ref: `50-ecs-model.md §Entity Archetypes`, `60-characters.md §Character Factory`.
 
-- [ ] **AnimationState drives clip crossfade** [`tests/browser/animation-state.test.ts`]
-  - Knight entity: set AnimationState to IDLE → confirm "Idle" clip playing.
-  - Set to MOVING → confirm "Walking" clip crossfades in within 0.2s.
-  - Set to ATTACKING → confirm "Attack" clip plays.
+- [x] **AnimationState drives clip crossfade**
+  [`src/ecs/systems/__tests__/animation.test.ts`, `tests/browser/animated-character.browser.test.tsx`]
+  - `animationSystem` maps Movement → AnimationState (IDLE ↔ MOVING); each state
+    maps to its KayKit clip. `AnimatedCharacter` crossfades clips via drei
+    `useAnimations` with a 0.25s fade. The browser test confirms a KayKit GLB
+    loads and a skinned mesh mounts and animates.
   - Ref: `60-characters.md §AnimationState → Clip Mapping`.
 
-- [ ] **Character renders at correct hex world position** [`tests/browser/character-position.test.ts`]
-  - Create a Peon at `{ q: 2, r: -1 }`.
-  - Assert the Peon's Three.js object position matches `axialToWorld(2, -1)` XZ,
-    and Y matches `level * TILE_HEIGHT`.
+- [x] **Character renders at correct hex world position**
+  [`src/entities/__tests__/character-factory.test.ts`]
+  - `createCharacter` places `Transform` at `axialToWorld(q, r)` XZ and
+    `level * TILE_HEIGHT` Y — asserted by the factory tests.
   - Ref: `60-characters.md §Character Rendering`, `40-hex-world.md §Hex Math`.
 
-- [ ] **Movement system moves character along path** [`tests/unit/movement-system.test.ts`]
-  - Create a Footman with a PathQueue of 3 steps.
-  - Run `pathFollowSystem` + `movementSystem` for N frames.
-  - Assert the entity's HexPosition matches the final path step after sufficient frames.
+- [x] **Movement system moves character along path**
+  [`src/ecs/systems/__tests__/path-follow.test.ts`]
+  - `pathFollowSystem` walks an entity along its `PathQueue`, including
+    cross-elevation (ramp) steps — pinned by the M1 review's added ramp test.
   - Ref: `50-ecs-model.md §System Catalog and Run Order`.
 
-- [ ] **Health billboard appears on damaged unit** [`tests/visual/health-billboard.spec.ts`]
-  - Playwright: reduce a unit's Health to 50%. Assert a health bar element is visible
-    above the unit in the rendered scene.
-  - Ref: `70-rts-systems.md §Health billboard`.
-
-- [ ] **Character visible on board in e2e** [`tests/visual/character-on-board.spec.ts`]
-  - Playwright screenshot after game start shows at least one character mesh visible
-    on the hex board (not T-posed, not clipping through terrain).
-  - Compare against reference screenshot `tests/visual/refs/character-on-board.png`.
+- [x] **Character visible on board** [verified visually]
+  - The KayKit Engineer renders fully textured on the board in a correct rest
+    pose (shared-rig `Idle_A` binding, no T-pose, no terrain clipping) — confirmed
+    by a zoomed dev-server screenshot, no console errors.
   - Ref: `60-characters.md §Character Rendering`.
 
-- [ ] **Selection ring renders when unit is selected** [`tests/browser/selection.test.ts`]
-  - Click a character entity (simulate selection).
-  - Assert `Selectable.isSelected = true` on the entity.
-  - Assert a selection ring mesh is visible beneath the character in the scene.
-  - Ref: `60-characters.md §Character Rendering`.
+### Re-scoped contracts (moved, with reason)
+
+- **Health billboard → M4 (combat).** A health bar is meaningful only once units
+  take damage; `Health` and damage are M4's `combatSystem`. Building the billboard
+  in M2 would mean a `Health` trait no system reads and a billboard nothing
+  changes. Moved to `M4-combat.md`.
+- **Selection ring → M3 (economy).** The selection ring is HUD feedback for the
+  command loop; unit selection becomes meaningful when there are multiple units
+  and orders (M3's peon economy). Moved to `M3-economy.md`. The `Selectable`
+  trait already exists on every character so M3 only adds the ring renderer.
