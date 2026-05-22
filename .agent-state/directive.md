@@ -279,8 +279,10 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   base symmetrically; `EnemySpawner` (was `GoblinPortalTrait`); `evaluateWinLoss`
   scores symmetrically over `FactionBase`; `EnemyBase.tsx`; all `GoblinPortal`
   naming gone. 221 tests green.
-- [ ] M8.2 — render decomposition: `FactionBase` core + `HomeBase`/`EnemyBase`;
-  delete `Buildings.tsx`. Branch on visuals only.
+- [x] M8.2 — render decomposition (ca8e754): structure-models.ts faction-
+  symmetric model table; HomeBase.tsx renders player structures via a reusable
+  StructureMesh core; Buildings.tsx deleted; EnemyBase is the enemy side.
+  Render-only, 220 tests green.
 - [ ] M8.3 — command API faction parameter: `commands.ts` takes an issuing
   faction; enforce "own pieces, own knowledge only." The single action channel.
 - [ ] M8.4 — perception: `fog.ts`, vision cones (unit arc, base circle),
