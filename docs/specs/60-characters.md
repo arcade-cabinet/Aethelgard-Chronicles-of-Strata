@@ -40,23 +40,42 @@ worker unit — it harvests resources and constructs buildings.
 
 ## Shared-Rig Retargeting
 
-KayKit provides two animation source GLBs:
-- `characters/rig-medium-anims.glb` — contains all animation clips for medium-rig characters.
-- `characters/rig-large-anims.glb` — contains all animation clips for large-rig characters.
+KayKit provides four animation source GLBs (two per rig tier):
+- `characters/rig-medium-movement.glb` — 11 movement clips for medium-rig characters
+  (`Walking_A/B/C`, `Running_A/B`, `Jump_*`, `T-Pose`).
+- `characters/rig-medium-general.glb` — 15 general clips for medium-rig characters
+  (`Idle_A/B`, `Hit_A/B`, `Death_A/B`, `Interact`, `PickUp`, `Throw`, `Use_Item`,
+  `Spawn_Air`, `Spawn_Ground`, `T-Pose`).
+- `characters/rig-large-movement.glb` / `characters/rig-large-general.glb` — the
+  same clip sets for large-rig characters.
 
-Every character shares the skeleton of its rig tier. The character's mesh GLB contains
-only geometry and materials — no embedded animation data. At runtime, `useAnimations`
-from `@react-three/drei` is called with the animation GLB's clips and the character
-mesh's skeleton reference. This retargets the shared animations onto each character's
-unique mesh.
+Every character shares the skeleton of its rig tier. The character's mesh GLB
+contains only geometry and materials — **no embedded animation data** (verified:
+`Knight.glb` and `Mage.glb` report 0 animations). At runtime, `useAnimations` from
+`@react-three/drei` is given the animation GLBs' clips and the character's
+`SkinnedMesh`; the clips drive the character's skeleton.
 
-This pattern keeps the total GLB payload small (N character meshes + 2 animation GLBs
-rather than N character GLBs each containing full animation data).
+### Rig verification — RESULT (M2 task 1, completed)
 
-**Rig verification is M2's first task.** Before building the character factory, the
-rig compatibility must be confirmed by loading one character mesh with one animation
-GLB in isolation and verifying that the joint names match. If they do not match, the
-retargeting approach must be revisited before any other character work proceeds.
+Verified with `gltf-transform` against the real `references/` GLBs:
+
+- `Knight`, `Mage`, `Rig_Medium_MovementBasic`, `Rig_Medium_General` **all have a
+  23-bone skin** with the **identical bone-name set**: `root, hips, spine, chest,
+  upperarm.l/r, lowerarm.l/r, wrist.l/r, hand.l/r, handslot.l/r, head,
+  upperleg.l/r, lowerleg.l/r, foot.l/r, toes.l/r`.
+- The joint **array order differs** between a character GLB and a rig GLB (Knight
+  lists arms before legs; the Rig lists legs before arms). The bone *sets* are
+  byte-identical.
+
+**Decision — bind animation clips by bone NAME, not joint index.** Three.js
+`AnimationClip` tracks target nodes by name (`<boneName>.<property>`), and
+`useAnimations` resolves tracks against the mounted object graph by name. Because
+the bone names match exactly, a Rig clip plays correctly on any character of that
+rig tier regardless of joint-array order. No index remapping is needed. This is the
+KayKit-intended pipeline and it is confirmed sound — the design §10 risk is closed.
+
+The total GLB payload stays small: N character meshes + 4 animation GLBs, rather
+than N character GLBs each carrying full animation data.
 
 ## Character Factory
 
