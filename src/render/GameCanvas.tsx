@@ -9,13 +9,13 @@ import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { ResourceNodes } from '@/world/ResourceNodes';
 import { SelectionRing } from '@/world/SelectionRing';
-import { TileInteraction } from '@/world/TileInteraction';
+import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { Units } from '@/world/Units';
 import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
 
 /** Inner scene — runs inside the Canvas so r3f hooks are valid. */
-function Scene({ game }: { game: GameState }) {
+function Scene({ game, buildContext }: { game: GameState; buildContext: BuildContext | null }) {
   useGameLoop(game);
   const tiles = [...game.board.tiles.values()];
   return (
@@ -26,7 +26,7 @@ function Scene({ game }: { game: GameState }) {
           <HexTile key={`${t.q},${t.r}`} q={t.q} r={t.r} level={t.level} type={t.type} />
         ))}
       </group>
-      <TileInteraction game={game} />
+      <TileInteraction game={game} buildContext={buildContext} />
       <Suspense fallback={null}>
         <ResourceNodes game={game} />
         <Buildings game={game} />
@@ -45,17 +45,19 @@ function Scene({ game }: { game: GameState }) {
 export interface GameCanvasProps {
   /** The live game state to render. */
   game: GameState;
+  /** The active build context (a building chosen to place), or null. */
+  buildContext?: BuildContext | null;
 }
 
 /** The react-three-fiber canvas hosting the board scene. */
-export function GameCanvas({ game }: GameCanvasProps) {
+export function GameCanvas({ game, buildContext = null }: GameCanvasProps) {
   return (
     <Canvas
       shadows
       camera={{ position: [0, 40, 50], fov: 45 }}
       style={{ position: 'absolute', inset: 0 }}
     >
-      <Scene game={game} />
+      <Scene game={game} buildContext={buildContext} />
     </Canvas>
   );
 }

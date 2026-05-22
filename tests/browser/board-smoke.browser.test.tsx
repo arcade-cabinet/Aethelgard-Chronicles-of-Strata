@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { App } from '@/App';
+import { enterGame } from './enter-game';
 
 describe('board renders', () => {
   it('mounts the game canvas without crashing', async () => {
     await render(<App />);
-    const canvas = document.querySelector('canvas');
+    await enterGame();
+    const canvas = document.querySelector('canvas:not(#minimap-canvas)');
     expect(canvas).not.toBeNull();
   });
 

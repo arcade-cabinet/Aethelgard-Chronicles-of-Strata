@@ -201,8 +201,21 @@ M5 learnings carried into M6:
   SQLite/Preferences persistence, credits screen. Then: ONE final push of the
   whole feat/aethelgard-initial-release branch as the single PR.
 
-### M6 — Polish
-Plan written at M6 start. Contracts: Radix + framer-motion HUD, howler audio buses,
-SQLite + Preferences persistence, branded launcher, credits screen, final PR.
-Pillar: `90-ui-hud.md`, `80-audio.md`, `95-persistence.md`.
-- [ ] M6.* — decomposed at milestone start
+### M6 — Polish & Ship
+Plan: `docs/superpowers/plans/2026-05-22-m6-polish.md`.
+Mid-M6 design correction (`docs/specs/96-prng-and-landing.md`): split the map
+and event PRNGs; the landing page becomes New Game / Continue / Settings with
+map-size + difficulty + seed-phrase config; the event PRNG seed is a buried
+Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.random).
+- [x] M6.1-6 logic — audio buses, sound map, persistence, auto-save, selection,
+  build/research/rally commands
+- [x] M6 HUD built — hud-theme, TitleScreen, NewGameModal, SettingsModal,
+  SelectionPanel, SoundToggle, CreditsPanel, CREDITS.md, themed ResourceBar,
+  GameOverModal → Radix Dialog, map-size.ts (device-gated Huge)
+- [x] core two-PRNG refactor — createMapPrng / createEventPrng / advanceEventSeed,
+  generateBoard takes a radius
+- [ ] [WAIT] core-refactor subagent finishing game-state.ts NewGameConfig +
+  persistence.ts event-seed wiring + the 7 dependent test files (background,
+  harness-tracked — App.tsx rewire + remaining M6 wiring resumes on completion)
+- [ ] M6 finish — App.tsx → TitleScreen flow, useAudio + auto-save wired into
+  the loop, new browser tests, milestone verification, the single final PR

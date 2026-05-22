@@ -1,5 +1,7 @@
+import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import type { GameState } from '@/game/game-state';
+import { HUD_THEME } from './hud-theme';
 
 /** One resource readout. */
 interface Readout {
@@ -15,8 +17,8 @@ interface Readout {
 
 /**
  * The HUD resource bar — wood, stone, gold, and supply. Polls `game.economy`
- * on an animation frame so the counters track deposits live. Plain DOM; the
- * Radix-styled HUD arrives in M6.
+ * on an animation frame so the counters track deposits live. Themed with the
+ * obsidian/gold HUD palette; slides in from the left on mount (framer-motion).
  */
 export function ResourceBar({ game }: { game: GameState }) {
   const [readouts, setReadouts] = useState<Readout[]>(() => snapshot(game));
@@ -32,7 +34,11 @@ export function ResourceBar({ game }: { game: GameState }) {
   }, [game]);
 
   return (
-    <div
+    <motion.div
+      id="resource-bar"
+      initial={{ x: -40, opacity: 0 }}
+      animate={{ x: 0, opacity: 1 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
       style={{
         position: 'absolute',
         top: 16,
@@ -40,10 +46,11 @@ export function ResourceBar({ game }: { game: GameState }) {
         display: 'flex',
         gap: 16,
         padding: '10px 16px',
-        borderRadius: 12,
-        background: 'rgba(9, 13, 22, 0.85)',
-        color: '#f1f5f9',
-        fontFamily: 'sans-serif',
+        borderRadius: HUD_THEME.radius,
+        background: HUD_THEME.color.panel,
+        border: `1px solid ${HUD_THEME.color.border}`,
+        color: HUD_THEME.color.text,
+        fontFamily: HUD_THEME.font.body,
         fontWeight: 700,
         fontSize: 14,
         pointerEvents: 'none',
@@ -57,7 +64,7 @@ export function ResourceBar({ game }: { game: GameState }) {
           <span id={r.id}>{r.value}</span>
         </span>
       ))}
-    </div>
+    </motion.div>
   );
 }
 
@@ -65,13 +72,13 @@ export function ResourceBar({ game }: { game: GameState }) {
 function snapshot(game: GameState): Readout[] {
   const e = game.economy;
   return [
-    { id: 'val-wood', label: 'Wood', color: '#f97316', value: String(e.wood) },
-    { id: 'val-stone', label: 'Stone', color: '#94a3b8', value: String(e.stone) },
-    { id: 'val-gold', label: 'Gold', color: '#fbbf24', value: String(e.gold) },
+    { id: 'val-wood', label: 'Wood', color: HUD_THEME.color.wood, value: String(e.wood) },
+    { id: 'val-stone', label: 'Stone', color: HUD_THEME.color.stone, value: String(e.stone) },
+    { id: 'val-gold', label: 'Gold', color: HUD_THEME.color.coin, value: String(e.gold) },
     {
       id: 'val-supply',
       label: 'Supply',
-      color: '#a855f7',
+      color: HUD_THEME.color.supply,
       value: `${e.usedSupply}/${e.maxSupply}`,
     },
   ];

@@ -3,17 +3,9 @@ import seedrandom from 'seedrandom';
 /** A seeded, deterministic random function returning a float in [0, 1). */
 export type Rng = () => number;
 
-/** The map PRNG and event PRNG, both derived from one seed phrase. */
-export interface DualPrng {
-  /** Drives terrain, resource/ramp placement, spawn positions. Runs at world-gen. */
-  map: Rng;
-  /** Drives combat variance, weather, raid timing. Runs during gameplay. */
-  event: Rng;
-}
-
 /**
  * cyrb128 — a 128-bit non-cryptographic string hash. Produces four 32-bit
- * unsigned integers used to seed the two PRNG streams.
+ * unsigned integers used to seed a PRNG stream from a string.
  */
 export function cyrb128(str: string): [number, number, number, number] {
   let h1 = 1779033703;
@@ -39,13 +31,35 @@ export function cyrb128(str: string): [number, number, number, number] {
 }
 
 /**
- * Build the dual-stage PRNG from an adjective-adjective-noun seed phrase.
- * The first hash pair seeds the map stream; the second pair seeds the event stream.
+ * Build the **map PRNG** from an adjective-adjective-noun seed phrase. Drives
+ * board terrain, biomes, and resource placement. The contract is absolute:
+ * the same phrase always produces the same map. See `docs/specs/96-prng-and-landing.md`.
  */
-export function createDualPrng(seedPhrase: string): DualPrng {
-  const [a, b, c, d] = cyrb128(seedPhrase);
-  return {
-    map: seedrandom(`${a}.${b}`),
-    event: seedrandom(`${c}.${d}`),
-  };
+export function createMapPrng(seedPhrase: string): Rng {
+  const [a, b] = cyrb128(seedPhrase);
+  return seedrandom(`${a}.${b}`);
+}
+
+/**
+ * Build an **event PRNG** stream from an arbitrary seed string. Drives combat
+ * variance, weather, raid timing, and the seed-phrase shuffle. The event seed
+ * is device state persisted in Capacitor Preferences — independent of the map
+ * phrase — so "same map, different fight" and "replay this fight on a new map"
+ * are both expressible.
+ */
+export function createEventPrng(eventSeed: string): Rng {
+  const [a, b, c, d] = cyrb128(eventSeed);
+  return seedrandom(`${a}.${b}.${c}.${d}`);
+}
+
+/**
+ * Derive the *next* event seed from a running event stream. Each New Game
+ * advances the buried Preferences seed by drawing the successor from the
+ * current stream, so sessions differ but every session stays deterministic.
+ */
+export function advanceEventSeed(eventRng: Rng): string {
+  // four draws → a 64-ish-bit seed string
+  return [eventRng(), eventRng(), eventRng(), eventRng()]
+    .map((n) => Math.floor(n * 0x100000000).toString(36))
+    .join('');
 }

@@ -3,7 +3,7 @@ import { MAP_RADIUS } from './constants';
 import { getHexKey } from './hex';
 import { createNoise2D } from './noise';
 import { type Ramp, placeRamps } from './ramps';
-import { createDualPrng } from './rng';
+import { createMapPrng } from './rng';
 
 /** One tile of the generated board. */
 export interface Tile extends Biome {
@@ -19,6 +19,8 @@ export interface Tile extends Biome {
 export interface BoardData {
   /** The seed phrase this board was generated from. */
   seedPhrase: string;
+  /** The hex radius this board was generated at. */
+  radius: number;
   /** Every tile, keyed by `getHexKey(q, r)`. */
   tiles: Map<string, Tile>;
   /** Placed ramps, keyed by `rampKey(lowKey, highKey)`. */
@@ -27,19 +29,21 @@ export interface BoardData {
 
 /**
  * Generate the full board deterministically from a seed phrase. Uses only the
- * map PRNG stream — the event stream is untouched so gameplay randomness stays
- * independent of world generation.
+ * **map PRNG** (see `docs/specs/96-prng-and-landing.md`) — gameplay randomness
+ * is a separate, independent event stream. `radius` sets the board size
+ * (defaults to `MAP_RADIUS`); the same phrase + radius always yields the same
+ * board.
  */
-export function generateBoard(seedPhrase: string): BoardData {
-  const { map } = createDualPrng(seedPhrase);
+export function generateBoard(seedPhrase: string, radius: number = MAP_RADIUS): BoardData {
+  const map = createMapPrng(seedPhrase);
   // Two independent noise fields, both fed from the map stream in a fixed order.
   const heightNoise = createNoise2D(map);
   const moistureNoise = createNoise2D(map);
 
   const tiles = new Map<string, Tile>();
-  for (let q = -MAP_RADIUS; q <= MAP_RADIUS; q++) {
-    const rMin = Math.max(-MAP_RADIUS, -q - MAP_RADIUS);
-    const rMax = Math.min(MAP_RADIUS, -q + MAP_RADIUS);
+  for (let q = -radius; q <= radius; q++) {
+    const rMin = Math.max(-radius, -q - radius);
+    const rMax = Math.min(radius, -q + radius);
     for (let r = rMin; r <= rMax; r++) {
       const biome = assignBiome(q, r, heightNoise, moistureNoise);
       const walkable = biome.type !== 'OCEAN' && biome.type !== 'LAKE' && biome.level < 5;
@@ -47,5 +51,5 @@ export function generateBoard(seedPhrase: string): BoardData {
     }
   }
   const ramps = placeRamps(tiles, map);
-  return { seedPhrase, tiles, ramps };
+  return { seedPhrase, radius, tiles, ramps };
 }
