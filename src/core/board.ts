@@ -2,6 +2,7 @@ import { type Biome, assignBiome } from './biome';
 import { MAP_RADIUS } from './constants';
 import { getHexKey } from './hex';
 import { createNoise2D } from './noise';
+import { type Ramp, placeRamps } from './ramps';
 import { createDualPrng } from './rng';
 
 /** One tile of the generated board. */
@@ -20,6 +21,8 @@ export interface BoardData {
   seedPhrase: string;
   /** Every tile, keyed by `getHexKey(q, r)`. */
   tiles: Map<string, Tile>;
+  /** Placed ramps, keyed by `rampKey(lowKey, highKey)`. */
+  ramps: Map<string, Ramp>;
 }
 
 /**
@@ -43,5 +46,6 @@ export function generateBoard(seedPhrase: string): BoardData {
       tiles.set(getHexKey(q, r), { q, r, ...biome, walkable });
     }
   }
-  return { seedPhrase, tiles };
+  const ramps = placeRamps(tiles, map);
+  return { seedPhrase, tiles, ramps };
 }
