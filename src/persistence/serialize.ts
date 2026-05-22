@@ -67,9 +67,7 @@ const TRAIT_REGISTRY: TraitEntry[] = [
 ];
 
 // biome-ignore lint/suspicious/noExplicitAny: trait name → factory map
-const TRAIT_BY_NAME = new Map<string, any>(
-  TRAIT_REGISTRY.map((e) => [e.name, e.traitObj]),
-);
+const TRAIT_BY_NAME = new Map<string, any>(TRAIT_REGISTRY.map((e) => [e.name, e.traitObj]));
 
 // ---------------------------------------------------------------------------
 // Snapshot types

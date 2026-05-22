@@ -77,10 +77,12 @@ export function createPersistence(): Persistence {
       const savedAt = new Date().toISOString();
       const db = await openDb();
       try {
-        await db.run(
-          `INSERT INTO saves (name, seed, saved_at, snapshot) VALUES (?, ?, ?, ?);`,
-          [name, game.seedPhrase, savedAt, JSON.stringify(snapshot)],
-        );
+        await db.run(`INSERT INTO saves (name, seed, saved_at, snapshot) VALUES (?, ?, ?, ?);`, [
+          name,
+          game.seedPhrase,
+          savedAt,
+          JSON.stringify(snapshot),
+        ]);
       } finally {
         await sqlite.closeConnection(DB_NAME, false);
       }

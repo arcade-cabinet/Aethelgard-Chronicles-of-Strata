@@ -2,12 +2,7 @@ import { useState } from 'react';
 import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/core/constants';
 import { axialToWorld, getHexKey } from '@/core/hex';
-import {
-  findSelectableAtTile,
-  placeBuilding,
-  planMoveOrder,
-  setRally,
-} from '@/game/commands';
+import { findSelectableAtTile, placeBuilding, planMoveOrder, setRally } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
 import { Building, Selectable } from '@/ecs/components';

@@ -143,7 +143,10 @@ export function doResearch(game: GameState, id: ResearchId): boolean {
 // ---------------------------------------------------------------------------
 
 /** Find an entity on `tileKey` that has Selectable (a unit or building). */
-export function findSelectableAtTile(game: GameState, tileKey: string): import('koota').Entity | undefined {
+export function findSelectableAtTile(
+  game: GameState,
+  tileKey: string,
+): import('koota').Entity | undefined {
   for (const entity of game.world.query(Selectable, HexPosition)) {
     const hex = entity.get(HexPosition);
     if (hex && getHexKey(hex.q, hex.r) === tileKey) return entity;
