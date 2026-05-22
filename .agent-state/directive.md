@@ -311,12 +311,12 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
 - [x] M8.6a — symmetric economy (1a24098): `GameState.economy` is now
   `Record<Faction, GameEconomy>`; `enemyBaseKey`; depositSystem +
   recomputeMaxSupply run per faction. 227 tests green.
-- [ ] M8.4z — zone model (spec 102): `zone.ts` — per-faction `controlled` tile
-  set (claimed by peon exploitation) + `observed` set (vision cones, reusing
-  the M8.4 cone code). Replaces the fog discovered/visible framing.
-- [ ] M8.5z — zone rendering (spec 102): `ZoneBorder.tsx` — draw each faction's
-  controlled-region encirclement (two colours) + the contested-tile pulse.
-  Replaces FogOverlay; whole map renders, enemy units always draw.
+- [x] M8.4z — zone model (cd10305): src/game/zone.ts — ZoneState with
+  `controlled` (claimTile/releaseTile) + `observed` (difficulty-scaled vision
+  cones); GameState.zones replaces .fog. 233 tests green.
+- [x] M8.5z — zone rendering (cd10305): ZoneBorder.tsx draws each faction's
+  controlled-region encirclement; whole board visible, all units render.
+  Verified in-browser — no black fog. (Pulse layered in by M8.6e.)
 - [ ] M8.6b — `src/rules/` engine (spec 101): extract the full faction-agnostic
   rules into a yuka/koota-free barrel — peon autonomy (`nextPeonAction`),
   building behavior, placement (`canBuild`), economy + peon-cap, training,
