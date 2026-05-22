@@ -1,0 +1,29 @@
+{
+  "unitStats": {
+    "Peon":    { "speed": 3,   "faction": "player" },
+    "Footman": { "speed": 2.5, "faction": "player", "hp": 100, "attackDamage": 15, "attackRange": 1, "attackCooldown": 1   },
+    "Goblin":  { "speed": 2,   "faction": "enemy",  "hp": 60,  "attackDamage": 8,  "attackRange": 1, "attackCooldown": 1   },
+    "Orc":     { "speed": 1.5, "faction": "enemy",  "hp": 150, "attackDamage": 20, "attackRange": 1, "attackCooldown": 1.5 }
+  },
+  "difficultyMultiplier": {
+    "easy":   0.7,
+    "normal": 1.0,
+    "hard":   1.4
+  },
+  "damage": {
+    "critChance":  0.1,
+    "varianceMax": 3
+  },
+  "deathDelay": 2,
+  "spawn": {
+    "orcThreshold": 600,
+    "spawnIntervalByDifficulty": {
+      "easy":   60,
+      "normal": 45,
+      "hard":   30
+    }
+  },
+  "ai": {
+    "aggroRadius": 10
+  }
+}

@@ -35,6 +35,18 @@ import { type GameClock, advanceClock, createClock } from './clock';
 import { type Weather, WEATHER_SPEED_MULTIPLIER, advanceWeather, createWeather } from './weather';
 import { type ResearchState, createResearch } from './research';
 import { type RallyState, createRally } from './rally';
+import combatConfigRaw from '@/config/combat.json';
+
+/** Typed shape of the combat config JSON (spawnIntervalByDifficulty). */
+interface CombatConfig {
+  unitStats: Record<string, unknown>;
+  difficultyMultiplier: Record<string, number>;
+  damage: { critChance: number; varianceMax: number };
+  deathDelay: number;
+  spawn: { orcThreshold: number; spawnIntervalByDifficulty: Record<string, number> };
+  ai: { aggroRadius: number };
+}
+const combatConfig = combatConfigRaw as CombatConfig;
 
 /** AI difficulty level. Controls enemy HP/damage and spawn cadence. */
 export type Difficulty = 'easy' | 'normal' | 'hard';
@@ -152,11 +164,12 @@ function adjacentWalkableTiles(
 /**
  * Difficulty → spawn interval (seconds between enemy spawns).
  * Easy gives the player more breathing room; Hard is relentless.
+ * Values sourced from src/config/combat.json#spawn.spawnIntervalByDifficulty.
  */
 const SPAWN_INTERVAL: Record<Difficulty, number> = {
-  easy: 60,
-  normal: 45,
-  hard: 30,
+  easy:   combatConfig.spawn.spawnIntervalByDifficulty['easy']   as number,
+  normal: combatConfig.spawn.spawnIntervalByDifficulty['normal'] as number,
+  hard:   combatConfig.spawn.spawnIntervalByDifficulty['hard']   as number,
 };
 
 /**

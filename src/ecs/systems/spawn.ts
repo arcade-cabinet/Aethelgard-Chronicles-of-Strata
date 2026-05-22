@@ -4,9 +4,21 @@ import { hexNeighbors } from '@/core/hex';
 import { GoblinPortalTrait, HexPosition } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import type { Difficulty } from '@/game/game-state';
+import combatConfigRaw from '@/config/combat.json';
+
+/** Typed shape of the combat config JSON (spawn sub-object). */
+interface CombatConfig {
+  unitStats: Record<string, unknown>;
+  difficultyMultiplier: Record<string, number>;
+  damage: { critChance: number; varianceMax: number };
+  deathDelay: number;
+  spawn: { orcThreshold: number; spawnIntervalByDifficulty: Record<string, number> };
+  ai: { aggroRadius: number };
+}
+const combatConfig = combatConfigRaw as CombatConfig;
 
 /** Game-seconds after which the portal also spawns Orcs. */
-const ORC_THRESHOLD = 600;
+const ORC_THRESHOLD: number = combatConfig.spawn.orcThreshold;
 
 /** Running spawn counter per portal entity id — for deterministic Orc cadence. */
 const spawnCounts = new Map<number, number>();

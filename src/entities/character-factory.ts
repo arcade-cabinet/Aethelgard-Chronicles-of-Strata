@@ -20,12 +20,24 @@ import {
   type UnitType,
 } from '@/ecs/components';
 import type { Difficulty } from '@/game/game-state';
+import combatConfigRaw from '@/config/combat.json';
+
+/** Typed shape of the combat config JSON. */
+interface CombatConfig {
+  unitStats: Record<string, { speed: number; faction: string; hp?: number; attackDamage?: number; attackRange?: number; attackCooldown?: number }>;
+  difficultyMultiplier: Record<string, number>;
+  damage: { critChance: number; varianceMax: number };
+  deathDelay: number;
+  spawn: { orcThreshold: number; spawnIntervalByDifficulty: Record<string, number> };
+  ai: { aggroRadius: number };
+}
+const combatConfig = combatConfigRaw as CombatConfig;
 
 /** Per-difficulty HP/damage multipliers applied to enemy roles only. */
 const DIFFICULTY_MULTIPLIER: Record<Difficulty, number> = {
-  easy: 0.7,
-  normal: 1.0,
-  hard: 1.4,
+  easy: combatConfig.difficultyMultiplier['easy'] as number,
+  normal: combatConfig.difficultyMultiplier['normal'] as number,
+  hard: combatConfig.difficultyMultiplier['hard'] as number,
 };
 
 /** Per-role base stats. Source: docs/specs/50-ecs-model.md entity archetypes. */
@@ -40,31 +52,10 @@ const ROLE_STATS: Record<
     attackCooldown?: number;
   }
 > = {
-  Peon: { speed: 3, faction: 'player' },
-  Footman: {
-    speed: 2.5,
-    faction: 'player',
-    hp: 100,
-    attackDamage: 15,
-    attackRange: 1,
-    attackCooldown: 1,
-  },
-  Goblin: {
-    speed: 2,
-    faction: 'enemy',
-    hp: 60,
-    attackDamage: 8,
-    attackRange: 1,
-    attackCooldown: 1,
-  },
-  Orc: {
-    speed: 1.5,
-    faction: 'enemy',
-    hp: 150,
-    attackDamage: 20,
-    attackRange: 1,
-    attackCooldown: 1.5,
-  },
+  Peon:    combatConfig.unitStats['Peon']    as { speed: number; faction: Faction },
+  Footman: combatConfig.unitStats['Footman'] as { speed: number; faction: Faction; hp: number; attackDamage: number; attackRange: number; attackCooldown: number },
+  Goblin:  combatConfig.unitStats['Goblin']  as { speed: number; faction: Faction; hp: number; attackDamage: number; attackRange: number; attackCooldown: number },
+  Orc:     combatConfig.unitStats['Orc']     as { speed: number; faction: Faction; hp: number; attackDamage: number; attackRange: number; attackCooldown: number },
 };
 
 /** Parameters for spawning a character entity. */
