@@ -43,7 +43,32 @@ tiles** — a pulsing tile is rerouted around; a peon exploiting a tile that
 starts pulsing abandons it and flees toward home. This is the "mindless brute"
 contract completed: peons are also pacifists.
 
-## Territorial buildings — three local-zone kinds
+## ZoC as magnetic emitters — the unifying model
+
+Every zone-of-control archetype is a **magnetic emitter** — it attracts or
+reacts in its own frequency. This is the architectural principle the four
+archetypes share; their differences are just *what frequency they emit on* and
+*what they react to*:
+
+- **Attractor** — magnetically spawns/concentrates *resources* in its radius
+  (discrete: the map-gen guarantee. Continuous: a future field that biases
+  spawn density.)
+- **Offensive** — magnetically reacts to *enemies* in its radius (the targeting
+  + damage law).
+- **Defensive** — magnetically reacts to *itself and to offenders*. Walls snap
+  to other walls and to the middle-sides of offensive buildings, creating
+  emergent fortification patterns (watchtower flanked by walls = compound).
+- **Mover** — magnetically reacts to *other movers and to defenders*. Roads
+  snap to other roads (network), and to walls (becoming a **gate** at the
+  junction). Gates are *directional emitters*: friendly units cross freely
+  (open); enemy units find them closed and must destroy/circumvent.
+
+The same principle drives both **placement-time snapping** (a placed wall
+gravitates to align with adjacent walls or attaches to the side of an
+offensive building) AND **runtime reactivity** (a watchtower aims at enemies,
+a gate opens for a friendly). One concept, four families.
+
+## Territorial buildings — four local-zone kinds
 
 Every territorial building exerts a **local zone of control** and radiates its
 own border, drawn in a distinct colour. Three non-overlapping kinds:

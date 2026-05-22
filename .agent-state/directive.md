@@ -332,17 +332,30 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   OffensiveBehavior entity (decoupled); encroachment pulses with difficulty-
   scaled grace + flip; attractor map-gen guarantees resources in radius
   (emergent game-start). 253 tests green.
-- [ ] M8.6f — behavior-system polish: (a) OffensiveBehavior consumes the event
-  PRNG for arrow-volley jitter and multi-target selection (upgradable —
-  `targetCount`, wider radius); (b) DefensiveBehavior extended with
-  `armorVsSiege` / `armorVsNormal` and a system that absorbs proportional
-  damage by attacker type (responsive to siege units); (c) arrow/projectile
-  animation when an OffensiveBehavior fires.
-- [ ] M8.6d — yuka AI player (spec 101/102): `AiPlayer extends GameEntity` with
-  a yuka `Think` brain; `GoalEvaluator`s for build / train / move-military
-  (no scout goal — peons auto-claim) reading pulse/erosion/wall signals,
-  calling `commands.ts`. Built on `src/rules/`. Modeled on pond-warfare's
-  `Governor`. Uses `@types/yuka`.
+- [ ] M8.6f — behavior-system polish (spec 102): (a) OffensiveBehavior
+  consumes the event PRNG for arrow-volley jitter and multi-target selection
+  (`targetCount`, wider radius); (b) DefensiveBehavior extended with
+  `armorVsSiege`/`armorVsNormal` and proportional damage absorption by
+  attacker type (responsive to siege units); (c) arrow/projectile animation
+  when an OffensiveBehavior fires.
+- [ ] M8.6g — magnetic emitters + 4th ZoC archetype "Mover" (spec 102 update):
+  - MoverBehavior trait — roads. Snap to other roads (network), to walls
+    (forming a Gate at the junction), to defenders.
+  - Gate = MoverBehavior on a tile adjacent to a DefensiveBehavior. Default
+    state: closed-to-enemies, open-to-friendlies. Direction-aware passability
+    in pathfinding: friendly units cross freely; enemy units find a closed
+    door and must destroy/circumvent.
+  - rules/snapping.ts — placement-time magnetic snap rule: every ZoC emitter
+    attracts compatible neighbours (wall→wall, road→road, road→wall=gate,
+    wall→offender side-flank). Applied in placeBuilding before commit; also
+    surfaces in the build-menu placement preview.
+  - The magnetic-emitter framing (attractor/offensive/defensive/mover all
+    operate on the same principle, differing in frequency + reaction target)
+    is now the unifying architectural law for territorial behaviour.
+- [x] M8.6d — yuka Think-brain AI player (69e6ebc): AiPlayer extends
+  GameEntity with an AiBrain (Think); BuildEvaluator + MilitaryEvaluator
+  score from KNOWN state and dispatch to commands.ts; enemy faction always
+  AI-driven. Built on @/rules. 257 tests.
 - [ ] M8.7 — AI-vs-AI golden-path E2E: swap both factions to AI, turn loop,
   macro/meso/micro state probes, golden-transcript regression assertions.
 - [ ] M8.8 — M8 integration check: `pnpm verify` + `test:browser` green; an
