@@ -338,9 +338,64 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   `Governor`. Uses `@types/yuka`.
 - [ ] M8.7 — AI-vs-AI golden-path E2E: swap both factions to AI, turn loop,
   macro/meso/micro state probes, golden-transcript regression assertions.
-- [ ] M8.8 — pre-push gate: full `pnpm verify` + `test:browser` + `test:e2e`
-  green; push; confirm PR #1 CI green; update CHANGELOG; flip Status RELEASED.
+- [ ] M8.8 — M8 integration check: `pnpm verify` + `test:browser` green; an
+  AI-vs-AI match runs start→win without NaN/stuck-unit/economy invariants
+  broken; commit the M8 milestone-complete marker.
 
-Each M8.x: extend `docs/specs/`, write the test batch, make it green, commit,
+## Queue — M9 (Completion & Polish — make the game shippable)
+
+The game must be **complete, polished, and exercised** — not just mechanically
+done. M9 closes every gap between "M8 mechanics work" and "this is a finished,
+fun, releasable game."
+
+### M9.1 — UX for the new systems (the player must understand the game)
+- [ ] M9.1a — build menu covers ALL buildable types: Farm, Barracks, House,
+  Granary, Watchtower, Wall — each with icon, cost, a one-line description,
+  and `rules.canBuild` gating the button. `SelectionPanel` / build UI updated.
+- [ ] M9.1b — zone & territory legend: the HUD teaches what the zone border,
+  the contested-tile pulse, and the three building auras mean (a compact
+  legend / first-run hints — the player must read the board correctly).
+- [ ] M9.1c — onboarding: a short first-run tutorial overlay walking the core
+  loop (peons auto-harvest, watch resources, build, defend the Town Hall).
+  Skippable, shown once (Preferences flag).
+- [ ] M9.1d — `docs/specs/10-player-journey.md` — write the scene-by-scene
+  player journey spec (it does not exist yet); every transition gets an e2e.
+
+### M9.2 — visual & audio polish (the agent owns this — judge vs references)
+- [ ] M9.2a — building models: House, Granary, Watchtower, Wall get real
+  kit GLBs (Town/Castle kits) in `structure-models.ts`, both faction skins;
+  screenshot-judged vs `references/poc1.png` + the Castle/Town kit look.
+- [ ] M9.2b — zone-border + pulse polish: the encirclement line and the
+  encroachment pulse are tuned to read clearly and look good on a phone
+  screen; screenshot-judged at desktop + Pixel-7 portrait.
+- [ ] M9.2c — audio: zone-claimed, encroachment-warning, building-placed,
+  tile-lost cues wired through the audio buses; audio-graph tests.
+- [ ] M9.2d — full visual sweep: every screen + new component screenshotted,
+  read, and judged against `docs/specs/20-visual-language.md` and the
+  references; fix anything that is "acceptable, not great."
+
+### M9.3 — exercised (the full five-layer test pyramid, all green)
+- [ ] M9.3a — e2e player-journey suite: one Playwright test per transition in
+  `10-player-journey.md` (launch → new-game → play → build → combat →
+  victory/defeat), all green.
+- [ ] M9.3b — visual baselines: lock `toHaveScreenshot` baselines for every
+  HUD component, the zone border, each building, the title screen — self-judge
+  before locking, per the visual lock-in ladder.
+- [ ] M9.3c — coverage audit: every `docs/specs/` claim has a pinning test;
+  `pnpm verify` + `test:browser` + `test:e2e` + `test:visual` all green.
+
+### M9.4 — mobile & release
+- [ ] M9.4a — Capacitor: `pnpm cap:sync`; the debug APK builds; touch input
+  works for the new build menu + tap-to-move; safe-area insets respected;
+  tested at Pixel-5a render budget.
+- [ ] M9.4b — release hygiene: CHANGELOG updated (Keep a Changelog), all root
+  `STANDARDS.md`/`README.md`/`docs/STATE.md` current, the PR description
+  rewritten to summarise M7+M8+M9.
+- [ ] M9.4c — pre-push gate: `comprehensive-review:full-review` vs
+  `origin/main..HEAD`, address blockers; full suite green; CI green on PR #1.
+- [ ] M9.5 — RELEASE: squash-merge PR #1 to main; confirm cd.yml deploys
+  GitHub Pages + the APK artifact; flip directive Status to RELEASED.
+
+Each M8/M9 step: extend `docs/specs/`, write the test batch, make it green, commit,
 then the next. The faction-symmetry rule — identical traits/behaviors/commands,
 render-only divergence — is the invariant the whole milestone protects.
