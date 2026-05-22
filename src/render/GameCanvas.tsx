@@ -5,10 +5,13 @@ import type { GameState } from '@/game/game-state';
 import { Buildings } from '@/world/Buildings';
 import { CombatText } from '@/world/CombatText';
 import { HexTile } from '@/world/HexTile';
+import { RainParticles } from '@/world/RainParticles';
+import { RallyMarker } from '@/world/RallyMarker';
 import { ResourceNodes } from '@/world/ResourceNodes';
 import { SelectionRing } from '@/world/SelectionRing';
 import { TileInteraction } from '@/world/TileInteraction';
 import { Units } from '@/world/Units';
+import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
 
 /** Inner scene — runs inside the Canvas so r3f hooks are valid. */
@@ -17,9 +20,7 @@ function Scene({ game }: { game: GameState }) {
   const tiles = [...game.board.tiles.values()];
   return (
     <>
-      <color attach="background" args={['#bae6fd']} />
-      <hemisphereLight args={['#ffffff', '#444444', 1]} />
-      <directionalLight position={[40, 60, 25]} intensity={1.5} castShadow />
+      <DayNightCycle game={game} />
       <group name="board">
         {tiles.map((t) => (
           <HexTile key={`${t.q},${t.r}`} q={t.q} r={t.r} level={t.level} type={t.type} />
@@ -32,6 +33,8 @@ function Scene({ game }: { game: GameState }) {
         <Units game={game} />
       </Suspense>
       <CombatText game={game} />
+      <RainParticles game={game} />
+      <RallyMarker game={game} />
       <SelectionRing game={game} />
       <OrbitControls maxPolarAngle={Math.PI / 2.1} />
     </>

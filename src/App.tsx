@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { GameOverModal } from '@/hud/GameOverModal';
+import { Minimap } from '@/hud/Minimap';
 import { ResourceBar } from '@/hud/ResourceBar';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
@@ -34,6 +35,7 @@ export function App() {
         <GameCanvas game={game} />
       </ErrorBoundary>
       <ResourceBar game={game} />
+      <Minimap game={game} />
       <GameOverModal game={game} />
     </div>
   );
