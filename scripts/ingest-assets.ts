@@ -42,8 +42,7 @@ async function main(): Promise<void> {
     const outAbs = join(OUT_DIR, outRel);
     mkdirSync(dirname(outAbs), { recursive: true });
     copyFileSync(src, outAbs);
-    const meta =
-      kind === 'glb' ? await readGlbMeta(src) : { triangles: undefined, animations: [] };
+    const meta = kind === 'glb' ? await readGlbMeta(src) : { triangles: undefined, animations: [] };
     entries[item.id] = {
       id: item.id,
       path: outRel,
@@ -60,10 +59,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
   const manifest: AssetManifest = { generatedAt: new Date().toISOString(), entries };
-  writeFileSync(
-    join(OUT_DIR, 'assets', 'manifest.json'),
-    `${JSON.stringify(manifest, null, 2)}\n`,
-  );
+  writeFileSync(join(OUT_DIR, 'assets', 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
   console.log(`Ingested ${Object.keys(entries).length} assets.`);
 }
 
