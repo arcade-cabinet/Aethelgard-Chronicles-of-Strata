@@ -271,9 +271,10 @@ SAME interface, perception, and action space as a human — so AI-vs-AI is
 deterministic golden-path E2E testing. Strictly sequential; I drive it myself,
 docs → tests → code per step. Also folds in spec `99` (contextual crossings).
 
-- [ ] M8.0 — crossings/passability (spec 99): biome-pair classifies elevation
-  transitions; two-form crossings (natural | artificial), connectivity-first
-  placement; FLAT/CROSSING/BLOCKED edges; decoration skips crossing landings.
+- [x] M8.0 — crossings/passability (spec 99) — c704bf5. core/crossings.ts
+  (connectivity-first union-find placement), biomeStyleFor, FLAT/CROSSING/
+  BLOCKED edges, Crossings.tsx contextual forms, scatter skips landings.
+  220 tests green, verified in-browser — ramp-fringe gone.
 - [ ] M8.1 — faction model: a `Base` ECS trait; faction-symmetric structure
   config (player model + enemy model per structure type, shared costs/traits);
   fully remove `GoblinPortal*` → `EnemyBase`.
