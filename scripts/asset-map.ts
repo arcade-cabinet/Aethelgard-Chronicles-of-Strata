@@ -21,6 +21,8 @@ const KAYKIT_ADV = 'references/KayKit_Adventurers_2.0_EXTRA';
 const ADV_CHARS = `${KAYKIT_ADV}/Characters/gltf`;
 const ADV_RIGS = `${KAYKIT_ADV}/Animations/gltf`;
 const ORC_RAIDER = 'references/KayKit_Mystery_Monthly_Series_4/1 - July 2023 - Orc Raider';
+const GRAVEYARD = 'references/Graveyard Kit/Models/GLB format';
+const MYSTERY5 = 'references/KayKit_Mystery_Monthly_Series_5';
 
 /**
  * The curation list. M0 ships the core board tiles needed by M1; later
@@ -180,6 +182,52 @@ export const ASSET_MAP: AssetMapEntry[] = [
     license: 'CC-BY',
   },
 
+  // --- M7: enemy characters — KayKit Mystery Series 5 (Rig_Medium, CC-BY) ---
+  {
+    id: 'characters.enemies.vampire',
+    source: `${MYSTERY5}/4 - October 2024 - Vampire/characters/Vampire.glb`,
+    pack: 'KayKit Mystery Series 5',
+    license: 'CC-BY',
+  },
+  {
+    id: 'characters.enemies.black-knight',
+    source: `${MYSTERY5}/3 - September 2024 - Black Knight/characters/BlackKnight.glb`,
+    pack: 'KayKit Mystery Series 5',
+    license: 'CC-BY',
+  },
+  {
+    id: 'characters.enemies.witch',
+    source: `${MYSTERY5}/5 - November 2024 - Witch/characters/Witch.glb`,
+    pack: 'KayKit Mystery Series 5',
+    license: 'CC-BY',
+  },
+
+  // --- M7: Graveyard Kit — portal base props (Kenney, CC0) ---
+  {
+    id: 'structures.portal-crypt',
+    source: `${GRAVEYARD}/crypt.glb`,
+    pack: 'Graveyard Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.gravestone.cross',
+    source: `${GRAVEYARD}/gravestone-cross.glb`,
+    pack: 'Graveyard Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.gravestone.round',
+    source: `${GRAVEYARD}/gravestone-round.glb`,
+    pack: 'Graveyard Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'structures.portal-fence',
+    source: `${GRAVEYARD}/fence.glb`,
+    pack: 'Graveyard Kit',
+    license: 'CC0',
+  },
+
   // --- M6: audio — OGG sfx (PixelLoops Audio, Royalty-Free) ---
   {
     id: 'audio.sfx.footstep-grass',
@@ -227,6 +275,46 @@ export const ASSET_MAP: AssetMapEntry[] = [
     id: 'audio.sfx.build',
     source: 'references/Impact_Hit_Sound_Effects_Pack/OGG/pl_impact_wood_02.ogg',
     pack: 'PixelLoops Audio — Impact Hit Pack',
+    license: 'Royalty-Free',
+  },
+
+  // --- M7: audio — UI sounds (PixelLoops UI Sound Effects Pack, Royalty-Free) ---
+  {
+    id: 'audio.sfx.ui-click',
+    source: 'references/PixelLoops_UI_Sound_Effects_Pack/WAV/pl_Click_01.wav',
+    pack: 'PixelLoops Audio — UI Sound Effects Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.ui-panel-open',
+    source: 'references/PixelLoops_UI_Sound_Effects_Pack/WAV/pl_Popup_01.wav',
+    pack: 'PixelLoops Audio — UI Sound Effects Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.ui-confirm',
+    source: 'references/PixelLoops_UI_Sound_Effects_Pack/WAV/pl_Confirm_01.wav',
+    pack: 'PixelLoops Audio — UI Sound Effects Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.ui-unlock',
+    source: 'references/PixelLoops_UI_Sound_Effects_Pack/WAV/pl_Unlock_01.wav',
+    pack: 'PixelLoops Audio — UI Sound Effects Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.ui-achievement',
+    source: 'references/PixelLoops_UI_Sound_Effects_Pack/WAV/pl_Achievement_01.wav',
+    pack: 'PixelLoops Audio — UI Sound Effects Pack',
+    license: 'Royalty-Free',
+  },
+
+  // --- M7: audio — magic sfx (Fantasy Magic Spell Sound Effects Pack, Royalty-Free) ---
+  {
+    id: 'audio.sfx.magic-impact',
+    source: 'references/fantasy_magic_spell_sound_effects_pack/WAV/pl_magic_impact_01.wav',
+    pack: 'PixelLoops Audio — Fantasy Magic Spell Pack',
     license: 'Royalty-Free',
   },
 

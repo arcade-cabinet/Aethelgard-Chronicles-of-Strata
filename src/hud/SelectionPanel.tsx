@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Building, Health, Unit } from '@/ecs/components';
+import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { doResearch } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { canResearch, RESEARCH_COST, type ResearchId } from '@/game/research';
@@ -94,9 +95,14 @@ function HudButton({
  * The HUD selection panel. Slides in from the left (framer-motion) when an
  * entity is selected. The Town Hall shows build buttons (Farm, Barracks); a
  * Barracks shows research buttons. Buttons call the M6 game commands.
+ *
+ * UI sounds fire via the module-level emitter so they reach the howler buses
+ * owned by `useAudio` inside the r3f Canvas.
  */
 export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
   const [view, setView] = useState<SelectionView | null>(() => viewOf(game));
+  // Track whether the panel was open last render to detect open transitions.
+  const wasOpenRef = useRef<boolean>(view !== null);
 
   useEffect(() => {
     let raf = 0;
@@ -108,7 +114,29 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
     return () => cancelAnimationFrame(raf);
   }, [game]);
 
-  const research = (id: ResearchId) => doResearch(game, id);
+  // Fire ui-panel-open sound when the panel transitions from closed → open.
+  const isOpen = view !== null;
+  useEffect(() => {
+    if (isOpen && !wasOpenRef.current) {
+      emitUiSound('ui-panel-open');
+    }
+    wasOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  const research = (id: ResearchId) => {
+    const canDo = canResearch(game.economy, game.research, id);
+    if (canDo) {
+      doResearch(game, id);
+      emitUiSound('research-purchased');
+    } else {
+      emitUiSound('ui-button-click');
+    }
+  };
+
+  const beginBuild = (ctx: BuildContext) => {
+    emitUiSound('ui-button-click');
+    onBeginBuild(ctx);
+  };
 
   return (
     <AnimatePresence>
@@ -151,11 +179,11 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
             <div style={{ marginTop: 10 }}>
               <HudButton
                 label="Build Farm"
-                onClick={() => onBeginBuild({ type: 'Farm', onPlaced: () => {} })}
+                onClick={() => beginBuild({ type: 'Farm', onPlaced: () => {} })}
               />
               <HudButton
                 label="Build Barracks"
-                onClick={() => onBeginBuild({ type: 'Barracks', onPlaced: () => {} })}
+                onClick={() => beginBuild({ type: 'Barracks', onPlaced: () => {} })}
               />
             </div>
           )}

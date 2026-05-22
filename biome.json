@@ -9,7 +9,9 @@
       "!android",
       "!.vite",
       "!coverage",
-      "!src/static-assets.ts"
+      "!src/static-assets.ts",
+      "!.claude/worktrees",
+      "!.clone"
     ]
   },
   "formatter": {

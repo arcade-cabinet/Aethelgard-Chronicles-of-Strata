@@ -2,17 +2,21 @@
  * useAudio — an r3f-friendly hook that fires sounds in response to game events.
  *
  * On mount: starts the gameplay music loop.
- * Each frame: inspects `game.lastDamageEvents` (→ combat-hit) and
- * `game.outcome` transitions (→ victory / defeat), firing the mapped sounds.
+ * Each frame:
+ *   - `game.lastDamageEvents` → combat-hit (per event) and combat-crit (for crits)
+ *   - `game.outcome` transitions → victory / defeat stingers
+ *   - completed-building count → building-completed on each new completion
  *
  * Source: docs/specs/80-audio.md §Audio Hook
  */
 import { useEffect, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Building } from '@/ecs/components';
 import type { DamageEvent } from '@/ecs/systems/combat';
 import type { GameState } from '@/game/game-state';
 import { createAudioBuses, playMusic, playSound } from './buses';
 import { SOUND_FOR_EVENT } from './sound-map';
+import { registerUiSoundPlayer } from './ui-sound-emitter';
 
 /**
  * Call inside an r3f `<Canvas>` descendant. Drives the game's audio from the
@@ -26,25 +30,37 @@ export function useAudio(game: GameState): void {
   // Track the last damage-event batch by reference so a hit fires once, not
   // every frame the batch lingers on game.lastDamageEvents.
   const lastBatchRef = useRef<DamageEvent[] | null>(null);
+  // Track completed building count to detect new completions each tick.
+  const lastCompleteBuildingsRef = useRef<number>(0);
 
   useEffect(() => {
     // Start the gameplay music loop when the hook mounts.
     playMusic(busesRef.current, 'audio.music.gameplay');
-    // No cleanup — let the track continue (the mute toggle handles silencing).
+    // Register buses with the UI sound emitter so HUD components outside the
+    // Canvas can fire sounds via emitUiSound().
+    const unregister = registerUiSoundPlayer(busesRef.current);
+    return unregister;
   }, []);
 
   useFrame(() => {
     const buses = busesRef.current;
 
-    // Fire a combat-hit sound for each damage event — but only when a NEW
-    // batch arrives (detected by array-reference identity, since runEconomyTick
+    // Fire combat sounds for each damage event — but only when a NEW batch
+    // arrives (detected by array-reference identity, since runEconomyTick
     // assigns a fresh array each tick).
     const events = game.lastDamageEvents;
     if (events !== lastBatchRef.current) {
       lastBatchRef.current = events;
       const { bus: hitBus, soundId: hitId } = SOUND_FOR_EVENT['combat-hit'];
-      for (let i = 0; i < events.length; i++) {
-        playSound(buses, hitBus, hitId);
+      const { bus: critBus, soundId: critId } = SOUND_FOR_EVENT['combat-crit'];
+      for (const ev of events) {
+        if (ev.isCrit) {
+          // Crit: play the magic-impact stab instead of (not in addition to) the
+          // regular hit — one sound per crit event keeps it punchy.
+          playSound(buses, critBus, critId);
+        } else {
+          playSound(buses, hitBus, hitId);
+        }
       }
     }
 
@@ -53,12 +69,28 @@ export function useAudio(game: GameState): void {
     if (currentOutcome !== lastOutcomeRef.current) {
       lastOutcomeRef.current = currentOutcome;
       if (currentOutcome === 'win') {
-        const { bus, soundId } = SOUND_FOR_EVENT['victory'];
+        const { bus, soundId } = SOUND_FOR_EVENT.victory;
         playSound(buses, bus, soundId);
       } else if (currentOutcome === 'loss') {
-        const { bus, soundId } = SOUND_FOR_EVENT['defeat'];
+        const { bus, soundId } = SOUND_FOR_EVENT.defeat;
         playSound(buses, bus, soundId);
       }
     }
+
+    // Detect newly-completed buildings by counting entities with isComplete.
+    // One building-completed sound per new completion.
+    let completeCount = 0;
+    for (const e of game.world.query(Building)) {
+      if (e.get(Building)?.isComplete) completeCount++;
+    }
+    const prev = lastCompleteBuildingsRef.current;
+    if (completeCount > prev) {
+      const { bus, soundId } = SOUND_FOR_EVENT['building-completed'];
+      const newCompletions = completeCount - prev;
+      for (let i = 0; i < newCompletions; i++) {
+        playSound(buses, bus, soundId);
+      }
+    }
+    lastCompleteBuildingsRef.current = completeCount;
   });
 }

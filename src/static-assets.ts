@@ -11,8 +11,14 @@ export type StaticAssetPath =
   'assets/audio/sfx/footstep-grass.ogg' |
   'assets/audio/sfx/footstep-stone.ogg' |
   'assets/audio/sfx/hit.ogg' |
+  'assets/audio/sfx/magic-impact.wav' |
   'assets/audio/sfx/mine.ogg' |
   'assets/audio/sfx/select.ogg' |
+  'assets/audio/sfx/ui-achievement.wav' |
+  'assets/audio/sfx/ui-click.wav' |
+  'assets/audio/sfx/ui-confirm.wav' |
+  'assets/audio/sfx/ui-panel-open.wav' |
+  'assets/audio/sfx/ui-unlock.wav' |
   'assets/audio/stinger/defeat.wav' |
   'assets/audio/stinger/victory.wav' |
   'assets/board/tile/dirt.glb' |
@@ -25,7 +31,10 @@ export type StaticAssetPath =
   'assets/board/tile/stone-mountain.glb' |
   'assets/board/tile/stone.glb' |
   'assets/board/tile/water.glb' |
+  'assets/characters/enemies/black-knight.glb' |
   'assets/characters/enemies/orc.glb' |
+  'assets/characters/enemies/vampire.glb' |
+  'assets/characters/enemies/witch.glb' |
   'assets/characters/heroes/barbarian-large.glb' |
   'assets/characters/heroes/barbarian.glb' |
   'assets/characters/heroes/druid.glb' |
@@ -38,11 +47,15 @@ export type StaticAssetPath =
   'assets/characters/rigs/large-movement.glb' |
   'assets/characters/rigs/medium-general.glb' |
   'assets/characters/rigs/medium-movement.glb' |
+  'assets/nature/gravestone/cross.glb' |
+  'assets/nature/gravestone/round.glb' |
   'assets/nature/rock/large-a.glb' |
   'assets/nature/tree/pine-a.glb' |
   'assets/sql-wasm.wasm' |
   'assets/structures/barracks.glb' |
   'assets/structures/farm.glb' |
+  'assets/structures/portal-crypt.glb' |
+  'assets/structures/portal-fence.glb' |
   'assets/structures/town-hall.glb' |
   'sql-wasm.wasm';
 
@@ -64,6 +77,7 @@ export type StaticAssetDirectory =
   'assets/characters/heroes/' |
   'assets/characters/rigs/' |
   'assets/nature/' |
+  'assets/nature/gravestone/' |
   'assets/nature/rock/' |
   'assets/nature/tree/' |
   'assets/structures/';
@@ -96,8 +110,14 @@ const assets = new Set<string>([
   'assets/audio/sfx/footstep-grass.ogg',
   'assets/audio/sfx/footstep-stone.ogg',
   'assets/audio/sfx/hit.ogg',
+  'assets/audio/sfx/magic-impact.wav',
   'assets/audio/sfx/mine.ogg',
   'assets/audio/sfx/select.ogg',
+  'assets/audio/sfx/ui-achievement.wav',
+  'assets/audio/sfx/ui-click.wav',
+  'assets/audio/sfx/ui-confirm.wav',
+  'assets/audio/sfx/ui-panel-open.wav',
+  'assets/audio/sfx/ui-unlock.wav',
   'assets/audio/stinger/defeat.wav',
   'assets/audio/stinger/victory.wav',
   'assets/board/tile/dirt.glb',
@@ -110,7 +130,10 @@ const assets = new Set<string>([
   'assets/board/tile/stone-mountain.glb',
   'assets/board/tile/stone.glb',
   'assets/board/tile/water.glb',
+  'assets/characters/enemies/black-knight.glb',
   'assets/characters/enemies/orc.glb',
+  'assets/characters/enemies/vampire.glb',
+  'assets/characters/enemies/witch.glb',
   'assets/characters/heroes/barbarian-large.glb',
   'assets/characters/heroes/barbarian.glb',
   'assets/characters/heroes/druid.glb',
@@ -123,11 +146,15 @@ const assets = new Set<string>([
   'assets/characters/rigs/large-movement.glb',
   'assets/characters/rigs/medium-general.glb',
   'assets/characters/rigs/medium-movement.glb',
+  'assets/nature/gravestone/cross.glb',
+  'assets/nature/gravestone/round.glb',
   'assets/nature/rock/large-a.glb',
   'assets/nature/tree/pine-a.glb',
   'assets/sql-wasm.wasm',
   'assets/structures/barracks.glb',
   'assets/structures/farm.glb',
+  'assets/structures/portal-crypt.glb',
+  'assets/structures/portal-fence.glb',
   'assets/structures/town-hall.glb',
   'sql-wasm.wasm'
 ]);
