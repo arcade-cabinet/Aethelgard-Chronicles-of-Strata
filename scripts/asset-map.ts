@@ -76,6 +76,26 @@ export const ASSET_MAP: AssetMapEntry[] = [
     license: 'CC0',
   },
 
+  // --- M3: structures (Hexagon Kit, CC0) ---
+  {
+    id: 'structures.town-hall',
+    source: `${HEX}/building-castle.glb`,
+    pack: 'Hexagon Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'structures.farm',
+    source: `${HEX}/building-farm.glb`,
+    pack: 'Hexagon Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'structures.barracks',
+    source: `${HEX}/building-tower.glb`,
+    pack: 'Hexagon Kit',
+    license: 'CC0',
+  },
+
   // --- M2: KayKit Adventurer heroes (Rig_Medium, CC-BY) ---
   {
     id: 'characters.heroes.knight',

@@ -35,8 +35,11 @@ function kindOf(source: string): AssetKind {
   return 'ogg';
 }
 
-async function readGlbMeta(absPath: string): Promise<{ triangles: number; animations: string[] }> {
-  const doc = await io.read(absPath);
+/** Triangle count + animation names for a loaded GLB document. */
+function glbMeta(doc: Awaited<ReturnType<NodeIO['read']>>): {
+  triangles: number;
+  animations: string[];
+} {
   let triangles = 0;
   for (const mesh of doc.getRoot().listMeshes()) {
     for (const prim of mesh.listPrimitives()) {
@@ -52,6 +55,27 @@ async function readGlbMeta(absPath: string): Promise<{ triangles: number; animat
     .map((a) => a.getName())
     .filter((n) => n.length > 0);
   return { triangles, animations };
+}
+
+/**
+ * Read a source GLB, embed every texture (clear external URIs so the image
+ * data travels inside the binary), and write a self-contained GLB to `outAbs`.
+ * Kenney's GLB exports reference `Textures/colormap.png` by external URI even
+ * though the image bytes are present — Three.js then fails to fetch it. Clearing
+ * the URI makes the GLB load without the sidecar file. Returns the GLB metadata.
+ */
+async function embedAndWriteGlb(
+  src: string,
+  outAbs: string,
+): Promise<{ triangles: number; animations: string[] }> {
+  const doc = await io.read(src);
+  for (const texture of doc.getRoot().listTextures()) {
+    // an embedded texture has image bytes; drop the external URI so the
+    // writer packs the bytes into the GLB binary chunk.
+    if (texture.getImage()) texture.setURI('');
+  }
+  await io.write(outAbs, doc);
+  return glbMeta(doc);
 }
 
 async function main(): Promise<void> {
@@ -80,7 +104,6 @@ async function main(): Promise<void> {
     const outRel = logicalIdToOutputPath(item.id, kind);
     const outAbs = join(OUT_DIR, outRel);
     mkdirSync(dirname(outAbs), { recursive: true });
-    copyFileSync(src, outAbs);
     const entry: AssetEntry = {
       id: item.id,
       path: outRel,
@@ -92,13 +115,16 @@ async function main(): Promise<void> {
     };
     if (kind === 'glb') {
       try {
-        const meta = await readGlbMeta(src);
+        const meta = await embedAndWriteGlb(src, outAbs);
         entry.triangles = meta.triangles;
         entry.animations = meta.animations;
       } catch (err) {
         const reason = err instanceof Error ? err.message : String(err);
-        throw new Error(`Failed to read GLB metadata for ${item.source}: ${reason}`);
+        throw new Error(`Failed to process GLB ${item.source}: ${reason}`);
       }
+    } else {
+      // audio assets are copied verbatim
+      copyFileSync(src, outAbs);
     }
     entries[item.id] = entry;
   }

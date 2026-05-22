@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T14:45:42.341Z",
+  "generatedAt": "2026-05-22T15:19:33.131Z",
   "entries": {
     "board.tile.grass": {
       "id": "board.tile.grass",
@@ -120,6 +120,36 @@
       "pack": "Nature Kit",
       "license": "CC0",
       "triangles": 80
+    },
+    "structures.town-hall": {
+      "id": "structures.town-hall",
+      "path": "assets/structures/town-hall.glb",
+      "category": "structures",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 966
+    },
+    "structures.farm": {
+      "id": "structures.farm",
+      "path": "assets/structures/farm.glb",
+      "category": "structures",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 186
+    },
+    "structures.barracks": {
+      "id": "structures.barracks",
+      "path": "assets/structures/barracks.glb",
+      "category": "structures",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 528
     },
     "characters.heroes.knight": {
       "id": "characters.heroes.knight",

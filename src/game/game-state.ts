@@ -58,12 +58,13 @@ function findCentralWalkableTile(board: BoardData): { q: number; r: number; leve
   return best;
 }
 
-/** Find a walkable tile adjacent to the given tile, falling back to the tile itself. */
-function findAdjacentWalkable(
+/** Up to `count` distinct walkable tiles adjacent to (q, r), nearest-ring first. */
+function adjacentWalkableTiles(
   board: BoardData,
   q: number,
   r: number,
-): { q: number; r: number; level: number } {
+  count: number,
+): Array<{ q: number; r: number; level: number }> {
   const dirs = [
     { q: 1, r: 0 },
     { q: 0, r: 1 },
@@ -72,13 +73,13 @@ function findAdjacentWalkable(
     { q: 0, r: -1 },
     { q: 1, r: -1 },
   ];
+  const out: Array<{ q: number; r: number; level: number }> = [];
   for (const d of dirs) {
+    if (out.length >= count) break;
     const tile = board.tiles.get(getHexKey(q + d.q, r + d.r));
-    if (tile?.walkable) return { q: q + d.q, r: r + d.r, level: tile.level };
+    if (tile?.walkable) out.push({ q: q + d.q, r: r + d.r, level: tile.level });
   }
-  // fallback to the same tile if walkable
-  const fallback = board.tiles.get(getHexKey(q, r));
-  return { q, r, level: fallback?.level ?? 0 };
+  return out;
 }
 
 /**
@@ -88,25 +89,36 @@ function findAdjacentWalkable(
  */
 export function startGame(seedPhrase: string): GameState {
   const board = generateBoard(seedPhrase);
-  const navGraph = buildNavGraph(board);
   const world = createEcsWorld();
 
-  const spawn = findCentralWalkableTile(board);
-  const townHallKey = getHexKey(spawn.q, spawn.r);
+  // The Town Hall occupies the most central walkable tile. Peons spawn on
+  // adjacent tiles — never on the Town Hall tile itself (they would overlap
+  // the building mesh).
+  const center = findCentralWalkableTile(board);
+  const townHallKey = getHexKey(center.q, center.r);
   const economy = createEconomy();
 
-  // spawn the primary player pawn at the Town Hall tile
+  // Mark the Town Hall tile unwalkable BEFORE building the nav graph — units
+  // path around the building and deposit from an adjacent tile.
+  const townHallTile = board.tiles.get(townHallKey);
+  if (townHallTile) townHallTile.walkable = false;
+  const navGraph = buildNavGraph(board);
+
+  const peonSpawns = adjacentWalkableTiles(board, center.q, center.r, 2);
+  // fall back to the centre tile only if the centre is somehow isolated
+  if (peonSpawns.length === 0) peonSpawns.push(center);
+
+  const firstSpawn = peonSpawns[0] ?? center;
   const playerPawn = createCharacter({
     world,
     role: 'Peon',
-    q: spawn.q,
-    r: spawn.r,
-    level: spawn.level,
+    q: firstSpawn.q,
+    r: firstSpawn.r,
+    level: firstSpawn.level,
     selected: true,
   });
 
-  // spawn a second peon adjacent to the Town Hall
-  const secondSpawn = findAdjacentWalkable(board, spawn.q, spawn.r);
+  const secondSpawn = peonSpawns[1] ?? firstSpawn;
   createCharacter({
     world,
     role: 'Peon',

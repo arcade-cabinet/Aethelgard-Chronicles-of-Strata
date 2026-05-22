@@ -1,8 +1,12 @@
 import { OrbitControls } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
+import { Suspense } from 'react';
 import type { GameState } from '@/game/game-state';
+import { Buildings } from '@/world/Buildings';
 import { HexTile } from '@/world/HexTile';
 import { PlayerPawn } from '@/world/PlayerPawn';
+import { ResourceNodes } from '@/world/ResourceNodes';
+import { SelectionRing } from '@/world/SelectionRing';
 import { TileInteraction } from '@/world/TileInteraction';
 import { useGameLoop } from './useGameLoop';
 
@@ -21,7 +25,12 @@ function Scene({ game }: { game: GameState }) {
         ))}
       </group>
       <TileInteraction game={game} />
-      <PlayerPawn game={game} />
+      <Suspense fallback={null}>
+        <ResourceNodes game={game} />
+        <Buildings game={game} />
+        <PlayerPawn game={game} />
+      </Suspense>
+      <SelectionRing game={game} />
       <OrbitControls maxPolarAngle={Math.PI / 2.1} />
     </>
   );
