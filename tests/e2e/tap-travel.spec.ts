@@ -1,9 +1,8 @@
 import { expect, test } from '@playwright/test';
+import { enterGame } from './enter-game';
 
 test('tapping a tile moves the pawn along a path', async ({ page }) => {
-  await page.goto('/');
-  // the r3f game canvas — not the #minimap-canvas
-  await page.waitForSelector('canvas:not(#minimap-canvas)');
+  await enterGame(page);
   await page.waitForTimeout(1000);
 
   const canvas = page.locator('canvas:not(#minimap-canvas)');

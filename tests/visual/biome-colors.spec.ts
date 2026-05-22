@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
+import { enterGame } from '../e2e/enter-game';
 
 /**
  * Per-OS screenshot baselines. The committed baseline is generated on the dev
@@ -12,9 +13,8 @@ import { expect, test } from '@playwright/test';
  */
 test.describe('board visual', () => {
   test('the seeded board renders as a colored hex island', async ({ page }, testInfo) => {
-    await page.goto('/');
-    // the r3f game canvas — not the #minimap-canvas
-    await page.waitForSelector('canvas:not(#minimap-canvas)');
+    // start a deterministic board so the visual baseline is stable
+    await enterGame(page, 'ancient-silver-forest');
     await page.waitForTimeout(1500);
 
     const baseline = join(

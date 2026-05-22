@@ -1,10 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { App } from '@/App';
+import { enterGame } from './enter-game';
 
 describe('HUD resource bar', () => {
   it('shows the opening resource totals', async () => {
     await render(<App />);
+    await enterGame();
     await vi.waitFor(
       () => {
         expect(document.getElementById('val-wood')?.textContent).toBe('50');
@@ -17,6 +19,7 @@ describe('HUD resource bar', () => {
 
   it('shows supply as used/max', async () => {
     await render(<App />);
+    await enterGame();
     await vi.waitFor(
       () => {
         const supply = document.getElementById('val-supply')?.textContent ?? '';

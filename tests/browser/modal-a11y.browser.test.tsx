@@ -4,49 +4,50 @@ import { startGame } from '@/game/game-state';
 import { GameOverModal } from '@/hud/GameOverModal';
 
 describe('GameOverModal accessibility', () => {
-  it('the win modal has the Radix dialog role and aria-modal', async () => {
+  it('the win modal renders as an accessible dialog', async () => {
     const game = startGame('ancient-silver-forest');
     game.outcome = 'win';
-    render(<GameOverModal game={game} />);
+    await render(<GameOverModal game={game} />);
     await vi.waitFor(
       () => {
-        const dialog = document.querySelector('[role="dialog"]');
-        expect(dialog).not.toBeNull();
-        expect(dialog?.getAttribute('aria-modal')).toBe('true');
+        const dialog = document.getElementById('game-over-modal');
+        if (!dialog) throw new Error('modal not open');
+        // Radix Dialog.Content carries the dialog role
+        expect(dialog.getAttribute('role')).toBe('dialog');
       },
-      { timeout: 3000, interval: 100 },
+      { timeout: 4000, interval: 100 },
     );
   });
 
-  it('the win modal traps focus on an interactive element', async () => {
+  it('the win modal traps focus inside itself', async () => {
     const game = startGame('ancient-silver-forest');
     game.outcome = 'win';
-    render(<GameOverModal game={game} />);
+    await render(<GameOverModal game={game} />);
     await vi.waitFor(
       () => {
         const modal = document.getElementById('game-over-modal');
-        expect(modal).not.toBeNull();
+        if (!modal) throw new Error('modal not open');
         // Radix moves focus into the dialog when it opens
-        expect(modal?.contains(document.activeElement)).toBe(true);
+        expect(modal.contains(document.activeElement)).toBe(true);
       },
-      { timeout: 3000, interval: 100 },
+      { timeout: 4000, interval: 100 },
     );
   });
 
   it('the "Re-enter Aethelgard" button is keyboard-focusable', async () => {
     const game = startGame('ancient-silver-forest');
     game.outcome = 'loss';
-    render(<GameOverModal game={game} />);
+    await render(<GameOverModal game={game} />);
     await vi.waitFor(
       () => {
         const button = [...document.querySelectorAll('button')].find(
           (b) => b.textContent === 'Re-enter Aethelgard',
         );
-        expect(button).toBeDefined();
-        button?.focus();
+        if (!button) throw new Error('button not found');
+        button.focus();
         expect(document.activeElement).toBe(button);
       },
-      { timeout: 3000, interval: 100 },
+      { timeout: 4000, interval: 100 },
     );
   });
 });

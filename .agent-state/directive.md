@@ -228,10 +228,11 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
   left the land backface-culled. Verified against references/poc1.png.
 - [x] constants→config (6f16830) — core/constants.ts deleted, all values
   (incl. HEX_DIRECTIONS) now in world.json via the typed WORLD loader.
-- [x] viewport/camera layer — useViewport hook (a377d7f), CameraRig zoom+pan
-  (a377d7f), minimap viewport-rectangle (721e5b8). Spec 98 Steps 1-3 done.
-- [ ] M6 finish — per-viewport HUD pass (spec 98 Step 4: HUD panels
-  stack/compact for phone-portrait vs desktop), full verification, the PR.
+- [x] viewport/camera layer — useViewport (a377d7f), CameraRig zoom+pan
+  (a377d7f), minimap viewport-rectangle (721e5b8), per-viewport HUD (b83f17b).
+  Spec 98 Steps 1-4 all done, verified desktop + phone-portrait.
+- [ ] M6 finish — full verification (verify + browser + e2e), milestone doc +
+  CHANGELOG, then the single final PR.
 
 ### M7 — AI subpackage (yuka)  [planned — after M6 ships]
 Per user: the AI deserves its own subpackage, not the minor `ecs/systems/ai.ts`
