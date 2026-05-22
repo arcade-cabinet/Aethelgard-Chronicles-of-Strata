@@ -24,6 +24,7 @@ import { type DamageEvent, combatSystem } from '@/ecs/systems/combat';
 import { deathSystem } from '@/ecs/systems/death';
 import { depositSystem } from '@/ecs/systems/deposit';
 import { harvestSystem } from '@/ecs/systems/harvest';
+import { AiPlayer } from '@/ai/ai-player';
 import { encroachmentSystem } from '@/ecs/systems/encroachment';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
 import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
@@ -111,6 +112,11 @@ export interface GameState {
   rally: RallyState;
   /** Per-faction zone of control + observed battlefield (spec 102). */
   zones: Record<Faction, ZoneState>;
+  /**
+   * Goal-driven AI players, keyed by faction. The enemy faction always has one;
+   * the player faction gets one only in AI-vs-AI mode (M8.7 E2E harness).
+   */
+  aiPlayers: Partial<Record<Faction, AiPlayer>>;
   /**
    * The koota entityId of the currently-selected entity, or `undefined` when
    * nothing is selected. Updated by `selectEntity` in `@/game/selection`.
@@ -347,6 +353,9 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     research: createResearch(),
     rally: createRally(),
     zones: { player: createZoneState(), enemy: createZoneState() },
+    // the enemy faction always runs a yuka AI player; AI-vs-AI mode swaps in
+    // the player faction's via the test harness (M8.7).
+    aiPlayers: { enemy: new AiPlayer('enemy') },
     assignAllPeonsToHarvest() {
       // find the first wood node (fallback to any node)
       const woodNodes = resourceNodes.filter((n) => n.resourceType === 'wood');
@@ -401,6 +410,9 @@ export function runEconomyTick(game: GameState, delta: number): void {
   advanceClock(game.clock, delta);
   advanceWeather(game.weather, game.eventRng, delta);
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
+
+  // goal-driven AI players decide + issue commands on their own cadence
+  for (const ai of Object.values(game.aiPlayers)) ai?.tick(game, delta);
 
   // enemy spawning + AI unit-steering target selection
   spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
