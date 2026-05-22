@@ -275,9 +275,10 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   (connectivity-first union-find placement), biomeStyleFor, FLAT/CROSSING/
   BLOCKED edges, Crossings.tsx contextual forms, scatter skips landings.
   220 tests green, verified in-browser — ramp-fringe gone.
-- [ ] M8.1 — faction model: a `Base` ECS trait; faction-symmetric structure
-  config (player model + enemy model per structure type, shared costs/traits);
-  fully remove `GoblinPortal*` → `EnemyBase`.
+- [x] M8.1 — faction model (d3f303b): `FactionBase` trait marks each faction's
+  base symmetrically; `EnemySpawner` (was `GoblinPortalTrait`); `evaluateWinLoss`
+  scores symmetrically over `FactionBase`; `EnemyBase.tsx`; all `GoblinPortal`
+  naming gone. 221 tests green.
 - [ ] M8.2 — render decomposition: `FactionBase` core + `HomeBase`/`EnemyBase`;
   delete `Buildings.tsx`. Branch on visuals only.
 - [ ] M8.3 — command API faction parameter: `commands.ts` takes an issuing
