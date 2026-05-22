@@ -83,6 +83,6 @@ pillar docs written.
 
 - [ ] **Task 13 — Coverage gates + standard repo files** [`tests/unit/gates.test.ts`]
   - `.claude/gates.json` exists and is valid JSON matching the gate schema.
-  - `README.md`, `CREDITS.md`, `LICENSE` present.
-  - `CREDITS.md` includes the KayKit attribution line.
+  - `README.md`, `LICENSE` present. (No `CREDITS.md` — this is a commercial
+    release with commercially-licensed assets; see `30-asset-pipeline.md`.)
   - Ref: `30-asset-pipeline.md §Licensing`, `99-build-deploy.md §Coverage Gates`.

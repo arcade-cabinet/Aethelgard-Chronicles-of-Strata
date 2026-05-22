@@ -8,8 +8,6 @@ export interface AssetAccessor {
   entry(id: string): AssetEntry;
   /** Every logical id within a category, sorted. */
   idsInCategory(category: string): string[];
-  /** Unique (pack, license) pairs for the credits screen, sorted by pack. */
-  credits(): Array<{ pack: string; license: string }>;
 }
 
 /**
@@ -31,17 +29,5 @@ export function createAssetAccessor(manifest: AssetManifest, base: string): Asse
         .filter((e) => e.category === category)
         .map((e) => e.id)
         .sort(),
-    credits: () => {
-      // Dedup on the (pack, license) pair so a pack appearing under two
-      // licenses contributes both — the credits screen must be legally exact.
-      const seen = new Map<string, { pack: string; license: string }>();
-      for (const e of Object.values(manifest.entries)) {
-        const key = `${e.pack}::${e.license}`;
-        if (!seen.has(key)) seen.set(key, { pack: e.pack, license: e.license });
-      }
-      return [...seen.values()].sort(
-        (a, b) => a.pack.localeCompare(b.pack) || a.license.localeCompare(b.license),
-      );
-    },
   };
 }

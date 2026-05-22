@@ -109,10 +109,8 @@ but it does NOT fail on total size.
 
 ## Licensing
 
-| Source | License | Requirement |
-|---|---|---|
-| Kenney.nl | CC0 1.0 Universal | No attribution required, but credit is appreciated |
-| KayKit (Kay Lousberg) | CC BY 4.0 | Credits screen attribution: "Characters & Buildings: KayKit by Kay Lousberg (kaylousberg.com)" |
-
-The credits screen (shown in the win/loss modal footer and the launcher) must include
-the KayKit attribution line. Omitting it is a build-failing bug.
+This is a commercial release. Every asset pack is used under a commercial
+licence procured for the project, so the game ships **no in-app credits or
+attribution screen** — the licensing obligations are satisfied by the procured
+licences, not by runtime attribution. The asset manifest still records each
+entry's `pack` for provenance/bookkeeping, but nothing renders it.

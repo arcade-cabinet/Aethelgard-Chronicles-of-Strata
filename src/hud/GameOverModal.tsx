@@ -118,9 +118,6 @@ export function GameOverModal({ game }: { game: GameState }) {
           >
             Re-enter Aethelgard
           </button>
-          <p style={{ marginTop: 20, marginBottom: 0, fontSize: '0.66rem', color: '#64748b' }}>
-            Art: KayKit by Kay Lousberg · Kenney. Audio: PixelLoops. See CREDITS.md.
-          </p>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

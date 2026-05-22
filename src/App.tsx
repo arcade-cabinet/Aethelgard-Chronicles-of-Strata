@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MAP_SIZES } from '@/core/map-size';
-import { CreditsPanel } from '@/hud/CreditsPanel';
 import { GameOverModal } from '@/hud/GameOverModal';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
 import { Minimap } from '@/hud/Minimap';
@@ -51,7 +50,6 @@ function GameSession({ config }: { config: NewGameConfig }) {
     return g;
   }, [config]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
-  const [showCredits, setShowCredits] = useState(false);
   const viewport = useViewport();
 
   return (
@@ -69,41 +67,6 @@ function GameSession({ config }: { config: NewGameConfig }) {
       />
       <SoundToggle persistence={persistence} />
       <GameOverModal game={game} />
-      {showCredits && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(3,7,18,0.85)',
-            zIndex: 900,
-          }}
-        >
-          <CreditsPanel onClose={() => setShowCredits(false)} />
-        </div>
-      )}
-      <button
-        type="button"
-        onClick={() => setShowCredits(true)}
-        style={{
-          position: 'absolute',
-          bottom: 16,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          padding: '6px 14px',
-          borderRadius: 8,
-          border: '1px solid rgba(56,189,248,0.28)',
-          background: 'rgba(9,13,22,0.88)',
-          color: '#94a3b8',
-          fontFamily: 'sans-serif',
-          fontSize: '0.72rem',
-          cursor: 'pointer',
-        }}
-      >
-        Credits
-      </button>
     </div>
   );
 }

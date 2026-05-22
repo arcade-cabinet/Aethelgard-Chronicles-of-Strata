@@ -48,9 +48,6 @@ landing page) and `98-viewport-and-config.md` (viewport architecture; constants
   `getEventSeed` buries the event-PRNG seed in Preferences.
   [`src/persistence/persistence.ts`]
 
-- [x] **Credits** — `CREDITS.md` + `CreditsPanel` + the win-modal footer
-  attribute KayKit, Kenney, PixelLoops. [`tests/unit/credits.test.ts`]
-
 - [x] **GitHub Pages build** — `pnpm build:pages` produces `dist/` with the
   `/Aethelgard-Chronicles-of-Strata/` base path. CI deploys it.
 

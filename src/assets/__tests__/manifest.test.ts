@@ -57,12 +57,4 @@ describe('createAssetAccessor', () => {
     const assets = createAssetAccessor(fixture, '/');
     expect(assets.idsInCategory('characters')).toEqual(['characters.heroes.knight']);
   });
-
-  it('collects unique licenses with their packs for the credits screen', () => {
-    const assets = createAssetAccessor(fixture, '/');
-    expect(assets.credits()).toEqual([
-      { pack: 'Hexagon Kit', license: 'CC0' },
-      { pack: 'KayKit Adventurers', license: 'CC-BY' },
-    ]);
-  });
 });
