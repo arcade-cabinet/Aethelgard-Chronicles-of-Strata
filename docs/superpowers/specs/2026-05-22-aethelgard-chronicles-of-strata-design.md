@@ -217,7 +217,7 @@ docs/milestones/
 |---|---|
 | KayKit rig retargeting fails (skeleton mismatch) | M2 first task is a rig-verification harness; lock approach on evidence before building the factory |
 | poc2's described systems (weather/research/rally) have no working reference | Reconstruct from the conversation's prose descriptions; pin each as an M5 milestone contract with explicit acceptance criteria in `70-rts-systems.md` |
-| Asset payload too large for web/APK | Ingest script ships GLB+OGG only, dedupes; budget tracked in `30-asset-pipeline.md`; draco/meshopt compression if needed |
+| Asset payload large for web/APK | NOT budget-capped — the game ships whatever assets make it full and fun. Ingest script ships GLB+OGG only and dedupes; draco/meshopt compression + lazy per-milestone asset chunks keep load times reasonable without cutting content. No `size-limit` gate. |
 | r3f in Vitest browser mode flaky | Canvas smoke test via Playwright as the backstop; browser-mode tests scoped to component behavior, not pixel exactness |
 | Capacitor SQLite native plugin on web | `@capacitor-community/sqlite` has a web (wa-sqlite) fallback; persistence layer abstracts the platform |
 
