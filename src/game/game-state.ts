@@ -30,6 +30,10 @@ import { type GameEconomy, createEconomy } from './economy';
 import { recomputeMaxSupply } from './supply';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import { createDualPrng } from '@/core/rng';
+import { type GameClock, advanceClock, createClock } from './clock';
+import { type Weather, WEATHER_SPEED_MULTIPLIER, advanceWeather, createWeather } from './weather';
+import { type ResearchState, createResearch } from './research';
+import { type RallyState, createRally } from './rally';
 
 /** The live state of one play session. */
 export interface GameState {
@@ -61,6 +65,14 @@ export interface GameState {
   lastDamageEvents: DamageEvent[];
   /** The event PRNG — shared across all combat rolls to preserve determinism. */
   eventRng: () => number;
+  /** The game clock — drives the day/night cycle and Orc escalation threshold. */
+  clock: GameClock;
+  /** The current weather state — drives movement penalty and visual effects. */
+  weather: Weather;
+  /** Which research upgrades have been purchased this session. */
+  research: ResearchState;
+  /** The barracks rally point — where newly trained footmen are directed. */
+  rally: RallyState;
   /**
    * Assign every idle peon to harvest the nearest resource node.
    * Call this to kick-start the autonomous harvest loop.
@@ -219,6 +231,10 @@ export function startGame(seedPhrase: string): GameState {
     outcome: 'playing',
     lastDamageEvents: [],
     eventRng,
+    clock: createClock(),
+    weather: createWeather(),
+    research: createResearch(),
+    rally: createRally(),
     assignAllPeonsToHarvest() {
       // find the first wood node (fallback to any node)
       const woodNodes = resourceNodes.filter((n) => n.resourceType === 'wood');
@@ -269,12 +285,16 @@ export function runEconomyTick(game: GameState, delta: number): void {
   // Skip all ticks once the game has ended.
   if (game.outcome !== 'playing') return;
 
+  // advance time-based systems
+  advanceClock(game.clock, delta);
+  advanceWeather(game.weather, game.eventRng, delta);
+
   // enemy spawning + AI target selection
-  spawnSystem(game.world, game.board, delta);
+  spawnSystem(game.world, game.board, delta, game.clock.elapsed);
   aiSystem(game.world, game.board, game.navGraph);
 
-  // movement + economy
-  pathFollowSystem(game.world, delta);
+  // movement + economy — apply rain speed penalty from weather state
+  pathFollowSystem(game.world, delta, WEATHER_SPEED_MULTIPLIER[game.weather.state]);
   jobRoutingSystem(game.world, game.board, game.navGraph, game.townHallKey);
   harvestSystem(game.world, delta);
   buildSystem(game.world, game.buildSites, delta);
