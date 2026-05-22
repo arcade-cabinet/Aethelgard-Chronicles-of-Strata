@@ -38,8 +38,10 @@ import { type ResearchState, createResearch } from './research';
 import { type RallyState, createRally } from './rally';
 import type { AutoSave } from './auto-save';
 import { tickAutoSave } from './auto-save';
+import { type FogState, createFogState, updateFog } from './fog';
 import { spawnIntervalFor } from '@/config/combat';
 import type { Difficulty } from './difficulty';
+import type { Faction } from '@/ecs/components';
 
 export type { Difficulty } from './difficulty';
 
@@ -101,6 +103,8 @@ export interface GameState {
   research: ResearchState;
   /** The barracks rally point — where newly trained footmen are directed. */
   rally: RallyState;
+  /** Per-faction fog of war — what each side has perceived. */
+  fog: Record<Faction, FogState>;
   /**
    * The koota entityId of the currently-selected entity, or `undefined` when
    * nothing is selected. Updated by `selectEntity` in `@/game/selection`.
@@ -303,6 +307,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     weather: createWeather(),
     research: createResearch(),
     rally: createRally(),
+    fog: { player: createFogState(), enemy: createFogState() },
     assignAllPeonsToHarvest() {
       // find the first wood node (fallback to any node)
       const woodNodes = resourceNodes.filter((n) => n.resourceType === 'wood');
@@ -367,6 +372,11 @@ export function runEconomyTick(game: GameState, delta: number): void {
   jobRoutingSystem(game.world, game.board, game.navGraph, game.townHallKey);
   harvestSystem(game.world, delta);
   buildSystem(game.world, game.buildSites, delta);
+
+  // recompute per-faction fog of war from the now-current unit/base positions
+  const tiles = game.board.tiles.values();
+  updateFog(game.fog.player, game.world, 'player', tiles);
+  updateFog(game.fog.enemy, game.world, 'enemy', game.board.tiles.values());
 
   // recompute the supply cap from all complete buildings — a finished Farm
   // raises max supply.
