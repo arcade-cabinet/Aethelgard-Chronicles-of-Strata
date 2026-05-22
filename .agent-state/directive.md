@@ -326,15 +326,12 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   rules.nextPeonAction on both factions (harvest, claim, flee); House, Granary,
   Watchtower, Wall types in BuildingType + economy.json + structure-models;
   244 tests. (Dedicated GLBs for the 4 new types land in M9.2a.)
-- [ ] M8.6e — encroachment + behavior-archetype LOCAL ZONE OF CONTROL (spec 102):
-  OffensiveBehavior/DefensiveBehavior/AttractorBehavior are composable traits
-  (not building-type-coupled); `rules/building-behaviors.ts` maps each type to
-  its profile; placeBuilding composes the right traits at spawn. Encroachment:
-  enemy-military-on-controlled-tile → pulse → flip (difficulty-scaled grace).
-  Watchtower offensive zone via offensiveBehaviorSystem (decoupled — runs over
-  ANY OffensiveBehavior entity). Town Hall + enemy base get AttractorBehavior;
-  attractor map-gen contract guarantees N×resource in radius (emergent
-  game-start). Wall blocks pathing via the existing walkable=false.
+- [x] M8.6e — behavior-archetype local ZoC + encroachment + attractor (06b15f5):
+  Offensive/Defensive/Attractor are composable traits; placeBuilding composes
+  them via rules/building-behaviors.ts; offensiveBehaviorSystem runs over ANY
+  OffensiveBehavior entity (decoupled); encroachment pulses with difficulty-
+  scaled grace + flip; attractor map-gen guarantees resources in radius
+  (emergent game-start). 253 tests green.
 - [ ] M8.6f — behavior-system polish: (a) OffensiveBehavior consumes the event
   PRNG for arrow-volley jitter and multi-target selection (upgradable —
   `targetCount`, wider radius); (b) DefensiveBehavior extended with
