@@ -237,7 +237,12 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
 - [x] M6 milestone doc + CHANGELOG 0.1.0 written
 - [x] pushed feat/aethelgard-initial-release; opened PR #1 (the single
   release PR delivering all of M0-M6)
-- [ ] [WAIT] CI on PR #1 — green build/test + debug-APK + Pages deploy
+- [x] PR-review (gemini-code-assist) — all 8 findings folded (72ee98a):
+  module state → ECS components, RainParticles determinism, kill-count via
+  deathSystem return, ramp Y-interp, terrain winding (DoubleSide dropped)
+- [x] CI "Build and test" green on 72ee98a
+- [ ] [WAIT] CI debug-APK job on 72ee98a (building); then PR #1 awaits human
+  review/merge — no --admin merge per policy.
 
 ### M7 — AI subpackage (yuka)  [planned — after M6 ships]
 PR-review note to fold into M7: `aiSystem` target selection is O(N_enemies ×
