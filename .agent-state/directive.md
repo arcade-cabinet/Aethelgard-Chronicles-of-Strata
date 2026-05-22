@@ -317,13 +317,15 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
 - [x] M8.5z — zone rendering (cd10305): ZoneBorder.tsx draws each faction's
   controlled-region encirclement; whole board visible, all units render.
   Verified in-browser — no black fog. (Pulse layered in by M8.6e.)
-- [ ] M8.6b — `src/rules/` engine (spec 101): extract the full faction-agnostic
-  rules into a yuka/koota-free barrel — peon autonomy (`nextPeonAction`),
-  building behavior, placement (`canBuild`), economy + peon-cap, training,
-  combat targeting. ECS systems + both drivers consult it.
-- [ ] M8.6c — peon autonomy (spec 101/102): peons run `rules.nextPeonAction` on
-  both factions — autonomous harvest, claim a tile on exploitation, flee
-  pulsing tiles. Add House + Granary types; peon cap = houses+granary.
+- [x] M8.6b — `src/rules/` engine (37fb082): yuka/koota-free barrel —
+  placement (`canBuild`), economy-rules (`canTrain`, `recomputeMaxSupply`,
+  `peonCap`, `canAddPeon`). build.ts/supply.ts deleted, consumers repointed.
+  235 tests. (Peon-autonomy `nextPeonAction` + building behavior land in
+  M8.6c as that's where they're first exercised.)
+- [x] M8.6c — peon autonomy + 4 new building types (a396a55): peons run
+  rules.nextPeonAction on both factions (harvest, claim, flee); House, Granary,
+  Watchtower, Wall types in BuildingType + economy.json + structure-models;
+  244 tests. (Dedicated GLBs for the 4 new types land in M9.2a.)
 - [ ] M8.6e — encroachment & 3 territorial-building kinds (spec 102): enemy-
   military-on-controlled-tile → pulse → flip; Watchtower (offensive zone,
   shoots intruders), Wall (defensive hard border, blocks pathing), Town Hall
@@ -358,13 +360,19 @@ fun, releasable game."
 - [ ] M9.1c — onboarding: a short first-run tutorial overlay walking the core
   loop (peons auto-harvest, watch resources, build, defend the Town Hall).
   Skippable, shown once (Preferences flag).
-- [ ] M9.1d — `docs/specs/10-player-journey.md` — write the scene-by-scene
-  player journey spec (it does not exist yet); every transition gets an e2e.
+- [ ] M9.1d — docs completeness: write `docs/specs/10-player-journey.md`
+  (scene-by-scene journey — does not exist; every transition gets an e2e) and
+  `docs/specs/99-glossary.md` (canonical term list). Refresh `docs/STATE.md`.
 
 ### M9.2 — visual & audio polish (the agent owns this — judge vs references)
-- [ ] M9.2a — building models: House, Granary, Watchtower, Wall get real
-  kit GLBs (Town/Castle kits) in `structure-models.ts`, both faction skins;
-  screenshot-judged vs `references/poc1.png` + the Castle/Town kit look.
+- [ ] M9.2a — building models: House, Granary, Watchtower, Wall get dedicated
+  GLBs in `structure-models.ts` (M8.6c reuses existing structure GLBs to land
+  the logic). Curate from the **KayKit Ultimate Fantasy RTS** pack via the
+  assets-library MCP (`/Volumes/home/assets/3DLowPoly/GameKits/Fantasy/Ultimate
+  Fantasy RTS` — TowerHouse, Windmill, Archery, WonderWalls) + the KayKit
+  Medieval Hexagon `building_watchtower`. Both faction skins; screenshot-judged
+  vs `references/poc1.png`. Consider this pack for a whole-game building
+  upgrade.
 - [ ] M9.2b — zone-border + pulse polish: the encirclement line and the
   encroachment pulse are tuned to read clearly and look good on a phone
   screen; screenshot-judged at desktop + Pixel-7 portrait.
