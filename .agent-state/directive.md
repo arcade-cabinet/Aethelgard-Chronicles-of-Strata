@@ -338,20 +338,23 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   `armorVsSiege`/`armorVsNormal` and proportional damage absorption by
   attacker type (responsive to siege units); (c) arrow/projectile animation
   when an OffensiveBehavior fires.
-- [ ] M8.6g — magnetic emitters + 4th ZoC archetype "Mover" (spec 102 update):
-  - MoverBehavior trait — roads. Snap to other roads (network), to walls
-    (forming a Gate at the junction), to defenders.
-  - Gate = MoverBehavior on a tile adjacent to a DefensiveBehavior. Default
-    state: closed-to-enemies, open-to-friendlies. Direction-aware passability
-    in pathfinding: friendly units cross freely; enemy units find a closed
-    door and must destroy/circumvent.
-  - rules/snapping.ts — placement-time magnetic snap rule: every ZoC emitter
-    attracts compatible neighbours (wall→wall, road→road, road→wall=gate,
-    wall→offender side-flank). Applied in placeBuilding before commit; also
-    surfaces in the build-menu placement preview.
-  - The magnetic-emitter framing (attractor/offensive/defensive/mover all
-    operate on the same principle, differing in frequency + reaction target)
-    is now the unifying architectural law for territorial behaviour.
+- [ ] M8.6g — full archetype-algebra unification (spec 102):
+  - Add the two missing archetypes: MoverBehavior (ZoC-neutral roads —
+    material + 6-way connectors + defender-transform to Gate + pillageable)
+    and ConsumerBehavior (ZoC-neutral resource holders — kind + amount,
+    threatenable; replaces the hard-coded ResourceType enum so future
+    Consumers — magical crystal etc — are instances not type extensions).
+  - Gate composition: a Mover on a tile adjacent-to / overlapping a Defender
+    transforms that tile's render + passability (friendly = open, enemy =
+    closed; the gate inherits the wall material + road form).
+  - rules/snapping.ts — placement-time magnetic snap law: walls snap to
+    walls, roads snap to roads + walls, all archetypes magnetically attract
+    compatible neighbours. Applied in placeBuilding + the build preview.
+  - The unification beyond buildings: archetype traits are UNIVERSAL.
+    Footmen `add` OffensiveBehavior on spawn; combat.ts collapses into a
+    thin slice of the offensive-behavior system; Walls grow armorVsSiege /
+    armorVsNormal; Sieges multiply by the dual. One pairwise law, all
+    combat shapes. See `docs/specs/102 — Archetype composition algebra`.
 - [x] M8.6d — yuka Think-brain AI player (69e6ebc): AiPlayer extends
   GameEntity with an AiBrain (Think); BuildEvaluator + MilitaryEvaluator
   score from KNOWN state and dispatch to commands.ts; enemy faction always
@@ -370,9 +373,9 @@ done. M9 closes every gap between "M8 mechanics work" and "this is a finished,
 fun, releasable game."
 
 ### M9.1 — UX for the new systems (the player must understand the game)
-- [ ] M9.1a — build menu covers ALL buildable types: Farm, Barracks, House,
-  Granary, Watchtower, Wall — each with icon, cost, a one-line description,
-  and `rules.canBuild` gating the button. `SelectionPanel` / build UI updated.
+- [x] M9.1a — build menu (3ac2e4b): SelectionPanel lists all 6 buildable
+  types with cost labels + affordability gating from @/rules BUILDING_COSTS.
+  build-menu.browser.test.tsx pins the UI contract. 260 tests.
 - [ ] M9.1b — zone & territory legend: the HUD teaches what the zone border,
   the contested-tile pulse, and the three building auras mean (a compact
   legend / first-run hints — the player must read the board correctly).

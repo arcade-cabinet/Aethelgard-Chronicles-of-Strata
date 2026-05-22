@@ -73,11 +73,74 @@ archetypes share; their differences are just *what frequency they emit on* and
     (friendly = open, enemy = closed).
   - **Pillageable but inert** — a unit can destroy a road as an explicit
     action; merely standing on it does nothing.
+- **Consumer** — a neutral single-tile placement holding an amount of
+  something consumable. Trees, rocks, gold veins — all are Consumers
+  parameterised by `kind` + `amount`. ZoC-neutral (a tree is not territory
+  until a peon starts exploiting it; that exploitation is what claims the
+  tile via the Attractor/peon contract). Threatenable — an enemy military
+  unit may damage or fully destroy a Consumer, denying its yield to the
+  opponent. This means resource *kinds* (wood/stone/gold) are NOT a baked
+  enum — they are a property of a Consumer instance, so a future
+  "magical-crystal" Consumer is one new instance, not a type extension.
 
 The same principle drives both **placement-time snapping** (a placed wall
 gravitates to align with adjacent walls or attaches to the side of an
 offensive building) AND **runtime reactivity** (a watchtower aims at enemies,
 a gate opens for a friendly). One concept, four families.
+
+## Archetype composition algebra — emergent richness without rule explosion
+
+The five archetypes (Attractor, Offensive, Defensive, Mover, Consumer) are not
+just a taxonomy — they are a **composition algebra**. Every gameplay pattern
+the player or AI builds is a *composition of two-or-more archetype
+interactions*. Defining each pairwise rule ONCE yields the whole rich behaviour
+space. The intended pairwise table:
+
+| Composition | Pattern that emerges |
+|---|---|
+| Consumer + Attractor | Resource node inside a base zone — the bootstrap (peon finds work in-radius). |
+| Mover + Defender | **Gate** — the road transforms the wall into a directional door (friendly = open, enemy = closed). |
+| Defender + Defender | **Wall network** — snap into a continuous border. |
+| Defender + Offensive | **Fortified compound** — walls flank a watchtower, defenders absorb damage, the offensive kills enemies inside. |
+| Mover + Mover (different materials) | **Bridged junction** — wood meets stone, both pass freely. |
+| Offensive + Offensive | **Overlapping kill zones** — areas where any one source applies (one-source-per-tick rule still avoids stacking). |
+| Consumer + Offensive | **Contested resource site** — the AI's "attack" verb has a concrete target. |
+| Attractor + Mover | **Road system fanning out from a base** — radial expansion is visible AND navigable. |
+| Mover + Consumer | **No effect** — both are neutral; a road past a tree is just a road past a tree. |
+| Attractor + Attractor | Two attractor radii overlap → resources get *both* guarantees applied, naturally creating a contested heartland. |
+
+This is the deep architecture — **rules-as-algebra**, depth as composition.
+Once the five archetype traits + their pairwise systems exist, every future
+building / consumable / mover is an *instance*, not an extension. Adding the
+"magical-crystal" Consumer or a "trebuchet" Offensive variant requires zero
+system changes — just an entry in the building/consumable table.
+
+### The same algebra applies to UNITS
+
+The archetypes are not building-specific — they are **universal entity
+traits**. A unit is just a *mobile* emitter:
+
+- **Peon** — a Consumer-driver. No ZoC; its purpose is to interact with
+  Consumers. (Spec 101 — mindless pacifist brutes.)
+- **Footman / military** — an `OffensiveBehavior` on legs. Small radius, low
+  dps, but the same trait the Watchtower has. The `offensiveBehaviorSystem`
+  already iterates *every* OffensiveBehavior entity — a Footman that adds the
+  trait at spawn slots in for free.
+- **Siege unit** — an Offensive tuned vs Defensive. Its damage law multiplies
+  by the Defensive's `armorVsSiege` (the dual of M8.6f's siege-responsive
+  walls).
+- **Scout / spy** — a Mover instance with extended observed-battlefield radius
+  and zero ZoC.
+
+This means M8's combat surface unifies onto the same algebra: damage isn't
+hard-coded "unit-vs-unit" combat, it's the `OffensiveBehavior × everything`
+pairwise rule. The current `combat.ts` becomes a *thin slice* of the
+offensive-behavior system. A Footman attacks a Wall = "Offensive (Footman)
+× Defensive (Wall) with armorVsNormal"; a Trebuchet attacks the same Wall =
+"Offensive (Trebuchet) × Defensive (Wall) with armorVsSiege". One law.
+
+The full game's depth comes from a tiny core: five archetype traits + one
+pairwise-composition table.
 
 ## Territorial buildings — four local-zone kinds
 
