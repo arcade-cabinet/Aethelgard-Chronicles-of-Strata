@@ -8,6 +8,7 @@ import { HomeBase } from '@/world/HomeBase';
 import { CombatText } from '@/world/CombatText';
 import { Decoration } from '@/world/Decoration';
 import { EnemyBase } from '@/world/EnemyBase';
+import { FogOverlay } from '@/world/FogOverlay';
 import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { Mountains } from '@/world/Mountains';
@@ -60,6 +61,7 @@ function Scene({
       <RainParticles game={game} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
+      <FogOverlay game={game} />
       <CameraRig viewport={viewport} boardRadius={game.board.radius} />
     </>
   );
