@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { BoardData, Tile } from '@/core/board';
+import { type Crossing, crossingKey } from '@/core/crossings';
 import { getHexKey } from '@/core/hex';
 import { buildNavGraph, findPath } from '@/core/pathfinding';
-import { rampKey } from '@/core/ramps';
 
 /** Build a tiny hand-made board for deterministic graph tests. */
 function makeBoard(
   specs: Array<{ q: number; r: number; level: number; walkable: boolean }>,
-  rampEdges: Array<[string, string]> = [],
+  crossingEdges: Array<[string, string]> = [],
 ): BoardData {
   const tiles = new Map<string, Tile>();
   for (const s of specs) {
@@ -18,12 +18,26 @@ function makeBoard(
       type: s.walkable ? 'GRASS' : 'OCEAN',
       moisture: 0.5,
       walkable: s.walkable,
+      isCrossingLanding: false,
     });
   }
-  const ramps = new Map(
-    rampEdges.map(([a, b]) => [rampKey(a, b), { lowKey: a, highKey: b }] as const),
+  const crossings = new Map<string, Crossing>(
+    crossingEdges.map(([a, b]) => {
+      const ta = tiles.get(a);
+      const tb = tiles.get(b);
+      const aLower = (ta?.level ?? 0) < (tb?.level ?? 0);
+      return [
+        crossingKey(a, b),
+        {
+          lowKey: aLower ? a : b,
+          highKey: aLower ? b : a,
+          form: 'artificial' as const,
+          style: 'grass' as const,
+        },
+      ];
+    }),
   );
-  return { seedPhrase: 'test', radius: 5, tiles, ramps };
+  return { seedPhrase: 'test', radius: 5, tiles, crossings };
 }
 
 describe('A* pathfinding', () => {

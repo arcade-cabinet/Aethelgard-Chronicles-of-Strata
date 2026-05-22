@@ -33,6 +33,39 @@ export interface Biome {
   moisture: number;
 }
 
+/**
+ * A crossing-style family — groups biomes by how an elevation transition
+ * across them looks and is traversed. See `docs/specs/99-passability-and-slopes.md`.
+ * `water` biomes never host a crossing.
+ */
+export type CrossingStyle = 'stone' | 'mountain' | 'grass' | 'sand' | 'water';
+
+/**
+ * The crossing style for a biome — drives which natural/artificial crossing
+ * meshes a cliff face of this biome renders:
+ * - `stone`  — HIGHLAND: rockfall (natural) | carved stone stairs (artificial)
+ * - `mountain` — MOUNTAIN: rock ramp | rough stone steps
+ * - `grass`  — GRASS/FOREST: graded grassy hill | wooden plank-and-rope ramp
+ * - `sand`   — BEACH/DESERT: sloped sand rise | wooden boardwalk
+ * - `water`  — OCEAN/LAKE: never a crossing
+ */
+export function biomeStyleFor(type: BiomeType): CrossingStyle {
+  switch (type) {
+    case 'OCEAN':
+    case 'LAKE':
+      return 'water';
+    case 'MOUNTAIN':
+      return 'mountain';
+    case 'HIGHLAND':
+      return 'stone';
+    case 'BEACH':
+    case 'DESERT':
+      return 'sand';
+    default:
+      return 'grass';
+  }
+}
+
 /** Convert an elevation level + moisture to a biome type (no lake override). */
 export function levelToType(level: number, moisture: number): BiomeType {
   if (level === 0) return 'OCEAN';

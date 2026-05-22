@@ -39,6 +39,8 @@ export function spawnResourceNodes(board: BoardData, rng: Rng): ResourceNodePlan
   for (const key of sortedKeys) {
     const tile = board.tiles.get(key);
     if (!tile) continue;
+    // never place a resource node on a crossing landing — it would block it
+    if (tile.isCrossingLanding) continue;
     for (const rule of SPAWN_RULES) {
       if (!rule.biomes.has(tile.type)) continue;
       if (rng() < rule.chance) {

@@ -1,15 +1,16 @@
 import type { BoardData } from './board';
 import { HEX_DIRECTIONS } from '@/config/world';
+import { crossingKey } from './crossings';
 import { getHexKey, hexDistance } from './hex';
-import { rampKey } from './ramps';
 
 /** The navigation graph: an adjacency list of walkable tile keys. */
 export type NavGraph = Map<string, Set<string>>;
 
 /**
- * Build the A* navigation graph from a board. Two adjacent walkable tiles are
- * connected when their levels are equal, OR their levels differ by exactly 1 AND
- * a ramp exists on that edge.
+ * Build the A* navigation graph from a board. An edge between two adjacent
+ * walkable tiles exists when their levels are equal (`FLAT`), OR they differ by
+ * exactly one level AND a crossing is placed on that edge (`CROSSING`). All
+ * other adjacencies are `BLOCKED`. See `docs/specs/99-passability-and-slopes.md`.
  */
 export function buildNavGraph(board: BoardData): NavGraph {
   const graph: NavGraph = new Map();
@@ -24,7 +25,7 @@ export function buildNavGraph(board: BoardData): NavGraph {
       const delta = Math.abs(neighbor.level - tile.level);
       if (delta === 0) {
         neighbors.add(nKey);
-      } else if (delta === 1 && board.ramps.has(rampKey(key, nKey))) {
+      } else if (delta === 1 && board.crossings.has(crossingKey(key, nKey))) {
         neighbors.add(nKey);
       }
     }

@@ -302,6 +302,8 @@ function planDecoration(board: BoardData, occupiedKeys: ReadonlySet<string>): De
     if (!tile) continue;
     if (tile.type === 'OCEAN' || tile.type === 'LAKE') continue;
     if (occupiedKeys.has(key)) continue;
+    // never scatter props onto a crossing's landing tile — they would block it
+    if (tile.isCrossingLanding) continue;
 
     const palette = PALETTES[tile.type];
     if (!palette) continue;

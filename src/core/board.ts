@@ -1,8 +1,8 @@
 import { type Biome, assignBiome } from './biome';
 import { MAP_RADIUS } from '@/config/world';
+import { type Crossing, placeCrossings } from './crossings';
 import { getHexKey } from './hex';
 import { createNoise2D } from './noise';
-import { type Ramp, placeRamps } from './ramps';
 import { createMapPrng } from './rng';
 
 /** One tile of the generated board. */
@@ -13,6 +13,12 @@ export interface Tile extends Biome {
   r: number;
   /** Whether units may stand on / path through this tile. */
   walkable: boolean;
+  /**
+   * True when this tile is the low or high end of a placed crossing. Decoration
+   * and resource-node scatter skip these so nothing blocks a crossing. See
+   * `docs/specs/99-passability-and-slopes.md`.
+   */
+  isCrossingLanding: boolean;
 }
 
 /** The full generated board. */
@@ -23,8 +29,8 @@ export interface BoardData {
   radius: number;
   /** Every tile, keyed by `getHexKey(q, r)`. */
   tiles: Map<string, Tile>;
-  /** Placed ramps, keyed by `rampKey(lowKey, highKey)`. */
-  ramps: Map<string, Ramp>;
+  /** Placed crossings, keyed by `crossingKey(lowKey, highKey)`. */
+  crossings: Map<string, Crossing>;
 }
 
 /**
@@ -47,9 +53,18 @@ export function generateBoard(seedPhrase: string, radius: number = MAP_RADIUS): 
     for (let r = rMin; r <= rMax; r++) {
       const biome = assignBiome(q, r, heightNoise, moistureNoise);
       const walkable = biome.type !== 'OCEAN' && biome.type !== 'LAKE' && biome.level < 5;
-      tiles.set(getHexKey(q, r), { q, r, ...biome, walkable });
+      tiles.set(getHexKey(q, r), { q, r, ...biome, walkable, isCrossingLanding: false });
     }
   }
-  const ramps = placeRamps(tiles, map);
-  return { seedPhrase, radius, tiles, ramps };
+
+  const crossings = placeCrossings(tiles, map);
+  // Tag the low/high landing tile of every crossing so scatter avoids them.
+  for (const c of crossings.values()) {
+    const low = tiles.get(c.lowKey);
+    const high = tiles.get(c.highKey);
+    if (low) low.isCrossingLanding = true;
+    if (high) high.isCrossingLanding = true;
+  }
+
+  return { seedPhrase, radius, tiles, crossings };
 }

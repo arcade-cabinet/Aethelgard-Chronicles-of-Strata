@@ -11,7 +11,7 @@ import { GoblinPortalBase } from '@/world/GoblinPortalBase';
 import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { Mountains } from '@/world/Mountains';
-import { Ramps } from '@/world/Ramps';
+import { Crossings } from '@/world/Crossings';
 import { ResourceNodes } from '@/world/ResourceNodes';
 import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
@@ -46,7 +46,7 @@ function Scene({
       <DayNightCycle game={game} />
       <Terrain board={game.board} />
       <Mountains board={game.board} />
-      <Ramps board={game.board} />
+      <Crossings board={game.board} />
       <Water mapRadius={game.board.radius} />
       <TileInteraction game={game} buildContext={buildContext} />
       <Suspense fallback={null}>
