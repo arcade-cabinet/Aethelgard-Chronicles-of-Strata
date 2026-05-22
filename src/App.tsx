@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { MAP_SIZES } from '@/core/map-size';
 import { GameOverModal } from '@/hud/GameOverModal';
+import { ZoneLegend } from '@/hud/ZoneLegend';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
 import { Minimap } from '@/hud/Minimap';
 import { ResourceBar } from '@/hud/ResourceBar';
@@ -66,6 +67,7 @@ function GameSession({ config }: { config: NewGameConfig }) {
         }
       />
       <SoundToggle persistence={persistence} />
+      <ZoneLegend />
       <GameOverModal game={game} />
     </div>
   );
