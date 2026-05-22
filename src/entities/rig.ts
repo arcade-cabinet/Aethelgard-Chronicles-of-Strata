@@ -1,0 +1,34 @@
+import type { UnitType } from '@/ecs/components';
+
+/** The two KayKit skeleton tiers. Characters share a rig within a tier. */
+export type RigTier = 'medium' | 'large';
+
+/** The rig tier for a unit role. */
+export function rigForRole(role: UnitType): RigTier {
+  return role === 'Orc' ? 'large' : 'medium';
+}
+
+/** The two manifest ids of the animation-library GLBs for a rig tier. */
+export function rigAnimationIds(tier: RigTier): { movement: string; general: string } {
+  return {
+    movement: `characters.rigs.${tier}-movement`,
+    general: `characters.rigs.${tier}-general`,
+  };
+}
+
+/**
+ * The manifest id of the character mesh GLB for a unit role. Peon and Footman
+ * both draw from the hero roster; enemies draw from the enemy roster.
+ */
+export function characterMeshId(role: UnitType): string {
+  switch (role) {
+    case 'Peon':
+      return 'characters.heroes.engineer';
+    case 'Footman':
+      return 'characters.heroes.knight';
+    case 'Goblin':
+      return 'characters.heroes.rogue';
+    case 'Orc':
+      return 'characters.enemies.orc';
+  }
+}
