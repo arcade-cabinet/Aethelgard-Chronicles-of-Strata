@@ -38,8 +38,39 @@ export type StaticAssetPath =
   'assets/characters/rigs/large-movement.glb' |
   'assets/characters/rigs/medium-general.glb' |
   'assets/characters/rigs/medium-movement.glb' |
+  'assets/nature/bush-a.glb' |
+  'assets/nature/bush-b.glb' |
+  'assets/nature/bush-c.glb' |
+  'assets/nature/cactus/short.glb' |
+  'assets/nature/cactus/tall.glb' |
+  'assets/nature/flower-a.glb' |
+  'assets/nature/flower-b.glb' |
+  'assets/nature/flower-c.glb' |
+  'assets/nature/grass-tuft.glb' |
+  'assets/nature/mound-a.glb' |
+  'assets/nature/mound-b.glb' |
+  'assets/nature/mushroom-a.glb' |
+  'assets/nature/mushroom-b.glb' |
+  'assets/nature/rock/crystal-a.glb' |
+  'assets/nature/rock/crystal-large.glb' |
   'assets/nature/rock/large-a.glb' |
+  'assets/nature/rock/large-b.glb' |
+  'assets/nature/rock/large-c.glb' |
+  'assets/nature/rock/small-a.glb' |
+  'assets/nature/rock/tall-a.glb' |
+  'assets/nature/rock/td-rocks-large.glb' |
+  'assets/nature/rock/td-rocks.glb' |
+  'assets/nature/stump-a.glb' |
+  'assets/nature/tree/broadleaf-a.glb' |
+  'assets/nature/tree/broadleaf-b.glb' |
+  'assets/nature/tree/oak-a.glb' |
+  'assets/nature/tree/palm-a.glb' |
+  'assets/nature/tree/palm-bend.glb' |
   'assets/nature/tree/pine-a.glb' |
+  'assets/nature/tree/pine-b.glb' |
+  'assets/nature/tree/pine-round-a.glb' |
+  'assets/nature/tree/pine-tall-a.glb' |
+  'assets/nature/tree/small-a.glb' |
   'assets/sql-wasm.wasm' |
   'assets/structures/barracks.glb' |
   'assets/structures/farm.glb' |
@@ -64,6 +95,7 @@ export type StaticAssetDirectory =
   'assets/characters/heroes/' |
   'assets/characters/rigs/' |
   'assets/nature/' |
+  'assets/nature/cactus/' |
   'assets/nature/rock/' |
   'assets/nature/tree/' |
   'assets/structures/';
@@ -123,8 +155,39 @@ const assets = new Set<string>([
   'assets/characters/rigs/large-movement.glb',
   'assets/characters/rigs/medium-general.glb',
   'assets/characters/rigs/medium-movement.glb',
+  'assets/nature/bush-a.glb',
+  'assets/nature/bush-b.glb',
+  'assets/nature/bush-c.glb',
+  'assets/nature/cactus/short.glb',
+  'assets/nature/cactus/tall.glb',
+  'assets/nature/flower-a.glb',
+  'assets/nature/flower-b.glb',
+  'assets/nature/flower-c.glb',
+  'assets/nature/grass-tuft.glb',
+  'assets/nature/mound-a.glb',
+  'assets/nature/mound-b.glb',
+  'assets/nature/mushroom-a.glb',
+  'assets/nature/mushroom-b.glb',
+  'assets/nature/rock/crystal-a.glb',
+  'assets/nature/rock/crystal-large.glb',
   'assets/nature/rock/large-a.glb',
+  'assets/nature/rock/large-b.glb',
+  'assets/nature/rock/large-c.glb',
+  'assets/nature/rock/small-a.glb',
+  'assets/nature/rock/tall-a.glb',
+  'assets/nature/rock/td-rocks-large.glb',
+  'assets/nature/rock/td-rocks.glb',
+  'assets/nature/stump-a.glb',
+  'assets/nature/tree/broadleaf-a.glb',
+  'assets/nature/tree/broadleaf-b.glb',
+  'assets/nature/tree/oak-a.glb',
+  'assets/nature/tree/palm-a.glb',
+  'assets/nature/tree/palm-bend.glb',
   'assets/nature/tree/pine-a.glb',
+  'assets/nature/tree/pine-b.glb',
+  'assets/nature/tree/pine-round-a.glb',
+  'assets/nature/tree/pine-tall-a.glb',
+  'assets/nature/tree/small-a.glb',
   'assets/sql-wasm.wasm',
   'assets/structures/barracks.glb',
   'assets/structures/farm.glb',

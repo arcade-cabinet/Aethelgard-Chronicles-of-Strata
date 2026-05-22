@@ -17,6 +17,7 @@ export function logicalIdToOutputPath(id: string, kind: 'glb' | 'ogg' | 'wav'): 
 
 const HEX = 'references/Hexagon Kit/Models/GLB format';
 const NATURE = 'references/Nature Kit/Models/GLTF format';
+const TD = 'references/Tower Defense Kit/Models/GLB format';
 const KAYKIT_ADV = 'references/KayKit_Adventurers_2.0_EXTRA';
 const ADV_CHARS = `${KAYKIT_ADV}/Characters/gltf`;
 const ADV_RIGS = `${KAYKIT_ADV}/Animations/gltf`;
@@ -73,6 +74,208 @@ export const ASSET_MAP: AssetMapEntry[] = [
     id: 'nature.rock.large-a',
     source: `${NATURE}/rock_largeA.glb`,
     pack: 'Nature Kit',
+    license: 'CC0',
+  },
+
+  // --- M7: environment decoration (Nature Kit, CC0) ---
+  // Trees — broadleaf / oak / pine variety for FOREST + GRASS biomes
+  {
+    id: 'nature.tree.broadleaf-a',
+    source: `${NATURE}/tree_default.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.tree.broadleaf-b',
+    source: `${NATURE}/tree_fat.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.tree.oak-a',
+    source: `${NATURE}/tree_oak.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.tree.pine-b',
+    source: `${NATURE}/tree_pineDefaultB.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.tree.pine-tall-a',
+    source: `${NATURE}/tree_pineTallA.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.tree.pine-round-a',
+    source: `${NATURE}/tree_pineRoundA.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.tree.small-a',
+    source: `${NATURE}/tree_small.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  // Palm for BEACH biome
+  {
+    id: 'nature.tree.palm-a',
+    source: `${NATURE}/tree_palm.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.tree.palm-bend',
+    source: `${NATURE}/tree_palmBend.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  // Cacti for DESERT biome
+  {
+    id: 'nature.cactus.tall',
+    source: `${NATURE}/cactus_tall.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.cactus.short',
+    source: `${NATURE}/cactus_short.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  // Bushes for GRASS / FOREST understorey
+  {
+    id: 'nature.bush-a',
+    source: `${NATURE}/plant_bush.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.bush-b',
+    source: `${NATURE}/plant_bushLarge.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.bush-c',
+    source: `${NATURE}/plant_bushSmall.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  // Flowers for GRASS / BEACH
+  {
+    id: 'nature.flower-a',
+    source: `${NATURE}/flower_redA.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.flower-b',
+    source: `${NATURE}/flower_yellowA.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.flower-c',
+    source: `${NATURE}/flower_purpleA.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  // Mushrooms for FOREST floor
+  {
+    id: 'nature.mushroom-a',
+    source: `${NATURE}/mushroom_red.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.mushroom-b',
+    source: `${NATURE}/mushroom_tan.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  // Grass tufts for GRASS / BEACH atmosphere
+  {
+    id: 'nature.grass-tuft',
+    source: `${NATURE}/grass_large.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  // Stumps — give FOREST biome a harvested feel in places
+  {
+    id: 'nature.stump-a',
+    source: `${NATURE}/stump_round.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  // Extra rock variety (Nature Kit)
+  {
+    id: 'nature.rock.large-b',
+    source: `${NATURE}/rock_largeB.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.rock.large-c',
+    source: `${NATURE}/rock_largeC.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.rock.small-a',
+    source: `${NATURE}/rock_smallA.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.rock.tall-a',
+    source: `${NATURE}/rock_tallA.glb`,
+    pack: 'Nature Kit',
+    license: 'CC0',
+  },
+
+  // --- M7: environment decoration — Tower Defense Kit detail props (CC0) ---
+  // Crystals for HIGHLAND / MOUNTAIN biomes
+  {
+    id: 'nature.rock.crystal-a',
+    source: `${TD}/detail-crystal.glb`,
+    pack: 'Tower Defense Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.rock.crystal-large',
+    source: `${TD}/detail-crystal-large.glb`,
+    pack: 'Tower Defense Kit',
+    license: 'CC0',
+  },
+  // Rock clusters for HIGHLAND / MOUNTAIN / DESERT
+  {
+    id: 'nature.rock.td-rocks',
+    source: `${TD}/detail-rocks.glb`,
+    pack: 'Tower Defense Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.rock.td-rocks-large',
+    source: `${TD}/detail-rocks-large.glb`,
+    pack: 'Tower Defense Kit',
+    license: 'CC0',
+  },
+  // Dirt mounds as DESERT scatter
+  {
+    id: 'nature.mound-a',
+    source: `${TD}/detail-dirt.glb`,
+    pack: 'Tower Defense Kit',
+    license: 'CC0',
+  },
+  {
+    id: 'nature.mound-b',
+    source: `${TD}/detail-dirt-large.glb`,
+    pack: 'Tower Defense Kit',
     license: 'CC0',
   },
 

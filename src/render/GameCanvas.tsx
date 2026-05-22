@@ -1,11 +1,12 @@
 import { Canvas } from '@react-three/fiber';
-import { Suspense } from 'react';
+import { Suspense, useMemo } from 'react';
 import { PCFSoftShadowMap } from 'three';
 import type { GameState } from '@/game/game-state';
 import { CameraRig } from './CameraRig';
 import { type ViewportProfile, useViewport } from './useViewport';
 import { Buildings } from '@/world/Buildings';
 import { CombatText } from '@/world/CombatText';
+import { Decoration } from '@/world/Decoration';
 import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { Mountains } from '@/world/Mountains';
@@ -30,6 +31,15 @@ function Scene({
   viewport: ViewportProfile;
 }) {
   useGameLoop(game);
+
+  // Build a set of hex tile keys that already have a resource node so the
+  // Decoration component can skip those tiles. Memoised on the resource node
+  // list (which is stable for the session lifetime).
+  const occupiedKeys = useMemo<ReadonlySet<string>>(
+    () => new Set(game.resourceNodes.map((n) => n.key)),
+    [game.resourceNodes],
+  );
+
   return (
     <>
       <DayNightCycle game={game} />
@@ -39,6 +49,7 @@ function Scene({
       <Water mapRadius={game.board.radius} />
       <TileInteraction game={game} buildContext={buildContext} />
       <Suspense fallback={null}>
+        <Decoration board={game.board} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
         <Buildings game={game} />
         <Units game={game} />
