@@ -91,11 +91,29 @@ them `undefined`. (4) Vitest browser API: `page` from `vitest/browser`, `render`
 is async. (5) `references/` paths confirmed: Hexagon Kit GLBs at
 `Hexagon Kit/Models/GLB format/`, Nature Kit at `Nature Kit/Models/GLTF format/`.
 
-### M1 — Hex board
-Plan written at M1 start. Contracts: terraced terrain mesh, biome assignment,
-dual-stage PRNG, axial hex math + A*, ramp placement, tap-to-travel + path preview,
-Canvas smoke test (guards "no game board"). Pillar: `40-hex-world.md`.
-- [ ] M1.* — decomposed at milestone start
+### M1 — Hex board  ✅ COMPLETE
+Plan: `docs/superpowers/plans/2026-05-22-m1-hex-board.md` (17 tasks)
+- [x] M1.1-8 core — constants, hex math, dual-PRNG, FBM noise, biome, board, ramps, A*
+- [x] M1.9-12 ECS — koota world + components, path-follow system, startGame, commands
+- [x] M1.13-16 render — palette, hex tiles, GameCanvas, tap-to-travel (visually verified)
+- [x] M1.17 verification — 67 unit + 2 browser + 3 e2e/visual tests green
+
+M1 learnings carried into M2:
+- The "no game board" bug is FIXED — `startGame` produces a seeded, navigable
+  board; tap-to-travel walks the pawn (screenshot-confirmed).
+- r3f 9 needs `import '@react-three/fiber'` types in vite-env.d.ts for JSX
+  intrinsics; Vitest browser mode needs `resolve.dedupe: ['react','react-dom']`.
+- Single-octave noise starved biome variety — FBM + contrast stretch fixed it.
+  M2's character placement (random NPCs) should use the same FBM field, NOT
+  fresh single-octave noise.
+- KNOWN M1 DEFERRALS (deliberate, not bugs — for later milestones): ocean is
+  hex-prisms not a flat translucent water plane; mountains lack snow peaks.
+  These are M5 (day/night + water polish) per the meta-rule — M1's contract was
+  "the board renders + is navigable", which is met. Recorded here so they are
+  not lost.
+- M2 FIRST TASK is the KayKit rig-verification harness (per design §10 risk) —
+  load a KayKit character + Rig_Medium animation GLBs, confirm the skeleton
+  retargeting works, lock the approach in `60-characters.md` BEFORE the factory.
 
 ### M2 — Characters
 Plan written at M2 start. Contracts: rig-verification harness FIRST, KayKit GLB
