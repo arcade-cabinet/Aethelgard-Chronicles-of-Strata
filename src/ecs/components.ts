@@ -66,3 +66,17 @@ export const AssignedJob = trait({ state: 'IDLE' as JobState, targetKey: '' });
 
 /** Hit points. */
 export const Health = trait({ current: 50, max: 50 });
+
+/** Combat stats and the attack-cooldown timer. */
+export const Combatant = trait({
+  attackDamage: 10,
+  attackRange: 1,
+  attackCooldown: 1,
+  attackTimer: 0,
+});
+
+/** Marks the Goblin Portal and tracks its enemy-spawn timer. */
+export const GoblinPortalTrait = trait({ spawnTimer: 0, spawnInterval: 45 });
+
+/** The entity an enemy is currently hunting. `targetId` is -1 when none. */
+export const EnemyTarget = trait({ targetId: -1 });
