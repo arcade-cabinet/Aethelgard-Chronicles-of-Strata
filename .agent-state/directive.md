@@ -254,18 +254,43 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
 - [ ] [WAIT] CI on the post-playtest commits (6a6ac58)
 - [ ] further visual pass vs poc1.png — mountains drama, terrace crispness
 
-### M7 — AI subpackage (yuka)  [planned — after M6 ships]
-PR-review fix landed: `aiSystem` now caps retargets at MAX_RETARGETS_PER_TICK
-(8) — the costly nearest-scan + A* is rate-limited, bounding per-frame cost.
-M7's yuka rewrite (spatial partitioning / perception) supersedes it with a
-proper spatial index.
+### M7 — yuka AI subpackage + asset expansion  ✅ COMPLETE
+Spec `docs/specs/97-ai-and-asset-expansion.md`. Five worktree agents, merged to
+the branch (merge `db9cb0b`):
+- [x] yuka AI subpackage — `src/ai/` (AiDirector, EntityManager, steering,
+  perception); `ecs/systems/ai.ts` is now a thin facade. 213 tests green.
+- [x] buildings — Castle/Town-kit models replace the blocky Hexagon stand-ins.
+- [x] enemy base + monsters — graveyard base, +Vampire/Witch/BlackKnight roles,
+  spawn escalation ladder.
+- [x] audio — magic + UI sound packs, crit + UI event sounds.
+- [x] decoration — per-biome environment scatter.
 
-Per user: the AI deserves its own subpackage, not the minor `ecs/systems/ai.ts`
-slot. yuka (^0.7.8, already a dep) is the original-stack AI library, currently
-unused. Decision: FULL yuka GameEntity model — `src/ai/` subpackage with a yuka
-`EntityManager` running alongside the koota ECS (synced each tick), enemy
-behavior via yuka steering + perception (vision/memory) + goal-oriented
-behavior. Keep the hex A* (`core/pathfinding.ts`) — correct for hex grids; yuka
-supplies the behavior layer, not the pathfinder. Ref: `/Users/jbogaty/src/
-reference-codebases/yuka`. Write `docs/specs/97-ai-architecture.md` + an M7 plan
-with use-case enumeration FIRST. Build after the M6 PR is open.
+### M8 — AI-as-Player, Perception & Golden-Path E2E  [ACTIVE]
+Spec `docs/specs/100-ai-as-player.md`. The destination: the AI plays through the
+SAME interface, perception, and action space as a human — so AI-vs-AI is
+deterministic golden-path E2E testing. Strictly sequential; I drive it myself,
+docs → tests → code per step. Also folds in spec `99` (contextual crossings).
+
+- [ ] M8.0 — crossings/passability (spec 99): biome-pair classifies elevation
+  transitions; two-form crossings (natural | artificial), connectivity-first
+  placement; FLAT/CROSSING/BLOCKED edges; decoration skips crossing landings.
+- [ ] M8.1 — faction model: a `Base` ECS trait; faction-symmetric structure
+  config (player model + enemy model per structure type, shared costs/traits);
+  fully remove `GoblinPortal*` → `EnemyBase`.
+- [ ] M8.2 — render decomposition: `FactionBase` core + `HomeBase`/`EnemyBase`;
+  delete `Buildings.tsx`. Branch on visuals only.
+- [ ] M8.3 — command API faction parameter: `commands.ts` takes an issuing
+  faction; enforce "own pieces, own knowledge only." The single action channel.
+- [ ] M8.4 — perception: `fog.ts`, vision cones (unit arc, base circle),
+  per-faction discovered/visible/unknown tile state.
+- [ ] M8.5 — fog rendering: player fog overlay (dim discovered, hide unknown);
+  enemy units in fog not rendered.
+- [ ] M8.6 — AI player: yuka goal evaluators (build-farm / build-barracks /
+  expand / attack / scout) scoring desires from KNOWN state only, issuing
+  `commands.ts` calls. Enemy faction runs it; human faction swappable to AI.
+- [ ] M8.7 — AI-vs-AI golden-path E2E: swap both factions to AI, turn loop,
+  macro/meso/micro state probes, golden-transcript regression assertions.
+
+Each M8.x: extend `docs/specs/`, write the test batch, make it green, commit,
+then the next. The faction-symmetry rule — identical traits/behaviors/commands,
+render-only divergence — is the invariant the whole milestone protects.
