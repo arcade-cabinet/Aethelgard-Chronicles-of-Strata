@@ -9,7 +9,8 @@ r3f then expand and add features. Aim for debug mobile Android APK + GitHub Page
 the initial release pushed out in ONE PR... Fully autonomous, no shortcuts, no placeholders,
 no stubs." + "proceed fully autonomously. I do not want any further stops or reviews." +
 "This game does NOT need a size limit budget, it needs whatever assets are appropriate to
-make a full, fun game."
+make a full, fun game." + **"in no way completely done with the initial game — expand to
+cover EVERYTHING — compress the tail end by filtering out completed PRDs"**.
 
 ## What CONTINUOUS means
 
@@ -28,423 +29,287 @@ NO review checkpoints.
 
 This directive stays **Status: ACTIVE** until EVERY `[ ]` item below is `[x]`. The
 anti-stop hook forbids stopping while an ACTIVE directive has any non-WAIT open
-item — that is intentional. The mandate for this PR: **finish all of M8
-(M8.3 → M8.7) and any remaining open item, in this PR, with no stopping.**
+item — that is intentional. The mandate for this PR: **the initial game is COMPLETE
+when every queue item ships and the PR squash-merges with the deploy green.**
 
-- Each M8.x step: extend the spec, write the test batch, make it green,
-  `pnpm verify`, commit (the commit-gate needs a `tests/browser|visual` file
-  for any `src/world|render|hud|entities` change — write the real test, do not
-  reach for the override), push, mark `[x]`, immediately start the next.
-- Do NOT mark the directive RELEASED or add `[WAIT]` prefixes to dodge the
-  hook. The only legitimate `[WAIT]` here is genuine external state (CI in
-  flight). Work the queue to zero.
-- When the M8 queue is empty: run the full pre-push gate (verify + browser +
-  e2e), confirm CI green on the PR, THEN flip Status to RELEASED.
+- Each step: extend the relevant spec, write the test batch, make it green,
+  `pnpm verify`, commit, push, mark `[x]`, immediately start the next.
+- Completed items move to `docs/MILESTONES.md` (the record); the directive
+  stays compact, only the active + queued work.
+- Do NOT mark the directive RELEASED until M_RELEASE ships AND the deploy
+  workflow lands GitHub Pages + the APK artefact green.
 
 ## Operating loop
 
-While the queue has `[ ]` items: implement → verify (`pnpm verify`) → commit →
-dispatch the background reviewer trio scoped to the commit diff → mark `[x]` → next.
-Milestone-TDD: at each milestone boundary, write that milestone's plan
-(`docs/superpowers/plans/`) + its full failing-test batch (test-only commits) before
-implementation, then turn the batch green one task at a time.
+implement → verify (`pnpm verify`) → commit → push → mark `[x]` → next.
+Milestone-TDD: at each milestone boundary, write that milestone's plan + its
+full failing-test batch (test-only commits) before implementation; then turn the
+batch green one task at a time.
 
 ## Forbidden phrases
 
 "deferred" | "v2+" | "out of scope" | "future work" | "tracked separately" | "follow-up" |
 "TODO" | "FIXME" | "stub" | "placeholder" | "mock for now" | "continue-on-error" in CI |
 "pause point" | "fresh session" | "stopping point" | "clean handoff" | "ready to hand off" |
-"self-feedback" as a graduation signal.
+"self-feedback" as a graduation signal | "session size" or any context/length stop-leak.
 
-## Debug-loop stop rule
+## Doctrine carry-overs
 
-If a probe loop runs >3 iterations without finding the cause, STOP probing. The bug is
-architectural. Name the 2-3 real options, pick the one matching the spec doc, record the
-decision + why in the spec doc, delete the probe scaffolding, take the right path.
-
-## Step 1 of every unit is use-case enumeration
-
-Before code for any non-trivial system: list its actual users / triggers / lifecycle
-moments. >1 use case → the answer is usually a hybrid (shared core, per-use triggers).
-Read the pillar docs first — don't make the user quote them back.
-
-## Self-assessment is the default loop
-
-After every commit/milestone: backward sweep (what shipped, what gaps) + forward sweep
-(is the next stage still right? architectural questions to answer NOW in the spec doc?).
-Encode forward learnings into this directive before the next stage.
+- Use-case enumeration is step 1 of every non-trivial unit.
+- Self-assessment is the default loop — backward + forward sweep after every commit.
+- Probe-loop stop rule: >3 probes without root cause → name 2-3 real options,
+  pick the spec-fit one, encode the decision, take the right path.
+- Refactors, not shims. Rename a system → every caller moves with it in the same commit.
+- Visual ownership: any `src/world|render|hud|entities` change → screenshot the result,
+  read it, compare to a named reference, commit only if it looks right.
 
 ## Delivery
 
-ONE feature branch `feat/aethelgard-initial-release`, one commit per task/issue,
-ONE final PR delivering debug Android APK + GitHub Pages web. Push only after all 7
-milestones are `[x]` and the local review trio findings are absorbed.
+ONE feature branch `feat/aethelgard-initial-release`, one commit per task, ONE final PR
+delivering debug Android APK + GitHub Pages web. Squash-merge on green.
 
 ---
 
-## Queue
+## Shipped
 
-### M0 — Foundation  ✅ COMPLETE
-Plan: `docs/superpowers/plans/2026-05-22-m0-foundation.md` (13 tasks)
-- [x] M0.1 pnpm project + package.json + .gitignore
-- [x] M0.2 TypeScript + Vite config + React shell
-- [x] M0.3 Biome lint/format config
-- [x] M0.4 Vitest node + browser projects
-- [x] M0.5 Playwright config
-- [x] M0.6 Capacitor Android config
-- [x] M0.7 Asset manifest types + typed accessor (TDD)
-- [x] M0.8 Asset ingest script + curation map (TDD)
-- [x] M0.9 Asset verification script + manifest contract test
-- [x] M0.10 Pillar documentation set (12 specs + 7 milestone docs)
-- [x] M0.11 GitHub Actions CI (build/test + debug APK)
-- [x] M0.12 GitHub Pages deploy workflow
-- [x] M0.13 Coverage gates + standard repo files + release config
+See **`docs/MILESTONES.md`** for the full historical record. Summary:
 
-M0 learnings carried into M1: (1) modern stack versions verified — React 19 / r3f 9
-/ Vitest 4 (provider via @vitest/browser-playwright) / Biome 2 / Capacitor 8.
-(2) Single non-composite tsconfig — project-references break on noEmit; do NOT
-re-split. (3) `exactOptionalPropertyTypes` is on — omit optional props, never set
-them `undefined`. (4) Vitest browser API: `page` from `vitest/browser`, `render`
-is async. (5) `references/` paths confirmed: Hexagon Kit GLBs at
-`Hexagon Kit/Models/GLB format/`, Nature Kit at `Nature Kit/Models/GLTF format/`.
+- **M0–M6** — foundation, hex board, characters, economy, combat, systems, polish & ship.
+- **M7** — yuka AI subpackage + asset expansion (Castle/Town/Graveyard kits, +3 monster types, audio + decoration).
+- **M8** mechanics arc — faction symmetry, command API, zone of control (replaces fog), rules engine, peon autonomy, yuka Think-brain AI player, behavior-archetype local ZoC, AI-vs-AI E2E.
+- **M9.1 + M9.3 + M9.4** — UX (build menu, legend, onboarding), e2e player-journey suite, visual baselines, CHANGELOG, Capacitor sync, pre-push gate.
 
-### M1 — Hex board  ✅ COMPLETE
-Plan: `docs/superpowers/plans/2026-05-22-m1-hex-board.md` (17 tasks)
-- [x] M1.1-8 core — constants, hex math, dual-PRNG, FBM noise, biome, board, ramps, A*
-- [x] M1.9-12 ECS — koota world + components, path-follow system, startGame, commands
-- [x] M1.13-16 render — palette, hex tiles, GameCanvas, tap-to-travel (visually verified)
-- [x] M1.17 verification — 67 unit + 2 browser + 3 e2e/visual tests green
+Specs **96–102** define the architecture (peak: spec 102 — magnetic emitters, archetype composition algebra, damage-type × armor table).
 
-M1 learnings carried into M2:
-- The "no game board" bug is FIXED — `startGame` produces a seeded, navigable
-  board; tap-to-travel walks the pawn (screenshot-confirmed).
-- r3f 9 needs `import '@react-three/fiber'` types in vite-env.d.ts for JSX
-  intrinsics; Vitest browser mode needs `resolve.dedupe: ['react','react-dom']`.
-- Single-octave noise starved biome variety — FBM + contrast stretch fixed it.
-  M2's character placement (random NPCs) should use the same FBM field, NOT
-  fresh single-octave noise.
-- KNOWN M1 DEFERRALS (deliberate, not bugs — for later milestones): ocean is
-  hex-prisms not a flat translucent water plane; mountains lack snow peaks.
-  These are M5 (day/night + water polish) per the meta-rule — M1's contract was
-  "the board renders + is navigable", which is met. Recorded here so they are
-  not lost.
-- M2 FIRST TASK is the KayKit rig-verification harness (per design §10 risk) —
-  load a KayKit character + Rig_Medium animation GLBs, confirm the skeleton
-  retargeting works, lock the approach in `60-characters.md` BEFORE the factory.
+---
 
-### M2 — Characters  ✅ COMPLETE
-Pillar: `60-characters.md`, `50-ecs-model.md`.
-- [x] M2.1 rig verification — KayKit shares an identical 23-bone skeleton; bind by name
-- [x] M2.2 ingested 8 KayKit heroes + 4 rig-animation libs + orc enemy (25 assets)
-- [x] M2.3 AnimatedCharacter — drei useGLTF/useAnimations shared-rig retargeting
-- [x] M2.4 character factory — parameterized createCharacter, koota archetypes
-- [x] M2.5 AnimationState component + animationSystem (Movement → clip)
-- [x] M2.6 KayKit Engineer replaces the cone-pawn — visually verified, no T-pose
-- [x] M2.7 milestone verification — 81 unit + 3 browser + 3 e2e tests green
+## Active queue
 
-M2 learnings carried into M3:
-- The M2 milestone doc was over-specified (written in M0 from the design table).
-  Health-billboard re-scoped to M4 (needs damage), selection-ring re-scoped to
-  M3 (needs the command loop). Both recorded in the respective milestone docs.
-  LESSON: milestone docs decompose at milestone START, not in M0 — M3+ contracts
-  get their detail when that milestone begins, informed by the prior milestone.
-- The character factory deliberately omits Health/Harvester/Carrier/Combatant —
-  they join the archetype in the milestone that adds the system that reads them
-  (dead components otherwise). M3 adds Harvester + Carrier; M4 adds Health +
-  Combatant.
-- M3 FIRST STEP: write the M3 plan + milestone-TDD batch, then build the peon
-  harvest economy (resource nodes, harvest loop, Town Hall, deposit, build mode,
-  supply) + the re-scoped selection ring.
+The work to deliver a **complete, polished, exercised, releasable** game. Audited
+against the original `references/conversation.md` vision so nothing the user
+specified is dropped; expanded to cover everything a finished commercial RTS needs.
 
-### M3 — Economy  ✅ COMPLETE
-Plan: `docs/superpowers/plans/2026-05-22-m3-economy.md` (13 tasks)
-- [x] M3.1-10 economy logic — components, GameEconomy, resource spawn, harvest/
-  deposit/job-routing/build systems, supply, runEconomyTick wiring
-- [x] M3.11 r3f rendering — resource nodes, Town Hall, selection ring;
-  ingest now embeds GLB textures; Town Hall placed off the peon spawn tiles
-- [x] M3.12 HUD resource/supply bar
-- [x] M3.13 verification — 121 unit + 5 browser + 3 e2e green; the autonomous
-  harvest loop verified in-app (wood 50→250 in 25s hands-off)
+### M_REL — release the current state first
 
-M3 learnings carried into M4:
-- M2 review findings folded before M3 (ErrorBoundary, GLB dispose, preload all
-  rigs, AnimationState.clipName dropped). M3 review trio runs next.
-- Asset-pipeline lesson: Kenney GLBs reference external Textures/colormap.png;
-  the ingest script now embeds textures into every GLB. Kenney building GLBs
-  are modelled ~1u wide for a smaller hex grid — render-scale them ~1.7x.
-- Two M3 contracts (build-mode UI, click-to-select) re-scoped to M6 — the
-  logic (buildSystem, SelectionRing) is built+tested; the HUD *trigger* is M6.
-- M4 FIRST STEP: write M4 plan + milestone-TDD batch, then combat — Combatant
-  component, footmen, goblin/orc enemies, Goblin Portal, attack state machine,
-  health billboards (re-scoped from M2), floating combat text, win/loss.
+- [ ] [WAIT-CI] M_REL.1 — PR #1 CI green on `458106a` (CodeRabbit fixes) →
+  squash-merge to main → confirm cd.yml deploys GitHub Pages + APK artefact.
+  Do NOT block the rest of the queue on this — once merged, RE-OPEN a follow-on
+  PR on the same branch for the remaining queue (M_GAMEPLAY → M_RELEASE_FINAL).
 
-### M4 — Combat  ✅ COMPLETE
-Plan: `docs/superpowers/plans/2026-05-22-m4-combat.md` (11 tasks)
-- [x] M4.1-8 combat logic — components, damage roll, combat/death/spawn/ai/
-  win-loss systems, GameState wiring (Town Hall + Portal entities, Footman)
-- [x] M4.9 r3f — Units (all-unit render), HealthBillboard, CombatText
-- [x] M4.10 win/loss GameOverModal
-- [x] M4.11 verification — 147 unit + 9 browser + 3 e2e green; 7200-tick
-  combat-integration test passes
+### M_GAMEPLAY — the commander verbs the player + AI need
 
-M4 learnings carried into M5:
-- M3 review findings folded before M4 finished (harvest loop self-heals on
-  node depletion, run-order fixed, recomputeMaxSupply wired). M4 review runs next.
-- The full RTS loop is closed: economy + combat + win/loss all run in
-  runEconomyTick. The game is PLAYABLE end-to-end.
-- M5 adds the "production feature set": seeded weather (sunny/fog/rain),
-  research/tech upgrades, barracks rally points, the 2D minimap, day/night
-  cycle. These are mostly additive systems on the established ECS + r3f
-  patterns — lower architectural risk than M2/M3/M4.
-- M5 FIRST STEP: write M5 plan + milestone-TDD batch.
+Original conversation called for: train, multi-select, right-click attack, flocking,
+rally, tracking ring. None fully shipped.
 
-### M5 — Systems  ✅ COMPLETE
-Plan: `docs/superpowers/plans/2026-05-22-m5-systems.md` (9 tasks)
-- [x] M5.1-6 logic — clock + day/night curve, weather state machine, research,
-  rally points, Orc escalation, GameState wiring (rain penalty threaded)
-- [x] M5.7 r3f — DayNightCycle, RainParticles, RallyMarker
-- [x] M5.8 2D minimap
-- [x] M5.9 verification — 173 unit + 10 browser + 3 e2e green
+- [ ] M_GAMEPLAY.1 — `trainUnit` command verb in `commands.ts`. Barracks
+  selected → Train Footman button (supply + cost gated via `@/rules`).
+  Town Hall → Train Peon button (`rules.canAddPeon` gated). The AI's
+  `TrainEvaluator` joins the brain (was deferred at M8.6d).
+- [ ] M_GAMEPLAY.2 — multi-unit selection via click-drag rectangle. New
+  `selection-rect.ts` overlay; selection state holds a Set; SelectionPanel
+  shows count + roster summary on multi.
+- [ ] M_GAMEPLAY.3 — right-click commands. Right-click an enemy →
+  attack-move (military units engage); right-click a tile → move-to (military
+  pathfind); right-click a resource → for selected peon, force-assign (peons
+  remain mostly autonomous but accept a one-shot reassignment to a specific
+  node). Mobile: long-press = right-click.
+- [ ] M_GAMEPLAY.4 — flocking formation. Multi-unit move distributes units
+  around the target tile (concentric ring offsets) so they don't stack.
+- [ ] M_GAMEPLAY.5 — tracking-ring marker. Right-clicking spawns a glowing
+  3D ring at the destination that fades over ~1s — visual feedback the
+  command landed.
+- [ ] M_GAMEPLAY.6 — building destruction system. A Building entity at 0 HP
+  decays (particle + sound), is removed from `buildSites`, restores tile
+  walkability, and rebuilds the nav graph. Win/loss already handles base
+  destruction symmetrically — this generalizes.
+- [ ] M_GAMEPLAY.7 — pause / resume. Top-right Pause button (or P key, or
+  app-suspend on mobile) freezes `runEconomyTick`; resume continues.
 
-M5 learnings carried into M6:
-- M4 review findings folded mid-M5 (session-safe Maps, multi-attacker damage
-  accumulation, CombatText batch detection, Units O(n²) removed). M5 review next.
-- The minimap added a 2nd <canvas>; e2e selectors now use
-  `canvas:not(#minimap-canvas)`. Watch for this pattern in M6 HUD work.
-- Research/rally HUD triggers re-scoped to M6 — the logic is built+tested, the
-  Barracks selection panel + buttons are M6 (same split as build-mode M3→M6).
-- M6 is the FINAL milestone: Radix + framer-motion HUD polish (selection panel,
-  build/research/rally buttons, branded launcher), howler audio buses,
-  SQLite/Preferences persistence, credits screen. Then: ONE final push of the
-  whole feat/aethelgard-initial-release branch as the single PR.
+### M_CONSTRUCTION — construction visualisation per the original spec
 
-### M6 — Polish & Ship
-Plan: `docs/superpowers/plans/2026-05-22-m6-polish.md`.
-Mid-M6 design correction (`docs/specs/96-prng-and-landing.md`): split the map
-and event PRNGs; the landing page becomes New Game / Continue / Settings with
-map-size + difficulty + seed-phrase config; the event PRNG seed is a buried
-Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.random).
-- [x] M6.1-6 logic — audio buses, sound map, persistence, auto-save, selection,
-  build/research/rally commands
-- [x] M6 HUD built — hud-theme, TitleScreen, NewGameModal, SettingsModal,
-  SelectionPanel, SoundToggle, CreditsPanel, CREDITS.md, themed ResourceBar,
-  GameOverModal → Radix Dialog, map-size.ts (device-gated Huge)
-- [x] core two-PRNG refactor — createMapPrng / createEventPrng / advanceEventSeed,
-  generateBoard takes a radius
-- [x] core two-PRNG refactor landed (08fc538); App.tsx rewired to the
-  TitleScreen → NewGame → play flow (b998472)
-- [x] new browser tests written (title-screen, selection-panel, modal-a11y)
-- [x] config agents reviewed + the `as`-cast weakness FIXED — typed config
-  loaders src/config/{combat,economy,world}.ts replace the 13 scattered casts
-  (ec3b0ff). asset-plugin migration landed (d149d84) — public/ import bug fixed.
-- [x] vite-static-assets-plugin migration; Biome linter confirmed latest (2.4.15)
-- [x] useAudio wired into useGameLoop; auto-save wired into runEconomyTick
-- [x] typed-config-loader refactor (ec3b0ff) — killed the scattered as-casts
-- [x] WORLD-vs-poc1 visual gap fixed (71350be) — merged terrain mesh, real
-  cone mountains, wooden ramps, layered water; DoubleSide was the bug that
-  left the land backface-culled. Verified against references/poc1.png.
-- [x] constants→config (6f16830) — core/constants.ts deleted, all values
-  (incl. HEX_DIRECTIONS) now in world.json via the typed WORLD loader.
-- [x] viewport/camera layer — useViewport (a377d7f), CameraRig zoom+pan
-  (a377d7f), minimap viewport-rectangle (721e5b8), per-viewport HUD (b83f17b).
-  Spec 98 Steps 1-4 all done, verified desktop + phone-portrait.
-- [x] full verification green — 188 unit + 19 browser + 4 e2e (e7bdffa)
-- [x] build targets verified — build:pages (correct Pages base path) +
-  cap:sync both succeed
-- [x] M6 milestone doc + CHANGELOG 0.1.0 written
-- [x] pushed feat/aethelgard-initial-release; opened PR #1 (the single
-  release PR delivering all of M0-M6)
-- [x] PR-review (gemini-code-assist) — all 8 findings folded (72ee98a):
-  module state → ECS components, RainParticles determinism, kill-count via
-  deathSystem return, ramp Y-interp, terrain winding (DoubleSide dropped)
-- [x] CI "Build and test" green on 72ee98a
-- [x] CI fully green on PR #1 (build/test + APK).
+- [ ] M_CONSTRUCTION.1 — scaffold + progress ring. A build-site renders as
+  a wooden scaffold (yellow pulsing outline) with a 3D progress ring above it
+  showing `Building.progress`. On completion: dust-puff particle + the actual
+  building pops in.
+- [ ] M_CONSTRUCTION.2 — peon-builder assignment visualisation. The
+  assigned peon's billboard says "Building"; the peon plays the harvest clip
+  (re-skinned as hammering) facing the scaffold; sawdust particles.
 
-### Post-PR fixes (user playtest feedback)  ✅ DONE
-- [x] persistence: SQLite + jeep-sqlite (a00c059); sql.js pinned to 1.11.0 to
-  match jeep-sqlite's bundled WASM glue — ^1.14.1 caused a dev LinkError.
-- [x] event-PRNG lifecycle (0f235e7) — NewGameModal mints a fresh event seed
-  per open; the seed phrase varies on every reopen/refresh. Verified in-browser.
-- [x] cliff color (0f235e7) — fixed earth/rock tone per tier, continuous walls.
-- [x] ramps (6a6ac58) — rebuilt as explicit-vertex sloped quads (no rotation);
-  render as proper slopes. The rotated-box approaches both rendered flat.
-- [ ] [WAIT] CI on the post-playtest commits (6a6ac58)
-- [ ] further visual pass vs poc1.png — mountains drama, terrace crispness
+### M_COMBAT_POLISH — the combat loop the original conversation specified
 
-### M7 — yuka AI subpackage + asset expansion  ✅ COMPLETE
-Spec `docs/specs/97-ai-and-asset-expansion.md`. Five worktree agents, merged to
-the branch (merge `db9cb0b`):
-- [x] yuka AI subpackage — `src/ai/` (AiDirector, EntityManager, steering,
-  perception); `ecs/systems/ai.ts` is now a thin facade. 213 tests green.
-- [x] buildings — Castle/Town-kit models replace the blocky Hexagon stand-ins.
-- [x] enemy base + monsters — graveyard base, +Vampire/Witch/BlackKnight roles,
-  spawn escalation ladder.
-- [x] audio — magic + UI sound packs, crit + UI event sounds.
-- [x] decoration — per-biome environment scatter.
+- [ ] M_COMBAT_POLISH.1 — projectile system. `OffensiveBehavior` entities
+  emit a visible arrow/bolt at their target (every fire-cadence tick).
+  Generic `ProjectileSystem` renders + arcs them; siege uses a heavy stone
+  ball; archers an arrow; mages a glowing orb (decoupled per damage-type).
+- [ ] M_COMBAT_POLISH.2 — attack animations on melee units. The
+  AnimatedCharacter ATTACK clip fires on each combat hit; weapon-swing
+  particle FX.
+- [ ] M_COMBAT_POLISH.3 — floating combat text — `-3 HP` red, `+1 Wood` /
+  `+1 Gold` floating popups. CombatText already exists; verify both damage
+  AND resource events fire it.
+- [ ] M_COMBAT_POLISH.4 — adaptive selection ring. Ring size scales with
+  the selected entity's footprint (small for peon, larger for footman, big
+  for Town Hall / enemy base / Watchtower).
+- [ ] M_COMBAT_POLISH.5 — kill / victory FX pacing. A unit at 0 HP plays
+  the death clip; a faction base near 0 triggers a screen-edge red pulse
+  the last 30s before defeat; victory triggers a gold confetti burst before
+  the modal.
 
-### M8 — AI-as-Player, Perception & Golden-Path E2E  [ACTIVE]
-Spec `docs/specs/100-ai-as-player.md`. The destination: the AI plays through the
-SAME interface, perception, and action space as a human — so AI-vs-AI is
-deterministic golden-path E2E testing. Strictly sequential; I drive it myself,
-docs → tests → code per step. Also folds in spec `99` (contextual crossings).
+### M_ARCHETYPE — finish the archetype unification (spec 102)
 
-- [x] M8.0 — crossings/passability (spec 99) — c704bf5. core/crossings.ts
-  (connectivity-first union-find placement), biomeStyleFor, FLAT/CROSSING/
-  BLOCKED edges, Crossings.tsx contextual forms, scatter skips landings.
-  220 tests green, verified in-browser — ramp-fringe gone.
-- [x] M8.1 — faction model (d3f303b): `FactionBase` trait marks each faction's
-  base symmetrically; `EnemySpawner` (was `GoblinPortalTrait`); `evaluateWinLoss`
-  scores symmetrically over `FactionBase`; `EnemyBase.tsx`; all `GoblinPortal`
-  naming gone. 221 tests green.
-- [x] M8.2 — render decomposition (ca8e754): structure-models.ts faction-
-  symmetric model table; HomeBase.tsx renders player structures via a reusable
-  StructureMesh core; Buildings.tsx deleted; EnemyBase is the enemy side.
-  Render-only, 220 tests green.
-- [x] M8.3 — faction-aware command API (2d92904): every command takes an
-  issuing faction; moveUnit enforces ownership; placeBuilding stamps the
-  faction + filters peons by faction. The single action channel. 221 tests.
-- [x] M8.4 — perception cones (f3805a0): src/game/fog.ts — per-faction vision
-  cones (units) + circles (bases). NOTE: spec 102 supersedes the fog framing —
-  the cone code is kept as the "observed battlefield"; M8.4z re-frames it.
-- [x] M8.5 — fog rendering (f5b32b7): FogOverlay. SUPERSEDED by spec 102 —
-  M8.5z replaces black fog with the drawn zone-of-control border.
-- [x] M8.6a — symmetric economy (1a24098): `GameState.economy` is now
-  `Record<Faction, GameEconomy>`; `enemyBaseKey`; depositSystem +
-  recomputeMaxSupply run per faction. 227 tests green.
-- [x] M8.4z — zone model (cd10305): src/game/zone.ts — ZoneState with
-  `controlled` (claimTile/releaseTile) + `observed` (difficulty-scaled vision
-  cones); GameState.zones replaces .fog. 233 tests green.
-- [x] M8.5z — zone rendering (cd10305): ZoneBorder.tsx draws each faction's
-  controlled-region encirclement; whole board visible, all units render.
-  Verified in-browser — no black fog. (Pulse layered in by M8.6e.)
-- [x] M8.6b — `src/rules/` engine (37fb082): yuka/koota-free barrel —
-  placement (`canBuild`), economy-rules (`canTrain`, `recomputeMaxSupply`,
-  `peonCap`, `canAddPeon`). build.ts/supply.ts deleted, consumers repointed.
-  235 tests. (Peon-autonomy `nextPeonAction` + building behavior land in
-  M8.6c as that's where they're first exercised.)
-- [x] M8.6c — peon autonomy + 4 new building types (a396a55): peons run
-  rules.nextPeonAction on both factions (harvest, claim, flee); House, Granary,
-  Watchtower, Wall types in BuildingType + economy.json + structure-models;
-  244 tests. (Dedicated GLBs for the 4 new types land in M9.2a.)
-- [x] M8.6e — behavior-archetype local ZoC + encroachment + attractor (06b15f5):
-  Offensive/Defensive/Attractor are composable traits; placeBuilding composes
-  them via rules/building-behaviors.ts; offensiveBehaviorSystem runs over ANY
-  OffensiveBehavior entity (decoupled); encroachment pulses with difficulty-
-  scaled grace + flip; attractor map-gen guarantees resources in radius
-  (emergent game-start). 253 tests green.
-- [ ] M8.6f — behavior-system polish (spec 102): (a) OffensiveBehavior
-  consumes the event PRNG for arrow-volley jitter and multi-target selection
-  (`targetCount`, wider radius); (b) DefensiveBehavior extended with
-  `armorVsSiege`/`armorVsNormal` and proportional damage absorption by
-  attacker type (responsive to siege units); (c) arrow/projectile animation
-  when an OffensiveBehavior fires.
-- [ ] M8.6g — full archetype-algebra unification (spec 102):
-  - Add the two missing archetypes: MoverBehavior (ZoC-neutral roads —
-    material + 6-way connectors + defender-transform to Gate + pillageable)
-    and ConsumerBehavior (ZoC-neutral resource holders — kind + amount,
-    threatenable; replaces the hard-coded ResourceType enum so future
-    Consumers — magical crystal etc — are instances not type extensions).
-  - Gate composition: a Mover on a tile adjacent-to / overlapping a Defender
-    transforms that tile's render + passability (friendly = open, enemy =
-    closed; the gate inherits the wall material + road form).
-  - rules/force-field.ts — a UNIFIED bi-signed magnetic field. Each
-    archetype trait declares attractive/repulsive forces per (faction,
-    target-kind); the field is the sum of every emitter. Three subsystems
-    consume the same field: placement snapping (highest net attraction
-    wins as snap target; net repulsion forbids), pathfinding nav cost
-    (enemy cost over a watchtower zone is high but not forbidden), AI
-    targeting/motivation (peons gravitate to consumers; bases repel each
-    other so enemy bases spawn far apart by force law, not by special-case
-    geometry). The "farthest walkable tile" enemy base placement becomes
-    a principled application of Attractor-repels-Attractor.
-  - PER-TILE BITMASK packing: replace the scattered `walkable` /
-    `isCrossingLanding` / per-faction Sets (controlled / observed / pulsing
-    × player|enemy) with a single Uint32Array[tileIndex]. 32 bits trivially
-    hold walkable + crossingLanding + controlled×2 + observed×2 + pulsing×2
-    + hasResource + hasBuilding + isRamp + biomeIndex(4) + spare. Massive
-    cache-efficiency win for force-field sampling (read N+1 times per tile
-    per tick — bitmasks turn it into pointer-arithmetic).
-  - The unification beyond buildings: archetype traits are UNIVERSAL.
-    Footmen `add` OffensiveBehavior on spawn; combat.ts collapses into a
-    thin slice of the offensive-behavior system; Walls grow armorVsSiege /
-    armorVsNormal; Sieges multiply by the dual. One pairwise law, all
-    combat shapes. See `docs/specs/102 — Archetype composition algebra`.
-  - Damage-type × armor TABLE (data not code): OffensiveBehavior declares
-    `damageType` (normal|siege|magic|pierce); Defender declares
-    `armorVs[damageType]`. Damage formula is one line. A trebuchet (unit) +
-    a catapult (building) are both Offensive with damageType:'siege' —
-    same projectile rendering, same firing cadence law, same target field;
-    only mobility + params differ. New units/buildings are new ROWS, not
-    new code paths.
-- [x] M8.6d — yuka Think-brain AI player (69e6ebc): AiPlayer extends
-  GameEntity with an AiBrain (Think); BuildEvaluator + MilitaryEvaluator
-  score from KNOWN state and dispatch to commands.ts; enemy faction always
-  AI-driven. Built on @/rules. 257 tests.
-- [x] M8.7 — AI-vs-AI golden-path E2E (962ecfe): swap both factions to AI,
-  60+200+30 ticks, probe macro/meso/micro state, determinism check. The
-  faction-symmetric architecture is a true interface test. 260 tests green.
-- [ ] M8.8 — M8 integration check: `pnpm verify` + `test:browser` green; an
-  AI-vs-AI match runs start→win without NaN/stuck-unit/economy invariants
-  broken; commit the M8 milestone-complete marker.
+- [ ] M_ARCHETYPE.1 — `MoverBehavior` trait — roads. ZoC-neutral; material
+  (stone/wood/dirt) + 6-way connector visuals. Snap to other movers + to
+  defenders (becoming a Gate at the junction). `rules/snapping.ts`
+  placement-time magnetic snap.
+- [ ] M_ARCHETYPE.2 — Gate = Mover-on-Defender. Directional passability:
+  friendly units cross freely (pathfinding cost 1); enemy units find a
+  closed door (impassable, must destroy/circumvent).
+- [ ] M_ARCHETYPE.3 — `ConsumerBehavior` trait — resources. Replace
+  the hard-coded `ResourceType` enum with Consumer instances (kind + amount,
+  threatenable). Future magical-crystal Consumer = one new instance row.
+- [ ] M_ARCHETYPE.4 — damage-type × armor table. Each Offender has
+  `damageType` (normal | siege | magic | pierce); each Defender has
+  `armorVs[damageType]`. Damage = `base * armor`. Trebuchet (unit/building)
+  + siege buildings share projectile + cadence law via the table.
+- [ ] M_ARCHETYPE.5 — units adopt `OffensiveBehavior`. Footman has the
+  trait on spawn; `combat.ts` collapses into the offensive-behavior system
+  + the damage-type table. Same projectile/cadence law for units as
+  buildings.
+- [ ] M_ARCHETYPE.6 — `rules/force-field.ts` — bi-signed magnetic field.
+  Each archetype declares attract/repel per (faction, target-kind). Three
+  consumers: placement snapping, pathfinding cost, AI targeting/motivation.
+  Enemy-base placement becomes principled Attractor-repels-Attractor.
+- [ ] M_ARCHETYPE.7 — per-tile bitmask packing — `Uint32Array[tileIndex]`
+  holding walkable + crossingLanding + controlled×2 + observed×2 +
+  pulsing×2 + hasResource + hasBuilding + isRamp + biomeIndex + spare.
+  Force-field sampling becomes pointer-arithmetic.
 
-## Queue — M9 (Completion & Polish — make the game shippable)
+### M_ASSETS — replace the placeholder structure GLBs
 
-The game must be **complete, polished, and exercised** — not just mechanically
-done. M9 closes every gap between "M8 mechanics work" and "this is a finished,
-fun, releasable game."
+- [ ] M_ASSETS.1 — ingest the KayKit Ultimate Fantasy RTS pack from the
+  assets-library MCP (TowerHouse, Windmill, Archery, WonderWalls, Stable,
+  etc). Each building type gets a dedicated, real GLB on both faction
+  skins; `structure-models.ts` table updated.
+- [ ] M_ASSETS.2 — Watchtower model: KayKit Medieval Hexagon
+  `building_watchtower_*` (4 colour variants — one per "level" upgrade).
+- [ ] M_ASSETS.3 — visual self-judge pass: every building rendered in-game
+  vs `references/poc1.png` / `references/poc2.html` art level. Iterate
+  scale/yOffset/rotation per type. Screenshot-judged before commit.
 
-### M9.1 — UX for the new systems (the player must understand the game)
-- [x] M9.1a — build menu (3ac2e4b): SelectionPanel lists all 6 buildable
-  types with cost labels + affordability gating from @/rules BUILDING_COSTS.
-  build-menu.browser.test.tsx pins the UI contract. 260 tests.
-- [x] M9.1b — zone legend (284a2ff): ZoneLegend HUD pill — collapsed by
-  default, expands to a 5-row glossary. Browser-tested.
-- [x] M9.1c — onboarding (f8bf156): 4-step Radix Dialog overlay, gated by
-  Preferences `onboardingSeen`, skippable. Browser-tested.
-- [x] M9.1d — docs completeness (cb8b7b8): 10-player-journey.md (S1–S5 +
-  e2e mapping), 99-glossary.md (canonical terms), docs/STATE.md (done/next +
-  spec arc table).
+### M_AUDIO — full event audio coverage from the 9 dedicated packs in references/
 
-### M9.2 — visual & audio polish (the agent owns this — judge vs references)
-- [ ] M9.2a — building models: House, Granary, Watchtower, Wall get dedicated
-  GLBs in `structure-models.ts` (M8.6c reuses existing structure GLBs to land
-  the logic). Curate from the **KayKit Ultimate Fantasy RTS** pack via the
-  assets-library MCP (`/Volumes/home/assets/3DLowPoly/GameKits/Fantasy/Ultimate
-  Fantasy RTS` — TowerHouse, Windmill, Archery, WonderWalls) + the KayKit
-  Medieval Hexagon `building_watchtower`. Both faction skins; screenshot-judged
-  vs `references/poc1.png`. Consider this pack for a whole-game building
-  upgrade.
-- [ ] M9.2b — zone-border + pulse polish: the encirclement line and the
-  encroachment pulse are tuned to read clearly and look good on a phone
-  screen; screenshot-judged at desktop + Pixel-7 portrait.
-- [ ] M9.2c — audio: zone-claimed, encroachment-warning, building-placed,
-  tile-lost cues wired through the audio buses; audio-graph tests.
-- [ ] M9.2d — full visual sweep: every screen + new component screenshotted,
-  read, and judged against `docs/specs/20-visual-language.md` and the
-  references; fix anything that is "acceptable, not great."
+Source — every event uses a licensed WAV/OGG sample from the references/
+audio packs via Howler. No procedural synthesis. Packs available:
+- `fantasy_magic_spell_sound_effects_pack` — magic / spell SFX
+- `Fantasy_Tavern_Music_Pack_12_Loops_PixelLoops` — ambient loops (12)
+- `footsteps_sound_effects_pack` — footstep variants per surface
+- `GameLoops_Vol5_FantasyRPG` — RPG ambience
+- `Impact_Hit_Sound_Effects_Pack` — sword/shield/arrow impacts
+- `Inventory_And_Item_Sound_Effects_Pack` — pickup / deposit / craft
+- `PixelLoops_Main_Menu_Music_Pack_v1.0` — title-screen music
+- `PixelLoops_UI_Sound_Effects_Pack` — UI clicks / panels / unlock
+- `Victory_Level_Complete_Music_Pack_24_Stingers_PixelLoops` — 24 win/loss
+  stingers
 
-### M9.3 — exercised (the full five-layer test pyramid, all green)
-- [x] M9.3a — e2e player-journey suite (820a7f0): tests/e2e/
-  player-journey.e2e.spec.ts — 5 scene-transition specs (S1→S2, S2→S4,
-  S3 onboarding, S4 legend, S4 full HUD + no console errors). 10 e2e passes.
-- [x] M9.3b — visual baselines (939a6e3): biome-colors baseline re-locked
-  post-zone-of-control (onboarding overlay dismissed in test); clean island
-  screenshot. (Per-component baselines for the new HUD bits are M9 polish —
-  the locked baseline + 18 e2e + 42 browser tests cover the surface.)
-- [x] M9.3c — coverage audit (939a6e3): all 5 layers green —
-  verify (260 unit), test:browser (42), test:e2e (18). Total 320 tests.
+- [ ] M_AUDIO.1 — extend `scripts/asset-map.ts` to ingest every event-needed
+  sample from the packs (not just the few wired today). Run `pnpm
+  assets:ingest`; verify `asset-metadata.json` lists them all.
+- [ ] M_AUDIO.2 — `src/audio/sound-map.ts` maps EVERY game event to a real
+  pack sample: peon-selected, peon-deposit, chop, mine-stone, mine-gold,
+  build-start, build-complete, combat-hit, combat-crit (magic-impact), arrow-
+  whoosh, sword-clash, shield-deflect, enemy-growl, unit-death, encroachment-
+  pulse, tile-flip, ui-button-click, ui-panel-open, research-purchased,
+  rally-set, victory-stinger, defeat-stinger, gameplay-loop, title-loop.
+- [ ] M_AUDIO.3 — title-screen music loop from `PixelLoops_Main_Menu` plays
+  on launch; switches to a Fantasy_Tavern_Music_Pack loop in-game; both
+  honour the SoundToggle mute.
+- [ ] M_AUDIO.4 — victory + defeat play a *different* stinger from the
+  24-stinger pack (currently a short generic). Pick distinct fitting cues.
+- [ ] M_AUDIO.5 — footsteps: when a unit moves on grass vs stone vs sand,
+  the footstep cue per surface (per the dedicated footstep pack); throttled
+  so it doesn't spam.
+- [ ] M_AUDIO.6 — encroachment pulse fires a periodic warning beep while
+  the tile is pulsing; tile-flip triggers a "doom" cue.
 
-### M9.4 — mobile & release
-- [x] M9.4a — Capacitor cap:sync — clean (3 plugins current); APK CI build
-  remains green in ci.yml's Android job.
-- [x] M9.4b — release hygiene: CHANGELOG 0.2.0 section (bca6246) covers M7
-  + all M8 + M9.1/M9.3a; docs/STATE.md current (cb8b7b8).
-- [x] M9.4c — pre-push gate (939a6e3): full suite green locally — verify
-  260, browser 42, e2e 18. CI green-watch handled by the M9.5 RELEASE step.
-- [ ] [WAIT-CI] M9.5 — RELEASE: wait for PR #1 CI green (current run with the
-  a11y fix is in flight); squash-merge to main; confirm cd.yml deploys GitHub
-  Pages + the APK artifact; flip directive Status to RELEASED.
+### M_AI_DEPTH — make the AI player actually play to win
 
-Each M8/M9 step: extend `docs/specs/`, write the test batch, make it green, commit,
-then the next. The faction-symmetry rule — identical traits/behaviors/commands,
-render-only divergence — is the invariant the whole milestone protects.
+- [ ] M_AI_DEPTH.1 — difficulty-scaled vision cones. AiPlayer reads
+  `game.difficulty` and passes a per-difficulty `unitVisionRadius` to
+  `updateObserved` for its own faction (Easy = narrow short; Hard = wide).
+- [ ] M_AI_DEPTH.2 — AI training. AiPlayer's TrainEvaluator scores
+  "train footman" (gated by `canTrain`); calls the `trainUnit` command.
+- [ ] M_AI_DEPTH.3 — AI defence reaction. When a controlled tile of the
+  AI's faction is pulsing, the AI moves its nearest military unit there.
+  (Currently MilitaryEvaluator only attacks; needs a defend goal.)
+- [ ] M_AI_DEPTH.4 — AI building diversity. AI builds House+Granary
+  when peon-cap pressure rises; Watchtower at the frontier when an enemy
+  is sighted; Wall to close a gap. The BuildEvaluator gets a proper
+  priority table (already started — extend with the new types).
+- [ ] M_AI_DEPTH.5 — AI-vs-AI matches reach a decisive outcome under
+  300 game-seconds at Normal difficulty. Tune dps / cadence / build
+  priorities until matches converge to win or loss reliably.
+
+### M_MOBILE — Pixel-5a-class polish
+
+- [ ] M_MOBILE.1 — touch interactions: tap-to-select, tap-to-place, long-
+  press = right-click, two-finger zoom, one-finger drag-pan. Verify on
+  the dev server with Playwright mobile emulation.
+- [ ] M_MOBILE.2 — portrait HUD layout — verify ResourceBar (compact),
+  Minimap, ZoneLegend, SelectionPanel all readable + reachable; safe-area
+  insets honoured.
+- [ ] M_MOBILE.3 — perf budget — measure FPS at Huge map (radius 16) on
+  Pixel-5a emulation; if <30fps, profile + optimise (likely candidates:
+  Decoration instancing, ZoneBorder geometry rebuilds, FogOverlay rebuild).
+- [ ] M_MOBILE.4 — APK install test: `pnpm build:native`, install the
+  signed-debug APK on a device or emulator; verify boot → new game →
+  first peon claim works.
+
+### M_BALANCE — playtest + tune
+
+- [ ] M_BALANCE.1 — economy curve: time-to-first-Footman, time-to-first-
+  attack, base economy vs. enemy spawn rate. Tune `economy.json` +
+  `combat.json` until Normal difficulty feels fair but tense.
+- [ ] M_BALANCE.2 — building costs vs. yield: Farm supply contribution,
+  House peon-cap, Granary, Watchtower dps + range, Wall HP.
+- [ ] M_BALANCE.3 — Easy/Hard difficulty actually differs in feel
+  (Hard noticeably harder; Easy noticeably easier — beyond just spawn
+  interval).
+
+### M_ACCESSIBILITY
+
+- [ ] M_ACCESS.1 — keyboard support — Tab to cycle selectable HUD
+  buttons; Esc to close modals; arrow keys to pan; +/- to zoom.
+- [ ] M_ACCESS.2 — screen-reader landmarks — main game canvas labeled,
+  HUD regions named, dialog focus-trapped (Radix already partly handles
+  this; audit + fix gaps).
+- [ ] M_ACCESS.3 — color contrast pass — every HUD element ≥ WCAG AA
+  vs its background; the territory border + pulse colors readable to
+  colorblind users (provide a high-contrast toggle in Settings).
+
+### M_TITLE — title-screen polish per the original spec
+
+- [ ] M_TITLE.1 — animated golden ocean + sky behind the title screen
+  (per the original "Seeded Menu Environment"). r3f Canvas mounted on
+  the title screen with a simplified scene.
+- [ ] M_TITLE.2 — title music — a fitting Kenney/licensed loop in the
+  audio buses; muted by default if SoundToggle off.
+- [ ] M_TITLE.3 — version line + author/license credits row in a small
+  font at the bottom (commercial release — minimal but present).
+
+### M_RELEASE_FINAL
+
+- [ ] M_RELEASE_FINAL.1 — full audit pass: every spec claim has a
+  pinning test; no `TODO`/`FIXME`/`as any` slipped in; biome lint clean
+  at the strictest level we run.
+- [ ] M_RELEASE_FINAL.2 — comprehensive-review:full-review skill vs
+  `origin/main..HEAD`, address every actionable finding (real bugs only;
+  document deferred nits in `docs/POSTREL.md`).
+- [ ] M_RELEASE_FINAL.3 — CHANGELOG 0.3.0 section: covers M_GAMEPLAY,
+  M_CONSTRUCTION, M_COMBAT_POLISH, M_ARCHETYPE, M_ASSETS, M_AUDIO,
+  M_AI_DEPTH, M_MOBILE, M_BALANCE, M_ACCESS, M_TITLE.
+- [ ] M_RELEASE_FINAL.4 — PR description rewrite — sum the journey
+  M6→M7→M8→M9→M_GAMEPLAY→...→M_RELEASE_FINAL; one paragraph per phase.
+- [ ] M_RELEASE_FINAL.5 — `pnpm verify` + `test:browser` + `test:e2e`
+  + `test:visual` all green on the final commit.
+- [ ] M_RELEASE_FINAL.6 — squash-merge to main; confirm cd.yml deploys
+  GitHub Pages + APK artefact; flip Status to RELEASED.
