@@ -4,10 +4,10 @@ import { Building, type BuildingType, Health, Unit } from '@/ecs/components';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { doResearch, trainUnit } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
-import { canResearch, RESEARCH_COST, type ResearchId } from '@/game/research';
+import { canResearch, type ResearchId } from '@/game/research';
 import { selectedEntity } from '@/game/selection';
 import { canAfford, type ResourceCost } from '@/game/economy';
-import { BUILDING_COSTS, UNIT_COSTS, displayFor } from '@/rules';
+import { BUILDING_COSTS, UNIT_COSTS, discoveryById, displayFor } from '@/rules';
 import { costLabel } from './format';
 import type { BuildContext } from '@/world/TileInteraction';
 import { HUD_THEME } from './hud-theme';
@@ -216,17 +216,19 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                         />
                       );
                     })}
-                  {/* Research — driven by display.research, NOT building type */}
-                  {meta.research?.map((id) => (
-                    <HudButton
-                      key={id}
-                      label={`${id === 'forgedBlades' ? 'Forged Blades' : 'Steel Plows'} (${
-                        RESEARCH_COST[id].gold
-                      }g)`}
-                      onClick={() => research(id)}
-                      disabled={!canResearch(game.economy.player, game.research, id)}
-                    />
-                  ))}
+                  {/* Discoveries — name, cost, gating all from the discoveries.json table */}
+                  {meta.research?.map((id) => {
+                    const d = discoveryById(id);
+                    if (!d) return null;
+                    return (
+                      <HudButton
+                        key={id}
+                        label={`${d.name} — ${costLabel(d.cost)}`}
+                        onClick={() => research(id)}
+                        disabled={!canResearch(game.economy.player, game.research, id)}
+                      />
+                    );
+                  })}
                   {meta.hasRally && (
                     <div
                       style={{ fontSize: '0.68rem', color: HUD_THEME.color.muted, marginTop: 6 }}

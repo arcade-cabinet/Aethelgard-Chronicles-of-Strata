@@ -1,0 +1,20 @@
+{
+  "discoveries": [
+    {
+      "id": "forgedBlades",
+      "name": "Forged Blades",
+      "description": "+5 attack damage to every combatant.",
+      "cost": { "stone": 100, "gold": 150 },
+      "prereqs": [],
+      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5 }
+    },
+    {
+      "id": "steelPlows",
+      "name": "Steel Plows",
+      "description": "×1.5 harvest rate on every peon.",
+      "cost": { "wood": 50, "gold": 100 },
+      "prereqs": [],
+      "effect": { "kind": "multiply-harvest", "factor": 1.5 }
+    }
+  ]
+}

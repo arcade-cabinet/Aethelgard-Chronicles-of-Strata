@@ -44,8 +44,6 @@ export interface EconomyConfig {
     /** Starting supply cap. */
     maxSupply: number;
   };
-  /** Resource cost of each research upgrade. */
-  researchCosts: Record<'forgedBlades' | 'steelPlows', ResourceCost>;
   /** Resource-node spawn rules. */
   resourceSpawn: ResourceSpawnRule[];
   /** Resource yielded per completed harvest cycle. */
@@ -77,11 +75,6 @@ export function harvestYieldFor(type: ResourceType): number {
 /** Resource cost of a building type. */
 export function buildingCostFor(type: Exclude<BuildingType, 'TownHall'>): ResourceCost {
   return ECONOMY.buildingCosts[type] as ResourceCost;
-}
-
-/** Resource cost of a research upgrade. */
-export function researchCostFor(id: 'forgedBlades' | 'steelPlows'): ResourceCost {
-  return ECONOMY.researchCosts[id] as ResourceCost;
 }
 
 /** Resource cost to train a trainable unit. */

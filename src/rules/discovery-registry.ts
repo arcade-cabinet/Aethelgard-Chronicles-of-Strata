@@ -1,41 +1,47 @@
+import type { World } from 'koota';
+import { DISCOVERIES_CONFIG, type DiscoveryEffect } from '@/config/discoveries';
 import { Combatant, Harvester } from '@/ecs/components';
-import { researchCostFor } from '@/config/economy';
 import type { Discovery } from './discoveries';
 
 /**
- * The Discoveries registry — every Discovery available in the game. ONE table
- * driving the HUD, the AI's potential goals, and save/load. Adding a new
- * Discovery is a new row HERE; no system changes elsewhere.
- *
- * The two legacy researches (Forged Blades, Steel Plows) are migrated to
- * Discovery rows. Their costs still come from the existing economy.json
- * `researchCosts` block so behaviour is byte-equivalent during the
- * migration; future Discoveries can declare costs that include science.
+ * Dispatch a declarative DiscoveryEffect to its ECS mutation. The CONFIG
+ * (discoveries.json) says WHAT each Discovery does; THIS code says HOW each
+ * effect kind mutates the world. Adding a new effect kind = a new variant in
+ * `DiscoveryEffect` + a new case here. The Discovery rows themselves never
+ * need code changes.
  */
-export const DISCOVERIES: ReadonlyArray<Discovery> = [
-  {
-    id: 'forgedBlades',
-    name: 'Forged Blades',
-    description: '+5 attack damage to every combatant.',
-    cost: researchCostFor('forgedBlades'),
-    apply: (world) => {
+function applyEffect(effect: DiscoveryEffect, world: World): void {
+  switch (effect.kind) {
+    case 'buff-combatant':
       world.query(Combatant).updateEach(([c]) => {
-        c.attackDamage += 5;
+        if (effect.stat === 'attackDamage') c.attackDamage += effect.delta;
+        else if (effect.stat === 'attackRange') c.attackRange += effect.delta;
       });
-    },
-  },
-  {
-    id: 'steelPlows',
-    name: 'Steel Plows',
-    description: '×1.5 harvest rate on every peon.',
-    cost: researchCostFor('steelPlows'),
-    apply: (world) => {
+      break;
+    case 'multiply-harvest':
       world.query(Harvester).updateEach(([h]) => {
-        h.harvestRate *= 1.5;
+        h.harvestRate *= effect.factor;
       });
-    },
-  },
-];
+      break;
+  }
+}
+
+/**
+ * The Discoveries registry — derived from discoveries.json + the effect
+ * dispatcher. ONE table driving the HUD, the AI's potential goals, and
+ * save/load. Adding a Discovery = a new row in discoveries.json. Adding a new
+ * effect KIND = a variant in DiscoveryEffect + a case in applyEffect above.
+ */
+export const DISCOVERIES: ReadonlyArray<Discovery> = DISCOVERIES_CONFIG.discoveries.map(
+  (config) => ({
+    id: config.id,
+    name: config.name,
+    description: config.description,
+    cost: config.cost,
+    prereqs: config.prereqs,
+    apply: (world: World) => applyEffect(config.effect, world),
+  }),
+);
 
 /** Look up a Discovery by id. Returns undefined if unknown. */
 export function discoveryById(id: string): Discovery | undefined {

@@ -37,10 +37,6 @@
     "science": 0,
     "maxSupply": 5
   },
-  "researchCosts": {
-    "forgedBlades": { "wood": 0, "stone": 100, "gold": 150 },
-    "steelPlows": { "wood": 50, "stone": 0, "gold": 100 }
-  },
   "resourceSpawn": [
     { "resourceType": "wood", "biomes": ["FOREST"], "chance": 0.45, "amount": 100 },
     { "resourceType": "stone", "biomes": ["HIGHLAND", "MOUNTAIN"], "chance": 0.3, "amount": 80 },

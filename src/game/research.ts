@@ -1,7 +1,6 @@
 import type { World } from 'koota';
-import { ECONOMY } from '@/config/economy';
 import { type Discovery, discoveryById } from '@/rules';
-import { type GameEconomy, type ResourceCost, canAfford, spend } from './economy';
+import { type GameEconomy, canAfford, spend } from './economy';
 
 /**
  * Research / Discoveries (M_DATA.7) — the tech-tree archetype, spec 102.
@@ -24,9 +23,6 @@ export interface ResearchState {
   /** Purchased Discovery ids. */
   purchased: Set<ResearchId>;
 }
-
-/** Resource cost per Discovery — kept exported for HUD back-compat. */
-export const RESEARCH_COST: Record<ResearchId, ResourceCost> = ECONOMY.researchCosts;
 
 /** Create an empty research state. */
 export function createResearch(): ResearchState {
