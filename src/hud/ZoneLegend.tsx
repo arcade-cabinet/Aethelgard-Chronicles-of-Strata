@@ -16,7 +16,7 @@ const ENEMY_COLOR = '#f43f5e';
 /** Render swatch helpers — tiny inline SVG so the legend is self-contained. */
 function lineSwatch(color: string, dashed = false) {
   return (
-    <svg width="18" height="10" aria-hidden>
+    <svg width="18" height="10" aria-hidden="true">
       <line
         x1="1"
         y1="5"
@@ -31,14 +31,14 @@ function lineSwatch(color: string, dashed = false) {
 }
 function dotSwatch(color: string) {
   return (
-    <svg width="18" height="10" aria-hidden>
+    <svg width="18" height="10" aria-hidden="true">
       <circle cx="9" cy="5" r="4" fill={color} />
     </svg>
   );
 }
 function pulseSwatch(color: string) {
   return (
-    <svg width="18" height="10" aria-hidden>
+    <svg width="18" height="10" aria-hidden="true">
       <circle cx="9" cy="5" r="4" fill={color} opacity="0.6">
         <animate attributeName="opacity" values="0.6;1;0.6" dur="1.4s" repeatCount="indefinite" />
       </circle>
