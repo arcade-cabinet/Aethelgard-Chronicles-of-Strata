@@ -86,3 +86,15 @@ Detailed test files are written as the first act of M6 (milestone-TDD batch).
   - `app-debug.apk` is present in `android/app/build/outputs/apk/debug/`.
   - APK installs and runs on an Android 12+ device/emulator; launcher appears.
   - Ref: `99-build-deploy.md §Native (Capacitor Android)`.
+
+- [ ] **Build mode UI + build progress ring** [`tests/browser/build-mode-hud.test.ts`]
+  - Re-scoped from M3: the buildSystem and Buildings render are built and tested;
+    M6 adds the build-button HUD that places a Farm and the progress ring shown
+    while it constructs.
+  - Ref: `70-rts-systems.md §Build Mode`, `90-ui-hud.md §Selection Panel`.
+
+- [ ] **Click-to-select + selection ring interaction** [`tests/browser/selection.test.ts`]
+  - Re-scoped from M3: SelectionRing renders for any isSelected entity (built);
+    M6 wires a unit tap to toggle Selectable.isSelected so the ring follows the
+    player's selection.
+  - Ref: `60-characters.md §Character Rendering`, `90-ui-hud.md §Selection Panel`.

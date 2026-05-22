@@ -139,10 +139,27 @@ M2 learnings carried into M3:
   harvest economy (resource nodes, harvest loop, Town Hall, deposit, build mode,
   supply) + the re-scoped selection ring.
 
-### M3 — Economy
-Plan written at M3 start. Contracts: peon harvest loop, resource nodes, Town Hall,
-build mode (ghost/scaffold/builder/progress), supply system. Pillar: `70-rts-systems.md`.
-- [ ] M3.* — decomposed at milestone start
+### M3 — Economy  ✅ COMPLETE
+Plan: `docs/superpowers/plans/2026-05-22-m3-economy.md` (13 tasks)
+- [x] M3.1-10 economy logic — components, GameEconomy, resource spawn, harvest/
+  deposit/job-routing/build systems, supply, runEconomyTick wiring
+- [x] M3.11 r3f rendering — resource nodes, Town Hall, selection ring;
+  ingest now embeds GLB textures; Town Hall placed off the peon spawn tiles
+- [x] M3.12 HUD resource/supply bar
+- [x] M3.13 verification — 121 unit + 5 browser + 3 e2e green; the autonomous
+  harvest loop verified in-app (wood 50→250 in 25s hands-off)
+
+M3 learnings carried into M4:
+- M2 review findings folded before M3 (ErrorBoundary, GLB dispose, preload all
+  rigs, AnimationState.clipName dropped). M3 review trio runs next.
+- Asset-pipeline lesson: Kenney GLBs reference external Textures/colormap.png;
+  the ingest script now embeds textures into every GLB. Kenney building GLBs
+  are modelled ~1u wide for a smaller hex grid — render-scale them ~1.7x.
+- Two M3 contracts (build-mode UI, click-to-select) re-scoped to M6 — the
+  logic (buildSystem, SelectionRing) is built+tested; the HUD *trigger* is M6.
+- M4 FIRST STEP: write M4 plan + milestone-TDD batch, then combat — Combatant
+  component, footmen, goblin/orc enemies, Goblin Portal, attack state machine,
+  health billboards (re-scoped from M2), floating combat text, win/loss.
 
 ### M4 — Combat
 Plan written at M4 start. Contracts: footmen, goblin/orc enemies, portal, combat
