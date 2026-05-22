@@ -123,9 +123,12 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
           job.state = 'CARRYING'; // depositSystem completes the deposit when adjacent
           break;
         case 'flee': {
-          // nonviolent peon abandons a contested tile — head home
+          // nonviolent peon abandons a contested tile — head home. Clear the
+          // stale path FIRST so any in-flight movement is dropped before the
+          // new home route replaces it.
           job.state = 'SEEKING';
           job.targetKey = '';
+          path.steps = [];
           const route = pathToAdjacent(graph, peonKey, baseKeys[faction]);
           if (route) path.steps = leveledSteps(board, route);
           break;
@@ -133,6 +136,8 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
         case 'idle':
           job.state = 'IDLE';
           job.targetKey = '';
+          // clear any stale path — an idle peon must not keep walking
+          path.steps = [];
           break;
       }
     });

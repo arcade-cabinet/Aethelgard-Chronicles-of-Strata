@@ -68,7 +68,9 @@ export function ZoneLegend() {
         position: 'absolute',
         left: 16,
         top: 70,
-        pointerEvents: 'auto',
+        // wrapper must NOT block canvas raycasts — only the interactive
+        // children below opt back into pointer events.
+        pointerEvents: 'none',
         fontFamily: HUD_THEME.font.body,
         color: HUD_THEME.color.text,
       }}
@@ -85,6 +87,7 @@ export function ZoneLegend() {
           fontSize: '0.7rem',
           fontWeight: 700,
           cursor: 'pointer',
+          pointerEvents: 'auto',
         }}
         aria-expanded={open}
         aria-label="Toggle territory legend"

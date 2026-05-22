@@ -19,7 +19,8 @@ human-readable summary.
 - **M7 — yuka AI subpackage + asset expansion** — `src/ai/` (steering),
   Castle/Town buildings, graveyard enemy base, monster variety (Vampire / Witch
   / Black Knight), audio + decoration expansion.
-- **M8 — AI-as-Player + Zone of Control** (all sub-items shipped):
+- **M8 — AI-as-Player + Zone of Control** (mechanics arc shipped; expansion
+  items M8.6f + M8.6g queued for post-release):
   - M8.0 contextual crossings (spec 99)
   - M8.1 faction-base model (`FactionBase`, `EnemySpawner`)
   - M8.2 render decomposition (`HomeBase` / `EnemyBase` / `structure-models`)
@@ -34,22 +35,29 @@ human-readable summary.
   - M8.7 AI-vs-AI golden-path E2E
 - **M9.1a/b/c** — build menu / zone legend / first-run onboarding overlay.
 
-## Next (in `.agent-state/directive.md`)
+- **M9.1a/b/c/d** — UX systems (build menu, zone legend, first-run onboarding,
+  player-journey + glossary + STATE docs).
+- **M9.3a** — e2e player-journey suite (5 scene-transition specs, 18 e2e
+  passes total).
+- **M9.3b/c** — visual baseline re-locked post-zone-of-control; full
+  five-layer test pyramid green (260 unit + 42 browser + 18 e2e).
+- **M9.4a/b** — Capacitor sync clean; CHANGELOG 0.2.0 section.
+
+## Next
+
+- **[WAIT-CI] M9.5 RELEASE** — CI green on PR #1 → squash-merge to main →
+  cd.yml deploys GitHub Pages + APK → flip directive Status to RELEASED.
+
+## Post-release (queued in `.agent-state/directive.md`)
 
 - **M8.6f** — behavior-system polish (event-PRNG arrow volleys, multi-target,
   siege-responsive defenders, projectile animation).
 - **M8.6g** — full archetype-algebra unification: add MoverBehavior +
-  ConsumerBehavior, the magnetic force-field (`rules/force-field.ts`),
-  damage-type × armor table, unify units onto the same archetype traits.
-- **M9.1d** — docs completeness (this file + `10-player-journey.md` +
-  `99-glossary.md` — all created).
-- **M9.2** — visual + audio polish (dedicated GLBs for the new buildings
-  from the KayKit Ultimate Fantasy RTS pack; zone-border tuning; new audio
-  cues).
-- **M9.3** — full test pyramid (e2e player-journey suite, locked visual
-  baselines).
-- **M9.4** — mobile/Capacitor APK + release hygiene + squash-merge.
-- **M9.5** — RELEASE.
+  ConsumerBehavior, the bi-signed magnetic force-field (`rules/force-field.ts`),
+  damage-type × armor table, unify units onto the same archetype traits,
+  per-tile bitmask packing.
+- **M9.2** — dedicated GLBs for the new buildings (KayKit Ultimate Fantasy RTS
+  pack), zone-border tuning, additional audio cues, full visual sweep.
 
 ## Architecture spec arc
 

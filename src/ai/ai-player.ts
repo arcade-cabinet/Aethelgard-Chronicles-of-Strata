@@ -77,10 +77,14 @@ class AiBrain extends Think<AiPlayer> {
 // Shared helpers (faction-scoped reads from KNOWN state)
 // ---------------------------------------------------------------------------
 
-/** This faction's complete or in-progress buildings of `type`. */
+/**
+ * This faction's buildings of `type` — both completed and in-progress.
+ * Queries the ECS world rather than only `game.buildSites` (which omits the
+ * Town Hall and any future bases spawned outside the build-site map).
+ */
 function ownedBuildingCount(game: GameState, faction: Faction, type: BuildingType): number {
   let n = 0;
-  for (const [, e] of game.buildSites) {
+  for (const e of game.world.query(Building, FactionTrait)) {
     if (e.get(FactionTrait)?.faction !== faction) continue;
     if (e.get(Building)?.buildingType === type) n += 1;
   }

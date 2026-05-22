@@ -357,6 +357,13 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
     other so enemy bases spawn far apart by force law, not by special-case
     geometry). The "farthest walkable tile" enemy base placement becomes
     a principled application of Attractor-repels-Attractor.
+  - PER-TILE BITMASK packing: replace the scattered `walkable` /
+    `isCrossingLanding` / per-faction Sets (controlled / observed / pulsing
+    × player|enemy) with a single Uint32Array[tileIndex]. 32 bits trivially
+    hold walkable + crossingLanding + controlled×2 + observed×2 + pulsing×2
+    + hasResource + hasBuilding + isRamp + biomeIndex(4) + spare. Massive
+    cache-efficiency win for force-field sampling (read N+1 times per tile
+    per tick — bitmasks turn it into pointer-arithmetic).
   - The unification beyond buildings: archetype traits are UNIVERSAL.
     Footmen `add` OffensiveBehavior on spawn; combat.ts collapses into a
     thin slice of the offensive-behavior system; Walls grow armorVsSiege /

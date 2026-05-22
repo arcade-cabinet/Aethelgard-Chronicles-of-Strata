@@ -41,10 +41,14 @@ function toLeveledStep(game: GameState, key: string): string {
   return `${key},${tile?.level ?? 0}`;
 }
 
-/** True when `entity` belongs to `faction` (or has no faction trait at all). */
+/**
+ * True when `entity` belongs to `faction`. Fails CLOSED — an entity without a
+ * FactionTrait is NOT owned (security/correctness — a stray unit must never
+ * be steerable by any faction by accident).
+ */
 function ownedBy(entity: Entity, faction: Faction): boolean {
   const ft = entity.get(FactionTrait);
-  return ft === undefined || ft.faction === faction;
+  return ft !== undefined && ft.faction === faction;
 }
 
 /**

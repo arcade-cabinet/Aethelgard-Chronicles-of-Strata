@@ -218,10 +218,11 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   };
 
   // Mark the Town Hall tile unwalkable BEFORE building the nav graph — units
-  // path around the building and deposit from an adjacent tile.
+  // path around the building and deposit from an adjacent tile. The enemy
+  // base is marked + the graph rebuilt below, once its tile is picked.
   const townHallTile = board.tiles.get(townHallKey);
   if (townHallTile) townHallTile.walkable = false;
-  const navGraph = buildNavGraph(board);
+  let navGraph = buildNavGraph(board);
 
   const peonSpawns = adjacentWalkableTiles(board, center.q, center.r, 2);
   // fall back to the centre tile only if the centre is somehow isolated
@@ -274,7 +275,15 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
 
   // Spawn the enemy base — the graveyard (enemy unit spawner — win condition).
   // spawnInterval is difficulty-scaled: easy 60s, normal 45s, hard 30s.
+  // Mark the base tile non-walkable + rebuild the nav graph so units cannot
+  // path THROUGH the enemy base (the previous code left the tile walkable —
+  // CodeRabbit finding, real bug).
   const enemyBaseKey = getHexKey(enemyBaseTile.q, enemyBaseTile.r);
+  const enemyBaseBoardTile = board.tiles.get(enemyBaseKey);
+  if (enemyBaseBoardTile) {
+    enemyBaseBoardTile.walkable = false;
+    navGraph = buildNavGraph(board);
+  }
   // the enemy base is also an attractor — both factions get a starting
   // zone-of-control footprint and resource guarantee, symmetric by construction.
   const enemyBaseEntity = world.spawn(
