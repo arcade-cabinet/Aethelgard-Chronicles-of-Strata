@@ -326,13 +326,21 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   rules.nextPeonAction on both factions (harvest, claim, flee); House, Granary,
   Watchtower, Wall types in BuildingType + economy.json + structure-models;
   244 tests. (Dedicated GLBs for the 4 new types land in M9.2a.)
-- [ ] M8.6e — encroachment & 3 territorial-building kinds (spec 102): enemy-
-  military-on-controlled-tile → pulse → flip; Watchtower (offensive zone,
-  shoots intruders), Wall (defensive hard border, blocks pathing), Town Hall
-  (attractor — exerts the initial ~2-tile zone, non-combat). Plus the
-  attractor map-gen contract: `board.ts` guarantees N×resource within radius U
-  of each Town Hall, making the game-start fully emergent (no scripted
-  town-hall/resource/peon sequence).
+- [ ] M8.6e — encroachment + behavior-archetype LOCAL ZONE OF CONTROL (spec 102):
+  OffensiveBehavior/DefensiveBehavior/AttractorBehavior are composable traits
+  (not building-type-coupled); `rules/building-behaviors.ts` maps each type to
+  its profile; placeBuilding composes the right traits at spawn. Encroachment:
+  enemy-military-on-controlled-tile → pulse → flip (difficulty-scaled grace).
+  Watchtower offensive zone via offensiveBehaviorSystem (decoupled — runs over
+  ANY OffensiveBehavior entity). Town Hall + enemy base get AttractorBehavior;
+  attractor map-gen contract guarantees N×resource in radius (emergent
+  game-start). Wall blocks pathing via the existing walkable=false.
+- [ ] M8.6f — behavior-system polish: (a) OffensiveBehavior consumes the event
+  PRNG for arrow-volley jitter and multi-target selection (upgradable —
+  `targetCount`, wider radius); (b) DefensiveBehavior extended with
+  `armorVsSiege` / `armorVsNormal` and a system that absorbs proportional
+  damage by attacker type (responsive to siege units); (c) arrow/projectile
+  animation when an OffensiveBehavior fires.
 - [ ] M8.6d — yuka AI player (spec 101/102): `AiPlayer extends GameEntity` with
   a yuka `Think` brain; `GoalEvaluator`s for build / train / move-military
   (no scout goal — peons auto-claim) reading pulse/erosion/wall signals,

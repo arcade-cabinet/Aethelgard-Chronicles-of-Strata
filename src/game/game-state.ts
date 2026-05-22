@@ -6,6 +6,7 @@ import { createEcsWorld } from '@/ecs/world';
 import { createCharacter } from '@/entities/character-factory';
 import {
   AssignedJob,
+  AttractorBehavior,
   Building,
   type BuildingType,
   EnemySpawner,
@@ -23,13 +24,16 @@ import { type DamageEvent, combatSystem } from '@/ecs/systems/combat';
 import { deathSystem } from '@/ecs/systems/death';
 import { depositSystem } from '@/ecs/systems/deposit';
 import { harvestSystem } from '@/ecs/systems/harvest';
+import { encroachmentSystem } from '@/ecs/systems/encroachment';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
+import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { type GameOutcome, evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { type GameEconomy, createEconomy } from './economy';
-import { recomputeMaxSupply } from '@/rules';
+import { behaviorsFor, recomputeMaxSupply } from '@/rules';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
+import { ensureAttractorResources } from '@/rules';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import { MAP_RADIUS } from '@/config/world';
 import { type GameClock, advanceClock, createClock } from './clock';
@@ -238,12 +242,16 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   });
 
   // Spawn the player home base (the Town Hall — loss condition when destroyed).
+  // Town Hall composes AttractorBehavior (spec 102) — radius drives the
+  // map-gen guarantee AND the initial zone-of-control footprint.
+  const townHallProfile = behaviorsFor('TownHall');
   const townHallEntity = world.spawn(
     HexPosition({ q: center.q, r: center.r, level: center.level }),
     Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
     Health({ current: 500, max: 500 }),
     FactionTrait({ faction: 'player' }),
     FactionBase({ faction: 'player' }),
+    ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
   );
 
   // Pick the farthest walkable tile from center for the enemy base.
@@ -261,12 +269,15 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // Spawn the enemy base — the graveyard (enemy unit spawner — win condition).
   // spawnInterval is difficulty-scaled: easy 60s, normal 45s, hard 30s.
   const enemyBaseKey = getHexKey(enemyBaseTile.q, enemyBaseTile.r);
+  // the enemy base is also an attractor — both factions get a starting
+  // zone-of-control footprint and resource guarantee, symmetric by construction.
   const enemyBaseEntity = world.spawn(
     HexPosition({ q: enemyBaseTile.q, r: enemyBaseTile.r, level: enemyBaseTile.level }),
     EnemySpawner({ spawnTimer: 0, spawnInterval: spawnIntervalFor(difficulty) }),
     Health({ current: 300, max: 300 }),
     FactionTrait({ faction: 'enemy' }),
     FactionBase({ faction: 'enemy' }),
+    ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
   );
 
   // Spawn one starting Footman near the Town Hall.
@@ -282,7 +293,27 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // Spawn resource nodes using the map PRNG (deterministic, phrase-only).
   const mapRng = createMapPrng(seedPhrase);
   const eventRng = createEventPrng(eventSeed);
-  const resourceNodes = spawnResourceNodes(board, mapRng);
+  // 1. natural resource spawn from the biome rules
+  // 2. attractor contract — each Town Hall guarantees a minimum of every
+  //    resource type within its radius, so a peon always has work in-zone
+  //    (spec 102). Run for both factions' attractors deterministically.
+  let resourceNodes = spawnResourceNodes(board, mapRng);
+  resourceNodes = ensureAttractorResources(
+    board,
+    townHallKey,
+    center.q,
+    center.r,
+    resourceNodes,
+    mapRng,
+  );
+  resourceNodes = ensureAttractorResources(
+    board,
+    enemyBaseKey,
+    enemyBaseTile.q,
+    enemyBaseTile.r,
+    resourceNodes,
+    mapRng,
+  );
   for (const plan of resourceNodes) {
     world.spawn(
       HexPosition({ q: plan.q, r: plan.r, level: plan.level }),
@@ -377,6 +408,9 @@ export function runEconomyTick(game: GameState, delta: number): void {
 
   // movement + economy — apply rain speed penalty from weather state
   pathFollowSystem(game.world, delta, WEATHER_SPEED_MULTIPLIER[game.weather.state]);
+  // encroachment runs BEFORE peon routing so peons see this tick's pulse set
+  // (their decision rule routes them away from threatened tiles).
+  encroachmentSystem(game.world, game.zones, delta, game.difficulty);
   jobRoutingSystem({
     world: game.world,
     board: game.board,
@@ -386,6 +420,9 @@ export function runEconomyTick(game: GameState, delta: number): void {
   });
   harvestSystem(game.world, delta);
   buildSystem(game.world, game.buildSites, delta);
+  // Every offensive-behaviour entity (Watchtower today; future Wonder etc.)
+  // damages enemy military in its radius — decoupled from building type.
+  offensiveBehaviorSystem(game.world, delta, game.eventRng);
 
   // recompute each faction's observed battlefield from current unit/base cones
   updateObserved(game.zones.player, game.world, 'player', game.board.tiles.values());

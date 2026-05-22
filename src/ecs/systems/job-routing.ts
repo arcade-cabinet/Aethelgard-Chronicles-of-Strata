@@ -85,7 +85,9 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
       const action = nextPeonAction(view, {
         resources: allResources,
         baseKey: baseKeys[faction],
-        threatenedTiles: new Set(), // encroachment pulses wired in M8.6e
+        // pulsing tiles on the faction's own zone are under encroachment —
+        // peons flee them (spec 102, wired by the encroachmentSystem)
+        threatenedTiles: new Set(zones[faction].pulsing.keys()),
       });
 
       switch (action.kind) {

@@ -34,3 +34,9 @@ export {
   type ResourceSite,
   nextPeonAction,
 } from './peon-rules';
+export { ATTRACTOR_GUARANTEE, ATTRACTOR_RADIUS, ensureAttractorResources } from './attractor';
+export {
+  BUILDING_BEHAVIORS,
+  type BuildingBehaviorProfile,
+  behaviorsFor,
+} from './building-behaviors';

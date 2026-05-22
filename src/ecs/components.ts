@@ -76,6 +76,31 @@ export const Building = trait({
 /** A peon's current job assignment: the state machine + the target entity id. */
 export const AssignedJob = trait({ state: 'IDLE' as JobState, targetKey: '' });
 
+// ----- Local-zone-of-control behaviour archetypes (spec 102, refined). -----
+// Behaviours are composable traits attached to ANY entity (typically a building)
+// rather than baked into a building type. A future Wonder could have all three.
+
+/**
+ * Offensive zone of control — the entity radiates an offensive aura over
+ * neighbouring tiles within `radius`; the offensive system deals `dps` damage
+ * each second to enemy military units inside the aura.
+ */
+export const OffensiveBehavior = trait({ radius: 3, dps: 6 });
+
+/**
+ * Defensive zone of control — the entity is a hard pathing border. The tile
+ * itself is non-walkable; enemy units cannot path past it until the entity is
+ * destroyed. `radius` is reserved for future area-defence walls.
+ */
+export const DefensiveBehavior = trait({ radius: 0 });
+
+/**
+ * Attractor zone of control — the entity is a faction anchor. Its `radius`
+ * guarantees resource minimums at map-generation (the rules engine reads this).
+ * Non-combat by itself; combat capability comes from composing OffensiveBehavior.
+ */
+export const AttractorBehavior = trait({ radius: 2 });
+
 /** Hit points. */
 export const Health = trait({ current: 50, max: 50 });
 

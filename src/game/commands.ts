@@ -2,17 +2,20 @@ import { getHexKey } from '@/core/hex';
 import { findPath } from '@/core/pathfinding';
 import {
   AssignedJob,
+  AttractorBehavior,
   Building,
   type BuildingType,
+  DefensiveBehavior,
   type Faction,
   FactionTrait,
   HexPosition,
+  OffensiveBehavior,
   PathQueue,
   Selectable,
   Unit,
 } from '@/ecs/components';
 import type { Entity } from 'koota';
-import { BUILDING_COSTS, canBuild } from '@/rules';
+import { BUILDING_COSTS, behaviorsFor, canBuild } from '@/rules';
 import { spend } from './economy';
 import type { GameState } from './game-state';
 import { type ResearchId, applyResearch } from './research';
@@ -121,6 +124,12 @@ export function placeBuilding(
     Building({ buildingType: type, isComplete: false, progress: 0 }),
     FactionTrait({ faction }),
   );
+  // compose the building's local-zone-of-control behaviours from the rules
+  // engine (spec 102) — orthogonal traits, not type-coupled logic.
+  const profile = behaviorsFor(type);
+  if (profile.offensive) buildingEntity.add(OffensiveBehavior(profile.offensive));
+  if (profile.defensive) buildingEntity.add(DefensiveBehavior(profile.defensive));
+  if (profile.attractor) buildingEntity.add(AttractorBehavior(profile.attractor));
   game.buildSites.set(tileKey, buildingEntity);
 
   // Assign the nearest idle peon OF THE ISSUING FACTION to build.

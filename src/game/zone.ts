@@ -28,11 +28,17 @@ export interface ZoneState {
   controlled: Set<string>;
   /** Tile keys currently inside this faction's vision this tick. */
   observed: Set<string>;
+  /**
+   * Pulsing tiles under encroachment (spec 102) — keyed by tile, the value is
+   * how many seconds the pulse has been running. When the pulse exceeds the
+   * encroachment grace window, the tile flips to the encroaching faction.
+   */
+  pulsing: Map<string, number>;
 }
 
 /** Create an empty zone state — no territory, nothing observed. */
 export function createZoneState(): ZoneState {
-  return { controlled: new Set(), observed: new Set() };
+  return { controlled: new Set(), observed: new Set(), pulsing: new Map() };
 }
 
 /** Claim a tile for a faction — called when a peon begins exploiting it. */
