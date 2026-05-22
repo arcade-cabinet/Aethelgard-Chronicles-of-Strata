@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { ResourceBar } from '@/hud/ResourceBar';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
 import { startGame } from '@/game/game-state';
@@ -23,7 +24,7 @@ function SceneError() {
   );
 }
 
-/** Root component. Starts a game on a fixed seed and renders it. */
+/** Root component. Starts a game on a fixed seed and renders it with the HUD. */
 export function App() {
   const game = useMemo(() => startGame('ancient-silver-forest'), []);
   return (
@@ -31,6 +32,7 @@ export function App() {
       <ErrorBoundary fallback={<SceneError />}>
         <GameCanvas game={game} />
       </ErrorBoundary>
+      <ResourceBar game={game} />
     </div>
   );
 }
