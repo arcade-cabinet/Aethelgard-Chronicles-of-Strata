@@ -2,19 +2,9 @@ import { useFrame } from '@react-three/fiber';
 import type { Entity } from 'koota';
 import { Suspense, useRef, useState } from 'react';
 import type { Group } from 'three';
-import { getHexKey } from '@/core/hex';
-import {
-  AnimationState,
-  FactionTrait,
-  Health,
-  HexPosition,
-  Transform,
-  Unit,
-  type UnitType,
-} from '@/ecs/components';
+import { AnimationState, Health, Transform, Unit, type UnitType } from '@/ecs/components';
 import { type ClipName, clipForState } from '@/ecs/systems/animation';
 import { AnimatedCharacter } from '@/entities/AnimatedCharacter';
-import { tileVisibility } from '@/game/fog';
 import type { GameState } from '@/game/game-state';
 import { HealthBillboard } from './HealthBillboard';
 
@@ -72,17 +62,12 @@ export function Units({ game }: { game: GameState }) {
 
   useFrame(() => {
     const current: UnitView[] = [];
+    // Under the zone-of-control model (spec 102) the whole board is visible —
+    // every unit, both factions, always renders. Territory is shown by the
+    // drawn zone border, not by concealing units.
     for (const e of game.world.query(Unit)) {
       const role = e.get(Unit)?.unitType;
       if (!role) continue;
-      // fog of war — an enemy unit renders only on a tile the player can
-      // currently see. Player units always render. See docs/specs/100.
-      if (e.get(FactionTrait)?.faction === 'enemy') {
-        const hex = e.get(HexPosition);
-        if (hex && tileVisibility(game.fog.player, getHexKey(hex.q, hex.r)) !== 'visible') {
-          continue;
-        }
-      }
       current.push({ id: Number(e), entity: e, role });
     }
     // re-render the unit list only when the membership actually changes

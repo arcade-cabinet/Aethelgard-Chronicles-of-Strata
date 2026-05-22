@@ -38,7 +38,7 @@ import { type ResearchState, createResearch } from './research';
 import { type RallyState, createRally } from './rally';
 import type { AutoSave } from './auto-save';
 import { tickAutoSave } from './auto-save';
-import { type FogState, createFogState, updateFog } from './fog';
+import { type ZoneState, createZoneState, updateObserved } from './zone';
 import { spawnIntervalFor } from '@/config/combat';
 import type { Difficulty } from './difficulty';
 import type { Faction } from '@/ecs/components';
@@ -105,8 +105,8 @@ export interface GameState {
   research: ResearchState;
   /** The barracks rally point — where newly trained footmen are directed. */
   rally: RallyState;
-  /** Per-faction fog of war — what each side has perceived. */
-  fog: Record<Faction, FogState>;
+  /** Per-faction zone of control + observed battlefield (spec 102). */
+  zones: Record<Faction, ZoneState>;
   /**
    * The koota entityId of the currently-selected entity, or `undefined` when
    * nothing is selected. Updated by `selectEntity` in `@/game/selection`.
@@ -315,7 +315,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     weather: createWeather(),
     research: createResearch(),
     rally: createRally(),
-    fog: { player: createFogState(), enemy: createFogState() },
+    zones: { player: createZoneState(), enemy: createZoneState() },
     assignAllPeonsToHarvest() {
       // find the first wood node (fallback to any node)
       const woodNodes = resourceNodes.filter((n) => n.resourceType === 'wood');
@@ -381,10 +381,9 @@ export function runEconomyTick(game: GameState, delta: number): void {
   harvestSystem(game.world, delta);
   buildSystem(game.world, game.buildSites, delta);
 
-  // recompute per-faction fog of war from the now-current unit/base positions
-  const tiles = game.board.tiles.values();
-  updateFog(game.fog.player, game.world, 'player', tiles);
-  updateFog(game.fog.enemy, game.world, 'enemy', game.board.tiles.values());
+  // recompute each faction's observed battlefield from current unit/base cones
+  updateObserved(game.zones.player, game.world, 'player', game.board.tiles.values());
+  updateObserved(game.zones.enemy, game.world, 'enemy', game.board.tiles.values());
 
   // recompute each faction's supply cap from its own complete buildings —
   // a finished Farm raises that faction's max supply.

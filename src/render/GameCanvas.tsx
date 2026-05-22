@@ -8,7 +8,6 @@ import { HomeBase } from '@/world/HomeBase';
 import { CombatText } from '@/world/CombatText';
 import { Decoration } from '@/world/Decoration';
 import { EnemyBase } from '@/world/EnemyBase';
-import { FogOverlay } from '@/world/FogOverlay';
 import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { Mountains } from '@/world/Mountains';
@@ -19,6 +18,7 @@ import { Terrain } from '@/world/Terrain';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { Units } from '@/world/Units';
 import { Water } from '@/world/Water';
+import { ZoneBorder } from '@/world/ZoneBorder';
 import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
 
@@ -61,7 +61,7 @@ function Scene({
       <RainParticles game={game} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
-      <FogOverlay game={game} />
+      <ZoneBorder game={game} />
       <CameraRig viewport={viewport} boardRadius={game.board.radius} />
     </>
   );
