@@ -1,4 +1,5 @@
 import { useFrame } from '@react-three/fiber';
+import type { Entity } from 'koota';
 import { Suspense, useRef, useState } from 'react';
 import type { Group } from 'three';
 import { AnimationState, Health, Transform, Unit, type UnitType } from '@/ecs/components';
@@ -7,23 +8,23 @@ import { AnimatedCharacter } from '@/entities/AnimatedCharacter';
 import type { GameState } from '@/game/game-state';
 import { HealthBillboard } from './HealthBillboard';
 
-/** A live unit snapshot taken each frame from the ECS. */
+/** A live unit snapshot taken when the roster changes. */
 interface UnitView {
   /** Entity numeric id — stable React key. */
   id: number;
+  /** The ECS entity reference. */
+  entity: Entity;
   /** Unit role. */
   role: UnitType;
 }
 
 /** One rendered unit — an animated character that follows its ECS entity. */
-function UnitMesh({ game, id, role }: { game: GameState; id: number; role: UnitType }) {
+function UnitMesh({ entity, role }: { entity: Entity; role: UnitType }) {
   const ref = useRef<Group>(null);
   const [clip, setClip] = useState<ClipName>('Idle_A');
   const [health, setHealth] = useState({ current: 1, max: 1 });
 
   useFrame(() => {
-    const entity = findEntity(game, id);
-    if (!entity) return;
     const t = entity.get(Transform);
     if (t && ref.current) {
       ref.current.position.set(t.x, t.y, t.z);
@@ -50,21 +51,11 @@ function UnitMesh({ game, id, role }: { game: GameState; id: number; role: UnitT
   );
 }
 
-/** Locate an ECS entity by numeric id (koota has no direct id->entity lookup). */
-function findEntity(
-  game: GameState,
-  id: number,
-): ReturnType<GameState['world']['query']>[number] | undefined {
-  for (const e of game.world.query(Unit)) {
-    if (Number(e) === id) return e;
-  }
-  return undefined;
-}
-
 /**
  * Renders every unit in the ECS — player peons and footmen, enemy goblins and
- * orcs — as an animated KayKit character with a health billboard. The unit set
- * is re-snapshotted each frame so spawned enemies appear and dead units vanish.
+ * orcs — as an animated KayKit character with a health billboard. The roster is
+ * re-snapshotted each frame; the entity reference is passed straight to each
+ * UnitMesh so per-unit rendering needs no per-frame id lookup.
  */
 export function Units({ game }: { game: GameState }) {
   const [units, setUnits] = useState<UnitView[]>([]);
@@ -73,9 +64,9 @@ export function Units({ game }: { game: GameState }) {
     const current: UnitView[] = [];
     for (const e of game.world.query(Unit)) {
       const role = e.get(Unit)?.unitType;
-      if (role) current.push({ id: Number(e), role });
+      if (role) current.push({ id: Number(e), entity: e, role });
     }
-    // only re-render the unit list when the membership actually changes
+    // re-render the unit list only when the membership actually changes
     if (current.length !== units.length || current.some((u, i) => u.id !== units[i]?.id)) {
       setUnits(current);
     }
@@ -84,7 +75,7 @@ export function Units({ game }: { game: GameState }) {
   return (
     <group name="units">
       {units.map((u) => (
-        <UnitMesh key={u.id} game={game} id={u.id} role={u.role} />
+        <UnitMesh key={u.id} entity={u.entity} role={u.role} />
       ))}
     </group>
   );

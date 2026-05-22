@@ -11,6 +11,14 @@ const ORC_THRESHOLD = 600;
 const spawnCounts = new Map<number, number>();
 
 /**
+ * Reset the per-portal spawn counters. Called by `startGame` so a new session
+ * does not inherit a stale Orc-cadence counter from a previous world.
+ */
+export function clearSpawnCounts(): void {
+  spawnCounts.clear();
+}
+
+/**
  * Advance the Goblin Portal's spawn timer. Each `spawnInterval` seconds it
  * spawns an enemy on a walkable neighbor tile — a Goblin, or (past
  * `ORC_THRESHOLD` game-seconds) every third spawn an Orc.

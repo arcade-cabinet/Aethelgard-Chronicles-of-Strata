@@ -19,12 +19,12 @@ import { animationSystem } from '@/ecs/systems/animation';
 import { aiSystem } from '@/ecs/systems/ai';
 import { buildSystem } from '@/ecs/systems/build';
 import { type DamageEvent, combatSystem } from '@/ecs/systems/combat';
-import { deathSystem } from '@/ecs/systems/death';
+import { clearDeathTimers, deathSystem } from '@/ecs/systems/death';
 import { depositSystem } from '@/ecs/systems/deposit';
 import { harvestSystem } from '@/ecs/systems/harvest';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
-import { spawnSystem } from '@/ecs/systems/spawn';
+import { clearSpawnCounts, spawnSystem } from '@/ecs/systems/spawn';
 import { type GameOutcome, evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { type GameEconomy, createEconomy } from './economy';
 import { recomputeMaxSupply } from './supply';
@@ -126,6 +126,11 @@ function adjacentWalkableTiles(
  * and places the Town Hall on the most central walkable tile.
  */
 export function startGame(seedPhrase: string): GameState {
+  // Reset module-level system state so a new session does not inherit stale
+  // timers/counters keyed by entity ids the previous world reused.
+  clearDeathTimers();
+  clearSpawnCounts();
+
   const board = generateBoard(seedPhrase);
   const world = createEcsWorld();
 

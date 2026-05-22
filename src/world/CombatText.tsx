@@ -2,6 +2,7 @@ import { Billboard, Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 import { Transform } from '@/ecs/components';
+import type { DamageEvent } from '@/ecs/systems/combat';
 import type { GameState } from '@/game/game-state';
 
 /** Seconds a damage popup floats before it is removed. */
@@ -23,36 +24,38 @@ interface Popup {
   age: number;
 }
 
-let nextPopupId = 0;
-
 /**
  * Floating combat text. Each combat damage event from `game.lastDamageEvents`
  * spawns a `-N` popup at the target's world position; it drifts up and fades
  * over 1.6s. Crits show `★-N` larger in gold. Source: poc2.html `.popup-text`.
+ *
+ * New batches are detected by the `lastDamageEvents` array *reference* —
+ * `runEconomyTick` assigns a fresh array each tick — so two consecutive
+ * same-length batches are not mistaken for one. The popup id counter is a ref
+ * so it is per-instance, not module-global.
  */
 export function CombatText({ game }: { game: GameState }) {
   const [popups, setPopups] = useState<Popup[]>([]);
-  const seen = useRef(0);
+  const lastBatch = useRef<DamageEvent[] | null>(null);
+  const nextId = useRef(0);
 
   useFrame((_, delta) => {
-    // ingest new damage events produced this tick
+    // ingest a new damage-event batch (detected by array reference identity)
     const events = game.lastDamageEvents;
-    if (events.length > 0 && seen.current !== events.length) {
+    if (events !== lastBatch.current && events.length > 0) {
       const fresh: Popup[] = events.map((e) => {
         const t = e.target.get(Transform);
         return {
-          id: nextPopupId++,
-          origin: [t?.x ?? 0, (t?.y ?? 0) + 1.8, t?.z ?? 0],
+          id: nextId.current++,
+          origin: [t?.x ?? 0, (t?.y ?? 0) + 1.8, t?.z ?? 0] as [number, number, number],
           text: e.isCrit ? `★-${e.damage}` : `-${e.damage}`,
           isCrit: e.isCrit,
           age: 0,
         };
       });
-      seen.current = events.length;
       setPopups((prev) => [...prev, ...fresh]);
-    } else if (events.length === 0) {
-      seen.current = 0;
     }
+    lastBatch.current = events;
 
     // age and cull popups
     setPopups((prev) =>

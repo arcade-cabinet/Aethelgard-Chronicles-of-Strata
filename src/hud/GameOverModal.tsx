@@ -20,10 +20,12 @@ export function GameOverModal({ game }: { game: GameState }) {
   const [outcome, setOutcome] = useState<GameOutcome>(game.outcome);
 
   useEffect(() => {
+    // poll game.outcome until it goes terminal, then stop — once the game has
+    // ended runEconomyTick freezes, so there is nothing further to watch.
     let raf = 0;
     const tick = () => {
       setOutcome(game.outcome);
-      raf = requestAnimationFrame(tick);
+      if (game.outcome === 'playing') raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);

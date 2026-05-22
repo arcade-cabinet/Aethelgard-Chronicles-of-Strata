@@ -8,6 +8,15 @@ const DEATH_DELAY = 2;
 const dyingTimers = new Map<number, number>();
 
 /**
+ * Reset the death-timer state. Called by `startGame` so a new session does not
+ * inherit stale timers — entity ids are reused across worlds, and an orphan
+ * timer would destroy a fresh entity early.
+ */
+export function clearDeathTimers(): void {
+  dyingTimers.clear();
+}
+
+/**
  * Handle unit death. A unit at 0 Health enters the DYING animation state; after
  * `DEATH_DELAY` seconds (the death clip length) it is removed from the world.
  */
