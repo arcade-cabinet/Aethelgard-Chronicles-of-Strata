@@ -303,27 +303,35 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
 - [x] M8.3 — faction-aware command API (2d92904): every command takes an
   issuing faction; moveUnit enforces ownership; placeBuilding stamps the
   faction + filters peons by faction. The single action channel. 221 tests.
-- [x] M8.4 — perception / fog of war (f3805a0): src/game/fog.ts — per-faction
-  FogState (visible + monotonic discovered); units see forward cones, bases
-  full circles; runEconomyTick recomputes both factions' fog. 226 tests green.
-- [x] M8.5 — fog rendering (f5b32b7): FogOverlay caps unknown (opaque) +
-  discovered (translucent) tiles per frame; enemy units render only on
-  player-visible tiles. 229 tests green, verified in-browser.
+- [x] M8.4 — perception cones (f3805a0): src/game/fog.ts — per-faction vision
+  cones (units) + circles (bases). NOTE: spec 102 supersedes the fog framing —
+  the cone code is kept as the "observed battlefield"; M8.4z re-frames it.
+- [x] M8.5 — fog rendering (f5b32b7): FogOverlay. SUPERSEDED by spec 102 —
+  M8.5z replaces black fog with the drawn zone-of-control border.
 - [x] M8.6a — symmetric economy (1a24098): `GameState.economy` is now
   `Record<Faction, GameEconomy>`; `enemyBaseKey`; depositSystem +
-  recomputeMaxSupply run per faction; commands spend the issuing faction's
-  economy. 227 tests green.
+  recomputeMaxSupply run per faction. 227 tests green.
+- [ ] M8.4z — zone model (spec 102): `zone.ts` — per-faction `controlled` tile
+  set (claimed by peon exploitation) + `observed` set (vision cones, reusing
+  the M8.4 cone code). Replaces the fog discovered/visible framing.
+- [ ] M8.5z — zone rendering (spec 102): `ZoneBorder.tsx` — draw each faction's
+  controlled-region encirclement (two colours) + the contested-tile pulse.
+  Replaces FogOverlay; whole map renders, enemy units always draw.
 - [ ] M8.6b — `src/rules/` engine (spec 101): extract the full faction-agnostic
   rules into a yuka/koota-free barrel — peon autonomy (`nextPeonAction`),
   building behavior, placement (`canBuild`), economy + peon-cap, training,
   combat targeting. ECS systems + both drivers consult it.
-- [ ] M8.6c — peon autonomy (spec 101): peons run `rules.nextPeonAction` on
-  both factions — autonomous harvest + radial frontier expansion, no peon
-  command path. Add House + Granary structure types; peon cap = houses+granary.
-- [ ] M8.6d — yuka AI player (spec 101): `AiPlayer extends GameEntity` with a
-  yuka `Think` brain; `GoalEvaluator`s for the 3 commander verbs (build /
-  train / move-military) score from KNOWN state and call `commands.ts`. Built
-  on `src/rules/`. Modeled on pond-warfare's `Governor`. Uses `@types/yuka`.
+- [ ] M8.6c — peon autonomy (spec 101/102): peons run `rules.nextPeonAction` on
+  both factions — autonomous harvest, claim a tile on exploitation, flee
+  pulsing tiles. Add House + Granary types; peon cap = houses+granary.
+- [ ] M8.6e — encroachment & territorial buildings (spec 102): enemy-military-
+  on-controlled-tile → pulse → flip; Watchtower (offensive zone, shoots
+  intruders) + Wall (hard border, blocks pathfinding) building types.
+- [ ] M8.6d — yuka AI player (spec 101/102): `AiPlayer extends GameEntity` with
+  a yuka `Think` brain; `GoalEvaluator`s for build / train / move-military
+  (no scout goal — peons auto-claim) reading pulse/erosion/wall signals,
+  calling `commands.ts`. Built on `src/rules/`. Modeled on pond-warfare's
+  `Governor`. Uses `@types/yuka`.
 - [ ] M8.7 — AI-vs-AI golden-path E2E: swap both factions to AI, turn loop,
   macro/meso/micro state probes, golden-transcript regression assertions.
 - [ ] M8.8 — pre-push gate: full `pnpm verify` + `test:browser` + `test:e2e`

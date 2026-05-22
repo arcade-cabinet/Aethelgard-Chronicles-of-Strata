@@ -1,0 +1,94 @@
+# 102 — Zone of Control, Encroachment & Territorial Buildings
+
+Supersedes the black fog-of-war model (specs 100 §3 / the M8.4–M8.5 fog
+rendering). The map is **always fully visible** — a low-poly board is meant to
+be read at a glance, especially on a phone. Territory is shown by **drawn
+borders**, not concealment.
+
+## Two independent things
+
+1. **Zone of control** — territory a faction *holds*. Defined by tile
+   *exploitation*, drawn as an encirclement border. This is ownership.
+2. **Observed battlefield** — what a faction currently *perceives* through unit
+   vision cones + base circles. This is current sight. Independent of control —
+   an enemy army can sit inside your zone of control unobserved.
+
+Vision cones (the `fog.ts` perception code) **survive** — they are the observed
+battlefield. Only the black-fog *rendering* is dropped.
+
+## Zone of control — claimed by exploitation
+
+- A tile becomes a faction's the moment one of its peons **begins exploiting**
+  it (starts harvesting the tile's resource). It is `controlled` by that
+  faction.
+- It stays controlled until either the resource is **fully cleared**, or an
+  **enemy offensive (military) unit marches onto the tile** and the claim is
+  not defended (see Encroachment).
+- The zone-of-control **border** is the outer hull of a faction's controlled
+  tiles — one drawn line, faction-coloured. It erodes visibly as tiles flip.
+
+## Encroachment & border erosion
+
+When an enemy **military** unit steps onto a tile a faction controls:
+
+1. The tile **pulses** (a visible warning pulse) for `N` seconds. `N` is set by
+   difficulty — Easy gives a long grace window, Hard a short one.
+2. If the defending faction brings a military unit onto / adjacent to the tile
+   within `N` seconds, the claim holds.
+3. If `N` elapses with no response, the tile **flips** to the encroaching
+   faction's control. The border redraws.
+
+**Peons are purely nonviolent.** They never fight. They **avoid threatened
+tiles** — a pulsing tile is rerouted around; a peon exploiting a tile that
+starts pulsing abandons it and flees toward home. This is the "mindless brute"
+contract completed: peons are also pacifists.
+
+## Territorial buildings — second-degree borders
+
+Buildings radiate their **own** border around neighbouring hexes, drawn in a
+distinct colour from the zone-of-control line. Two kinds:
+
+- **Offensive building** (e.g. a Watchtower) — radiates an *offensive zone*. An
+  enemy *can* march into the overlap (e.g. to contest a resource), but is
+  **shot at continuously** by the building while inside the zone, until they
+  destroy the building.
+- **Defensive building** (e.g. a Wall) — a **hard border**. An enemy unit
+  **cannot path past it** — pathfinding treats the wall's border as blocked
+  until the wall is destroyed.
+
+These give GOAP concrete, legible signals: is a target tile pulsing? is my
+border eroding? is a wall blocking my route? — far more tractable than
+guessing at fog exploration.
+
+## Difficulty
+
+Difficulty scales two perception/response knobs — the AI never cheats:
+
+- **Vision cone size** — Easy: narrow/short cones; Hard: wide cones.
+- **Reaction latency** — how fast the AI responds to its observed battlefield;
+  also sets the encroachment grace window `N`.
+
+## Why this replaces fog
+
+- The board stays fully legible — no black caps on a phone screen.
+- "Should I explore?" disappears as an AI goal — peons auto-claim by exploiting;
+  exploration is an emergent byproduct, not a decision to tune.
+- Difficulty becomes one clean dial (cones + latency), not fudged heuristics.
+- Encroachment + eroding borders + territorial buildings give the AI concrete
+  signals to reason over.
+
+## M8 re-decomposition (supersedes the fog steps)
+
+- **M8.4 (revise)** — `zone.ts`: per-faction `controlled` tile set (claimed by
+  exploitation) + `observed` set (vision cones). Replaces the fog `discovered`/
+  `visible` framing; vision-cone code is reused for `observed`.
+- **M8.5 (revise)** — `ZoneBorder.tsx`: draw the encirclement of each faction's
+  `controlled` region (two faction colours) + the pulse animation on contested
+  tiles. Replaces `FogOverlay`. The whole map renders; enemy units always draw.
+- **M8.6c** — peon autonomy also claims tiles on exploitation and flees pulsing
+  tiles.
+- **M8.6e (new)** — encroachment system: enemy-military-on-controlled-tile →
+  pulse → flip; territorial buildings (Watchtower offensive zone, Wall hard
+  border); pathfinding respects walls.
+- **M8.6d** — the yuka AI player loses the `scout` goal entirely; gains
+  goals that read pulse/erosion/wall signals.
