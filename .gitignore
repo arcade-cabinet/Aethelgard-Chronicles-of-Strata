@@ -158,6 +158,14 @@ test-results
 /blob-report
 /playwright/.cache
 
+# Vitest browser-mode failure artifacts (Playwright visual baselines under
+# tests/e2e and tests/visual ARE committed — these are transient failure shots)
+.vitest-attachments
+tests/browser/**/__screenshots__
+
+# macOS
+.DS_Store
+
 # agent-state caches (re-derivable; directive.md + decisions.ndjson are tracked)
 .agent-state/digest.md
 .agent-state/cursor.md

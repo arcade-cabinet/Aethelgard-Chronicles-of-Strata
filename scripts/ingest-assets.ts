@@ -1,7 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
-import type { AssetManifest } from '../src/assets/manifest-types';
+import type { AssetEntry, AssetManifest } from '../src/assets/manifest-types';
 import { ASSET_MAP, logicalIdToOutputPath } from './asset-map';
 
 const REPO = process.cwd();
@@ -42,17 +42,21 @@ async function main(): Promise<void> {
     const outAbs = join(OUT_DIR, outRel);
     mkdirSync(dirname(outAbs), { recursive: true });
     copyFileSync(src, outAbs);
-    const meta = kind === 'glb' ? await readGlbMeta(src) : { triangles: undefined, animations: [] };
-    entries[item.id] = {
+    const entry: AssetEntry = {
       id: item.id,
       path: outRel,
       category: item.id.split('.')[0] ?? 'misc',
       kind,
-      triangles: meta.triangles,
-      animations: meta.animations,
+      animations: [],
       pack: item.pack,
       license: item.license,
     };
+    if (kind === 'glb') {
+      const meta = await readGlbMeta(src);
+      entry.triangles = meta.triangles;
+      entry.animations = meta.animations;
+    }
+    entries[item.id] = entry;
   }
   if (missing > 0) {
     console.error(`Ingest failed: ${missing} source asset(s) missing.`);
