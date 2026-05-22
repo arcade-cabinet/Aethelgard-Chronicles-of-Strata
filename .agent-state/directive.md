@@ -390,15 +390,13 @@ fun, releasable game."
 - [x] M9.1a — build menu (3ac2e4b): SelectionPanel lists all 6 buildable
   types with cost labels + affordability gating from @/rules BUILDING_COSTS.
   build-menu.browser.test.tsx pins the UI contract. 260 tests.
-- [ ] M9.1b — zone & territory legend: the HUD teaches what the zone border,
-  the contested-tile pulse, and the three building auras mean (a compact
-  legend / first-run hints — the player must read the board correctly).
-- [ ] M9.1c — onboarding: a short first-run tutorial overlay walking the core
-  loop (peons auto-harvest, watch resources, build, defend the Town Hall).
-  Skippable, shown once (Preferences flag).
-- [ ] M9.1d — docs completeness: write `docs/specs/10-player-journey.md`
-  (scene-by-scene journey — does not exist; every transition gets an e2e) and
-  `docs/specs/99-glossary.md` (canonical term list). Refresh `docs/STATE.md`.
+- [x] M9.1b — zone legend (284a2ff): ZoneLegend HUD pill — collapsed by
+  default, expands to a 5-row glossary. Browser-tested.
+- [x] M9.1c — onboarding (f8bf156): 4-step Radix Dialog overlay, gated by
+  Preferences `onboardingSeen`, skippable. Browser-tested.
+- [x] M9.1d — docs completeness (cb8b7b8): 10-player-journey.md (S1–S5 +
+  e2e mapping), 99-glossary.md (canonical terms), docs/STATE.md (done/next +
+  spec arc table).
 
 ### M9.2 — visual & audio polish (the agent owns this — judge vs references)
 - [ ] M9.2a — building models: House, Granary, Watchtower, Wall get dedicated
