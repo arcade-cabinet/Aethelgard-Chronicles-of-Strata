@@ -5,12 +5,14 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    include: ['three/examples/jsm/utils/SkeletonUtils.js'],
+  },
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') },
-    // r3f + React 19 in browser mode: force a single React instance so hooks
-    // resolve against one renderer (otherwise useMemo reads from a null
-    // dispatcher and crashes).
-    dedupe: ['react', 'react-dom'],
+    // Force single instances: React (r3f hooks need one renderer) and three
+    // (r3f + drei + direct imports otherwise double-load the three module).
+    dedupe: ['react', 'react-dom', 'three'],
   },
   test: {
     coverage: {

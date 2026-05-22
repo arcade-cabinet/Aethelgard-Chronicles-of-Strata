@@ -7,5 +7,12 @@ export default defineConfig(({ mode }) => ({
   cacheDir: '.vite',
   build: { chunkSizeWarningLimit: 2000, target: 'es2022' },
   plugins: [react()],
-  resolve: { alias: { '@': path.resolve(__dirname, './src') } },
+  optimizeDeps: {
+    include: ['three/examples/jsm/utils/SkeletonUtils.js'],
+  },
+  resolve: {
+    alias: { '@': path.resolve(__dirname, './src') },
+    // single three instance — r3f + drei + direct three imports
+    dedupe: ['three'],
+  },
 }));

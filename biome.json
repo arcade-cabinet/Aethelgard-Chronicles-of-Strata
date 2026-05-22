@@ -20,5 +20,15 @@
   },
   "javascript": {
     "formatter": { "quoteStyle": "single", "trailingCommas": "all" }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/entities/**", "src/world/**", "src/render/**"],
+      "linter": {
+        "rules": {
+          "a11y": "off"
+        }
+      }
+    }
+  ]
 }
