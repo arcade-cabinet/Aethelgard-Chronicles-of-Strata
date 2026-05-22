@@ -347,9 +347,16 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   - Gate composition: a Mover on a tile adjacent-to / overlapping a Defender
     transforms that tile's render + passability (friendly = open, enemy =
     closed; the gate inherits the wall material + road form).
-  - rules/snapping.ts — placement-time magnetic snap law: walls snap to
-    walls, roads snap to roads + walls, all archetypes magnetically attract
-    compatible neighbours. Applied in placeBuilding + the build preview.
+  - rules/force-field.ts — a UNIFIED bi-signed magnetic field. Each
+    archetype trait declares attractive/repulsive forces per (faction,
+    target-kind); the field is the sum of every emitter. Three subsystems
+    consume the same field: placement snapping (highest net attraction
+    wins as snap target; net repulsion forbids), pathfinding nav cost
+    (enemy cost over a watchtower zone is high but not forbidden), AI
+    targeting/motivation (peons gravitate to consumers; bases repel each
+    other so enemy bases spawn far apart by force law, not by special-case
+    geometry). The "farthest walkable tile" enemy base placement becomes
+    a principled application of Attractor-repels-Attractor.
   - The unification beyond buildings: archetype traits are UNIVERSAL.
     Footmen `add` OffensiveBehavior on spawn; combat.ts collapses into a
     thin slice of the offensive-behavior system; Walls grow armorVsSiege /

@@ -88,6 +88,37 @@ gravitates to align with adjacent walls or attaches to the side of an
 offensive building) AND **runtime reactivity** (a watchtower aims at enemies,
 a gate opens for a friendly). One concept, four families.
 
+### Magnetism has TWO signs — attractive AND repulsive
+
+The full magnetic model expresses both attractive and repulsive forces, per
+faction. Each archetype emits a force on each *kind* of nearby thing:
+
+| Force pair | Sign | Behaviour it expresses |
+|---|---|---|
+| Defender ↔ Defender (same faction) | attract | walls snap into networks |
+| Defender ↔ friendly unit | attract | units shelter behind walls |
+| Defender ↔ enemy unit | **repel** | the wall is a pathing barrier (expressed as nav cost) |
+| Offensive ↔ enemy unit | attract (targeting) + **repel** (movement) | a watchtower scans for enemies AND enemy pathfinding routes around its zone |
+| Attractor ↔ resources | attract | the map-gen guarantee field |
+| Attractor ↔ enemy Attractor | **repel** | enemy bases naturally spawn far apart (the current "farthest walkable tile" enemy base placement is exactly this repulsion law, made principled) |
+| Consumer ↔ friendly peon | attract | peons gravitate to harvest in-zone |
+| Mover ↔ Mover (same / compatible) | attract | roads snap into a network |
+
+This unifies *three* systems onto **one underlying force field**:
+
+1. **Placement snapping** samples the field at candidate tiles → the highest
+   net attraction wins as snap target; net repulsion forbids placement.
+2. **Pathfinding cost** integrates the field along a path → enemy nav cost
+   over a watchtower zone is *high*, encouraging detour without forbidding.
+3. **AI targeting / motivation** reads attractive forces → a Footman's
+   target-selection bias, a peon's resource gravitation, a goal evaluator's
+   "where is the enemy concentrated."
+
+Each behaviour trait declares its attractive/repulsive parameters per
+(faction, target-kind); the field is the sum of every emitter. One model,
+many systems — the depth comes from the field, not from each system's
+internal heuristics.
+
 ## Archetype composition algebra — emergent richness without rule explosion
 
 The five archetypes (Attractor, Offensive, Defensive, Mover, Consumer) are not
