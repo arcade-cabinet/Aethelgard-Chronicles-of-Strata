@@ -119,6 +119,316 @@
     "license": "CC0",
     "triangles": 80
   },
+  "nature.tree.broadleaf-a": {
+    "id": "nature.tree.broadleaf-a",
+    "path": "assets/nature/tree/broadleaf-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 114
+  },
+  "nature.tree.broadleaf-b": {
+    "id": "nature.tree.broadleaf-b",
+    "path": "assets/nature/tree/broadleaf-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 50
+  },
+  "nature.tree.oak-a": {
+    "id": "nature.tree.oak-a",
+    "path": "assets/nature/tree/oak-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 196
+  },
+  "nature.tree.pine-b": {
+    "id": "nature.tree.pine-b",
+    "path": "assets/nature/tree/pine-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 246
+  },
+  "nature.tree.pine-tall-a": {
+    "id": "nature.tree.pine-tall-a",
+    "path": "assets/nature/tree/pine-tall-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 78
+  },
+  "nature.tree.pine-round-a": {
+    "id": "nature.tree.pine-round-a",
+    "path": "assets/nature/tree/pine-round-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 204
+  },
+  "nature.tree.small-a": {
+    "id": "nature.tree.small-a",
+    "path": "assets/nature/tree/small-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 62
+  },
+  "nature.tree.palm-a": {
+    "id": "nature.tree.palm-a",
+    "path": "assets/nature/tree/palm-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 186
+  },
+  "nature.tree.palm-bend": {
+    "id": "nature.tree.palm-bend",
+    "path": "assets/nature/tree/palm-bend.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 200
+  },
+  "nature.cactus.tall": {
+    "id": "nature.cactus.tall",
+    "path": "assets/nature/cactus/tall.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 122
+  },
+  "nature.cactus.short": {
+    "id": "nature.cactus.short",
+    "path": "assets/nature/cactus/short.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 116
+  },
+  "nature.bush-a": {
+    "id": "nature.bush-a",
+    "path": "assets/nature/bush-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 32
+  },
+  "nature.bush-b": {
+    "id": "nature.bush-b",
+    "path": "assets/nature/bush-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 60
+  },
+  "nature.bush-c": {
+    "id": "nature.bush-c",
+    "path": "assets/nature/bush-c.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 16
+  },
+  "nature.flower-a": {
+    "id": "nature.flower-a",
+    "path": "assets/nature/flower-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 76
+  },
+  "nature.flower-b": {
+    "id": "nature.flower-b",
+    "path": "assets/nature/flower-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 76
+  },
+  "nature.flower-c": {
+    "id": "nature.flower-c",
+    "path": "assets/nature/flower-c.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 76
+  },
+  "nature.mushroom-a": {
+    "id": "nature.mushroom-a",
+    "path": "assets/nature/mushroom-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 48
+  },
+  "nature.mushroom-b": {
+    "id": "nature.mushroom-b",
+    "path": "assets/nature/mushroom-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 48
+  },
+  "nature.grass-tuft": {
+    "id": "nature.grass-tuft",
+    "path": "assets/nature/grass-tuft.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 224
+  },
+  "nature.stump-a": {
+    "id": "nature.stump-a",
+    "path": "assets/nature/stump-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 56
+  },
+  "nature.rock.large-b": {
+    "id": "nature.rock.large-b",
+    "path": "assets/nature/rock/large-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 85
+  },
+  "nature.rock.large-c": {
+    "id": "nature.rock.large-c",
+    "path": "assets/nature/rock/large-c.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 72
+  },
+  "nature.rock.small-a": {
+    "id": "nature.rock.small-a",
+    "path": "assets/nature/rock/small-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 16
+  },
+  "nature.rock.tall-a": {
+    "id": "nature.rock.tall-a",
+    "path": "assets/nature/rock/tall-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Nature Kit",
+    "license": "CC0",
+    "triangles": 136
+  },
+  "nature.rock.crystal-a": {
+    "id": "nature.rock.crystal-a",
+    "path": "assets/nature/rock/crystal-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Tower Defense Kit",
+    "license": "CC0",
+    "triangles": 68
+  },
+  "nature.rock.crystal-large": {
+    "id": "nature.rock.crystal-large",
+    "path": "assets/nature/rock/crystal-large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Tower Defense Kit",
+    "license": "CC0",
+    "triangles": 436
+  },
+  "nature.rock.td-rocks": {
+    "id": "nature.rock.td-rocks",
+    "path": "assets/nature/rock/td-rocks.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Tower Defense Kit",
+    "license": "CC0",
+    "triangles": 184
+  },
+  "nature.rock.td-rocks-large": {
+    "id": "nature.rock.td-rocks-large",
+    "path": "assets/nature/rock/td-rocks-large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Tower Defense Kit",
+    "license": "CC0",
+    "triangles": 232
+  },
+  "nature.mound-a": {
+    "id": "nature.mound-a",
+    "path": "assets/nature/mound-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Tower Defense Kit",
+    "license": "CC0",
+    "triangles": 232
+  },
+  "nature.mound-b": {
+    "id": "nature.mound-b",
+    "path": "assets/nature/mound-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Tower Defense Kit",
+    "license": "CC0",
+    "triangles": 232
+  },
   "structures.town-hall": {
     "id": "structures.town-hall",
     "path": "assets/structures/town-hall.glb",
