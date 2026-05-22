@@ -362,6 +362,13 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
     thin slice of the offensive-behavior system; Walls grow armorVsSiege /
     armorVsNormal; Sieges multiply by the dual. One pairwise law, all
     combat shapes. See `docs/specs/102 — Archetype composition algebra`.
+  - Damage-type × armor TABLE (data not code): OffensiveBehavior declares
+    `damageType` (normal|siege|magic|pierce); Defender declares
+    `armorVs[damageType]`. Damage formula is one line. A trebuchet (unit) +
+    a catapult (building) are both Offensive with damageType:'siege' —
+    same projectile rendering, same firing cadence law, same target field;
+    only mobility + params differ. New units/buildings are new ROWS, not
+    new code paths.
 - [x] M8.6d — yuka Think-brain AI player (69e6ebc): AiPlayer extends
   GameEntity with an AiBrain (Think); BuildEvaluator + MilitaryEvaluator
   score from KNOWN state and dispatch to commands.ts; enemy faction always

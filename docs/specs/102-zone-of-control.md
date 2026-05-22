@@ -173,6 +173,31 @@ offensive-behavior system. A Footman attacks a Wall = "Offensive (Footman)
 The full game's depth comes from a tiny core: five archetype traits + one
 pairwise-composition table.
 
+### Damage-type × armor table — siege is data, not code
+
+The Offensive × Defender pairwise rule is realized as a small data table —
+the **cause-and-effect matrix**:
+
+- Each Offender entity declares a `damageType` — `normal` | `siege` | `magic`
+  | `pierce` (extendable).
+- Each Defender entity declares `armorVs[damageType]` — a multiplier on
+  incoming damage (1.0 = no resistance; 0.2 = heavy resistance; 2.0 = weak).
+- The damage formula is one line:
+  `applied = base * (target.armorVs[source.damageType] ?? 1)`.
+
+That means **siege isn't a unit subclass** — a siege unit (trebuchet) and a
+siege building (catapult emplacement) are both `OffensiveBehavior` instances
+with `damageType: 'siege'`. They reuse the same projectile rendering, the
+same firing cadence law, the same field-driven targeting — they differ only
+in mobility (unit vs building) and parameters. The Wall declares
+`armorVsNormal: 0.3, armorVsSiege: 1.5`; the formula does the rest. A new
+"battering ram" or a "wizard's fireball" is a new row of *data*, not new code.
+
+This is the pattern: **every game-system effect collapses into composition +
+a small typed table**. Hard-coding ("if unit.type === 'Trebuchet'") is the
+anti-pattern; the system iterates `OffensiveBehavior` once, the table tells
+it what each instance does.
+
 ## Territorial buildings — four local-zone kinds
 
 Every territorial building exerts a **local zone of control** and radiates its
