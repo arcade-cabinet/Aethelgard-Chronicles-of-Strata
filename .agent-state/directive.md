@@ -235,7 +235,9 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
 - [x] build targets verified — build:pages (correct Pages base path) +
   cap:sync both succeed
 - [x] M6 milestone doc + CHANGELOG 0.1.0 written
-- [ ] push feat/aethelgard-initial-release, open the single PR
+- [x] pushed feat/aethelgard-initial-release; opened PR #1 (the single
+  release PR delivering all of M0-M6)
+- [ ] [WAIT] CI on PR #1 — green build/test + debug-APK + Pages deploy
 
 ### M7 — AI subpackage (yuka)  [planned — after M6 ships]
 Per user: the AI deserves its own subpackage, not the minor `ecs/systems/ai.ts`

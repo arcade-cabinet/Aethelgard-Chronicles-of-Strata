@@ -2,14 +2,23 @@
 
 ## Technology
 
-Two persistence mechanisms are used:
-- **`@capacitor-community/sqlite`** — structured save files (ECS snapshots).
-- **`@capacitor/preferences`** — lightweight key-value settings.
+> **Revised during M6.** The original design used `@capacitor-community/sqlite`
+> for save files. That plugin's web platform requires the `jeep-sqlite` web
+> component + a WASM SQLite payload, and threw `jeep-sqlite element is not
+> present` errors in the browser test environment. Save games are small JSON
+> blobs with no relational queries beyond "list" and "get by id" — SQLite was
+> heavier than the data warrants. **All persistence now uses
+> `@capacitor/preferences`** (native key-value on Android, `localStorage` on
+> web — no platform setup, no WASM).
 
-On web (GitHub Pages), the SQLite plugin uses `wa-sqlite` as a WebAssembly fallback.
-The persistence layer in `src/persistence/` abstracts the platform — application code
-never calls the Capacitor plugin directly. It calls the persistence module, which
-selects the correct backend at runtime.
+A single persistence mechanism:
+- **`@capacitor/preferences`** — key-value storage for both settings and save
+  games.
+
+The persistence layer in `src/persistence/` abstracts it — application code
+never calls the Capacitor plugin directly. Save games are stored as one
+Preferences key per save (`save:<id>`) plus a `saveIndex` key holding the
+ordered id list; settings and the buried event-PRNG seed are their own keys.
 
 ## SQLite Save Schema
 

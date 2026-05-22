@@ -1,33 +1,42 @@
 /**
  * Persistence facade — save/load game sessions + settings.
  *
- * Save games are stored in `@capacitor-community/sqlite` (a `saves` table
- * as described in docs/specs/95-persistence.md). Settings (muted, lastSeed)
- * are stored in `@capacitor/preferences` which falls back to localStorage on
- * web. Both plugins have web fallback implementations so this module works
- * in the browser without native binaries.
+ * Everything is stored in `@capacitor/preferences`, which uses native
+ * key-value storage on Android and `localStorage` on web — no platform setup,
+ * no WASM payload, no `jeep-sqlite` web component. Save games are small JSON
+ * blobs (`{name, seed, snapshot}`) with no relational queries beyond "list" and
+ * "get by id", so a key-value store is the right fit; the `95-persistence.md`
+ * spec's SQLite design was heavier than the data warrants.
  *
- * Source: docs/specs/95-persistence.md
+ * Source: docs/specs/95-persistence.md (revised — Preferences-backed saves).
  */
-import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import { Preferences } from '@capacitor/preferences';
+import { type Rng, advanceEventSeed } from '@/core/rng';
 import type { GameState } from '@/game/game-state';
-import { advanceEventSeed, type Rng } from '@/core/rng';
-import { serializeWorld, type WorldSnapshot } from './serialize';
+import { type WorldSnapshot, serializeWorld } from './serialize';
 
 /** The Preferences key under which the device-level event PRNG seed is stored. */
 const EVENT_SEED_KEY = 'eventPrngSeed';
+/** The Preferences key holding the JSON array of save ids, newest first. */
+const SAVE_INDEX_KEY = 'saveIndex';
+/** Prefix for the per-save Preferences keys (`save:<id>`). */
+const SAVE_KEY_PREFIX = 'save:';
 
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
-/** A save-game record from the saves table. */
+/** A persisted save-game record. */
 export interface SaveRecord {
+  /** Monotonic save id (millisecond timestamp at save time). */
   id: number;
+  /** The save's display name. */
   name: string;
+  /** The map seed phrase the session was started with. */
   seedPhrase: string;
+  /** ISO timestamp the save was written. */
   savedAt: string;
+  /** The serialized ECS world. */
   snapshot: WorldSnapshot;
 }
 
@@ -35,7 +44,7 @@ export interface SaveRecord {
 export interface Persistence {
   /** Persist the current game state under `name`. */
   save(name: string, game: GameState): Promise<void>;
-  /** Load a save record by its row id. */
+  /** Load a save record by its id. */
   load(id: number): Promise<SaveRecord | null>;
   /** List all saved games, newest first. */
   list(): Promise<SaveRecord[]>;
@@ -53,35 +62,31 @@ export interface Persistence {
   getEventSeed(): Promise<string>;
   /**
    * Advance the event seed by drawing the next seed from the current event
-   * PRNG stream, persist the new value under `eventPrngSeed`, and return it.
-   * Call once per New Game so each session gets a distinct, deterministic
-   * event stream.
+   * PRNG stream, persist the new value, and return it. Call once per New Game
+   * so each session gets a distinct, deterministic event stream.
    */
   advanceAndPersistEventSeed(currentRng: Rng): Promise<string>;
 }
 
 // ---------------------------------------------------------------------------
-// SQLite init
+// Save-index helpers
 // ---------------------------------------------------------------------------
 
-const DB_NAME = 'aethelgard';
+/** Read the ordered list of save ids (newest first). */
+async function readIndex(): Promise<number[]> {
+  const { value } = await Preferences.get({ key: SAVE_INDEX_KEY });
+  if (!value) return [];
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) ? (parsed as number[]) : [];
+  } catch {
+    return [];
+  }
+}
 
-const sqlite = new SQLiteConnection(CapacitorSQLite);
-
-/** Open (or create) the app database and ensure the schema exists. */
-async function openDb() {
-  const db = await sqlite.createConnection(DB_NAME, false, 'no-encryption', 1, false);
-  await db.open();
-  await db.execute(`
-    CREATE TABLE IF NOT EXISTS saves (
-      id       INTEGER PRIMARY KEY AUTOINCREMENT,
-      name     TEXT    NOT NULL,
-      seed     TEXT    NOT NULL,
-      saved_at TEXT    NOT NULL,
-      snapshot TEXT    NOT NULL
-    );
-  `);
-  return db;
+/** Write the ordered list of save ids. */
+async function writeIndex(ids: number[]): Promise<void> {
+  await Preferences.set({ key: SAVE_INDEX_KEY, value: JSON.stringify(ids) });
 }
 
 // ---------------------------------------------------------------------------
@@ -92,53 +97,46 @@ async function openDb() {
 export function createPersistence(): Persistence {
   return {
     async save(name: string, game: GameState): Promise<void> {
-      const snapshot = serializeWorld(game.world);
-      const savedAt = new Date().toISOString();
-      const db = await openDb();
-      try {
-        await db.run(`INSERT INTO saves (name, seed, saved_at, snapshot) VALUES (?, ?, ?, ?);`, [
-          name,
-          game.seedPhrase,
-          savedAt,
-          JSON.stringify(snapshot),
-        ]);
-      } finally {
-        await sqlite.closeConnection(DB_NAME, false);
-      }
+      const id = Date.now();
+      const record: SaveRecord = {
+        id,
+        name,
+        seedPhrase: game.seedPhrase,
+        savedAt: new Date().toISOString(),
+        snapshot: serializeWorld(game.world),
+      };
+      await Preferences.set({
+        key: `${SAVE_KEY_PREFIX}${id}`,
+        value: JSON.stringify(record),
+      });
+      const index = await readIndex();
+      await writeIndex([id, ...index.filter((existing) => existing !== id)]);
     },
 
     async load(id: number): Promise<SaveRecord | null> {
-      const db = await openDb();
+      const { value } = await Preferences.get({ key: `${SAVE_KEY_PREFIX}${id}` });
+      if (!value) return null;
       try {
-        const result = await db.query(`SELECT * FROM saves WHERE id = ?;`, [id]);
-        const row = result.values?.[0];
-        if (!row) return null;
-        return {
-          id: row.id as number,
-          name: row.name as string,
-          seedPhrase: row.seed as string,
-          savedAt: row.saved_at as string,
-          snapshot: JSON.parse(row.snapshot as string) as WorldSnapshot,
-        };
-      } finally {
-        await sqlite.closeConnection(DB_NAME, false);
+        return JSON.parse(value) as SaveRecord;
+      } catch {
+        return null;
       }
     },
 
     async list(): Promise<SaveRecord[]> {
-      const db = await openDb();
-      try {
-        const result = await db.query(`SELECT * FROM saves ORDER BY saved_at DESC;`);
-        return (result.values ?? []).map((row) => ({
-          id: row.id as number,
-          name: row.name as string,
-          seedPhrase: row.seed as string,
-          savedAt: row.saved_at as string,
-          snapshot: JSON.parse(row.snapshot as string) as WorldSnapshot,
-        }));
-      } finally {
-        await sqlite.closeConnection(DB_NAME, false);
+      const ids = await readIndex();
+      const records: SaveRecord[] = [];
+      for (const id of ids) {
+        const { value } = await Preferences.get({ key: `${SAVE_KEY_PREFIX}${id}` });
+        if (value) {
+          try {
+            records.push(JSON.parse(value) as SaveRecord);
+          } catch {
+            // skip a corrupt save rather than failing the whole list
+          }
+        }
       }
+      return records;
     },
 
     async getSetting(key: string): Promise<string | null> {

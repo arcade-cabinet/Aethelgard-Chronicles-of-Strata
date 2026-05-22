@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { BufferAttribute, BufferGeometry, DoubleSide } from 'three';
 import type { BoardData } from '@/core/board';
 import { buildTerrainGeometry } from './terrain-mesh';
@@ -18,6 +18,9 @@ export function Terrain({ board }: { board: BoardData }) {
     geo.computeVertexNormals();
     return geo;
   }, [board]);
+
+  // release the GPU buffers when the board changes or the component unmounts
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (
     <mesh geometry={geometry} castShadow receiveShadow>

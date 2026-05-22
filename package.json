@@ -29,7 +29,6 @@
     "verify": "pnpm check && pnpm lint && pnpm format:check && pnpm test"
   },
   "dependencies": {
-    "@capacitor-community/sqlite": "^8.1.0",
     "@capacitor/core": "^8.3.4",
     "@capacitor/device": "^8.0.2",
     "@capacitor/preferences": "^8.0.1",

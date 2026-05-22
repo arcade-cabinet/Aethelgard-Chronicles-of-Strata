@@ -1,5 +1,5 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { BufferAttribute, BufferGeometry, type Points } from 'three';
 import { MAP_RADIUS } from '@/config/world';
 import type { GameState } from '@/game/game-state';
@@ -30,6 +30,9 @@ export function RainParticles({ game }: { game: GameState }) {
     geo.setAttribute('position', new BufferAttribute(positions, 3));
     return geo;
   }, [span]);
+
+  // release the GPU buffer when the component unmounts
+  useEffect(() => () => geometry.dispose(), [geometry]);
 
   useFrame((_, delta) => {
     const points = ref.current;
