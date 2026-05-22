@@ -118,10 +118,10 @@ function drawOverlay(
     ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
   }
 
-  // Town Hall + Goblin Portal markers
+  // home base + enemy base markers
   for (const [entity, color] of [
     [game.townHallEntity, '#38bdf8'],
-    [game.portalEntity, '#a855f7'],
+    [game.enemyBaseEntity, '#a855f7'],
   ] as const) {
     const hex = entity.get(HexPosition);
     if (!hex) continue;

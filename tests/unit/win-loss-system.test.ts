@@ -1,45 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import { Building, GoblinPortalTrait, Health } from '@/ecs/components';
+import { FactionBase, Health } from '@/ecs/components';
 import { evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('win/loss system', () => {
-  it('returns "playing" while both the Portal and Town Hall live', () => {
+  it('returns "playing" while both faction bases live', () => {
     const world = createEcsWorld();
-    world.spawn(
-      GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }),
-      Health({ current: 300, max: 300 }),
-    );
-    world.spawn(
-      Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
-      Health({ current: 500, max: 500 }),
-    );
+    world.spawn(FactionBase({ faction: 'enemy' }), Health({ current: 300, max: 300 }));
+    world.spawn(FactionBase({ faction: 'player' }), Health({ current: 500, max: 500 }));
     expect(evaluateWinLoss(world)).toBe('playing');
   });
 
-  it('returns "win" when the Portal Health hits 0', () => {
+  it('returns "win" when the enemy base Health hits 0', () => {
     const world = createEcsWorld();
-    world.spawn(
-      GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }),
-      Health({ current: 0, max: 300 }),
-    );
-    world.spawn(
-      Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
-      Health({ current: 500, max: 500 }),
-    );
+    world.spawn(FactionBase({ faction: 'enemy' }), Health({ current: 0, max: 300 }));
+    world.spawn(FactionBase({ faction: 'player' }), Health({ current: 500, max: 500 }));
     expect(evaluateWinLoss(world)).toBe('win');
   });
 
-  it('returns "loss" when the Town Hall Health hits 0', () => {
+  it('returns "loss" when the player home base Health hits 0', () => {
     const world = createEcsWorld();
-    world.spawn(
-      GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }),
-      Health({ current: 300, max: 300 }),
-    );
-    world.spawn(
-      Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
-      Health({ current: 0, max: 500 }),
-    );
+    world.spawn(FactionBase({ faction: 'enemy' }), Health({ current: 300, max: 300 }));
+    world.spawn(FactionBase({ faction: 'player' }), Health({ current: 0, max: 500 }));
+    expect(evaluateWinLoss(world)).toBe('loss');
+  });
+
+  it('loss takes precedence when both bases fall on the same tick', () => {
+    const world = createEcsWorld();
+    world.spawn(FactionBase({ faction: 'enemy' }), Health({ current: 0, max: 300 }));
+    world.spawn(FactionBase({ faction: 'player' }), Health({ current: 0, max: 500 }));
     expect(evaluateWinLoss(world)).toBe('loss');
   });
 });

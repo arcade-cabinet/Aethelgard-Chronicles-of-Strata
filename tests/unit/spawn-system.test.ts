@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
-import { FactionTrait, GoblinPortalTrait, HexPosition, Unit } from '@/ecs/components';
+import { FactionTrait, EnemySpawner, HexPosition, Unit } from '@/ecs/components';
 import { pickEnemyRole, spawnSystem } from '@/ecs/systems/spawn';
 import { createEcsWorld } from '@/ecs/world';
 
@@ -13,7 +13,7 @@ describe('spawn system', () => {
     if (!tile) throw new Error('no walkable tile');
     world.spawn(
       HexPosition({ q: tile.q, r: tile.r, level: tile.level }),
-      GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }),
+      EnemySpawner({ spawnTimer: 0, spawnInterval: 45 }),
     );
     const enemiesBefore = world
       .query(Unit, FactionTrait)
@@ -32,7 +32,7 @@ describe('spawn system', () => {
     if (!tile) throw new Error('no walkable tile');
     world.spawn(
       HexPosition({ q: tile.q, r: tile.r, level: tile.level }),
-      GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }),
+      EnemySpawner({ spawnTimer: 0, spawnInterval: 45 }),
     );
     spawnSystem(world, board, 10, 60);
     expect(world.query(Unit).length).toBe(0);

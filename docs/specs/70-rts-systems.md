@@ -174,7 +174,7 @@ per Barracks at a time — setting a new rally removes the old marker.
 
 ## Win / Loss Conditions
 
-**Win:** The GoblinPortal entity's Health reaches 0. The `winLossSystem` detects the
+**Win:** The EnemyBase entity's Health reaches 0. The `winLossSystem` detects the
 Portal entity removal and triggers the win flow:
 1. All enemy AI stops.
 2. The win modal appears with `modal-title-win` styling (gold `#fbbf24`, Metamorphous
@@ -191,7 +191,7 @@ Both modals include a "Re-enter Aethelgard" button that calls `location.reload()
 reset to the launcher.
 
 **Acceptance criteria:**
-- Reducing the GoblinPortal to 0 HP triggers the victory modal.
+- Reducing the EnemyBase to 0 HP triggers the victory modal.
 - Reducing the TownHall to 0 HP triggers the defeat modal.
 - No player input is accepted after either modal appears.
 - Stats accurately reflect the completed session's totals.
@@ -204,7 +204,7 @@ The enemy AI runs in `aiSystem` each frame. For each enemy entity with no curren
 2. Compute A* path to that target's hex.
 3. Assign the path to the entity's PathQueue.
 
-Goblins spawn from the GoblinPortal on a timer (every 45 seconds at base rate, reduced
+Goblins spawn from the EnemyBase on a timer (every 45 seconds at base rate, reduced
 by 10% per surviving footman). They always target the nearest player unit first; if no
 units exist, they target the TownHall directly.
 

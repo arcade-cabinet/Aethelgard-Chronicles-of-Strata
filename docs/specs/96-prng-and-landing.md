@@ -69,7 +69,7 @@ title screen.
 
 Three levels — Easy / Normal / Hard — scaling **both**:
 
-- Goblin Portal `spawnInterval` and the Orc-escalation threshold.
+- enemy base `spawnInterval` and the Orc-escalation threshold.
 - Enemy `Health` and `Combatant.attackDamage` (a per-difficulty multiplier
   applied in the character factory for enemy roles).
 

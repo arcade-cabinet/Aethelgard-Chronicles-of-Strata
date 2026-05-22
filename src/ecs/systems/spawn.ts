@@ -2,7 +2,7 @@ import type { World } from 'koota';
 import { COMBAT } from '@/config/combat';
 import type { BoardData } from '@/core/board';
 import { hexNeighbors } from '@/core/hex';
-import { GoblinPortalTrait, HexPosition, type UnitType } from '@/ecs/components';
+import { EnemySpawner, HexPosition, type UnitType } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import type { Difficulty } from '@/game/difficulty';
 
@@ -54,11 +54,11 @@ export function pickEnemyRole(spawnCount: number, gameElapsed: number): UnitType
 }
 
 /**
- * Advance the Goblin Portal's spawn timer. Each `spawnInterval` seconds it
- * spawns an enemy on a walkable neighbor tile. The enemy roster escalates as
- * game-elapsed increases: Goblins first, then Vampires, Orcs, Witches, and
- * finally Black Knights. The spawn count lives on the `GoblinPortalTrait`
- * entity so the escalation cadence survives a save/load round-trip.
+ * Advance the enemy base's spawn timer. Each `spawnInterval` seconds the base
+ * spawns an enemy on a walkable neighbour tile. The roster escalates with
+ * game-elapsed: Goblins first, then Vampires, Orcs, Witches, Black Knights. The
+ * spawn count lives on the `EnemySpawner` entity so the escalation cadence
+ * survives a save/load round-trip.
  *
  * `difficulty` is optional (defaults to 'normal') so existing 4-arg test
  * call-sites keep working.
@@ -70,12 +70,12 @@ export function spawnSystem(
   gameElapsed: number,
   difficulty: Difficulty = 'normal',
 ): void {
-  world.query(GoblinPortalTrait, HexPosition).updateEach(([portal, hex]) => {
-    portal.spawnTimer += delta;
-    if (portal.spawnTimer < portal.spawnInterval) return;
-    portal.spawnTimer = 0;
-    portal.spawnCount += 1;
-    const role = pickEnemyRole(portal.spawnCount, gameElapsed);
+  world.query(EnemySpawner, HexPosition).updateEach(([spawner, hex]) => {
+    spawner.spawnTimer += delta;
+    if (spawner.spawnTimer < spawner.spawnInterval) return;
+    spawner.spawnTimer = 0;
+    spawner.spawnCount += 1;
+    const role = pickEnemyRole(spawner.spawnCount, gameElapsed);
     for (const nKey of hexNeighbors(hex.q, hex.r)) {
       const tile = board.tiles.get(nKey);
       if (tile?.walkable) {
@@ -83,7 +83,7 @@ export function spawnSystem(
         return;
       }
     }
-    // fallback: spawn on the portal tile itself when no walkable neighbor exists
+    // fallback: spawn on the base tile itself when no walkable neighbour exists
     createCharacter({ world, role, q: hex.q, r: hex.r, level: hex.level, difficulty });
   });
 }

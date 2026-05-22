@@ -76,11 +76,20 @@ export const Combatant = trait({
 });
 
 /**
- * Marks the Goblin Portal and tracks its enemy-spawn timer plus the running
- * spawn count (every third spawn past the Orc threshold is an Orc). The count
- * lives on the entity — not module state — so it survives save/load.
+ * Marks a faction's main base — the player's home base or the enemy's. A
+ * faction loses when its `FactionBase` entity is destroyed. The base is the
+ * symmetric anchor of each faction's structures. See `docs/specs/100-ai-as-player.md`.
  */
-export const GoblinPortalTrait = trait({ spawnTimer: 0, spawnInterval: 45, spawnCount: 0 });
+export const FactionBase = trait({ faction: 'player' as Faction });
+
+/**
+ * The enemy base's unit-spawning behaviour — its spawn timer, interval, and the
+ * running spawn count (drives the escalation ladder). Attached alongside
+ * `FactionBase` on the enemy base entity. The player home base has no spawner;
+ * the player builds units instead. The count lives on the entity — not module
+ * state — so it survives save/load.
+ */
+export const EnemySpawner = trait({ spawnTimer: 0, spawnInterval: 45, spawnCount: 0 });
 
 /** The entity an enemy is currently hunting. `targetId` is -1 when none. */
 export const EnemyTarget = trait({ targetId: -1 });

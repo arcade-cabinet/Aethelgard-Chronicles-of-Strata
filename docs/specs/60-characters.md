@@ -120,7 +120,7 @@ crossfade when the state changes.
 
 ## Building Characters
 
-Buildings (TownHall, Farm, Barracks, GoblinPortal) use KayKit building GLBs from the
+Buildings (TownHall, Farm, Barracks, EnemyBase) use KayKit building GLBs from the
 Dungeon Pack. They are not animated and do not use the shared-rig pattern. They are
 instantiated by `src/entities/buildingFactory.ts`, which follows the same parameter
 pattern as `createCharacter` but without animation setup.

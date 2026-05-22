@@ -7,32 +7,32 @@ import { HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 
 /**
- * Renders the Goblin Portal's necropolis base: a central crypt flanked by
- * gravestones and iron fences on the portal tile. All props are Kenney Graveyard
- * Kit GLBs (CC0). The crypt is the dominant landmark; gravestones and fences
- * cluster around it to form a recognisable "enemy HQ" silhouette.
+ * Renders the enemy base — a graveyard: a central crypt flanked by gravestones
+ * and iron fences on the enemy base tile. All props are Kenney Graveyard Kit
+ * GLBs. The crypt is the dominant landmark; gravestones and fences cluster
+ * around it to form a recognisable "enemy HQ" silhouette.
  *
- * Prop positions are fixed offsets in local tile-space — no PRNG needed.
- * The group sits at the portal entity's world position, derived from its ECS
- * HexPosition component each render (stable once the session starts).
+ * Prop positions are fixed offsets in local tile-space. The group sits at the
+ * enemy base entity's world position, derived from its ECS HexPosition
+ * component (stable once the session starts).
  */
-export function GoblinPortalBase({ game }: { game: GameState }) {
+export function EnemyBase({ game }: { game: GameState }) {
   const crypt = useGLTF(assets.url('structures.portal-crypt'));
   const gravestoneCross = useGLTF(assets.url('nature.gravestone.cross'));
   const gravestoneRound = useGLTF(assets.url('nature.gravestone.round'));
   const fence = useGLTF(assets.url('structures.portal-fence'));
 
   const pos = useMemo(() => {
-    const hexPos = game.portalEntity.get(HexPosition);
+    const hexPos = game.enemyBaseEntity.get(HexPosition);
     if (!hexPos) return null;
     const { x, z } = axialToWorld(hexPos.q, hexPos.r);
     return { x, y: hexPos.level * TILE_HEIGHT, z };
-  }, [game.portalEntity]);
+  }, [game.enemyBaseEntity]);
 
   if (!pos) return null;
 
   return (
-    <group name="goblin-portal-base" position={[pos.x, pos.y, pos.z]}>
+    <group name="enemy-base" position={[pos.x, pos.y, pos.z]}>
       {/* Central crypt — scaled to dominate the tile */}
       <group scale={1.4}>
         <Clone object={crypt.scene} />
@@ -63,7 +63,7 @@ export function GoblinPortalBase({ game }: { game: GameState }) {
   );
 }
 
-// Preload all portal base assets so they arrive before the first render.
+// Preload all enemy-base assets so they arrive before the first render.
 useGLTF.preload(assets.url('structures.portal-crypt'));
 useGLTF.preload(assets.url('nature.gravestone.cross'));
 useGLTF.preload(assets.url('nature.gravestone.round'));

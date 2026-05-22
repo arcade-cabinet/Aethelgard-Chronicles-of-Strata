@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
-import { FactionTrait, GoblinPortalTrait, HexPosition, Unit } from '@/ecs/components';
+import { FactionTrait, EnemySpawner, HexPosition, Unit } from '@/ecs/components';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { createEcsWorld } from '@/ecs/world';
 
@@ -17,7 +17,7 @@ describe('orc escalation', () => {
     if (!tile) throw new Error('no walkable tile');
     world.spawn(
       HexPosition({ q: tile.q, r: tile.r, level: tile.level }),
-      GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }),
+      EnemySpawner({ spawnTimer: 0, spawnInterval: 45 }),
     );
     // gameElapsed = 60s — below the 600s Orc threshold
     spawnSystem(world, board, 45, 60);
@@ -32,7 +32,7 @@ describe('orc escalation', () => {
     if (!tile) throw new Error('no walkable tile');
     world.spawn(
       HexPosition({ q: tile.q, r: tile.r, level: tile.level }),
-      GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }),
+      EnemySpawner({ spawnTimer: 0, spawnInterval: 45 }),
     );
     // gameElapsed = 700s — past the 600s Orc threshold
     let orcs = 0;

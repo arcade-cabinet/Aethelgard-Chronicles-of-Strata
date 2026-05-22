@@ -7,7 +7,7 @@
 A full-featured tactical RTS played on a procedurally generated hex board. One
 seed phrase produces a unique world: terraced terrain, biomes, resources, enemy
 portals, and random events. Players command peons to harvest resources, construct
-buildings, train soldiers, and defeat the Goblin Portal before their Town Hall
+buildings, train soldiers, and defeat the enemy base before their Town Hall
 falls. The aesthetic is a low-poly diorama — chunky distinct tiles, flat shading,
 vibrant biome colors — bridging the tactile feel of Catan with the terraced
 strata of Monument Valley and the biome identity of Animal Crossing: New Horizons.

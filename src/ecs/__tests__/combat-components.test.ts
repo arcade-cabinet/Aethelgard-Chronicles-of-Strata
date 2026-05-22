@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Combatant, EnemyTarget, GoblinPortalTrait } from '@/ecs/components';
+import { Combatant, EnemySpawner, EnemyTarget } from '@/ecs/components';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('combat components', () => {
@@ -12,10 +12,10 @@ describe('combat components', () => {
     expect(e.get(Combatant)?.attackRange).toBe(1);
   });
 
-  it('GoblinPortalTrait tracks the enemy spawn timer', () => {
+  it('EnemySpawner tracks the enemy base spawn timer', () => {
     const world = createEcsWorld();
-    const portal = world.spawn(GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }));
-    expect(portal.get(GoblinPortalTrait)?.spawnInterval).toBe(45);
+    const base = world.spawn(EnemySpawner({ spawnTimer: 0, spawnInterval: 45 }));
+    expect(base.get(EnemySpawner)?.spawnInterval).toBe(45);
   });
 
   it('EnemyTarget records the targeted entity id, empty when none', () => {

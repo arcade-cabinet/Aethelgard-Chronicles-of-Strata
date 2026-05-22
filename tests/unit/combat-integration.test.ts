@@ -6,7 +6,7 @@ describe('combat integration', () => {
   it('startGame creates a Town Hall entity and a Goblin Portal entity with Health', () => {
     const game = startGame('ancient-silver-forest');
     expect(game.townHallEntity.get(Health)?.current).toBeGreaterThan(0);
-    expect(game.portalEntity.get(Health)?.current).toBeGreaterThan(0);
+    expect(game.enemyBaseEntity.get(Health)?.current).toBeGreaterThan(0);
   });
 
   it('the portal spawns enemies over time', () => {

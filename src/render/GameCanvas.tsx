@@ -7,7 +7,7 @@ import { type ViewportProfile, useViewport } from './useViewport';
 import { Buildings } from '@/world/Buildings';
 import { CombatText } from '@/world/CombatText';
 import { Decoration } from '@/world/Decoration';
-import { GoblinPortalBase } from '@/world/GoblinPortalBase';
+import { EnemyBase } from '@/world/EnemyBase';
 import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { Mountains } from '@/world/Mountains';
@@ -53,7 +53,7 @@ function Scene({
         <Decoration board={game.board} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
         <Buildings game={game} />
-        <GoblinPortalBase game={game} />
+        <EnemyBase game={game} />
         <Units game={game} />
       </Suspense>
       <CombatText game={game} />

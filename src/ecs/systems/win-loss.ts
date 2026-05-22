@@ -1,30 +1,34 @@
 import type { World } from 'koota';
-import { Building, GoblinPortalTrait, Health } from '@/ecs/components';
+import { FactionBase, Health } from '@/ecs/components';
 
 /** The end-state of a session. */
 export type GameOutcome = 'playing' | 'win' | 'loss';
 
 /**
- * Evaluate the win/loss condition. Win when the Goblin Portal's Health reaches
- * 0; loss when the Town Hall's Health reaches 0. Loss takes precedence if both
- * fall on the same tick (the player has lost their base).
+ * Evaluate the win/loss condition symmetrically over the `FactionBase` entities:
+ * the player loses when their home base's Health reaches 0; the player wins when
+ * the enemy base's Health reaches 0. Loss takes precedence if both fall on the
+ * same tick. This is faction-symmetric — the same rule scores either side.
  */
 export function evaluateWinLoss(world: World): GameOutcome {
-  let townHallDead = false;
-  for (const e of world.query(Building, Health)) {
-    if (e.get(Building)?.buildingType === 'TownHall' && (e.get(Health)?.current ?? 1) <= 0) {
-      townHallDead = true;
+  let playerBaseAlive = false;
+  let playerBaseExists = false;
+  let enemyBaseAlive = false;
+  let enemyBaseExists = false;
+
+  for (const e of world.query(FactionBase, Health)) {
+    const faction = e.get(FactionBase)?.faction;
+    const alive = (e.get(Health)?.current ?? 0) > 0;
+    if (faction === 'player') {
+      playerBaseExists = true;
+      if (alive) playerBaseAlive = true;
+    } else if (faction === 'enemy') {
+      enemyBaseExists = true;
+      if (alive) enemyBaseAlive = true;
     }
   }
-  if (townHallDead) return 'loss';
 
-  let portalAlive = false;
-  for (const e of world.query(GoblinPortalTrait, Health)) {
-    if ((e.get(Health)?.current ?? 0) > 0) portalAlive = true;
-  }
-  // a session always has a portal — if none is alive, it was destroyed
-  const portalExists = world.query(GoblinPortalTrait).length > 0;
-  if (portalExists && !portalAlive) return 'win';
-
+  if (playerBaseExists && !playerBaseAlive) return 'loss';
+  if (enemyBaseExists && !enemyBaseAlive) return 'win';
   return 'playing';
 }

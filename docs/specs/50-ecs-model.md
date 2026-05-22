@@ -28,7 +28,7 @@ a play session.
 
 ```typescript
 type UnitType = "Peon" | "Footman" | "Goblin" | "Orc";
-type BuildingType = "TownHall" | "Farm" | "Barracks" | "GoblinPortal";
+type BuildingType = "TownHall" | "Farm" | "Barracks" | "EnemyBase";
 type ResourceType = "wood" | "stone" | "gold";
 type AnimState = "IDLE" | "MOVING" | "HARVESTING" | "ATTACKING" | "DYING" | "BUILDING";
 type HexKey = string; // format: "${q},${r}"
@@ -48,7 +48,7 @@ each produce exactly one archetype type, parameterized by role.
 | **TownHall** | Transform, HexPosition, Building(TownHall,complete), Faction(player), Health(500), Selectable |
 | **Farm** | Transform, HexPosition, Building(Farm), Faction(player), Health(100) |
 | **Barracks** | Transform, HexPosition, Building(Barracks), Faction(player), Health(150), Selectable |
-| **GoblinPortal** | Transform, HexPosition, Building(GoblinPortal,complete), Faction(enemy), Health(300) |
+| **EnemyBase** | Transform, HexPosition, Building(EnemyBase,complete), Faction(enemy), Health(300) |
 | **ResourceNode** | Transform, HexPosition, Resource(type,amount) |
 
 ## System Catalog and Run Order
@@ -59,7 +59,7 @@ state that later systems read in the same frame.
 | # | System | Description |
 |---|---|---|
 | 1 | `weatherSystem` | Advances the weather state machine (sunny → fog → rain → sunny) using the event PRNG. Updates sky color and ambient light. |
-| 2 | `spawnSystem` | Checks spawn timers; creates new Goblin/Orc entities at the GoblinPortal when spawn conditions are met. |
+| 2 | `spawnSystem` | Checks spawn timers; creates new Goblin/Orc entities at the EnemyBase when spawn conditions are met. |
 | 3 | `aiSystem` | For each enemy entity: if no PathQueue, pick a target (nearest player unit or TownHall) and compute A* path. |
 | 4 | `pathFollowSystem` | For all entities with PathQueue: advance position along the path. Pops completed steps. Sets `isMoving`, updates HexPosition when a step completes. |
 | 5 | `movementSystem` | Applies velocity from `Movement` and `PathQueue` to `Transform.position` each frame. |
@@ -68,7 +68,7 @@ state that later systems read in the same frame.
 | 8 | `combatSystem` | For all Combatant entities: tick attackTimer. When timer fires AND an enemy is in range: apply damage (with event PRNG crit roll), create floating combat text, reduce target Health. |
 | 9 | `depositSystem` | For carriers with full Carrier at or adjacent to TownHall: add resources to global economy state, clear Carrier, return Harvester to idle. |
 | 10 | `deathSystem` | For entities with Health.current ≤ 0: set AnimationState(DYING), schedule entity removal after death animation completes. |
-| 11 | `winLossSystem` | Check: if GoblinPortal entity gone → trigger win. If TownHall entity gone → trigger loss. |
+| 11 | `winLossSystem` | Check: if EnemyBase entity gone → trigger win. If TownHall entity gone → trigger loss. |
 
 ## Serialization
 

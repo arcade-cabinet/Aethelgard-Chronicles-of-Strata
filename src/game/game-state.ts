@@ -8,8 +8,9 @@ import {
   AssignedJob,
   Building,
   type BuildingType,
+  EnemySpawner,
+  FactionBase,
   FactionTrait,
-  GoblinPortalTrait,
   Health,
   HexPosition,
   ResourceTrait,
@@ -82,10 +83,10 @@ export interface GameState {
   resourceNodes: ResourceNodePlan[];
   /** Building-site entities keyed by hex tile key (for the build system). */
   buildSites: Map<string, Entity>;
-  /** The Town Hall ECS entity (player base — loss condition). */
+  /** The player home base ECS entity (the Town Hall — loss condition). */
   townHallEntity: Entity;
-  /** The Goblin Portal ECS entity (enemy spawner — win condition). */
-  portalEntity: Entity;
+  /** The enemy base ECS entity (the graveyard spawner — win condition). */
+  enemyBaseEntity: Entity;
   /** Current win/loss outcome; 'playing' until a condition is met. */
   outcome: GameOutcome;
   /** Damage events produced by the last combatSystem tick (for FX). */
@@ -226,33 +227,35 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     selected: false,
   });
 
-  // Spawn the Town Hall entity (player base — loss condition).
+  // Spawn the player home base (the Town Hall — loss condition when destroyed).
   const townHallEntity = world.spawn(
     HexPosition({ q: center.q, r: center.r, level: center.level }),
     Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
     Health({ current: 500, max: 500 }),
     FactionTrait({ faction: 'player' }),
+    FactionBase({ faction: 'player' }),
   );
 
-  // Pick the farthest walkable tile from center for the Goblin Portal.
-  let portalTile = center;
+  // Pick the farthest walkable tile from center for the enemy base.
+  let enemyBaseTile = center;
   let maxDist = 0;
   for (const tile of board.tiles.values()) {
     if (!tile.walkable) continue;
     const d = hexDistance(tile.q, tile.r, center.q, center.r);
     if (d > maxDist) {
       maxDist = d;
-      portalTile = tile;
+      enemyBaseTile = tile;
     }
   }
 
-  // Spawn the Goblin Portal entity (enemy spawner — win condition).
+  // Spawn the enemy base — the graveyard (enemy unit spawner — win condition).
   // spawnInterval is difficulty-scaled: easy 60s, normal 45s, hard 30s.
-  const portalEntity = world.spawn(
-    HexPosition({ q: portalTile.q, r: portalTile.r, level: portalTile.level }),
-    GoblinPortalTrait({ spawnTimer: 0, spawnInterval: spawnIntervalFor(difficulty) }),
+  const enemyBaseEntity = world.spawn(
+    HexPosition({ q: enemyBaseTile.q, r: enemyBaseTile.r, level: enemyBaseTile.level }),
+    EnemySpawner({ spawnTimer: 0, spawnInterval: spawnIntervalFor(difficulty) }),
     Health({ current: 300, max: 300 }),
     FactionTrait({ faction: 'enemy' }),
+    FactionBase({ faction: 'enemy' }),
   );
 
   // Spawn one starting Footman near the Town Hall.
@@ -292,7 +295,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     resourceNodes,
     buildSites,
     townHallEntity,
-    portalEntity,
+    enemyBaseEntity,
     outcome: 'playing',
     lastDamageEvents: [],
     eventRng,
