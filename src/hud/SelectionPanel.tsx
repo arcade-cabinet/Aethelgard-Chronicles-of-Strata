@@ -1,13 +1,42 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { Building, Health, Unit } from '@/ecs/components';
+import { Building, type BuildingType, Health, Unit } from '@/ecs/components';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { doResearch } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { canResearch, RESEARCH_COST, type ResearchId } from '@/game/research';
 import { selectedEntity } from '@/game/selection';
+import { BUILDING_COSTS } from '@/rules';
 import type { BuildContext } from '@/world/TileInteraction';
 import { HUD_THEME } from './hud-theme';
+
+/** Every type the player may build, in build-menu priority order. */
+const BUILDABLE_TYPES: ReadonlyArray<Exclude<BuildingType, 'TownHall'>> = [
+  'Farm',
+  'House',
+  'Granary',
+  'Barracks',
+  'Watchtower',
+  'Wall',
+];
+
+/** Compact "60w 40s" cost label, omitting zero components. */
+function costLabel(cost: { wood: number; stone: number; gold: number }): string {
+  const parts: string[] = [];
+  if (cost.wood) parts.push(`${cost.wood}w`);
+  if (cost.stone) parts.push(`${cost.stone}s`);
+  if (cost.gold) parts.push(`${cost.gold}g`);
+  return parts.join(' ') || 'free';
+}
+
+/** Whether the player's economy can cover a building cost. */
+function canAffordCost(
+  game: GameState,
+  cost: { wood: number; stone: number; gold: number },
+): boolean {
+  const eco = game.economy.player;
+  return eco.wood >= cost.wood && eco.stone >= cost.stone && eco.gold >= cost.gold;
+}
 
 /** Props for the selection panel. */
 export interface SelectionPanelProps {
@@ -177,14 +206,18 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
 
           {view.isTownHall && (
             <div style={{ marginTop: 10 }}>
-              <HudButton
-                label="Build Farm"
-                onClick={() => beginBuild({ type: 'Farm', onPlaced: () => {} })}
-              />
-              <HudButton
-                label="Build Barracks"
-                onClick={() => beginBuild({ type: 'Barracks', onPlaced: () => {} })}
-              />
+              {BUILDABLE_TYPES.map((type) => {
+                const cost = BUILDING_COSTS[type];
+                const afford = canAffordCost(game, cost);
+                return (
+                  <HudButton
+                    key={type}
+                    label={`Build ${type} — ${costLabel(cost)}`}
+                    onClick={() => beginBuild({ type, onPlaced: () => {} })}
+                    disabled={!afford}
+                  />
+                );
+              })}
             </div>
           )}
 

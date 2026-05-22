@@ -58,10 +58,21 @@ archetypes share; their differences are just *what frequency they emit on* and
 - **Defensive** — magnetically reacts to *itself and to offenders*. Walls snap
   to other walls and to the middle-sides of offensive buildings, creating
   emergent fortification patterns (watchtower flanked by walls = compound).
-- **Mover** — magnetically reacts to *other movers and to defenders*. Roads
-  snap to other roads (network), and to walls (becoming a **gate** at the
-  junction). Gates are *directional emitters*: friendly units cross freely
-  (open); enemy units find them closed and must destroy/circumvent.
+- **Mover** — pathing/visual archetype only. Crucially, **Movers emit ZERO
+  zone of control** — they are perfectly *ZoC-neutral*. A road is just a
+  road; walking on one does not claim it, building a road across the map
+  does not grant territory. Movers' magnetism is purely placement-time +
+  visual + a defender-transform rule, not control:
+  - **Material defines visuals + connector form** — stone, wood, dirt; each
+    snaps to other mover tiles of any material in up to a 6-way junction.
+  - **Bridges across materials** — wood road meets stone road = visible
+    junction; a unit crosses either freely.
+  - **Defender transformation** — a Mover crossing a DefensiveBehavior
+    (e.g. wood wall) replaces that tile with a **Gate**: the gate inherits
+    the wall's material and the road's form. Gates are directional emitters
+    (friendly = open, enemy = closed).
+  - **Pillageable but inert** — a unit can destroy a road as an explicit
+    action; merely standing on it does nothing.
 
 The same principle drives both **placement-time snapping** (a placed wall
 gravitates to align with adjacent walls or attaches to the side of an
