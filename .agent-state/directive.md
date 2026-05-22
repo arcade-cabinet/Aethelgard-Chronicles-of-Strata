@@ -243,28 +243,16 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
 - [x] CI "Build and test" green on 72ee98a
 - [x] CI fully green on PR #1 (build/test + APK).
 
-### Post-PR fixes (user playtest feedback)
-- [ ] [WAIT] persistence agent: SQLite + jeep-sqlite (committed sessions in
-  SQLite, transient state in Preferences). Running in the SAME working tree —
-  its git ops keep reverting uncommitted edits to other files. WAIT for its
-  commit before touching shared-tree files.
-- [ ] Re-apply (lost to the agent's tree-revert race) once it commits:
-  1. EVENT-PRNG LIFECYCLE — `createFreshEventSeed()` is in rng.ts (survived).
-     NewGameModal must mint a fresh event seed on every modal-open (useEffect
-     on `open`), derive eventRng from it, shuffle the phrase; pass eventSeed up
-     via NewGameChoices. App.beginGame uses `choices.eventSeed`; drop the
-     getEventSeed/eventRng plumbing. This fixes "frosty-untamed-spire every
-     refresh" — the bug is the event PRNG never regenerating per New Game.
-  2. CLIFF COLOR — terrain-mesh.ts `cliffColor` must be fixed-per-tier (poc1's
-     getCliffColor: LAKE #0ea5e9 / level≥4 #334155 / DESERT #92400e / else
-     #78350f), NOT a darkened biome blend. + surface dither.
-  3. RAMPS — render flat instead of pitched. Geometry math verified correct
-     (all 105 ramps are L→L+1, rise 0.85, pitch 26°, slopeLen 1.93). Tried
-     Euler nested-groups AND Object3D.lookAt+quaternion — both still flat.
-     ARCHITECTURAL: the transform isn't the bug; investigate why a pitched
-     group renders flat (r3f quaternion/rotation prop, or the box is being
-     re-parented). Do NOT keep tweaking the transform — diagnose the render.
-- [ ] visual pass vs references/poc1.png — mountains, terrace crispness
+### Post-PR fixes (user playtest feedback)  ✅ DONE
+- [x] persistence: SQLite + jeep-sqlite (a00c059); sql.js pinned to 1.11.0 to
+  match jeep-sqlite's bundled WASM glue — ^1.14.1 caused a dev LinkError.
+- [x] event-PRNG lifecycle (0f235e7) — NewGameModal mints a fresh event seed
+  per open; the seed phrase varies on every reopen/refresh. Verified in-browser.
+- [x] cliff color (0f235e7) — fixed earth/rock tone per tier, continuous walls.
+- [x] ramps (6a6ac58) — rebuilt as explicit-vertex sloped quads (no rotation);
+  render as proper slopes. The rotated-box approaches both rendered flat.
+- [ ] [WAIT] CI on the post-playtest commits (6a6ac58)
+- [ ] further visual pass vs poc1.png — mountains drama, terrace crispness
 
 ### M7 — AI subpackage (yuka)  [planned — after M6 ships]
 PR-review note to fold into M7: `aiSystem` target selection is O(N_enemies ×
