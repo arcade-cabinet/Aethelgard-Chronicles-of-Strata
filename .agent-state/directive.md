@@ -255,10 +255,10 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
 - [ ] further visual pass vs poc1.png — mountains drama, terrace crispness
 
 ### M7 — AI subpackage (yuka)  [planned — after M6 ships]
-PR-review note to fold into M7: `aiSystem` target selection is O(N_enemies ×
-N_player_units). Acceptable at current unit counts; the yuka rewrite (spatial
-partitioning / perception) resolves it — don't add a staggered-scan hack that
-M7 would discard.
+PR-review fix landed: `aiSystem` now caps retargets at MAX_RETARGETS_PER_TICK
+(8) — the costly nearest-scan + A* is rate-limited, bounding per-frame cost.
+M7's yuka rewrite (spatial partitioning / perception) supersedes it with a
+proper spatial index.
 
 Per user: the AI deserves its own subpackage, not the minor `ecs/systems/ai.ts`
 slot. yuka (^0.7.8, already a dep) is the original-stack AI library, currently
