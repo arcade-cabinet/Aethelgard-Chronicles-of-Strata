@@ -1,6 +1,7 @@
 import type { World } from 'koota';
 import { Combatant, Harvester } from '@/ecs/components';
 import { type GameEconomy, type ResourceCost, canAfford, spend } from './economy';
+import economyJson from '@/config/economy.json';
 
 /** A research upgrade id. */
 export type ResearchId = 'forgedBlades' | 'steelPlows';
@@ -11,11 +12,14 @@ export interface ResearchState {
   purchased: Set<ResearchId>;
 }
 
+interface EconomyConfigResearch {
+  researchCosts: Record<ResearchId, ResourceCost>;
+}
+
+const cfg = economyJson as EconomyConfigResearch;
+
 /** Resource cost per research. Source: 70-rts-systems.md §Research System. */
-export const RESEARCH_COST: Record<ResearchId, ResourceCost> = {
-  forgedBlades: { wood: 0, stone: 100, gold: 150 },
-  steelPlows: { wood: 50, stone: 0, gold: 100 },
-};
+export const RESEARCH_COST: Record<ResearchId, ResourceCost> = cfg.researchCosts;
 
 /** Create an empty research state. */
 export function createResearch(): ResearchState {

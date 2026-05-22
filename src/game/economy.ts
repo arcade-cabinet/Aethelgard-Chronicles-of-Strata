@@ -1,4 +1,18 @@
 import type { ResourceType } from '@/ecs/components';
+import economyJson from '@/config/economy.json';
+
+interface StartingResources {
+  wood: number;
+  stone: number;
+  gold: number;
+  maxSupply: number;
+}
+
+interface EconomyConfigStarting {
+  startingResources: StartingResources;
+}
+
+const cfg = economyJson as EconomyConfigStarting;
 
 /** Global resource totals and supply for one play session. */
 export interface GameEconomy {
@@ -28,7 +42,8 @@ export interface ResourceCost {
 
 /** Create the opening economy. TownHall provides 5 supply at game start. */
 export function createEconomy(): GameEconomy {
-  return { wood: 50, stone: 20, gold: 20, usedSupply: 0, maxSupply: 5, kills: 0 };
+  const s = cfg.startingResources;
+  return { wood: s.wood, stone: s.stone, gold: s.gold, usedSupply: 0, maxSupply: s.maxSupply, kills: 0 };
 }
 
 /** Add an amount of a resource to the economy. */

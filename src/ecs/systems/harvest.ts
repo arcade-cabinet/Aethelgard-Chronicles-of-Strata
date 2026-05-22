@@ -8,9 +8,16 @@ import {
   type ResourceType,
   ResourceTrait,
 } from '@/ecs/components';
+import economyJson from '@/config/economy.json';
+
+interface EconomyConfigHarvest {
+  harvestYield: Record<ResourceType, number>;
+}
+
+const cfg = economyJson as EconomyConfigHarvest;
 
 /** How much one full harvest cycle yields, per resource type. */
-const YIELD: Record<ResourceType, number> = { wood: 10, stone: 8, gold: 5 };
+const YIELD: Record<ResourceType, number> = cfg.harvestYield;
 
 /**
  * Advance peons in the HARVESTING state. A harvesting peon must be adjacent to

@@ -1,6 +1,7 @@
 import type { BoardData } from '@/core/board';
 import type { ResourceType } from '@/ecs/components';
 import type { Rng } from '@/core/rng';
+import economyJson from '@/config/economy.json';
 
 /** A planned resource node placement. */
 export interface ResourceNodePlan {
@@ -18,17 +19,26 @@ export interface ResourceNodePlan {
   amount: number;
 }
 
+interface SpawnRuleJson {
+  resourceType: ResourceType;
+  biomes: string[];
+  chance: number;
+  amount: number;
+}
+
+interface EconomyConfigSpawn {
+  resourceSpawn: SpawnRuleJson[];
+}
+
+const cfg = economyJson as EconomyConfigSpawn;
+
 /** Per-resource spawn config: eligible biomes, chance per eligible tile, amount. */
 const SPAWN_RULES: Array<{
   resourceType: ResourceType;
   biomes: ReadonlySet<string>;
   chance: number;
   amount: number;
-}> = [
-  { resourceType: 'wood', biomes: new Set(['FOREST']), chance: 0.45, amount: 100 },
-  { resourceType: 'stone', biomes: new Set(['HIGHLAND', 'MOUNTAIN']), chance: 0.3, amount: 80 },
-  { resourceType: 'gold', biomes: new Set(['GRASS', 'HIGHLAND']), chance: 0.08, amount: 60 },
-];
+}> = cfg.resourceSpawn.map((r) => ({ ...r, biomes: new Set(r.biomes) }));
 
 /**
  * Plan resource node placements across the board. Deterministic given `rng`

@@ -1,14 +1,16 @@
 import type { BuildingType, UnitType } from '@/ecs/components';
 import { BUILDING_SUPPLY } from './build';
 import type { GameEconomy } from './economy';
+import economyJson from '@/config/economy.json';
+
+interface EconomyConfigSupply {
+  supplyCosts: Record<UnitType, number>;
+}
+
+const cfg = economyJson as EconomyConfigSupply;
 
 /** Supply each trainable unit consumes. Enemies are not supply-tracked. */
-export const SUPPLY_COST: Record<UnitType, number> = {
-  Peon: 1,
-  Footman: 2,
-  Goblin: 0,
-  Orc: 0,
-};
+export const SUPPLY_COST: Record<UnitType, number> = cfg.supplyCosts;
 
 /** Whether a unit can be trained without exceeding the supply cap. */
 export function canTrain(economy: GameEconomy, unit: UnitType): boolean {

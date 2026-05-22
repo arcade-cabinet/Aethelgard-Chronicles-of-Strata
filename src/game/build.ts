@@ -1,22 +1,36 @@
 import type { BoardData } from '@/core/board';
 import type { BuildingType } from '@/ecs/components';
 import { type GameEconomy, type ResourceCost, canAfford } from './economy';
+import economyJson from '@/config/economy.json';
+
+interface EconomyBuildingCosts {
+  Farm: ResourceCost;
+  Barracks: ResourceCost;
+}
+
+interface EconomyBuildingSupply {
+  TownHall: number;
+  Farm: number;
+  Barracks: number;
+}
+
+interface EconomyConfigBuild {
+  buildingCosts: EconomyBuildingCosts;
+  buildingSupply: EconomyBuildingSupply;
+  buildableBiomes: string[];
+}
+
+const cfg = economyJson as EconomyConfigBuild;
 
 /** Resource cost per building type. Source: 70-rts-systems.md §Build Mode. */
-export const BUILDING_COSTS: Record<Exclude<BuildingType, 'TownHall'>, ResourceCost> = {
-  Farm: { wood: 100, stone: 0, gold: 50 },
-  Barracks: { wood: 150, stone: 100, gold: 50 },
-};
+export const BUILDING_COSTS: Record<Exclude<BuildingType, 'TownHall'>, ResourceCost> =
+  cfg.buildingCosts;
 
 /** Supply each building contributes once complete. */
-export const BUILDING_SUPPLY: Record<BuildingType, number> = {
-  TownHall: 5,
-  Farm: 10,
-  Barracks: 0,
-};
+export const BUILDING_SUPPLY: Record<BuildingType, number> = cfg.buildingSupply;
 
 /** Biomes a building may be placed on. */
-const BUILDABLE_BIOMES = new Set(['GRASS', 'HIGHLAND', 'BEACH']);
+const BUILDABLE_BIOMES = new Set(cfg.buildableBiomes);
 
 /** The result of a placement validity check. */
 export interface PlacementCheck {
