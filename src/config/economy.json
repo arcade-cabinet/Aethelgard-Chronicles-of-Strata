@@ -1,12 +1,20 @@
 {
   "buildingCosts": {
     "Farm": { "wood": 100, "stone": 0, "gold": 50 },
-    "Barracks": { "wood": 150, "stone": 100, "gold": 50 }
+    "House": { "wood": 60, "stone": 0, "gold": 0 },
+    "Granary": { "wood": 80, "stone": 40, "gold": 0 },
+    "Barracks": { "wood": 150, "stone": 100, "gold": 50 },
+    "Watchtower": { "wood": 80, "stone": 120, "gold": 0 },
+    "Wall": { "wood": 0, "stone": 60, "gold": 0 }
   },
   "buildingSupply": {
     "TownHall": 5,
     "Farm": 10,
-    "Barracks": 0
+    "House": 4,
+    "Granary": 2,
+    "Barracks": 0,
+    "Watchtower": 0,
+    "Wall": 0
   },
   "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH"],
   "supplyCosts": {

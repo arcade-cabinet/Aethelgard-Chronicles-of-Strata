@@ -35,6 +35,10 @@ export function peonCap(houseCount: number, granaryCount: number): number {
 }
 
 /** Whether a faction may add another peon, given its current peon count + cap. */
-export function canAddPeon(currentPeons: number, houseCount: number, granaryCount: number): boolean {
+export function canAddPeon(
+  currentPeons: number,
+  houseCount: number,
+  granaryCount: number,
+): boolean {
   return currentPeons < peonCap(houseCount, granaryCount);
 }

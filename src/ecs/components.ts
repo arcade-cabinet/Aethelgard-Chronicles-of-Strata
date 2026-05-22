@@ -39,8 +39,20 @@ export const Selectable = trait({ isSelected: false });
 /** A harvestable resource type. */
 export type ResourceType = 'wood' | 'stone' | 'gold';
 
-/** A building type. */
-export type BuildingType = 'TownHall' | 'Farm' | 'Barracks';
+/**
+ * A building type. `TownHall` is the attractor (start base, not built
+ * mid-game); `Farm`/`House`/`Granary` are economy buildings; `Barracks` trains
+ * military; `Watchtower`/`Wall` are the offensive/defensive territorial
+ * buildings. See `docs/specs/102-zone-of-control.md`.
+ */
+export type BuildingType =
+  | 'TownHall'
+  | 'Farm'
+  | 'House'
+  | 'Granary'
+  | 'Barracks'
+  | 'Watchtower'
+  | 'Wall';
 
 /** The peon job state machine. */
 export type JobState = 'IDLE' | 'SEEKING' | 'HARVESTING' | 'CARRYING' | 'DEPOSITING' | 'BUILDING';

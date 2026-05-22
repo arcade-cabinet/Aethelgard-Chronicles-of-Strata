@@ -8,9 +8,9 @@ describe('build mode placement validation', () => {
     const board = generateBoard('ancient-silver-forest');
     const ocean = [...board.tiles.values()].find((t) => t.type === 'OCEAN');
     if (!ocean) throw new Error('seed has no ocean tile');
-    expect(
-      canBuild(board, new Set(), `${ocean.q},${ocean.r}`, 'Farm', createEconomy()).ok,
-    ).toBe(false);
+    expect(canBuild(board, new Set(), `${ocean.q},${ocean.r}`, 'Farm', createEconomy()).ok).toBe(
+      false,
+    );
   });
 
   it('rejects placement on an occupied tile', () => {
@@ -29,9 +29,9 @@ describe('build mode placement validation', () => {
     const grass = [...board.tiles.values()].find((t) => t.type === 'GRASS');
     if (!grass) throw new Error('seed has no grass tile');
     // default economy (50 wood) cannot afford a Farm (100 wood)
-    expect(
-      canBuild(board, new Set(), `${grass.q},${grass.r}`, 'Farm', createEconomy()).ok,
-    ).toBe(false);
+    expect(canBuild(board, new Set(), `${grass.q},${grass.r}`, 'Farm', createEconomy()).ok).toBe(
+      false,
+    );
   });
 
   it('accepts placement on a free grass tile with sufficient resources', () => {

@@ -377,7 +377,13 @@ export function runEconomyTick(game: GameState, delta: number): void {
 
   // movement + economy — apply rain speed penalty from weather state
   pathFollowSystem(game.world, delta, WEATHER_SPEED_MULTIPLIER[game.weather.state]);
-  jobRoutingSystem(game.world, game.board, game.navGraph, game.townHallKey);
+  jobRoutingSystem({
+    world: game.world,
+    board: game.board,
+    graph: game.navGraph,
+    baseKeys: { player: game.townHallKey, enemy: game.enemyBaseKey },
+    zones: game.zones,
+  });
   harvestSystem(game.world, delta);
   buildSystem(game.world, game.buildSites, delta);
 

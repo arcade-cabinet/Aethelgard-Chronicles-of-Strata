@@ -27,3 +27,10 @@ export {
   peonCap,
   recomputeMaxSupply,
 } from './economy-rules';
+export {
+  type PeonAction,
+  type PeonView,
+  type PeonWorld,
+  type ResourceSite,
+  nextPeonAction,
+} from './peon-rules';

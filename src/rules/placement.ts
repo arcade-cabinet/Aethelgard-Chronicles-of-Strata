@@ -7,8 +7,10 @@ import { type GameEconomy, type ResourceCost, canAfford } from '@/game/economy';
  * Resource cost per buildable building type. `TownHall` is excluded — it is a
  * generation-time attractor, never built mid-game (spec 102).
  */
-export const BUILDING_COSTS: Record<Exclude<BuildingType, 'TownHall'>, ResourceCost> =
-  ECONOMY.buildingCosts;
+export const BUILDING_COSTS: Record<
+  Exclude<BuildingType, 'TownHall'>,
+  ResourceCost
+> = ECONOMY.buildingCosts;
 
 /** Supply each building contributes once complete. */
 export const BUILDING_SUPPLY: Record<BuildingType, number> = ECONOMY.buildingSupply;
