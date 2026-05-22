@@ -122,7 +122,9 @@ export function NewGameModal({ open, onOpenChange, eventRng, onBegin }: NewGameM
             New Realm
           </Dialog.Title>
 
-          <label style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted }}>Seed phrase</label>
+          <label htmlFor="seed-input" style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted }}>
+            Seed phrase
+          </label>
           <div style={{ display: 'flex', gap: 8, margin: '6px 0 18px' }}>
             <input
               id="seed-input"
@@ -158,7 +160,7 @@ export function NewGameModal({ open, onOpenChange, eventRng, onBegin }: NewGameM
             </button>
           </div>
 
-          <label style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted }}>Map size</label>
+          <p style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted, margin: 0 }}>Map size</p>
           <div style={{ margin: '6px 0 18px' }}>
             <Segmented
               value={mapSize}
@@ -172,7 +174,9 @@ export function NewGameModal({ open, onOpenChange, eventRng, onBegin }: NewGameM
             />
           </div>
 
-          <label style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted }}>AI difficulty</label>
+          <p style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted, margin: 0 }}>
+            AI difficulty
+          </p>
           <div style={{ margin: '6px 0 24px' }}>
             <Segmented
               value={difficulty}

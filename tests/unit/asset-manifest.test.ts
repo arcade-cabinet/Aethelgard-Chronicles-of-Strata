@@ -1,18 +1,19 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { AssetManifest } from '@/assets/manifest-types';
+import type { AssetEntry } from '@/assets/manifest-types';
 
-const manifestPath = join(process.cwd(), 'public', 'assets', 'manifest.json');
+// The importable metadata lives in src/config/ (public/ import is forbidden by Vite).
+const metadataPath = join(process.cwd(), 'src', 'config', 'asset-metadata.json');
 
-describe('generated asset manifest', () => {
+describe('asset-metadata.json', () => {
   it('exists (run `pnpm assets:ingest` first)', () => {
-    expect(existsSync(manifestPath)).toBe(true);
+    expect(existsSync(metadataPath)).toBe(true);
   });
 
-  it('every entry points at a file that exists on disk', () => {
-    const manifest: AssetManifest = JSON.parse(readFileSync(manifestPath, 'utf-8'));
-    for (const entry of Object.values(manifest.entries)) {
+  it('every entry points at a file that exists on disk under public/', () => {
+    const metadata: Record<string, AssetEntry> = JSON.parse(readFileSync(metadataPath, 'utf-8'));
+    for (const entry of Object.values(metadata)) {
       const abs = join(process.cwd(), 'public', entry.path);
       expect(existsSync(abs), `missing ingested file: ${entry.path}`).toBe(true);
     }

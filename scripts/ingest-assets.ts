@@ -1,7 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
-import type { AssetEntry, AssetManifest } from '../src/assets/manifest-types';
+import type { AssetEntry } from '../src/assets/manifest-types';
 import { ASSET_MAP, logicalIdToOutputPath } from './asset-map';
 
 const REPO = process.cwd();
@@ -99,7 +99,7 @@ async function main(): Promise<void> {
 
   // Pass 2: copy every file and build the manifest. All sources are verified present.
   mkdirSync(ASSETS_DIR, { recursive: true });
-  const entries: AssetManifest['entries'] = {};
+  const entries: Record<string, AssetEntry> = {};
   for (const { src, kind, item } of resolved) {
     const outRel = logicalIdToOutputPath(item.id, kind);
     const outAbs = join(OUT_DIR, outRel);
@@ -129,9 +129,14 @@ async function main(): Promise<void> {
     entries[item.id] = entry;
   }
 
-  const manifest: AssetManifest = { generatedAt: new Date().toISOString(), entries };
-  writeFileSync(join(ASSETS_DIR, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-  console.log(`Ingested ${Object.keys(entries).length} assets.`);
+  // Write the importable metadata to src/config/asset-metadata.json.
+  // This is the source of truth for logical-id → path + metadata used by assets.ts.
+  // public/assets/ is NOT written a manifest.json — that file was removed in favour of
+  // the importable src/config/asset-metadata.json (Vite forbids importing from public/).
+  const metadataPath = join(REPO, 'src', 'config', 'asset-metadata.json');
+  mkdirSync(dirname(metadataPath), { recursive: true });
+  writeFileSync(metadataPath, `${JSON.stringify(entries, null, 2)}\n`);
+  console.log(`Ingested ${Object.keys(entries).length} assets → src/config/asset-metadata.json`);
 }
 
 main().catch((err) => {

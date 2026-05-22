@@ -2,9 +2,17 @@ import path from 'node:path';
 import { playwright } from '@vitest/browser-playwright';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+import staticAssetsPlugin from 'vite-static-assets-plugin';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    staticAssetsPlugin({
+      directory: 'public',
+      outputFile: 'src/static-assets.ts',
+      ignore: ['.DS_Store'],
+    }),
+  ],
   optimizeDeps: {
     include: ['three/examples/jsm/utils/SkeletonUtils.js'],
   },
