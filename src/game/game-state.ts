@@ -19,12 +19,12 @@ import { animationSystem } from '@/ecs/systems/animation';
 import { aiSystem } from '@/ecs/systems/ai';
 import { buildSystem } from '@/ecs/systems/build';
 import { type DamageEvent, combatSystem } from '@/ecs/systems/combat';
-import { clearDeathTimers, deathSystem } from '@/ecs/systems/death';
+import { deathSystem } from '@/ecs/systems/death';
 import { depositSystem } from '@/ecs/systems/deposit';
 import { harvestSystem } from '@/ecs/systems/harvest';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
-import { clearSpawnCounts, spawnSystem } from '@/ecs/systems/spawn';
+import { spawnSystem } from '@/ecs/systems/spawn';
 import { type GameOutcome, evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { type GameEconomy, createEconomy } from './economy';
 import { recomputeMaxSupply } from './supply';
@@ -184,12 +184,9 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
 
   const { seedPhrase, mapSize, difficulty, eventSeed } = config;
 
-  // Reset module-level system state so a new session does not inherit stale
-  // timers/counters keyed by entity ids the previous world reused.
-  clearDeathTimers();
-  clearSpawnCounts();
-
   const board = generateBoard(seedPhrase, mapSize);
+  // A fresh ECS world — death timers and the portal spawn count are now ECS
+  // components, so a new session starts clean with no module state to reset.
   const world = createEcsWorld();
 
   // The Town Hall occupies the most central walkable tile. Peons spawn on
@@ -377,22 +374,14 @@ export function runEconomyTick(game: GameState, delta: number): void {
   }
   recomputeMaxSupply(game.economy, completeBuildings);
 
-  // combat — capture pre-death enemy count to credit kills
-  const enemyUnitsBefore = game.world
-    .query(Unit, FactionTrait)
-    .filter((e) => e.get(FactionTrait)?.faction === 'enemy').length;
+  // combat
   game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta);
 
   // resource deposit
   depositSystem(game.world, game.economy, game.townHallKey);
 
-  // death resolution + kill credit
-  deathSystem(game.world, delta);
-  const enemyUnitsAfter = game.world
-    .query(Unit, FactionTrait)
-    .filter((e) => e.get(FactionTrait)?.faction === 'enemy').length;
-  const killed = enemyUnitsBefore - enemyUnitsAfter;
-  if (killed > 0) game.economy.kills += killed;
+  // death resolution — deathSystem returns the enemies removed this tick
+  game.economy.kills += deathSystem(game.world, delta);
 
   // animation state + end-condition check
   animationSystem(game.world);

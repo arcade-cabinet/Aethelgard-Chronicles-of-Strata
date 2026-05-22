@@ -240,6 +240,11 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
 - [ ] [WAIT] CI on PR #1 — green build/test + debug-APK + Pages deploy
 
 ### M7 — AI subpackage (yuka)  [planned — after M6 ships]
+PR-review note to fold into M7: `aiSystem` target selection is O(N_enemies ×
+N_player_units). Acceptable at current unit counts; the yuka rewrite (spatial
+partitioning / perception) resolves it — don't add a staggered-scan hack that
+M7 would discard.
+
 Per user: the AI deserves its own subpackage, not the minor `ecs/systems/ai.ts`
 slot. yuka (^0.7.8, already a dep) is the original-stack AI library, currently
 unused. Decision: FULL yuka GameEntity model — `src/ai/` subpackage with a yuka

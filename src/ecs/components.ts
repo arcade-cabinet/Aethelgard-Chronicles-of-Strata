@@ -75,8 +75,19 @@ export const Combatant = trait({
   attackTimer: 0,
 });
 
-/** Marks the Goblin Portal and tracks its enemy-spawn timer. */
-export const GoblinPortalTrait = trait({ spawnTimer: 0, spawnInterval: 45 });
+/**
+ * Marks the Goblin Portal and tracks its enemy-spawn timer plus the running
+ * spawn count (every third spawn past the Orc threshold is an Orc). The count
+ * lives on the entity — not module state — so it survives save/load.
+ */
+export const GoblinPortalTrait = trait({ spawnTimer: 0, spawnInterval: 45, spawnCount: 0 });
 
 /** The entity an enemy is currently hunting. `targetId` is -1 when none. */
 export const EnemyTarget = trait({ targetId: -1 });
+
+/**
+ * Death countdown — added to a unit when it reaches 0 HP. `elapsed` accumulates
+ * until the death clip finishes, then the entity is removed. An ECS component
+ * (not module state) so a mid-death unit survives a save/load round-trip.
+ */
+export const DeathTimer = trait({ elapsed: 0 });

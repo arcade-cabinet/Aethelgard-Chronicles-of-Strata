@@ -1,41 +1,40 @@
 import type { World } from 'koota';
 import { COMBAT } from '@/config/combat';
-import { AnimationState, Health, Unit } from '@/ecs/components';
+import { AnimationState, DeathTimer, FactionTrait, Health, Unit } from '@/ecs/components';
 
 /** Seconds a corpse lingers (plays the death clip) before removal. */
 const DEATH_DELAY: number = COMBAT.deathDelay;
 
-/** Per-entity death timers — keyed by entity numeric id. */
-const dyingTimers = new Map<number, number>();
-
 /**
- * Reset the death-timer state. Called by `startGame` so a new session does not
- * inherit stale timers — entity ids are reused across worlds, and an orphan
- * timer would destroy a fresh entity early.
+ * Handle unit death. A unit at 0 Health enters the DYING animation state and
+ * gains a `DeathTimer` component; after `DEATH_DELAY` seconds (the death clip
+ * length) it is removed from the world. The timer is an ECS component, so a
+ * mid-death unit survives a save/load round-trip.
+ *
+ * Returns the number of enemy-faction units removed this tick — the caller
+ * credits kills from this rather than re-scanning the roster.
  */
-export function clearDeathTimers(): void {
-  dyingTimers.clear();
-}
-
-/**
- * Handle unit death. A unit at 0 Health enters the DYING animation state; after
- * `DEATH_DELAY` seconds (the death clip length) it is removed from the world.
- */
-export function deathSystem(world: World, delta: number): void {
+export function deathSystem(world: World, delta: number): number {
+  let enemyKills = 0;
   for (const entity of world.query(Unit, Health, AnimationState)) {
     const health = entity.get(Health);
     if (!health || health.current > 0) continue;
-    const id = Number(entity);
+
     const anim = entity.get(AnimationState);
     if (anim && anim.state !== 'DYING') {
       entity.set(AnimationState, { state: 'DYING' });
     }
-    const elapsed = (dyingTimers.get(id) ?? 0) + delta;
+
+    // accumulate the death countdown on the entity itself
+    if (!entity.has(DeathTimer)) entity.add(DeathTimer);
+    const timer = entity.get(DeathTimer);
+    const elapsed = (timer?.elapsed ?? 0) + delta;
     if (elapsed >= DEATH_DELAY) {
-      dyingTimers.delete(id);
+      if (entity.get(FactionTrait)?.faction === 'enemy') enemyKills += 1;
       entity.destroy();
     } else {
-      dyingTimers.set(id, elapsed);
+      entity.set(DeathTimer, { elapsed });
     }
   }
+  return enemyKills;
 }

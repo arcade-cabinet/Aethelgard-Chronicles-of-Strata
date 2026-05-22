@@ -21,6 +21,7 @@ import {
   Building,
   Carrier,
   Combatant,
+  DeathTimer,
   EnemyTarget,
   FactionTrait,
   GoblinPortalTrait,
@@ -64,6 +65,7 @@ const TRAIT_REGISTRY: TraitEntry[] = [
   { name: 'Combatant', traitObj: Combatant },
   { name: 'GoblinPortalTrait', traitObj: GoblinPortalTrait },
   { name: 'EnemyTarget', traitObj: EnemyTarget },
+  { name: 'DeathTimer', traitObj: DeathTimer },
 ];
 
 // biome-ignore lint/suspicious/noExplicitAny: trait name → factory map

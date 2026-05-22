@@ -77,10 +77,11 @@ export function buildTerrainGeometry(board: BoardData): TerrainGeometryData {
       const p1 = getHexCorner(center.x, center.z, i);
       const p2 = getHexCorner(center.x, center.z, (i + 1) % 6);
 
-      // top-face triangle (center → corner → next corner)
+      // Top-face triangle. Wound (center → p2 → p1) so the face normal points
+      // +Y (up) — a consistent outward winding lets backface culling stay on.
       push(center.x, topY, center.z, surf);
-      push(p1.x, topY, p1.z, surf);
       push(p2.x, topY, p2.z, surf);
+      push(p1.x, topY, p1.z, surf);
 
       // cliff face on this edge if the neighbor is lower or off-board
       const dir = NEIGHBOR_DIRS[i];
@@ -89,13 +90,14 @@ export function buildTerrainGeometry(board: BoardData): TerrainGeometryData {
       const neighborY =
         neighbor && neighbor.level > 0 ? neighbor.level * TILE_HEIGHT : -TILE_HEIGHT * 1.5;
       if (neighborY < topY) {
+        // Cliff quad, wound so its normal faces outward from the tile edge.
         const cliff = cliffColor(tile, neighbor);
         push(p1.x, topY, p1.z, cliff);
-        push(p1.x, neighborY, p1.z, cliff);
         push(p2.x, topY, p2.z, cliff);
         push(p1.x, neighborY, p1.z, cliff);
+        push(p1.x, neighborY, p1.z, cliff);
+        push(p2.x, topY, p2.z, cliff);
         push(p2.x, neighborY, p2.z, cliff);
-        push(p2.x, topY, p2.z, cliff);
       }
     }
   }

@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import { BufferAttribute, BufferGeometry, type Points } from 'three';
-import { MAP_RADIUS } from '@/config/world';
+import { createMapPrng } from '@/core/rng';
 import type { GameState } from '@/game/game-state';
 
 /** Number of rain streak particles. */
@@ -13,23 +13,29 @@ const FIELD_HEIGHT = 30;
 
 /**
  * A falling-rain particle field, visible only while `game.weather.state` is
- * 'rain'. Drops loop from the top of the field back down over the board.
+ * 'rain'. Drops loop from the top of the field back down over the board. The
+ * field spans the actual board (`board.radius`, not the default constant) and
+ * the initial drop layout is drawn from a seeded PRNG — no `Math.random`, so
+ * the rain is deterministic per seed.
  */
 export function RainParticles({ game }: { game: GameState }) {
   const ref = useRef<Points>(null);
-  const span = MAP_RADIUS * 2.2;
+  const span = game.board.radius * 2.2;
 
   const geometry = useMemo(() => {
+    // a dedicated PRNG stream for the rain layout — seeded off the map phrase
+    // so the field is deterministic without consuming the gameplay streams.
+    const rng = createMapPrng(`${game.seedPhrase}:rain`);
     const positions = new Float32Array(DROP_COUNT * 3);
     for (let i = 0; i < DROP_COUNT; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * span;
-      positions[i * 3 + 1] = Math.random() * FIELD_HEIGHT;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * span;
+      positions[i * 3] = (rng() - 0.5) * span;
+      positions[i * 3 + 1] = rng() * FIELD_HEIGHT;
+      positions[i * 3 + 2] = (rng() - 0.5) * span;
     }
     const geo = new BufferGeometry();
     geo.setAttribute('position', new BufferAttribute(positions, 3));
     return geo;
-  }, [span]);
+  }, [span, game.seedPhrase]);
 
   // release the GPU buffer when the component unmounts
   useEffect(() => () => geometry.dispose(), [geometry]);

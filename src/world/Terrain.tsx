@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { BufferAttribute, BufferGeometry, DoubleSide } from 'three';
+import { BufferAttribute, BufferGeometry } from 'three';
 import type { BoardData } from '@/core/board';
 import { buildTerrainGeometry } from './terrain-mesh';
 
@@ -24,15 +24,9 @@ export function Terrain({ board }: { board: BoardData }) {
 
   return (
     <mesh geometry={geometry} castShadow receiveShadow>
-      {/* DoubleSide — the merged hex fans mix triangle windings; rendering both
-          faces (as poc1 does) keeps every top face and cliff visible. */}
-      <meshStandardMaterial
-        vertexColors
-        flatShading
-        roughness={0.9}
-        metalness={0.1}
-        side={DoubleSide}
-      />
+      {/* Consistent outward winding in buildTerrainGeometry lets backface
+          culling stay on (default FrontSide) — important for mobile. */}
+      <meshStandardMaterial vertexColors flatShading roughness={0.9} metalness={0.1} />
     </mesh>
   );
 }

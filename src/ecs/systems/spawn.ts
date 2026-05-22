@@ -9,24 +9,15 @@ import type { Difficulty } from '@/game/difficulty';
 /** Game-seconds after which the portal also spawns Orcs. */
 const ORC_THRESHOLD: number = COMBAT.spawn.orcThreshold;
 
-/** Running spawn counter per portal entity id — for deterministic Orc cadence. */
-const spawnCounts = new Map<number, number>();
-
-/**
- * Reset the per-portal spawn counters. Called by `startGame` so a new session
- * does not inherit a stale Orc-cadence counter from a previous world.
- */
-export function clearSpawnCounts(): void {
-  spawnCounts.clear();
-}
-
 /**
  * Advance the Goblin Portal's spawn timer. Each `spawnInterval` seconds it
  * spawns an enemy on a walkable neighbor tile — a Goblin, or (past
- * `ORC_THRESHOLD` game-seconds) every third spawn an Orc.
+ * `ORC_THRESHOLD` game-seconds) every third spawn an Orc. The spawn count
+ * lives on the `GoblinPortalTrait` entity, so the Orc cadence survives a
+ * save/load round-trip.
  *
- * `difficulty` is optional (defaults to 'normal') so that existing 4-arg
- * test call-sites continue to work without changes.
+ * `difficulty` is optional (defaults to 'normal') so existing 4-arg test
+ * call-sites keep working.
  */
 export function spawnSystem(
   world: World,
@@ -35,14 +26,12 @@ export function spawnSystem(
   gameElapsed: number,
   difficulty: Difficulty = 'normal',
 ): void {
-  world.query(GoblinPortalTrait, HexPosition).updateEach(([portal, hex], portalEntity) => {
+  world.query(GoblinPortalTrait, HexPosition).updateEach(([portal, hex]) => {
     portal.spawnTimer += delta;
     if (portal.spawnTimer < portal.spawnInterval) return;
     portal.spawnTimer = 0;
-    const id = Number(portalEntity);
-    const count = (spawnCounts.get(id) ?? 0) + 1;
-    spawnCounts.set(id, count);
-    const role = gameElapsed >= ORC_THRESHOLD && count % 3 === 0 ? 'Orc' : 'Goblin';
+    portal.spawnCount += 1;
+    const role = gameElapsed >= ORC_THRESHOLD && portal.spawnCount % 3 === 0 ? 'Orc' : 'Goblin';
     for (const nKey of hexNeighbors(hex.q, hex.r)) {
       const tile = board.tiles.get(nKey);
       if (tile?.walkable) {

@@ -50,6 +50,18 @@ export function pathFollowSystem(world: World, delta: number, speedMultiplier = 
         transform.x += (dx / dist) * stepDist;
         transform.z += (dz / dist) * stepDist;
         transform.rotationY = Math.atan2(dx, dz);
+        // interpolate Y across the step so a unit climbing a ramp rises
+        // smoothly instead of teleporting vertically on arrival
+        const fromY = hex.level * TILE_HEIGHT;
+        const toY = step.level * TILE_HEIGHT;
+        if (fromY !== toY) {
+          const tileSpacing = Math.hypot(
+            goal.x - axialToWorld(hex.q, hex.r).x,
+            goal.z - axialToWorld(hex.q, hex.r).z,
+          );
+          const progress = tileSpacing > 0 ? 1 - dist / tileSpacing : 1;
+          transform.y = fromY + (toY - fromY) * Math.max(0, Math.min(1, progress));
+        }
       }
     });
 }
