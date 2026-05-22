@@ -1,13 +1,7 @@
-import worldConfigRaw from '@/config/world.json';
-
-interface WorldConfig {
-  dayLength: number;
-}
-
-const worldConfig = worldConfigRaw as WorldConfig;
+import { WORLD } from '@/config/world';
 
 /** Seconds in one full day/night cycle. */
-export const DAY_LENGTH: number = worldConfig.dayLength;
+export const DAY_LENGTH: number = WORLD.dayLength;
 
 /** The game clock — total elapsed game-seconds. */
 export interface GameClock {

@@ -1,20 +1,9 @@
 import type { World } from 'koota';
+import { COMBAT } from '@/config/combat';
 import { AnimationState, Health, Unit } from '@/ecs/components';
-import combatConfigRaw from '@/config/combat.json';
-
-/** Typed shape of the combat config JSON (deathDelay sub-field). */
-interface CombatConfig {
-  unitStats: Record<string, unknown>;
-  difficultyMultiplier: Record<string, number>;
-  damage: { critChance: number; varianceMax: number };
-  deathDelay: number;
-  spawn: { orcThreshold: number; spawnIntervalByDifficulty: Record<string, number> };
-  ai: { aggroRadius: number };
-}
-const combatConfig = combatConfigRaw as CombatConfig;
 
 /** Seconds a corpse lingers (plays the death clip) before removal. */
-const DEATH_DELAY: number = combatConfig.deathDelay;
+const DEATH_DELAY: number = COMBAT.deathDelay;
 
 /** Per-entity death timers — keyed by entity numeric id. */
 const dyingTimers = new Map<number, number>();

@@ -214,8 +214,16 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
   GameOverModal → Radix Dialog, map-size.ts (device-gated Huge)
 - [x] core two-PRNG refactor — createMapPrng / createEventPrng / advanceEventSeed,
   generateBoard takes a radius
-- [ ] [WAIT] core-refactor subagent finishing game-state.ts NewGameConfig +
-  persistence.ts event-seed wiring + the 7 dependent test files (background,
-  harness-tracked — App.tsx rewire + remaining M6 wiring resumes on completion)
-- [ ] M6 finish — App.tsx → TitleScreen flow, useAudio + auto-save wired into
-  the loop, new browser tests, milestone verification, the single final PR
+- [x] core two-PRNG refactor landed (08fc538); App.tsx rewired to the
+  TitleScreen → NewGame → play flow (b998472)
+- [x] new browser tests written (title-screen, selection-panel, modal-a11y)
+- [x] config agents reviewed — economy(7c14337)/combat(c8adcd5)/world(dc9241f)
+  all faithful (values verified unchanged, exports stable, 188 tests each).
+  KNOWN-WEAKNESS to clean up: the JSON imports use scattered `as` casts to
+  satisfy noUncheckedIndexedAccess — safe (JSON committed + test-covered) but a
+  typed-config-loader module would be cleaner. Follow-up, non-blocking.
+- [ ] [WAIT] asset-plugin migration agent (last of 4, harness-tracked) — fixes
+  the public/ import playtest bug. M6 finish resumes on its completion.
+- [ ] M6 finish — RE-APPLY the lost useAudio ref-guard + useGameLoop audio
+  wiring (a checkout reverted them), wire auto-save into runEconomyTick, full
+  verification, the single final PR

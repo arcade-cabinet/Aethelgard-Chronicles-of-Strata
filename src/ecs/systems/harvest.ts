@@ -1,23 +1,7 @@
 import type { World } from 'koota';
+import { harvestYieldFor } from '@/config/economy';
 import { areAdjacent, getHexKey } from '@/core/hex';
-import {
-  AssignedJob,
-  Carrier,
-  Harvester,
-  HexPosition,
-  type ResourceType,
-  ResourceTrait,
-} from '@/ecs/components';
-import economyJson from '@/config/economy.json';
-
-interface EconomyConfigHarvest {
-  harvestYield: Record<ResourceType, number>;
-}
-
-const cfg = economyJson as EconomyConfigHarvest;
-
-/** How much one full harvest cycle yields, per resource type. */
-const YIELD: Record<ResourceType, number> = cfg.harvestYield;
+import { AssignedJob, Carrier, Harvester, HexPosition, ResourceTrait } from '@/ecs/components';
 
 /**
  * Advance peons in the HARVESTING state. A harvesting peon must be adjacent to
@@ -56,7 +40,7 @@ export function harvestSystem(world: World, delta: number): void {
       harvester.harvestTimer += harvester.harvestRate * delta;
       if (harvester.harvestTimer >= 1) {
         harvester.harvestTimer = 0;
-        const amount = Math.min(YIELD[res.resourceType], res.amount);
+        const amount = Math.min(harvestYieldFor(res.resourceType), res.amount);
         node.set(ResourceTrait, { ...res, amount: res.amount - amount });
         carrier.carryType = res.resourceType;
         carrier.amount = amount;

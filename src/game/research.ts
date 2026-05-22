@@ -1,7 +1,7 @@
 import type { World } from 'koota';
+import { ECONOMY, researchCostFor } from '@/config/economy';
 import { Combatant, Harvester } from '@/ecs/components';
 import { type GameEconomy, type ResourceCost, canAfford, spend } from './economy';
-import economyJson from '@/config/economy.json';
 
 /** A research upgrade id. */
 export type ResearchId = 'forgedBlades' | 'steelPlows';
@@ -12,14 +12,8 @@ export interface ResearchState {
   purchased: Set<ResearchId>;
 }
 
-interface EconomyConfigResearch {
-  researchCosts: Record<ResearchId, ResourceCost>;
-}
-
-const cfg = economyJson as EconomyConfigResearch;
-
 /** Resource cost per research. Source: 70-rts-systems.md §Research System. */
-export const RESEARCH_COST: Record<ResearchId, ResourceCost> = cfg.researchCosts;
+export const RESEARCH_COST: Record<ResearchId, ResourceCost> = ECONOMY.researchCosts;
 
 /** Create an empty research state. */
 export function createResearch(): ResearchState {
@@ -33,7 +27,7 @@ export function canResearch(
   id: ResearchId,
 ): boolean {
   if (research.purchased.has(id)) return false;
-  return canAfford(economy, RESEARCH_COST[id]);
+  return canAfford(economy, researchCostFor(id));
 }
 
 /**
@@ -48,7 +42,7 @@ export function applyResearch(
   id: ResearchId,
 ): boolean {
   if (!canResearch(economy, research, id)) return false;
-  if (!spend(economy, RESEARCH_COST[id])) return false;
+  if (!spend(economy, researchCostFor(id))) return false;
   research.purchased.add(id);
   if (id === 'forgedBlades') {
     world.query(Combatant).updateEach(([c]) => {

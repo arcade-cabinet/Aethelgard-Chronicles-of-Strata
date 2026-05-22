@@ -1,36 +1,19 @@
 import type { BoardData } from '@/core/board';
 import type { BuildingType } from '@/ecs/components';
+import { ECONOMY } from '@/config/economy';
 import { type GameEconomy, type ResourceCost, canAfford } from './economy';
-import economyJson from '@/config/economy.json';
-
-interface EconomyBuildingCosts {
-  Farm: ResourceCost;
-  Barracks: ResourceCost;
-}
-
-interface EconomyBuildingSupply {
-  TownHall: number;
-  Farm: number;
-  Barracks: number;
-}
-
-interface EconomyConfigBuild {
-  buildingCosts: EconomyBuildingCosts;
-  buildingSupply: EconomyBuildingSupply;
-  buildableBiomes: string[];
-}
-
-const cfg = economyJson as EconomyConfigBuild;
 
 /** Resource cost per building type. Source: 70-rts-systems.md §Build Mode. */
-export const BUILDING_COSTS: Record<Exclude<BuildingType, 'TownHall'>, ResourceCost> =
-  cfg.buildingCosts;
+export const BUILDING_COSTS: Record<
+  Exclude<BuildingType, 'TownHall'>,
+  ResourceCost
+> = ECONOMY.buildingCosts;
 
 /** Supply each building contributes once complete. */
-export const BUILDING_SUPPLY: Record<BuildingType, number> = cfg.buildingSupply;
+export const BUILDING_SUPPLY: Record<BuildingType, number> = ECONOMY.buildingSupply;
 
 /** Biomes a building may be placed on. */
-const BUILDABLE_BIOMES = new Set(cfg.buildableBiomes);
+const BUILDABLE_BIOMES = new Set(ECONOMY.buildableBiomes);
 
 /** The result of a placement validity check. */
 export interface PlacementCheck {

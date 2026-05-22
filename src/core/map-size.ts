@@ -1,11 +1,5 @@
 import { Device } from '@capacitor/device';
-import worldConfigRaw from '@/config/world.json';
-
-interface WorldConfig {
-  mapSizes: { small: number; medium: number; large: number; huge: number };
-}
-
-const worldConfig = worldConfigRaw as WorldConfig;
+import { WORLD } from '@/config/world';
 
 /** A named map size and its hex radius. */
 export interface MapSizeOption {
@@ -17,10 +11,10 @@ export interface MapSizeOption {
 
 /** The selectable map sizes. "Huge" is device-gated (see `availableMapSizes`). */
 export const MAP_SIZES = {
-  small: { label: 'Small', radius: worldConfig.mapSizes.small },
-  medium: { label: 'Medium', radius: worldConfig.mapSizes.medium },
-  large: { label: 'Large', radius: worldConfig.mapSizes.large },
-  huge: { label: 'Huge', radius: worldConfig.mapSizes.huge },
+  small: { label: 'Small', radius: WORLD.mapSizes.small },
+  medium: { label: 'Medium', radius: WORLD.mapSizes.medium },
+  large: { label: 'Large', radius: WORLD.mapSizes.large },
+  huge: { label: 'Huge', radius: WORLD.mapSizes.huge },
 } as const satisfies Record<string, MapSizeOption>;
 
 /** A map-size key. */

@@ -1,20 +1,6 @@
+import { WORLD } from '@/config/world';
 import { MAP_RADIUS } from './constants';
-import worldConfigRaw from '@/config/world.json';
 import type { Noise2D } from './noise';
-
-interface WorldConfig {
-  biome: {
-    heightThresholds: number[];
-    moistureCutoffDesert: number;
-    moistureCutoffLake: number;
-    noiseScale: number;
-    islandAttenuationFactor: number;
-    lakeModulo: number;
-    lakeModuloThreshold: number;
-  };
-}
-
-const worldConfig = worldConfigRaw as WorldConfig;
 
 const {
   heightThresholds,
@@ -24,7 +10,7 @@ const {
   islandAttenuationFactor,
   lakeModulo,
   lakeModuloThreshold,
-} = worldConfig.biome;
+} = WORLD.biome;
 
 /** A biome type. OCEAN and LAKE are water; the rest are land. */
 export type BiomeType =

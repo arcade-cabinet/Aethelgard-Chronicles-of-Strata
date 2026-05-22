@@ -1,22 +1,16 @@
-import worldConfigRaw from '@/config/world.json';
+import { WORLD } from '@/config/world';
 import type { Rng } from './rng';
-
-interface WorldConfig {
-  noise: { octaves: number; persistence: number; lacunarity: number };
-}
-
-const worldConfig = worldConfigRaw as WorldConfig;
 
 /** A 2D scalar noise field: (x, z) -> value in [0, 1]. */
 export type Noise2D = (x: number, z: number) => number;
 
 const LATTICE = 256;
 /** Number of fractal octaves summed. More octaves = more fine detail + contrast. */
-const OCTAVES: number = worldConfig.noise.octaves;
+const OCTAVES: number = WORLD.noise.octaves;
 /** Per-octave amplitude falloff. */
-const PERSISTENCE: number = worldConfig.noise.persistence;
+const PERSISTENCE: number = WORLD.noise.persistence;
 /** Per-octave frequency multiplier. */
-const LACUNARITY: number = worldConfig.noise.lacunarity;
+const LACUNARITY: number = WORLD.noise.lacunarity;
 
 function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);

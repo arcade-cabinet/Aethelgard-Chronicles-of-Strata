@@ -1,38 +1,38 @@
 {
   "buildingCosts": {
-    "Farm":     { "wood": 100, "stone": 0,   "gold": 50 },
+    "Farm": { "wood": 100, "stone": 0, "gold": 50 },
     "Barracks": { "wood": 150, "stone": 100, "gold": 50 }
   },
   "buildingSupply": {
     "TownHall": 5,
-    "Farm":     10,
+    "Farm": 10,
     "Barracks": 0
   },
   "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH"],
   "supplyCosts": {
-    "Peon":     1,
-    "Footman":  2,
-    "Goblin":   0,
-    "Orc":      0
+    "Peon": 1,
+    "Footman": 2,
+    "Goblin": 0,
+    "Orc": 0
   },
   "startingResources": {
-    "wood":       50,
-    "stone":      20,
-    "gold":       20,
-    "maxSupply":  5
+    "wood": 50,
+    "stone": 20,
+    "gold": 20,
+    "maxSupply": 5
   },
   "researchCosts": {
-    "forgedBlades": { "wood": 0,  "stone": 100, "gold": 150 },
-    "steelPlows":   { "wood": 50, "stone": 0,   "gold": 100 }
+    "forgedBlades": { "wood": 0, "stone": 100, "gold": 150 },
+    "steelPlows": { "wood": 50, "stone": 0, "gold": 100 }
   },
   "resourceSpawn": [
-    { "resourceType": "wood",  "biomes": ["FOREST"],              "chance": 0.45, "amount": 100 },
-    { "resourceType": "stone", "biomes": ["HIGHLAND", "MOUNTAIN"], "chance": 0.3,  "amount": 80  },
-    { "resourceType": "gold",  "biomes": ["GRASS", "HIGHLAND"],   "chance": 0.08, "amount": 60  }
+    { "resourceType": "wood", "biomes": ["FOREST"], "chance": 0.45, "amount": 100 },
+    { "resourceType": "stone", "biomes": ["HIGHLAND", "MOUNTAIN"], "chance": 0.3, "amount": 80 },
+    { "resourceType": "gold", "biomes": ["GRASS", "HIGHLAND"], "chance": 0.08, "amount": 60 }
   ],
   "harvestYield": {
-    "wood":  10,
+    "wood": 10,
     "stone": 8,
-    "gold":  5
+    "gold": 5
   }
 }

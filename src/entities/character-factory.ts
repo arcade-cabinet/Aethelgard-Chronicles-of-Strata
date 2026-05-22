@@ -7,7 +7,6 @@ import {
   Carrier,
   Combatant,
   EnemyTarget,
-  type Faction,
   FactionTrait,
   Harvester,
   Health,
@@ -19,44 +18,8 @@ import {
   Unit,
   type UnitType,
 } from '@/ecs/components';
-import type { Difficulty } from '@/game/game-state';
-import combatConfigRaw from '@/config/combat.json';
-
-/** Typed shape of the combat config JSON. */
-interface CombatConfig {
-  unitStats: Record<string, { speed: number; faction: string; hp?: number; attackDamage?: number; attackRange?: number; attackCooldown?: number }>;
-  difficultyMultiplier: Record<string, number>;
-  damage: { critChance: number; varianceMax: number };
-  deathDelay: number;
-  spawn: { orcThreshold: number; spawnIntervalByDifficulty: Record<string, number> };
-  ai: { aggroRadius: number };
-}
-const combatConfig = combatConfigRaw as CombatConfig;
-
-/** Per-difficulty HP/damage multipliers applied to enemy roles only. */
-const DIFFICULTY_MULTIPLIER: Record<Difficulty, number> = {
-  easy: combatConfig.difficultyMultiplier['easy'] as number,
-  normal: combatConfig.difficultyMultiplier['normal'] as number,
-  hard: combatConfig.difficultyMultiplier['hard'] as number,
-};
-
-/** Per-role base stats. Source: docs/specs/50-ecs-model.md entity archetypes. */
-const ROLE_STATS: Record<
-  UnitType,
-  {
-    speed: number;
-    faction: Faction;
-    hp?: number;
-    attackDamage?: number;
-    attackRange?: number;
-    attackCooldown?: number;
-  }
-> = {
-  Peon:    combatConfig.unitStats['Peon']    as { speed: number; faction: Faction },
-  Footman: combatConfig.unitStats['Footman'] as { speed: number; faction: Faction; hp: number; attackDamage: number; attackRange: number; attackCooldown: number },
-  Goblin:  combatConfig.unitStats['Goblin']  as { speed: number; faction: Faction; hp: number; attackDamage: number; attackRange: number; attackCooldown: number },
-  Orc:     combatConfig.unitStats['Orc']     as { speed: number; faction: Faction; hp: number; attackDamage: number; attackRange: number; attackCooldown: number },
-};
+import { difficultyMultiplierFor, unitStatFor } from '@/config/combat';
+import type { Difficulty } from '@/game/difficulty';
 
 /** Parameters for spawning a character entity. */
 export interface CreateCharacterParams {
@@ -87,7 +50,7 @@ export interface CreateCharacterParams {
  */
 export function createCharacter(params: CreateCharacterParams): Entity {
   const { world, role, q, r, level, selected = false, difficulty = 'normal' } = params;
-  const stats = ROLE_STATS[role];
+  const stats = unitStatFor(role);
   const { x, z } = axialToWorld(q, r);
   const base = [
     HexPosition({ q, r, level }),
@@ -119,7 +82,7 @@ export function createCharacter(params: CreateCharacterParams): Entity {
     attackCooldown !== undefined
   ) {
     // Apply difficulty multiplier to enemy roles only. Player roles are unaffected.
-    const mult = stats.faction === 'enemy' ? DIFFICULTY_MULTIPLIER[difficulty] : 1.0;
+    const mult = stats.faction === 'enemy' ? difficultyMultiplierFor(difficulty) : 1.0;
     const scaledHp = Math.round(hp * mult);
     const scaledDamage = Math.round(attackDamage * mult);
     const combatTraits = [

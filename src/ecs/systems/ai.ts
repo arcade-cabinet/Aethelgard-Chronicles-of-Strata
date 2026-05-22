@@ -1,23 +1,12 @@
 import type { Entity, World } from 'koota';
+import { COMBAT } from '@/config/combat';
 import type { BoardData } from '@/core/board';
 import { getHexKey, hexDistance } from '@/core/hex';
 import { type NavGraph, findPath } from '@/core/pathfinding';
 import { EnemyTarget, FactionTrait, Health, HexPosition, PathQueue } from '@/ecs/components';
-import combatConfigRaw from '@/config/combat.json';
-
-/** Typed shape of the combat config JSON (ai sub-object). */
-interface CombatConfig {
-  unitStats: Record<string, unknown>;
-  difficultyMultiplier: Record<string, number>;
-  damage: { critChance: number; varianceMax: number };
-  deathDelay: number;
-  spawn: { orcThreshold: number; spawnIntervalByDifficulty: Record<string, number> };
-  ai: { aggroRadius: number };
-}
-const combatConfig = combatConfigRaw as CombatConfig;
 
 /** Search radius (hex tiles) within which an enemy will pick a target. */
-const AGGRO_RADIUS: number = combatConfig.ai.aggroRadius;
+const AGGRO_RADIUS: number = COMBAT.ai.aggroRadius;
 
 /**
  * Enemy AI. Each enemy with no live target finds the nearest player-faction
