@@ -18,7 +18,7 @@ describe('board generation reproducibility', () => {
     const a = generateBoard('ancient-silver-forest');
     const b = generateBoard('grizzled-crimson-keep');
     let differences = 0;
-    for (const [key, tileA] of a.tiles) {
+    for (const key of a.tiles.keys()) {
       if (a.tiles.get(key)?.level !== b.tiles.get(key)?.level) differences += 1;
     }
     expect(differences).toBeGreaterThan(0);

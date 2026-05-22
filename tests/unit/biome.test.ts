@@ -27,23 +27,43 @@ describe('biome assignment', () => {
 
   it('assignBiome attenuates height by distance — far tiles are ocean', () => {
     // a tile at the map edge is forced toward OCEAN by the island falloff
-    const edge = assignBiome(20, 0, () => 0.9, () => 0.5);
+    const edge = assignBiome(
+      20,
+      0,
+      () => 0.9,
+      () => 0.5,
+    );
     expect(edge.level).toBe(0);
     expect(edge.type).toBe<BiomeType>('OCEAN');
   });
 
   it('assignBiome returns a high level for a high-noise centre tile', () => {
-    const centre = assignBiome(0, 0, () => 0.95, () => 0.5);
+    const centre = assignBiome(
+      0,
+      0,
+      () => 0.95,
+      () => 0.5,
+    );
     expect(centre.level).toBeGreaterThanOrEqual(5);
     expect(centre.type).toBe<BiomeType>('MOUNTAIN');
   });
 
   it('lake override fires for a wet mid-elevation pocket', () => {
     // moisture > 0.85 and the rawHeight lands in the lake band
-    const result = assignBiome(0, 0, () => 0.5, () => 0.9);
+    const result = assignBiome(
+      0,
+      0,
+      () => 0.5,
+      () => 0.9,
+    );
     // result is either LAKE (if the rawHeight%0.1 band hits) or a normal mid biome;
     // assert the override is reachable: force a height whose %0.1 < 0.02
-    const lake = assignBiome(0, 0, () => 0.5005, () => 0.9);
+    const lake = assignBiome(
+      0,
+      0,
+      () => 0.5005,
+      () => 0.9,
+    );
     expect([lake.type, result.type]).toContain<BiomeType>(lake.type);
     expect(lake.level).toBeGreaterThanOrEqual(3);
   });
