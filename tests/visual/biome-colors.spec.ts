@@ -13,7 +13,8 @@ import { expect, test } from '@playwright/test';
 test.describe('board visual', () => {
   test('the seeded board renders as a colored hex island', async ({ page }, testInfo) => {
     await page.goto('/');
-    await page.waitForSelector('canvas');
+    // the r3f game canvas — not the #minimap-canvas
+    await page.waitForSelector('canvas:not(#minimap-canvas)');
     await page.waitForTimeout(1500);
 
     const baseline = join(
@@ -26,7 +27,7 @@ test.describe('board visual', () => {
       });
     } else {
       // no same-OS baseline yet — assert the board is on screen
-      const canvas = page.locator('canvas');
+      const canvas = page.locator('canvas:not(#minimap-canvas)');
       await expect(canvas).toBeVisible();
       const dims = await canvas.evaluate((c: HTMLCanvasElement) => ({
         w: c.width,

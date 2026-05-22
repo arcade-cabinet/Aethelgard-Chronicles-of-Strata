@@ -2,10 +2,11 @@ import { expect, test } from '@playwright/test';
 
 test('tapping a tile moves the pawn along a path', async ({ page }) => {
   await page.goto('/');
-  await page.waitForSelector('canvas');
+  // the r3f game canvas — not the #minimap-canvas
+  await page.waitForSelector('canvas:not(#minimap-canvas)');
   await page.waitForTimeout(1000);
 
-  const canvas = page.locator('canvas');
+  const canvas = page.locator('canvas:not(#minimap-canvas)');
   const box = await canvas.boundingBox();
   if (!box) throw new Error('canvas has no bounding box');
 
