@@ -231,8 +231,11 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
 - [x] viewport/camera layer — useViewport (a377d7f), CameraRig zoom+pan
   (a377d7f), minimap viewport-rectangle (721e5b8), per-viewport HUD (b83f17b).
   Spec 98 Steps 1-4 all done, verified desktop + phone-portrait.
-- [ ] M6 finish — full verification (verify + browser + e2e), milestone doc +
-  CHANGELOG, then the single final PR.
+- [x] full verification green — 188 unit + 19 browser + 4 e2e (e7bdffa)
+- [x] build targets verified — build:pages (correct Pages base path) +
+  cap:sync both succeed
+- [x] M6 milestone doc + CHANGELOG 0.1.0 written
+- [ ] push feat/aethelgard-initial-release, open the single PR
 
 ### M7 — AI subpackage (yuka)  [planned — after M6 ships]
 Per user: the AI deserves its own subpackage, not the minor `ecs/systems/ai.ts`

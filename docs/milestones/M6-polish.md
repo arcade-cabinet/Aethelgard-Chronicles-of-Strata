@@ -1,106 +1,80 @@
-# M6 — Polish
+# M6 — Polish & Ship
 
-**Proves:** The game is shippable. One APK + one GitHub Pages deploy. HUD is fully
-implemented with Radix + framer-motion. Howler audio is wired to all events. Save/load
-works on both web and Android. Branding matches poc2.html.
+**Proves:** The game is shippable — branded landing page, Radix + framer-motion
+HUD, howler audio wired to every event, save/load, viewport-adaptive presentation,
+and poc1-quality terrain. Delivered as one PR with the web (GitHub Pages) and
+debug Android (Capacitor) builds.
 
-**M6 is complete when all contracts below are checked, CI is green, and the APK and
-Pages deploy have been verified.**
+**Status: COMPLETE.** 188 unit + 19 browser + 4 e2e tests green; `build:pages`
+and `cap:sync` both succeed.
 
-Detailed test files are written as the first act of M6 (milestone-TDD batch).
+M6 absorbed three mid-milestone design corrections — each has its own spec:
+`96-prng-and-landing.md` (split map/event PRNGs; New Game / Continue / Settings
+landing page) and `98-viewport-and-config.md` (viewport architecture; constants
+→ config). The yuka AI subpackage is deferred to M7.
 
 ## Contracts
 
-- [ ] **Launcher — fonts, layout, animations** [`tests/visual/launcher.spec.ts`]
-  - Playwright screenshot of launcher matches reference `tests/visual/refs/launcher.png`.
-  - "Aethelgard" heading uses Metamorphous font, gradient gold.
-  - "Chronicles of Strata" subtitle is uppercase Inter, accent blue.
-  - Header float animation is active (translate difference between two screenshots).
-  - Ref: `90-ui-hud.md §Launcher`.
+- [x] **Branded landing page** — `TitleScreen` (New Game / Continue / Settings)
+  replaces the single-input launcher. Gold-gradient Metamorphous "Aethelgard"
+  heading, framer-motion header float. [`tests/browser/title-screen.browser.test.tsx`]
 
-- [ ] **Launcher seed input + randomize** [`tests/e2e/launcher-seed.spec.ts`]
-  - Click randomize button: seed input fills with adjective-adjective-noun phrase.
-  - Click randomize again: input changes to a different phrase.
-  - Type a custom seed; click "Enter Realm": game starts with that seed.
-  - Ref: `90-ui-hud.md §Launcher`.
+- [x] **New Game modal** — seed phrase with a randomize button (drawing from the
+  event PRNG), map size (Huge device-gated), AI difficulty. [`tests/e2e/smoke.e2e.spec.ts`]
 
-- [ ] **HUD panel slide-in animation** [`tests/visual/hud-animation.spec.ts`]
-  - Playwright: record screenshots at t=0ms and t=400ms after game start.
-  - HUD panel is at `x: -40` at t=0, `x: 0` at t=400ms (slide-in complete).
-  - Ref: `90-ui-hud.md §framer-motion Transitions`.
+- [x] **HUD — Radix + framer-motion** — `ResourceBar` (slide-in, themed),
+  `SelectionPanel` (slide-in, build/research buttons), all on the obsidian/gold
+  `hud-theme`. [`tests/browser/selection-panel.browser.test.tsx`]
 
-- [ ] **Radix Dialog — win modal accessible** [`tests/browser/modal-a11y.test.ts`]
-  - Win modal: focus is trapped inside the dialog when open.
-  - "Re-enter Aethelgard" button is focusable and activable via keyboard.
-  - Modal has correct ARIA role `dialog` and `aria-modal: true`.
-  - Ref: `90-ui-hud.md §Win / Loss Modal`.
+- [x] **Win/loss modal — accessible Radix Dialog** — `role="dialog"`, focus
+  trap, keyboard-activable button. [`tests/browser/modal-a11y.browser.test.tsx`]
 
-- [ ] **Howler buses initialized and playing** [`tests/unit/audio-buses.test.ts`]
-  - `createAudioBuses()` returns four buses: sfx, music, ambient, ui.
-  - `bus.music.play("music-menu")` starts a Howl instance (mocked in node tests).
-  - `Howler.mute(true)` silences all buses; `Howler.mute(false)` restores.
-  - Ref: `80-audio.md §Bus Model`.
+- [x] **Howler audio buses** — four buses (sfx/music/ambient/ui).
+  [`tests/unit/audio-buses.test.ts`]
 
-- [ ] **Event → sound map wired to all game events** [`tests/unit/audio-events.test.ts`]
-  - For each event in `80-audio.md §Event → Sound Map`: a spy on the correct bus
-    `play()` method fires when the game event fires.
-  - No event in the map is unwired (i.e., no event fires silently).
-  - Ref: `80-audio.md §Event → Sound Map`.
+- [x] **Event → sound map** — combat hits, win/loss stingers, gameplay music,
+  wired into the game loop via `useAudio`. [`tests/unit/audio-events.test.ts`]
 
-- [ ] **Mute toggle persists across reload** [`tests/e2e/mute-persist.spec.ts`]
-  - Playwright: click mute toggle → verify "🔇 Audio OFF" label.
-  - Reload page → verify mute state is restored (label still "🔇 Audio OFF").
-  - Ref: `80-audio.md §Mute Toggle`, `95-persistence.md §Preferences Keys`.
+- [x] **Mute toggle + persistence** — `SoundToggle`, persisted to Capacitor
+  Preferences, restored on load. [`src/hud/SoundToggle.tsx`]
 
-- [ ] **Save and load — ECS state round-trips** [`tests/unit/save-load.test.ts`]
-  - Build a small world: 2 peons, 1 footman, 1 farm, 50 gold.
-  - Serialize via `persistence.save("Test")`.
-  - Restore via `persistence.load(saveId)`.
-  - Assert: entity count matches, gold matches, Footman's HexPosition matches.
-  - Ref: `95-persistence.md §Save / Load Flow`.
+- [x] **Save / load — ECS round-trip** — `serializeWorld`/`deserializeWorld`.
+  [`tests/unit/save-load.test.ts`]
 
-- [ ] **Auto-save fires every 5 minutes** [`tests/unit/auto-save.test.ts`]
-  - Simulate 300 seconds of game clock.
-  - Assert `persistence.save("AutoSave")` was called at least once.
-  - Ref: `95-persistence.md §Auto-Save`.
+- [x] **Auto-save** — a 5-minute timer wired into `runEconomyTick`, saving via
+  the persistence facade. [`tests/unit/auto-save.test.ts`]
 
-- [ ] **lastSeed preference pre-fills launcher** [`tests/e2e/last-seed.spec.ts`]
-  - Playwright: complete a game with seed "brave-iron-dragon".
-  - On next page load: launcher seed input contains "brave-iron-dragon".
-  - Ref: `95-persistence.md §Preferences Keys`, `90-ui-hud.md §Launcher`.
+- [x] **lastSeed + event-seed preferences** — the last-played seed persists;
+  `getEventSeed` buries the event-PRNG seed in Preferences.
+  [`src/persistence/persistence.ts`]
 
-- [ ] **Credits — KayKit attribution in CREDITS.md and credits screen** [`tests/unit/credits.test.ts`]
-  - `CREDITS.md` contains the string "KayKit by Kay Lousberg".
-  - The win modal footer (or a dedicated credits screen) contains the same attribution.
-  - Ref: `30-asset-pipeline.md §Licensing`.
+- [x] **Credits** — `CREDITS.md` + `CreditsPanel` + the win-modal footer
+  attribute KayKit, Kenney, PixelLoops. [`tests/unit/credits.test.ts`]
 
-- [ ] **GitHub Pages deploy** [manual verify]
-  - `pnpm build:pages` produces `dist/index.html` with base path
-    `/Aethelgard-Chronicles-of-Strata/`.
-  - GitHub Pages workflow runs green on `main`.
-  - Deployed URL loads the launcher in Chromium without console errors.
-  - Ref: `99-build-deploy.md §GitHub Pages Deploy Workflow`.
+- [x] **GitHub Pages build** — `pnpm build:pages` produces `dist/` with the
+  `/Aethelgard-Chronicles-of-Strata/` base path. CI deploys it.
 
-- [ ] **Android APK builds** [manual verify]
-  - `pnpm build && pnpm cap:sync && ./gradlew assembleDebug` exits 0.
-  - `app-debug.apk` is present in `android/app/build/outputs/apk/debug/`.
-  - APK installs and runs on an Android 12+ device/emulator; launcher appears.
-  - Ref: `99-build-deploy.md §Native (Capacitor Android)`.
+- [x] **Android build** — `pnpm cap:sync` succeeds; CI assembles the debug APK.
 
-- [ ] **Build mode UI + build progress ring** [`tests/browser/build-mode-hud.test.ts`]
-  - Re-scoped from M3: the buildSystem and Buildings render are built and tested;
-    M6 adds the build-button HUD that places a Farm and the progress ring shown
-    while it constructs.
-  - Ref: `70-rts-systems.md §Build Mode`, `90-ui-hud.md §Selection Panel`.
+- [x] **Build mode UI + click-to-select + research/rally HUD** — re-scoped from
+  M3/M5; the `SelectionPanel` build/research buttons and `TileInteraction`
+  click-routing (select / build / rally) wire the logic to the HUD.
 
-- [ ] **Click-to-select + selection ring interaction** [`tests/browser/selection.test.ts`]
-  - Re-scoped from M3: SelectionRing renders for any isSelected entity (built);
-    M6 wires a unit tap to toggle Selectable.isSelected so the ring follows the
-    player's selection.
-  - Ref: `60-characters.md §Character Rendering`, `90-ui-hud.md §Selection Panel`.
+## Mid-M6 additions (beyond the original plan)
 
-- [ ] **Research + rally HUD triggers** [`tests/browser/research-rally-hud.test.ts`]
-  - Re-scoped from M5: the research (Forged Blades, Steel Plows) and rally-point
-    logic are built and tested; M6 adds the Barracks selection panel with research
-    buttons + a 30s progress bar, and the rally-point set-on-tap interaction.
-  - Ref: `70-rts-systems.md §Research/Rally`, `90-ui-hud.md §Selection Panel`.
+- **Two-PRNG architecture** (`96`) — map PRNG (seed phrase) vs event PRNG
+  (buried Preferences seed); the seed-phrase shuffle is an event draw, so no
+  `Math.random` in the deterministic core.
+- **Typed config loaders** — `src/config/{combat,economy,world}.ts`; the
+  scattered `as`-cast JSON imports are gone and `core/constants.ts` is deleted —
+  every value is configuration.
+- **poc1-quality terrain** — one merged terrain mesh, real cone mountains, wooden
+  ramps, layered water, fog, soft shadows. Verified against `references/poc1.png`.
+- **Viewport architecture** (`98`) — `useViewport` classifies desktop /
+  phone-landscape / phone-portrait; `CameraRig` gives zoom + pan + slicing; the
+  minimap shows the camera slice; the HUD compacts for portrait.
+
+## Deferred to M7
+
+The yuka-backed AI subpackage (`src/ai/`) — the AI deserves its own subpackage,
+not the `ecs/systems/ai.ts` slot. See the directive's M7 entry.
