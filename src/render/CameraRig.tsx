@@ -2,6 +2,7 @@ import { MapControls } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { type ComponentRef, useEffect, useRef } from 'react';
 import { HEX_RADIUS, WORLD } from '@/config/world';
+import { cameraView } from './camera-view';
 import type { ViewportProfile } from './useViewport';
 
 /** The imperative handle drei's MapControls exposes via ref. */
@@ -47,18 +48,22 @@ export function CameraRig({ viewport, boardRadius }: CameraRigProps) {
     controlsRef.current?.update();
   }, [viewport, camera]);
 
-  // clamp the pan target to the board bounds every frame the controls change
+  // on every controls change: clamp the pan target to the board bounds, then
+  // publish the camera view so the minimap can draw the current slice.
   useEffect(() => {
     const controls = controlsRef.current;
     if (!controls) return;
-    const clamp = () => {
+    const onChange = () => {
       const t = controls.target;
       t.x = Math.max(-panLimit, Math.min(panLimit, t.x));
       t.z = Math.max(-panLimit, Math.min(panLimit, t.z));
+      cameraView.targetX = t.x;
+      cameraView.targetZ = t.z;
+      cameraView.distance = camera.position.distanceTo(t);
     };
-    controls.addEventListener('change', clamp);
-    return () => controls.removeEventListener('change', clamp);
-  }, [panLimit]);
+    controls.addEventListener('change', onChange);
+    return () => controls.removeEventListener('change', onChange);
+  }, [panLimit, camera]);
 
   return (
     <MapControls
