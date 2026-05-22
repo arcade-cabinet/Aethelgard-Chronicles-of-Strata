@@ -32,7 +32,7 @@ describe('rally points', () => {
     const rally = createRally();
     setRallyPoint(rally, toKey);
     applyRallyPoint(footman, board, graph, rally);
-    expect((footman.get(PathQueue)?.steps.length ?? 0)).toBeGreaterThan(0);
+    expect(footman.get(PathQueue)?.steps.length ?? 0).toBeGreaterThan(0);
   });
 
   it('does nothing when no rally point is set', () => {
