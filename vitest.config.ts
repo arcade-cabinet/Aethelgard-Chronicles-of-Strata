@@ -5,7 +5,13 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()],
-  resolve: { alias: { '@': path.resolve(__dirname, './src') } },
+  resolve: {
+    alias: { '@': path.resolve(__dirname, './src') },
+    // r3f + React 19 in browser mode: force a single React instance so hooks
+    // resolve against one renderer (otherwise useMemo reads from a null
+    // dispatcher and crashes).
+    dedupe: ['react', 'react-dom'],
+  },
   test: {
     coverage: {
       provider: 'v8',
