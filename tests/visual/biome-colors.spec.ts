@@ -15,6 +15,10 @@ test.describe('board visual', () => {
   test('the seeded board renders as a colored hex island', async ({ page }, testInfo) => {
     // start a deterministic board so the visual baseline is stable
     await enterGame(page, 'ancient-silver-forest');
+    // dismiss the first-run onboarding overlay if it appears — the baseline is
+    // for the BOARD, not the tutorial
+    const skip = page.locator('button', { hasText: 'Skip' });
+    if (await skip.count()) await skip.first().click();
     await page.waitForTimeout(1500);
 
     const baseline = join(

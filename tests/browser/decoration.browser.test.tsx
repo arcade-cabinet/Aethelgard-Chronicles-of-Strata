@@ -16,6 +16,8 @@ import { render } from 'vitest-browser-react';
 import { App } from '@/App';
 import { generateBoard } from '@/core/board';
 import { assets } from '@/assets/assets';
+import { createMapPrng } from '@/core/rng';
+import { spawnResourceNodes } from '@/world/resource-spawn';
 import { enterGame } from './enter-game';
 
 describe('Decoration scatter', () => {
@@ -43,13 +45,6 @@ describe('Decoration scatter', () => {
   });
 
   it('no decoration on resource-node tiles', () => {
-    const { spawnResourceNodes } = require('@/world/resource-spawn') as {
-      spawnResourceNodes: typeof import('@/world/resource-spawn').spawnResourceNodes;
-    };
-    const { createMapPrng } = require('@/core/rng') as {
-      createMapPrng: typeof import('@/core/rng').createMapPrng;
-    };
-
     const seedPhrase = 'ancient-silver-forest';
     const board = generateBoard(seedPhrase);
     const rng = createMapPrng(seedPhrase);
@@ -92,10 +87,6 @@ describe('Decoration scatter', () => {
   });
 
   it('decoration placement is deterministic across two runs', () => {
-    const { createMapPrng } = require('@/core/rng') as {
-      createMapPrng: typeof import('@/core/rng').createMapPrng;
-    };
-
     const seedPhrase = 'brave-golden-river';
     const board = generateBoard(seedPhrase);
 
