@@ -37,7 +37,19 @@ export const AnimationState = trait({ state: 'IDLE' as AnimState });
 export const Selectable = trait({ isSelected: false });
 
 /** A harvestable resource type. */
+/**
+ * A resource type — an economic "slot" the player + AI accumulate and spend.
+ * Per spec 102 + the user's slot-model insight, resources are slots-with-
+ * multipliers, not unique types: each ResourceType represents an accumulation
+ * slot tied magnetically to Consumers (which fill it) and to Costs (which
+ * spend it). The union here is the *known* slots; iteration ALWAYS uses
+ * `RESOURCE_TYPES` (the enumerable list) so adding a 4th slot is one config
+ * row + one union entry, never `if/elseif` branches.
+ */
 export type ResourceType = 'wood' | 'stone' | 'gold';
+
+/** The enumerable list of resource slots — iterate this, never hardcode 'wood'/'stone'/'gold'. */
+export const RESOURCE_TYPES: readonly ResourceType[] = ['wood', 'stone', 'gold'] as const;
 
 /**
  * A building type. `TownHall` is the attractor (start base, not built

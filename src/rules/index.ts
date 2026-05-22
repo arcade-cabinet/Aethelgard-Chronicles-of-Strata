@@ -42,3 +42,10 @@ export {
   type BuildingBehaviorProfile,
   behaviorsFor,
 } from './building-behaviors';
+export {
+  BUILDING_DISPLAY,
+  type BuildingDisplay,
+  displayFor,
+  trainableUnits,
+  trainerFor,
+} from './display';

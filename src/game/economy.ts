@@ -1,13 +1,20 @@
-import type { ResourceType } from '@/ecs/components';
+import { RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import { ECONOMY } from '@/config/economy';
 
-/** Global resource totals and supply for one play session. */
+/**
+ * Global resource totals + supply + kills for one play session.
+ *
+ * The `wood`/`stone`/`gold` fields are the three current ECONOMIC SLOTS
+ * (spec 102 + M_DATA.6). Iterate via `RESOURCE_TYPES`, never by name —
+ * adding a 4th slot is one config row + one ResourceType union entry +
+ * one GameEconomy field; no system needs `if (slot === 'wood') ...`.
+ */
 export interface GameEconomy {
-  /** Wood total. */
+  /** Wood total — accumulation slot. */
   wood: number;
-  /** Stone total. */
+  /** Stone total — accumulation slot. */
   stone: number;
-  /** Gold total. */
+  /** Gold total — accumulation slot. */
   gold: number;
   /** Current supply consumed by units. */
   usedSupply: number;
@@ -17,17 +24,14 @@ export interface GameEconomy {
   kills: number;
 }
 
-/** A resource cost for training a unit or placing a building. */
-export interface ResourceCost {
-  /** Wood required. */
-  wood: number;
-  /** Stone required. */
-  stone: number;
-  /** Gold required. */
-  gold: number;
-}
+/**
+ * A resource cost — a map of slot → amount. A cost omits slots it does not
+ * consume (treated as 0). Validated + spent by iterating `RESOURCE_TYPES`,
+ * NOT by hardcoded `cost.wood + cost.stone + cost.gold`.
+ */
+export type ResourceCost = Partial<Record<ResourceType, number>>;
 
-/** Create the opening economy. TownHall provides 5 supply at game start. */
+/** Create the opening economy from the starting-resources config. */
 export function createEconomy(): GameEconomy {
   const s = ECONOMY.startingResources;
   return {
@@ -40,22 +44,29 @@ export function createEconomy(): GameEconomy {
   };
 }
 
-/** Add an amount of a resource to the economy. */
+/** Add `amount` to an economy slot. */
 export function addResource(eco: GameEconomy, type: ResourceType, amount: number): void {
   eco[type] += amount;
 }
 
-/** Whether the economy can pay a cost. */
+/**
+ * Whether the economy can pay every slot in `cost`. Slot-iterating — adding a
+ * 4th slot needs no change here.
+ */
 export function canAfford(eco: GameEconomy, cost: ResourceCost): boolean {
-  return eco.wood >= cost.wood && eco.stone >= cost.stone && eco.gold >= cost.gold;
+  for (const slot of RESOURCE_TYPES) {
+    const need = cost[slot] ?? 0;
+    if (eco[slot] < need) return false;
+  }
+  return true;
 }
 
-/** Deduct a cost if affordable. Returns whether the spend succeeded. */
+/** Deduct every slot in `cost` if affordable. Returns whether the spend succeeded. */
 export function spend(eco: GameEconomy, cost: ResourceCost): boolean {
   if (!canAfford(eco, cost)) return false;
-  eco.wood -= cost.wood;
-  eco.stone -= cost.stone;
-  eco.gold -= cost.gold;
+  for (const slot of RESOURCE_TYPES) {
+    eco[slot] -= cost[slot] ?? 0;
+  }
   return true;
 }
 

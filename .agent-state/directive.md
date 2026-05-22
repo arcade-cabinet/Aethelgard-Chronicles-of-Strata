@@ -36,6 +36,12 @@ when every queue item ships and the PR squash-merges with the deploy green.**
   `pnpm verify`, commit, push, mark `[x]`, immediately start the next.
 - Completed items move to `docs/MILESTONES.md` (the record); the directive
   stays compact, only the active + queued work.
+- **OWN deep refactorings WHEN FOUND, not as deferred items.** When the
+  user flags a deep generalization (e.g. resources-as-slots, archetypes-
+  as-magnetic-emitters), do the full refactor in the current commit
+  arc, not as a "queued M_xxx for later" item. Apply this to ALL
+  deferments — there are no come-back-to items. The directive's open
+  queue is the *plan*, not a parking lot.
 - Do NOT mark the directive RELEASED until M_RELEASE ships AND the deploy
   workflow lands GitHub Pages + the APK artefact green.
 
@@ -101,10 +107,11 @@ specified is dropped; expanded to cover everything a finished commercial RTS nee
 Original conversation called for: train, multi-select, right-click attack, flocking,
 rally, tracking ring. None fully shipped.
 
-- [ ] M_GAMEPLAY.1 — `trainUnit` command verb in `commands.ts`. Barracks
-  selected → Train Footman button (supply + cost gated via `@/rules`).
-  Town Hall → Train Peon button (`rules.canAddPeon` gated). The AI's
-  `TrainEvaluator` joins the brain (was deferred at M8.6d).
+- [x] M_GAMEPLAY.1 — trainUnit (4034af0): commands.ts trainUnit verb;
+  HUD buttons on Town Hall (Train Peon) + Barracks (Train Footman);
+  rules.canTrainComplete gates supply+cost+peon-cap; factionOverride on
+  createCharacter enables enemy peons. 265 tests. (AI TrainEvaluator
+  remains for M_AI_DEPTH.2.)
 - [ ] M_GAMEPLAY.2 — multi-unit selection via click-drag rectangle. New
   `selection-rect.ts` overlay; selection state holds a Set; SelectionPanel
   shows count + roster summary on multi.
@@ -177,6 +184,21 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
   build menu for Town Hall, etc).
 - [ ] M_DATA.5 — `costLabel` and similar formatters live ONCE in
   `src/hud/format.ts` and are reused everywhere.
+- [ ] M_DATA.6 — resources as ECONOMIC SLOTS + multipliers. ResourceCost
+  becomes `Partial<Record<ResourceType, number>>`; canAfford/spend iterate
+  RESOURCE_TYPES; ResourceBar drives off SLOT_DISPLAY × RESOURCE_TYPES.
+  Adding a slot = 1 row in RESOURCE_TYPES + 1 GameEconomy field + 1
+  SLOT_DISPLAY row; no `if/elseif` anywhere.
+- [ ] M_DATA.7 — Discoveries archetype + Science slot (user-flagged: tech
+  tree is just another archetype with the slot machinery). Add `science`
+  resource slot (accumulates from science buildings + rare events). Define
+  a `Discovery` config: cost (science + optional other slots), effect
+  (unlocks a unit/building, modifies a stat). Replace `research.ts` with
+  the Discoveries graph. HUD: a top button opens a Discoveries panel; each
+  discovery shows cost + effect + prereqs. Cost scales logarithmically by
+  tree depth so complexity ramps naturally as a match progresses. This
+  unifies "tech tree" into the same cause-and-effect language as the rest
+  of the game (spec 102 algebra).
 
 ### M_ARCHETYPE — finish the archetype unification (spec 102)
 

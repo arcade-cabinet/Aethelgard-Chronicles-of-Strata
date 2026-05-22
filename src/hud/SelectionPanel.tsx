@@ -6,36 +6,20 @@ import { doResearch, trainUnit } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { canResearch, RESEARCH_COST, type ResearchId } from '@/game/research';
 import { selectedEntity } from '@/game/selection';
-import { BUILDING_COSTS, UNIT_COSTS } from '@/rules';
+import { canAfford, type ResourceCost } from '@/game/economy';
+import { BUILDING_COSTS, UNIT_COSTS, displayFor } from '@/rules';
+import { costLabel } from './format';
 import type { BuildContext } from '@/world/TileInteraction';
 import { HUD_THEME } from './hud-theme';
 
-/** Every type the player may build, in build-menu priority order. */
-const BUILDABLE_TYPES: ReadonlyArray<Exclude<BuildingType, 'TownHall'>> = [
-  'Farm',
-  'House',
-  'Granary',
-  'Barracks',
-  'Watchtower',
-  'Wall',
-];
+/** Buildable types derived from the BUILDING_COSTS table — NOT hardcoded. */
+const BUILDABLE_TYPES = Object.keys(BUILDING_COSTS).sort() as ReadonlyArray<
+  Exclude<BuildingType, 'TownHall'>
+>;
 
-/** Compact "60w 40s" cost label, omitting zero components. */
-function costLabel(cost: { wood: number; stone: number; gold: number }): string {
-  const parts: string[] = [];
-  if (cost.wood) parts.push(`${cost.wood}w`);
-  if (cost.stone) parts.push(`${cost.stone}s`);
-  if (cost.gold) parts.push(`${cost.gold}g`);
-  return parts.join(' ') || 'free';
-}
-
-/** Whether the player's economy can cover a building cost. */
-function canAffordCost(
-  game: GameState,
-  cost: { wood: number; stone: number; gold: number },
-): boolean {
-  const eco = game.economy.player;
-  return eco.wood >= cost.wood && eco.stone >= cost.stone && eco.gold >= cost.gold;
+/** Whether the player's economy can cover a building cost — thin wrapper over rules.canAfford. */
+function canAffordCost(game: GameState, cost: ResourceCost): boolean {
+  return canAfford(game.economy.player, cost);
 }
 
 /** Props for the selection panel. */
@@ -46,16 +30,19 @@ export interface SelectionPanelProps {
   onBeginBuild: (ctx: BuildContext) => void;
 }
 
-/** A description of the selected entity for display. */
+/**
+ * A description of the selected entity for display. Building-specific
+ * branching uses `buildingType` + the rules/display.ts table — not hardcoded
+ * `isTownHall`/`isBarracks` flags. Adding a new building type with actions
+ * is one BUILDING_DISPLAY row, no SelectionPanel JSX change.
+ */
 interface SelectionView {
   /** Display name. */
   name: string;
   /** State / task line. */
   task: string;
-  /** Whether it is the Town Hall (build buttons). */
-  isTownHall: boolean;
-  /** Whether it is a Barracks (research buttons). */
-  isBarracks: boolean;
+  /** Selected building's type, or null when a unit is selected. */
+  buildingType: BuildingType | null;
 }
 
 /** Build a display view from the selected entity. */
@@ -64,24 +51,19 @@ function viewOf(game: GameState): SelectionView | null {
   if (!entity) return null;
   const building = entity.get(Building);
   if (building) {
-    const name = building.buildingType === 'TownHall' ? 'Town Hall' : building.buildingType;
+    const meta = displayFor(building.buildingType);
     const task = building.isComplete
       ? 'Operational'
       : `Constructing — ${Math.round(building.progress * 100)}%`;
-    return {
-      name,
-      task,
-      isTownHall: building.buildingType === 'TownHall',
-      isBarracks: building.buildingType === 'Barracks',
-    };
+    return { name: meta.name, task, buildingType: building.buildingType };
   }
   const unit = entity.get(Unit);
   if (unit) {
     const health = entity.get(Health);
     const hp = health ? ` — ${health.current}/${health.max} HP` : '';
-    return { name: unit.unitType, task: `Ready${hp}`, isTownHall: false, isBarracks: false };
+    return { name: unit.unitType, task: `Ready${hp}`, buildingType: null };
   }
-  return { name: 'Unknown', task: '', isTownHall: false, isBarracks: false };
+  return { name: 'Unknown', task: '', buildingType: null };
 }
 
 /** A Radix-styled HUD button. */
@@ -204,56 +186,57 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
           </div>
           <div style={{ fontSize: '0.78rem', color: '#fde047', marginTop: 2 }}>{view.task}</div>
 
-          {view.isTownHall && (
-            <div style={{ marginTop: 10 }}>
-              {/* Train Peon — the first thing a player should do at the Town Hall */}
-              <HudButton
-                label={`Train Peon — ${costLabel(UNIT_COSTS.Peon)}`}
-                onClick={() => {
-                  if (trainUnit(game, 'Peon', 'player')) emitUiSound('ui-button-click');
-                }}
-                disabled={!canAffordCost(game, UNIT_COSTS.Peon)}
-              />
-              {BUILDABLE_TYPES.map((type) => {
-                const cost = BUILDING_COSTS[type];
-                const afford = canAffordCost(game, cost);
-                return (
-                  <HudButton
-                    key={type}
-                    label={`Build ${type} — ${costLabel(cost)}`}
-                    onClick={() => beginBuild({ type, onPlaced: () => {} })}
-                    disabled={!afford}
-                  />
-                );
-              })}
-            </div>
-          )}
-
-          {view.isBarracks && (
-            <div style={{ marginTop: 10 }}>
-              {/* Train Footman — the Barracks' primary function */}
-              <HudButton
-                label={`Train Footman — ${costLabel(UNIT_COSTS.Footman)}`}
-                onClick={() => {
-                  if (trainUnit(game, 'Footman', 'player')) emitUiSound('ui-button-click');
-                }}
-                disabled={!canAffordCost(game, UNIT_COSTS.Footman)}
-              />
-              <HudButton
-                label={`Forged Blades (${RESEARCH_COST.forgedBlades.gold}g)`}
-                onClick={() => research('forgedBlades')}
-                disabled={!canResearch(game.economy.player, game.research, 'forgedBlades')}
-              />
-              <HudButton
-                label={`Steel Plows (${RESEARCH_COST.steelPlows.gold}g)`}
-                onClick={() => research('steelPlows')}
-                disabled={!canResearch(game.economy.player, game.research, 'steelPlows')}
-              />
-              <div style={{ fontSize: '0.68rem', color: HUD_THEME.color.muted, marginTop: 6 }}>
-                Tap a tile to set the rally point.
-              </div>
-            </div>
-          )}
+          {view.buildingType &&
+            (() => {
+              const meta = displayFor(view.buildingType);
+              return (
+                <div style={{ marginTop: 10 }}>
+                  {/* Train button — driven by display.trains, NOT building type */}
+                  {meta.trains && (
+                    <HudButton
+                      label={`Train ${meta.trains} — ${costLabel(UNIT_COSTS[meta.trains])}`}
+                      onClick={() => {
+                        if (meta.trains && trainUnit(game, meta.trains, 'player'))
+                          emitUiSound('ui-button-click');
+                      }}
+                      disabled={!canAffordCost(game, UNIT_COSTS[meta.trains])}
+                    />
+                  )}
+                  {/* Build menu — only on buildings that show it (TownHall today) */}
+                  {meta.showsBuildMenu &&
+                    BUILDABLE_TYPES.map((type) => {
+                      const cost = BUILDING_COSTS[type];
+                      const afford = canAffordCost(game, cost);
+                      return (
+                        <HudButton
+                          key={type}
+                          label={`Build ${type} — ${costLabel(cost)}`}
+                          onClick={() => beginBuild({ type, onPlaced: () => {} })}
+                          disabled={!afford}
+                        />
+                      );
+                    })}
+                  {/* Research — driven by display.research, NOT building type */}
+                  {meta.research?.map((id) => (
+                    <HudButton
+                      key={id}
+                      label={`${id === 'forgedBlades' ? 'Forged Blades' : 'Steel Plows'} (${
+                        RESEARCH_COST[id].gold
+                      }g)`}
+                      onClick={() => research(id)}
+                      disabled={!canResearch(game.economy.player, game.research, id)}
+                    />
+                  ))}
+                  {meta.hasRally && (
+                    <div
+                      style={{ fontSize: '0.68rem', color: HUD_THEME.color.muted, marginTop: 6 }}
+                    >
+                      Tap a tile to set the rally point.
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
         </motion.div>
       )}
     </AnimatePresence>

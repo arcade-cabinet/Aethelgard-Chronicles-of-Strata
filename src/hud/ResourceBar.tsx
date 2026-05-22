@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { HUD_THEME } from './hud-theme';
 
@@ -69,18 +70,31 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
   );
 }
 
-/** Read the current economy into display readouts. */
+/** Display config per resource slot — label, theme color, HUD id. */
+const SLOT_DISPLAY: Record<ResourceType, { label: string; color: string; id: string }> = {
+  wood: { label: 'Wood', color: HUD_THEME.color.wood, id: 'val-wood' },
+  stone: { label: 'Stone', color: HUD_THEME.color.stone, id: 'val-stone' },
+  gold: { label: 'Gold', color: HUD_THEME.color.coin, id: 'val-gold' },
+};
+
+/**
+ * Snapshot the economy into HUD readouts. Slot-iterating: adding a 4th slot
+ * means one row in SLOT_DISPLAY + one entry in RESOURCE_TYPES; no code change
+ * here. Supply is non-slot (separate counter), shown last.
+ */
 function snapshot(game: GameState): Readout[] {
   const e = game.economy.player;
-  return [
-    { id: 'val-wood', label: 'Wood', color: HUD_THEME.color.wood, value: String(e.wood) },
-    { id: 'val-stone', label: 'Stone', color: HUD_THEME.color.stone, value: String(e.stone) },
-    { id: 'val-gold', label: 'Gold', color: HUD_THEME.color.coin, value: String(e.gold) },
-    {
-      id: 'val-supply',
-      label: 'Supply',
-      color: HUD_THEME.color.supply,
-      value: `${e.usedSupply}/${e.maxSupply}`,
-    },
-  ];
+  const rows: Readout[] = [];
+  for (const slot of RESOURCE_TYPES) {
+    const d = SLOT_DISPLAY[slot];
+    if (!d) continue;
+    rows.push({ id: d.id, label: d.label, color: d.color, value: String(e[slot]) });
+  }
+  rows.push({
+    id: 'val-supply',
+    label: 'Supply',
+    color: HUD_THEME.color.supply,
+    value: `${e.usedSupply}/${e.maxSupply}`,
+  });
+  return rows;
 }
