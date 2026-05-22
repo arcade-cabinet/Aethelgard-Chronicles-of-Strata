@@ -1,9 +1,9 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type MapSizeKey, MAP_SIZES, availableMapSizes, DEFAULT_MAP_SIZE } from '@/core/map-size';
+import { createEventPrng, createFreshEventSeed } from '@/core/rng';
 import { randomSeedPhrase } from '@/core/seed-phrase';
 import type { Difficulty } from '@/game/game-state';
-import type { Rng } from '@/core/rng';
 import { HUD_THEME } from './hud-theme';
 
 /** The choices a New Game collects. */
@@ -14,6 +14,8 @@ export interface NewGameChoices {
   mapSize: MapSizeKey;
   /** AI difficulty. */
   difficulty: Difficulty;
+  /** The fresh event-PRNG seed minted for this game. */
+  eventSeed: string;
 }
 
 /** Props for the New Game modal. */
@@ -22,8 +24,6 @@ export interface NewGameModalProps {
   open: boolean;
   /** Called when the modal requests to close. */
   onOpenChange: (open: boolean) => void;
-  /** Event PRNG — drives the seed-phrase randomizer. */
-  eventRng: Rng;
   /** Called with the choices when the player begins the game. */
   onBegin: (choices: NewGameChoices) => void;
 }
@@ -74,12 +74,20 @@ function Segmented<T extends string>({
 }
 
 /**
- * The New Game modal (Radix Dialog) — collects the seed phrase (with a
- * randomize button drawing from the event PRNG), the map size (Huge is
- * device-gated), and the AI difficulty, then starts the game.
+ * The New Game modal (Radix Dialog) — collects the seed phrase, map size
+ * (Huge is device-gated), and AI difficulty, then starts the game.
+ *
+ * Each time the modal opens it mints a fresh, purely-random event-PRNG seed;
+ * the suggested seed phrase is the first draw from that event stream, so it
+ * genuinely differs every open and every page load. The same event seed
+ * travels with `onBegin` to become the committed session's event seed.
  */
-export function NewGameModal({ open, onOpenChange, eventRng, onBegin }: NewGameModalProps) {
-  const [seedPhrase, setSeedPhrase] = useState(() => randomSeedPhrase(eventRng));
+export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps) {
+  // the fresh event seed for the game being configured — re-minted each open
+  const [eventSeed, setEventSeed] = useState(createFreshEventSeed);
+  // the event PRNG stream derived from that seed; the shuffle draws from it
+  const eventRng = useRef(createEventPrng(eventSeed));
+  const [seedPhrase, setSeedPhrase] = useState(() => randomSeedPhrase(eventRng.current));
   const [mapSize, setMapSize] = useState<MapSizeKey>(DEFAULT_MAP_SIZE);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
@@ -87,6 +95,15 @@ export function NewGameModal({ open, onOpenChange, eventRng, onBegin }: NewGameM
   useEffect(() => {
     void availableMapSizes().then(setSizeKeys);
   }, []);
+
+  // on each open, mint a fresh event seed + stream and re-suggest a phrase
+  useEffect(() => {
+    if (!open) return;
+    const seed = createFreshEventSeed();
+    setEventSeed(seed);
+    eventRng.current = createEventPrng(seed);
+    setSeedPhrase(randomSeedPhrase(eventRng.current));
+  }, [open]);
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -145,7 +162,7 @@ export function NewGameModal({ open, onOpenChange, eventRng, onBegin }: NewGameM
               type="button"
               id="randomize-seed"
               aria-label="Randomize seed"
-              onClick={() => setSeedPhrase(randomSeedPhrase(eventRng))}
+              onClick={() => setSeedPhrase(randomSeedPhrase(eventRng.current))}
               style={{
                 padding: '0 12px',
                 borderRadius: 8,
@@ -189,7 +206,9 @@ export function NewGameModal({ open, onOpenChange, eventRng, onBegin }: NewGameM
           <button
             type="button"
             id="begin-game"
-            onClick={() => onBegin({ seedPhrase: seedPhrase.trim(), mapSize, difficulty })}
+            onClick={() =>
+              onBegin({ seedPhrase: seedPhrase.trim(), mapSize, difficulty, eventSeed })
+            }
             style={{
               width: '100%',
               padding: '14px',

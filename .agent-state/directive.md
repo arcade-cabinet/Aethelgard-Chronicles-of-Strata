@@ -241,8 +241,30 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
   module state → ECS components, RainParticles determinism, kill-count via
   deathSystem return, ramp Y-interp, terrain winding (DoubleSide dropped)
 - [x] CI "Build and test" green on 72ee98a
-- [ ] [WAIT] CI debug-APK job on 72ee98a (building); then PR #1 awaits human
-  review/merge — no --admin merge per policy.
+- [x] CI fully green on PR #1 (build/test + APK).
+
+### Post-PR fixes (user playtest feedback)
+- [ ] [WAIT] persistence agent: SQLite + jeep-sqlite (committed sessions in
+  SQLite, transient state in Preferences). Running in the SAME working tree —
+  its git ops keep reverting uncommitted edits to other files. WAIT for its
+  commit before touching shared-tree files.
+- [ ] Re-apply (lost to the agent's tree-revert race) once it commits:
+  1. EVENT-PRNG LIFECYCLE — `createFreshEventSeed()` is in rng.ts (survived).
+     NewGameModal must mint a fresh event seed on every modal-open (useEffect
+     on `open`), derive eventRng from it, shuffle the phrase; pass eventSeed up
+     via NewGameChoices. App.beginGame uses `choices.eventSeed`; drop the
+     getEventSeed/eventRng plumbing. This fixes "frosty-untamed-spire every
+     refresh" — the bug is the event PRNG never regenerating per New Game.
+  2. CLIFF COLOR — terrain-mesh.ts `cliffColor` must be fixed-per-tier (poc1's
+     getCliffColor: LAKE #0ea5e9 / level≥4 #334155 / DESERT #92400e / else
+     #78350f), NOT a darkened biome blend. + surface dither.
+  3. RAMPS — render flat instead of pitched. Geometry math verified correct
+     (all 105 ramps are L→L+1, rise 0.85, pitch 26°, slopeLen 1.93). Tried
+     Euler nested-groups AND Object3D.lookAt+quaternion — both still flat.
+     ARCHITECTURAL: the transform isn't the bug; investigate why a pitched
+     group renders flat (r3f quaternion/rotation prop, or the box is being
+     re-parented). Do NOT keep tweaking the transform — diagnose the render.
+- [ ] visual pass vs references/poc1.png — mountains, terrace crispness
 
 ### M7 — AI subpackage (yuka)  [planned — after M6 ships]
 PR-review note to fold into M7: `aiSystem` target selection is O(N_enemies ×

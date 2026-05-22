@@ -27,10 +27,17 @@ const SNOW = new Color('#f8fafc');
 /** Lush-green tint a grass/forest tile lerps toward by its moisture. */
 const LUSH = new Color('#22c55e');
 
+/** Fixed cliff-face colors by terrace tier — see `cliffColor`. */
+const CLIFF_WATER = new Color('#0ea5e9');
+const CLIFF_ROCK = new Color('#334155');
+const CLIFF_DESERT = new Color('#92400e');
+const CLIFF_DIRT = new Color('#78350f');
+
 /**
  * Surface (top-face) color for a tile — the flat biome color, brightened toward
  * lush green on moist grass/forest tiles and toward snow-white on level-6
- * peaks. Mirrors poc1's `getSurfaceColor`.
+ * peaks, with a faint per-tile dither so wide terraces are not dead-flat.
+ * Mirrors poc1's `getSurfaceColor`.
  */
 function surfaceColor(tile: Tile): Color {
   const c = new Color(BIOME_COLORS[tile.type]);
@@ -40,18 +47,23 @@ function surfaceColor(tile: Tile): Color {
   if (tile.level >= 6) {
     c.lerp(SNOW, 0.8);
   }
+  // subtle deterministic lightness dither keyed off the tile coords
+  const n = (((tile.q * 73 + tile.r * 149) % 7) - 3) * 0.012;
+  c.offsetHSL(0, 0, n);
   return c;
 }
 
 /**
- * Cliff (vertical-face) color where a tile drops to a lower neighbor — the mean
- * of the two tiles' biome colors, darkened slightly so cliffs read as shadowed
- * rock. Mirrors poc1's `getCliffColor`.
+ * Cliff (vertical-face) color — a **fixed earth/rock tone by tier**, not a
+ * blend of the two biomes. Every cliff of a tier shares one colour, so the
+ * terrace walls read as continuous earth instead of a murky per-tile
+ * patchwork. Mirrors poc1's `getCliffColor`.
  */
-function cliffColor(top: Tile, bottom: Tile | undefined): Color {
-  const a = new Color(BIOME_COLORS[top.type]);
-  const b = bottom ? new Color(BIOME_COLORS[bottom.type]) : a.clone();
-  return a.lerp(b, 0.5).multiplyScalar(0.78);
+function cliffColor(top: Tile): Color {
+  if (top.type === 'LAKE') return CLIFF_WATER;
+  if (top.level >= 4) return CLIFF_ROCK;
+  if (top.type === 'DESERT') return CLIFF_DESERT;
+  return CLIFF_DIRT;
 }
 
 /**
@@ -91,7 +103,7 @@ export function buildTerrainGeometry(board: BoardData): TerrainGeometryData {
         neighbor && neighbor.level > 0 ? neighbor.level * TILE_HEIGHT : -TILE_HEIGHT * 1.5;
       if (neighborY < topY) {
         // Cliff quad, wound so its normal faces outward from the tile edge.
-        const cliff = cliffColor(tile, neighbor);
+        const cliff = cliffColor(tile);
         push(p1.x, topY, p1.z, cliff);
         push(p2.x, topY, p2.z, cliff);
         push(p1.x, neighborY, p1.z, cliff);

@@ -133,7 +133,7 @@ const assets = new Set<string>([
 ]);
 
 // Store basePath resolved from Vite config
-const BASE_PATH = "/Aethelgard-Chronicles-of-Strata/";
+const BASE_PATH = "/";
 
 
 /**

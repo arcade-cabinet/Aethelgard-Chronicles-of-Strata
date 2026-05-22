@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createEventPrng } from '@/core/rng';
 import { MAP_SIZES } from '@/core/map-size';
 import { CreditsPanel } from '@/hud/CreditsPanel';
 import { GameOverModal } from '@/hud/GameOverModal';
@@ -111,40 +110,33 @@ function GameSession({ config }: { config: NewGameConfig }) {
 
 /**
  * Root component. The title screen (New Game / Continue / Settings) precedes
- * the playing phase. New Game collects a seed phrase, map size, and difficulty;
- * the event-PRNG seed is the buried Capacitor Preferences value, advanced once
- * per game. See `docs/specs/96-prng-and-landing.md`.
+ * the playing phase. The New Game modal mints a fresh event-PRNG seed each
+ * time it opens and passes it up on Begin — that seed becomes the committed
+ * session's event seed. See `docs/specs/96-prng-and-landing.md`.
  */
 export function App() {
   const [config, setConfig] = useState<NewGameConfig | null>(null);
   const [showNewGame, setShowNewGame] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [eventSeed, setEventSeed] = useState<string | null>(null);
   const [hasSave, setHasSave] = useState(false);
 
-  // load the buried event seed and check for an existing auto-save
+  // check for an existing committed save (enables the Continue button)
   useEffect(() => {
-    void persistence.getEventSeed().then(setEventSeed);
     void persistence.list().then((saves) => setHasSave(saves.length > 0));
   }, []);
-
-  // the event PRNG used by the New Game modal's seed randomizer
-  const eventRng = useMemo(() => createEventPrng(eventSeed ?? 'pending'), [eventSeed]);
 
   if (config !== null) {
     return <GameSession config={config} />;
   }
 
   const beginGame = (choices: NewGameChoices) => {
-    const seed = eventSeed ?? 'pending';
     setConfig({
       seedPhrase: choices.seedPhrase,
       mapSize: MAP_SIZES[choices.mapSize].radius,
       difficulty: choices.difficulty,
-      eventSeed: seed,
+      // the fresh event seed minted by the modal — committed with this session
+      eventSeed: choices.eventSeed,
     });
-    // advance the buried event seed so the next game differs
-    void persistence.advanceAndPersistEventSeed(createEventPrng(seed));
   };
 
   return (
@@ -155,7 +147,7 @@ export function App() {
         {...(hasSave
           ? {
               onContinue: () => {
-                // resume the most recent auto-save
+                // resume the most recent committed save
                 void persistence.list().then((saves) => {
                   const latest = saves[0];
                   if (latest) {
@@ -163,7 +155,10 @@ export function App() {
                       seedPhrase: latest.seedPhrase,
                       mapSize: MAP_SIZES.medium.radius,
                       difficulty: 'normal',
-                      eventSeed: eventSeed ?? 'pending',
+                      // a saved session carries its own committed event seed;
+                      // until full save-restore lands, derive a stable one
+                      // from the save's seed phrase
+                      eventSeed: latest.seedPhrase,
                     });
                   }
                 });
@@ -171,12 +166,7 @@ export function App() {
             }
           : {})}
       />
-      <NewGameModal
-        open={showNewGame}
-        onOpenChange={setShowNewGame}
-        eventRng={eventRng}
-        onBegin={beginGame}
-      />
+      <NewGameModal open={showNewGame} onOpenChange={setShowNewGame} onBegin={beginGame} />
       <SettingsModal open={showSettings} onOpenChange={setShowSettings} persistence={persistence} />
     </>
   );

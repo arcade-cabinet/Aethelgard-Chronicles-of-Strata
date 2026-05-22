@@ -1,21 +1,18 @@
 import { useMemo } from 'react';
-import { Euler, Quaternion, Vector3 } from 'three';
-import type { BoardData } from '@/core/board';
+import { Object3D, Vector3 } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
+import type { BoardData } from '@/core/board';
 import { axialToWorld } from '@/core/hex';
-
-/** Horizontal run of a ramp between two tile centres. */
-const RAMP_RUN = 1.3;
 
 /** A placed ramp's rendering transform. */
 interface RampPlacement {
   /** Stable React key. */
   key: string;
-  /** Midpoint world position. */
+  /** Midpoint world position of the plank. */
   position: [number, number, number];
-  /** Euler rotation orienting the plank low→high. */
-  rotation: [number, number, number];
-  /** Slope length (the plank's long dimension). */
+  /** Quaternion (x,y,z,w) orienting the plank's +Z up the slope. */
+  quaternion: [number, number, number, number];
+  /** Length of the plank along the slope. */
   slopeLength: number;
 }
 
@@ -25,10 +22,17 @@ function parseKey(key: string): { q: number; r: number } {
   return { q: q ?? 0, r: r ?? 0 };
 }
 
+/** Reused scratch object — its `lookAt` yields the plank orientation. */
+const scratch = new Object3D();
+
 /**
  * Wooden ramps connecting a tile to its one-level-higher neighbour — a sloped
- * plank with two side rails. Ramps are the only way units traverse elevation,
- * so they must be visible. Mirrors poc1's `buildRamp`.
+ * plank with side rails bridging the cliff between the two tile tops.
+ *
+ * The plank runs endpoint-to-endpoint from the low tile's top centre to the
+ * high tile's top centre. `Object3D.lookAt` aims the plank's local +Z straight
+ * at the high endpoint (combining heading + pitch); the quaternion is passed
+ * to r3f directly, with no Euler round-trip.
  */
 export function Ramps({ board }: { board: BoardData }) {
   const ramps = useMemo<RampPlacement[]>(() => {
@@ -42,22 +46,22 @@ export function Ramps({ board }: { board: BoardData }) {
 
       const lowPos = axialToWorld(low.q, low.r);
       const highPos = axialToWorld(high.q, high.r);
-      const lowY = lowTile.level * TILE_HEIGHT;
-      const highY = highTile.level * TILE_HEIGHT;
-      const midX = (lowPos.x + highPos.x) / 2;
-      const midZ = (lowPos.z + highPos.z) / 2;
-      const midY = (lowY + highY) / 2;
-      const slopeLength = Math.hypot(RAMP_RUN, highY - lowY);
+      const lowEnd = new Vector3(lowPos.x, lowTile.level * TILE_HEIGHT, lowPos.z);
+      const highEnd = new Vector3(highPos.x, highTile.level * TILE_HEIGHT, highPos.z);
 
-      // orient the plank's local +Z toward the high tile (poc1 used lookAt)
-      const dir = new Vector3(highPos.x - midX, highY - midY, highPos.z - midZ).normalize();
-      const quat = new Quaternion().setFromUnitVectors(new Vector3(0, 0, 1), dir);
-      const euler = new Euler().setFromQuaternion(quat);
+      const mid = lowEnd.clone().add(highEnd).multiplyScalar(0.5);
+      const slopeLength = lowEnd.distanceTo(highEnd);
+
+      // aim +Z at the high endpoint — one transform for heading + pitch
+      scratch.position.copy(mid);
+      scratch.lookAt(highEnd);
+      scratch.updateMatrix();
+      const q = scratch.quaternion;
 
       out.push({
         key: `${ramp.lowKey}->${ramp.highKey}`,
-        position: [midX, midY, midZ],
-        rotation: [euler.x, euler.y, euler.z],
+        position: [mid.x, mid.y, mid.z],
+        quaternion: [q.x, q.y, q.z, q.w],
         slopeLength,
       });
     }
@@ -67,17 +71,17 @@ export function Ramps({ board }: { board: BoardData }) {
   return (
     <group name="ramps">
       {ramps.map((r) => (
-        <group key={r.key} position={r.position} rotation={r.rotation}>
-          {/* sloped plank */}
-          <mesh castShadow receiveShadow>
-            <boxGeometry args={[HEX_RADIUS * 0.7, 0.15, r.slopeLength]} />
-            <meshStandardMaterial color="#92400e" flatShading roughness={0.9} />
+        <group key={r.key} position={r.position} quaternion={r.quaternion}>
+          {/* sloped plank — long axis on local +Z, lifted clear of the cliff */}
+          <mesh position={[0, 0.1, 0]} castShadow receiveShadow>
+            <boxGeometry args={[HEX_RADIUS * 0.85, 0.16, r.slopeLength]} />
+            <meshStandardMaterial color="#92400e" flatShading roughness={0.95} />
           </mesh>
-          {/* side rails */}
-          {[HEX_RADIUS * 0.35, -HEX_RADIUS * 0.35].map((railX) => (
-            <mesh key={railX} position={[railX, 0.05, 0]} castShadow>
-              <boxGeometry args={[0.08, 0.25, r.slopeLength]} />
-              <meshStandardMaterial color="#78350f" flatShading roughness={0.9} />
+          {/* side rails running the plank length */}
+          {[HEX_RADIUS * 0.4, -HEX_RADIUS * 0.4].map((railX) => (
+            <mesh key={railX} position={[railX, 0.24, 0]} castShadow>
+              <boxGeometry args={[0.1, 0.22, r.slopeLength]} />
+              <meshStandardMaterial color="#78350f" flatShading roughness={0.95} />
             </mesh>
           ))}
         </group>

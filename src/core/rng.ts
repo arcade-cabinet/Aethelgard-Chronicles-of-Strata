@@ -41,11 +41,11 @@ export function createMapPrng(seedPhrase: string): Rng {
 }
 
 /**
- * Build an **event PRNG** stream from an arbitrary seed string. Drives combat
- * variance, weather, raid timing, and the seed-phrase shuffle. The event seed
- * is device state persisted in Capacitor Preferences — independent of the map
- * phrase — so "same map, different fight" and "replay this fight on a new map"
- * are both expressible.
+ * Build an **event PRNG** stream from a seed string. Drives combat variance,
+ * loot, weather, raid timing, and the seed-phrase shuffle — everything random
+ * except Yuka's internal AI jitter. The event seed is minted fresh per New
+ * Game and buried with the committed session, independent of the map phrase.
+ * See `docs/specs/96-prng-and-landing.md`.
  */
 export function createEventPrng(eventSeed: string): Rng {
   const [a, b, c, d] = cyrb128(eventSeed);
@@ -53,12 +53,25 @@ export function createEventPrng(eventSeed: string): Rng {
 }
 
 /**
- * Derive the *next* event seed from a running event stream. Each New Game
- * advances the buried Preferences seed by drawing the successor from the
- * current stream, so sessions differ but every session stays deterministic.
+ * Generate a fresh, purely-random event seed string. Called when the New Game
+ * modal opens — each open yields an entirely new event PRNG, so the suggested
+ * seed phrase (an event draw) genuinely differs every time. Uses
+ * `crypto.getRandomValues`, the one allowed non-determinism: it seeds a PRNG,
+ * it is not simulation logic.
+ */
+export function createFreshEventSeed(): string {
+  const buf = new Uint32Array(4);
+  crypto.getRandomValues(buf);
+  return Array.from(buf)
+    .map((n) => n.toString(36))
+    .join('');
+}
+
+/**
+ * Derive a successor event seed by drawing from a running event stream — a
+ * deterministic way to fork a child seed from a parent.
  */
 export function advanceEventSeed(eventRng: Rng): string {
-  // four draws → a 64-ish-bit seed string
   return [eventRng(), eventRng(), eventRng(), eventRng()]
     .map((n) => Math.floor(n * 0x100000000).toString(36))
     .join('');
