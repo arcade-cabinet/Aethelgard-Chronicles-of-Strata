@@ -324,9 +324,13 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
 - [ ] M8.6c — peon autonomy (spec 101/102): peons run `rules.nextPeonAction` on
   both factions — autonomous harvest, claim a tile on exploitation, flee
   pulsing tiles. Add House + Granary types; peon cap = houses+granary.
-- [ ] M8.6e — encroachment & territorial buildings (spec 102): enemy-military-
-  on-controlled-tile → pulse → flip; Watchtower (offensive zone, shoots
-  intruders) + Wall (hard border, blocks pathfinding) building types.
+- [ ] M8.6e — encroachment & 3 territorial-building kinds (spec 102): enemy-
+  military-on-controlled-tile → pulse → flip; Watchtower (offensive zone,
+  shoots intruders), Wall (defensive hard border, blocks pathing), Town Hall
+  (attractor — exerts the initial ~2-tile zone, non-combat). Plus the
+  attractor map-gen contract: `board.ts` guarantees N×resource within radius U
+  of each Town Hall, making the game-start fully emergent (no scripted
+  town-hall/resource/peon sequence).
 - [ ] M8.6d — yuka AI player (spec 101/102): `AiPlayer extends GameEntity` with
   a yuka `Think` brain; `GoalEvaluator`s for build / train / move-military
   (no scout goal — peons auto-claim) reading pulse/erosion/wall signals,

@@ -43,22 +43,47 @@ tiles** — a pulsing tile is rerouted around; a peon exploiting a tile that
 starts pulsing abandons it and flees toward home. This is the "mindless brute"
 contract completed: peons are also pacifists.
 
-## Territorial buildings — second-degree borders
+## Territorial buildings — three local-zone kinds
 
-Buildings radiate their **own** border around neighbouring hexes, drawn in a
-distinct colour from the zone-of-control line. Two kinds:
+Every territorial building exerts a **local zone of control** and radiates its
+own border, drawn in a distinct colour. Three non-overlapping kinds:
 
-- **Offensive building** (e.g. a Watchtower) — radiates an *offensive zone*. An
-  enemy *can* march into the overlap (e.g. to contest a resource), but is
-  **shot at continuously** by the building while inside the zone, until they
-  destroy the building.
-- **Defensive building** (e.g. a Wall) — a **hard border**. An enemy unit
-  **cannot path past it** — pathfinding treats the wall's border as blocked
-  until the wall is destroyed.
+- **Offensive** (e.g. a Watchtower) — radiates an *offensive zone*. An enemy
+  *can* march into the overlap (e.g. to contest a resource), but is **shot at
+  continuously** while inside the zone, until they destroy the building.
+- **Defensive** (e.g. a Wall) — a **hard border**. An enemy unit **cannot path
+  past it** — pathfinding treats the wall's border as blocked until the wall is
+  destroyed.
+- **Attractor** (the Town Hall) — radiates an *attractor zone* and shapes map
+  generation (see below). Purely **non-combat** — it anchors the faction, has
+  HP, never shoots. The three kinds stay strictly separate so each is a clear
+  strategic choice.
 
 These give GOAP concrete, legible signals: is a target tile pulsing? is my
-border eroding? is a wall blocking my route? — far more tractable than
-guessing at fog exploration.
+border eroding? is a wall blocking my route? — far more tractable than guessing
+at exploration.
+
+## Attractors & the emergent game-start
+
+An **attractor** building tells the map builder: *"guarantee at least N of
+resource-X and M of resource-Y within radius U of me."* The **Town Hall is the
+sole attractor** — one per faction, the start base, **not buildable mid-game**.
+Losing the Town Hall ends the game (the existing `FactionBase` win/loss rule).
+
+The attractor contract resolves **once, at map generation** (deterministic from
+the map seed): each faction's Town Hall reserves its guaranteed resource radius.
+This makes the game-start **fully emergent — no scripted sequence**:
+
+1. Map generation places the two Town Hall attractors and, by the attractor
+   contract, guarantees resources within each one's radius U.
+2. Each Town Hall's attractor zone is that faction's **initial zone of control**
+   (~2 hex tiles out).
+3. One peon spawns per faction. Because resources are guaranteed in-radius by
+   construction, the peon immediately finds work — the autonomous exploit loop
+   (spec 101) self-starts, and the zone grows organically from there.
+
+The attractor guarantees the AI's (and the player's) peons **always have a
+radius to exploit** — there is no barren-start edge case.
 
 ## Difficulty
 
@@ -87,8 +112,15 @@ Difficulty scales two perception/response knobs — the AI never cheats:
   tiles. Replaces `FogOverlay`. The whole map renders; enemy units always draw.
 - **M8.6c** — peon autonomy also claims tiles on exploitation and flees pulsing
   tiles.
-- **M8.6e (new)** — encroachment system: enemy-military-on-controlled-tile →
-  pulse → flip; territorial buildings (Watchtower offensive zone, Wall hard
-  border); pathfinding respects walls.
-- **M8.6d** — the yuka AI player loses the `scout` goal entirely; gains
-  goals that read pulse/erosion/wall signals.
+- **M8.6c** — peon autonomy also claims tiles on exploitation, flees pulsing
+  tiles. The Town Hall attractor seeds the initial zone of control.
+- **M8.6e (new)** — encroachment + the three territorial-building kinds:
+  enemy-military-on-controlled-tile → pulse → flip; Watchtower (offensive
+  zone, shoots intruders), Wall (defensive hard border, blocks pathing),
+  Town Hall (attractor — exerts the initial zone, non-combat).
+- **M8.6-attractor (new)** — `board.ts` honours the attractor contract at map
+  generation: each Town Hall guarantees N×resource within radius U; the
+  game-start becomes fully emergent (no scripted town-hall/resource/peon
+  sequence — see "Attractors & the emergent game-start" above).
+- **M8.6d** — the yuka AI player has no `scout` goal; its goals read
+  pulse/erosion/wall signals.
