@@ -29,6 +29,8 @@ export interface EconomyConfig {
   buildableBiomes: string[];
   /** Supply each unit role consumes. */
   supplyCosts: Record<UnitType, number>;
+  /** Resource cost to TRAIN each trainable unit (Peon at Town Hall, Footman at Barracks). */
+  unitCosts: Record<'Peon' | 'Footman', ResourceCost>;
   /** The economy a fresh game starts with. */
   startingResources: {
     /** Starting wood. */
@@ -78,4 +80,9 @@ export function buildingCostFor(type: Exclude<BuildingType, 'TownHall'>): Resour
 /** Resource cost of a research upgrade. */
 export function researchCostFor(id: 'forgedBlades' | 'steelPlows'): ResourceCost {
   return ECONOMY.researchCosts[id] as ResourceCost;
+}
+
+/** Resource cost to train a trainable unit. */
+export function unitCostFor(role: 'Peon' | 'Footman'): ResourceCost {
+  return ECONOMY.unitCosts[role] as ResourceCost;
 }

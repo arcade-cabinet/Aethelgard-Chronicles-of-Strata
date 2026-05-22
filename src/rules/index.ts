@@ -22,8 +22,10 @@ export {
 } from './placement';
 export {
   SUPPLY_COST,
+  UNIT_COSTS,
   canAddPeon,
   canTrain,
+  canTrainComplete,
   peonCap,
   recomputeMaxSupply,
 } from './economy-rules';

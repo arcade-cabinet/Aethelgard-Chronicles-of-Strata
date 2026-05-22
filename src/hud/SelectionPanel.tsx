@@ -2,11 +2,11 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { Building, type BuildingType, Health, Unit } from '@/ecs/components';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
-import { doResearch } from '@/game/commands';
+import { doResearch, trainUnit } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { canResearch, RESEARCH_COST, type ResearchId } from '@/game/research';
 import { selectedEntity } from '@/game/selection';
-import { BUILDING_COSTS } from '@/rules';
+import { BUILDING_COSTS, UNIT_COSTS } from '@/rules';
 import type { BuildContext } from '@/world/TileInteraction';
 import { HUD_THEME } from './hud-theme';
 
@@ -206,6 +206,14 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
 
           {view.isTownHall && (
             <div style={{ marginTop: 10 }}>
+              {/* Train Peon — the first thing a player should do at the Town Hall */}
+              <HudButton
+                label={`Train Peon — ${costLabel(UNIT_COSTS.Peon)}`}
+                onClick={() => {
+                  if (trainUnit(game, 'Peon', 'player')) emitUiSound('ui-button-click');
+                }}
+                disabled={!canAffordCost(game, UNIT_COSTS.Peon)}
+              />
               {BUILDABLE_TYPES.map((type) => {
                 const cost = BUILDING_COSTS[type];
                 const afford = canAffordCost(game, cost);
@@ -223,6 +231,14 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
 
           {view.isBarracks && (
             <div style={{ marginTop: 10 }}>
+              {/* Train Footman — the Barracks' primary function */}
+              <HudButton
+                label={`Train Footman — ${costLabel(UNIT_COSTS.Footman)}`}
+                onClick={() => {
+                  if (trainUnit(game, 'Footman', 'player')) emitUiSound('ui-button-click');
+                }}
+                disabled={!canAffordCost(game, UNIT_COSTS.Footman)}
+              />
               <HudButton
                 label={`Forged Blades (${RESEARCH_COST.forgedBlades.gold}g)`}
                 onClick={() => research('forgedBlades')}

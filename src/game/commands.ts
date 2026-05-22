@@ -1,5 +1,6 @@
-import { getHexKey } from '@/core/hex';
+import { getHexKey, hexNeighbors } from '@/core/hex';
 import { findPath } from '@/core/pathfinding';
+import { createCharacter } from '@/entities/character-factory';
 import {
   AssignedJob,
   AttractorBehavior,
@@ -15,7 +16,14 @@ import {
   Unit,
 } from '@/ecs/components';
 import type { Entity } from 'koota';
-import { BUILDING_COSTS, behaviorsFor, canBuild } from '@/rules';
+import {
+  BUILDING_COSTS,
+  SUPPLY_COST,
+  UNIT_COSTS,
+  behaviorsFor,
+  canBuild,
+  canTrainComplete,
+} from '@/rules';
 import { spend } from './economy';
 import type { GameState } from './game-state';
 import { type ResearchId, applyResearch } from './research';
@@ -158,6 +166,94 @@ export function placeBuilding(
   }
 
   return true;
+}
+
+// ---------------------------------------------------------------------------
+// Train command — the 2nd commander verb (build is the 1st, move-military 3rd)
+// ---------------------------------------------------------------------------
+
+/**
+ * Train a unit of `role` for `faction`. Validates against the rules engine
+ * (supply + cost + peon cap), spends the cost from the faction's economy,
+ * spawns the character on a walkable tile adjacent to the issuing building,
+ * and (for Peons) routes the new peon to SEEKING immediately so the
+ * autonomous harvest loop picks up.
+ *
+ * The same channel is called by:
+ *  - The human UI — Train Peon button on the Town Hall, Train Footman on the
+ *    Barracks (M_GAMEPLAY.1).
+ *  - The AI player — its TrainEvaluator (M_AI_DEPTH.2).
+ *
+ * Returns true on success.
+ */
+export function trainUnit(
+  game: GameState,
+  role: 'Peon' | 'Footman',
+  faction: Faction = 'player',
+): boolean {
+  const eco = game.economy[faction];
+  const peonCount = countPeons(game.world, faction);
+  const houseCount = countBuildings(game.world, faction, 'House');
+  const granaryCount = countBuildings(game.world, faction, 'Granary');
+  if (!canTrainComplete(eco, role, peonCount, houseCount, granaryCount)) return false;
+  if (!spend(eco, UNIT_COSTS[role])) return false;
+
+  // pick a walkable tile adjacent to the faction's base (the trainer building)
+  const baseKey = faction === 'player' ? game.townHallKey : game.enemyBaseKey;
+  const [bq, br] = baseKey.split(',').map(Number);
+  let spawnTile: { q: number; r: number; level: number } | null = null;
+  for (const nKey of hexNeighbors(bq ?? 0, br ?? 0)) {
+    const tile = game.board.tiles.get(nKey);
+    if (tile?.walkable && !game.buildSites.has(nKey)) {
+      spawnTile = { q: tile.q, r: tile.r, level: tile.level };
+      break;
+    }
+  }
+  if (!spawnTile) return false;
+
+  const entity = createCharacter({
+    world: game.world,
+    role,
+    q: spawnTile.q,
+    r: spawnTile.r,
+    level: spawnTile.level,
+    factionOverride: faction,
+    difficulty: game.difficulty,
+  });
+  // tick supply: the unit now consumes its supply cost
+  eco.usedSupply += SUPPLY_COST[role];
+  // a fresh peon goes SEEKING immediately so the harvest loop assigns it
+  if (role === 'Peon') entity.set(AssignedJob, { state: 'SEEKING', targetKey: '' });
+  return true;
+}
+
+/** Count this faction's peons (utility for the train cap). */
+function countPeons(
+  world: ReturnType<typeof Object>['constructor'] extends never ? never : GameState['world'],
+  faction: Faction,
+): number {
+  // typed via GameState['world'] indirectly; using `any` would also work but
+  // is banned project-wide
+  return countByPredicate(
+    world,
+    (e) => e.get(Unit)?.unitType === 'Peon' && e.get(FactionTrait)?.faction === faction,
+  );
+}
+
+/** Count this faction's buildings of `type` — completed or in-progress. */
+function countBuildings(world: GameState['world'], faction: Faction, type: BuildingType): number {
+  return countByPredicate(
+    world,
+    (e) => e.get(Building)?.buildingType === type && e.get(FactionTrait)?.faction === faction,
+  );
+}
+
+/** Generic entity-counter with a predicate. */
+function countByPredicate(world: GameState['world'], pred: (entity: Entity) => boolean): number {
+  let n = 0;
+  for (const e of world.query(Unit)) if (pred(e)) n += 1;
+  for (const e of world.query(Building)) if (pred(e)) n += 1;
+  return n;
 }
 
 // ---------------------------------------------------------------------------

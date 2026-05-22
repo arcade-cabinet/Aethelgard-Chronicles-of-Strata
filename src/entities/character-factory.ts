@@ -40,6 +40,12 @@ export interface CreateCharacterParams {
    * Player roles (Peon, Footman) are unaffected. Defaults to 'normal'.
    */
   difficulty?: Difficulty;
+  /**
+   * Override the faction the role's stats normally assign. The faction-
+   * symmetric economy (M8.6a) needs ENEMY peons + footmen; the enemy AI's
+   * trainUnit command passes 'enemy' here. Undefined = use stats.faction.
+   */
+  factionOverride?: 'player' | 'enemy';
 }
 
 /**
@@ -49,14 +55,24 @@ export interface CreateCharacterParams {
  * The r3f layer renders entities that carry these traits.
  */
 export function createCharacter(params: CreateCharacterParams): Entity {
-  const { world, role, q, r, level, selected = false, difficulty = 'normal' } = params;
+  const {
+    world,
+    role,
+    q,
+    r,
+    level,
+    selected = false,
+    difficulty = 'normal',
+    factionOverride,
+  } = params;
   const stats = unitStatFor(role);
+  const faction = factionOverride ?? stats.faction;
   const { x, z } = axialToWorld(q, r);
   const base = [
     HexPosition({ q, r, level }),
     Transform({ x, y: level * TILE_HEIGHT, z, rotationY: 0 }),
     Unit({ unitType: role }),
-    FactionTrait({ faction: stats.faction }),
+    FactionTrait({ faction }),
     Movement({ speed: stats.speed, isMoving: false }),
     PathQueue({ steps: [] }),
     AnimationState({ state: 'IDLE' }),

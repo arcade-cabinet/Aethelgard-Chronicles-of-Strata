@@ -1,16 +1,38 @@
-import { ECONOMY, buildingSupplyFor, supplyCostFor } from '@/config/economy';
+import { ECONOMY, buildingSupplyFor, supplyCostFor, unitCostFor } from '@/config/economy';
 import type { BuildingType, UnitType } from '@/ecs/components';
-import type { GameEconomy } from '@/game/economy';
+import { type GameEconomy, type ResourceCost, canAfford } from '@/game/economy';
 
 /** Supply each trainable unit consumes. Enemies are not supply-tracked. */
 export const SUPPLY_COST: Record<UnitType, number> = ECONOMY.supplyCosts;
 
+/** Resource cost to train a trainable unit (Peon at Town Hall, Footman at Barracks). */
+export const UNIT_COSTS: Record<'Peon' | 'Footman', ResourceCost> = ECONOMY.unitCosts;
+
 /**
  * Whether `unit` can be trained without exceeding `economy`'s supply cap.
- * Faction-agnostic — both the human UI and the AI player consult this.
+ * Supply-only check (older signature kept for back-compat).
  */
 export function canTrain(economy: GameEconomy, unit: UnitType): boolean {
   return economy.usedSupply + supplyCostFor(unit) <= economy.maxSupply;
+}
+
+/**
+ * Whether a trainable unit can be trained right now — supply cap AND
+ * resource cost AND (for Peons) the peon cap. The single legality check the
+ * human UI greys buttons on AND the AI's TrainEvaluator consults.
+ */
+export function canTrainComplete(
+  economy: GameEconomy,
+  unit: 'Peon' | 'Footman',
+  peonCount: number,
+  houseCount: number,
+  granaryCount: number,
+): boolean {
+  if (!canTrain(economy, unit)) return false;
+  if (!canAfford(economy, unitCostFor(unit))) return false;
+  // Peons are also capped by Houses + Granaries
+  if (unit === 'Peon' && !canAddPeon(peonCount, houseCount, granaryCount)) return false;
+  return true;
 }
 
 /** Recompute a faction's supply cap from its list of complete buildings. */

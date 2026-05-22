@@ -155,6 +155,29 @@ rally, tracking ring. None fully shipped.
   the last 30s before defeat; victory triggers a gold confetti burst before
   the modal.
 
+### M_DATA_DRIVEN — eliminate hardcoded HUD/visual strings; derive from config
+
+The HUD currently hardcodes building/unit lists, display labels, and per-type
+branches that should be data-driven from the same rules/archetype tables the
+game logic consults. ONE source of truth — config + archetype profiles —
+drives display name, icon, cost, supply, behaviors, model, and tooltip.
+
+- [ ] M_DATA.1 — `rules/display.ts` (or extend `building-behaviors.ts`):
+  declare per-building `displayName`, `description`, `iconId` derived from
+  the existing config; HUD consumes only this table. Adding a building =
+  adding a row, not editing the SelectionPanel JSX.
+- [ ] M_DATA.2 — derive `BUILDABLE_TYPES` from `Object.keys(BUILDING_COSTS)`
+  (or from the BUILDING_BEHAVIORS table) rather than hardcoded literal.
+- [ ] M_DATA.3 — derive Train buttons from `UNIT_COSTS` + the
+  trainer-building-type map (Town Hall trains Peon, Barracks trains
+  Footman, future training buildings = new row in a `trainsAt` table).
+- [ ] M_DATA.4 — replace `view.isTownHall` / `view.isBarracks` branching in
+  SelectionPanel with a per-building "actions" config (each building type
+  declares its action list: train + research + rally for Barracks, train +
+  build menu for Town Hall, etc).
+- [ ] M_DATA.5 — `costLabel` and similar formatters live ONCE in
+  `src/hud/format.ts` and are reused everywhere.
+
 ### M_ARCHETYPE — finish the archetype unification (spec 102)
 
 - [ ] M_ARCHETYPE.1 — `MoverBehavior` trait — roads. ZoC-neutral; material
