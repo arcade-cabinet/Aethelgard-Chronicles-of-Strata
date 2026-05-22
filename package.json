@@ -68,6 +68,7 @@
     "@types/seedrandom": "^3.0.8",
     "@types/sql.js": "^1.4.11",
     "@types/three": "^0.184.1",
+    "@types/yuka": "^0.7.4",
     "@vitejs/plugin-react": "^6.0.2",
     "@vitest/browser": "^4.1.7",
     "@vitest/browser-playwright": "^4.1.7",

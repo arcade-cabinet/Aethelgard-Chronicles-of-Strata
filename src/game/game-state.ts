@@ -371,7 +371,7 @@ export function runEconomyTick(game: GameState, delta: number): void {
   advanceWeather(game.weather, game.eventRng, delta);
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 
-  // enemy spawning + AI target selection
+  // enemy spawning + AI unit-steering target selection
   spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
   aiSystem(game.world, game.board, game.navGraph);
 

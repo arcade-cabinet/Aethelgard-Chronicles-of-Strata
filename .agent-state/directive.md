@@ -309,9 +309,21 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
 - [x] M8.5 — fog rendering (f5b32b7): FogOverlay caps unknown (opaque) +
   discovered (translucent) tiles per frame; enemy units render only on
   player-visible tiles. 229 tests green, verified in-browser.
-- [ ] M8.6 — AI player: yuka goal evaluators (build-farm / build-barracks /
-  expand / attack / scout) scoring desires from KNOWN state only, issuing
-  `commands.ts` calls. Enemy faction runs it; human faction swappable to AI.
+- [x] M8.6a — symmetric economy (1a24098): `GameState.economy` is now
+  `Record<Faction, GameEconomy>`; `enemyBaseKey`; depositSystem +
+  recomputeMaxSupply run per faction; commands spend the issuing faction's
+  economy. 227 tests green.
+- [ ] M8.6b — `src/rules/` engine (spec 101): extract the full faction-agnostic
+  rules into a yuka/koota-free barrel — peon autonomy (`nextPeonAction`),
+  building behavior, placement (`canBuild`), economy + peon-cap, training,
+  combat targeting. ECS systems + both drivers consult it.
+- [ ] M8.6c — peon autonomy (spec 101): peons run `rules.nextPeonAction` on
+  both factions — autonomous harvest + radial frontier expansion, no peon
+  command path. Add House + Granary structure types; peon cap = houses+granary.
+- [ ] M8.6d — yuka AI player (spec 101): `AiPlayer extends GameEntity` with a
+  yuka `Think` brain; `GoalEvaluator`s for the 3 commander verbs (build /
+  train / move-military) score from KNOWN state and call `commands.ts`. Built
+  on `src/rules/`. Modeled on pond-warfare's `Governor`. Uses `@types/yuka`.
 - [ ] M8.7 — AI-vs-AI golden-path E2E: swap both factions to AI, turn loop,
   macro/meso/micro state probes, golden-transcript regression assertions.
 - [ ] M8.8 — pre-push gate: full `pnpm verify` + `test:browser` + `test:e2e`

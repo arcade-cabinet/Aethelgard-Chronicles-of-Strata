@@ -35,9 +35,10 @@ export interface EnemySteering {
  */
 export function setupVehicleSteering(vehicle: Vehicle): EnemySteering {
   const path = new Path();
+  // FollowPathBehavior wraps its own ArriveBehavior internally (yuka defaults);
+  // its end-of-path arrival uses those defaults — only the stand-alone
+  // ArriveBehavior below is tuned directly, via the public constructor.
   const followPath = new FollowPathBehavior(path, NEXT_WAYPOINT_DIST);
-  followPath._arrive.deceleration = ARRIVE_DECEL;
-  followPath._arrive.tolerance = ARRIVE_TOLERANCE;
   // Start inactive — activated when a path is loaded.
   followPath.active = false;
 
