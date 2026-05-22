@@ -17,6 +17,8 @@ export function logicalIdToOutputPath(id: string, kind: 'glb' | 'ogg' | 'wav'): 
 
 const HEX = 'references/Hexagon Kit/Models/GLB format';
 const NATURE = 'references/Nature Kit/Models/GLTF format';
+const CASTLE = 'references/Castle Kit/Models/GLB format';
+const TOWN = 'references/Fantasy Town Kit/Models/GLB format';
 const KAYKIT_ADV = 'references/KayKit_Adventurers_2.0_EXTRA';
 const ADV_CHARS = `${KAYKIT_ADV}/Characters/gltf`;
 const ADV_RIGS = `${KAYKIT_ADV}/Animations/gltf`;
@@ -76,23 +78,26 @@ export const ASSET_MAP: AssetMapEntry[] = [
     license: 'CC0',
   },
 
-  // --- M3: structures (Hexagon Kit, CC0) ---
+  // --- M7: structures — Castle Kit + Fantasy Town Kit (CC0) ---
+  // Town Hall: complete square castle tower — reads as a keep/stronghold at hex scale.
   {
     id: 'structures.town-hall',
-    source: `${HEX}/building-castle.glb`,
-    pack: 'Hexagon Kit',
+    source: `${CASTLE}/tower-square.glb`,
+    pack: 'Castle Kit',
     license: 'CC0',
   },
+  // Farm: windmill — iconic rural landmark, prominent silhouette, reads clearly.
   {
     id: 'structures.farm',
-    source: `${HEX}/building-farm.glb`,
-    pack: 'Hexagon Kit',
+    source: `${TOWN}/windmill.glb`,
+    pack: 'Fantasy Town Kit',
     license: 'CC0',
   },
+  // Barracks: fortified tower with slant roof — reads as a military outpost.
   {
     id: 'structures.barracks',
-    source: `${HEX}/building-tower.glb`,
-    pack: 'Hexagon Kit',
+    source: `${CASTLE}/tower-slant-roof.glb`,
+    pack: 'Castle Kit',
     license: 'CC0',
   },
 
