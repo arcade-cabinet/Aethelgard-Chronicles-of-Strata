@@ -356,8 +356,9 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   GameEntity with an AiBrain (Think); BuildEvaluator + MilitaryEvaluator
   score from KNOWN state and dispatch to commands.ts; enemy faction always
   AI-driven. Built on @/rules. 257 tests.
-- [ ] M8.7 — AI-vs-AI golden-path E2E: swap both factions to AI, turn loop,
-  macro/meso/micro state probes, golden-transcript regression assertions.
+- [x] M8.7 — AI-vs-AI golden-path E2E (962ecfe): swap both factions to AI,
+  60+200+30 ticks, probe macro/meso/micro state, determinism check. The
+  faction-symmetric architecture is a true interface test. 260 tests green.
 - [ ] M8.8 — M8 integration check: `pnpm verify` + `test:browser` green; an
   AI-vs-AI match runs start→win without NaN/stuck-unit/economy invariants
   broken; commit the M8 milestone-complete marker.
