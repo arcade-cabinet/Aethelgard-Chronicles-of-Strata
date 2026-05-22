@@ -98,3 +98,9 @@ Detailed test files are written as the first act of M6 (milestone-TDD batch).
     M6 wires a unit tap to toggle Selectable.isSelected so the ring follows the
     player's selection.
   - Ref: `60-characters.md §Character Rendering`, `90-ui-hud.md §Selection Panel`.
+
+- [ ] **Research + rally HUD triggers** [`tests/browser/research-rally-hud.test.ts`]
+  - Re-scoped from M5: the research (Forged Blades, Steel Plows) and rally-point
+    logic are built and tested; M6 adds the Barracks selection panel with research
+    buttons + a 30s progress bar, and the rally-point set-on-tap interaction.
+  - Ref: `70-rts-systems.md §Research/Rally`, `90-ui-hud.md §Selection Panel`.

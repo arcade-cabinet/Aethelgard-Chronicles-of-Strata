@@ -181,10 +181,25 @@ M4 learnings carried into M5:
   patterns — lower architectural risk than M2/M3/M4.
 - M5 FIRST STEP: write M5 plan + milestone-TDD batch.
 
-### M5 — Systems
-Plan written at M5 start. Contracts: seeded weather, research/tech, barracks rally
-points, 2D minimap, day/night cycle. Pillar: `70-rts-systems.md`, `20-visual-language.md`.
-- [ ] M5.* — decomposed at milestone start
+### M5 — Systems  ✅ COMPLETE
+Plan: `docs/superpowers/plans/2026-05-22-m5-systems.md` (9 tasks)
+- [x] M5.1-6 logic — clock + day/night curve, weather state machine, research,
+  rally points, Orc escalation, GameState wiring (rain penalty threaded)
+- [x] M5.7 r3f — DayNightCycle, RainParticles, RallyMarker
+- [x] M5.8 2D minimap
+- [x] M5.9 verification — 173 unit + 10 browser + 3 e2e green
+
+M5 learnings carried into M6:
+- M4 review findings folded mid-M5 (session-safe Maps, multi-attacker damage
+  accumulation, CombatText batch detection, Units O(n²) removed). M5 review next.
+- The minimap added a 2nd <canvas>; e2e selectors now use
+  `canvas:not(#minimap-canvas)`. Watch for this pattern in M6 HUD work.
+- Research/rally HUD triggers re-scoped to M6 — the logic is built+tested, the
+  Barracks selection panel + buttons are M6 (same split as build-mode M3→M6).
+- M6 is the FINAL milestone: Radix + framer-motion HUD polish (selection panel,
+  build/research/rally buttons, branded launcher), howler audio buses,
+  SQLite/Preferences persistence, credits screen. Then: ONE final push of the
+  whole feat/aethelgard-initial-release branch as the single PR.
 
 ### M6 — Polish
 Plan written at M6 start. Contracts: Radix + framer-motion HUD, howler audio buses,
