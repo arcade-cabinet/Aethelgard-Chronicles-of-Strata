@@ -1,10 +1,28 @@
 import worldJson from './world.json';
 
+/** One axial neighbour direction. */
+export interface AxialDir {
+  /** Axial q offset. */
+  q: number;
+  /** Axial r offset. */
+  r: number;
+}
+
+/** Camera placement for one viewport class. */
+export interface CameraProfileConfig {
+  /** Default camera distance from its target. */
+  distance: number;
+  /** Vertical field of view, degrees. */
+  fov: number;
+  /** Downward pitch in radians (0 = horizon, π/2 = straight down). */
+  pitch: number;
+}
+
 /**
- * Typed accessor for `world.json` — board, hex, weather, day-night, biome, and
- * noise tuning. The JSON is imported and asserted to this shape exactly once,
- * here, at the module boundary; every consumer imports the typed `WORLD` object
- * and gets full type-checking with no per-site casts.
+ * Typed accessor for `world.json` — every scene-scale, terrain, weather,
+ * day-night, biome, noise, and camera value. There is no `core/constants`:
+ * every number, including the six axial directions, is configuration loaded
+ * here once. See `docs/specs/98-viewport-and-config.md`.
  */
 export interface WorldConfig {
   /** Hex-tile geometry. */
@@ -13,8 +31,12 @@ export interface WorldConfig {
     hexRadius: number;
     /** World-space height of one elevation tier. */
     tileHeight: number;
-    /** Water-plane height as a fraction of `tileHeight`. */
+    /** Water-surface height as a fraction of `tileHeight`. */
     waterLevelFactor: number;
+    /** Vertical thickness of the water disc. */
+    waterDiscHeight: number;
+    /** The six axial neighbour directions, clockwise. */
+    directions: AxialDir[];
   };
   /** Board generation. */
   board: {
@@ -67,7 +89,37 @@ export interface WorldConfig {
     /** Frequency growth per octave. */
     lacunarity: number;
   };
+  /** Camera zoom bounds and per-viewport-class defaults. */
+  camera: {
+    /** Closest the camera may zoom. */
+    minZoom: number;
+    /** Farthest the camera may zoom. */
+    maxZoom: number;
+    /** Desktop / landscape-tablet camera defaults. */
+    desktop: CameraProfileConfig;
+    /** Phone-landscape camera defaults. */
+    phoneLandscape: CameraProfileConfig;
+    /** Phone-portrait camera defaults. */
+    phonePortrait: CameraProfileConfig;
+  };
 }
 
-/** The validated, frozen world tuning. Import this — never `world.json` directly. */
+/** The validated world config. Import this — never `world.json` directly. */
 export const WORLD: WorldConfig = worldJson;
+
+// --- Derived scene-scale values (formerly src/core/constants.ts) ---
+
+/** World-space radius of one hex tile. */
+export const HEX_RADIUS: number = WORLD.hex.hexRadius;
+
+/** World-space height of one elevation tier. */
+export const TILE_HEIGHT: number = WORLD.hex.tileHeight;
+
+/** Default board radius in hex tiles. */
+export const MAP_RADIUS: number = WORLD.board.mapRadius;
+
+/** Y of the water surface — level-0 ocean tiles sit at or below it. */
+export const WATER_LEVEL: number = WORLD.hex.waterLevelFactor * TILE_HEIGHT;
+
+/** The six axial neighbour directions, clockwise. */
+export const HEX_DIRECTIONS: ReadonlyArray<AxialDir> = WORLD.hex.directions;

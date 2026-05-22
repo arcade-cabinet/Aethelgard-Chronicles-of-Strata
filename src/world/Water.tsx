@@ -13,12 +13,28 @@ export function Water({ mapRadius }: { mapRadius: number }) {
       {/* lower water layer */}
       <mesh position={[0, WATER_LEVEL, 0]} rotation={[0, Math.PI / 6, 0]}>
         <cylinderGeometry args={[waterR, waterR, WORLD.hex.waterDiscHeight, 6]} />
-        <meshStandardMaterial color="#0ea5e9" transparent opacity={0.6} roughness={0.1} flatShading />
+        <meshStandardMaterial
+          color="#0ea5e9"
+          transparent
+          opacity={0.6}
+          roughness={0.1}
+          flatShading
+        />
       </mesh>
       {/* upper water layer — slightly smaller and higher for a layered sheen */}
-      <mesh position={[0, WATER_LEVEL + 0.05, 0]} rotation={[0, Math.PI / 6, 0]} scale={[0.98, 1, 0.98]}>
+      <mesh
+        position={[0, WATER_LEVEL + 0.05, 0]}
+        rotation={[0, Math.PI / 6, 0]}
+        scale={[0.98, 1, 0.98]}
+      >
         <cylinderGeometry args={[waterR, waterR, WORLD.hex.waterDiscHeight, 6]} />
-        <meshStandardMaterial color="#38bdf8" transparent opacity={0.4} roughness={0.2} flatShading />
+        <meshStandardMaterial
+          color="#38bdf8"
+          transparent
+          opacity={0.4}
+          roughness={0.2}
+          flatShading
+        />
       </mesh>
       {/* opaque sea floor */}
       <mesh position={[0, -TILE_HEIGHT * 1.2, 0]} rotation={[0, Math.PI / 6, 0]} receiveShadow>

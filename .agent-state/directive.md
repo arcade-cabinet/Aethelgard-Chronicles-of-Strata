@@ -217,13 +217,21 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
 - [x] core two-PRNG refactor landed (08fc538); App.tsx rewired to the
   TitleScreen → NewGame → play flow (b998472)
 - [x] new browser tests written (title-screen, selection-panel, modal-a11y)
-- [x] config agents reviewed — economy(7c14337)/combat(c8adcd5)/world(dc9241f)
-  all faithful (values verified unchanged, exports stable, 188 tests each).
-  KNOWN-WEAKNESS to clean up: the JSON imports use scattered `as` casts to
-  satisfy noUncheckedIndexedAccess — safe (JSON committed + test-covered) but a
-  typed-config-loader module would be cleaner. Follow-up, non-blocking.
-- [ ] [WAIT] asset-plugin migration agent (last of 4, harness-tracked) — fixes
-  the public/ import playtest bug. M6 finish resumes on its completion.
+- [x] config agents reviewed + the `as`-cast weakness FIXED — typed config
+  loaders src/config/{combat,economy,world}.ts replace the 13 scattered casts
+  (ec3b0ff). asset-plugin migration landed (d149d84) — public/ import bug fixed.
+- [x] vite-static-assets-plugin migration; Biome linter confirmed latest (2.4.15)
 - [ ] M6 finish — RE-APPLY the lost useAudio ref-guard + useGameLoop audio
   wiring (a checkout reverted them), wire auto-save into runEconomyTick, full
   verification, the single final PR
+
+### M7 — AI subpackage (yuka)  [planned — after M6 ships]
+Per user: the AI deserves its own subpackage, not the minor `ecs/systems/ai.ts`
+slot. yuka (^0.7.8, already a dep) is the original-stack AI library, currently
+unused. Decision: FULL yuka GameEntity model — `src/ai/` subpackage with a yuka
+`EntityManager` running alongside the koota ECS (synced each tick), enemy
+behavior via yuka steering + perception (vision/memory) + goal-oriented
+behavior. Keep the hex A* (`core/pathfinding.ts`) — correct for hex grids; yuka
+supplies the behavior layer, not the pathfinder. Ref: `/Users/jbogaty/src/
+reference-codebases/yuka`. Write `docs/specs/97-ai-architecture.md` + an M7 plan
+with use-case enumeration FIRST. Build after the M6 PR is open.

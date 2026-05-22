@@ -11,6 +11,7 @@ import { SettingsModal } from '@/hud/SettingsModal';
 import { SoundToggle } from '@/hud/SoundToggle';
 import { TitleScreen } from '@/hud/TitleScreen';
 import { createPersistence } from '@/persistence/persistence';
+import { createAutoSave } from '@/game/auto-save';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
 import { type NewGameConfig, startGame } from '@/game/game-state';
@@ -41,7 +42,14 @@ const persistence = createPersistence();
 
 /** The active game session, rendered once a config has been chosen. */
 function GameSession({ config }: { config: NewGameConfig }) {
-  const game = useMemo(() => startGame(config), [config]);
+  const game = useMemo(() => {
+    const g = startGame(config);
+    // Attach the 5-minute auto-save — runEconomyTick advances the timer.
+    g.autoSave = createAutoSave(() => {
+      void persistence.save('AutoSave', g);
+    });
+    return g;
+  }, [config]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const [showCredits, setShowCredits] = useState(false);
 
