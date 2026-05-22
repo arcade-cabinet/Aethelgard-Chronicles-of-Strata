@@ -4,13 +4,27 @@ import { getHexKey, hexDistance } from '@/core/hex';
 import { type NavGraph, buildNavGraph } from '@/core/pathfinding';
 import { createEcsWorld } from '@/ecs/world';
 import { createCharacter } from '@/entities/character-factory';
-import { AssignedJob, HexPosition, ResourceTrait, Unit } from '@/ecs/components';
+import {
+  AssignedJob,
+  Building,
+  FactionTrait,
+  GoblinPortalTrait,
+  Health,
+  HexPosition,
+  ResourceTrait,
+  Unit,
+} from '@/ecs/components';
 import { animationSystem } from '@/ecs/systems/animation';
+import { aiSystem } from '@/ecs/systems/ai';
 import { buildSystem } from '@/ecs/systems/build';
+import { type DamageEvent, combatSystem } from '@/ecs/systems/combat';
+import { deathSystem } from '@/ecs/systems/death';
 import { depositSystem } from '@/ecs/systems/deposit';
 import { harvestSystem } from '@/ecs/systems/harvest';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
+import { spawnSystem } from '@/ecs/systems/spawn';
+import { type GameOutcome, evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { type GameEconomy, createEconomy } from './economy';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import { createDualPrng } from '@/core/rng';
@@ -35,6 +49,16 @@ export interface GameState {
   resourceNodes: ResourceNodePlan[];
   /** Building-site entities keyed by hex tile key (for the build system). */
   buildSites: Map<string, Entity>;
+  /** The Town Hall ECS entity (player base — loss condition). */
+  townHallEntity: Entity;
+  /** The Goblin Portal ECS entity (enemy spawner — win condition). */
+  portalEntity: Entity;
+  /** Current win/loss outcome; 'playing' until a condition is met. */
+  outcome: GameOutcome;
+  /** Damage events produced by the last combatSystem tick (for FX). */
+  lastDamageEvents: DamageEvent[];
+  /** The event PRNG — shared across all combat rolls to preserve determinism. */
+  eventRng: () => number;
   /**
    * Assign every idle peon to harvest the nearest resource node.
    * Call this to kick-start the autonomous harvest loop.
@@ -128,8 +152,46 @@ export function startGame(seedPhrase: string): GameState {
     selected: false,
   });
 
+  // Spawn the Town Hall entity (player base — loss condition).
+  const townHallEntity = world.spawn(
+    HexPosition({ q: center.q, r: center.r, level: center.level }),
+    Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
+    Health({ current: 500, max: 500 }),
+    FactionTrait({ faction: 'player' }),
+  );
+
+  // Pick the farthest walkable tile from center for the Goblin Portal.
+  let portalTile = center;
+  let maxDist = 0;
+  for (const tile of board.tiles.values()) {
+    if (!tile.walkable) continue;
+    const d = hexDistance(tile.q, tile.r, center.q, center.r);
+    if (d > maxDist) {
+      maxDist = d;
+      portalTile = tile;
+    }
+  }
+
+  // Spawn the Goblin Portal entity (enemy spawner — win condition).
+  const portalEntity = world.spawn(
+    HexPosition({ q: portalTile.q, r: portalTile.r, level: portalTile.level }),
+    GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }),
+    Health({ current: 300, max: 300 }),
+    FactionTrait({ faction: 'enemy' }),
+  );
+
+  // Spawn one starting Footman near the Town Hall.
+  const footmanSpawn = peonSpawns[0] ?? center;
+  createCharacter({
+    world,
+    role: 'Footman',
+    q: footmanSpawn.q,
+    r: footmanSpawn.r,
+    level: footmanSpawn.level,
+  });
+
   // spawn resource nodes using the map PRNG
-  const { map } = createDualPrng(seedPhrase);
+  const { map, event: eventRng } = createDualPrng(seedPhrase);
   const resourceNodes = spawnResourceNodes(board, map);
   for (const plan of resourceNodes) {
     world.spawn(
@@ -150,6 +212,11 @@ export function startGame(seedPhrase: string): GameState {
     townHallKey,
     resourceNodes,
     buildSites,
+    townHallEntity,
+    portalEntity,
+    outcome: 'playing',
+    lastDamageEvents: [],
+    eventRng,
     assignAllPeonsToHarvest() {
       // find the first wood node (fallback to any node)
       const woodNodes = resourceNodes.filter((n) => n.resourceType === 'wood');
@@ -195,10 +262,34 @@ export function startGame(seedPhrase: string): GameState {
  * simulation step in tests).
  */
 export function runEconomyTick(game: GameState, delta: number): void {
+  // Skip all ticks once the game has ended.
+  if (game.outcome !== 'playing') return;
+
   pathFollowSystem(game.world, delta);
   jobRoutingSystem(game.world, game.board, game.navGraph, game.townHallKey);
   harvestSystem(game.world, delta);
   depositSystem(game.world, game.economy, game.townHallKey);
   buildSystem(game.world, game.buildSites, delta);
   animationSystem(game.world);
+
+  // Combat systems run after the economy loop.
+  spawnSystem(game.world, game.board, delta);
+  aiSystem(game.world, game.board, game.navGraph);
+
+  // Track pre-death enemy count to credit kills.
+  const enemyUnitsBefore = game.world
+    .query(Unit, FactionTrait)
+    .filter((e) => e.get(FactionTrait)?.faction === 'enemy').length;
+
+  game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta);
+  deathSystem(game.world, delta);
+
+  // Credit kills: enemies that died this tick.
+  const enemyUnitsAfter = game.world
+    .query(Unit, FactionTrait)
+    .filter((e) => e.get(FactionTrait)?.faction === 'enemy').length;
+  const killed = enemyUnitsBefore - enemyUnitsAfter;
+  if (killed > 0) game.economy.kills += killed;
+
+  game.outcome = evaluateWinLoss(game.world);
 }

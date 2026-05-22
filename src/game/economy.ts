@@ -12,6 +12,8 @@ export interface GameEconomy {
   usedSupply: number;
   /** Supply cap — sum of owned buildings' supply contribution. */
   maxSupply: number;
+  /** Enemy units killed this session. */
+  kills: number;
 }
 
 /** A resource cost for training a unit or placing a building. */
@@ -26,7 +28,7 @@ export interface ResourceCost {
 
 /** Create the opening economy. TownHall provides 5 supply at game start. */
 export function createEconomy(): GameEconomy {
-  return { wood: 50, stone: 20, gold: 20, usedSupply: 0, maxSupply: 5 };
+  return { wood: 50, stone: 20, gold: 20, usedSupply: 0, maxSupply: 5, kills: 0 };
 }
 
 /** Add an amount of a resource to the economy. */
