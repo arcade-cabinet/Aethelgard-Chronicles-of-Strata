@@ -4,7 +4,7 @@ import { PCFSoftShadowMap } from 'three';
 import type { GameState } from '@/game/game-state';
 import { CameraRig } from './CameraRig';
 import { type ViewportProfile, useViewport } from './useViewport';
-import { Buildings } from '@/world/Buildings';
+import { HomeBase } from '@/world/HomeBase';
 import { CombatText } from '@/world/CombatText';
 import { Decoration } from '@/world/Decoration';
 import { EnemyBase } from '@/world/EnemyBase';
@@ -52,7 +52,7 @@ function Scene({
       <Suspense fallback={null}>
         <Decoration board={game.board} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
-        <Buildings game={game} />
+        <HomeBase game={game} />
         <EnemyBase game={game} />
         <Units game={game} />
       </Suspense>

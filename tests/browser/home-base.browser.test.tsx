@@ -1,5 +1,5 @@
 /**
- * Buildings rendering — M7 asset expansion.
+ * HomeBase rendering — M7 asset expansion.
  * Verifies that the new Castle Kit / Fantasy Town Kit GLBs load and mount
  * meshes in the Three.js scene for all three building types.
  */
@@ -10,9 +10,9 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { Building, HexPosition, FactionTrait } from '@/ecs/components';
 import { startGame } from '@/game/game-state';
-import { Buildings } from '@/world/Buildings';
+import { HomeBase } from '@/world/HomeBase';
 
-describe('Buildings rendering (Castle Kit / Fantasy Town Kit)', () => {
+describe('HomeBase rendering (Castle Kit / Fantasy Town Kit)', () => {
   it('renders town-hall (tower-square) mesh in the scene', async () => {
     const game = startGame('ancient-silver-forest');
     const captured: { scene?: Object3D } = {};
@@ -24,7 +24,7 @@ describe('Buildings rendering (Castle Kit / Fantasy Town Kit)', () => {
         }}
       >
         <Suspense fallback={null}>
-          <Buildings game={game} />
+          <HomeBase game={game} />
         </Suspense>
       </Canvas>,
     );
@@ -70,7 +70,7 @@ describe('Buildings rendering (Castle Kit / Fantasy Town Kit)', () => {
         }}
       >
         <Suspense fallback={null}>
-          <Buildings game={game} />
+          <HomeBase game={game} />
         </Suspense>
       </Canvas>,
     );
