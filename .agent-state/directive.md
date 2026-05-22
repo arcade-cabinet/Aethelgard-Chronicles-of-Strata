@@ -300,12 +300,15 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   symmetric model table; HomeBase.tsx renders player structures via a reusable
   StructureMesh core; Buildings.tsx deleted; EnemyBase is the enemy side.
   Render-only, 220 tests green.
-- [ ] M8.3 — command API faction parameter: `commands.ts` takes an issuing
-  faction; enforce "own pieces, own knowledge only." The single action channel.
-- [ ] M8.4 — perception: `fog.ts`, vision cones (unit arc, base circle),
-  per-faction discovered/visible/unknown tile state.
-- [ ] M8.5 — fog rendering: player fog overlay (dim discovered, hide unknown);
-  enemy units in fog not rendered.
+- [x] M8.3 — faction-aware command API (2d92904): every command takes an
+  issuing faction; moveUnit enforces ownership; placeBuilding stamps the
+  faction + filters peons by faction. The single action channel. 221 tests.
+- [x] M8.4 — perception / fog of war (f3805a0): src/game/fog.ts — per-faction
+  FogState (visible + monotonic discovered); units see forward cones, bases
+  full circles; runEconomyTick recomputes both factions' fog. 226 tests green.
+- [x] M8.5 — fog rendering (f5b32b7): FogOverlay caps unknown (opaque) +
+  discovered (translucent) tiles per frame; enemy units render only on
+  player-visible tiles. 229 tests green, verified in-browser.
 - [ ] M8.6 — AI player: yuka goal evaluators (build-farm / build-barracks /
   expand / attack / scout) scoring desires from KNOWN state only, issuing
   `commands.ts` calls. Enemy faction runs it; human faction swappable to AI.
