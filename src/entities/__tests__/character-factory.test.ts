@@ -36,9 +36,9 @@ describe('createCharacter', () => {
 
   it('gives each role its archetype movement speed', () => {
     const world = createEcsWorld();
-    expect(createCharacter({ world, role: 'Peon', q: 0, r: 0, level: 2 }).get(Movement)?.speed).toBe(
-      3,
-    );
+    expect(
+      createCharacter({ world, role: 'Peon', q: 0, r: 0, level: 2 }).get(Movement)?.speed,
+    ).toBe(3);
     expect(createCharacter({ world, role: 'Orc', q: 0, r: 0, level: 2 }).get(Movement)?.speed).toBe(
       1.5,
     );

@@ -1,10 +1,9 @@
 import type { Entity, World } from 'koota';
 import { type BoardData, generateBoard } from '@/core/board';
-import { TILE_HEIGHT } from '@/core/constants';
-import { axialToWorld, hexDistance } from '@/core/hex';
+import { hexDistance } from '@/core/hex';
 import { type NavGraph, buildNavGraph } from '@/core/pathfinding';
-import { HexPosition, Movement, PathQueue, Selectable, Transform, Unit } from '@/ecs/components';
 import { createEcsWorld } from '@/ecs/world';
+import { createCharacter } from '@/entities/character-factory';
 
 /** The live state of one play session. */
 export interface GameState {
@@ -47,15 +46,14 @@ export function startGame(seedPhrase: string): GameState {
   const world = createEcsWorld();
 
   const spawn = findCentralWalkableTile(board);
-  const spawnWorld = axialToWorld(spawn.q, spawn.r);
-  const playerPawn = world.spawn(
-    HexPosition({ q: spawn.q, r: spawn.r, level: spawn.level }),
-    Transform({ x: spawnWorld.x, y: spawn.level * TILE_HEIGHT, z: spawnWorld.z, rotationY: 0 }),
-    Unit({ unitType: 'Peon' }),
-    Movement({ speed: 3, isMoving: false }),
-    PathQueue({ steps: [] }),
-    Selectable({ isSelected: true }),
-  );
+  const playerPawn = createCharacter({
+    world,
+    role: 'Peon',
+    q: spawn.q,
+    r: spawn.r,
+    level: spawn.level,
+    selected: true,
+  });
 
   return { seedPhrase, board, navGraph, world, playerPawn };
 }
