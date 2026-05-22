@@ -12,7 +12,7 @@ import {
   Unit,
 } from '@/ecs/components';
 import type { Entity } from 'koota';
-import { BUILDING_COSTS, canPlaceBuilding } from './build';
+import { BUILDING_COSTS, canBuild } from '@/rules';
 import { spend } from './economy';
 import type { GameState } from './game-state';
 import { type ResearchId, applyResearch } from './research';
@@ -90,7 +90,7 @@ export function issueMoveOrder(game: GameState, targetKey: string): boolean {
 
 /**
  * Place a building of `type` on `tileKey` for `faction`. Validates via
- * `canPlaceBuilding`, deducts the cost, spawns the incomplete Building entity
+ * `rules.canBuild`, deducts the cost, spawns the incomplete Building entity
  * (stamped with the issuing faction) into `game.buildSites`, and assigns the
  * nearest idle peon **of that faction** to BUILDING state.
  *
@@ -105,7 +105,7 @@ export function placeBuilding(
   const occupied = new Set<string>([game.townHallKey, ...game.buildSites.keys()]);
   const economy = game.economy[faction];
 
-  const check = canPlaceBuilding(game.board, occupied, tileKey, type, economy);
+  const check = canBuild(game.board, occupied, tileKey, type, economy);
   if (!check.ok) return false;
 
   if (!spend(economy, BUILDING_COSTS[type])) return false;

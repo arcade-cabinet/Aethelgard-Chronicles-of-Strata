@@ -28,7 +28,7 @@ import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { type GameOutcome, evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { type GameEconomy, createEconomy } from './economy';
-import { recomputeMaxSupply } from './supply';
+import { recomputeMaxSupply } from '@/rules';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import { MAP_RADIUS } from '@/config/world';

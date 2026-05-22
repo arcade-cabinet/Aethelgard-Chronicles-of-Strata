@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
-import { canPlaceBuilding, BUILDING_COSTS } from '@/game/build';
+import { canBuild, BUILDING_COSTS } from '@/rules';
 import { createEconomy } from '@/game/economy';
 
 describe('build mode placement validation', () => {
@@ -9,7 +9,7 @@ describe('build mode placement validation', () => {
     const ocean = [...board.tiles.values()].find((t) => t.type === 'OCEAN');
     if (!ocean) throw new Error('seed has no ocean tile');
     expect(
-      canPlaceBuilding(board, new Set(), `${ocean.q},${ocean.r}`, 'Farm', createEconomy()).ok,
+      canBuild(board, new Set(), `${ocean.q},${ocean.r}`, 'Farm', createEconomy()).ok,
     ).toBe(false);
   });
 
@@ -21,7 +21,7 @@ describe('build mode placement validation', () => {
     const eco = createEconomy();
     eco.wood = 1000;
     eco.gold = 1000;
-    expect(canPlaceBuilding(board, new Set([key]), key, 'Farm', eco).ok).toBe(false);
+    expect(canBuild(board, new Set([key]), key, 'Farm', eco).ok).toBe(false);
   });
 
   it('rejects placement the player cannot afford', () => {
@@ -30,7 +30,7 @@ describe('build mode placement validation', () => {
     if (!grass) throw new Error('seed has no grass tile');
     // default economy (50 wood) cannot afford a Farm (100 wood)
     expect(
-      canPlaceBuilding(board, new Set(), `${grass.q},${grass.r}`, 'Farm', createEconomy()).ok,
+      canBuild(board, new Set(), `${grass.q},${grass.r}`, 'Farm', createEconomy()).ok,
     ).toBe(false);
   });
 
@@ -41,7 +41,7 @@ describe('build mode placement validation', () => {
     const eco = createEconomy();
     eco.wood = 1000;
     eco.gold = 1000;
-    expect(canPlaceBuilding(board, new Set(), `${grass.q},${grass.r}`, 'Farm', eco).ok).toBe(true);
+    expect(canBuild(board, new Set(), `${grass.q},${grass.r}`, 'Farm', eco).ok).toBe(true);
   });
 
   it('defines costs for Farm and Barracks', () => {
