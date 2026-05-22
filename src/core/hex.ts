@@ -1,4 +1,4 @@
-import { HEX_RADIUS } from './constants';
+import { HEX_DIRECTIONS, HEX_RADIUS } from './constants';
 
 /** Round to 3 decimal places — fuses near-identical floating-point corner positions. */
 export function round(val: number): number {
@@ -35,4 +35,16 @@ export function hexDistance(q1: number, r1: number, q2: number, r2: number): num
   const s1 = -q1 - r1;
   const s2 = -q2 - r2;
   return (Math.abs(q1 - q2) + Math.abs(r1 - r2) + Math.abs(s1 - s2)) / 2;
+}
+
+/** The six neighbor hex keys of an axial coordinate. */
+export function hexNeighbors(q: number, r: number): string[] {
+  return HEX_DIRECTIONS.map((d) => getHexKey(q + d.q, r + d.r));
+}
+
+/** Whether two hex keys are adjacent (exactly one tile apart). */
+export function areAdjacent(keyA: string, keyB: string): boolean {
+  if (keyA === keyB) return false;
+  const [aq, ar] = keyA.split(',').map(Number);
+  return hexNeighbors(aq ?? 0, ar ?? 0).includes(keyB);
 }
