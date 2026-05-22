@@ -67,21 +67,29 @@ milestones are `[x]` and the local review trio findings are absorbed.
 
 ## Queue
 
-### M0 — Foundation
+### M0 — Foundation  ✅ COMPLETE
 Plan: `docs/superpowers/plans/2026-05-22-m0-foundation.md` (13 tasks)
-- [ ] M0.1 pnpm project + package.json + .gitignore
-- [ ] M0.2 TypeScript + Vite config + React shell
-- [ ] M0.3 Biome lint/format config
-- [ ] M0.4 Vitest node + browser projects
-- [ ] M0.5 Playwright config
-- [ ] M0.6 Capacitor Android config
-- [ ] M0.7 Asset manifest types + typed accessor (TDD)
-- [ ] M0.8 Asset ingest script + curation map (TDD)
-- [ ] M0.9 Asset verification script + manifest contract test
-- [ ] M0.10 Pillar documentation set (12 specs + 7 milestone docs)
-- [ ] M0.11 GitHub Actions CI (build/test + debug APK)
-- [ ] M0.12 GitHub Pages deploy workflow
-- [ ] M0.13 Coverage gates + standard repo files + release config
+- [x] M0.1 pnpm project + package.json + .gitignore
+- [x] M0.2 TypeScript + Vite config + React shell
+- [x] M0.3 Biome lint/format config
+- [x] M0.4 Vitest node + browser projects
+- [x] M0.5 Playwright config
+- [x] M0.6 Capacitor Android config
+- [x] M0.7 Asset manifest types + typed accessor (TDD)
+- [x] M0.8 Asset ingest script + curation map (TDD)
+- [x] M0.9 Asset verification script + manifest contract test
+- [x] M0.10 Pillar documentation set (12 specs + 7 milestone docs)
+- [x] M0.11 GitHub Actions CI (build/test + debug APK)
+- [x] M0.12 GitHub Pages deploy workflow
+- [x] M0.13 Coverage gates + standard repo files + release config
+
+M0 learnings carried into M1: (1) modern stack versions verified — React 19 / r3f 9
+/ Vitest 4 (provider via @vitest/browser-playwright) / Biome 2 / Capacitor 8.
+(2) Single non-composite tsconfig — project-references break on noEmit; do NOT
+re-split. (3) `exactOptionalPropertyTypes` is on — omit optional props, never set
+them `undefined`. (4) Vitest browser API: `page` from `vitest/browser`, `render`
+is async. (5) `references/` paths confirmed: Hexagon Kit GLBs at
+`Hexagon Kit/Models/GLB format/`, Nature Kit at `Nature Kit/Models/GLTF format/`.
 
 ### M1 — Hex board
 Plan written at M1 start. Contracts: terraced terrain mesh, biome assignment,
