@@ -22,7 +22,24 @@ make a full, fun game."
 
 Only legitimate stops: explicit user halt, red CI needing user knowledge, a destructive
 op needing per-op authorization, a scope-flipping ambiguity. Per user directive there are
-NO review checkpoints — proceed through all 7 milestones to one final push.
+NO review checkpoints.
+
+## Autonomous-completion contract (aligned with the anti-stop hook)
+
+This directive stays **Status: ACTIVE** until EVERY `[ ]` item below is `[x]`. The
+anti-stop hook forbids stopping while an ACTIVE directive has any non-WAIT open
+item — that is intentional. The mandate for this PR: **finish all of M8
+(M8.3 → M8.7) and any remaining open item, in this PR, with no stopping.**
+
+- Each M8.x step: extend the spec, write the test batch, make it green,
+  `pnpm verify`, commit (the commit-gate needs a `tests/browser|visual` file
+  for any `src/world|render|hud|entities` change — write the real test, do not
+  reach for the override), push, mark `[x]`, immediately start the next.
+- Do NOT mark the directive RELEASED or add `[WAIT]` prefixes to dodge the
+  hook. The only legitimate `[WAIT]` here is genuine external state (CI in
+  flight). Work the queue to zero.
+- When the M8 queue is empty: run the full pre-push gate (verify + browser +
+  e2e), confirm CI green on the PR, THEN flip Status to RELEASED.
 
 ## Operating loop
 
@@ -294,6 +311,8 @@ docs → tests → code per step. Also folds in spec `99` (contextual crossings)
   `commands.ts` calls. Enemy faction runs it; human faction swappable to AI.
 - [ ] M8.7 — AI-vs-AI golden-path E2E: swap both factions to AI, turn loop,
   macro/meso/micro state probes, golden-transcript regression assertions.
+- [ ] M8.8 — pre-push gate: full `pnpm verify` + `test:browser` + `test:e2e`
+  green; push; confirm PR #1 CI green; update CHANGELOG; flip Status RELEASED.
 
 Each M8.x: extend `docs/specs/`, write the test batch, make it green, commit,
 then the next. The faction-symmetry rule — identical traits/behaviors/commands,
