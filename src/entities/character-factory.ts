@@ -23,12 +23,40 @@ import {
 /** Per-role base stats. Source: docs/specs/50-ecs-model.md entity archetypes. */
 const ROLE_STATS: Record<
   UnitType,
-  { speed: number; faction: Faction; hp?: number; attackDamage?: number; attackRange?: number; attackCooldown?: number }
+  {
+    speed: number;
+    faction: Faction;
+    hp?: number;
+    attackDamage?: number;
+    attackRange?: number;
+    attackCooldown?: number;
+  }
 > = {
   Peon: { speed: 3, faction: 'player' },
-  Footman: { speed: 2.5, faction: 'player', hp: 100, attackDamage: 15, attackRange: 1, attackCooldown: 1 },
-  Goblin: { speed: 2, faction: 'enemy', hp: 60, attackDamage: 8, attackRange: 1, attackCooldown: 1 },
-  Orc: { speed: 1.5, faction: 'enemy', hp: 150, attackDamage: 20, attackRange: 1, attackCooldown: 1.5 },
+  Footman: {
+    speed: 2.5,
+    faction: 'player',
+    hp: 100,
+    attackDamage: 15,
+    attackRange: 1,
+    attackCooldown: 1,
+  },
+  Goblin: {
+    speed: 2,
+    faction: 'enemy',
+    hp: 60,
+    attackDamage: 8,
+    attackRange: 1,
+    attackCooldown: 1,
+  },
+  Orc: {
+    speed: 1.5,
+    faction: 'enemy',
+    hp: 150,
+    attackDamage: 20,
+    attackRange: 1,
+    attackCooldown: 1.5,
+  },
 };
 
 /** Parameters for spawning a character entity. */
@@ -80,7 +108,12 @@ export function createCharacter(params: CreateCharacterParams): Entity {
 
   // Combat units (Footman, Goblin, Orc) get Health, Combatant, and EnemyTarget.
   const { hp, attackDamage, attackRange, attackCooldown } = stats;
-  if (hp !== undefined && attackDamage !== undefined && attackRange !== undefined && attackCooldown !== undefined) {
+  if (
+    hp !== undefined &&
+    attackDamage !== undefined &&
+    attackRange !== undefined &&
+    attackCooldown !== undefined
+  ) {
     const combatTraits = [
       Health({ current: hp, max: hp }),
       Combatant({ attackDamage, attackRange, attackCooldown, attackTimer: 0 }),

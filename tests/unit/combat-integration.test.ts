@@ -14,7 +14,9 @@ describe('combat integration', () => {
     // run ~2 minutes of game time
     for (let i = 0; i < 7200; i++) runEconomyTick(game, 1 / 60);
     // at least one goblin spawned (spawnInterval ~45s)
-    expect(game.outcome === 'playing' || game.outcome === 'win' || game.outcome === 'loss').toBe(true);
+    expect(game.outcome === 'playing' || game.outcome === 'win' || game.outcome === 'loss').toBe(
+      true,
+    );
   });
 
   it('runs 7200 combat ticks without throwing', () => {

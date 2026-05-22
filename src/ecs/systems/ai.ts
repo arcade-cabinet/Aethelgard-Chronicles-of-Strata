@@ -21,36 +21,38 @@ export function aiSystem(world: World, board: BoardData, graph: NavGraph): void 
     return e.get(FactionTrait)?.faction === 'player' && (e.get(Health)?.current ?? 0) > 0;
   });
 
-  world.query(FactionTrait, EnemyTarget, HexPosition, PathQueue).updateEach(([faction, target, hex, path]) => {
-    if (faction.faction !== 'enemy') return;
+  world
+    .query(FactionTrait, EnemyTarget, HexPosition, PathQueue)
+    .updateEach(([faction, target, hex, path]) => {
+      if (faction.faction !== 'enemy') return;
 
-    const current = byId.get(target.targetId);
-    const currentAlive = current && (current.get(Health)?.current ?? 0) > 0;
-    if (currentAlive) return; // keep hunting the live target
+      const current = byId.get(target.targetId);
+      const currentAlive = current && (current.get(Health)?.current ?? 0) > 0;
+      if (currentAlive) return; // keep hunting the live target
 
-    // (re)select the nearest player entity within aggro range
-    let nearest: Entity | null = null;
-    let nearestDist = AGGRO_RADIUS + 1;
-    for (const t of targets) {
-      const th = t.get(HexPosition);
-      if (!th) continue;
-      const d = hexDistance(hex.q, hex.r, th.q, th.r);
-      if (d < nearestDist) {
-        nearestDist = d;
-        nearest = t;
+      // (re)select the nearest player entity within aggro range
+      let nearest: Entity | null = null;
+      let nearestDist = AGGRO_RADIUS + 1;
+      for (const t of targets) {
+        const th = t.get(HexPosition);
+        if (!th) continue;
+        const d = hexDistance(hex.q, hex.r, th.q, th.r);
+        if (d < nearestDist) {
+          nearestDist = d;
+          nearest = t;
+        }
       }
-    }
-    if (!nearest) {
-      target.targetId = -1;
-      return;
-    }
-    target.targetId = Number(nearest);
-    const th = nearest.get(HexPosition);
-    if (th) {
-      const route = findPath(graph, getHexKey(hex.q, hex.r), getHexKey(th.q, th.r));
-      if (route && route.length > 1) {
-        path.steps = route.slice(1).map((k) => `${k},${board.tiles.get(k)?.level ?? 0}`);
+      if (!nearest) {
+        target.targetId = -1;
+        return;
       }
-    }
-  });
+      target.targetId = Number(nearest);
+      const th = nearest.get(HexPosition);
+      if (th) {
+        const route = findPath(graph, getHexKey(hex.q, hex.r), getHexKey(th.q, th.r));
+        if (route && route.length > 1) {
+          path.steps = route.slice(1).map((k) => `${k},${board.tiles.get(k)?.level ?? 0}`);
+        }
+      }
+    });
 }
