@@ -1,8 +1,9 @@
-import { OrbitControls } from '@react-three/drei';
 import { Canvas } from '@react-three/fiber';
 import { Suspense } from 'react';
 import { PCFSoftShadowMap } from 'three';
 import type { GameState } from '@/game/game-state';
+import { CameraRig } from './CameraRig';
+import { type ViewportProfile, useViewport } from './useViewport';
 import { Buildings } from '@/world/Buildings';
 import { CombatText } from '@/world/CombatText';
 import { RainParticles } from '@/world/RainParticles';
@@ -19,7 +20,15 @@ import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
 
 /** Inner scene — runs inside the Canvas so r3f hooks are valid. */
-function Scene({ game, buildContext }: { game: GameState; buildContext: BuildContext | null }) {
+function Scene({
+  game,
+  buildContext,
+  viewport,
+}: {
+  game: GameState;
+  buildContext: BuildContext | null;
+  viewport: ViewportProfile;
+}) {
   useGameLoop(game);
   return (
     <>
@@ -38,7 +47,7 @@ function Scene({ game, buildContext }: { game: GameState; buildContext: BuildCon
       <RainParticles game={game} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
-      <OrbitControls maxPolarAngle={Math.PI / 2.1} />
+      <CameraRig viewport={viewport} boardRadius={game.board.radius} />
     </>
   );
 }
@@ -52,18 +61,20 @@ export interface GameCanvasProps {
 }
 
 /**
- * The react-three-fiber canvas hosting the board scene. Soft (PCF) shadows are
- * enabled for the gentle low-poly look; `DayNightCycle` adds distance fog and
- * drives the lighting.
+ * The react-three-fiber canvas hosting the board scene. The viewport profile
+ * (desktop / phone-landscape / phone-portrait) is resolved here and drives the
+ * `CameraRig`'s default framing. Soft (PCF) shadows give the gentle low-poly
+ * look; `DayNightCycle` adds distance fog and drives the lighting.
  */
 export function GameCanvas({ game, buildContext = null }: GameCanvasProps) {
+  const viewport = useViewport();
   return (
     <Canvas
       shadows={{ type: PCFSoftShadowMap }}
-      camera={{ position: [0, 55, 62], fov: 42 }}
+      camera={{ position: [0, 55, 62], fov: viewport.camera.fov }}
       style={{ position: 'absolute', inset: 0 }}
     >
-      <Scene game={game} buildContext={buildContext} />
+      <Scene game={game} buildContext={buildContext} viewport={viewport} />
     </Canvas>
   );
 }

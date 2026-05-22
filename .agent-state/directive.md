@@ -221,9 +221,17 @@ Capacitor Preferences value; the seed-phrase shuffle draws from it (no Math.rand
   loaders src/config/{combat,economy,world}.ts replace the 13 scattered casts
   (ec3b0ff). asset-plugin migration landed (d149d84) — public/ import bug fixed.
 - [x] vite-static-assets-plugin migration; Biome linter confirmed latest (2.4.15)
-- [ ] M6 finish — RE-APPLY the lost useAudio ref-guard + useGameLoop audio
-  wiring (a checkout reverted them), wire auto-save into runEconomyTick, full
-  verification, the single final PR
+- [x] useAudio wired into useGameLoop; auto-save wired into runEconomyTick
+- [x] typed-config-loader refactor (ec3b0ff) — killed the scattered as-casts
+- [x] WORLD-vs-poc1 visual gap fixed (71350be) — merged terrain mesh, real
+  cone mountains, wooden ramps, layered water; DoubleSide was the bug that
+  left the land backface-culled. Verified against references/poc1.png.
+- [x] constants→config (6f16830) — core/constants.ts deleted, all values
+  (incl. HEX_DIRECTIONS) now in world.json via the typed WORLD loader.
+- [ ] M6 finish — viewport/camera layer per docs/specs/98 Steps 2-4:
+  useViewport hook (desktop/phone-landscape/phone-portrait classes),
+  CameraRig (zoom + pan/slice, viewport-aware), minimap viewport-rectangle,
+  per-viewport HUD passes. Then full verification + the single final PR.
 
 ### M7 — AI subpackage (yuka)  [planned — after M6 ships]
 Per user: the AI deserves its own subpackage, not the minor `ecs/systems/ai.ts`
