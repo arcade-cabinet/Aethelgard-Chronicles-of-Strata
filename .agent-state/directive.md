@@ -434,8 +434,9 @@ fun, releasable game."
   + all M8 + M9.1/M9.3a; docs/STATE.md current (cb8b7b8).
 - [x] M9.4c — pre-push gate (939a6e3): full suite green locally — verify
   260, browser 42, e2e 18. CI green-watch handled by the M9.5 RELEASE step.
-- [ ] M9.5 — RELEASE: squash-merge PR #1 to main; confirm cd.yml deploys
-  GitHub Pages + the APK artifact; flip directive Status to RELEASED.
+- [ ] [WAIT-CI] M9.5 — RELEASE: wait for PR #1 CI green (current run with the
+  a11y fix is in flight); squash-merge to main; confirm cd.yml deploys GitHub
+  Pages + the APK artifact; flip directive Status to RELEASED.
 
 Each M8/M9 step: extend `docs/specs/`, write the test batch, make it green, commit,
 then the next. The faction-symmetry rule — identical traits/behaviors/commands,
