@@ -29,16 +29,40 @@ import { type GameOutcome, evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { type GameEconomy, createEconomy } from './economy';
 import { recomputeMaxSupply } from './supply';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
-import { createDualPrng } from '@/core/rng';
+import { createEventPrng, createMapPrng } from '@/core/rng';
+import { MAP_RADIUS } from '@/core/constants';
 import { type GameClock, advanceClock, createClock } from './clock';
 import { type Weather, WEATHER_SPEED_MULTIPLIER, advanceWeather, createWeather } from './weather';
 import { type ResearchState, createResearch } from './research';
 import { type RallyState, createRally } from './rally';
 
+/** AI difficulty level. Controls enemy HP/damage and spawn cadence. */
+export type Difficulty = 'easy' | 'normal' | 'hard';
+
+/**
+ * Configuration for starting a new game. Passed to `startGame`.
+ * - `seedPhrase` — adjective-adjective-noun map seed (player-visible).
+ * - `mapSize` — board radius in hex tiles (defaults to MAP_RADIUS = 20).
+ * - `difficulty` — AI scaling preset.
+ * - `eventSeed` — the device-level event PRNG seed (from Persistence).
+ */
+export interface NewGameConfig {
+  seedPhrase: string;
+  mapSize: number;
+  difficulty: Difficulty;
+  eventSeed: string;
+}
+
 /** The live state of one play session. */
 export interface GameState {
   /** The seed phrase the session was started with. */
   seedPhrase: string;
+  /** The board radius this session was generated at. */
+  mapSize: number;
+  /** The AI difficulty level for this session. */
+  difficulty: Difficulty;
+  /** The event seed string used to initialize the event PRNG. */
+  eventSeed: string;
   /** The generated board. */
   board: BoardData;
   /** The A* navigation graph. */
@@ -126,17 +150,47 @@ function adjacentWalkableTiles(
 }
 
 /**
- * Start a new game from a seed phrase. Generates the board, builds the nav
- * graph, creates the ECS world, spawns the player pawn, spawns resource nodes,
- * and places the Town Hall on the most central walkable tile.
+ * Difficulty → spawn interval (seconds between enemy spawns).
+ * Easy gives the player more breathing room; Hard is relentless.
  */
-export function startGame(seedPhrase: string): GameState {
+const SPAWN_INTERVAL: Record<Difficulty, number> = {
+  easy: 60,
+  normal: 45,
+  hard: 30,
+};
+
+/**
+ * Start a new game.
+ *
+ * Accepts either a `NewGameConfig` object or a plain `string` seed phrase.
+ * When given a string, defaults are applied: mapSize = MAP_RADIUS, difficulty
+ * = 'normal', eventSeed = 'default-event-seed'. This keeps existing
+ * `startGame('phrase')` call-sites (e.g. in tests) working without changes.
+ *
+ * Generates the board, builds the nav graph, creates the ECS world, spawns
+ * the player pawn, spawns resource nodes, and places the Town Hall on the
+ * most central walkable tile.
+ */
+export function startGame(configOrPhrase: NewGameConfig | string): GameState {
+  // Normalise the overloaded argument.
+  const config: NewGameConfig =
+    typeof configOrPhrase === 'string'
+      ? {
+          seedPhrase: configOrPhrase,
+          mapSize: MAP_RADIUS,
+          difficulty: 'normal',
+          eventSeed: 'default-event-seed',
+        }
+      : configOrPhrase;
+
+  const { seedPhrase, mapSize, difficulty, eventSeed } = config;
+
   // Reset module-level system state so a new session does not inherit stale
   // timers/counters keyed by entity ids the previous world reused.
   clearDeathTimers();
   clearSpawnCounts();
 
-  const board = generateBoard(seedPhrase);
+  const board = generateBoard(seedPhrase, mapSize);
   const world = createEcsWorld();
 
   // The Town Hall occupies the most central walkable tile. Peons spawn on
@@ -197,9 +251,10 @@ export function startGame(seedPhrase: string): GameState {
   }
 
   // Spawn the Goblin Portal entity (enemy spawner — win condition).
+  // spawnInterval is difficulty-scaled: easy 60s, normal 45s, hard 30s.
   const portalEntity = world.spawn(
     HexPosition({ q: portalTile.q, r: portalTile.r, level: portalTile.level }),
-    GoblinPortalTrait({ spawnTimer: 0, spawnInterval: 45 }),
+    GoblinPortalTrait({ spawnTimer: 0, spawnInterval: SPAWN_INTERVAL[difficulty] }),
     Health({ current: 300, max: 300 }),
     FactionTrait({ faction: 'enemy' }),
   );
@@ -214,9 +269,10 @@ export function startGame(seedPhrase: string): GameState {
     level: footmanSpawn.level,
   });
 
-  // spawn resource nodes using the map PRNG
-  const { map, event: eventRng } = createDualPrng(seedPhrase);
-  const resourceNodes = spawnResourceNodes(board, map);
+  // Spawn resource nodes using the map PRNG (deterministic, phrase-only).
+  const mapRng = createMapPrng(seedPhrase);
+  const eventRng = createEventPrng(eventSeed);
+  const resourceNodes = spawnResourceNodes(board, mapRng);
   for (const plan of resourceNodes) {
     world.spawn(
       HexPosition({ q: plan.q, r: plan.r, level: plan.level }),
@@ -228,6 +284,9 @@ export function startGame(seedPhrase: string): GameState {
 
   const game: GameState = {
     seedPhrase,
+    mapSize,
+    difficulty,
+    eventSeed,
     board,
     navGraph,
     world,
@@ -300,7 +359,7 @@ export function runEconomyTick(game: GameState, delta: number): void {
   advanceWeather(game.weather, game.eventRng, delta);
 
   // enemy spawning + AI target selection
-  spawnSystem(game.world, game.board, delta, game.clock.elapsed);
+  spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
   aiSystem(game.world, game.board, game.navGraph);
 
   // movement + economy — apply rain speed penalty from weather state

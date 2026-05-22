@@ -12,7 +12,11 @@
 import { CapacitorSQLite, SQLiteConnection } from '@capacitor-community/sqlite';
 import { Preferences } from '@capacitor/preferences';
 import type { GameState } from '@/game/game-state';
+import { advanceEventSeed, type Rng } from '@/core/rng';
 import { serializeWorld, type WorldSnapshot } from './serialize';
+
+/** The Preferences key under which the device-level event PRNG seed is stored. */
+const EVENT_SEED_KEY = 'eventPrngSeed';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -39,6 +43,21 @@ export interface Persistence {
   getSetting(key: string): Promise<string | null>;
   /** Write a string setting. */
   setSetting(key: string, value: string): Promise<void>;
+  /**
+   * Return the device-level event PRNG seed from Preferences. If absent,
+   * generates a fresh random seed via `crypto.getRandomValues`, stores it,
+   * and returns it. `crypto.getRandomValues` is the one allowed
+   * non-determinism — it seeds the PRNG, it is not simulation logic.
+   * See docs/specs/96-prng-and-landing.md.
+   */
+  getEventSeed(): Promise<string>;
+  /**
+   * Advance the event seed by drawing the next seed from the current event
+   * PRNG stream, persist the new value under `eventPrngSeed`, and return it.
+   * Call once per New Game so each session gets a distinct, deterministic
+   * event stream.
+   */
+  advanceAndPersistEventSeed(currentRng: Rng): Promise<string>;
 }
 
 // ---------------------------------------------------------------------------
@@ -129,6 +148,27 @@ export function createPersistence(): Persistence {
 
     async setSetting(key: string, value: string): Promise<void> {
       await Preferences.set({ key, value });
+    },
+
+    async getEventSeed(): Promise<string> {
+      const { value } = await Preferences.get({ key: EVENT_SEED_KEY });
+      if (value !== null) return value;
+      // First launch: generate a fresh random seed from crypto.getRandomValues.
+      // This is the one allowed non-determinism — it seeds the PRNG, it is not
+      // simulation logic. Lives here in persistence.ts, outside src/core|ecs|game.
+      const buf = new Uint32Array(4);
+      crypto.getRandomValues(buf);
+      const seed = Array.from(buf)
+        .map((n) => n.toString(36))
+        .join('');
+      await Preferences.set({ key: EVENT_SEED_KEY, value: seed });
+      return seed;
+    },
+
+    async advanceAndPersistEventSeed(currentRng: Rng): Promise<string> {
+      const next = advanceEventSeed(currentRng);
+      await Preferences.set({ key: EVENT_SEED_KEY, value: next });
+      return next;
     },
   };
 }

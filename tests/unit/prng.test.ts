@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { createDualPrng, cyrb128 } from '@/core/rng';
+import { advanceEventSeed, createEventPrng, createMapPrng, cyrb128 } from '@/core/rng';
 
-describe('dual-stage PRNG', () => {
+describe('two-PRNG model', () => {
   it('cyrb128 is deterministic for a given string', () => {
     const a = cyrb128('ancient-silver-forest');
     const b = cyrb128('ancient-silver-forest');
@@ -13,31 +13,53 @@ describe('dual-stage PRNG', () => {
     expect(cyrb128('ancient-silver-forest')).not.toEqual(cyrb128('grizzled-crimson-keep'));
   });
 
-  it('map and event streams differ for the same seed phrase', () => {
-    const { map, event } = createDualPrng('ancient-silver-forest');
-    const mapSeq = [map(), map(), map()];
-    const eventSeq = [event(), event(), event()];
-    expect(mapSeq).not.toEqual(eventSeq);
+  it('same phrase → same map stream', () => {
+    const a = createMapPrng('ancient-silver-forest');
+    const b = createMapPrng('ancient-silver-forest');
+    expect([a(), a(), a()]).toEqual([b(), b(), b()]);
   });
 
-  it('replaying the same seed produces identical map sequences', () => {
-    const a = createDualPrng('ancient-silver-forest');
-    const b = createDualPrng('ancient-silver-forest');
-    expect([a.map(), a.map(), a.map()]).toEqual([b.map(), b.map(), b.map()]);
-  });
-
-  it('replaying the same seed produces identical event sequences', () => {
-    const a = createDualPrng('ancient-silver-forest');
-    const b = createDualPrng('ancient-silver-forest');
-    expect([a.event(), a.event()]).toEqual([b.event(), b.event()]);
-  });
-
-  it('every PRNG value is in [0, 1)', () => {
-    const { map } = createDualPrng('test-seed-phrase');
+  it('map stream values are in [0, 1)', () => {
+    const rng = createMapPrng('test-seed-phrase');
     for (let i = 0; i < 100; i++) {
-      const v = map();
+      const v = rng();
       expect(v).toBeGreaterThanOrEqual(0);
       expect(v).toBeLessThan(1);
     }
+  });
+
+  it('createEventPrng is deterministic for the same seed string', () => {
+    const a = createEventPrng('event-seed-42');
+    const b = createEventPrng('event-seed-42');
+    expect([a(), a(), a()]).toEqual([b(), b(), b()]);
+  });
+
+  it('map and event streams are independent — different values for same input phrase', () => {
+    const mapRng = createMapPrng('ancient-silver-forest');
+    const eventRng = createEventPrng('ancient-silver-forest');
+    const mapSeq = [mapRng(), mapRng(), mapRng()];
+    const eventSeq = [eventRng(), eventRng(), eventRng()];
+    // The two streams use different cyrb128 projections so they differ
+    expect(mapSeq).not.toEqual(eventSeq);
+  });
+
+  it('advanceEventSeed produces a non-empty deterministic string', () => {
+    const rng = createEventPrng('base-seed');
+    const s1 = advanceEventSeed(rng);
+    expect(typeof s1).toBe('string');
+    expect(s1.length).toBeGreaterThan(0);
+  });
+
+  it('advanceEventSeed is deterministic — same rng state → same output', () => {
+    const a = createEventPrng('base-seed');
+    const b = createEventPrng('base-seed');
+    expect(advanceEventSeed(a)).toBe(advanceEventSeed(b));
+  });
+
+  it('advanceEventSeed produces a different string than the original seed', () => {
+    const seed = 'original-event-seed';
+    const rng = createEventPrng(seed);
+    const advanced = advanceEventSeed(rng);
+    expect(advanced).not.toBe(seed);
   });
 });

@@ -23,7 +23,7 @@ function makeBoard(
   const ramps = new Map(
     rampEdges.map(([a, b]) => [rampKey(a, b), { lowKey: a, highKey: b }] as const),
   );
-  return { seedPhrase: 'test', tiles, ramps };
+  return { seedPhrase: 'test', radius: 5, tiles, ramps };
 }
 
 describe('A* pathfinding', () => {

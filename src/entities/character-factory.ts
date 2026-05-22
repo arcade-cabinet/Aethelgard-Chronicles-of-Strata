@@ -19,6 +19,14 @@ import {
   Unit,
   type UnitType,
 } from '@/ecs/components';
+import type { Difficulty } from '@/game/game-state';
+
+/** Per-difficulty HP/damage multipliers applied to enemy roles only. */
+const DIFFICULTY_MULTIPLIER: Record<Difficulty, number> = {
+  easy: 0.7,
+  normal: 1.0,
+  hard: 1.4,
+};
 
 /** Per-role base stats. Source: docs/specs/50-ecs-model.md entity archetypes. */
 const ROLE_STATS: Record<
@@ -73,6 +81,11 @@ export interface CreateCharacterParams {
   level: number;
   /** Whether the character starts selected (the player pawn does). */
   selected?: boolean;
+  /**
+   * AI difficulty — scales HP and attackDamage for enemy roles (Goblin, Orc).
+   * Player roles (Peon, Footman) are unaffected. Defaults to 'normal'.
+   */
+  difficulty?: Difficulty;
 }
 
 /**
@@ -82,7 +95,7 @@ export interface CreateCharacterParams {
  * The r3f layer renders entities that carry these traits.
  */
 export function createCharacter(params: CreateCharacterParams): Entity {
-  const { world, role, q, r, level, selected = false } = params;
+  const { world, role, q, r, level, selected = false, difficulty = 'normal' } = params;
   const stats = ROLE_STATS[role];
   const { x, z } = axialToWorld(q, r);
   const base = [
@@ -114,9 +127,13 @@ export function createCharacter(params: CreateCharacterParams): Entity {
     attackRange !== undefined &&
     attackCooldown !== undefined
   ) {
+    // Apply difficulty multiplier to enemy roles only. Player roles are unaffected.
+    const mult = stats.faction === 'enemy' ? DIFFICULTY_MULTIPLIER[difficulty] : 1.0;
+    const scaledHp = Math.round(hp * mult);
+    const scaledDamage = Math.round(attackDamage * mult);
     const combatTraits = [
-      Health({ current: hp, max: hp }),
-      Combatant({ attackDamage, attackRange, attackCooldown, attackTimer: 0 }),
+      Health({ current: scaledHp, max: scaledHp }),
+      Combatant({ attackDamage: scaledDamage, attackRange, attackCooldown, attackTimer: 0 }),
       EnemyTarget({ targetId: -1 }),
     ] as const;
     return world.spawn(...base, ...combatTraits);

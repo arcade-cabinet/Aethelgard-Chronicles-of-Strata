@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDualPrng } from '@/core/rng';
+import { createEventPrng } from '@/core/rng';
 import { Combatant, EnemyTarget, Health, HexPosition } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { createEcsWorld } from '@/ecs/world';
@@ -17,7 +17,7 @@ describe('combat system', () => {
       EnemyTarget({ targetId: Number(target) }),
     );
     void attacker;
-    const rng = createDualPrng('ancient-silver-forest').event;
+    const rng = createEventPrng('ancient-silver-forest');
     combatSystem(world, rng, 1); // a full second — one attack
     expect(target.get(Health)?.current).toBeLessThan(60);
   });
@@ -33,7 +33,7 @@ describe('combat system', () => {
       Combatant({ attackDamage: 15, attackRange: 1, attackCooldown: 1, attackTimer: 0 }),
       EnemyTarget({ targetId: Number(target) }),
     );
-    const rng = createDualPrng('ancient-silver-forest').event;
+    const rng = createEventPrng('ancient-silver-forest');
     combatSystem(world, rng, 1);
     expect(target.get(Health)?.current).toBe(60);
   });
@@ -49,7 +49,7 @@ describe('combat system', () => {
       Combatant({ attackDamage: 15, attackRange: 1, attackCooldown: 1, attackTimer: 0 }),
       EnemyTarget({ targetId: Number(target) }),
     );
-    const rng = createDualPrng('ancient-silver-forest').event;
+    const rng = createEventPrng('ancient-silver-forest');
     combatSystem(world, rng, 0.1); // well under the 1s cooldown
     expect(target.get(Health)?.current).toBe(60);
   });
@@ -61,7 +61,7 @@ describe('combat system', () => {
       Combatant({ attackDamage: 15, attackRange: 1, attackCooldown: 1, attackTimer: 0 }),
       EnemyTarget({ targetId: 99999 }), // non-existent entity
     );
-    const rng = createDualPrng('ancient-silver-forest').event;
+    const rng = createEventPrng('ancient-silver-forest');
     combatSystem(world, rng, 1);
     expect(attacker.get(EnemyTarget)?.targetId).toBe(-1);
   });
