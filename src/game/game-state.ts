@@ -30,11 +30,13 @@ import { type GameEconomy, createEconomy } from './economy';
 import { recomputeMaxSupply } from './supply';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import { createEventPrng, createMapPrng } from '@/core/rng';
-import { MAP_RADIUS } from '@/core/constants';
+import { MAP_RADIUS } from '@/config/world';
 import { type GameClock, advanceClock, createClock } from './clock';
 import { type Weather, WEATHER_SPEED_MULTIPLIER, advanceWeather, createWeather } from './weather';
 import { type ResearchState, createResearch } from './research';
 import { type RallyState, createRally } from './rally';
+import type { AutoSave } from './auto-save';
+import { tickAutoSave } from './auto-save';
 import { spawnIntervalFor } from '@/config/combat';
 import type { Difficulty } from './difficulty';
 
@@ -103,6 +105,12 @@ export interface GameState {
    * nothing is selected. Updated by `selectEntity` in `@/game/selection`.
    */
   selectedId?: number;
+  /**
+   * Auto-save timer. Attached by the App layer (which owns the persistence
+   * facade); when present, `runEconomyTick` advances it. Absent in tests and
+   * headless sims that do not persist.
+   */
+  autoSave?: AutoSave;
   /**
    * Assign every idle peon to harvest the nearest resource node.
    * Call this to kick-start the autonomous harvest loop.
@@ -348,6 +356,7 @@ export function runEconomyTick(game: GameState, delta: number): void {
   // advance time-based systems
   advanceClock(game.clock, delta);
   advanceWeather(game.weather, game.eventRng, delta);
+  if (game.autoSave) tickAutoSave(game.autoSave, delta);
 
   // enemy spawning + AI target selection
   spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);

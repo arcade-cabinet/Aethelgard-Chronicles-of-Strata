@@ -1,5 +1,5 @@
 import type { BoardData } from './board';
-import { HEX_DIRECTIONS } from './constants';
+import { HEX_DIRECTIONS } from '@/config/world';
 import { getHexKey, hexDistance } from './hex';
 import { rampKey } from './ramps';
 

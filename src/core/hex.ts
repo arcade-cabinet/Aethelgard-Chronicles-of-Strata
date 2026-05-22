@@ -1,4 +1,4 @@
-import { HEX_DIRECTIONS, HEX_RADIUS } from './constants';
+import { HEX_DIRECTIONS, HEX_RADIUS } from '@/config/world';
 
 /** Round to 3 decimal places — fuses near-identical floating-point corner positions. */
 export function round(val: number): number {

@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import type { Mesh } from 'three';
-import { HEX_RADIUS } from '@/core/constants';
+import { HEX_RADIUS } from '@/config/world';
 import { Selectable, Transform } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 

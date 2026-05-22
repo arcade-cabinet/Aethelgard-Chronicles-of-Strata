@@ -1,5 +1,5 @@
 import type { World } from 'koota';
-import { TILE_HEIGHT } from '@/core/constants';
+import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
 import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 

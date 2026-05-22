@@ -1,5 +1,5 @@
 import type { Tile } from './board';
-import { HEX_DIRECTIONS } from './constants';
+import { HEX_DIRECTIONS } from '@/config/world';
 import { getHexKey } from './hex';
 import type { Rng } from './rng';
 

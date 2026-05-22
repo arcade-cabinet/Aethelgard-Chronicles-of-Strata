@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import { BufferAttribute, BufferGeometry, type Points } from 'three';
-import { MAP_RADIUS } from '@/core/constants';
+import { MAP_RADIUS } from '@/config/world';
 import type { GameState } from '@/game/game-state';
 
 /** Number of rain streak particles. */

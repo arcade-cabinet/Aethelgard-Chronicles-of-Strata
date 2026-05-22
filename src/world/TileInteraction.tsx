@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CylinderGeometry } from 'three';
-import { HEX_RADIUS, TILE_HEIGHT } from '@/core/constants';
+import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexKey } from '@/core/hex';
 import { findSelectableAtTile, placeBuilding, planMoveOrder, setRally } from '@/game/commands';
 import type { GameState } from '@/game/game-state';

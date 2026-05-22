@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TILE_HEIGHT } from '@/core/constants';
+import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
 import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';

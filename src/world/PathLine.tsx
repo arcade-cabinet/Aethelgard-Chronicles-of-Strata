@@ -1,6 +1,6 @@
 import { Line } from '@react-three/drei';
 import { useMemo } from 'react';
-import { TILE_HEIGHT } from '@/core/constants';
+import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
 import type { GameState } from '@/game/game-state';
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { MAP_RADIUS } from '@/core/constants';
+import { MAP_RADIUS } from '@/config/world';
 import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { BIOME_COLORS } from '@/world/palette';
