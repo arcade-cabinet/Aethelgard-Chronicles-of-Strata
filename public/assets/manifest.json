@@ -1,0 +1,125 @@
+{
+  "generatedAt": "2026-05-22T14:20:12.772Z",
+  "entries": {
+    "board.tile.grass": {
+      "id": "board.tile.grass",
+      "path": "assets/board/tile/grass.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 32
+    },
+    "board.tile.sand": {
+      "id": "board.tile.sand",
+      "path": "assets/board/tile/sand.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 32
+    },
+    "board.tile.stone": {
+      "id": "board.tile.stone",
+      "path": "assets/board/tile/stone.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 32
+    },
+    "board.tile.dirt": {
+      "id": "board.tile.dirt",
+      "path": "assets/board/tile/dirt.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 20
+    },
+    "board.tile.water": {
+      "id": "board.tile.water",
+      "path": "assets/board/tile/water.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 20
+    },
+    "board.tile.grass-forest": {
+      "id": "board.tile.grass-forest",
+      "path": "assets/board/tile/grass-forest.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 448
+    },
+    "board.tile.grass-hill": {
+      "id": "board.tile.grass-hill",
+      "path": "assets/board/tile/grass-hill.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 348
+    },
+    "board.tile.stone-mountain": {
+      "id": "board.tile.stone-mountain",
+      "path": "assets/board/tile/stone-mountain.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 210
+    },
+    "board.tile.stone-hill": {
+      "id": "board.tile.stone-hill",
+      "path": "assets/board/tile/stone-hill.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 134
+    },
+    "board.tile.sand-desert": {
+      "id": "board.tile.sand-desert",
+      "path": "assets/board/tile/sand-desert.glb",
+      "category": "board",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Hexagon Kit",
+      "license": "CC0",
+      "triangles": 246
+    },
+    "nature.tree.pine-a": {
+      "id": "nature.tree.pine-a",
+      "path": "assets/nature/tree/pine-a.glb",
+      "category": "nature",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Nature Kit",
+      "license": "CC0",
+      "triangles": 230
+    },
+    "nature.rock.large-a": {
+      "id": "nature.rock.large-a",
+      "path": "assets/nature/rock/large-a.glb",
+      "category": "nature",
+      "kind": "glb",
+      "animations": [],
+      "pack": "Nature Kit",
+      "license": "CC0",
+      "triangles": 80
+    }
+  }
+}

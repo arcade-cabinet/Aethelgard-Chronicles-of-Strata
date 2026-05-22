@@ -32,13 +32,16 @@ export function createAssetAccessor(manifest: AssetManifest, base: string): Asse
         .map((e) => e.id)
         .sort(),
     credits: () => {
-      const seen = new Map<string, string>();
+      // Dedup on the (pack, license) pair so a pack appearing under two
+      // licenses contributes both — the credits screen must be legally exact.
+      const seen = new Map<string, { pack: string; license: string }>();
       for (const e of Object.values(manifest.entries)) {
-        if (!seen.has(e.pack)) seen.set(e.pack, e.license);
+        const key = `${e.pack}::${e.license}`;
+        if (!seen.has(key)) seen.set(key, { pack: e.pack, license: e.license });
       }
-      return [...seen.entries()]
-        .map(([pack, license]) => ({ pack, license }))
-        .sort((a, b) => a.pack.localeCompare(b.pack));
+      return [...seen.values()].sort(
+        (a, b) => a.pack.localeCompare(b.pack) || a.license.localeCompare(b.license),
+      );
     },
   };
 }

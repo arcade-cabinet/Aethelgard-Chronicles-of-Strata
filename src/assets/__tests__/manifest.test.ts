@@ -7,7 +7,8 @@ const fixture: AssetManifest = {
   entries: {
     'board.tile.grass': {
       id: 'board.tile.grass',
-      path: 'assets/board/grass.glb',
+      // path matches logicalIdToOutputPath('board.tile.grass', 'glb')
+      path: 'assets/board/tile/grass.glb',
       category: 'board',
       kind: 'glb',
       triangles: 120,
@@ -32,7 +33,7 @@ describe('createAssetAccessor', () => {
   it('resolves an asset url by logical id with the base prefix applied', () => {
     const assets = createAssetAccessor(fixture, '/Aethelgard-Chronicles-of-Strata/');
     expect(assets.url('board.tile.grass')).toBe(
-      '/Aethelgard-Chronicles-of-Strata/assets/board/grass.glb',
+      '/Aethelgard-Chronicles-of-Strata/assets/board/tile/grass.glb',
     );
   });
 

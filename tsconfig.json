@@ -1,7 +1,12 @@
 {
+  // Single non-composite tsconfig: covers browser src, tests, and Node scripts.
+  // A split app/node project-reference setup is incompatible with `noEmit`
+  // (composite references require declaration emit), so the trade-off is one
+  // merged type context. Scripts/ may see DOM types; this is accepted — the
+  // Biome lint + the determinism gates catch the practical misuse cases.
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",

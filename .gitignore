@@ -149,8 +149,9 @@ vite.config.ts.timestamp-*
 android
 ios
 
-# Generated assets — `pnpm assets:ingest` curates these from references/
-public/assets
+# public/assets/ is COMMITTED — it is the curated bundle the build and CI
+# consume. `pnpm assets:ingest` regenerates it locally from the git-ignored
+# references/ source bundle; CI does not run ingest (references/ is not in git).
 
 # Playwright
 playwright-report

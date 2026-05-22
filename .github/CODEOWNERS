@@ -1,0 +1,13 @@
+# Code ownership for Aethelgard: Chronicles of Strata.
+# Critical infrastructure requires review before merge.
+
+# CI / deploy workflows and build tooling
+/.github/                 @jbogaty
+/scripts/                 @jbogaty
+/capacitor.config.ts      @jbogaty
+/vite.config.ts           @jbogaty
+/biome.json               @jbogaty
+/tsconfig.json            @jbogaty
+
+# Pillar specifications — the source of truth
+/docs/specs/              @jbogaty
