@@ -29,9 +29,14 @@ export const WEATHER_SPEED_MULTIPLIER: Record<WeatherState, number> = {
   rain: 0.8,
 };
 
-/** Create the opening weather — Sunny, with the first transition scheduled. */
-export function createWeather(): Weather {
-  return { state: 'sunny', timer: MIN_INTERVAL };
+/**
+ * Create the opening weather — Sunny. The first transition is scheduled at a
+ * seed-scattered interval when an `rng` is given (so the opening 90s is not
+ * identical across all seeds), or at `MIN_INTERVAL` as a deterministic default.
+ */
+export function createWeather(rng?: Rng): Weather {
+  const timer = rng ? MIN_INTERVAL + rng() * (MAX_INTERVAL - MIN_INTERVAL) : MIN_INTERVAL;
+  return { state: 'sunny', timer };
 }
 
 /**

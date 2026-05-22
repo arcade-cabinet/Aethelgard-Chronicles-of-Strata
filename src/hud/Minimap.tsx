@@ -15,19 +15,40 @@ function project(q: number, r: number): { x: number; y: number } {
   return { x: px, y: py };
 }
 
+/** Render the static terrain layer once onto an offscreen canvas. */
+function renderTerrain(game: GameState): HTMLCanvasElement {
+  const off = document.createElement('canvas');
+  off.width = SIZE;
+  off.height = SIZE;
+  const ctx = off.getContext('2d');
+  if (ctx) {
+    ctx.fillStyle = '#090d16';
+    ctx.fillRect(0, 0, SIZE, SIZE);
+    const dot = Math.max(2, SIZE / (MAP_RADIUS * 2 + 1));
+    for (const tile of game.board.tiles.values()) {
+      const { x, y } = project(tile.q, tile.r);
+      ctx.fillStyle = BIOME_COLORS[tile.type];
+      ctx.fillRect(x - dot / 2, y - dot / 2, dot, dot);
+    }
+  }
+  return off;
+}
+
 /**
- * A 2D top-down minimap. Each frame it draws the terrain (every tile a
- * biome-colored pixel) then plots unit dots (green player, red enemy) and the
- * Town Hall / Goblin Portal markers, reading positions live from the ECS.
+ * A 2D top-down minimap. The terrain — which never changes after `startGame` —
+ * is rasterized once to an offscreen canvas; each frame blits that cached layer
+ * then draws only the live overlay (unit dots, Town Hall, Portal). This keeps
+ * per-frame cost to O(units) rather than O(tiles).
  */
 export function Minimap({ game }: { game: GameState }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    const terrain = renderTerrain(game);
     let raf = 0;
     const tick = () => {
       const ctx = canvasRef.current?.getContext('2d');
-      if (ctx) drawMinimap(ctx, game);
+      if (ctx) drawOverlay(ctx, terrain, game);
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
@@ -59,17 +80,13 @@ export function Minimap({ game }: { game: GameState }) {
   );
 }
 
-/** Draw the full minimap — terrain, then the live unit/building overlay. */
-function drawMinimap(ctx: CanvasRenderingContext2D, game: GameState): void {
-  // terrain
-  ctx.fillStyle = '#090d16';
-  ctx.fillRect(0, 0, SIZE, SIZE);
-  const dot = Math.max(2, SIZE / (MAP_RADIUS * 2 + 1));
-  for (const tile of game.board.tiles.values()) {
-    const { x, y } = project(tile.q, tile.r);
-    ctx.fillStyle = BIOME_COLORS[tile.type];
-    ctx.fillRect(x - dot / 2, y - dot / 2, dot, dot);
-  }
+/** Blit the cached terrain, then draw the live unit/building overlay. */
+function drawOverlay(
+  ctx: CanvasRenderingContext2D,
+  terrain: HTMLCanvasElement,
+  game: GameState,
+): void {
+  ctx.drawImage(terrain, 0, 0);
   // unit dots
   for (const e of game.world.query(Unit, FactionTrait, HexPosition)) {
     const hex = e.get(HexPosition);

@@ -12,9 +12,9 @@ export function createClock(): GameClock {
   return { elapsed: 0 };
 }
 
-/** Advance the clock by `delta` seconds. */
+/** Advance the clock by `delta` seconds. Negative deltas are ignored. */
 export function advanceClock(clock: GameClock, delta: number): void {
-  clock.elapsed += delta;
+  clock.elapsed += Math.max(0, delta);
 }
 
 /** The cycle phase in [0, 1): 0 = dawn, 0.25 = noon, 0.5 = dusk, 0.75 = midnight. */
@@ -32,14 +32,33 @@ export function lightIntensityAt(phase: number): number {
   return Math.max(0, Math.min(1, (v + 1) / 2));
 }
 
-/** Sky color hex for a cycle phase — day blue through sunset to night navy. */
-export function skyColorAt(phase: number): string {
-  const intensity = lightIntensityAt(phase);
-  // lerp between night navy (#0f172a) and day blue (#bae6fd)
+/** A 0–255 RGB triple. */
+export interface RgbColor {
+  /** Red 0–255. */
+  r: number;
+  /** Green 0–255. */
+  g: number;
+  /** Blue 0–255. */
+  b: number;
+}
+
+/**
+ * Sky color (0–255 RGB) for a cycle phase — lerps between night navy (#0f172a)
+ * and day blue (#bae6fd) by the light intensity. `intensity` may be passed in
+ * to avoid recomputing the cosine when the caller already has it.
+ */
+export function skyRgbAt(phase: number, intensity = lightIntensityAt(phase)): RgbColor {
   const lerp = (a: number, b: number) => Math.round(a + (b - a) * intensity);
-  const r = lerp(0x0f, 0xba);
-  const g = lerp(0x17, 0xe6);
-  const b = lerp(0x2a, 0xfd);
+  return {
+    r: lerp(0x0f, 0xba),
+    g: lerp(0x17, 0xe6),
+    b: lerp(0x2a, 0xfd),
+  };
+}
+
+/** Sky color as a `#rrggbb` hex string for a cycle phase. */
+export function skyColorAt(phase: number): string {
+  const { r, g, b } = skyRgbAt(phase);
   const hex = (n: number) => n.toString(16).padStart(2, '0');
   return `#${hex(r)}${hex(g)}${hex(b)}`;
 }

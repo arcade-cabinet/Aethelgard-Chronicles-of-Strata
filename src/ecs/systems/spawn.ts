@@ -1,6 +1,6 @@
 import type { World } from 'koota';
 import type { BoardData } from '@/core/board';
-import { getHexKey, hexNeighbors } from '@/core/hex';
+import { hexNeighbors } from '@/core/hex';
 import { GoblinPortalTrait, HexPosition } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 
@@ -44,8 +44,7 @@ export function spawnSystem(
         return;
       }
     }
-    // fallback: spawn on the portal tile itself
-    void getHexKey;
+    // fallback: spawn on the portal tile itself when no walkable neighbor exists
     createCharacter({ world, role, q: hex.q, r: hex.r, level: hex.level });
   });
 }

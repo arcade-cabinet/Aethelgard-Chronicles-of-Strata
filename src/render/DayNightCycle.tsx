@@ -1,15 +1,16 @@
-import { useThree } from '@react-three/fiber';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useRef } from 'react';
 import { Color, type DirectionalLight } from 'three';
-import { cyclePhase, lightIntensityAt, skyColorAt } from '@/game/clock';
+import { cyclePhase, lightIntensityAt, skyRgbAt } from '@/game/clock';
 import type { GameState } from '@/game/game-state';
 
 /**
  * Drives the day/night cycle each frame: the scene background color follows
- * `skyColorAt(phase)` and the directional light intensity follows
+ * the sky-color curve and the directional light intensity follows
  * `lightIntensityAt(phase)`, so the board visibly moves from a bright noon
- * through sunset into a dark, dim night and back.
+ * through sunset into a dark, dim night and back. The cosine is evaluated once
+ * per frame and the background Color object is mutated in place — no per-frame
+ * string or Color allocation.
  */
 export function DayNightCycle({ game }: { game: GameState }) {
   const lightRef = useRef<DirectionalLight>(null);
@@ -22,7 +23,8 @@ export function DayNightCycle({ game }: { game: GameState }) {
     if (lightRef.current) {
       lightRef.current.intensity = 0.3 + intensity * 1.4;
     }
-    skyColor.current.set(skyColorAt(phase));
+    const { r, g, b } = skyRgbAt(phase, intensity);
+    skyColor.current.setRGB(r / 255, g / 255, b / 255);
     scene.background = skyColor.current;
   });
 
