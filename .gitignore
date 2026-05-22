@@ -6,6 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# References
+references
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -141,3 +144,27 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Capacitor — android/ is regenerated from capacitor.config.ts by `cap sync`
+android
+ios
+
+# Generated assets — `pnpm assets:ingest` curates these from references/
+public/assets
+
+# Playwright
+playwright-report
+test-results
+/blob-report
+/playwright/.cache
+
+# agent-state caches (re-derivable; directive.md + decisions.ndjson are tracked)
+.agent-state/digest.md
+.agent-state/cursor.md
+.agent-state/.indexed-sha
+.agent-state/.last-stop-sha
+.agent-state/.last-compaction
+.agent-state/batch.json
+
+# brainstorming companion
+.superpowers
