@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T14:20:12.772Z",
+  "generatedAt": "2026-05-22T14:45:42.341Z",
   "entries": {
     "board.tile.grass": {
       "id": "board.tile.grass",
@@ -120,6 +120,175 @@
       "pack": "Nature Kit",
       "license": "CC0",
       "triangles": 80
+    },
+    "characters.heroes.knight": {
+      "id": "characters.heroes.knight",
+      "path": "assets/characters/heroes/knight.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 5800
+    },
+    "characters.heroes.mage": {
+      "id": "characters.heroes.mage",
+      "path": "assets/characters/heroes/mage.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 6668
+    },
+    "characters.heroes.barbarian": {
+      "id": "characters.heroes.barbarian",
+      "path": "assets/characters/heroes/barbarian.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 7123
+    },
+    "characters.heroes.rogue": {
+      "id": "characters.heroes.rogue",
+      "path": "assets/characters/heroes/rogue.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 7562
+    },
+    "characters.heroes.ranger": {
+      "id": "characters.heroes.ranger",
+      "path": "assets/characters/heroes/ranger.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 8900
+    },
+    "characters.heroes.druid": {
+      "id": "characters.heroes.druid",
+      "path": "assets/characters/heroes/druid.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 7784
+    },
+    "characters.heroes.engineer": {
+      "id": "characters.heroes.engineer",
+      "path": "assets/characters/heroes/engineer.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 7500
+    },
+    "characters.heroes.barbarian-large": {
+      "id": "characters.heroes.barbarian-large",
+      "path": "assets/characters/heroes/barbarian-large.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 11677
+    },
+    "characters.rigs.medium-movement": {
+      "id": "characters.rigs.medium-movement",
+      "path": "assets/characters/rigs/medium-movement.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [
+        "Jump_Full_Long",
+        "Jump_Full_Short",
+        "Jump_Idle",
+        "Jump_Land",
+        "Jump_Start",
+        "Running_A",
+        "Running_B",
+        "T-Pose",
+        "Walking_A",
+        "Walking_B",
+        "Walking_C"
+      ],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 6916
+    },
+    "characters.rigs.medium-general": {
+      "id": "characters.rigs.medium-general",
+      "path": "assets/characters/rigs/medium-general.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [
+        "Death_A",
+        "Death_A_Pose",
+        "Death_B",
+        "Death_B_Pose",
+        "Hit_A",
+        "Hit_B",
+        "Idle_A",
+        "Idle_B",
+        "Interact",
+        "PickUp",
+        "Spawn_Air",
+        "Spawn_Ground",
+        "T-Pose",
+        "Throw",
+        "Use_Item"
+      ],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 6916
+    },
+    "characters.rigs.large-movement": {
+      "id": "characters.rigs.large-movement",
+      "path": "assets/characters/rigs/large-movement.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [
+        "Running_A",
+        "T-Pose",
+        "Walking_A"
+      ],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 9148
+    },
+    "characters.rigs.large-general": {
+      "id": "characters.rigs.large-general",
+      "path": "assets/characters/rigs/large-general.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [
+        "Death_A",
+        "Death_A_Pose",
+        "Hit_A",
+        "Idle_A",
+        "Idle_B",
+        "T-Pose"
+      ],
+      "pack": "KayKit Adventurers",
+      "license": "CC-BY",
+      "triangles": 9148
+    },
+    "characters.enemies.orc": {
+      "id": "characters.enemies.orc",
+      "path": "assets/characters/enemies/orc.glb",
+      "category": "characters",
+      "kind": "glb",
+      "animations": [],
+      "pack": "KayKit Mystery Series",
+      "license": "CC-BY",
+      "triangles": 5849
     }
   }
 }
