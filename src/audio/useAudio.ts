@@ -42,10 +42,10 @@ export function useAudio(game: GameState): void {
     const currentOutcome = game.outcome;
     if (currentOutcome !== lastOutcomeRef.current) {
       lastOutcomeRef.current = currentOutcome;
-      if (currentOutcome === 'victory') {
+      if (currentOutcome === 'win') {
         const { bus, soundId } = SOUND_FOR_EVENT['victory'];
         playSound(buses, bus, soundId);
-      } else if (currentOutcome === 'defeat') {
+      } else if (currentOutcome === 'loss') {
         const { bus, soundId } = SOUND_FOR_EVENT['defeat'];
         playSound(buses, bus, soundId);
       }
