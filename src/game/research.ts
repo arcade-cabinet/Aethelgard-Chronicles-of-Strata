@@ -1,18 +1,31 @@
 import type { World } from 'koota';
-import { ECONOMY, researchCostFor } from '@/config/economy';
-import { Combatant, Harvester } from '@/ecs/components';
+import { ECONOMY } from '@/config/economy';
+import { type Discovery, discoveryById } from '@/rules';
 import { type GameEconomy, type ResourceCost, canAfford, spend } from './economy';
 
-/** A research upgrade id. */
+/**
+ * Research / Discoveries (M_DATA.7) — the tech-tree archetype, spec 102.
+ *
+ * The 2-item "research" surface is now a thin compatibility layer over the
+ * `DISCOVERIES` registry in `@/rules`. Each Discovery's effect is declared
+ * in `discovery-registry.ts`; this module owns the per-game purchased state
+ * and the apply/spend lifecycle.
+ *
+ * Adding a Discovery = a new row in `discovery-registry.ts`. No code branches
+ * here. The legacy `ResearchId` union is kept narrow to ease the migration;
+ * any string id may pass through `applyResearch` and dispatch to the registry.
+ */
+
+/** A research / Discovery id. */
 export type ResearchId = 'forgedBlades' | 'steelPlows';
 
-/** Which upgrades have been purchased this session. */
+/** Which Discoveries have been purchased this session. */
 export interface ResearchState {
-  /** Purchased upgrade ids. */
+  /** Purchased Discovery ids. */
   purchased: Set<ResearchId>;
 }
 
-/** Resource cost per research. Source: 70-rts-systems.md §Research System. */
+/** Resource cost per Discovery — kept exported for HUD back-compat. */
 export const RESEARCH_COST: Record<ResearchId, ResourceCost> = ECONOMY.researchCosts;
 
 /** Create an empty research state. */
@@ -20,20 +33,22 @@ export function createResearch(): ResearchState {
   return { purchased: new Set() };
 }
 
-/** Whether an upgrade can be purchased — affordable and not already owned. */
+/** Whether a Discovery can be purchased — affordable, owned, and prereqs met. */
 export function canResearch(
   economy: GameEconomy,
   research: ResearchState,
   id: ResearchId,
 ): boolean {
   if (research.purchased.has(id)) return false;
-  return canAfford(economy, researchCostFor(id));
+  const d = discoveryById(id);
+  if (!d) return false;
+  if (d.prereqs && !d.prereqs.every((p) => research.purchased.has(p as ResearchId))) return false;
+  return canAfford(economy, d.cost);
 }
 
 /**
- * Purchase and apply a research upgrade. Forged Blades raises every Combatant's
- * attackDamage by 5; Steel Plows multiplies every Harvester's rate by 1.5.
- * No-ops if unaffordable or already owned.
+ * Purchase a Discovery — validate, spend, dispatch its `apply(world)` effect,
+ * record it as purchased. Dispatches through the registry; no code branches.
  */
 export function applyResearch(
   world: World,
@@ -41,17 +56,11 @@ export function applyResearch(
   research: ResearchState,
   id: ResearchId,
 ): boolean {
+  const d: Discovery | undefined = discoveryById(id);
+  if (!d) return false;
   if (!canResearch(economy, research, id)) return false;
-  if (!spend(economy, researchCostFor(id))) return false;
+  if (!spend(economy, d.cost)) return false;
   research.purchased.add(id);
-  if (id === 'forgedBlades') {
-    world.query(Combatant).updateEach(([c]) => {
-      c.attackDamage += 5;
-    });
-  } else {
-    world.query(Harvester).updateEach(([h]) => {
-      h.harvestRate *= 1.5;
-    });
-  }
+  d.apply(world);
   return true;
 }

@@ -15,24 +15,35 @@ import type { ResourceNodePlan } from '@/world/resource-spawn';
  * top-up placements.
  */
 
-/** How many of each resource an attractor guarantees within its radius. */
+/**
+ * How many of each resource an attractor guarantees within its radius.
+ * Science is not biome-spawned (accumulates via science buildings + events
+ * per spec 102), so its guarantee is 0.
+ */
 export const ATTRACTOR_GUARANTEE: Record<ResourceType, number> = {
   wood: 3,
   stone: 2,
   gold: 1,
+  science: 0,
 };
 
 /** Hex radius of an attractor's resource-guarantee zone (~2-tile zone of control). */
 export const ATTRACTOR_RADIUS = 2;
 
 /** Starting amount of a top-up resource node. */
-const TOPUP_AMOUNT: Record<ResourceType, number> = { wood: 100, stone: 80, gold: 60 };
+const TOPUP_AMOUNT: Record<ResourceType, number> = {
+  wood: 100,
+  stone: 80,
+  gold: 60,
+  science: 0,
+};
 
-/** Biomes a top-up node of each type may land on. Matches resourceSpawn rules. */
+/** Biomes a top-up node of each type may land on. Science: none (not spawned). */
 const ALLOWED_BIOMES: Record<ResourceType, ReadonlySet<string>> = {
   wood: new Set(['FOREST', 'GRASS']),
   stone: new Set(['HIGHLAND', 'MOUNTAIN']),
   gold: new Set(['GRASS', 'HIGHLAND']),
+  science: new Set(),
 };
 
 /** Count nodes of `type` whose hex key sits within `radius` of (cq, cr). */

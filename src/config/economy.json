@@ -21,7 +21,10 @@
     "Peon": 1,
     "Footman": 2,
     "Goblin": 0,
-    "Orc": 0
+    "Orc": 0,
+    "Vampire": 0,
+    "Witch": 0,
+    "BlackKnight": 0
   },
   "unitCosts": {
     "Peon": { "wood": 5, "stone": 0, "gold": 0 },
@@ -31,6 +34,7 @@
     "wood": 50,
     "stone": 20,
     "gold": 20,
+    "science": 0,
     "maxSupply": 5
   },
   "researchCosts": {

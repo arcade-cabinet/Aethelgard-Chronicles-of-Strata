@@ -1,8 +1,13 @@
 import { RESOURCE_TYPES } from '@/ecs/components';
 import type { ResourceCost } from '@/game/economy';
 
-/** Short single-letter abbreviation per slot — keeps cost labels compact. */
-const SLOT_ABBREV: Record<string, string> = { wood: 'w', stone: 's', gold: 'g' };
+/** Short abbreviation per slot — keeps cost labels compact (e.g. "60w 40s 30sci"). */
+const SLOT_ABBREV: Record<string, string> = {
+  wood: 'w',
+  stone: 's',
+  gold: 'g',
+  science: 'sci',
+};
 
 /**
  * Compact resource-cost label — `"60w 40s"`, omitting zero/absent slots.

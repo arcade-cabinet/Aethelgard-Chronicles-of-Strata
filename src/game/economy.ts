@@ -16,6 +16,12 @@ export interface GameEconomy {
   stone: number;
   /** Gold total — accumulation slot. */
   gold: number;
+  /**
+   * Science total — accumulation slot. Spent on Discoveries (the tech tree
+   * archetype, M_DATA.7). Accumulates passively over time + faster with
+   * science-producing buildings.
+   */
+  science: number;
   /** Current supply consumed by units. */
   usedSupply: number;
   /** Supply cap — sum of owned buildings' supply contribution. */
@@ -38,6 +44,7 @@ export function createEconomy(): GameEconomy {
     wood: s.wood,
     stone: s.stone,
     gold: s.gold,
+    science: s.science,
     usedSupply: 0,
     maxSupply: s.maxSupply,
     kills: 0,

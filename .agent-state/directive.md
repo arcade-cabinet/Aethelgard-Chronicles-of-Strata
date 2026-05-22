@@ -169,26 +169,12 @@ branches that should be data-driven from the same rules/archetype tables the
 game logic consults. ONE source of truth — config + archetype profiles —
 drives display name, icon, cost, supply, behaviors, model, and tooltip.
 
-- [ ] M_DATA.1 — `rules/display.ts` (or extend `building-behaviors.ts`):
-  declare per-building `displayName`, `description`, `iconId` derived from
-  the existing config; HUD consumes only this table. Adding a building =
-  adding a row, not editing the SelectionPanel JSX.
-- [ ] M_DATA.2 — derive `BUILDABLE_TYPES` from `Object.keys(BUILDING_COSTS)`
-  (or from the BUILDING_BEHAVIORS table) rather than hardcoded literal.
-- [ ] M_DATA.3 — derive Train buttons from `UNIT_COSTS` + the
-  trainer-building-type map (Town Hall trains Peon, Barracks trains
-  Footman, future training buildings = new row in a `trainsAt` table).
-- [ ] M_DATA.4 — replace `view.isTownHall` / `view.isBarracks` branching in
-  SelectionPanel with a per-building "actions" config (each building type
-  declares its action list: train + research + rally for Barracks, train +
-  build menu for Town Hall, etc).
-- [ ] M_DATA.5 — `costLabel` and similar formatters live ONCE in
-  `src/hud/format.ts` and are reused everywhere.
-- [ ] M_DATA.6 — resources as ECONOMIC SLOTS + multipliers. ResourceCost
-  becomes `Partial<Record<ResourceType, number>>`; canAfford/spend iterate
-  RESOURCE_TYPES; ResourceBar drives off SLOT_DISPLAY × RESOURCE_TYPES.
-  Adding a slot = 1 row in RESOURCE_TYPES + 1 GameEconomy field + 1
-  SLOT_DISPLAY row; no `if/elseif` anywhere.
+- [x] M_DATA.1–6 (c62d638): rules/display.ts BUILDING_DISPLAY table;
+  SelectionPanel data-driven from displayFor() (no isTownHall/isBarracks);
+  BUILDABLE_TYPES derived from Object.keys(BUILDING_COSTS); UNIT_COSTS-
+  driven train buttons; format.ts.costLabel; ResourceCost = Partial<Record<
+  ResourceType, number>> + canAfford/spend slot-iterating; ResourceBar
+  iterates RESOURCE_TYPES × SLOT_DISPLAY. 265 tests green.
 - [ ] M_DATA.7 — Discoveries archetype + Science slot (user-flagged: tech
   tree is just another archetype with the slot machinery). Add `science`
   resource slot (accumulates from science buildings + rare events). Define

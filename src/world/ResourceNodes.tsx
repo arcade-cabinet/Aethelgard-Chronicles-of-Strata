@@ -6,11 +6,12 @@ import { axialToWorld } from '@/core/hex';
 import type { ResourceType } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 
-/** The GLB manifest id used to render each resource type. */
+/** The GLB manifest id used to render each resource type — none for science (no world mesh). */
 const NODE_MESH: Record<ResourceType, string> = {
   wood: 'nature.tree.pine-a',
   stone: 'nature.rock.large-a',
   gold: 'nature.rock.large-a', // gold veins reuse the rock mesh, gold-tinted
+  science: 'nature.rock.large-a', // unused — science nodes are never spawned in the world
 };
 
 /** Tint applied to a resource-node mesh; gold veins glow gold. */

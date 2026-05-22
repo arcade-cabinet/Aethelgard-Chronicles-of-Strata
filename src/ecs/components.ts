@@ -46,10 +46,15 @@ export const Selectable = trait({ isSelected: false });
  * `RESOURCE_TYPES` (the enumerable list) so adding a 4th slot is one config
  * row + one union entry, never `if/elseif` branches.
  */
-export type ResourceType = 'wood' | 'stone' | 'gold';
+export type ResourceType = 'wood' | 'stone' | 'gold' | 'science';
 
-/** The enumerable list of resource slots — iterate this, never hardcode 'wood'/'stone'/'gold'. */
-export const RESOURCE_TYPES: readonly ResourceType[] = ['wood', 'stone', 'gold'] as const;
+/** The enumerable list of resource slots — iterate this, never hardcode individual slots. */
+export const RESOURCE_TYPES: readonly ResourceType[] = [
+  'wood',
+  'stone',
+  'gold',
+  'science',
+] as const;
 
 /**
  * A building type. `TownHall` is the attractor (start base, not built

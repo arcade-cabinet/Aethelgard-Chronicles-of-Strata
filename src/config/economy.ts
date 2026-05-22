@@ -39,6 +39,8 @@ export interface EconomyConfig {
     stone: number;
     /** Starting gold. */
     gold: number;
+    /** Starting science. */
+    science: number;
     /** Starting supply cap. */
     maxSupply: number;
   };

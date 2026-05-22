@@ -75,6 +75,7 @@ const SLOT_DISPLAY: Record<ResourceType, { label: string; color: string; id: str
   wood: { label: 'Wood', color: HUD_THEME.color.wood, id: 'val-wood' },
   stone: { label: 'Stone', color: HUD_THEME.color.stone, id: 'val-stone' },
   gold: { label: 'Gold', color: HUD_THEME.color.coin, id: 'val-gold' },
+  science: { label: 'Science', color: HUD_THEME.color.accent, id: 'val-science' },
 };
 
 /**
