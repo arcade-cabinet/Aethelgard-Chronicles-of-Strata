@@ -74,6 +74,11 @@ export interface GameState {
   /** The barracks rally point — where newly trained footmen are directed. */
   rally: RallyState;
   /**
+   * The koota entityId of the currently-selected entity, or `undefined` when
+   * nothing is selected. Updated by `selectEntity` in `@/game/selection`.
+   */
+  selectedId?: number;
+  /**
    * Assign every idle peon to harvest the nearest resource node.
    * Call this to kick-start the autonomous harvest loop.
    */
