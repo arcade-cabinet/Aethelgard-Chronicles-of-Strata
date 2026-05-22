@@ -3,8 +3,11 @@ import { TILE_HEIGHT } from '@/core/constants';
 import { axialToWorld } from '@/core/hex';
 import {
   AnimationState,
+  AssignedJob,
+  Carrier,
   type Faction,
   FactionTrait,
+  Harvester,
   HexPosition,
   Movement,
   PathQueue,
@@ -48,7 +51,7 @@ export function createCharacter(params: CreateCharacterParams): Entity {
   const { world, role, q, r, level, selected = false } = params;
   const stats = ROLE_STATS[role];
   const { x, z } = axialToWorld(q, r);
-  return world.spawn(
+  const base = [
     HexPosition({ q, r, level }),
     Transform({ x, y: level * TILE_HEIGHT, z, rotationY: 0 }),
     Unit({ unitType: role }),
@@ -57,5 +60,17 @@ export function createCharacter(params: CreateCharacterParams): Entity {
     PathQueue({ steps: [] }),
     AnimationState({ state: 'IDLE' }),
     Selectable({ isSelected: selected }),
-  );
+  ] as const;
+
+  // Peons participate in the harvest loop — add economy traits.
+  if (role === 'Peon') {
+    return world.spawn(
+      ...base,
+      Harvester({ harvestRate: 1, harvestTimer: 0 }),
+      Carrier({ carryType: 'none', amount: 0 }),
+      AssignedJob({ state: 'IDLE', targetKey: '' }),
+    );
+  }
+
+  return world.spawn(...base);
 }

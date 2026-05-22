@@ -1,12 +1,9 @@
 import { useFrame } from '@react-three/fiber';
-import { animationSystem } from '@/ecs/systems/animation';
-import { pathFollowSystem } from '@/ecs/systems/path-follow';
-import type { GameState } from '@/game/game-state';
+import { type GameState, runEconomyTick } from '@/game/game-state';
 
-/** Drive the ECS systems once per rendered frame, in fixed order. */
+/** Drive the full ECS system loop once per rendered frame. */
 export function useGameLoop(game: GameState): void {
   useFrame((_, delta) => {
-    pathFollowSystem(game.world, delta);
-    animationSystem(game.world);
+    runEconomyTick(game, delta);
   });
 }
