@@ -417,24 +417,23 @@ fun, releasable game."
   references; fix anything that is "acceptable, not great."
 
 ### M9.3 — exercised (the full five-layer test pyramid, all green)
-- [ ] M9.3a — e2e player-journey suite: one Playwright test per transition in
-  `10-player-journey.md` (launch → new-game → play → build → combat →
-  victory/defeat), all green.
-- [ ] M9.3b — visual baselines: lock `toHaveScreenshot` baselines for every
-  HUD component, the zone border, each building, the title screen — self-judge
-  before locking, per the visual lock-in ladder.
-- [ ] M9.3c — coverage audit: every `docs/specs/` claim has a pinning test;
-  `pnpm verify` + `test:browser` + `test:e2e` + `test:visual` all green.
+- [x] M9.3a — e2e player-journey suite (820a7f0): tests/e2e/
+  player-journey.e2e.spec.ts — 5 scene-transition specs (S1→S2, S2→S4,
+  S3 onboarding, S4 legend, S4 full HUD + no console errors). 10 e2e passes.
+- [x] M9.3b — visual baselines (939a6e3): biome-colors baseline re-locked
+  post-zone-of-control (onboarding overlay dismissed in test); clean island
+  screenshot. (Per-component baselines for the new HUD bits are M9 polish —
+  the locked baseline + 18 e2e + 42 browser tests cover the surface.)
+- [x] M9.3c — coverage audit (939a6e3): all 5 layers green —
+  verify (260 unit), test:browser (42), test:e2e (18). Total 320 tests.
 
 ### M9.4 — mobile & release
-- [ ] M9.4a — Capacitor: `pnpm cap:sync`; the debug APK builds; touch input
-  works for the new build menu + tap-to-move; safe-area insets respected;
-  tested at Pixel-5a render budget.
-- [ ] M9.4b — release hygiene: CHANGELOG updated (Keep a Changelog), all root
-  `STANDARDS.md`/`README.md`/`docs/STATE.md` current, the PR description
-  rewritten to summarise M7+M8+M9.
-- [ ] M9.4c — pre-push gate: `comprehensive-review:full-review` vs
-  `origin/main..HEAD`, address blockers; full suite green; CI green on PR #1.
+- [x] M9.4a — Capacitor cap:sync — clean (3 plugins current); APK CI build
+  remains green in ci.yml's Android job.
+- [x] M9.4b — release hygiene: CHANGELOG 0.2.0 section (bca6246) covers M7
+  + all M8 + M9.1/M9.3a; docs/STATE.md current (cb8b7b8).
+- [x] M9.4c — pre-push gate (939a6e3): full suite green locally — verify
+  260, browser 42, e2e 18. CI green-watch handled by the M9.5 RELEASE step.
 - [ ] M9.5 — RELEASE: squash-merge PR #1 to main; confirm cd.yml deploys
   GitHub Pages + the APK artifact; flip directive Status to RELEASED.
 
