@@ -5,7 +5,10 @@ export function round(val: number): number {
   return Math.round(val * 1000) / 1000;
 }
 
-/** Convert axial (q, r) to world XZ position (flat-top hex orientation). */
+/**
+ * Convert axial (q, r) to world XZ position. Pointy-top hex layout:
+ * `x = √3·R·(q + r/2)`, `z = 1.5·R·r`, matching getHexCorner's -30° corner 0.
+ */
 export function axialToWorld(q: number, r: number): { x: number; z: number } {
   return {
     x: round(HEX_RADIUS * Math.sqrt(3) * (q + r / 2)),

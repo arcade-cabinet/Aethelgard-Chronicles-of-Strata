@@ -1,7 +1,7 @@
 import type { Entity, World } from 'koota';
 import { type BoardData, generateBoard } from '@/core/board';
 import { TILE_HEIGHT } from '@/core/constants';
-import { axialToWorld } from '@/core/hex';
+import { axialToWorld, hexDistance } from '@/core/hex';
 import { type NavGraph, buildNavGraph } from '@/core/pathfinding';
 import { HexPosition, Movement, PathQueue, Selectable, Transform, Unit } from '@/ecs/components';
 import { createEcsWorld } from '@/ecs/world';
@@ -26,7 +26,7 @@ function findCentralWalkableTile(board: BoardData): { q: number; r: number; leve
   let bestDist = Number.POSITIVE_INFINITY;
   for (const tile of board.tiles.values()) {
     if (!tile.walkable) continue;
-    const dist = Math.abs(tile.q) + Math.abs(tile.r);
+    const dist = hexDistance(tile.q, tile.r, 0, 0);
     if (dist < bestDist) {
       bestDist = dist;
       best = { q: tile.q, r: tile.r, level: tile.level };

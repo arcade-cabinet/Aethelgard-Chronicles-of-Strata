@@ -73,8 +73,8 @@ export function findPath(graph: NavGraph, startKey: string, goalKey: string): st
     if (current === goalKey) {
       const path = [current];
       let step = current;
-      while (cameFrom.has(step)) {
-        step = cameFrom.get(step) as string;
+      for (let prev = cameFrom.get(step); prev !== undefined; prev = cameFrom.get(step)) {
+        step = prev;
         path.unshift(step);
       }
       return path;

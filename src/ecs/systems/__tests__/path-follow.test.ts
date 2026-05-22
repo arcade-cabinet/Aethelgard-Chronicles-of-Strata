@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { TILE_HEIGHT } from '@/core/constants';
 import { axialToWorld } from '@/core/hex';
 import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
@@ -56,5 +57,19 @@ describe('path-follow system', () => {
     expect(t?.x).toBeGreaterThan(0);
     expect(entity.get(HexPosition)?.q).toBe(0);
     expect(entity.get(PathQueue)?.steps).toEqual(['1,0']);
+  });
+
+  it('updates HexPosition.level and Transform.y on a ramp (cross-elevation) step', () => {
+    const world = createEcsWorld();
+    // step carries level 3 — the pawn climbs a ramp from level 2 to level 3
+    const entity = world.spawn(
+      HexPosition({ q: 0, r: 0, level: 2 }),
+      Transform({ x: 0, y: 2 * TILE_HEIGHT, z: 0, rotationY: 0 }),
+      Movement({ speed: 100, isMoving: false }),
+      PathQueue({ steps: ['1,0,3'] }),
+    );
+    pathFollowSystem(world, 1);
+    expect(entity.get(HexPosition)?.level).toBe(3);
+    expect(entity.get(Transform)?.y).toBeCloseTo(3 * TILE_HEIGHT, 5);
   });
 });

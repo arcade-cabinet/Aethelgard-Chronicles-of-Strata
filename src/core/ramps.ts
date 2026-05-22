@@ -35,11 +35,19 @@ export function placeRamps(tiles: Map<string, Tile>, rng: Rng): Map<string, Ramp
       const neighborKey = getHexKey(tile.q + dir.q, tile.r + dir.r);
       const neighbor = tiles.get(neighborKey);
       if (!neighbor || !neighbor.walkable) continue;
-      if (neighbor.level !== tile.level + 1) continue; // only upward, delta exactly 1
+      // Visit each eligible edge once, from the lower tile, so the PRNG draw
+      // sequence is stable. delta is exactly +1 here.
+      if (neighbor.level !== tile.level + 1) continue;
       const edge = rampKey(key, neighborKey);
       if (ramps.has(edge)) continue;
       if (rng() < RAMP_CHANCE) {
-        ramps.set(edge, { lowKey: key, highKey: neighborKey });
+        // derive low/high by level comparison, not loop direction — robust if
+        // the eligibility filter above is ever relaxed.
+        const tileIsLower = tile.level < neighbor.level;
+        ramps.set(edge, {
+          lowKey: tileIsLower ? key : neighborKey,
+          highKey: tileIsLower ? neighborKey : key,
+        });
       }
     }
   }

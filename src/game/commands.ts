@@ -4,18 +4,38 @@ import { HexPosition, PathQueue } from '@/ecs/components';
 import type { GameState } from './game-state';
 
 /**
- * Issue a move order: path the player pawn to `targetKey`. Runs A* from the
- * pawn's current tile; on success writes the path (excluding the start tile)
- * into the pawn's PathQueue and returns true. Returns false when the target is
- * unreachable, leaving the queue untouched.
+ * Encode a path tile key into a `"q,r,level"` step. The level travels with the
+ * step so the path-follow system can set the pawn's Y height on ramp traversal
+ * without holding a board reference.
  */
-export function issueMoveOrder(game: GameState, targetKey: string): boolean {
+function toLeveledStep(game: GameState, key: string): string {
+  const tile = game.board.tiles.get(key);
+  return `${key},${tile?.level ?? 0}`;
+}
+
+/**
+ * Issue a move order: path the player pawn to `targetKey`. Runs A* from the
+ * pawn's current tile; on success writes the path (excluding the start tile,
+ * each step carrying its elevation level) into the pawn's PathQueue and returns
+ * the tile-key path. Returns null when the target is unreachable, leaving the
+ * queue untouched.
+ */
+export function planMoveOrder(game: GameState, targetKey: string): string[] | null {
   const hex = game.playerPawn.get(HexPosition);
-  if (!hex) return false;
+  if (!hex) return null;
   const startKey = getHexKey(hex.q, hex.r);
   const path = findPath(game.navGraph, startKey, targetKey);
-  if (!path || path.length < 2) return false;
+  if (!path || path.length < 2) return null;
   // drop the start tile — the pawn is already there
-  game.playerPawn.set(PathQueue, { steps: path.slice(1) });
-  return true;
+  const steps = path.slice(1).map((key) => toLeveledStep(game, key));
+  game.playerPawn.set(PathQueue, { steps });
+  return path;
+}
+
+/**
+ * Issue a move order, returning whether a path was found. Thin boolean wrapper
+ * over `planMoveOrder` for callers that do not need the path itself.
+ */
+export function issueMoveOrder(game: GameState, targetKey: string): boolean {
+  return planMoveOrder(game, targetKey) !== null;
 }
