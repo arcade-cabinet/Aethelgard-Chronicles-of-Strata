@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-05-22T15:19:33.131Z",
+  "generatedAt": "2026-05-22T16:20:51.730Z",
   "entries": {
     "board.tile.grass": {
       "id": "board.tile.grass",
@@ -319,6 +319,123 @@
       "pack": "KayKit Mystery Series",
       "license": "CC-BY",
       "triangles": 5849
+    },
+    "audio.sfx.footstep-grass": {
+      "id": "audio.sfx.footstep-grass",
+      "path": "assets/audio/sfx/footstep-grass.ogg",
+      "category": "audio",
+      "kind": "ogg",
+      "animations": [],
+      "pack": "PixelLoops Audio — Footsteps Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.sfx.footstep-stone": {
+      "id": "audio.sfx.footstep-stone",
+      "path": "assets/audio/sfx/footstep-stone.ogg",
+      "category": "audio",
+      "kind": "ogg",
+      "animations": [],
+      "pack": "PixelLoops Audio — Footsteps Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.sfx.chop": {
+      "id": "audio.sfx.chop",
+      "path": "assets/audio/sfx/chop.ogg",
+      "category": "audio",
+      "kind": "ogg",
+      "animations": [],
+      "pack": "PixelLoops Audio — Impact Hit Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.sfx.mine": {
+      "id": "audio.sfx.mine",
+      "path": "assets/audio/sfx/mine.ogg",
+      "category": "audio",
+      "kind": "ogg",
+      "animations": [],
+      "pack": "PixelLoops Audio — Impact Hit Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.sfx.hit": {
+      "id": "audio.sfx.hit",
+      "path": "assets/audio/sfx/hit.ogg",
+      "category": "audio",
+      "kind": "ogg",
+      "animations": [],
+      "pack": "PixelLoops Audio — Impact Hit Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.sfx.deposit": {
+      "id": "audio.sfx.deposit",
+      "path": "assets/audio/sfx/deposit.ogg",
+      "category": "audio",
+      "kind": "ogg",
+      "animations": [],
+      "pack": "PixelLoops Audio — Inventory Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.sfx.select": {
+      "id": "audio.sfx.select",
+      "path": "assets/audio/sfx/select.ogg",
+      "category": "audio",
+      "kind": "ogg",
+      "animations": [],
+      "pack": "PixelLoops Audio — Inventory Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.sfx.build": {
+      "id": "audio.sfx.build",
+      "path": "assets/audio/sfx/build.ogg",
+      "category": "audio",
+      "kind": "ogg",
+      "animations": [],
+      "pack": "PixelLoops Audio — Impact Hit Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.music.menu": {
+      "id": "audio.music.menu",
+      "path": "assets/audio/music/menu.wav",
+      "category": "audio",
+      "kind": "wav",
+      "animations": [],
+      "pack": "PixelLoops Audio — Main Menu Music Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.music.gameplay": {
+      "id": "audio.music.gameplay",
+      "path": "assets/audio/music/gameplay.wav",
+      "category": "audio",
+      "kind": "wav",
+      "animations": [],
+      "pack": "PixelLoops Audio — GameLoops Vol5 Fantasy RPG",
+      "license": "Royalty-Free"
+    },
+    "audio.music.ambient": {
+      "id": "audio.music.ambient",
+      "path": "assets/audio/music/ambient.wav",
+      "category": "audio",
+      "kind": "wav",
+      "animations": [],
+      "pack": "PixelLoops Audio — Fantasy Tavern Music Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.stinger.victory": {
+      "id": "audio.stinger.victory",
+      "path": "assets/audio/stinger/victory.wav",
+      "category": "audio",
+      "kind": "wav",
+      "animations": [],
+      "pack": "PixelLoops Audio — Victory Level Complete Pack",
+      "license": "Royalty-Free"
+    },
+    "audio.stinger.defeat": {
+      "id": "audio.stinger.defeat",
+      "path": "assets/audio/stinger/defeat.wav",
+      "category": "audio",
+      "kind": "wav",
+      "animations": [],
+      "pack": "PixelLoops Audio — Impact Hit Pack",
+      "license": "Royalty-Free"
     }
   }
 }

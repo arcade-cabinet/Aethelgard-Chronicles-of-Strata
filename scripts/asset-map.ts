@@ -7,7 +7,7 @@ export interface AssetMapEntry {
   /** Source pack name for the credits screen. */
   pack: string;
   /** License id. */
-  license: 'CC0' | 'CC-BY';
+  license: 'CC0' | 'CC-BY' | 'Royalty-Free';
 }
 
 /** Convert a logical id + kind into the output path under public/. */
@@ -178,5 +178,89 @@ export const ASSET_MAP: AssetMapEntry[] = [
     source: `${ORC_RAIDER}/character/OrcRaider.glb`,
     pack: 'KayKit Mystery Series',
     license: 'CC-BY',
+  },
+
+  // --- M6: audio — OGG sfx (PixelLoops Audio, Royalty-Free) ---
+  {
+    id: 'audio.sfx.footstep-grass',
+    source: 'references/footsteps_sound_effects_pack/OGG/pl_footstep_grass_01.ogg',
+    pack: 'PixelLoops Audio — Footsteps Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.footstep-stone',
+    source: 'references/footsteps_sound_effects_pack/OGG/pl_footstep_stone_01.ogg',
+    pack: 'PixelLoops Audio — Footsteps Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.chop',
+    source: 'references/Impact_Hit_Sound_Effects_Pack/OGG/pl_impact_wood_01.ogg',
+    pack: 'PixelLoops Audio — Impact Hit Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.mine',
+    source: 'references/Impact_Hit_Sound_Effects_Pack/OGG/pl_impact_stone_01.ogg',
+    pack: 'PixelLoops Audio — Impact Hit Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.hit',
+    source: 'references/Impact_Hit_Sound_Effects_Pack/OGG/pl_impact_hit_01.ogg',
+    pack: 'PixelLoops Audio — Impact Hit Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.deposit',
+    source: 'references/Inventory_And_Item_Sound_Effects_Pack/OGG/pl_coin_pickup_01.ogg',
+    pack: 'PixelLoops Audio — Inventory Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.select',
+    source: 'references/Inventory_And_Item_Sound_Effects_Pack/OGG/pl_button_soft_01.ogg',
+    pack: 'PixelLoops Audio — Inventory Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.sfx.build',
+    source: 'references/Impact_Hit_Sound_Effects_Pack/OGG/pl_impact_wood_02.ogg',
+    pack: 'PixelLoops Audio — Impact Hit Pack',
+    license: 'Royalty-Free',
+  },
+
+  // --- M6: audio — WAV music (PixelLoops Audio, Royalty-Free) ---
+  {
+    id: 'audio.music.menu',
+    source: 'references/PixelLoops_Main_Menu_Music_Pack_v1.0/WAV/main_menu_fantasy_01.wav',
+    pack: 'PixelLoops Audio — Main Menu Music Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.music.gameplay',
+    source: 'references/GameLoops_Vol5_FantasyRPG/WAV/GLV5_TownOfEldor.wav',
+    pack: 'PixelLoops Audio — GameLoops Vol5 Fantasy RPG',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.music.ambient',
+    source:
+      'references/Fantasy_Tavern_Music_Pack_12_Loops_PixelLoops/WAV/pl_tavern_loop_12_ambient.wav',
+    pack: 'PixelLoops Audio — Fantasy Tavern Music Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.stinger.victory',
+    source:
+      'references/Victory_Level_Complete_Music_Pack_24_Stingers_PixelLoops/WAV/pl_vlc_victory_04_triumph.wav',
+    pack: 'PixelLoops Audio — Victory Level Complete Pack',
+    license: 'Royalty-Free',
+  },
+  {
+    id: 'audio.stinger.defeat',
+    source: 'references/Impact_Hit_Sound_Effects_Pack/WAV/pl_impact_heavy_04.wav',
+    pack: 'PixelLoops Audio — Impact Hit Pack',
+    license: 'Royalty-Free',
   },
 ];
