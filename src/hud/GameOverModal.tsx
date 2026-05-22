@@ -36,9 +36,9 @@ export function GameOverModal({ game }: { game: GameState }) {
 
   const isWin = outcome === 'win';
   const stats: StatLine[] = [
-    { label: 'Gold Earned', value: String(game.economy.gold) },
-    { label: 'Lumber Harvested', value: String(game.economy.wood) },
-    { label: 'Enemies Vanquished', value: String(game.economy.kills) },
+    { label: 'Gold Earned', value: String(game.economy.player.gold) },
+    { label: 'Lumber Harvested', value: String(game.economy.player.wood) },
+    { label: 'Enemies Vanquished', value: String(game.economy.player.kills) },
   ];
 
   return (
@@ -83,8 +83,8 @@ export function GameOverModal({ game }: { game: GameState }) {
           </Dialog.Title>
           <p style={{ color: HUD_THEME.color.muted, marginBottom: 24 }}>
             {isWin
-              ? 'You have shattered the Goblin Portal and defended Aethelgard.'
-              : 'The Goblins razed your Town Hall. Aethelgard has fallen.'}
+              ? 'You have razed the enemy base and defended Aethelgard.'
+              : 'The enemy razed your home base. Aethelgard has fallen.'}
           </p>
           {stats.map((s) => (
             <div

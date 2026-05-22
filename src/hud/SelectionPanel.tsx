@@ -124,7 +124,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
   }, [isOpen]);
 
   const research = (id: ResearchId) => {
-    const canDo = canResearch(game.economy, game.research, id);
+    const canDo = canResearch(game.economy.player, game.research, id);
     if (canDo) {
       doResearch(game, id);
       emitUiSound('research-purchased');
@@ -193,12 +193,12 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               <HudButton
                 label={`Forged Blades (${RESEARCH_COST.forgedBlades.gold}g)`}
                 onClick={() => research('forgedBlades')}
-                disabled={!canResearch(game.economy, game.research, 'forgedBlades')}
+                disabled={!canResearch(game.economy.player, game.research, 'forgedBlades')}
               />
               <HudButton
                 label={`Steel Plows (${RESEARCH_COST.steelPlows.gold}g)`}
                 onClick={() => research('steelPlows')}
-                disabled={!canResearch(game.economy, game.research, 'steelPlows')}
+                disabled={!canResearch(game.economy.player, game.research, 'steelPlows')}
               />
               <div style={{ fontSize: '0.68rem', color: HUD_THEME.color.muted, marginTop: 6 }}>
                 Tap a tile to set the rally point.

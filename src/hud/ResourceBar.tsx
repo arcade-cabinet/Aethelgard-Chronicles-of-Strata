@@ -71,7 +71,7 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
 
 /** Read the current economy into display readouts. */
 function snapshot(game: GameState): Readout[] {
-  const e = game.economy;
+  const e = game.economy.player;
   return [
     { id: 'val-wood', label: 'Wood', color: HUD_THEME.color.wood, value: String(e.wood) },
     { id: 'val-stone', label: 'Stone', color: HUD_THEME.color.stone, value: String(e.stone) },

@@ -40,9 +40,9 @@ describe('command API — faction parameter (M8.3)', () => {
       return { q: tq ?? 0, r: tr ?? 0 };
     })();
     // give the economy plenty so the spend succeeds
-    game.economy.wood = 9999;
-    game.economy.stone = 9999;
-    game.economy.gold = 9999;
+    game.economy.player.wood = 9999;
+    game.economy.player.stone = 9999;
+    game.economy.player.gold = 9999;
     // try neighbours until one is a valid placement
     let placed = false;
     const dirs: ReadonlyArray<readonly [number, number]> = [

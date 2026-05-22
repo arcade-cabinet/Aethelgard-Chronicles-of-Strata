@@ -77,10 +77,12 @@ export interface GameState {
   world: World;
   /** The player-controlled pawn entity. */
   playerPawn: Entity;
-  /** Global resource totals and supply. */
-  economy: GameEconomy;
-  /** The hex key of the Town Hall tile. */
+  /** Per-faction resource totals and supply — both factions are symmetric. */
+  economy: Record<Faction, GameEconomy>;
+  /** The hex key of the player's home-base (Town Hall) tile. */
   townHallKey: string;
+  /** The hex key of the enemy base tile — the enemy's deposit/build anchor. */
+  enemyBaseKey: string;
   /** All planned resource node placements for this session. */
   resourceNodes: ResourceNodePlan[];
   /** Building-site entities keyed by hex tile key (for the build system). */
@@ -199,7 +201,11 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // the building mesh).
   const center = findCentralWalkableTile(board);
   const townHallKey = getHexKey(center.q, center.r);
-  const economy = createEconomy();
+  // Both factions get a symmetric economy — the player's and the AI enemy's.
+  const economy: Record<Faction, GameEconomy> = {
+    player: createEconomy(),
+    enemy: createEconomy(),
+  };
 
   // Mark the Town Hall tile unwalkable BEFORE building the nav graph — units
   // path around the building and deposit from an adjacent tile.
@@ -254,6 +260,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
 
   // Spawn the enemy base — the graveyard (enemy unit spawner — win condition).
   // spawnInterval is difficulty-scaled: easy 60s, normal 45s, hard 30s.
+  const enemyBaseKey = getHexKey(enemyBaseTile.q, enemyBaseTile.r);
   const enemyBaseEntity = world.spawn(
     HexPosition({ q: enemyBaseTile.q, r: enemyBaseTile.r, level: enemyBaseTile.level }),
     EnemySpawner({ spawnTimer: 0, spawnInterval: spawnIntervalFor(difficulty) }),
@@ -296,6 +303,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     playerPawn,
     economy,
     townHallKey,
+    enemyBaseKey,
     resourceNodes,
     buildSites,
     townHallEntity,
@@ -378,23 +386,27 @@ export function runEconomyTick(game: GameState, delta: number): void {
   updateFog(game.fog.player, game.world, 'player', tiles);
   updateFog(game.fog.enemy, game.world, 'enemy', game.board.tiles.values());
 
-  // recompute the supply cap from all complete buildings — a finished Farm
-  // raises max supply.
-  const completeBuildings: BuildingType[] = [];
-  for (const e of game.world.query(Building)) {
+  // recompute each faction's supply cap from its own complete buildings —
+  // a finished Farm raises that faction's max supply.
+  const completeByFaction: Record<Faction, BuildingType[]> = { player: [], enemy: [] };
+  for (const e of game.world.query(Building, FactionTrait)) {
     const b = e.get(Building);
-    if (b?.isComplete) completeBuildings.push(b.buildingType);
+    const faction = e.get(FactionTrait)?.faction;
+    if (b?.isComplete && faction) completeByFaction[faction].push(b.buildingType);
   }
-  recomputeMaxSupply(game.economy, completeBuildings);
+  recomputeMaxSupply(game.economy.player, completeByFaction.player);
+  recomputeMaxSupply(game.economy.enemy, completeByFaction.enemy);
 
   // combat
   game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta);
 
-  // resource deposit
-  depositSystem(game.world, game.economy, game.townHallKey);
+  // resource deposit — each faction's carrying peons deposit at their own base
+  depositSystem(game.world, game.economy.player, game.townHallKey, 'player');
+  depositSystem(game.world, game.economy.enemy, game.enemyBaseKey, 'enemy');
 
-  // death resolution — deathSystem returns the enemies removed this tick
-  game.economy.kills += deathSystem(game.world, delta);
+  // death resolution — deathSystem returns the enemies removed this tick;
+  // a removed enemy is a player kill.
+  game.economy.player.kills += deathSystem(game.world, delta);
 
   // animation state + end-condition check
   animationSystem(game.world);

@@ -103,11 +103,12 @@ export function placeBuilding(
   faction: Faction = 'player',
 ): boolean {
   const occupied = new Set<string>([game.townHallKey, ...game.buildSites.keys()]);
+  const economy = game.economy[faction];
 
-  const check = canPlaceBuilding(game.board, occupied, tileKey, type, game.economy);
+  const check = canPlaceBuilding(game.board, occupied, tileKey, type, economy);
   if (!check.ok) return false;
 
-  if (!spend(game.economy, BUILDING_COSTS[type])) return false;
+  if (!spend(economy, BUILDING_COSTS[type])) return false;
 
   const tile = game.board.tiles.get(tileKey);
   const level = tile?.level ?? 0;
@@ -169,7 +170,7 @@ export function setRally(game: GameState, tileKey: string, faction: Faction = 'p
  */
 export function doResearch(game: GameState, id: ResearchId, faction: Faction = 'player'): boolean {
   if (faction !== 'player') return false;
-  return applyResearch(game.world, game.economy, game.research, id);
+  return applyResearch(game.world, game.economy[faction], game.research, id);
 }
 
 // ---------------------------------------------------------------------------
