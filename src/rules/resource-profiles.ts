@@ -23,6 +23,20 @@ export interface ResourceProfile {
   meshTint?: string;
   /** Resource yielded per harvest cycle. */
   harvestYield: number;
+  /**
+   * M_EXPANSION.S.52 — biomes a node of this type may spawn in.
+   * Used by BOTH the world-spread spawn pass + the attractor top-up
+   * (the two paths used to maintain separate ALLOWED_BIOMES tables).
+   * Empty set = never world-spawned (science today).
+   */
+  biomes: ReadonlySet<string>;
+  /**
+   * M_EXPANSION.S.52 — starting amount for an attractor top-up node
+   * (the guaranteed-near-base spawn). Separate from harvestYield (per-
+   * harvest yield) and the world-spread initial amount in
+   * config/economy.json.
+   */
+  topupAmount: number;
 }
 
 /**
@@ -35,21 +49,29 @@ export const RESOURCE_PROFILES: Record<ResourceType, ResourceProfile> = {
   wood: {
     meshLogicalId: 'nature.tree.pine-a',
     harvestYield: harvestYieldFor('wood'),
+    biomes: new Set(['FOREST', 'GRASS']),
+    topupAmount: 100,
   },
   stone: {
     meshLogicalId: 'nature.rock.large-a',
     harvestYield: harvestYieldFor('stone'),
+    biomes: new Set(['HIGHLAND', 'MOUNTAIN']),
+    topupAmount: 80,
   },
   gold: {
     meshLogicalId: 'nature.rock.large-a',
     meshTint: '#fbbf24', // gold veins glow gold
     harvestYield: harvestYieldFor('gold'),
+    biomes: new Set(['GRASS', 'HIGHLAND']),
+    topupAmount: 60,
   },
   science: {
     // Science nodes are never spawned in the world today; the mesh
     // is a placeholder so a future scatter rule doesn't crash.
     meshLogicalId: 'nature.rock.large-a',
     harvestYield: harvestYieldFor('science'),
+    biomes: new Set(),
+    topupAmount: 0,
   },
 };
 

@@ -1783,7 +1783,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 ### M_EXPANSION.SPEC — unmet spec items (51-70)
 
 - [x] [HIGH] M_EXPANSION.S.51 — spec 80-audio §M_REGISTRY.20 — move event→asset table into SKINS[faction].audio slot (currently the flag still says "planned"); enables per-faction sound theming (player crisp metallic, enemy bone/howl)
-- [ ] [HIGH] M_EXPANSION.S.52 — spec 104-archetype-unification.md M_REGISTRY.24 — resource-spawn unification (currently 3 parallel spawn paths in resource generation; consolidate to one driven by RESOURCE_PROFILES)
+- [x] [HIGH] M_EXPANSION.S.52 — spec 104-archetype-unification.md M_REGISTRY.24 — resource-spawn unification (currently 3 parallel spawn paths in resource generation; consolidate to one driven by RESOURCE_PROFILES)
 - [ ] [MED]  M_EXPANSION.S.53 — spec 105-brain-archetype.md "future steps" §M_REGISTRY.18 — finish brain-archetype migration for ResignGoal + ScoutGoal + DefendGoal
 - [ ] [MED]  M_EXPANSION.S.54 — spec 70-rts-systems.md HealthBar §Health billboard — animate fill on damage (lerp toward target fraction over 0.3s)
 - [ ] [MED]  M_EXPANSION.S.55 — spec 100-ai-as-player.md "patrol" goal — AI military units idle into PatrolGoal between raids (currently sit at base)

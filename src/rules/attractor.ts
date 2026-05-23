@@ -3,6 +3,7 @@ import { getHexKey, hexDistance } from '@/core/hex';
 import type { Rng } from '@/core/rng';
 import type { ResourceType } from '@/ecs/components';
 import type { ResourceNodePlan } from '@/world/resource-spawn';
+import { RESOURCE_PROFILES } from './resource-profiles';
 
 /**
  * Attractor rules (spec 102). A Town Hall is the sole attractor — at map
@@ -30,21 +31,10 @@ export const ATTRACTOR_GUARANTEE: Record<ResourceType, number> = {
 /** Hex radius of an attractor's resource-guarantee zone (~2-tile zone of control). */
 export const ATTRACTOR_RADIUS = 2;
 
-/** Starting amount of a top-up resource node. */
-const TOPUP_AMOUNT: Record<ResourceType, number> = {
-  wood: 100,
-  stone: 80,
-  gold: 60,
-  science: 0,
-};
-
-/** Biomes a top-up node of each type may land on. Science: none (not spawned). */
-const ALLOWED_BIOMES: Record<ResourceType, ReadonlySet<string>> = {
-  wood: new Set(['FOREST', 'GRASS']),
-  stone: new Set(['HIGHLAND', 'MOUNTAIN']),
-  gold: new Set(['GRASS', 'HIGHLAND']),
-  science: new Set(),
-};
+// M_EXPANSION.S.52 — TOPUP_AMOUNT + ALLOWED_BIOMES collapsed onto
+// the unified RESOURCE_PROFILES registry. Adding a new harvestable
+// resource is ONE row in resource-profiles.ts now; the attractor
+// reads biomes + topupAmount directly off the profile.
 
 /** Count nodes of `type` whose hex key sits within `radius` of (cq, cr). */
 function countNearby(
@@ -95,7 +85,7 @@ export function ensureAttractorResources(
     const have = countNearby(out, type, cq, cr, ATTRACTOR_RADIUS);
     const need = ATTRACTOR_GUARANTEE[type] - have;
     if (need <= 0) continue;
-    const allowed = ALLOWED_BIOMES[type];
+    const allowed = RESOURCE_PROFILES[type].biomes;
     // shuffle candidates lightly via the map PRNG for placement variation
     const pool = candidates.filter((c) => allowed.has(c.type) && !occupied.has(c.key));
     // pick `need` tiles from the pool — Fisher-Yates partial shuffle
@@ -113,7 +103,7 @@ export function ensureAttractorResources(
         r: c.r,
         level: c.level,
         resourceType: type,
-        amount: TOPUP_AMOUNT[type],
+        amount: RESOURCE_PROFILES[type].topupAmount,
       });
       occupied.add(c.key);
     }
