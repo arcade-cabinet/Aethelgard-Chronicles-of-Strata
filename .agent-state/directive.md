@@ -896,13 +896,13 @@ bug).
 
 #### Category 8 — Pre-bitmask hand-rolled tile loops
 
-- [ ] M_MICRO.8.1 — `ZoneBorder.tsx:32-44 buildBorder`
+- [x] M_MICRO.8.1 — `ZoneBorder.tsx:32-44 buildBorder`
   → AND-NOT over two tile-bitmasks (controlled XOR neighbours).
-- [ ] M_MICRO.8.2 — `encroachment.ts:109-120` neighbor-
+- [x] M_MICRO.8.2 — `encroachment.ts:109-120` neighbor-
   of-tile via inline direction → bit-shift + AND.
-- [ ] M_MICRO.8.3 — `Roads.tsx` snapshot full-scan
+- [x] M_MICRO.8.3 — `Roads.tsx` snapshot full-scan
   per frame → `tile-has-road` bitmask + popcount diff.
-- [ ] M_MICRO.8.4 — `zone.ts:117-129 updateObserved`
+- [x] M_MICRO.8.4 — `zone.ts:117-129 updateObserved`
   O(tiles × sources) → per-source vision-cone bitmask OR.
 
 #### Category 9 — Dead code / unused exports
