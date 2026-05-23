@@ -3,6 +3,7 @@ import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { GameOverModal } from '@/hud/GameOverModal';
 import { CriticalWarning } from '@/hud/CriticalWarning';
+import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
 import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
 import { PauseControl } from '@/hud/PauseControl';
@@ -84,6 +85,7 @@ function GameSession({ config }: { config: NewGameConfig }) {
       <SelectionRect game={game} getCamera={getCamera} />
       <SoundToggle persistence={persistence} />
       <PauseControl game={game} />
+      <DiscoveriesPanel game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
       <ZoneLegend />
