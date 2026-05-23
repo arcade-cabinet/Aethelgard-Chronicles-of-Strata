@@ -6,6 +6,9 @@ import type { BiomeType } from '@/core/biome';
 import type { BoardData } from '@/core/board';
 import { axialToWorld, parseHexKey } from '@/core/hex';
 import { createMapPrng } from '@/core/rng';
+import type { BuildingType } from '@/ecs/components';
+import { profileFor } from '@/rules/building-profiles';
+import { skinFor } from '@/rules/skins';
 
 // ---------------------------------------------------------------------------
 // Per-biome decoration palette
@@ -354,29 +357,10 @@ function planDecoration(board: BoardData, occupiedKeys: ReadonlySet<string>): De
 // Component
 // ---------------------------------------------------------------------------
 
-/**
- * Per-faction base-accretion config (M_MAPGEN.11). Each faction declares
- * a list of asset ids that scatter around its FactionBase + the radius +
- * density. Adding a new prop = ONE row in `propPool`; adding a new
- * accretion archetype = ONE new entry here. No code branch.
- *
- * Mirrors the user's "magnetic dipolars work similarly" insight: the
- * accretion radius IS the visual analog of the AttractorBehavior radius
- * (M_ARCHETYPE.6 force field); the propPool's spread is the visual
- * analog of the field's falloff.
- */
-interface BaseAccretion {
-  /** Asset ids the accretion picks from (deterministic, equal-weighted). */
-  propPool: ReadonlyArray<string>;
-  /** Hex radius around the base to scatter into. */
-  radius: number;
-  /** Per-tile chance (0-1) within the radius. */
-  density: number;
-  /** Y-scale range [min, max] applied per-instance. */
-  scaleRange: [number, number];
-  /** Seed-tag for the dedicated PRNG stream — keeps each accretion deterministic. */
-  seedTag: string;
-}
+// M_REGISTRY.7 + M_ARCH_UNIFY.9 — per-faction base-accretion is the
+// `baseAccretion` slot on Skin (`src/rules/skins.ts` → BaseAccretionSkin).
+// Was a local BaseAccretion interface here; type moved with the data so
+// every consumer reads through skinFor(faction).baseAccretion.
 
 /**
  * Per-building accretion config (M_MAPGEN.13). Each completed building's
@@ -385,60 +369,17 @@ interface BaseAccretion {
  * and so on"). Composes with BASE_ACCRETION (which is per-FactionBase).
  * Adding a building accretion = ONE row.
  */
-interface BuildingAccretion {
-  propPool: ReadonlyArray<string>;
-  radius: number;
-  density: number;
-  scaleRange: [number, number];
-}
+// M_REGISTRY.7 + M_ARCH_UNIFY.9 — per-building accretion moved to the
+// BUILDING_PROFILES `accretion` slot (`src/rules/building-profiles.ts`
+// → AccretionSlot). Decoration reads through profileFor(type).accretion;
+// a missing slot = no accretion (House / Watchtower / Wall / TownHall /
+// Wonder remain minimal; TownHall already gets baseAccretion via the
+// Skin slot).
 
-const BUILDING_ACCRETION: Partial<Record<string, BuildingAccretion>> = {
-  Farm: {
-    propPool: ['nature.grass-tuft', 'nature.flower-a', 'nature.flower-b'],
-    radius: 1,
-    density: 0.5,
-    scaleRange: [0.5, 0.8],
-  },
-  Barracks: {
-    propPool: ['nature.rock.small-a', 'nature.stump-a'],
-    radius: 1,
-    density: 0.3,
-    scaleRange: [0.7, 1.0],
-  },
-  Library: {
-    propPool: ['nature.mushroom-a', 'nature.mushroom-b'],
-    radius: 1,
-    density: 0.4,
-    scaleRange: [0.6, 0.9],
-  },
-  Granary: {
-    propPool: ['nature.grass-tuft', 'nature.bush-a'],
-    radius: 1,
-    density: 0.45,
-    scaleRange: [0.5, 0.75],
-  },
-  // House / Watchtower / Wall / TownHall / Wonder don't paint accretion
-  // (TownHall already gets BASE_ACCRETION; the rest stay minimal).
-};
-
-const BASE_ACCRETION: Record<'player' | 'enemy', BaseAccretion> = {
-  player: {
-    // Player base — town props (placeholder: small trees + buckets) until
-    // the dedicated banner/market-stall pack lands (POST_REL M_HARDENING.5).
-    propPool: ['nature.tree.pine-a', 'nature.rock.large-a'],
-    radius: 2,
-    density: 0.45,
-    scaleRange: [0.5, 0.8],
-    seedTag: 'player-accretion',
-  },
-  enemy: {
-    propPool: ['nature.gravestone.round', 'nature.gravestone.cross'],
-    radius: 2,
-    density: 0.55,
-    scaleRange: [0.8, 1.1],
-    seedTag: 'graveyard',
-  },
-};
+// M_REGISTRY.7 — BASE_ACCRETION moved to SKINS[faction].baseAccretion.
+// Decoration reads through skinFor(faction).baseAccretion; the per-
+// faction config table lives in src/rules/skins.ts. A future tribe
+// drops its accretion pool in as ONE Skin row.
 
 /**
  * M_MAPGEN.8+.11 — paint a faction-base accretion cluster around the
@@ -453,7 +394,8 @@ function appendBaseAccretion(
 ): void {
   if (!baseKey) return;
   const { q: bq, r: br } = parseHexKey(baseKey);
-  const cfg = BASE_ACCRETION[faction];
+  // M_REGISTRY.7 — read from the Skin slot.
+  const cfg = skinFor(faction).baseAccretion;
   const rng = createMapPrng(`${board.seedPhrase}:${cfg.seedTag}`);
   const [scaleLo, scaleHi] = cfg.scaleRange;
   for (let dq = -cfg.radius; dq <= cfg.radius; dq++) {
@@ -496,7 +438,7 @@ interface BuildSiteSnap {
   q: number;
   r: number;
   level: number;
-  type: string;
+  type: BuildingType;
   isComplete: boolean;
 }
 
@@ -516,7 +458,8 @@ function appendBuildingAccretion(
   ] as const;
   for (const site of sites) {
     if (!site.isComplete) continue;
-    const cfg = BUILDING_ACCRETION[site.type];
+    // M_REGISTRY.7 — read from the BUILDING_PROFILES slot.
+    const cfg = profileFor(site.type).accretion;
     if (!cfg) continue;
     const [scaleLo, scaleHi] = cfg.scaleRange;
     for (const [dq, dr] of NEIGHBORS) {

@@ -91,6 +91,31 @@ export interface BuildingProfile {
    * structures could get smaller in future.
    */
   selectionRadius: number;
+  /**
+   * Per-building accretion slot (M_REGISTRY.7 + M_ARCH_UNIFY.9). When
+   * present, completing this building scatters props in a 1-hex ring
+   * around it. The user's "different buildings have different
+   * adherence and accretion rules" insight realised as a Thing slot —
+   * was a top-level BUILDING_ACCRETION table in Decoration.tsx.
+   */
+  accretion?: AccretionSlot;
+}
+
+/**
+ * Per-Thing-type accretion config — used by both BuildingProfile
+ * (per-building completion ring) and (future) other Thing-shaped
+ * surfaces. Mirrors the BaseAccretionSkin shape but is keyed by
+ * Thing type instead of faction.
+ */
+export interface AccretionSlot {
+  /** Logical asset ids the scatter draws from. */
+  propPool: readonly string[];
+  /** Radius in hex tiles around the building tile. */
+  radius: number;
+  /** Spawn-chance per eligible tile (0–1). */
+  density: number;
+  /** Random scale range per prop. */
+  scaleRange: readonly [number, number];
 }
 
 /**
@@ -120,6 +145,12 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     cost: { wood: 100, stone: 0, gold: 50 },
     supply: 10,
     selectionRadius: 1.25,
+    accretion: {
+      propPool: ['nature.grass-tuft', 'nature.flower-a', 'nature.flower-b'],
+      radius: 1,
+      density: 0.5,
+      scaleRange: [0.5, 0.8],
+    },
   },
   House: {
     behaviors: {},
@@ -140,6 +171,12 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     cost: { wood: 80, stone: 40, gold: 0 },
     supply: 2,
     selectionRadius: 1.25,
+    accretion: {
+      propPool: ['nature.grass-tuft', 'nature.bush-a'],
+      radius: 1,
+      density: 0.45,
+      scaleRange: [0.5, 0.75],
+    },
   },
   Barracks: {
     behaviors: {},
@@ -153,6 +190,12 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     cost: { wood: 150, stone: 100, gold: 50 },
     supply: 0,
     selectionRadius: 1.25,
+    accretion: {
+      propPool: ['nature.rock.small-a', 'nature.stump-a'],
+      radius: 1,
+      density: 0.3,
+      scaleRange: [0.7, 1.0],
+    },
   },
   Watchtower: {
     behaviors: { offensive: { radius: 3, dps: 6 } },
@@ -199,6 +242,12 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     selectionRadius: 1.25,
     // M_REGISTRY.5 — was the `type === 'Library'` branch in commands.ts:160.
     producer: { kind: 'science', rate: 1 },
+    accretion: {
+      propPool: ['nature.mushroom-a', 'nature.mushroom-b'],
+      radius: 1,
+      density: 0.4,
+      scaleRange: [0.6, 0.9],
+    },
   },
 };
 

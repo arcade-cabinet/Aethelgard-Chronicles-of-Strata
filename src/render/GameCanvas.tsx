@@ -31,7 +31,7 @@ import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
 import { useViewport, type ViewportProfile } from './useViewport';
-import { Building, HexPosition } from '@/ecs/components';
+import { Building, type BuildingType, HexPosition } from '@/ecs/components';
 import { useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 
@@ -49,7 +49,14 @@ function DecorationLive({
   occupiedKeys: ReadonlySet<string>;
 }) {
   const [sites, setSites] = useState<
-    Array<{ key: string; q: number; r: number; level: number; type: string; isComplete: boolean }>
+    Array<{
+      key: string;
+      q: number;
+      r: number;
+      level: number;
+      type: BuildingType;
+      isComplete: boolean;
+    }>
   >([]);
   useFrame(() => {
     const next: typeof sites = [];

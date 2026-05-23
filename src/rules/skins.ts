@@ -91,6 +91,27 @@ export interface MinimapSkin {
 }
 
 /**
+ * Per-faction base-accretion config (M_REGISTRY.7). The cluster of
+ * decorative props scattered around the faction's base tile (the
+ * necropolis gravestones for the enemy; the small-trees + rocks for
+ * the player). Was hand-rolled BASE_ACCRETION in Decoration.tsx;
+ * lifted onto the Skin slot so a third tribe drops its accretion
+ * pool in as ONE row.
+ */
+export interface BaseAccretionSkin {
+  /** Logical asset ids the scatter draws from. */
+  propPool: readonly string[];
+  /** Radius in hex tiles around the base tile. */
+  radius: number;
+  /** Spawn-chance per eligible tile (0–1). */
+  density: number;
+  /** Random scale range per prop. */
+  scaleRange: readonly [number, number];
+  /** PRNG seed tag (deterministic per faction). */
+  seedTag: string;
+}
+
+/**
  * Visual identity for one faction. New slots get added here as each
  * M_REGISTRY.* ticket lands.
  */
@@ -99,6 +120,8 @@ export interface Skin {
   structure: Record<BuildingType, StructureModel>;
   /** Minimap unit + base colors (M_REGISTRY.27). */
   minimap: MinimapSkin;
+  /** Decorative cluster around the faction's base tile (M_REGISTRY.7). */
+  baseAccretion: BaseAccretionSkin;
   /**
    * Decorative props placed around the faction's base tile
    * (M_REGISTRY.4). Empty for player today; enemy clusters
@@ -172,6 +195,13 @@ export const SKINS: Record<Faction, Skin> = {
     baseProps: [],
     rig: SHARED_RIG_TODAY,
     minimap: { unitColor: '#22c55e', baseColor: '#38bdf8' },
+    baseAccretion: {
+      propPool: ['nature.tree.pine-a', 'nature.rock.large-a'],
+      radius: 2,
+      density: 0.45,
+      scaleRange: [0.5, 0.8],
+      seedTag: 'player-accretion',
+    },
   },
   enemy: {
     structure: {
@@ -206,6 +236,13 @@ export const SKINS: Record<Faction, Skin> = {
       { logicalId: 'structures.portal-fence', x: 0, y: 0, z: -0.9, scale: 0.8, rotationY: 0 },
     ],
     minimap: { unitColor: '#ef4444', baseColor: '#a855f7' },
+    baseAccretion: {
+      propPool: ['nature.gravestone.round', 'nature.gravestone.cross'],
+      radius: 2,
+      density: 0.55,
+      scaleRange: [0.8, 1.1],
+      seedTag: 'graveyard',
+    },
   },
 };
 

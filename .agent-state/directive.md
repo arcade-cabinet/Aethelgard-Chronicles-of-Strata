@@ -547,7 +547,7 @@ the smallest end-to-end proof, then drain in dependency order.
   ParticleSystem driven by `ParticleArchetype` slot configs (geometry,
   lifetime, emit trigger, drift fn, batch source). Supersedes the
   earlier M_REFACTOR.1 — this IS its realization.
-- [ ] M_REGISTRY.7 — `src/world/Decoration.tsx` (599 LOC,
+- [x] M_REGISTRY.7 — `src/world/Decoration.tsx` (599 LOC,
   biggest world file) splits along 3 painter passes; all 3 collapse
   into AccretesProps slot values on gen-time pass. Replace trio with
   one `paintAccretion(target, AccretesProps)` invoked per Accreting
@@ -1078,7 +1078,7 @@ The real architecture:
   runs as one runtime-pass handler. The Things doing the emitting
   (combat-hit, building-complete, weather, rain) declare which
   ParticleArchetype they emit per event.
-- [ ] M_ARCH_UNIFY.9 — supersede M_MAPGEN.13 (per-building accretion)
+- [x] M_ARCH_UNIFY.9 — supersede M_MAPGEN.13 (per-building accretion)
   + M_MAPGEN.11 (per-faction base accretion) as CONSUMERS: the
   accretion config tables collapse into AccretesProps slot values on
   Thing profiles. The accretion-paint loop iterates `registry.filter(
