@@ -552,7 +552,7 @@ the smallest end-to-end proof, then drain in dependency order.
   into AccretesProps slot values on gen-time pass. Replace trio with
   one `paintAccretion(target, AccretesProps)` invoked per Accreting
   entity.
-- [ ] M_REGISTRY.8 — `useDecorationGltfs()` hand-built
+- [x] M_REGISTRY.8 — `useDecorationGltfs()` hand-built
   32-key Record of preloads collapses into derived list from unified
   asset registry — every asset referenced by any Skin or
   AccretesProps auto-preloaded.
@@ -595,7 +595,7 @@ the smallest end-to-end proof, then drain in dependency order.
 - [x] M_REGISTRY.19 — `SelectionRing.tsx ringScale`
   4-branch ladder becomes `selectionRadius` Skin slot read off
   the selected thing's profile.
-- [ ] M_REGISTRY.20 — `audio/sound-map.ts` event→asset
+- [x] M_REGISTRY.20 — `audio/sound-map.ts` event→asset
   map becomes audio half of Skin slot — `Skin[faction].audio[event]`.
   Fixes the encroachment.ts:99 `faction === 'player'` critical-alarm
   hard-branch.
@@ -615,11 +615,11 @@ the smallest end-to-end proof, then drain in dependency order.
   ResourceType nodes. ONE `runResourcePlacement(board, [{kind:
   'attractor-guarantee', ...}, {kind: 'biome-scatter', ...}])`
   driven by config.
-- [ ] M_REGISTRY.25 — `persistence/serialize.ts` per-
+- [x] M_REGISTRY.25 — `persistence/serialize.ts` per-
   component-type table collapses into derived loop over unified
   component registry — every koota trait registered in
   ecs/components.ts auto-serialises. (Couples to M_SEC.5/6 below.)
-- [ ] M_REGISTRY.26 — `static-assets.ts` (242 LOC)
+- [x] M_REGISTRY.26 — `static-assets.ts` (242 LOC)
   becomes derived view over asset half of Skin registry; manual
   table goes away.
 - [x] M_REGISTRY.27 — `Minimap.tsx:118` color ternary
@@ -633,7 +633,7 @@ the smallest end-to-end proof, then drain in dependency order.
 - [x] M_REGISTRY.29 — `encroachment.ts` `for faction of
   ['player','enemy']` literal loop becomes `for faction of
   FACTIONS`. Same fix wherever two-faction literal escapes.
-- [ ] M_REGISTRY.30 — `offensive-behavior.ts:87`
+- [x] M_REGISTRY.30 — `offensive-behavior.ts:87`
   `s.faction === unitFaction` should be generalised `targetsRule:
   {includeFactions, excludeFactions, includeRoles, excludeRoles}`
   slot on OffensiveBehavior. Same trait drives Watchtowers,

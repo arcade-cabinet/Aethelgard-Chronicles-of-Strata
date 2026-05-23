@@ -15,60 +15,18 @@
  */
 import type { Entity, World } from 'koota';
 import { createWorld, unpackEntity } from 'koota';
-import {
-  AnimationState,
-  AssignedJob,
-  Building,
-  Carrier,
-  Combatant,
-  DeathTimer,
-  EnemySpawner,
-  EnemyTarget,
-  FactionBase,
-  FactionTrait,
-  Harvester,
-  Health,
-  HexPosition,
-  Movement,
-  PathQueue,
-  ResourceTrait,
-  Selectable,
-  Transform,
-  Unit,
-} from '@/ecs/components';
+import { SERIALIZED_TRAITS } from '@/ecs/components';
 
 // ---------------------------------------------------------------------------
 // Registry — every trait that survives serialization.
+//
+// M_REGISTRY.25 — the trait list now lives on `SERIALIZED_TRAITS` in
+// `@/ecs/components`. This module reads it directly; adding a new
+// trait that should round-trip means adding ONE row in components.ts
+// (next to the trait definition) — no parallel registry in persistence/.
 // ---------------------------------------------------------------------------
 
-/** A single entry in the trait registry. */
-interface TraitEntry {
-  name: string;
-  // biome-ignore lint/suspicious/noExplicitAny: registry needs generic trait type
-  traitObj: any;
-}
-
-const TRAIT_REGISTRY: TraitEntry[] = [
-  { name: 'Transform', traitObj: Transform },
-  { name: 'HexPosition', traitObj: HexPosition },
-  { name: 'Unit', traitObj: Unit },
-  { name: 'FactionTrait', traitObj: FactionTrait },
-  { name: 'Movement', traitObj: Movement },
-  { name: 'PathQueue', traitObj: PathQueue },
-  { name: 'AnimationState', traitObj: AnimationState },
-  { name: 'Selectable', traitObj: Selectable },
-  { name: 'ResourceTrait', traitObj: ResourceTrait },
-  { name: 'Harvester', traitObj: Harvester },
-  { name: 'Carrier', traitObj: Carrier },
-  { name: 'Building', traitObj: Building },
-  { name: 'AssignedJob', traitObj: AssignedJob },
-  { name: 'Health', traitObj: Health },
-  { name: 'Combatant', traitObj: Combatant },
-  { name: 'EnemySpawner', traitObj: EnemySpawner },
-  { name: 'FactionBase', traitObj: FactionBase },
-  { name: 'EnemyTarget', traitObj: EnemyTarget },
-  { name: 'DeathTimer', traitObj: DeathTimer },
-];
+const TRAIT_REGISTRY = SERIALIZED_TRAITS;
 
 // biome-ignore lint/suspicious/noExplicitAny: trait name → factory map
 const TRAIT_BY_NAME = new Map<string, any>(TRAIT_REGISTRY.map((e) => [e.name, e.traitObj]));
