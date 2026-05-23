@@ -27,12 +27,19 @@ function resolveSourcePath(source: string): string {
   return abs;
 }
 
-/** Classify a source file by extension. */
+/**
+ * Classify a source file by extension. Explicitly rejects unknown extensions
+ * (CodeRabbit MAJOR) — silently defaulting to OGG would mask asset-pipeline
+ * bugs (a stray `.txt` being treated as audio, a typo'd `.gltf` not loading).
+ */
 function kindOf(source: string): AssetKind {
   const lower = source.toLowerCase();
   if (lower.endsWith('.glb')) return 'glb';
   if (lower.endsWith('.wav')) return 'wav';
-  return 'ogg';
+  if (lower.endsWith('.ogg')) return 'ogg';
+  throw new Error(
+    `ingest-assets: unsupported extension on ${source}. Expected .glb, .wav, or .ogg.`,
+  );
 }
 
 /** Triangle count + animation names for a loaded GLB document. */
