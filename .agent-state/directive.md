@@ -1740,7 +1740,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.AU.33 — wire `pl_Achievement_04.wav` to first-zone-claim achievement
 - [x] [MED]  M_EXPANSION.AU.34 — wire `pl_Unlock_04.wav` to Discoveries.purchased emission
 - [x] [MED]  M_EXPANSION.AU.35 — wire `pl_button_click_*` set as the UI-button-click bus (today: one shared sound)
-- [ ] [LOW]  M_EXPANSION.AU.36 — wire `pl_Error_*` as the building-placement-failed error chime
+- [x] [LOW]  M_EXPANSION.AU.36 — wire `pl_Error_*` as the building-placement-failed error chime
 
 **GameLoops Vol5 Fantasy RPG (37-42)** — never ingested
 - [ ] [MED]  M_EXPANSION.AU.37 — ingest GameLoops Vol5 music pack into public/assets/audio/music/biome/

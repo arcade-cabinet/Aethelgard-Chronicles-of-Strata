@@ -593,6 +593,15 @@
     "pack": "PixelLoops UI SFX",
     "license": "PixelLoops Royalty-Free"
   },
+  "audio.ui.error": {
+    "id": "audio.ui.error",
+    "path": "assets/audio/ui/error.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops UI SFX",
+    "license": "PixelLoops Royalty-Free"
+  },
   "nature.crystal-large": {
     "id": "nature.crystal-large",
     "path": "assets/nature/crystal-large.glb",

@@ -324,8 +324,12 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                           <HudButton
                             label={`Train ${meta.trains} — ${costLabel(UNIT_COSTS[meta.trains])}`}
                             onClick={() => {
-                              if (meta.trains && trainUnit(game, meta.trains, 'player'))
-                                emitUiSound('ui-button-click');
+                              if (!meta.trains) return;
+                              const ok = trainUnit(game, meta.trains, 'player');
+                              // M_EXPANSION.AU.36 — error chime when the
+                              // command was rejected (mid-click prereqs
+                              // changed, supply cap raced, etc.).
+                              emitUiSound(ok ? 'ui-button-click' : 'ui-error');
                             }}
                             disabled={!canAffordCost(game, UNIT_COSTS[meta.trains])}
                             disabledReason={trainReason}

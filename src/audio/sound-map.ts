@@ -21,6 +21,7 @@ export type GameAudioEvent =
   | 'projectile-impact'
   | 'magic-cast'
   | 'achievement'
+  | 'ui-error'
   | 'resource-deposit'
   | 'unit-select'
   | 'unit-trained'
@@ -77,6 +78,10 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   // achievement). Fires today on first zone claim; later milestones
   // (first kill, first wonder build) reuse the same event.
   achievement: { bus: 'ui', soundId: 'audio.ui.achievement' },
+  // M_EXPANSION.AU.36 — failure chime for blocked actions (can't
+  // afford, prereq missing, supply at cap). Fires from HudButton's
+  // disabled-onClick handler.
+  'ui-error': { bus: 'ui', soundId: 'audio.ui.error' },
 
   // World interaction
   'harvest-chop': { bus: 'sfx', soundId: 'audio.sfx.chop' },

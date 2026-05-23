@@ -28,6 +28,7 @@ export type StaticAssetPath =
   'assets/audio/ui/click-02.wav' |
   'assets/audio/ui/click-03.wav' |
   'assets/audio/ui/discovery-unlock.wav' |
+  'assets/audio/ui/error.wav' |
   'assets/audio/ui/research-complete.wav' |
   'assets/board/tile/dirt.glb' |
   'assets/board/tile/grass-forest.glb' |
@@ -188,6 +189,7 @@ const assets = new Set<string>([
   'assets/audio/ui/click-02.wav',
   'assets/audio/ui/click-03.wav',
   'assets/audio/ui/discovery-unlock.wav',
+  'assets/audio/ui/error.wav',
   'assets/audio/ui/research-complete.wav',
   'assets/board/tile/dirt.glb',
   'assets/board/tile/grass-forest.glb',
