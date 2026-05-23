@@ -5,6 +5,7 @@ import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
 import { Building, type BuildingType, type Faction, HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { ConstructionRing } from './ConstructionRing';
 import { structureModel } from './structure-models';
 
 /** Parse a "q,r" hex key to axial coordinates. */
@@ -99,15 +100,17 @@ export function HomeBase({ game }: { game: GameState }) {
       />
       {/* player-built structures, scaled by construction progress */}
       {placed.map((b) => (
-        <StructureMesh
-          key={b.key}
-          faction="player"
-          type={b.type}
-          x={b.x}
-          y={b.y}
-          z={b.z}
-          progress={b.progress}
-        />
+        <group key={b.key}>
+          <StructureMesh
+            faction="player"
+            type={b.type}
+            x={b.x}
+            y={b.y}
+            z={b.z}
+            progress={b.progress}
+          />
+          <ConstructionRing x={b.x} y={b.y} z={b.z} progress={b.progress} />
+        </group>
       ))}
     </group>
   );
