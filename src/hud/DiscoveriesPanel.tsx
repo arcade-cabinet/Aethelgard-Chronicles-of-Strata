@@ -5,7 +5,7 @@ import { canAfford } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
 import { useViewport } from '@/render/useViewport';
-import { DISCOVERIES } from '@/rules';
+import { DISCOVERIES, scaledCostFor } from '@/rules';
 import { costLabel } from './format';
 import { HUD_THEME } from './hud-theme';
 
@@ -92,7 +92,9 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
             const prereqMet = (d.prereqs ?? []).every((p) =>
               game.research.purchased.has(p as ResearchId),
             );
-            const affordable = canAfford(eco, d.cost);
+            // M_FEATURE.2 — purchase cost scales with depth in the prereq DAG.
+            const effectiveCost = scaledCostFor(d.id);
+            const affordable = canAfford(eco, effectiveCost);
             const available = !purchased && prereqMet && affordable;
             const status = purchased
               ? 'Purchased'
@@ -131,7 +133,7 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
                       marginTop: 4,
                     }}
                   >
-                    Cost: {costLabel(d.cost)} · {status}
+                    Cost: {costLabel(effectiveCost)} · {status}
                   </div>
                 </div>
                 <button

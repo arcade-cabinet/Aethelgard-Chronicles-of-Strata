@@ -23,6 +23,7 @@ export {
 export { applyArmor, armorMultiplier } from './damage';
 export type { Discovery } from './discoveries';
 export { DISCOVERIES, discoveryById } from './discovery-registry';
+export { depthOf, scaleForDepth, scaledCostFor } from './discovery-cost';
 export {
   BUILDING_DISPLAY,
   type BuildingDisplay,

@@ -408,10 +408,11 @@ re-listing. Both unblock as the relevant dependency lands.)
   materialises Gate via materialiseGate; Roads.tsx r3f layer renders each
   Mover as a flat hex disc coloured per material. 4 unit tests pin
   spawn/cost/composition/faction symmetry. 302 tests green.
-- [ ] M_FEATURE.2 — Discovery panel science-cost scaling. Logarithmic
-  cost-by-depth as Discoveries graph deepens (Discoveries archetype +
-  science slot landed M_DATA.7; the cost scaling is the second-iteration
-  refinement).
+- [x] M_FEATURE.2 — Discovery cost scaling: rules/discovery-cost.ts —
+  depthOf (memoized BFS over prereqs), scaleForDepth (1 + log2(1 + d) so
+  depth 0→1x, 1→2x, 3→3x, 7→4x), scaledCostFor returns per-slot ceil
+  cost. research.ts canResearch + applyResearch consult the scaled cost;
+  DiscoveriesPanel renders the effective cost.
 - [ ] M_FEATURE.3 — passive science accumulation tick + a "science-
   producing" building variant (one new row in `building-behaviors.ts`).
 - [x] M_FEATURE.4 — Wonder building: composes Attractor (radius 3) +
