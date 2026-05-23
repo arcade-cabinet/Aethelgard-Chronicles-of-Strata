@@ -120,3 +120,30 @@ Combat numbers, resource pickups, and status messages float upward from the targ
 world position and fade out over 1.6 seconds. Source: poc2.html `.popup-text` / 
 `floatUp` keyframe. Scale-in on appear (0.6→1.3), then drift upward 280% and fade.
 Colors: damage red `#ef4444`, heal green `#4ade80`, resource gold `#fbbf24`.
+
+---
+
+## Post-launch palette (M_EXPANSION.D.167 + .U.113)
+
+Two follow-up palette variants are reserved for post-launch polish:
+
+### Colorblind mode (M_EXPANSION.U.113)
+
+Default palette uses red (enemy) vs blue (player). Both fail
+deuteranopia / protanopia. A colorblind-mode palette swap:
+
+| Surface | Default | Colorblind |
+|---|---|---|
+| Player units / zone border | blue (#38bdf8) | orange (#fb923c) |
+| Enemy units / zone border | red (#f43f5e)  | cyan (#06b6d4)   |
+| Health-bar fill (full→hurt) | green→red | cyan→amber |
+
+Selected from a Settings → Display option; persisted in
+PREF_KEYS.colorblind (a future Preferences key).
+
+### Evening palette variant (M_EXPANSION.S.65 — landed)
+
+`BIOME_COLORS_EVENING` already defined in `src/world/palette.ts`.
+Today only as a constant; the DayNightCycle global tint covers the
+basic warming. Active surface override lands when terrain-mesh
+visual-test pass is ready (see T.126 gating).
