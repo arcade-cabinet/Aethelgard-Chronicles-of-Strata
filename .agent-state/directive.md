@@ -1824,7 +1824,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 
 ### M_EXPANSION.FEATURE — gameplay scope expansions (71-100)
 
-- [ ] [HIGH] M_EXPANSION.F.71 — Wonder building: a victory-condition structure (build → 5-min countdown → wonder-win)
+- [x] [HIGH] M_EXPANSION.F.71 — Wonder building: a victory-condition structure (build → 5-min countdown → wonder-win)
 - [ ] [HIGH] M_EXPANSION.F.72 — Mana resource (4th slot): drives Wizard training + Magic-spell SFX
 - [x] [HIGH] M_EXPANSION.F.73 — Multiplayer-seed sharing: a "share seed" button in the New Game modal copies the current seed to clipboard
 - [ ] [HIGH] M_EXPANSION.F.74 — Replay export: save the EventLog ndjson to a downloadable file

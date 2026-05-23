@@ -63,6 +63,12 @@ function matchLengthScale(length: 'short' | 'medium' | 'long' | 'endless'): numb
  */
 const MAX_BALANCE_ATTEMPTS = 6;
 
+/**
+ * M_EXPANSION.F.71 — seconds between Wonder completion and the
+ * wonder-win flip. 300s = 5 minutes per the directive.
+ */
+const WONDER_COUNTDOWN_SECONDS = 300;
+
 function findBalancedBoard(
   seedPhrase: string,
   mapSize: number,
@@ -214,6 +220,13 @@ export interface GameState {
    * territory held. GameOverModal renders the final per-faction score.
    */
   score: Record<Faction, number>;
+  /**
+   * M_EXPANSION.F.71 — Wonder timer per faction. Seconds remaining
+   * until a completed Wonder triggers a wonder-win; Infinity = no
+   * Wonder built yet. The first faction to reach 0 wins (or, if the
+   * other faction destroys it mid-countdown, the timer resets).
+   */
+  wonderTimers: Record<Faction, number>;
   /**
    * Optional turn-based state (M_MODES.8). Present only when the preset's
    * turnsMode === 'turn-based'. `secondsRemaining` is decremented per tick;
@@ -593,6 +606,8 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
       enemy: enemyBaseTile,
     }),
     score: { player: 0, enemy: 0 },
+    // M_EXPANSION.F.71 — Infinity = no Wonder built yet for that faction.
+    wonderTimers: { player: Infinity, enemy: Infinity },
     // M_MODES.8 — turn-based superposition (4x default; others opt-in via
     // the Advanced toggle). 60s turns; player starts.
     ...(preset.turnsMode === 'turn-based'
@@ -766,6 +781,35 @@ export function runEconomyTick(game: GameState, delta: number): void {
 
   // animation state + end-condition check
   animationSystem(game.world);
+  // M_EXPANSION.F.71 — Wonder countdown. For each faction that has a
+  // completed Wonder building, decrement the timer; if it hits 0, the
+  // faction wins. If the Wonder is destroyed (missing from the world)
+  // the timer resets to Infinity so a fresh Wonder build re-starts
+  // the countdown.
+  for (const faction of FACTIONS) {
+    let hasCompleteWonder = false;
+    for (const e of game.world.query(Building, FactionTrait)) {
+      const b = e.get(Building);
+      const f = e.get(FactionTrait)?.faction;
+      if (f !== faction || !b || b.buildingType !== 'Wonder' || !b.isComplete) continue;
+      hasCompleteWonder = true;
+      break;
+    }
+    if (!hasCompleteWonder) {
+      game.wonderTimers[faction] = Infinity;
+      continue;
+    }
+    if (game.wonderTimers[faction] === Infinity) {
+      // First tick after completion — seed the countdown.
+      game.wonderTimers[faction] = WONDER_COUNTDOWN_SECONDS;
+    }
+    game.wonderTimers[faction] = Math.max(0, game.wonderTimers[faction] - delta);
+  }
+  // Apply wonder-win precedence: player Wonder hits 0 first → player wins.
+  if (game.outcome === 'playing') {
+    if (game.wonderTimers.player === 0) game.outcome = 'win';
+    else if (game.wonderTimers.enemy === 0) game.outcome = 'loss';
+  }
   game.outcome = evaluateWinLoss(game.world, game.outcome);
 
   // M_MODES.10 — controlled-tile-time score integral. Track area under the
