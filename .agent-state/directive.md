@@ -549,15 +549,13 @@ qualify for AI GOAP".
   below sustenance for 5 game-minutes); controlled-tile-time integral
   score tracked on GameState + shown in GameOverModal.
 
-- [ ] M_MODES.5 — `classic-rts` mode (user follow-up, 2026-05-22):
-  "fairly certain theres a fourth mode im not even considering thats more
-  like a classic RTS loop mode". Likely: a longer-form Warcraft-style
-  match — build economy, tech up via Discoveries, field a full army,
-  raze the enemy base; emphasis on Discoveries progression + larger maps
-  + multiple offensive/defensive layers rather than the quick-engage of
-  red-vs-blue. Clarify the exact loop rules in the spec doc before
-  implementing; differentiate from red-vs-blue's competitive tempo via
-  longer escalation thresholds + larger map default.
+- [x] M_MODES.5 — classic-rts: preset already chose 'large' + 'medium'
+  matchLength + 'continent' mapType. Concrete rules wired:
+  EnemySpawner.spawnInterval now scales by matchLengthScale(preset.
+  matchLength) — short ×0.7, medium ×1.0, long ×1.4, endless ×1.6 —
+  so classic-rts (medium) keeps the baseline spawn tempo, red-vs-blue
+  (short) pressures faster, endless (1.6×) breathes. Discoveries-
+  graph scaling already in via M_FEATURE.2 (depth-log).
 - [ ] M_MODES.9 — map-type axis (user, 2026-05-22): "plus this would
   allow offering several different kinds of map types. balanced,
   continent, archipelago, dry land, etc". The 4th customization axis

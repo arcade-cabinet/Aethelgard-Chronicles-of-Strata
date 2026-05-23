@@ -37,6 +37,24 @@ import { advanceProjectiles, type Projectile } from './projectiles';
 const projectileIdRef = { current: 0 };
 
 /**
+ * Match-length scaling for spawn cadence (M_MODES.5). Slower matches let the
+ * player breathe; short matches keep pressure on. Identity for 'medium' so
+ * existing tuning baselines stay intact.
+ */
+function matchLengthScale(length: 'short' | 'medium' | 'long' | 'endless'): number {
+  switch (length) {
+    case 'short':
+      return 0.7;
+    case 'medium':
+      return 1;
+    case 'long':
+      return 1.4;
+    case 'endless':
+      return 1.6;
+  }
+}
+
+/**
  * M_MAPGEN.10 — try the seed + a few variants and return the first that
  * passes the balance audit. We assume the most-central walkable tile is
  * the player center + the farthest-walkable tile is the enemy center
@@ -440,7 +458,12 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // zone-of-control footprint and resource guarantee, symmetric by construction.
   const enemyBaseEntity = world.spawn(
     HexPosition({ q: enemyBaseTile.q, r: enemyBaseTile.r, level: enemyBaseTile.level }),
-    EnemySpawner({ spawnTimer: 0, spawnInterval: spawnIntervalFor(difficulty) }),
+    // M_MODES.5 — match length scales the spawn cadence. classic-rts/long
+    // breathes; endless eases up further; short red-vs-blue stays tight.
+    EnemySpawner({
+      spawnTimer: 0,
+      spawnInterval: spawnIntervalFor(difficulty) * matchLengthScale(preset.matchLength),
+    }),
     Health({ current: 300, max: 300 }),
     FactionTrait({ faction: 'enemy' }),
     FactionBase({ faction: 'enemy' }),
