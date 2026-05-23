@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { GameOverModal } from '@/hud/GameOverModal';
+import { CriticalWarning } from '@/hud/CriticalWarning';
 import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
 import { PauseControl } from '@/hud/PauseControl';
 import { SelectionRect } from '@/hud/SelectionRect';
@@ -82,6 +83,7 @@ function GameSession({ config }: { config: NewGameConfig }) {
       <SelectionRect game={game} getCamera={getCamera} />
       <SoundToggle persistence={persistence} />
       <PauseControl game={game} />
+      <CriticalWarning game={game} />
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
       <GameOverModal game={game} />

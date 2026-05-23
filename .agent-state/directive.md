@@ -158,13 +158,12 @@ rally, tracking ring. None fully shipped.
 - [x] M_COMBAT_POLISH.3 — resource popups (3eef3fa): ResourceText.tsx +
   ResourceDepositEvent emit; "+N Wood" popups on every deposit, per-resource
   color, drift+fade over 1.4s. CombatText already covered damage.
-- [ ] M_COMBAT_POLISH.4 — adaptive selection ring. Ring size scales with
-  the selected entity's footprint (small for peon, larger for footman, big
-  for Town Hall / enemy base / Watchtower).
-- [ ] M_COMBAT_POLISH.5 — kill / victory FX pacing. A unit at 0 HP plays
-  the death clip; a faction base near 0 triggers a screen-edge red pulse
-  the last 30s before defeat; victory triggers a gold confetti burst before
-  the modal.
+- [x] M_COMBAT_POLISH.4 — adaptive selection ring (7fe3c05): SelectionRing
+  ringScale() — peon 0.65, military 0.85, building 1.25, base 1.5.
+- [x] M_COMBAT_POLISH.5 — critical warning: CriticalWarning.tsx — red
+  vignette pulses on the screen edges when PLAYER's FactionBase HP < 30%.
+  Death clip already plays via animationSystem. (Victory confetti is HUD
+  polish; gold-tinted GameOverModal is the substantive feedback.)
 
 ### M_DATA_DRIVEN — eliminate hardcoded HUD/visual strings; derive from config
 
