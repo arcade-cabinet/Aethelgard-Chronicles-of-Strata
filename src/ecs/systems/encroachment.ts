@@ -40,6 +40,13 @@ function opposite(faction: Faction): Faction {
  * Peons never encroach (they're nonviolent — `MILITARY` excludes them) and
  * peon-rules already routes them away from pulsing tiles (M8.6c).
  */
+// M_AUDIT2.ARCH.51 — per-tick `new Set()` × 2 was 120 Set allocations/sec
+// at 60Hz. Hoist + .clear() between ticks; identity persists.
+const REUSABLE_MILITARY: Record<Faction, Set<string>> = {
+  player: new Set(),
+  enemy: new Set(),
+};
+
 export function encroachmentSystem(
   world: World,
   zones: Record<Faction, ZoneState>,
@@ -49,10 +56,9 @@ export function encroachmentSystem(
   const grace = encroachmentGraceSecondsFor(difficulty);
 
   // index every faction's military positions for quick membership tests
-  const militaryByFaction: Record<Faction, Set<string>> = {
-    player: new Set(),
-    enemy: new Set(),
-  };
+  const militaryByFaction = REUSABLE_MILITARY;
+  militaryByFaction.player.clear();
+  militaryByFaction.enemy.clear();
   for (const e of world.query(Unit, HexPosition, FactionTrait)) {
     const role = e.get(Unit)?.unitType;
     if (!role || !MILITARY.has(role)) continue;

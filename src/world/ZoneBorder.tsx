@@ -5,15 +5,15 @@ import { HEX_DIRECTIONS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
 import type { Faction } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { SKINS } from '@/rules/skins';
 
 /** Y-lift of the border line above a tile's top face. */
 const BORDER_LIFT = 0.06;
 
-/** Faction colours for the zone-of-control border. */
-const ZONE_COLOR: Record<Faction, string> = {
-  player: '#38bdf8',
-  enemy: '#f43f5e',
-};
+// M_AUDIT2.ARCH.3 — ZONE_COLOR collapsed onto SKINS[faction].minimap
+// .unitColor (the territory border and the minimap unit dot share the
+// faction-identity color by design). Adding a third tribe = ONE Skin
+// row touches both surfaces.
 
 /**
  * Build the line-segment positions for one faction's zone-of-control border:
@@ -65,7 +65,7 @@ function FactionBorder({ game, faction }: { game: GameState; faction: Faction })
   return (
     <lineSegments ref={ref}>
       <bufferGeometry />
-      <lineBasicMaterial color={ZONE_COLOR[faction]} linewidth={2} />
+      <lineBasicMaterial color={SKINS[faction].zoneBorderColor} linewidth={2} />
     </lineSegments>
   );
 }

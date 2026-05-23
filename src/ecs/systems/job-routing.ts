@@ -67,6 +67,14 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
     }
   }
 
+  // M_AUDIT2.ARCH.52 — per-tick build of threatened-tile Sets ONCE
+  // (was per-peon inside the updateEach loop — 50 peons × 60 ticks =
+  // 3000 Set allocations/sec just to read pulsing keys).
+  const threatenedByFaction: Record<Faction, Set<string>> = {
+    player: new Set(zones.player.pulsing.keys()),
+    enemy: new Set(zones.enemy.pulsing.keys()),
+  };
+
   world
     .query(Unit, AssignedJob, HexPosition, PathQueue, Carrier, FactionTrait)
     .updateEach(([unit, job, hex, path, carrier], e) => {
@@ -87,7 +95,7 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
         baseKey: baseKeys[faction],
         // pulsing tiles on the faction's own zone are under encroachment —
         // peons flee them (spec 102, wired by the encroachmentSystem)
-        threatenedTiles: new Set(zones[faction].pulsing.keys()),
+        threatenedTiles: threatenedByFaction[faction],
       });
 
       switch (action.kind) {
