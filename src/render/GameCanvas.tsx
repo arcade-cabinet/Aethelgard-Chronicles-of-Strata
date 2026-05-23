@@ -14,6 +14,7 @@ import { ParticleEmitter } from '@/world/ParticleEmitter';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
 import {
   buildCompleteArchetype,
+  chimneySmokeArchetype,
   rainArchetype,
   sawdustArchetype,
   victoryConfettiArchetype,
@@ -158,6 +159,8 @@ function Scene({
             shared. */}
         <ParticleEmitter game={game} spec={buildCompleteArchetype} />
         <ParticleEmitter game={game} spec={sawdustArchetype} />
+        {/* M_EXPANSION.A.12 — chimney smoke for every complete House. */}
+        <ParticleEmitter game={game} spec={chimneySmokeArchetype} />
         <ParticleEmitter game={game} spec={victoryConfettiArchetype} />
         {/* M_REGISTRY.4 — ONE faction-symmetric base renderer mounted */}
         {/* twice with different `faction` props. Visual divergence is */}

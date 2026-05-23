@@ -304,3 +304,79 @@ export const victoryConfettiArchetype: ParticleEmitterSpec<ConfettiPiece> = {
     );
   },
 };
+
+// ---------------------------------------------------------------------------
+// CHIMNEY-SMOKE (M_EXPANSION.A.12) — per completed House, a slow puff
+// rising from the chimney; signals "inhabited" without any HUD chrome.
+// ---------------------------------------------------------------------------
+
+interface SmokePuff {
+  id: number;
+  age: number;
+  x: number;
+  y: number;
+  z: number;
+}
+
+const SMOKE_LIFETIME = 3.5;
+const SMOKE_INTERVAL = 0.9;
+const SMOKE_PER_FRAME_CAP = 4;
+const smokeGeo = new SphereGeometry(0.16, 6, 5);
+
+interface SmokeState {
+  /** Per-House accumulator (s since last puff), keyed by entity id. */
+  acc: Map<number, number>;
+}
+const smokeState: SmokeState = { acc: new Map() };
+
+export const chimneySmokeArchetype: ParticleEmitterSpec<SmokePuff> = {
+  name: 'chimney-smoke',
+  seedTag: 'chimney-smoke',
+  lifetime: SMOKE_LIFETIME,
+  tick({ game, delta, rng, nextId }) {
+    const live = new Set<number>();
+    let spawnedThisFrame = 0;
+    const fresh: SmokePuff[] = [];
+    for (const e of game.world.query(Building, HexPosition)) {
+      const b = e.get(Building);
+      if (!b || !b.isComplete || b.buildingType !== 'House') continue;
+      const id = unpackEntity(e).entityId;
+      live.add(id);
+      const next = (smokeState.acc.get(id) ?? SMOKE_INTERVAL) + delta;
+      if (next < SMOKE_INTERVAL) {
+        smokeState.acc.set(id, next);
+        continue;
+      }
+      smokeState.acc.set(id, 0);
+      if (spawnedThisFrame >= SMOKE_PER_FRAME_CAP) continue;
+      const h = e.get(HexPosition);
+      if (!h) continue;
+      const w = axialToWorld(h.q, h.r);
+      // small in-tile jitter so puffs from the same chimney don't stack
+      const jitter = (rng() - 0.5) * 0.1;
+      fresh.push({
+        id: nextId(),
+        age: 0,
+        x: w.x + jitter,
+        y: h.level * TILE_HEIGHT + 0.9,
+        z: w.z + jitter,
+      });
+      spawnedThisFrame += 1;
+    }
+    for (const id of smokeState.acc.keys()) {
+      if (!live.has(id)) smokeState.acc.delete(id);
+    }
+    return fresh.length > 0 ? fresh : null;
+  },
+  renderParticle(p) {
+    const t = p.age / SMOKE_LIFETIME;
+    const y = p.y + t * 1.6;
+    const scale = 1 + t * 1.5;
+    const opacity = (1 - t) * 0.35;
+    return (
+      <mesh key={p.id} position={[p.x, y, p.z]} scale={scale} geometry={smokeGeo}>
+        <meshBasicMaterial color="#94a3b8" transparent opacity={opacity} />
+      </mesh>
+    );
+  },
+};
