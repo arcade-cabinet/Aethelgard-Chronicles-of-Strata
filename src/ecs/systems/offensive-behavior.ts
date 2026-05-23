@@ -10,19 +10,12 @@ import {
   OffensiveBehavior,
   Transform,
   Unit,
-  type UnitType,
 } from '@/ecs/components';
 import { type Projectile, spawnProjectile } from '@/game/projectiles';
-
-/** Military roles an offensive zone targets (peons are nonviolent — not targeted). */
-const MILITARY: ReadonlySet<UnitType> = new Set([
-  'Footman',
-  'Goblin',
-  'Orc',
-  'Vampire',
-  'Witch',
-  'BlackKnight',
-]);
+// M_REGISTRY.17 — MILITARY set unified into UNIT_PROFILES.combatRole.
+// Was a 6-role hand-built set duplicated across 3 modules; corrected
+// by-derivation to include Trebuchet (was missing in the legacy set).
+import { MILITARY_ROLES as MILITARY } from '@/rules/unit-profiles';
 
 /** Seconds between projectile shots per offensive source (cadence). */
 const FIRE_CADENCE = 1.2;

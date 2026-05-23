@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexKey, hexNeighbors } from '@/core/hex';
-import { Building, FactionTrait, Selectable, Unit, type UnitType } from '@/ecs/components';
+import { Building, FactionTrait, Selectable, Unit } from '@/ecs/components';
 import {
   findSelectableAtTile,
   moveUnit,
@@ -85,15 +85,8 @@ function TilePick({
   );
 }
 
-/** Military roles right-click-move applies to (peons remain autonomous). */
-const MILITARY: ReadonlySet<UnitType> = new Set([
-  'Footman',
-  'Goblin',
-  'Orc',
-  'Vampire',
-  'Witch',
-  'BlackKnight',
-]);
+// M_REGISTRY.17 — MILITARY unified into UNIT_PROFILES.combatRole.
+import { MILITARY_ROLES as MILITARY } from '@/rules/unit-profiles';
 
 const pickGeometry = new CylinderGeometry(HEX_RADIUS * 0.95, HEX_RADIUS * 0.95, 0.2, 6);
 

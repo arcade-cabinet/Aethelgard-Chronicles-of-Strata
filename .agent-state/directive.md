@@ -583,7 +583,7 @@ the smallest end-to-end proof, then drain in dependency order.
   adds become `for (const f of FACTIONS) addResource(...)`. Same
   fix for game-state.ts twice-called depositSystem/jobRoutingSystem.
   Foundation for >2 factions.
-- [ ] M_REGISTRY.17 — extract MILITARY set duplicated
+- [x] M_REGISTRY.17 — extract MILITARY set duplicated
   in TileInteraction.tsx, offensive-behavior.ts, encroachment.ts
   into ONE `rules/unit-roles.MILITARY_ROLES` export OR push down
   to a `combatRole: 'military' | 'peon' | 'civilian'` slot per

@@ -1,19 +1,12 @@
 import type { World } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { getHexKey } from '@/core/hex';
-import { type Faction, FactionTrait, HexPosition, Unit, type UnitType } from '@/ecs/components';
+import { type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { Difficulty } from '@/game/difficulty';
 import { claimTile, releaseTile, type ZoneState } from '@/game/zone';
 
-/** Military unit roles — peons are nonviolent and never encroach. */
-const MILITARY: ReadonlySet<UnitType> = new Set([
-  'Footman',
-  'Goblin',
-  'Orc',
-  'Vampire',
-  'Witch',
-  'BlackKnight',
-]);
+// M_REGISTRY.17 — MILITARY unified into UNIT_PROFILES.combatRole.
+import { MILITARY_ROLES as MILITARY } from '@/rules/unit-profiles';
 
 /**
  * Encroachment grace window (seconds) per difficulty (spec 102). When an enemy

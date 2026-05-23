@@ -25,6 +25,17 @@ import { unitStatFor } from '@/config/combat';
 export type DamageType = 'normal' | 'siege' | 'magic';
 
 /**
+ * Combat-role classification — extracted from 3 duplicate MILITARY sets
+ * scattered across offensive-behavior.ts, TileInteraction.tsx, and
+ * encroachment.ts (M_REGISTRY.17). `military` = targets enemies and is
+ * targetable; `civilian` = peons + settlers (nonviolent, no encroach,
+ * no right-click move targeting). The slot is read by every consumer
+ * that needs "is this role a combatant" instead of each maintaining
+ * its own role list.
+ */
+export type CombatRole = 'military' | 'civilian';
+
+/**
  * Slot toggles for what kind of unit each role IS. Mirrors the M_ARCH_UNIFY
  * keystone's per-slot composition — building/unit/prop are all just
  * different slot tuples on the same Thing registry.
@@ -53,6 +64,14 @@ export interface UnitProfile {
    * fights. Read for combat units only (nonCombat=false).
    */
   damageType: DamageType;
+  /**
+   * Combat-role classification — collapses the 3 duplicate MILITARY
+   * sets that lived in offensive-behavior.ts, TileInteraction.tsx,
+   * and encroachment.ts. `civilian` = peons + settlers; `military` =
+   * everything that targets enemies (Footman, Trebuchet, all enemy
+   * units). Trebuchet is military despite being slow; Witch is military.
+   */
+  combatRole: CombatRole;
 }
 
 /**
@@ -66,18 +85,21 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     nonCombat: true,
     founder: false,
     damageType: 'normal',
+    combatRole: 'civilian',
   },
   Settler: {
     harvester: false,
     nonCombat: true,
     founder: true,
     damageType: 'normal',
+    combatRole: 'civilian',
   },
   Footman: {
     harvester: false,
     nonCombat: false,
     founder: false,
     damageType: 'normal',
+    combatRole: 'military',
   },
   Trebuchet: {
     harvester: false,
@@ -85,30 +107,35 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     founder: false,
     // Siege damage melts walls (M_FEATURE.5).
     damageType: 'siege',
+    combatRole: 'military',
   },
   Goblin: {
     harvester: false,
     nonCombat: false,
     founder: false,
     damageType: 'normal',
+    combatRole: 'military',
   },
   Orc: {
     harvester: false,
     nonCombat: false,
     founder: false,
     damageType: 'normal',
+    combatRole: 'military',
   },
   Vampire: {
     harvester: false,
     nonCombat: false,
     founder: false,
     damageType: 'normal',
+    combatRole: 'military',
   },
   BlackKnight: {
     harvester: false,
     nonCombat: false,
     founder: false,
     damageType: 'normal',
+    combatRole: 'military',
   },
   Witch: {
     harvester: false,
@@ -116,6 +143,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     founder: false,
     // Magic damage cuts magic-armor (M_FEATURE.6).
     damageType: 'magic',
+    combatRole: 'military',
   },
 };
 
@@ -123,6 +151,25 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
 export function unitProfileFor(role: UnitType): UnitProfile {
   return UNIT_PROFILES[role];
 }
+
+/**
+ * Derived set of all military roles — collapses the 3 duplicate
+ * MILITARY constants that lived in offensive-behavior.ts,
+ * TileInteraction.tsx, and encroachment.ts (M_REGISTRY.17). Single
+ * source of truth: the `combatRole` slot on UNIT_PROFILES. Adding
+ * a new military unit role just sets combatRole='military' on its
+ * profile; this set auto-extends.
+ *
+ * Note: this also CORRECTS a latent bug in the legacy MILITARY sets —
+ * they omitted Trebuchet (which IS a military role with siege damage,
+ * but the old hand-built sets missed it). After M_REGISTRY.17, the
+ * derivation includes Trebuchet automatically.
+ */
+export const MILITARY_ROLES: ReadonlySet<UnitType> = new Set(
+  (Object.entries(UNIT_PROFILES) as Array<[UnitType, UnitProfile]>)
+    .filter(([, p]) => p.combatRole === 'military')
+    .map(([role]) => role),
+);
 
 /**
  * Composite accessor — returns both the combat stats (from combat.json)
