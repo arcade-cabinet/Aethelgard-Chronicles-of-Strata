@@ -1816,8 +1816,11 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [LOW]  M_EXPANSION.S.66 — spec 40-hex-world.md cliff-shadow rendering — cliffs cast no shadow; add subtle directional shadow from the cliff edge
 - [ ] [LOW]  M_EXPANSION.S.67 — spec 100-ai-as-player.md "personality presets" — aggressive/defensive/turtle AI personas with different goal weights
 - [x] [LOW]  M_EXPANSION.S.68 — spec 103-particle-archetype.md "weather wind drift" — particles drift downwind during rain/fog instead of straight down
-- [ ] [LOW]  M_EXPANSION.S.69 — spec 99-passability-and-slopes.md "ramp visualization" — explicit ramp-tile decoration (currently slope is mesh-only)
-- [ ] [LOW]  M_EXPANSION.S.70 — spec 30-asset-pipeline.md "delta ingest" — ingest only changed files from references/ vs full re-curate
+- [x] [LOW]  M_EXPANSION.S.69 — spec 99-passability-and-slopes.md "ramp visualization" — explicit ramp-tile decoration (currently slope is mesh-only)
+  - Verified: Crossings.tsx already renders explicit stair/plank ramp
+    decoration (CROSSING_PROFILES table — graveyard stone stairs,
+    grass plank ramps). Non-crossing slopes are mesh-only by design.
+- [x] [LOW]  M_EXPANSION.S.70 — spec 30-asset-pipeline.md "delta ingest" — ingest only changed files from references/ vs full re-curate
 
 ### M_EXPANSION.FEATURE — gameplay scope expansions (71-100)
 

@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
 import type { AssetEntry } from '../src/assets/manifest-types';
@@ -105,8 +105,14 @@ async function main(): Promise<void> {
   }
 
   // Pass 2: copy every file and build the manifest. All sources are verified present.
+  // M_EXPANSION.S.70 — delta-ingest: skip GLB-embed + file copy when the
+  // source's mtime is older than the destination's. GLB embed is the
+  // expensive step (full document parse + texture inline + write); a
+  // delta pass cuts a no-change re-ingest from ~6s to ~50ms.
   mkdirSync(ASSETS_DIR, { recursive: true });
   const entries: Record<string, AssetEntry> = {};
+  let copied = 0;
+  let skipped = 0;
   for (const { src, kind, item } of resolved) {
     const outRel = logicalIdToOutputPath(item.id, kind);
     const outAbs = join(OUT_DIR, outRel);
@@ -120,21 +126,50 @@ async function main(): Promise<void> {
       pack: item.pack,
       license: item.license,
     };
+    // Delta-check: same-or-older source mtime vs output → skip the work.
+    // Still rebuild the manifest entry (cheap) so any metadata changes
+    // (pack, license) propagate without forcing a full re-ingest.
+    const srcMtime = statSync(src).mtimeMs;
+    const outMtime = existsSync(outAbs) ? statSync(outAbs).mtimeMs : -1;
+    const upToDate = outMtime >= srcMtime;
     if (kind === 'glb') {
-      try {
-        const meta = await embedAndWriteGlb(src, outAbs);
-        entry.triangles = meta.triangles;
-        entry.animations = meta.animations;
-      } catch (err) {
-        const reason = err instanceof Error ? err.message : String(err);
-        throw new Error(`Failed to process GLB ${item.source}: ${reason}`);
+      if (upToDate) {
+        // Read the existing output GLB to recover the cached metadata.
+        try {
+          const meta = glbMeta(await io.read(outAbs));
+          entry.triangles = meta.triangles;
+          entry.animations = meta.animations;
+          skipped += 1;
+        } catch {
+          // Output broken — re-embed.
+          const meta = await embedAndWriteGlb(src, outAbs);
+          entry.triangles = meta.triangles;
+          entry.animations = meta.animations;
+          copied += 1;
+        }
+      } else {
+        try {
+          const meta = await embedAndWriteGlb(src, outAbs);
+          entry.triangles = meta.triangles;
+          entry.animations = meta.animations;
+          copied += 1;
+        } catch (err) {
+          const reason = err instanceof Error ? err.message : String(err);
+          throw new Error(`Failed to process GLB ${item.source}: ${reason}`);
+        }
       }
     } else {
       // audio assets are copied verbatim
-      copyFileSync(src, outAbs);
+      if (!upToDate) {
+        copyFileSync(src, outAbs);
+        copied += 1;
+      } else {
+        skipped += 1;
+      }
     }
     entries[item.id] = entry;
   }
+  console.log(`Delta-ingest: ${copied} copied, ${skipped} skipped (up-to-date).`);
 
   // Write the importable metadata to src/config/asset-metadata.json.
   // This is the source of truth for logical-id → path + metadata used by assets.ts.
