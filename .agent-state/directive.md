@@ -718,9 +718,9 @@ overlap exists.
 - [x] M_SEC.15 — `SoundToggle.tsx:24` +
   `SettingsModal.tsx:30` strict-ternary on muted pref; return
   null for unrecognized values, default false.
-- [ ] M_SEC.16 — `.github/workflows/ci.yml` add fork-PR
+- [x] M_SEC.16 — `.github/workflows/ci.yml` add fork-PR
   scrub before artifact upload; skip upload on fork PRs.
-- [ ] M_SEC.17 — add CodeQL workflow + dependency-review-
+- [x] M_SEC.17 — add CodeQL workflow + dependency-review-
   action on pull_request. Currently no static analysis on PRs.
 - [x] M_SEC.18 — `android/app/build.gradle:18-22`
   release block — set `minifyEnabled true`, `shrinkResources true`,

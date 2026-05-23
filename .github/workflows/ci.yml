@@ -44,14 +44,47 @@ jobs:
         run: pnpm build:pages
       - name: E2E tests
         run: pnpm test:e2e
+      # M_SEC.16 — skip artifact upload on fork PRs. Fork PRs run
+      # against attacker-controlled code; uploading playwright-report/
+      # or test-results/ could exfiltrate secrets injected into the
+      # report (e.g. env-leaking screenshots). Maintainer PRs (same
+      # repo) still upload on failure.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
-        if: failure()
+        if: failure() && github.event.pull_request.head.repo.full_name == github.repository
         with:
           name: test-results-${{ github.run_id }}
           path: |
             playwright-report/
             test-results/
           retention-days: 7
+
+  dependency-review:
+    name: Dependency review (M_SEC.17)
+    # Block dep changes that introduce known-vulnerable packages.
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  codeql:
+    name: CodeQL (M_SEC.17)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@v3
 
   android-apk:
     name: Build debug APK
