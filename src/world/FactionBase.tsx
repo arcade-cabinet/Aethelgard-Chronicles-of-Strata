@@ -54,6 +54,7 @@ function StructureMesh({
   z,
   progress,
   hasGate = false,
+  isCorner = false,
 }: {
   faction: Faction;
   type: BuildingType;
@@ -63,9 +64,15 @@ function StructureMesh({
   progress: number;
   /** M_EXPANSION.A.3 — render the gate variant when a Wall has the Gate trait. */
   hasGate?: boolean;
+  /** M_EXPANSION.A.6 — render the corner variant for end-of-row wall tiles. */
+  isCorner?: boolean;
 }) {
   const model = structureModel(faction, type);
-  const logicalId = hasGate ? 'structures.gate-stone' : model.logicalId;
+  const logicalId = hasGate
+    ? 'structures.gate-stone'
+    : isCorner && type === 'Wall' && faction === 'player'
+      ? 'structures.wall-stone-corner'
+      : model.logicalId;
   const glb = useGLTF(assets.url(logicalId));
   const effectiveScale = model.scale * (0.5 + 0.5 * Math.min(progress, 1));
   return (
@@ -139,6 +146,9 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
       z: number;
       progress: number;
       hasGate: boolean;
+      q: number;
+      r: number;
+      isCorner?: boolean;
     }> = [];
     for (const [tileKey, entity] of game.buildSites) {
       const b = entity.get(Building);
@@ -161,7 +171,29 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
         z,
         progress: b.progress,
         hasGate,
+        q: pos.q,
+        r: pos.r,
       });
+    }
+    // M_EXPANSION.A.6 — pick corner mesh for Wall tiles that have ≤1
+    // walking-wall neighbour. Build a set of wall keys first, then
+    // count neighbours per wall site in O(neighbours_per_wall).
+    const wallKeys = new Set(result.filter((b) => b.type === 'Wall').map((b) => `${b.q},${b.r}`));
+    const neighbourOffsets: Array<[number, number]> = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+      [1, -1],
+      [-1, 1],
+    ];
+    for (const b of result) {
+      if (b.type !== 'Wall') continue;
+      let count = 0;
+      for (const [dq, dr] of neighbourOffsets) {
+        if (wallKeys.has(`${b.q + dq},${b.r + dr}`)) count += 1;
+      }
+      b.isCorner = count <= 1;
     }
     return result;
     // M_AUDIT2.ARCH.22 — depend on buildSitesGeneration (bumped per-
@@ -210,6 +242,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
             z={b.z}
             progress={b.progress}
             hasGate={b.hasGate}
+            isCorner={b.isCorner ?? false}
           />
           <ConstructionRing x={b.x} y={b.y} z={b.z} progress={b.progress} />
         </group>

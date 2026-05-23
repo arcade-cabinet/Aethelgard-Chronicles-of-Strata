@@ -1683,7 +1683,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.A.3 — Castle Kit `gate-doors.glb` as Wall->Gate composition completion mesh
 - [x] [MED]  M_EXPANSION.A.4 — Castle Kit `flag-narrow.glb` as faction-colored base banner (SKINS[faction].baseProps.banner)
 - [x] [LOW]  M_EXPANSION.A.5 — Castle Kit `keep.glb` as Wonder asset (no Wonder model exists today)
-- [ ] [LOW]  M_EXPANSION.A.6 — Castle Kit corner walls vs straight walls picked by neighbour count in WallSegment renderer
+- [x] [LOW]  M_EXPANSION.A.6 — Castle Kit corner walls vs straight walls picked by neighbour count in WallSegment renderer
 
 **Fantasy Town Kit (7-12)** — Town Hall + Granary + Library candidates
 - [x] [HIGH] M_EXPANSION.A.7 — Fantasy Town `house-block-big.glb` as Library mesh (Library currently uses a placeholder)

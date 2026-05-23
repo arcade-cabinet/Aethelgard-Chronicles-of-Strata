@@ -103,6 +103,7 @@ export type StaticAssetPath =
   'assets/structures/portal-crypt.glb' |
   'assets/structures/portal-fence.glb' |
   'assets/structures/town-hall.glb' |
+  'assets/structures/wall-stone-corner.glb' |
   'assets/structures/wall-stone.glb' |
   'assets/structures/watchtower-stone.glb' |
   'assets/structures/wonder-cannon.glb' |
@@ -254,6 +255,7 @@ const assets = new Set<string>([
   'assets/structures/portal-crypt.glb',
   'assets/structures/portal-fence.glb',
   'assets/structures/town-hall.glb',
+  'assets/structures/wall-stone-corner.glb',
   'assets/structures/wall-stone.glb',
   'assets/structures/watchtower-stone.glb',
   'assets/structures/wonder-cannon.glb',

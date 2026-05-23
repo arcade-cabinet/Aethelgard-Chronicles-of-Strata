@@ -636,6 +636,16 @@
     "license": "CC0",
     "triangles": 200
   },
+  "structures.wall-stone-corner": {
+    "id": "structures.wall-stone-corner",
+    "path": "assets/structures/wall-stone-corner.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Castle Kit",
+    "license": "CC0",
+    "triangles": 200
+  },
   "characters.heroes.knight": {
     "id": "characters.heroes.knight",
     "path": "assets/characters/heroes/knight.glb",
