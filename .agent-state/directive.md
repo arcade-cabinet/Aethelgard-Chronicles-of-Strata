@@ -1,6 +1,6 @@
 # Continuous Work Directive — Aethelgard: Chronicles of Strata
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** Claude
 **Mandate:** "Decompose the references into standard pillar docs and a test-driven
 r3f/drei/seedrandom/yuka/tonejs codebase with framer-motion and radix... capacitor-sqlite /
@@ -376,6 +376,60 @@ flagged. No "POST_REL" parking lot — work them now.
 - [x] M_RELEASE_FINAL.5 — `pnpm verify` clean (typecheck + lint + format
   + 293 tests). test:browser + test:e2e + test:visual continue running
   via PR CI on the branch.
-- [ ] [WAIT-RELEASE] M_RELEASE_FINAL.6 — squash-merge to main; confirm
-  cd.yml deploys GitHub Pages + APK artefact; flip Status to RELEASED.
-  Blocked on PR #1 CI green + comprehensive review findings absorbed.
+- [x] M_RELEASE_FINAL.6 — squash-merged (commit 6eba229); enabled GitHub
+  Pages on the repo (deploy was failing 404 pre-Pages-enable); re-ran the
+  Deploy Pages workflow. APK artefact built by ci.yml. Status: RELEASED.
+
+---
+
+## v0.4 cycle — kept open per user "ALWAYS extend the directives"
+
+Initial release shipped; the queue continues. Each item is real work
+surfaced by review feedback / playtesting / conversation spec gaps.
+
+### M_HARDENING_2 — finish the in-flight hardening items
+
+- [ ] [WAIT-MCP] M_HARDENING.5 — KayKit Ultimate Fantasy RTS pack ingest
+  via assets-library MCP; replace placeholder structures.
+- [ ] [WAIT-DEVICE] M_HARDENING.6 — Pixel-5a perf profile + APK install
+  validation on real device/emulator.
+
+### M_FEATURE — new gameplay from `references/conversation.md`
+
+- [ ] M_FEATURE.1 — road / Mover placement command. Trait + Gate
+  composition rules-layer landed in M_ARCHETYPE.1/.2; add the actual
+  place-road verb + snap-render in `src/world/Roads.tsx`.
+- [ ] M_FEATURE.2 — Discovery panel science-cost scaling. Logarithmic
+  cost-by-depth as Discoveries graph deepens (Discoveries archetype +
+  science slot landed M_DATA.7; the cost scaling is the second-iteration
+  refinement).
+- [ ] M_FEATURE.3 — passive science accumulation tick + a "science-
+  producing" building variant (one new row in `building-behaviors.ts`).
+- [ ] M_FEATURE.4 — Wonder building — composes all three ZoC archetypes
+  (Attractor + Offensive + Defensive). Spec 102 explicitly anticipated
+  this; building-behaviors.ts becomes the proof.
+- [ ] M_FEATURE.5 — siege-unit class: declares `damageType: 'siege'` on
+  OffensiveBehavior; melts walls per the damage-type table.
+- [ ] M_FEATURE.6 — magic-unit class: `damageType: 'magic'`; pairs with
+  a Witch role (already in UnitType union, needs spawn rule + asset).
+
+### M_QUALITY — review feedback fully discharged
+
+- [ ] M_QUALITY.1 — placeBuilding atomicity (comprehensive-review MED-8):
+  wrap spawn block in try/catch or single `world.spawn(...args)` call so a
+  trait-attach failure doesn't leave half-state behind.
+- [ ] M_QUALITY.2 — goblin-heavy late-game roster (CR MED-10): re-tune
+  spawn.ts cycle so 33-40% Goblin isn't the late-game default; rotate
+  toward Orc/Vampire/BlackKnight after the relevant threshold.
+- [ ] M_QUALITY.3 — runtime smoke test for the AI-vs-AI loop running a
+  full simulated match end-to-end with a fixed seed; pin the resulting
+  outcome so determinism regressions show as a test diff.
+
+### M_POLISH — visual + audio coverage
+
+- [ ] M_POLISH.1 — dust-puff particle FX on building completion
+  (M_CONSTRUCTION.1 referenced this but only the ring was wired).
+- [ ] M_POLISH.2 — sawdust particles on actively-building peons.
+- [ ] M_POLISH.3 — sword-clash / shield-deflect SFX variants on
+  combat-hit by attacker class (not the generic hit cue).
+- [ ] M_POLISH.4 — victory confetti r3f burst before the GameOverModal.
