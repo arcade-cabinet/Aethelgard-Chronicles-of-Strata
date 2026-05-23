@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import type { GameState } from '@/game/game-state';
 import { HUD_THEME } from './hud-theme';
+import { ModalShell } from './ModalShell';
 
 /** A win/loss stat line. */
 interface StatLine {
@@ -47,32 +48,24 @@ export function GameOverModal({ game }: { game: GameState }) {
 
   return (
     <Dialog.Root open={outcome !== 'playing'}>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          style={{ position: 'fixed', inset: 0, background: 'rgba(3,7,18,0.9)', zIndex: 1000 }}
-        />
-        <Dialog.Content
-          id="game-over-modal"
-          aria-describedby={undefined}
-          // the game has ended — block the Escape/outside-click close paths
-          onEscapeKeyDown={(e) => e.preventDefault()}
-          onPointerDownOutside={(e) => e.preventDefault()}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: 'rgba(9,13,22,0.97)',
-            border: `2px solid ${HUD_THEME.color.border}`,
-            borderRadius: 24,
-            padding: 40,
-            textAlign: 'center',
-            maxWidth: 440,
-            color: HUD_THEME.color.text,
-            fontFamily: HUD_THEME.font.body,
-            zIndex: 1001,
-          }}
-        >
+      {/* M_MICRO.10.1 — ModalShell + GameOverModal-specific overrides
+          (heavier overlay, larger card, terminal-state escape-block
+          via blockClose). */}
+      <ModalShell
+        contentId="game-over-modal"
+        zIndex={1000}
+        width="auto"
+        maxHeight="none"
+        blockClose
+        contentStyle={{
+          background: 'rgba(9,13,22,0.97)',
+          borderRadius: 24,
+          padding: 40,
+          textAlign: 'center',
+          maxWidth: 440,
+          fontFamily: HUD_THEME.font.body,
+        }}
+      >
           <Dialog.Title
             className={isWin ? 'modal-title-win' : 'modal-title-loss'}
             style={{
@@ -122,8 +115,7 @@ export function GameOverModal({ game }: { game: GameState }) {
           >
             Re-enter Aethelgard
           </button>
-        </Dialog.Content>
-      </Dialog.Portal>
+      </ModalShell>
     </Dialog.Root>
   );
 }

@@ -920,7 +920,7 @@ bug).
 
 #### Category 10 — Inline-styled JSX > 50 LOC
 
-- [ ] M_MICRO.10.1 — **MODALSHELL EXTRACTION** —
+- [x] M_MICRO.10.1 — **MODALSHELL EXTRACTION** —
   `NewGameModal` + `OnboardingOverlay` + `GameOverModal` +
   `SettingsModal` + `ResignButton` confirm + `DiscoveriesPanel`
   (6 dialogs) share Dialog.Overlay + Content + Title styling. One

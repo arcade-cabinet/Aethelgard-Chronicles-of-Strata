@@ -8,6 +8,7 @@ import { useViewport } from '@/render/useViewport';
 import { DISCOVERIES, scaledCostFor } from '@/rules';
 import { costLabel } from './format';
 import { HUD_THEME } from './hud-theme';
+import { ModalShell } from './ModalShell';
 
 /**
  * Discoveries panel (M_DATA.7). A top-right button opens a Radix Dialog
@@ -53,30 +54,13 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
           ⚗ Discoveries
         </button>
       </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          style={{ position: 'fixed', inset: 0, background: 'rgba(3,7,18,0.7)', zIndex: 100 }}
-        />
-        <Dialog.Content
-          id="discoveries-panel"
-          aria-describedby={undefined}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 'min(520px, 90vw)',
-            maxHeight: '80vh',
-            overflow: 'auto',
-            background: HUD_THEME.color.panel,
-            border: `2px solid ${HUD_THEME.color.border}`,
-            borderRadius: 14,
-            padding: 24,
-            color: HUD_THEME.color.text,
-            fontFamily: HUD_THEME.font.body,
-            zIndex: 101,
-          }}
-        >
+      {/* M_MICRO.10.1 — ModalShell collapses the per-dialog Overlay +
+          Content styling. Only DiscoveriesPanel-specific overrides
+          (font-family) come through contentStyle. */}
+      <ModalShell
+        contentId="discoveries-panel"
+        contentStyle={{ fontFamily: HUD_THEME.font.body }}
+      >
           <Dialog.Title
             style={{
               fontFamily: HUD_THEME.font.display,
@@ -157,8 +141,7 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
               </div>
             );
           })}
-        </Dialog.Content>
-      </Dialog.Portal>
+      </ModalShell>
     </Dialog.Root>
   );
 }

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { setMuted } from '@/audio/buses';
 import { type Persistence, safePersistenceRead } from '@/persistence/persistence';
 import { HUD_THEME } from './hud-theme';
+import { ModalShell } from './ModalShell';
 import { MUTE_PREF_KEY } from './SoundToggle';
 
 /** Props for the Settings modal. */
@@ -50,27 +51,18 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          style={{ position: 'fixed', inset: 0, background: 'rgba(3,7,18,0.8)', zIndex: 200 }}
-        />
-        <Dialog.Content
-          aria-describedby={undefined}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 'min(380px, 92vw)',
-            background: HUD_THEME.color.panel,
-            border: `1px solid ${HUD_THEME.color.border}`,
-            borderRadius: 16,
-            padding: 28,
-            color: HUD_THEME.color.text,
-            fontFamily: HUD_THEME.font.body,
-            zIndex: 201,
-          }}
-        >
+      {/* M_MICRO.10.1 — ModalShell unifies the dialog card. */}
+      <ModalShell
+        zIndex={200}
+        width="min(380px, 92vw)"
+        maxHeight="none"
+        contentStyle={{
+          border: `1px solid ${HUD_THEME.color.border}`,
+          borderRadius: 16,
+          padding: 28,
+          fontFamily: HUD_THEME.font.body,
+        }}
+      >
           <Dialog.Title
             style={{
               fontFamily: HUD_THEME.font.display,
@@ -129,8 +121,7 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
           >
             Done
           </button>
-        </Dialog.Content>
-      </Dialog.Portal>
+      </ModalShell>
     </Dialog.Root>
   );
 }

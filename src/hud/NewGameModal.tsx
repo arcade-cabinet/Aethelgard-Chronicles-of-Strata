@@ -6,6 +6,7 @@ import { randomSeedPhrase } from '@/core/seed-phrase';
 import type { Difficulty, GameMode } from '@/game/game-state';
 import { presetFor } from '@/rules';
 import { HUD_THEME } from './hud-theme';
+import { ModalShell } from './ModalShell';
 
 /** The choices a New Game collects. */
 export interface NewGameChoices {
@@ -127,27 +128,18 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
 
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          style={{ position: 'fixed', inset: 0, background: 'rgba(3,7,18,0.8)', zIndex: 200 }}
-        />
-        <Dialog.Content
-          aria-describedby={undefined}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 'min(420px, 92vw)',
-            background: HUD_THEME.color.panel,
-            border: `1px solid ${HUD_THEME.color.border}`,
-            borderRadius: 16,
-            padding: 28,
-            color: HUD_THEME.color.text,
-            fontFamily: HUD_THEME.font.body,
-            zIndex: 201,
-          }}
-        >
+      {/* M_MICRO.10.1 — ModalShell with NewGameModal's larger card. */}
+      <ModalShell
+        zIndex={200}
+        width="min(420px, 92vw)"
+        maxHeight="none"
+        contentStyle={{
+          border: `1px solid ${HUD_THEME.color.border}`,
+          borderRadius: 16,
+          padding: 28,
+          fontFamily: HUD_THEME.font.body,
+        }}
+      >
           <Dialog.Title
             style={{
               fontFamily: HUD_THEME.font.display,
@@ -272,8 +264,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           >
             Begin
           </button>
-        </Dialog.Content>
-      </Dialog.Portal>
+      </ModalShell>
     </Dialog.Root>
   );
 }

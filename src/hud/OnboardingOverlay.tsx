@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
 import { type Persistence, safePersistenceRead } from '@/persistence/persistence';
 import { HUD_THEME } from './hud-theme';
+import { ModalShell } from './ModalShell';
 
 /** Preferences key that marks the tutorial as seen. */
 const ONBOARDING_KEY = 'onboardingSeen';
@@ -80,30 +81,22 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
 
   return (
     <Dialog.Root open={open}>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          style={{ position: 'fixed', inset: 0, background: 'rgba(3,7,18,0.85)', zIndex: 900 }}
-        />
-        <Dialog.Content
-          id="onboarding-overlay"
-          aria-describedby={undefined}
-          onEscapeKeyDown={(e) => e.preventDefault()}
-          onPointerDownOutside={(e) => e.preventDefault()}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            background: HUD_THEME.color.panel,
-            border: `2px solid ${HUD_THEME.color.border}`,
-            borderRadius: 18,
-            padding: 28,
-            maxWidth: 420,
-            color: HUD_THEME.color.text,
-            fontFamily: HUD_THEME.font.body,
-            zIndex: 901,
-          }}
-        >
+      {/* M_MICRO.10.1 — onboarding is a tutorial that the player must
+          step through; blockClose=true so accidental click-outside
+          doesn't skip it. */}
+      <ModalShell
+        contentId="onboarding-overlay"
+        zIndex={900}
+        width="auto"
+        maxHeight="none"
+        blockClose
+        contentStyle={{
+          borderRadius: 18,
+          padding: 28,
+          maxWidth: 420,
+          fontFamily: HUD_THEME.font.body,
+        }}
+      >
           <Dialog.Title
             style={{
               fontFamily: HUD_THEME.font.display,
@@ -164,8 +157,7 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
               </button>
             </div>
           </div>
-        </Dialog.Content>
-      </Dialog.Portal>
+      </ModalShell>
     </Dialog.Root>
   );
 }

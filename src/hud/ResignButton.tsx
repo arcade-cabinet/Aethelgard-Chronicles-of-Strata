@@ -4,6 +4,7 @@ import { resign } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { useViewport } from '@/render/useViewport';
 import { HUD_THEME } from './hud-theme';
+import { ModalShell } from './ModalShell';
 
 /**
  * Resign HUD button (M_MODES.10). Always visible during gameplay; opens a
@@ -44,27 +45,16 @@ export function ResignButton({ game }: { game: GameState }) {
           ⚑ Resign
         </button>
       </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          style={{ position: 'fixed', inset: 0, background: 'rgba(3,7,18,0.7)', zIndex: 100 }}
-        />
-        <Dialog.Content
-          aria-describedby={undefined}
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 'min(360px, 90vw)',
-            padding: 22,
-            background: HUD_THEME.color.panel,
-            border: `2px solid ${HUD_THEME.color.border}`,
-            borderRadius: 12,
-            color: HUD_THEME.color.text,
-            fontFamily: HUD_THEME.font.body,
-            zIndex: 101,
-          }}
-        >
+      {/* M_MICRO.10.1 — ModalShell unifies the dialog card. */}
+      <ModalShell
+        width="min(360px, 90vw)"
+        maxHeight="none"
+        contentStyle={{
+          padding: 22,
+          borderRadius: 12,
+          fontFamily: HUD_THEME.font.body,
+        }}
+      >
           <Dialog.Title
             style={{
               fontFamily: HUD_THEME.font.display,
@@ -115,8 +105,7 @@ export function ResignButton({ game }: { game: GameState }) {
               Resign
             </button>
           </div>
-        </Dialog.Content>
-      </Dialog.Portal>
+      </ModalShell>
     </Dialog.Root>
   );
 }
