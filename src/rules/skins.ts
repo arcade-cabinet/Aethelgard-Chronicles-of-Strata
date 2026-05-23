@@ -143,6 +143,13 @@ export interface Skin {
    * already correct for that future.
    */
   rig: Record<UnitType, UnitRig>;
+  /**
+   * M_EXPANSION.A.29 — cosmetic faction-wide tint multiplied into
+   * every character mesh material at render time. Lets the player
+   * eyeball whose unit it is without reading a HUD label. Null leaves
+   * the GLB's native palette unchanged.
+   */
+  characterTint?: string | null;
 }
 
 /**
@@ -220,6 +227,10 @@ export const SKINS: Record<Faction, Skin> = {
     rig: SHARED_RIG_TODAY,
     minimap: { unitColor: '#22c55e', baseColor: '#38bdf8' },
     zoneBorderColor: '#38bdf8',
+    // M_EXPANSION.A.29 — null = leave native KayKit colors. Player
+    // faction reads cleanly without tinting (the warm-armor heroes
+    // already pop against grass/desert biomes).
+    characterTint: null,
     baseAccretion: {
       propPool: ['nature.tree.pine-a', 'nature.rock.large-a'],
       radius: 2,
@@ -286,6 +297,11 @@ export const SKINS: Record<Faction, Skin> = {
     ],
     minimap: { unitColor: '#ef4444', baseColor: '#a855f7' },
     zoneBorderColor: '#f43f5e',
+    // M_EXPANSION.A.29 — enemy units get a cool desaturating tint so
+    // the same KayKit Rogue mesh reads as 'enemy goblin' (gray/blue)
+    // not 'just another rogue'. Multiplies into the base color so
+    // the silhouette still varies via the texture.
+    characterTint: '#7da3c8',
     baseAccretion: {
       // M_EXPANSION.A.23 — mossy rocks added to the necropolis biome
       // accretion pool for visual variety beyond the all-gravestone

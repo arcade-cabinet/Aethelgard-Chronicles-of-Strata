@@ -1,6 +1,6 @@
 import { useAnimations, useGLTF } from '@react-three/drei';
 import { useEffect, useMemo, useRef } from 'react';
-import type { AnimationClip, Group, Mesh } from 'three';
+import { Color, type AnimationClip, type Group, type Mesh, type MeshStandardMaterial } from 'three';
 import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { assets } from '@/assets/assets';
 import type { UnitType } from '@/ecs/components';
@@ -15,6 +15,13 @@ export interface AnimatedCharacterProps {
   clip: ClipName;
   /** Crossfade duration into the clip, in seconds. */
   fade?: number;
+  /**
+   * M_EXPANSION.A.29 — cosmetic tint multiplied into every skinned-mesh
+   * material's color. Use `null` (default) to leave the GLB's native
+   * material untouched. The Skin slot supplies this per-faction so a
+   * single hero mesh reads visually-distinct per faction.
+   */
+  tint?: string | null;
 }
 
 /** Dispose every geometry and material under a scene graph (frees GPU memory). */
@@ -37,7 +44,12 @@ function disposeScene(scene: Group): void {
  * Clips bind to the character skeleton by bone name (verified: all KayKit
  * characters of a tier share an identical bone-name set).
  */
-export function AnimatedCharacter({ role, clip, fade = 0.25 }: AnimatedCharacterProps) {
+export function AnimatedCharacter({
+  role,
+  clip,
+  fade = 0.25,
+  tint = null,
+}: AnimatedCharacterProps) {
   const meshUrl = assets.url(characterMeshId(role));
   const rigIds = rigAnimationIds(rigForRole(role));
   const movementUrl = assets.url(rigIds.movement);
@@ -53,6 +65,29 @@ export function AnimatedCharacter({ role, clip, fade = 0.25 }: AnimatedCharacter
 
   // Dispose the cloned scene's GPU resources when this instance unmounts.
   useEffect(() => () => disposeScene(scene), [scene]);
+
+  // M_EXPANSION.A.29 — apply cosmetic tint to every skinned-mesh
+  // material. Multiplied into the existing diffuse color so the
+  // KayKit texture's value structure stays intact (a warm-tinted
+  // Knight reads as red-tinted, not a flat red blob). Re-clones the
+  // material first so adjacent instances of the same role with a
+  // different tint don't trample each other (they share the GLB but
+  // each gets its own material clone here).
+  useEffect(() => {
+    if (!tint) return;
+    const c = new Color(tint);
+    scene.traverse((obj) => {
+      const mesh = obj as Mesh;
+      if (!mesh.isMesh) return;
+      const cloneMat = (m: MeshStandardMaterial) => {
+        const next = m.clone();
+        next.color.multiply(c);
+        return next;
+      };
+      const mat = mesh.material as MeshStandardMaterial | MeshStandardMaterial[];
+      mesh.material = Array.isArray(mat) ? mat.map(cloneMat) : cloneMat(mat);
+    });
+  }, [scene, tint]);
 
   // The full clip set is the union of both rig libraries.
   const clips = useMemo<AnimationClip[]>(
