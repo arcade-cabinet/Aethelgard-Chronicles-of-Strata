@@ -79,6 +79,21 @@ export interface UnitProfile {
    * in SelectionRing.tsx; now a per-profile slot read.
    */
   selectionRadius: number;
+  /**
+   * M_POLISH.3 — melee weapon class for SFX routing. `sword`-wielders
+   * (Footman, Knight, BlackKnight, Vampire) get the bright clash cue;
+   * `club` (Goblin, Orc) use the generic hit; `none` means ranged or
+   * non-combat (no melee SFX swap). Read by audio's combat-hit picker
+   * when range ≤ 1 and damageType === 'normal'.
+   */
+  meleeWeapon: 'sword' | 'club' | 'none';
+  /**
+   * M_EXPANSION.AU.46 — parry chance 0..1. The combat tick rolls
+   * once per incoming melee hit; on success damage→0 and the
+   * 'combat-parry' SFX fires. Only sword-wielders carry a shield in
+   * the spec (Footman), so others have 0.
+   */
+  parryChance: number;
 }
 
 /**
@@ -94,6 +109,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'normal',
     combatRole: 'civilian',
     selectionRadius: 0.65,
+    meleeWeapon: 'none',
+    parryChance: 0,
   },
   Settler: {
     harvester: false,
@@ -102,6 +119,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'normal',
     combatRole: 'civilian',
     selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
   },
   Footman: {
     harvester: false,
@@ -110,6 +129,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'normal',
     combatRole: 'military',
     selectionRadius: 0.85,
+    meleeWeapon: 'sword',
+    parryChance: 0.1,
   },
   Trebuchet: {
     harvester: false,
@@ -119,6 +140,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'siege',
     combatRole: 'military',
     selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
   },
   Wizard: {
     // M_EXPANSION.A.26 — player magic-damage ranged unit. Mid HP,
@@ -129,6 +152,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'magic',
     combatRole: 'military',
     selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
   },
   Scout: {
     // M_EXPANSION.A.27 — player non-combat reconnaissance unit. High
@@ -140,6 +165,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'normal',
     combatRole: 'civilian',
     selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
   },
   Goblin: {
     harvester: false,
@@ -148,6 +175,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'normal',
     combatRole: 'military',
     selectionRadius: 0.85,
+    meleeWeapon: 'club',
+    parryChance: 0,
   },
   Orc: {
     harvester: false,
@@ -156,6 +185,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'normal',
     combatRole: 'military',
     selectionRadius: 0.85,
+    meleeWeapon: 'club',
+    parryChance: 0,
   },
   Vampire: {
     harvester: false,
@@ -164,6 +195,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'normal',
     combatRole: 'military',
     selectionRadius: 0.85,
+    meleeWeapon: 'sword',
+    parryChance: 0,
   },
   BlackKnight: {
     harvester: false,
@@ -172,6 +205,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'normal',
     combatRole: 'military',
     selectionRadius: 0.85,
+    meleeWeapon: 'sword',
+    parryChance: 0.05,
   },
   Witch: {
     harvester: false,
@@ -181,6 +216,8 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     damageType: 'magic',
     combatRole: 'military',
     selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
   },
 };
 

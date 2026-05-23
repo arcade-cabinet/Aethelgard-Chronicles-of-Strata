@@ -1396,11 +1396,7 @@ percentages, verify perf headroom holds at the new Huge.
   Difficulty-coupled timings (encroachment grace, spawn interval) stay
   size-independent by construction; actual pacing tuning at Huge is a
   hands-on playtest signal that loops back here when needed.
-- [ ] [HIGH] M_POLISH.3 — sword-clash / shield-deflect SFX per
-  attacker class: requires dedicated per-role audio assets that don't yet
-  exist in references/audio (current SFX pack is generic hit + magic-
-  impact). Wires up the moment the KayKit / Fantasy audio pack delivers
-  per-class variants. Today's combat-hit cue is the placeholder.
+- [x] [HIGH] M_POLISH.3 — sword-clash / shield-deflect SFX per attacker class — DONE: pl_impact_metal_02 → audio.sfx.sword-clash routed to new 'combat-hit-melee' event when attacker's meleeWeapon='sword' AND range≤1; pl_impact_hit_03 → audio.sfx.shield-deflect routed to new 'combat-parry' event when defender's parryChance roll succeeds. UNIT_PROFILES gain meleeWeapon + parryChance slots; Footman(sword,0.10), BlackKnight(sword,0.05), Vampire(sword,0), Goblin/Orc(club,0), peon/wizard/scout/trebuchet(none,0).
 - [ ] [WAIT-CI] PR_3_MERGE — squash-merge PR #3 (chore/release-marker)
   once CI lands green; carries the v0.4 cycle work (M_FEATURE.1+.2+.3+.4+
   .5+.6, M_QUALITY.1+.2+.3, M_POLISH.1+.2+.4, M_BALANCE_2.1+.2,
@@ -1758,7 +1754,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [HIGH] M_EXPANSION.AU.43 — footsteps per terrain biome (grass/sand/stone) — currently single sound
 - [x] [HIGH] M_EXPANSION.AU.44 — magic SFX pack wired to Wizard (M_EXPANSION.A.26) attack
 - [x] [MED]  M_EXPANSION.AU.45 — impact SFX per damageType (arrow vs sword vs magic) — currently one sound
-- [ ] [HIGH] M_EXPANSION.AU.46 — shield-deflect on Footman parry chance (~10% damage→0 with deflect SFX)
+- [x] [HIGH] M_EXPANSION.AU.46 — shield-deflect on Footman parry chance — DONE alongside M_POLISH.3. combat.ts rolls parryChance per incoming sword strike; on success damage→0, DamageEvent.parried=true, 'combat-parry' SFX fires, CombatText shows "Parried!" in steel-blue. Test pins ~10% rate across 200 strikes; clubs do NOT invoke the parry roll. parryChance lives on UNIT_PROFILES (Footman 0.10, BlackKnight 0.05, others 0).
   - Requires combat-math change (rollDamage extended with isParry roll,
     or a defender-side hook) + balance pass (parry chance % vs Footman
     survivability tuning) + DamageEvent extension + UI feedback (deflect

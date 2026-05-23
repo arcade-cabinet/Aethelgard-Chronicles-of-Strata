@@ -23,6 +23,19 @@ export interface DamageEvent {
   isCrit: boolean;
   /** M_EXPANSION.AU.45 — damageType of the attacker (drives per-type SFX). */
   damageType: DamageType;
+  /**
+   * M_POLISH.3 — true when the attacker is a sword-wielder closing for
+   * a melee strike (range ≤ 1, damageType 'normal', weapon 'sword').
+   * Audio uses this to pick the bright sword-clash SFX over the
+   * generic combat-hit. False for ranged + magic + siege + club.
+   */
+  isMeleeSword: boolean;
+  /**
+   * M_EXPANSION.AU.46 — true when the target's parryChance roll
+   * succeeded and damage was set to 0. Audio fires the shield-deflect
+   * cue; CombatText surfaces "Parried!" instead of a number.
+   */
+  parried: boolean;
 }
 
 /**
@@ -51,6 +64,8 @@ function resolveAttacks(
   damageByTarget: Map<number, number>,
   events: DamageEvent[],
   damageType: DamageType,
+  isMeleeSword: boolean,
+  defenderParryChance: number,
 ): number {
   combatant.attackTimer += delta;
   let fired = 0;
@@ -60,13 +75,21 @@ function resolveAttacks(
   while (combatant.attackTimer >= combatant.attackCooldown && fired < 8) {
     combatant.attackTimer -= combatant.attackCooldown;
     const roll = rollDamage(combatant.attackDamage, rng);
+    // M_EXPANSION.AU.46 — parry roll happens BEFORE damage is applied
+    // (so a parried hit deals 0 + plays shield-deflect instead of
+    // sword-clash + a number). Only meaningful for melee hits — a
+    // shield doesn't parry a fireball.
+    const parried = defenderParryChance > 0 && isMeleeSword && rng() < defenderParryChance;
+    const dealt = parried ? 0 : roll.damage;
     const id = target.targetId;
-    damageByTarget.set(id, (damageByTarget.get(id) ?? 0) + roll.damage);
+    damageByTarget.set(id, (damageByTarget.get(id) ?? 0) + dealt);
     events.push({
       target: targetEntity,
-      damage: roll.damage,
-      isCrit: roll.isCrit,
+      damage: dealt,
+      isCrit: !parried && roll.isCrit,
       damageType,
+      isMeleeSword,
+      parried,
     });
     fired += 1;
   }
@@ -115,9 +138,17 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
     // profile (Footman=normal, Trebuchet=siege, Wizard=magic).
     // Buildings (Watchtower) lack a Unit trait — default 'normal'.
     const attackerUnit = e.get(Unit)?.unitType;
-    const damageType: DamageType = attackerUnit
-      ? unitProfileFor(attackerUnit).damageType
-      : 'normal';
+    const attackerProfile = attackerUnit ? unitProfileFor(attackerUnit) : null;
+    const damageType: DamageType = attackerProfile?.damageType ?? 'normal';
+    // M_POLISH.3 — sword melee detection: range gate (≤1) + weapon
+    // class. A bow-Footman wouldn't trigger this (no such unit today,
+    // but range≤1 keeps the contract honest for future ranged variants).
+    const isMeleeSword =
+      attackerProfile?.meleeWeapon === 'sword' && combatant.attackRange <= 1;
+    // M_EXPANSION.AU.46 — defender's parry chance comes from THEIR
+    // unit profile (Footman shields, BlackKnight half-shields).
+    const targetUnit = targetEntity.get(Unit)?.unitType;
+    const defenderParryChance = targetUnit ? unitProfileFor(targetUnit).parryChance : 0;
     const fired = resolveAttacks(
       combatant,
       target,
@@ -127,6 +158,8 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
       damageByTarget,
       events,
       damageType,
+      isMeleeSword,
+      defenderParryChance,
     );
     if (fired > 0 && e.has(AnimationState)) {
       // M_COMBAT_POLISH.2 — flash the attacker into ATTACKING; animationSystem

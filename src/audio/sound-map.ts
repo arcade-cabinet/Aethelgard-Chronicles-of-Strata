@@ -13,6 +13,8 @@ export type GameAudioEvent =
   | 'combat-hit'
   | 'combat-hit-siege'
   | 'combat-hit-magic'
+  | 'combat-hit-melee'
+  | 'combat-parry'
   | 'combat-crit'
   | 'harvest-chop'
   | 'harvest-mine'
@@ -90,6 +92,14 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   'combat-hit': { bus: 'sfx', soundId: 'audio.sfx.hit' },
   'combat-hit-siege': { bus: 'sfx', soundId: 'audio.sfx.hit-stone' },
   'combat-hit-magic': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
+  // M_POLISH.3 — sword-clash for Footman / Knight melee strikes.
+  // Distinct from the generic 'combat-hit' (peon punches) and from
+  // the bright 'combat-crit' metal ring.
+  'combat-hit-melee': { bus: 'sfx', soundId: 'audio.sfx.sword-clash' },
+  // M_EXPANSION.AU.46 — shield-deflect plays when a Footman's parry
+  // roll succeeds (damage→0). Combat resolves the parry; this cue
+  // fires from the damage path when the absorbed-edge flag is set.
+  'combat-parry': { bus: 'sfx', soundId: 'audio.sfx.shield-deflect' },
   'combat-crit': { bus: 'sfx', soundId: 'audio.sfx.hit-metal' },
   'projectile-fire': { bus: 'sfx', soundId: 'audio.sfx.hit' },
   'projectile-impact': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },

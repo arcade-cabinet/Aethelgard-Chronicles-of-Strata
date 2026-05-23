@@ -22,6 +22,8 @@ export type StaticAssetPath =
   'assets/audio/sfx/magic-impact.wav' |
   'assets/audio/sfx/mine.ogg' |
   'assets/audio/sfx/select.ogg' |
+  'assets/audio/sfx/shield-deflect.wav' |
+  'assets/audio/sfx/sword-clash.wav' |
   'assets/audio/sfx/ui-achievement.wav' |
   'assets/audio/sfx/ui-click.wav' |
   'assets/audio/sfx/ui-confirm.wav' |
@@ -192,6 +194,8 @@ const assets = new Set<string>([
   'assets/audio/sfx/magic-impact.wav',
   'assets/audio/sfx/mine.ogg',
   'assets/audio/sfx/select.ogg',
+  'assets/audio/sfx/shield-deflect.wav',
+  'assets/audio/sfx/sword-clash.wav',
   'assets/audio/sfx/ui-achievement.wav',
   'assets/audio/sfx/ui-click.wav',
   'assets/audio/sfx/ui-confirm.wav',

@@ -57,7 +57,17 @@ export function useAudio(game: GameState): void {
       const hitMap = SOUND_FOR_EVENT['combat-hit'];
       const siegeMap = SOUND_FOR_EVENT['combat-hit-siege'];
       const magicMap = SOUND_FOR_EVENT['combat-hit-magic'];
+      // M_POLISH.3 — sword-clash for melee normal-damage strikes;
+      // shield-deflect when the defender parried. Parry takes
+      // precedence — a parried sword strike doesn't ALSO play sword
+      // sounds, just the deflect.
+      const meleeMap = SOUND_FOR_EVENT['combat-hit-melee'];
+      const parryMap = SOUND_FOR_EVENT['combat-parry'];
       for (const ev of events) {
+        if (ev.parried) {
+          playSound(buses, parryMap.bus, resolveSoundId(parryMap));
+          continue;
+        }
         if (ev.isCrit) {
           // Crit: play the magic-impact stab instead of (not in addition to) the
           // regular hit — one sound per crit event keeps it punchy.
@@ -65,7 +75,13 @@ export function useAudio(game: GameState): void {
           continue;
         }
         const map =
-          ev.damageType === 'siege' ? siegeMap : ev.damageType === 'magic' ? magicMap : hitMap;
+          ev.damageType === 'siege'
+            ? siegeMap
+            : ev.damageType === 'magic'
+              ? magicMap
+              : ev.isMeleeSword
+                ? meleeMap
+                : hitMap;
         playSound(buses, map.bus, resolveSoundId(map));
       }
     }

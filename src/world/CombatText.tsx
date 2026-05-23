@@ -20,6 +20,8 @@ interface Popup {
   text: string;
   /** Whether the hit was a crit (larger, gold). */
   isCrit: boolean;
+  /** M_EXPANSION.AU.46 — parry banner ("Parried!" in steel-blue). */
+  isParry: boolean;
   /** Age in seconds. */
   age: number;
 }
@@ -48,8 +50,9 @@ export function CombatText({ game }: { game: GameState }) {
         return {
           id: nextId.current++,
           origin: [t?.x ?? 0, (t?.y ?? 0) + 1.8, t?.z ?? 0] as [number, number, number],
-          text: e.isCrit ? `★-${e.damage}` : `-${e.damage}`,
+          text: e.parried ? 'Parried!' : e.isCrit ? `★-${e.damage}` : `-${e.damage}`,
           isCrit: e.isCrit,
+          isParry: e.parried,
           age: 0,
         };
       });
@@ -73,8 +76,8 @@ export function CombatText({ game }: { game: GameState }) {
         return (
           <Billboard key={p.id} position={[p.origin[0], p.origin[1] + POPUP_RISE * t, p.origin[2]]}>
             <Text
-              fontSize={p.isCrit ? 0.5 : 0.35}
-              color={p.isCrit ? '#fbbf24' : '#ef4444'}
+              fontSize={p.isCrit ? 0.5 : p.isParry ? 0.4 : 0.35}
+              color={p.isCrit ? '#fbbf24' : p.isParry ? '#94c5ff' : '#ef4444'}
               outlineWidth={0.02}
               outlineColor="#0b0f17"
               fillOpacity={1 - t}

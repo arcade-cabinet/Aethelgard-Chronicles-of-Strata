@@ -111,6 +111,11 @@ export function offensiveBehaviorSystem(
             damage: Math.round(applied),
             isCrit: false,
             damageType: (s.damageType as DamageEvent['damageType']) ?? 'normal',
+            // M_POLISH.3 — this path is the ranged/dps overlay; melee
+            // sword strikes go through combat.ts proper, so flag false
+            // and never trigger a parry from here.
+            isMeleeSword: false,
+            parried: false,
           });
         }
         // record the first picked source for projectile FX

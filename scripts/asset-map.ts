@@ -559,4 +559,25 @@ export const ASSET_MAP: AssetMapEntry[] = [
     pack: 'PixelLoops Audio — Impact Hit Pack',
     license: 'Royalty-Free',
   },
+  // M_POLISH.3 — sword-clash for Footman + Knight melee strike. The
+  // metal_02 sample has the brightest ringing transient of the metal
+  // trio (01 is duller, 03 is muddier). Already-mapped hit-metal.ogg
+  // is the generic "any metal damage" cue; sword-clash is the
+  // attacker-class variant for sword wielders specifically.
+  {
+    id: 'audio.sfx.sword-clash',
+    source: 'references/Impact_Hit_Sound_Effects_Pack/WAV/pl_impact_metal_02.wav',
+    pack: 'PixelLoops Audio — Impact Hit Pack',
+    license: 'Royalty-Free',
+  },
+  // M_POLISH.3 — shield-deflect for the Footman parry mechanic
+  // (M_EXPANSION.AU.46). The hit_03 sample has a softer absorbed
+  // thud — distinct from the bright metal_* clash but still impactful
+  // enough to read as "blocked" not "missed".
+  {
+    id: 'audio.sfx.shield-deflect',
+    source: 'references/Impact_Hit_Sound_Effects_Pack/WAV/pl_impact_hit_03.wav',
+    pack: 'PixelLoops Audio — Impact Hit Pack',
+    license: 'Royalty-Free',
+  },
 ];
