@@ -1934,11 +1934,11 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.O.148 — `pnpm release:dry-run` — local-simulation of the full release pipeline against a fake keystore
 - [ ] [WAIT-INFRA] M_EXPANSION.O.149 — Docker image of the dev environment (Node 22 + pnpm + Java 21 + Android SDK) for contributor onboarding
 - [ ] [WAIT-INFRA] M_EXPANSION.O.150 — Codecov integration via the existing coverage gate
-- [ ] [LOW]  M_EXPANSION.O.151 — Renovate or Dependabot grouped major bumps (split from the existing weekly minor/patch)
+- [x] [LOW]  M_EXPANSION.O.151 — Renovate or Dependabot grouped major bumps (split from the existing weekly minor/patch)
 - [ ] [WAIT-INFRA] M_EXPANSION.O.152 — SonarCloud integration (or local Sonar runner) for code quality history
 - [ ] [WAIT-INFRA] M_EXPANSION.O.153 — Lighthouse CI on the deployed pages build (perf + a11y score history)
 - [ ] [LOW]  M_EXPANSION.O.154 — Bundle size dashboard: track gzipped JS + asset bytes per release tag
-- [ ] [LOW]  M_EXPANSION.O.155 — CHANGELOG.md generation from release-please tags (we have config, no published changelog yet)
+- [x] [LOW]  M_EXPANSION.O.155 — CHANGELOG.md generation from release-please tags (we have config, no published changelog yet)
 - [ ] [WAIT-INFRA] M_EXPANSION.O.156 — Demo gif/mp4 baked into README on every release tag (a 10-second loop of the cove + combat)
 - [ ] [LOW]  M_EXPANSION.O.157 — README badges block: CI / coverage / release / license / app-store
 - [ ] [WAIT-INFRA] M_EXPANSION.O.158 — `pnpm assets:lint` — surface any references/ kit not yet ingested into public/assets

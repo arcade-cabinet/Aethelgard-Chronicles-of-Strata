@@ -3,9 +3,21 @@ updates:
   - package-ecosystem: npm
     directory: '/'
     schedule: { interval: weekly }
+    # M_EXPANSION.O.151 — split major bumps into a separate group so
+    # they get their own review cycle (different review burden than
+    # minor/patch). Minor + patch bunch into one PR; majors get one PR
+    # per ecosystem so the diff stays reviewable.
     groups:
       minor-patch:
         update-types: [minor, patch]
+      majors:
+        update-types: [major]
   - package-ecosystem: github-actions
     directory: '/'
     schedule: { interval: weekly }
+    # Group action major bumps the same way.
+    groups:
+      minor-patch:
+        update-types: [minor, patch]
+      majors:
+        update-types: [major]
