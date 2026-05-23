@@ -1,5 +1,19 @@
 # Audio
 
+> **M_ARCH_UNIFY cross-reference (added 2026-05-23).** Pre-dates the
+> unified Thing/Skin registry. The 4-layer model — Archetypes → Things
+> → Slots → Skins — is the authoritative architectural shape for every
+> visual/data fork in the codebase. See:
+>
+> - `docs/specs/103-particle-archetype.md` — keystone architectural pass
+> - `docs/specs/10-architecture.md` — pillar's full M_ARCH_UNIFY block
+> - `src/rules/building-profiles.ts` — Thing registry (M_REGISTRY.5)
+> - `src/rules/unit-profiles.ts` — Thing registry (M_REGISTRY.1)
+> - `src/rules/skins.ts` — Skin slot (M_REGISTRY.3/4/2)
+>
+> Per-section notes below mark where THIS pillar's text became
+> superseded or extended by the unified-registry doctrine.
+
 ## Technology
 
 Howler.js (`howler`) manages all audio. It is loaded imperatively from `src/audio/` —

@@ -477,7 +477,7 @@ The standards (just established in M_ARCH_UNIFY):
 - [x] M_AUDIT.6 — CODE-SIMPLIFICATION covered by M_MICRO.* + M_REGISTRY.*
   (especially M_MICRO.7.* helper splits + M_MICRO.8.* bitmask
   migration candidates).
-- [ ] M_AUDIT.7 — DOC ALIGNMENT: every spec doc in `docs/specs/` reviewed
+- [x] M_AUDIT.7 — DOC ALIGNMENT: every spec doc in `docs/specs/` reviewed
   against the M_ARCH_UNIFY architecture. Specs that pre-date the
   unification (most of them) get a "see spec 103" cross-reference; any
   that contradict the unified layer model get explicit corrigenda.

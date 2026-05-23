@@ -5,6 +5,85 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] — M_ARCH_UNIFY + M_AUDIT + M_SEC hardening (0.4.0 in-flight)
+
+Two interleaved tracks: (1) the unified Thing/Skin registry layer
+that collapses every per-Type and per-Faction parallel hierarchy into
+one slot-driven model (M_AUDIT.0-.6 findings forward-applied, then
+M_REGISTRY rollout); (2) Android + snapshot security hardening
+(M_SEC.1-11) per the deep-audit pass.
+
+### Architectural unification (M_REGISTRY.* + M_ARCH_UNIFY)
+
+- `src/rules/building-profiles.ts` — unified BUILDING_PROFILES registry
+  collapses 5 parallel per-BuildingType tables (BEHAVIORS, DISPLAY,
+  COSTS, SUPPLY, Library ScienceProducer if-branch) into ONE record
+  with named slots {behaviors, display, cost, supply, producer,
+  selectionRadius}. (M_REGISTRY.5, .19)
+- `src/rules/unit-profiles.ts` — UNIT_PROFILES per-role slot toggles
+  {harvester, nonCombat, founder, damageType, combatRole,
+  selectionRadius}. character-factory.ts's 3-way role switch +
+  damageType ternary collapsed to slot reads. (M_REGISTRY.1, .19)
+- `src/rules/skins.ts` — Skin registry (layer 4 of M_ARCH_UNIFY).
+  SKINS[faction] bundles {structure, baseProps, rig}. HomeBase.tsx +
+  EnemyBase.tsx (191 LOC parallel components) deleted; replaced by
+  ONE FactionBase mounted twice with different `faction` prop.
+  Per-faction divergence is now 100% data. A third tribe drops in as
+  ONE Skin row. (M_REGISTRY.2, .3, .4)
+- `src/rules/mover-profiles.ts` — third Thing-family registry; Roads.tsx
+  MATERIAL_COLOR table moved here. (M_REGISTRY.11)
+- `src/ecs/components.ts` — `FACTIONS: readonly Faction[]` constant.
+  science.ts passive trickle + game-state.ts depositSystem now loop
+  over FACTIONS instead of hand-unrolling player+enemy. (M_REGISTRY.16)
+- MILITARY_ROLES derived from UNIT_PROFILES.combatRole slot. 3
+  duplicate hand-built MILITARY sets collapsed. **Latent bug fix:** the
+  legacy sets omitted Trebuchet (a siege military unit); offensive
+  zones, right-click move, and encroachment now correctly include
+  Trebuchet. (M_REGISTRY.17)
+- spawn.ts pickEnemyRole 4-tier if-cascade replaced with declarative
+  ESCALATION_SCHEDULE table. (M_REGISTRY.15)
+- `parseHexKey` + `parseHexLevelKey` helpers in `src/core/hex.ts`
+  replace 11 hand-rolled `key.split(',').map(Number)` duplicates.
+  Centralises the missing-coord NaN fallback. (M_MICRO.2.2)
+- New spec `docs/specs/103-particle-archetype.md` — use-case
+  enumeration for the 8 particle FX components, 4-shape decomposition,
+  scope cut for the GeometryCloud-first slice. (M_REGISTRY.6 spec)
+- Cross-reference banners added to 10 pre-existing pillar specs
+  (M_AUDIT.7) pointing every reader at the unified registry stack.
+
+### Security hardening (M_SEC.*)
+
+- Android Manifest: `allowBackup=false`, `usesCleartextTraffic=false`,
+  scoped `data_extraction_rules.xml` + `backup_rules.xml` (deny-all
+  for database/sharedpref/file/external/root). (M_SEC.3)
+- Cordova `<access origin="*"/>` stripped from `config.xml`. (M_SEC.1)
+- `FileProvider` scoped to `screenshots/` + `cache_screenshots/` only.
+  (M_SEC.2)
+- Snapshot validator (`serialize-game.ts`): `validateSnapshot` rejects
+  prototype-pollution keys, NaN/Infinity numbers, out-of-bounds
+  mapSize, unknown weather states. `pickEconomy` whitelists keys with
+  `safeFinite` coercion. Entity-count capped at 5000. (M_SEC.5, .11)
+- `serialize.ts` deserializeWorld rejects `__proto__` / `constructor`
+  / `prototype` at both trait-name and trait-payload layers. (M_SEC.6)
+- App.tsx resume fallback no longer collapses the two-PRNG model — a
+  failed resume mints a fresh event seed instead of deriving it from
+  the map seed. (M_SEC.7)
+- NewGameModal seed input capped at 64 chars, NFC-normalised, ASCII
+  letters+hyphens+space whitelist (rejects RTL overrides, zero-width
+  joiners). (M_SEC.8)
+- Self-host Metamorphous + Inter via `@fontsource/*`; removed
+  `fonts.googleapis.com` runtime dependency. (M_SEC.9)
+- `Content-Security-Policy` meta tag — `default-src 'self'`,
+  `object-src 'none'`, no third-party origins. (M_SEC.10)
+
+### Doctrine + state
+
+- `LOCAL REVIEWERS DRIVE THE LOOP` doctrine encoded in the directive.
+- `ONE UNIFIED PRODUCTION CODEBASE` doctrine encoded — no fix-laters,
+  throw out and rewrite if the refactor demands it.
+- All M_AUDIT.0-.6 findings forward-applied into the directive as
+  ~130 concrete tickets (M_REGISTRY × 30, M_MICRO × 67, M_SEC × 33).
+
 ## [0.3.0] — Game-loop completion + spec-102 architecture
 
 The full-game release. Closes every gap from the original `references/
