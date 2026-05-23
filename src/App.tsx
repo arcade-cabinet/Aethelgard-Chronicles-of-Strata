@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { GameOverModal } from '@/hud/GameOverModal';
 import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
+import { SelectionRect } from '@/hud/SelectionRect';
 import { ZoneLegend } from '@/hud/ZoneLegend';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
 import { Minimap } from '@/hud/Minimap';
@@ -53,11 +55,20 @@ function GameSession({ config }: { config: NewGameConfig }) {
   }, [config]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const viewport = useViewport();
+  // r3f camera ref for HUD overlays that project world → screen (SelectionRect).
+  const cameraRef = useRef<Camera | null>(null);
+  const getCamera = useCallback(() => cameraRef.current, []);
 
   return (
     <div id="app-shell" data-viewport={viewport.class} style={{ position: 'absolute', inset: 0 }}>
       <ErrorBoundary fallback={<SceneError />}>
-        <GameCanvas game={game} buildContext={buildContext} />
+        <GameCanvas
+          game={game}
+          buildContext={buildContext}
+          onCameraReady={(cam) => {
+            cameraRef.current = cam;
+          }}
+        />
       </ErrorBoundary>
       <ResourceBar game={game} compact={viewport.isPortrait} />
       <Minimap game={game} compact={viewport.isPortrait} />
@@ -67,6 +78,7 @@ function GameSession({ config }: { config: NewGameConfig }) {
           setBuildContext({ type: ctx.type, onPlaced: () => setBuildContext(null) })
         }
       />
+      <SelectionRect game={game} getCamera={getCamera} />
       <SoundToggle persistence={persistence} />
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />

@@ -118,10 +118,16 @@ export interface GameState {
    */
   aiPlayers: Partial<Record<Faction, AiPlayer>>;
   /**
-   * The koota entityId of the currently-selected entity, or `undefined` when
-   * nothing is selected. Updated by `selectEntity` in `@/game/selection`.
+   * The PRIMARY currently-selected entity id (the first in `selectedIds` for
+   * single-selection consumers like SelectionPanel). Undefined when nothing is
+   * selected. Updated by `selectEntity` / `selectEntities` / `clearSelection`.
    */
   selectedId?: number;
+  /**
+   * Every currently-selected entity id (M_GAMEPLAY.2 — multi-unit selection).
+   * `selectedIds[0]` matches `selectedId`. Empty when nothing is selected.
+   */
+  selectedIds: number[];
   /**
    * Auto-save timer. Attached by the App layer (which owns the persistence
    * facade); when present, `runEconomyTick` advances it. Absent in tests and
@@ -356,6 +362,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     enemyBaseEntity,
     outcome: 'playing',
     lastDamageEvents: [],
+    selectedIds: [],
     eventRng,
     clock: createClock(),
     weather: createWeather(),

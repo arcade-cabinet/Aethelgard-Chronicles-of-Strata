@@ -1,6 +1,6 @@
-import { Canvas } from '@react-three/fiber';
-import { Suspense, useMemo } from 'react';
-import { PCFSoftShadowMap } from 'three';
+import { Canvas, useThree } from '@react-three/fiber';
+import { Suspense, useEffect, useMemo } from 'react';
+import { PCFSoftShadowMap, type Camera } from 'three';
 import type { GameState } from '@/game/game-state';
 import { CameraRig } from './CameraRig';
 import { type ViewportProfile, useViewport } from './useViewport';
@@ -22,15 +22,26 @@ import { ZoneBorder } from '@/world/ZoneBorder';
 import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
 
+/** Expose the active r3f camera to the parent via a callback. */
+function CameraTap({ onReady }: { onReady: (cam: Camera) => void }) {
+  const cam = useThree((s) => s.camera);
+  useEffect(() => {
+    onReady(cam);
+  }, [cam, onReady]);
+  return null;
+}
+
 /** Inner scene — runs inside the Canvas so r3f hooks are valid. */
 function Scene({
   game,
   buildContext,
   viewport,
+  onCameraReady,
 }: {
   game: GameState;
   buildContext: BuildContext | null;
   viewport: ViewportProfile;
+  onCameraReady?: (cam: Camera) => void;
 }) {
   useGameLoop(game);
 
@@ -63,6 +74,7 @@ function Scene({
       <SelectionRing game={game} />
       <ZoneBorder game={game} />
       <CameraRig viewport={viewport} boardRadius={game.board.radius} />
+      {onCameraReady && <CameraTap onReady={onCameraReady} />}
     </>
   );
 }
@@ -73,6 +85,8 @@ export interface GameCanvasProps {
   game: GameState;
   /** The active build context (a building chosen to place), or null. */
   buildContext?: BuildContext | null;
+  /** Receives the r3f camera reference (for HUD overlays that project to screen). */
+  onCameraReady?: (cam: Camera) => void;
 }
 
 /**
@@ -81,7 +95,7 @@ export interface GameCanvasProps {
  * `CameraRig`'s default framing. Soft (PCF) shadows give the gentle low-poly
  * look; `DayNightCycle` adds distance fog and drives the lighting.
  */
-export function GameCanvas({ game, buildContext = null }: GameCanvasProps) {
+export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCanvasProps) {
   const viewport = useViewport();
   return (
     <Canvas
@@ -89,7 +103,12 @@ export function GameCanvas({ game, buildContext = null }: GameCanvasProps) {
       camera={{ position: [0, 55, 62], fov: viewport.camera.fov }}
       style={{ position: 'absolute', inset: 0 }}
     >
-      <Scene game={game} buildContext={buildContext} viewport={viewport} />
+      <Scene
+        game={game}
+        buildContext={buildContext}
+        viewport={viewport}
+        {...(onCameraReady ? { onCameraReady } : {})}
+      />
     </Canvas>
   );
 }
