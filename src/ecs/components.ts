@@ -97,19 +97,41 @@ export const AssignedJob = trait({ state: 'IDLE' as JobState, targetKey: '' });
 // Behaviours are composable traits attached to ANY entity (typically a building)
 // rather than baked into a building type. A future Wonder could have all three.
 
+/** Damage kind an Offensive entity deals — see DefensiveBehavior.armorVs. */
+export type DamageType = 'normal' | 'siege' | 'magic' | 'pierce';
+
 /**
  * Offensive zone of control — the entity radiates an offensive aura over
  * neighbouring tiles within `radius`; the offensive system deals `dps` damage
- * each second to enemy military units inside the aura.
+ * each second to enemy military units inside the aura. `damageType` slots
+ * into the Defender's armorVs[damageType] table (spec 102) — a Trebuchet
+ * (`damageType:'siege'`) hits a Wall (`armorVsSiege: 1.5`) much harder than
+ * its `armorVsNormal: 0.3` would let a Footman.
  */
-export const OffensiveBehavior = trait({ radius: 3, dps: 6 });
+export const OffensiveBehavior = trait({
+  radius: 3,
+  dps: 6,
+  damageType: 'normal' as DamageType,
+});
 
 /**
  * Defensive zone of control — the entity is a hard pathing border. The tile
  * itself is non-walkable; enemy units cannot path past it until the entity is
  * destroyed. `radius` is reserved for future area-defence walls.
+ *
+ * `armorVs<DamageType>` are incoming-damage multipliers (1.0 = no resistance;
+ * <1.0 = resistant; >1.0 = vulnerable). The damage formula (M_ARCHETYPE.4):
+ *   applied = base * (target.armorVs[source.damageType] ?? 1)
+ * Adding a new damage type = a new field here + a row in any Offender's
+ * `damageType`; the system iterates the existing table — no code branches.
  */
-export const DefensiveBehavior = trait({ radius: 0 });
+export const DefensiveBehavior = trait({
+  radius: 0,
+  armorVsNormal: 0.3,
+  armorVsSiege: 1.5,
+  armorVsMagic: 1.0,
+  armorVsPierce: 0.6,
+});
 
 /**
  * Attractor zone of control — the entity is a faction anchor. Its `radius`

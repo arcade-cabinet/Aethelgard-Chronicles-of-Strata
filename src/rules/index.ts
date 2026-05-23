@@ -51,3 +51,4 @@ export {
 } from './display';
 export type { Discovery } from './discoveries';
 export { DISCOVERIES, discoveryById } from './discovery-registry';
+export { applyArmor, armorMultiplier } from './damage';
