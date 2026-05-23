@@ -29,12 +29,17 @@ describe('ui-sound-emitter', () => {
     expect(playSound).not.toHaveBeenCalled();
   });
 
-  it('calls playSound after registration', () => {
+  it('calls playSound after registration with a click-pool variant (M_EXPANSION.AU.35)', () => {
     const buses = createAudioBuses();
     const unregister = registerUiSoundPlayer(buses);
 
     emitUiSound('ui-button-click');
-    expect(playSound).toHaveBeenCalledWith(buses, 'ui', 'audio.sfx.ui-click');
+    // Variant pool — emitter picks one of three click variants at random.
+    expect(playSound).toHaveBeenCalledWith(
+      buses,
+      'ui',
+      expect.stringMatching(/^audio\.ui\.click-0[1-3]$/),
+    );
 
     unregister();
   });

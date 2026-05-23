@@ -24,6 +24,9 @@ export type StaticAssetPath =
   'assets/audio/stinger/defeat.wav' |
   'assets/audio/stinger/victory.wav' |
   'assets/audio/ui/achievement.wav' |
+  'assets/audio/ui/click-01.wav' |
+  'assets/audio/ui/click-02.wav' |
+  'assets/audio/ui/click-03.wav' |
   'assets/audio/ui/discovery-unlock.wav' |
   'assets/audio/ui/research-complete.wav' |
   'assets/board/tile/dirt.glb' |
@@ -181,6 +184,9 @@ const assets = new Set<string>([
   'assets/audio/stinger/defeat.wav',
   'assets/audio/stinger/victory.wav',
   'assets/audio/ui/achievement.wav',
+  'assets/audio/ui/click-01.wav',
+  'assets/audio/ui/click-02.wav',
+  'assets/audio/ui/click-03.wav',
   'assets/audio/ui/discovery-unlock.wav',
   'assets/audio/ui/research-complete.wav',
   'assets/board/tile/dirt.glb',

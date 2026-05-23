@@ -12,7 +12,7 @@
 import type { AudioBuses } from './buses';
 import { playSound } from './buses';
 import type { GameAudioEvent } from './sound-map';
-import { SOUND_FOR_EVENT } from './sound-map';
+import { resolveSoundId, SOUND_FOR_EVENT } from './sound-map';
 
 /** A registered sound player from the useAudio hook. */
 interface RegisteredPlayer {
@@ -36,5 +36,7 @@ export function registerUiSoundPlayer(buses: AudioBuses): () => void {
 export function emitUiSound(event: GameAudioEvent): void {
   if (!_player) return;
   const mapping = SOUND_FOR_EVENT[event];
-  playSound(_player.buses, mapping.bus, mapping.soundId);
+  const soundId = resolveSoundId(mapping);
+  if (!soundId) return;
+  playSound(_player.buses, mapping.bus, soundId);
 }

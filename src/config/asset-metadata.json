@@ -566,6 +566,33 @@
     "pack": "PixelLoops UI SFX",
     "license": "PixelLoops Royalty-Free"
   },
+  "audio.ui.click-01": {
+    "id": "audio.ui.click-01",
+    "path": "assets/audio/ui/click-01.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops UI SFX",
+    "license": "PixelLoops Royalty-Free"
+  },
+  "audio.ui.click-02": {
+    "id": "audio.ui.click-02",
+    "path": "assets/audio/ui/click-02.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops UI SFX",
+    "license": "PixelLoops Royalty-Free"
+  },
+  "audio.ui.click-03": {
+    "id": "audio.ui.click-03",
+    "path": "assets/audio/ui/click-03.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops UI SFX",
+    "license": "PixelLoops Royalty-Free"
+  },
   "nature.crystal-large": {
     "id": "nature.crystal-large",
     "path": "assets/nature/crystal-large.glb",

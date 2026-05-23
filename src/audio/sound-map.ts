@@ -36,10 +36,30 @@ export type GameAudioEvent =
   | 'victory'
   | 'defeat';
 
-/** A resolved bus + asset id pair for a sound event. */
+/** A resolved bus + asset id pair for a sound event.
+ * M_EXPANSION.AU.35 — `soundIds` (plural) declares a variant pool;
+ * the emitter picks one at play time. Use `soundId` (singular) for
+ * the legacy single-asset shape — both are accepted. */
 export interface SoundMapping {
   bus: keyof AudioBuses;
-  soundId: string;
+  soundId?: string;
+  /** Variant pool — the emitter rotates among these per call. */
+  soundIds?: readonly string[];
+}
+
+/**
+ * Resolve a sound mapping to one concrete asset id. Picks a random
+ * variant from `soundIds` if present; otherwise returns `soundId`.
+ * Returns the asset id (never undefined — mappings always have one or
+ * the other). The "random" pick uses Math.random because this is pure
+ * presentation outside the determinism scope (sim ≠ UI sound).
+ */
+export function resolveSoundId(mapping: SoundMapping): string {
+  if (mapping.soundIds && mapping.soundIds.length > 0) {
+    const idx = Math.floor(Math.random() * mapping.soundIds.length);
+    return mapping.soundIds[idx] ?? mapping.soundIds[0] ?? '';
+  }
+  return mapping.soundId ?? '';
 }
 
 /** Maps every `GameAudioEvent` to the bus and asset id that plays it. */
@@ -81,7 +101,12 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   'gate-close': { bus: 'sfx', soundId: 'audio.sfx.ui-confirm' },
 
   // UI
-  'ui-button-click': { bus: 'ui', soundId: 'audio.sfx.ui-click' },
+  // M_EXPANSION.AU.35 — variant pool so repeated clicks don't sound
+  // robotic. The emitter rotates among these per call.
+  'ui-button-click': {
+    bus: 'ui',
+    soundIds: ['audio.ui.click-01', 'audio.ui.click-02', 'audio.ui.click-03'],
+  },
   'ui-panel-open': { bus: 'ui', soundId: 'audio.sfx.ui-panel-open' },
   // M_EXPANSION.AU.34 — purchased-discovery now uses the dedicated
   // PixelLoops 'Unlock_04' chime (was a generic ui-unlock placeholder).

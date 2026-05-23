@@ -16,7 +16,7 @@ import { Building } from '@/ecs/components';
 import type { DamageEvent } from '@/ecs/systems/combat';
 import type { GameState } from '@/game/game-state';
 import { createAudioBuses, playMusic, playSound } from './buses';
-import { SOUND_FOR_EVENT } from './sound-map';
+import { resolveSoundId, SOUND_FOR_EVENT } from './sound-map';
 import { registerUiSoundPlayer } from './ui-sound-emitter';
 
 /**
@@ -52,15 +52,15 @@ export function useAudio(game: GameState): void {
     const events = game.lastDamageEvents;
     if (events !== lastBatchRef.current) {
       lastBatchRef.current = events;
-      const { bus: hitBus, soundId: hitId } = SOUND_FOR_EVENT['combat-hit'];
-      const { bus: critBus, soundId: critId } = SOUND_FOR_EVENT['combat-crit'];
+      const hitMap = SOUND_FOR_EVENT['combat-hit'];
+      const critMap = SOUND_FOR_EVENT['combat-crit'];
       for (const ev of events) {
         if (ev.isCrit) {
           // Crit: play the magic-impact stab instead of (not in addition to) the
           // regular hit — one sound per crit event keeps it punchy.
-          playSound(buses, critBus, critId);
+          playSound(buses, critMap.bus, resolveSoundId(critMap));
         } else {
-          playSound(buses, hitBus, hitId);
+          playSound(buses, hitMap.bus, resolveSoundId(hitMap));
         }
       }
     }
@@ -70,11 +70,11 @@ export function useAudio(game: GameState): void {
     if (currentOutcome !== lastOutcomeRef.current) {
       lastOutcomeRef.current = currentOutcome;
       if (currentOutcome === 'win') {
-        const { bus, soundId } = SOUND_FOR_EVENT.victory;
-        playSound(buses, bus, soundId);
+        const map = SOUND_FOR_EVENT.victory;
+        playSound(buses, map.bus, resolveSoundId(map));
       } else if (currentOutcome === 'loss') {
-        const { bus, soundId } = SOUND_FOR_EVENT.defeat;
-        playSound(buses, bus, soundId);
+        const map = SOUND_FOR_EVENT.defeat;
+        playSound(buses, map.bus, resolveSoundId(map));
       }
     }
 
@@ -86,10 +86,10 @@ export function useAudio(game: GameState): void {
     }
     const prev = lastCompleteBuildingsRef.current;
     if (completeCount > prev) {
-      const { bus, soundId } = SOUND_FOR_EVENT['building-completed'];
+      const map = SOUND_FOR_EVENT['building-completed'];
       const newCompletions = completeCount - prev;
       for (let i = 0; i < newCompletions; i++) {
-        playSound(buses, bus, soundId);
+        playSound(buses, map.bus, resolveSoundId(map));
       }
     }
     lastCompleteBuildingsRef.current = completeCount;
