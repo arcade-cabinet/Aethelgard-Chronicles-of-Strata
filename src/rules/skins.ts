@@ -77,12 +77,28 @@ export interface UnitRig {
 }
 
 /**
+ * Minimap visual identity per faction (M_REGISTRY.27) — was a hand-
+ * written ternary `faction === 'enemy' ? '#ef4444' : '#22c55e'` in
+ * Minimap.tsx:118 plus a literal tuple of (townHallEntity, '#38bdf8') /
+ * (enemyBaseEntity, '#a855f7') for base markers. After M_REGISTRY.27,
+ * these are Skin slot reads.
+ */
+export interface MinimapSkin {
+  /** Color of unit dots on the minimap. */
+  unitColor: string;
+  /** Color of the faction's base marker on the minimap. */
+  baseColor: string;
+}
+
+/**
  * Visual identity for one faction. New slots get added here as each
  * M_REGISTRY.* ticket lands.
  */
 export interface Skin {
   /** Per-building-type GLB + scale + yOffset (M_REGISTRY.3). */
   structure: Record<BuildingType, StructureModel>;
+  /** Minimap unit + base colors (M_REGISTRY.27). */
+  minimap: MinimapSkin;
   /**
    * Decorative props placed around the faction's base tile
    * (M_REGISTRY.4). Empty for player today; enemy clusters
@@ -155,6 +171,7 @@ export const SKINS: Record<Faction, Skin> = {
     // tiles.
     baseProps: [],
     rig: SHARED_RIG_TODAY,
+    minimap: { unitColor: '#22c55e', baseColor: '#38bdf8' },
   },
   enemy: {
     structure: {
@@ -188,6 +205,7 @@ export const SKINS: Record<Faction, Skin> = {
       { logicalId: 'structures.portal-fence', x: -0.9, y: 0, z: -0.1, scale: 0.8, rotationY: -Math.PI / 2 },
       { logicalId: 'structures.portal-fence', x: 0, y: 0, z: -0.9, scale: 0.8, rotationY: 0 },
     ],
+    minimap: { unitColor: '#ef4444', baseColor: '#a855f7' },
   },
 };
 

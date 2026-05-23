@@ -3,6 +3,7 @@ import { HEX_RADIUS } from '@/config/world';
 import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { cameraView } from '@/render/camera-view';
+import { SKINS } from '@/rules/skins';
 import { BIOME_COLORS } from '@/world/palette';
 
 /** Minimap canvas size in pixels. */
@@ -115,14 +116,19 @@ function drawOverlay(
     const hex = e.get(HexPosition);
     if (!hex) continue;
     const { x, y } = projectAxial(hex.q, hex.r, radius);
-    ctx.fillStyle = e.get(FactionTrait)?.faction === 'enemy' ? '#ef4444' : '#22c55e';
+    // M_REGISTRY.27 — minimap.unitColor lives on the Skin slot per
+    // faction; no more `=== 'enemy' ? ...` hand-branch.
+    const fac = e.get(FactionTrait)?.faction ?? 'player';
+    ctx.fillStyle = SKINS[fac].minimap.unitColor;
     ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
   }
 
-  // home base + enemy base markers
+  // home base + enemy base markers — colors live on each faction's
+  // Skin (M_REGISTRY.27). Adding a third tribe's base marker = ONE
+  // Skin row, no Minimap edit.
   for (const [entity, color] of [
-    [game.townHallEntity, '#38bdf8'],
-    [game.enemyBaseEntity, '#a855f7'],
+    [game.townHallEntity, SKINS.player.minimap.baseColor],
+    [game.enemyBaseEntity, SKINS.enemy.minimap.baseColor],
   ] as const) {
     const hex = entity.get(HexPosition);
     if (!hex) continue;

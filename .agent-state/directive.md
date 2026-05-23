@@ -622,7 +622,7 @@ the smallest end-to-end proof, then drain in dependency order.
 - [ ] M_REGISTRY.26 — `static-assets.ts` (242 LOC)
   becomes derived view over asset half of Skin registry; manual
   table goes away.
-- [ ] M_REGISTRY.27 — `Minimap.tsx:118` color ternary
+- [x] M_REGISTRY.27 — `Minimap.tsx:118` color ternary
   + literal base-marker tuple become Skin slot reads
   (`Skin[faction].minimap.color`).
 - [ ] M_REGISTRY.28 — `TileInteraction.tsx:145`
