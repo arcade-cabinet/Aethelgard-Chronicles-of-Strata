@@ -61,6 +61,12 @@ jobs:
       # malicious plugin update could inject code via this file. Diff
       # check fails CI if the build produced a tree-different output
       # than was committed.
+      #
+      # CONSTRAINT: build steps above MUST NOT modify public/. Both
+      # `pnpm build` and `pnpm build:pages` regenerate static-assets.ts
+      # from public/; any build step that writes into public/ would
+      # cause the second run to diverge from the committed file and
+      # produce a spurious CI failure (reviewer finding).
       - name: Static assets file is deterministic
         run: git diff --exit-code src/static-assets.ts
       - name: E2E tests

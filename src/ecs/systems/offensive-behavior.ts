@@ -79,7 +79,15 @@ export function offensiveBehaviorSystem(
     for (const s of sources) {
       if (s.faction === unitFaction) continue;
       if (hexDistance(s.q, s.r, hex.q, hex.r) <= s.radius) {
-        hp.current = Math.max(0, hp.current - s.dps * delta);
+        // M_AUDIT2.ARCH.42 LATENT BUG FIX: koota `entity.get(Health)`
+        // returns a SNAPSHOT (SoA-layout copy); mutating `hp.current`
+        // in place was a no-op since the system shipped. Use `.set`
+        // like combat.ts does so the canonical store receives the
+        // damage. Surfaced by the new test (offensive-behavior.test.ts).
+        target.set(Health, {
+          ...hp,
+          current: Math.max(0, hp.current - s.dps * delta),
+        });
         // record the first picked source for projectile FX
         const sid = Number(s.e);
         if (!picks.has(sid)) picks.set(sid, { src: s, target });

@@ -1473,8 +1473,8 @@ local-review-trio after each ~5-item batch.
 - [ ] M_AUDIT2.ARCH.40 — spec 103 ParticleEmitterSpec contract — verify matches actual interface
 
 **Test coverage gaps (41-50)**
-- [ ] M_AUDIT2.ARCH.41 — encroachment.ts: no test (tile flip, defended cancels, peon never encroach)
-- [ ] M_AUDIT2.ARCH.42 — offensive-behavior.ts: no test (one-source-per-target, cadence)
+- [x] M_AUDIT2.ARCH.41 — encroachment.ts: no test (tile flip, defended cancels, peon never encroach)
+- [x] M_AUDIT2.ARCH.42 — offensive-behavior.ts: no test (one-source-per-target, cadence)
 - [ ] M_AUDIT2.ARCH.43 — job-routing.ts: no test (5-case switch on action.kind)
 - [x] M_AUDIT2.ARCH.44 — zone.ts: no test (generation bump, vision cones)
 - [x] M_AUDIT2.ARCH.45 — projectiles.ts: no test (advanceProjectiles mutates+returns changed)

@@ -13,7 +13,10 @@
  * M_AUDIT2.SEC2.46).
  */
 
-const IS_PROD = typeof import.meta !== 'undefined' && Boolean(import.meta.env?.PROD);
+// Vite guarantees `import.meta.env` is always an object in transformed
+// code; PROD is a boolean. The earlier `typeof import.meta !== undefined`
+// guard was dead code per ESM spec.
+const IS_PROD = import.meta.env.PROD === true;
 
 export interface ErrorContext {
   /** Where the error happened (component name, system name, etc). */

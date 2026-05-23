@@ -60,9 +60,11 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
   const game = useMemo(() => {
     const g = initialGame ?? (config ? startGame(config) : startGame('default'));
     // Attach the 5-minute auto-save — runEconomyTick advances the timer.
-    g.autoSave = createAutoSave(() => {
-      void persistence.save('AutoSave', g);
-    });
+    // M_AUDIT2.SEC2.27 reviewer-fix — return the persistence.save
+    // promise directly so tickAutoSave's concurrency guard can await
+    // it. The previous `void persistence.save(...)` discarded the
+    // promise immediately, defeating the saving:bool guard.
+    g.autoSave = createAutoSave(() => persistence.save('AutoSave', g));
     return g;
     // initialGame is intentionally a one-shot prop; remounts on config change.
   }, [config, initialGame]);
