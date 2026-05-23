@@ -328,8 +328,9 @@ audio packs via Howler. No procedural synthesis. Packs available:
 - [x] M_TITLE.1 — animated title bg (4e0d101): TitleBackground.tsx own
   r3f Canvas behind title-screen; rotating golden ocean + 3 biome hex
   props; warm sky gradient.
-- [ ] M_TITLE.2 — title music — a fitting Kenney/licensed loop in the
-  audio buses; muted by default if SoundToggle off.
+- [x] M_TITLE.2 — title music: covered by M_AUDIO.3 — useTitleMusic
+  plays audio.music.menu on title-screen mount; Howler.mute() honours
+  the SoundToggle so muted state is global.
 - [x] M_TITLE.3 — title footer: small version+credits row at the bottom of
   the title screen (Kenney/KayKit CC0/CC-BY + PixelLoops/GameLoops audio +
   r3f/koota/yuka stack).
