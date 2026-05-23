@@ -19,6 +19,47 @@ are entities; all properties are components; all behavior is implemented in pure
 systems. The ECS world is created once at game start and persists for the lifetime of
 a play session.
 
+## Slot taxonomy (M_ARCH_UNIFY layer 1 → layer 2)
+
+```mermaid
+flowchart LR
+  subgraph Traits["koota traits (M_ARCH_UNIFY archetype slots)"]
+    OB[OffensiveBehavior]
+    DB[DefensiveBehavior]
+    AB[AttractorBehavior]
+    MV[Movement]
+    AN[AnimationState]
+    HP[Health]
+    SP[ScienceProducer]
+    BB[Building]
+    UU[Unit]
+    HX[HexPosition]
+    FT[FactionTrait]
+  end
+  subgraph Profiles["Thing registries (slot composition tables)"]
+    BP[BUILDING_PROFILES]
+    UP[UNIT_PROFILES]
+    MP[MOVER_PROFILES]
+  end
+  subgraph Factories["Factories (compose slots → entity)"]
+    CC[createCharacter]
+    PB[placeBuilding]
+    PR[placeRoad]
+  end
+  BP -->|.behaviors / .producer| Factories
+  UP -->|.harvester / .nonCombat / .damageType| Factories
+  MP -->|.color| Factories
+  Factories -->|world.spawn ...traits| Traits
+  Traits --> Entity[(Entity)]
+```
+
+Every spawn site (factory) reads the relevant Profile registry, picks
+the slot values, and assembles the trait tuple. The Factory layer is
+the boundary between **data (Profiles)** and **runtime (Traits on
+entities)**; ECS systems then iterate by querying trait membership.
+**Adding a new capability slot** = add the trait + extend a Profile
+interface + add ONE consumer in the factory or in a system.
+
 ## Component Catalog
 
 | Component | Type | Description |

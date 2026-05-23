@@ -48,7 +48,36 @@ new Howl({
 
 ## Event → Sound Map
 
-| Event | Sound asset | Bus | Notes |
+> **M_REGISTRY.20 (planned)** — this event→asset table will move onto
+> the Skin slot as `SKINS[faction].audio[event]`. A third tribe defines
+> its own `audio` map (e.g. necromancer footsteps = bone-clack); the
+> encroachment `faction === 'player'` critical-alarm hard-branch
+> collapses into a Skin slot read. The data shape below remains
+> authoritative; the location migrates.
+
+```mermaid
+flowchart LR
+  subgraph Slot["SKINS[faction].audio (future, M_REGISTRY.20)"]
+    EV1[footstep-grass]
+    EV2[footstep-sand]
+    EV3[combat-hit]
+    EV4[critical-alarm]
+    EVN[…]
+  end
+  subgraph Player["SKINS.player.audio"]
+    P1[default sfx pack]
+  end
+  subgraph Enemy["SKINS.enemy.audio"]
+    E1[default sfx pack]
+  end
+  subgraph New["SKINS.NEW_TRIBE.audio (one row to add)"]
+    N1[custom sfx pack]
+  end
+  Event[(game event)] -->|skinFor.audio[event]| Slot
+  Slot -->|asset id| Howler[(Howler bus)]
+```
+
+
 |---|---|---|---|
 | Peon footstep on GRASS | `audio/footstep-grass` | sfx | Triggered every ~0.5s while moving |
 | Peon footstep on BEACH | `audio/footstep-sand` | sfx | |

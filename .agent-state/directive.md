@@ -482,7 +482,7 @@ The standards (just established in M_ARCH_UNIFY):
   unification (most of them) get a "see spec 103" cross-reference; any
   that contradict the unified layer model get explicit corrigenda.
   CHANGELOG 0.4.0 entry drafted for M_AUDIT.0-.6 findings landed.
-- [ ] M_AUDIT.8 — PILLAR DOC OVERHAUL (user, 2026-05-23): every pillar
+- [x] M_AUDIT.8 — PILLAR DOC OVERHAUL (user, 2026-05-23): every pillar
   doc in `docs/specs/` updated to reflect the FULL hierarchy from
   archetypes → things → skins, INCLUDING the layers in the middle
   (slot capabilities, gen-time vs runtime pass, registry shape, config

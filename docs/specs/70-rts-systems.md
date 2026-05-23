@@ -17,6 +17,45 @@
 Each system described here is reconstructed from `references/conversation.md`. Every
 system has explicit acceptance criteria — these become milestone contract tests.
 
+## Two-pass model (M_ARCH_UNIFY layer 3)
+
+```mermaid
+flowchart TB
+  subgraph GenTime["Gen-time pass — runs once at startGame()"]
+    G1[generateBoard]
+    G2[assignBiomes]
+    G3[scatterResources]
+    G4[paintBeach/Lake/Channel/Desert/Mountain]
+    G5[placeAccretedProps]
+    G6[placeTownHall + EnemyBase]
+  end
+  subgraph RuntimePass["Runtime pass — runs every economy tick"]
+    R1[harvestSystem]
+    R2[depositSystem ×FACTIONS]
+    R3[combatSystem]
+    R4[offensiveBehaviorSystem]
+    R5[scienceSystem]
+    R6[encroachmentSystem]
+    R7[pathFollowSystem]
+    R8[deathSystem]
+    R9[spawnSystem]
+    R10[weatherSystem]
+  end
+  Cfg[economy.json + combat.json] --> GenTime
+  Cfg --> RuntimePass
+  Profiles[BUILDING_PROFILES + UNIT_PROFILES + MOVER_PROFILES] --> RuntimePass
+  Skins[SKINS&lt;Faction&gt;] -.->|reads| Renderer[(r3f scene)]
+  GenTime --> Board[(BoardData + buildSites)]
+  Board --> RuntimePass
+  RuntimePass --> World[(koota world)]
+  World --> Renderer
+```
+
+Every runtime system iterates **slot membership** (`world.query(Trait)`)
+rather than branching on type. Adding a new system = add ONE consumer
+of the relevant slot; adding a new Thing type drops into all existing
+systems automatically because it carries the same traits.
+
 ## Economy System
 
 ### Peon Harvest Loop

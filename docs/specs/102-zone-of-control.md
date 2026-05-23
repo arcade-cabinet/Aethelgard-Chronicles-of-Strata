@@ -135,6 +135,37 @@ internal heuristics.
 
 ## Archetype composition algebra — emergent richness without rule explosion
 
+```mermaid
+flowchart TB
+  subgraph Spec102["Spec 102 — the original FIVE archetypes"]
+    A1[Attractor]
+    A2[Offensive]
+    A3[Defensive]
+    A4[Mover]
+    A5[Consumer]
+  end
+  subgraph CrossCut["M_ARCH_UNIFY cross-cutting capability slots"]
+    C1[Movable]
+    C2[Animated]
+    C3[Costable]
+    C4[HasHP]
+    C5[AccretesProps]
+    C6[GenTimePlaced]
+    C7[RuntimePlaced]
+    C8[ParticleArchetype]
+    C9[ProducerSlot]
+  end
+  subgraph Thing["Things compose any subset of these slots"]
+    T1[Watchtower = Offensive + HasHP + Costable + RuntimePlaced]
+    T2[Wonder = Attractor + Offensive + Defensive + HasHP + Costable]
+    T3[Mountain = AccretesProps + GenTimePlaced]
+    T4[Footman = Mover + Offensive + HasHP + Animated + Costable]
+    T5[Library = ProducerSlot + HasHP + Costable]
+  end
+  Spec102 --> Thing
+  CrossCut --> Thing
+```
+
 The five archetypes (Attractor, Offensive, Defensive, Mover, Consumer) are not
 just a taxonomy — they are a **composition algebra**. Every gameplay pattern
 the player or AI builds is a *composition of two-or-more archetype
