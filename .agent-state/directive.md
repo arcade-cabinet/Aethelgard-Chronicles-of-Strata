@@ -938,11 +938,11 @@ bug).
 - [x] M_MICRO.B.1 — `safePersistenceRead<T>(p, key,
   fallback)` helper in `persistence.ts` consolidating
   `OnboardingOverlay` + `SettingsModal` catch shapes.
-- [ ] M_MICRO.B.2 — when SettingsModal grows, reuse
+- [x] M_MICRO.B.2 — when SettingsModal grows, reuse
   `Segmented` from NewGameModal.
-- [ ] M_MICRO.B.3 — `TileInteraction.tsx TilePick`
+- [x] M_MICRO.B.3 — `TileInteraction.tsx TilePick`
   separate "pointer state machine" from "command dispatch".
-- [ ] M_MICRO.B.4 — `Decoration.tsx useDecorationGltfs`
+- [x] M_MICRO.B.4 — `Decoration.tsx useDecorationGltfs`
   auto-derive asset-ids-to-preload from PALETTES at build time.
 
 ### M_DOCTRINE — own it architecturally top to bottom (user, 2026-05-23)

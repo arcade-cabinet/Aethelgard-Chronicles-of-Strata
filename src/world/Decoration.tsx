@@ -156,6 +156,23 @@ const DECO_IDS = [
   'nature.mound-b',
 ] as const;
 
+// M_MICRO.B.4 — verify DECO_IDS covers every asset referenced by
+// PALETTES. The DECO_IDS list is the hook-call source (must be
+// fixed-order for rules-of-hooks); the palettes are the per-biome
+// scatter sources. Drift between the two would silently skip preload
+// for new palette additions; this assertion fires at module-load if
+// a palette mentions an asset DECO_IDS forgot.
+const DECO_ID_SET: ReadonlySet<string> = new Set(DECO_IDS);
+for (const palette of Object.values(PALETTES)) {
+  for (const prop of palette.props) {
+    if (!DECO_ID_SET.has(prop.id)) {
+      throw new Error(
+        `Decoration: PALETTES references "${prop.id}" but it is missing from DECO_IDS — add it (in fixed order) to keep useGLTF call order constant per rules-of-hooks.`,
+      );
+    }
+  }
+}
+
 // Preload every decoration mesh at module load time.
 for (const id of DECO_IDS) {
   useGLTF.preload(assets.url(id));
