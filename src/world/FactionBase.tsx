@@ -205,14 +205,16 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
   );
 }
 
-// Preload every GLB any Skin references for either faction's base. The
-// Skin registry is the single source of truth for what visual assets
-// matter; this preload list derives from it.
+// Preload every GLB any Skin references — central base mesh (TownHall),
+// every structure type the faction may place (Farm/House/Granary/
+// Barracks/Watchtower/Wall/Wonder/Library — pre-warmed so placement
+// doesn't stutter), AND decorative baseProps. The Skin registry is
+// the single source of truth for what visual assets matter; this
+// preload list derives from it so adding a structure or prop in
+// SKINS automatically preloads its GLB.
 const SEEN_PRELOAD = new Set<string>();
 for (const skin of Object.values(SKINS)) {
-  // Central base mesh — TownHall slot for both factions.
-  SEEN_PRELOAD.add(skin.structure.TownHall.logicalId);
-  // Decorative props.
+  for (const model of Object.values(skin.structure)) SEEN_PRELOAD.add(model.logicalId);
   for (const p of skin.baseProps) SEEN_PRELOAD.add(p.logicalId);
 }
 for (const id of SEEN_PRELOAD) useGLTF.preload(assets.url(id));

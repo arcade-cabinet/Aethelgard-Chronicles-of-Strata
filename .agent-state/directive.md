@@ -527,11 +527,11 @@ the smallest end-to-end proof, then drain in dependency order.
   role switches into Skin slot reads: `Skin[faction].rig[role] =
   {tier, mesh}`. Delete `rigForRole` + `characterMeshId`;
   AnimatedCharacter reads the Skin slot directly.
-- [ ] M_REGISTRY.3 — kill `src/world/structure-models.ts`
+- [x] M_REGISTRY.3 — kill `src/world/structure-models.ts`
   as a top-level table. Move per-(faction, BuildingType) GLB + scale
   + yOffset under `Skin[faction].structure[type]`. structureModel()
   becomes a 2-key lookup.
-- [ ] M_REGISTRY.4 — collapse `HomeBase.tsx` +
+- [x] M_REGISTRY.4 — collapse `HomeBase.tsx` +
   `EnemyBase.tsx` into ONE `<FactionBase entity={...} />` component
   reading Skin slot for prop GLBs + offsets. Per-faction divergence
   becomes 100% data.
