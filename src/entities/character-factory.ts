@@ -12,6 +12,7 @@ import {
   Health,
   HexPosition,
   Movement,
+  OffensiveBehavior,
   PathQueue,
   Selectable,
   Transform,
@@ -105,6 +106,17 @@ export function createCharacter(params: CreateCharacterParams): Entity {
       Health({ current: scaledHp, max: scaledHp }),
       Combatant({ attackDamage: scaledDamage, attackRange, attackCooldown, attackTimer: 0 }),
       EnemyTarget({ targetId: -1 }),
+      // M_ARCHETYPE.5 — military units are OFFENSIVE EMITTERS on legs. They
+      // adopt the same trait Watchtowers have (spec 102). dps approximates
+      // attackDamage/attackCooldown so the offensive-behavior system applies
+      // continuous damage in range at the same rate combat.ts would. The
+      // damageType is 'normal' today; siege units (Trebuchet) will declare
+      // 'siege' as a single-row change.
+      OffensiveBehavior({
+        radius: attackRange,
+        dps: attackDamage / attackCooldown,
+        damageType: 'normal',
+      }),
     ] as const;
     return world.spawn(...base, ...combatTraits);
   }

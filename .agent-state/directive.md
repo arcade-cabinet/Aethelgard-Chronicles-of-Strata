@@ -196,10 +196,9 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
 - [ ] M_ARCHETYPE.2 — Gate = Mover-on-Defender. Directional passability:
   friendly units cross freely (pathfinding cost 1); enemy units find a
   closed door (impassable, must destroy/circumvent).
-- [ ] M_ARCHETYPE.4 — damage-type × armor table. Each Offender has
-  `damageType` (normal | siege | magic | pierce); each Defender has
-  `armorVs[damageType]`. Damage = `base * armor`. Trebuchet (unit/building)
-  + siege buildings share projectile + cadence law via the table.
+- [x] M_ARCHETYPE.4 — damage-type × armor table (336c611): DamageType
+  union; OffensiveBehavior.damageType; DefensiveBehavior.armorVs*; rules/
+  damage.ts armorMultiplier + applyArmor. 281 tests.
 - [ ] M_ARCHETYPE.5 — units adopt `OffensiveBehavior`. Footman has the
   trait on spawn; `combat.ts` collapses into the offensive-behavior system
   + the damage-type table. Same projectile/cadence law for units as
