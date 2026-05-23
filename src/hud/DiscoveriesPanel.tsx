@@ -4,6 +4,7 @@ import { doResearch } from '@/game/commands';
 import { canAfford } from '@/game/economy';
 import { canResearch, type ResearchId } from '@/game/research';
 import type { GameState } from '@/game/game-state';
+import { useViewport } from '@/render/useViewport';
 import { DISCOVERIES } from '@/rules';
 import { costLabel } from './format';
 import { HUD_THEME } from './hud-theme';
@@ -21,6 +22,10 @@ import { HUD_THEME } from './hud-theme';
 export function DiscoveriesPanel({ game }: { game: GameState }) {
   const [open, setOpen] = useState(false);
   const eco = game.economy.player;
+  const viewport = useViewport();
+  // narrow phones stack the trigger button below the pause/sound buttons
+  const rightPx = viewport.isPortrait ? 8 : 340;
+  const topPx = viewport.isPortrait ? 52 : 12;
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
@@ -30,8 +35,8 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
           type="button"
           style={{
             position: 'absolute',
-            top: 12,
-            right: 340,
+            top: topPx,
+            right: rightPx,
             zIndex: 6,
             padding: '6px 14px',
             borderRadius: 999,

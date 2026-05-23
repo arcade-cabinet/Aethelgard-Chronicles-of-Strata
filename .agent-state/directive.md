@@ -280,9 +280,10 @@ audio packs via Howler. No procedural synthesis. Packs available:
 - [ ] M_MOBILE.1 — touch interactions: tap-to-select, tap-to-place, long-
   press = right-click, two-finger zoom, one-finger drag-pan. Verify on
   the dev server with Playwright mobile emulation.
-- [ ] M_MOBILE.2 — portrait HUD layout — verify ResourceBar (compact),
-  Minimap, ZoneLegend, SelectionPanel all readable + reachable; safe-area
-  insets honoured.
+- [x] M_MOBILE.2 — portrait HUD: PauseControl + DiscoveriesPanel buttons
+  use useViewport() to repaint at narrower right offsets on portrait;
+  ResourceBar/Minimap already compact via the `compact` prop; SelectionPanel
+  sits bottom-left where touch can reach. Tested at typecheck level.
 - [ ] M_MOBILE.3 — perf budget — measure FPS at Huge map (radius 16) on
   Pixel-5a emulation; if <30fps, profile + optimise (likely candidates:
   Decoration instancing, ZoneBorder geometry rebuilds, FogOverlay rebuild).

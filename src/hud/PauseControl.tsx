@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { GameState } from '@/game/game-state';
+import { useViewport } from '@/render/useViewport';
 import { HUD_THEME } from './hud-theme';
 
 /**
@@ -10,6 +11,7 @@ import { HUD_THEME } from './hud-theme';
  */
 export function PauseControl({ game }: { game: GameState }) {
   const [paused, setPaused] = useState(game.paused);
+  const viewport = useViewport();
 
   const toggle = () => {
     game.paused = !game.paused;
@@ -40,13 +42,15 @@ export function PauseControl({ game }: { game: GameState }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [game]);
 
+  // narrower viewports stack the buttons closer to the right edge
+  const rightPx = viewport.isPortrait ? 72 : 220;
   return (
     <div
       data-hud-panel
       style={{
         position: 'absolute',
         top: 12,
-        right: 220,
+        right: rightPx,
         zIndex: 6,
         pointerEvents: 'auto',
       }}
