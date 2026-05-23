@@ -843,29 +843,29 @@ bug).
 
 #### Category 6 — Vacuous test assertions
 
-- [ ] M_MICRO.6.1 — `crossings.test.ts:43-44` assert
+- [x] M_MICRO.6.1 — `crossings.test.ts:43-44` assert
   `board.crossings.size > 0` + count natural vs artificial.
-- [ ] M_MICRO.6.2 — `resource-spawn.test.ts:22-26`
+- [x] M_MICRO.6.2 — `resource-spawn.test.ts:22-26`
   assert `woodNodes.length > 0` before the per-node check.
-- [ ] M_MICRO.6.3 — `attractor.test.ts:24-27` assert
+- [x] M_MICRO.6.3 — `attractor.test.ts:24-27` assert
   `nearby.length > 0` AND at least one type reaches guarantee.
-- [ ] M_MICRO.6.4 — `prng.test.ts:25-26` add
+- [x] M_MICRO.6.4 — `prng.test.ts:25-26` add
   `expect(v).toBeLessThan(1)` + statistical mean-in-[0.45,0.55]
   over 10k draws.
-- [ ] M_MICRO.6.5 — `ai-vs-ai.test.ts:65-67` assert
+- [x] M_MICRO.6.5 — `ai-vs-ai.test.ts:65-67` assert
   `wood > initialWood` (verify economy progress, not just signedness).
-- [ ] M_MICRO.6.6 — `weather-system.test.ts:31-33`
+- [x] M_MICRO.6.6 — `weather-system.test.ts:31-33`
   assert `seen.size > 0` first.
-- [ ] M_MICRO.6.7 — `economy-integration.test.ts:18-19`
+- [x] M_MICRO.6.7 — `economy-integration.test.ts:18-19`
   `expect(after).toBeGreaterThan(before + 10)` for meaningful
   harvest progress.
-- [ ] M_MICRO.6.8 — `audio-events.test.ts:20-21,32-33`
+- [x] M_MICRO.6.8 — `audio-events.test.ts:20-21,32-33`
   assert `events.length === EXPECTED_COUNT` before the loop.
-- [ ] M_MICRO.6.9 — `place-road.test.ts:25-29` query
+- [x] M_MICRO.6.9 — `place-road.test.ts:25-29` query
   for placed key specifically + assert stone material.
-- [ ] M_MICRO.6.10 — `day-night.test.ts:27-28` sample
+- [x] M_MICRO.6.10 — `day-night.test.ts:27-28` sample
   full phase + assert `min < max - 0.5` so curve isn't flat.
-- [ ] M_MICRO.6.11 — `science-system.test.ts:7-13`
+- [x] M_MICRO.6.11 — `science-system.test.ts:7-13`
   constrain magnitude: `~= expectedRate * 60 * (1/60) ± 5%`.
 
 #### Category 7 — Helper functions > 30 LOC

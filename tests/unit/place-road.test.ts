@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DefensiveBehavior, Gate, MoverBehavior } from '@/ecs/components';
+import { getHexKey } from '@/core/hex';
+import { DefensiveBehavior, Gate, HexPosition, MoverBehavior } from '@/ecs/components';
 import { placeBuilding, placeRoad } from '@/game/commands';
 import { startGame } from '@/game/game-state';
 import { buildGateMap } from '@/rules';
@@ -22,11 +23,18 @@ describe('placeRoad (M_FEATURE.1)', () => {
     const before = game.economy.player.stone;
     expect(placeRoad(game, key, 'stone')).toBe(true);
     expect(game.economy.player.stone).toBe(before - 5);
-    let foundMover = 0;
-    for (const e of game.world.query(MoverBehavior)) {
-      if (e.get(MoverBehavior)?.material === 'stone') foundMover += 1;
+    // M_MICRO.6.9 — query for the placed key specifically + assert
+    // the material; the prior "any stone mover exists" check would
+    // pass even if the road landed on a totally different tile.
+    let foundOnKey = false;
+    for (const e of game.world.query(MoverBehavior, HexPosition)) {
+      const h = e.get(HexPosition);
+      if (h && getHexKey(h.q, h.r) === key) {
+        expect(e.get(MoverBehavior)?.material).toBe('stone');
+        foundOnKey = true;
+      }
     }
-    expect(foundMover).toBeGreaterThan(0);
+    expect(foundOnKey).toBe(true);
   });
 
   it('rejects placement on the player Town Hall', () => {

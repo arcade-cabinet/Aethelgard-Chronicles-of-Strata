@@ -9,7 +9,12 @@ describe('science accumulation (M_FEATURE.3)', () => {
     const before = game.economy.player.science;
     // 60 fixed ticks = 1 game-second
     for (let i = 0; i < 60; i++) runEconomyTick(game, 1 / 60);
-    expect(game.economy.player.science).toBeGreaterThan(before);
+    // M_MICRO.6.11 — constrain magnitude: passive trickle is 0.05/sec
+    // (see scienceSystem.PASSIVE_TRICKLE), so 1 game-second should
+    // produce ~0.05. ±5% tolerance.
+    const delta = game.economy.player.science - before;
+    expect(delta).toBeGreaterThanOrEqual(0.0475);
+    expect(delta).toBeLessThanOrEqual(0.0525);
   });
 
   it('Library entity carries ScienceProducer trait + accelerates accumulation', () => {

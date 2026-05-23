@@ -40,11 +40,20 @@ describe('placeCrossings', () => {
 
   it('every crossing carries a form and a biome style from the higher tile', () => {
     const board = generateBoard(SEED);
+    // M_MICRO.6.1 — assert the board actually produced crossings before
+    // looping (a vacuously-passing 0-iteration loop would not catch a
+    // regression in crossing placement).
+    expect(board.crossings.size).toBeGreaterThan(0);
+    let naturalCount = 0;
+    let artificialCount = 0;
     for (const c of board.crossings.values()) {
       expect(c.form === 'natural' || c.form === 'artificial').toBe(true);
+      if (c.form === 'natural') naturalCount++;
+      else artificialCount++;
       const high = board.tiles.get(c.highKey);
       expect(c.style).toBe(biomeStyleFor(high?.type ?? 'GRASS'));
     }
+    expect(naturalCount + artificialCount).toBe(board.crossings.size);
   });
 
   it('places far fewer crossings than candidate cliff edges', () => {

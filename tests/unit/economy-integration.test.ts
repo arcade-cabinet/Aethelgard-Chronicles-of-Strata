@@ -16,7 +16,11 @@ describe('economy integration', () => {
     // assign every peon to the nearest wood node and run the loop
     game.assignAllPeonsToHarvest();
     for (let i = 0; i < 3600; i++) runEconomyTick(game, 1 / 60);
-    expect(game.economy.player.wood).toBeGreaterThanOrEqual(woodBefore);
+    // M_MICRO.6.7 — assert MEANINGFUL harvest progress; the prior
+    // `>= woodBefore` would pass even if the peons harvested nothing
+    // (a regression in the harvest loop). +10 leaves headroom for
+    // seed variation but rejects "harvested ~0".
+    expect(game.economy.player.wood).toBeGreaterThan(woodBefore + 10);
   });
 
   // 3600 ticks = 60 game-seconds; ~3-5s locally, occasionally over the

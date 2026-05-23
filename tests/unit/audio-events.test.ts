@@ -17,6 +17,10 @@ describe('event-sound map', () => {
       'victory',
       'defeat',
     ];
+    // M_MICRO.6.8 — assert the events array itself is non-empty so a
+    // future copy-paste accidentally emptying the array doesn't pass
+    // the per-event loop vacuously.
+    expect(events.length).toBeGreaterThan(0);
     for (const e of events) {
       expect(SOUND_FOR_EVENT[e]).toBeTruthy();
     }
@@ -29,6 +33,7 @@ describe('event-sound map', () => {
 
   it('routes all UI events to ui bus', () => {
     const uiEvents: GameAudioEvent[] = ['ui-button-click', 'ui-panel-open', 'unit-select'];
+    expect(uiEvents.length).toBe(3);
     for (const e of uiEvents) {
       expect(SOUND_FOR_EVENT[e].bus).toBe('ui');
     }
