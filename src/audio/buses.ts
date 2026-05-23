@@ -113,3 +113,24 @@ export function stopMusic(): void {
 export function setMuted(muted: boolean): void {
   Howler.mute(muted);
 }
+
+/**
+ * M_AUDIT2.ARCH.69 — Howler's shared AudioContext can suspend when
+ * the tab/app is hidden (browser / Capacitor WebView default). On
+ * resume, the FIRST sound after unhide can render silent because the
+ * context is still in 'suspended' state. Calling resume() proactively
+ * on visibilitychange fixes the silent-first-sound bug.
+ *
+ * No-op when Howler is muted (the user opted out anyway) or when the
+ * context isn't suspended.
+ */
+export function resumeAudioContextIfSuspended(): void {
+  const ctx = Howler.ctx;
+  if (!ctx) return;
+  if (ctx.state === 'suspended') {
+    // resume() returns a promise; we don't await it (fire-and-forget
+    // is the right shape for visibilitychange handlers — the next
+    // play() will queue correctly once resume settles).
+    void ctx.resume();
+  }
+}

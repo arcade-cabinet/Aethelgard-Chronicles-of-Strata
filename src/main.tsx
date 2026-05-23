@@ -30,6 +30,16 @@ if (typeof window !== 'undefined') {
   document.addEventListener('contextmenu', (e) => {
     if ((e.target as HTMLElement | null)?.closest('#root')) e.preventDefault();
   });
+  // M_AUDIT2.ARCH.69 — Howler's shared AudioContext suspends when the
+  // tab / Capacitor WebView hides; the first sound after unhide is
+  // silent until something queues a resume. Resume proactively on
+  // visibilitychange. Lazy import so howler doesn't preload before
+  // any audio code-path actually runs.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      void import('@/audio/buses').then((m) => m.resumeAudioContextIfSuspended());
+    }
+  });
 }
 
 const rootEl = document.getElementById('root');

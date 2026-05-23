@@ -1452,7 +1452,7 @@ local-review-trio after each ~5-item batch.
 **Code-shape duplication (24-29)**
 - [ ] M_AUDIT2.ARCH.24 — useFloatingPopups<T> hook (CombatText+ResourceText share lifecycle)
 - [ ] M_AUDIT2.ARCH.25 — usePolledSnapshot<T> hook (ResourceBar+SelectionPanel rAF poll)
-- [ ] M_AUDIT2.ARCH.26 — useAsset(logicalId) helper wrapping useGLTF(assets.url(id))
+- [x] M_AUDIT2.ARCH.26 — useAsset(logicalId) helper wrapping useGLTF(assets.url(id))
 - [ ] M_AUDIT2.ARCH.27 — codegen Decoration's 18 useGLTF + DECO_IDS from PALETTES single source
 - [ ] M_AUDIT2.ARCH.28 — once-per-tick buildFactionPositionsIndex used by encroachment/job-routing/ai
 - [ ] M_AUDIT2.ARCH.29 — useGameStateSubscription<T> hook (RallyMarker, GameCanvas wrappers)
@@ -1507,9 +1507,9 @@ local-review-trio after each ~5-item batch.
 - [x] M_AUDIT2.ARCH.66 — snapshot migration map (dup of .36 — track here for prod-readiness lens)
 - [ ] M_AUDIT2.ARCH.67 — <LoadingScreen progress={loaded/total}> Suspense fallback
 - [ ] M_AUDIT2.ARCH.68 — src/native/capacitor-lifecycle.ts (appStateChange + backButton)
-- [ ] M_AUDIT2.ARCH.69 — AudioContext resume on visibilitychange (Howler unhide silence)
+- [x] M_AUDIT2.ARCH.69 — AudioContext resume on visibilitychange (Howler unhide silence)
 - [ ] M_AUDIT2.ARCH.70 — @capacitor-community/sqlite still imported — pick truth (Preferences vs SQLite)
-- [ ] M_AUDIT2.ARCH.71 — <SaveCorruptedModal> before silent reseed
+- [x] M_AUDIT2.ARCH.71 — <SaveCorruptedModal> before silent reseed
 
 #### M_AUDIT2.SEC2 — security + production hardening (50)
 

@@ -120,6 +120,11 @@ export function App() {
   const [showNewGame, setShowNewGame] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [hasSave, setHasSave] = useState(false);
+  // M_AUDIT2.ARCH.71 — surface save-corruption to the user. The flag
+  // flips when persistence.load throws CorruptSaveError; a 10-second
+  // auto-dismiss toast tells them their save was lost without
+  // hijacking the title screen.
+  const [saveCorruptedNotice, setSaveCorruptedNotice] = useState(false);
 
   // Detect an existing committed save on mount so the Continue button can
   // appear. Re-runs are harmless — persistence.list is a cheap query.
@@ -148,6 +153,48 @@ export function App() {
 
   return (
     <>
+      {saveCorruptedNotice && (
+        <div
+          role="alert"
+          aria-live="polite"
+          style={{
+            position: 'fixed',
+            top: 20,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 2000,
+            background: 'rgba(239, 68, 68, 0.95)',
+            color: '#fff',
+            padding: '10px 18px',
+            borderRadius: 8,
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '0.9rem',
+            fontWeight: 600,
+            boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <span>Your saved game was corrupted and could not be loaded. Starting fresh.</span>
+          <button
+            type="button"
+            aria-label="Dismiss save-corruption notice"
+            onClick={() => setSaveCorruptedNotice(false)}
+            style={{
+              background: 'rgba(0,0,0,0.25)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 6,
+              padding: '4px 10px',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+            }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       <TitleScreen
         onNewGame={() => setShowNewGame(true)}
         onSettings={() => setShowSettings(true)}
@@ -170,7 +217,10 @@ export function App() {
                   try {
                     record = await persistence.load(latest.id);
                   } catch (err) {
+                    // M_AUDIT2.ARCH.71 — surface the corruption to the
+                    // user instead of silently starting fresh.
                     console.warn('[App] save corrupted; starting fresh game', err);
+                    setSaveCorruptedNotice(true);
                   }
                   if (!record) return;
                   try {
