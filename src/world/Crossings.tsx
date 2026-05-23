@@ -4,13 +4,9 @@ import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import type { CrossingStyle } from '@/core/biome';
 import type { BoardData } from '@/core/board';
 import type { Crossing } from '@/core/crossings';
-import { axialToWorld } from '@/core/hex';
-
-/** Parse a `"q,r"` hex key into a numeric pair. */
-function parseKey(key: string): { q: number; r: number } {
-  const [q, r] = key.split(',').map(Number);
-  return { q: q ?? 0, r: r ?? 0 };
-}
+import { axialToWorld, parseHexKey as parseKey } from '@/core/hex';
+// M_MICRO.2.2 — local parseKey aliased to shared parseHexKey to
+// keep call-sites unchanged.
 
 /** Half-width of a crossing surface, in world units. */
 const HALF_WIDTH = HEX_RADIUS * 0.44;

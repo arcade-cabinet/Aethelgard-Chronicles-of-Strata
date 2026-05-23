@@ -1,6 +1,6 @@
 import type { World } from 'koota';
 import { TILE_HEIGHT } from '@/config/world';
-import { axialToWorld } from '@/core/hex';
+import { axialToWorld, parseHexLevelKey } from '@/core/hex';
 import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 
 /**
@@ -8,12 +8,8 @@ import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
  * NaN-hardens each component (CodeRabbit: `?? 0` only catches `undefined`,
  * not the `NaN` that `Number('foo')` produces from malformed input).
  */
-function parseStep(step: string): { q: number; r: number; level: number } {
-  const [rawQ, rawR, rawLevel] = step.split(',').map(Number);
-  const safe = (n: number | undefined): number =>
-    typeof n === 'number' && !Number.isNaN(n) ? n : 0;
-  return { q: safe(rawQ), r: safe(rawR), level: safe(rawLevel) };
-}
+// M_MICRO.2.2 — local parseStep replaced by shared parseHexLevelKey.
+const parseStep = parseHexLevelKey;
 
 /**
  * Advance every entity with a PathQueue toward its next tile. When an entity

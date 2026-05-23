@@ -1,7 +1,7 @@
 import { HEX_DIRECTIONS } from '@/config/world';
 import type { BoardData } from './board';
 import { crossingKey } from './crossings';
-import { getHexKey, hexDistance } from './hex';
+import { getHexKey, hexDistance, parseHexKey } from './hex';
 
 /** The navigation graph: an adjacency list of walkable tile keys. */
 export type NavGraph = Map<string, Set<string>>;
@@ -34,11 +34,8 @@ export function buildNavGraph(board: BoardData): NavGraph {
   return graph;
 }
 
-/** Parse a hex key "q,r" back to numbers. */
-function parseKey(key: string): { q: number; r: number } {
-  const [q, r] = key.split(',').map(Number);
-  return { q: q ?? 0, r: r ?? 0 };
-}
+// M_MICRO.2.2 — parseKey was the local hand-roll; replaced by the
+// shared `parseHexKey` from @/core/hex.
 
 /**
  * A* shortest path from `startKey` to `goalKey` over the nav graph. Uniform step
@@ -49,9 +46,9 @@ export function findPath(graph: NavGraph, startKey: string, goalKey: string): st
   if (!graph.has(startKey) || !graph.has(goalKey)) return null;
   if (startKey === goalKey) return [startKey];
 
-  const goal = parseKey(goalKey);
+  const goal = parseHexKey(goalKey);
   const heuristic = (key: string): number => {
-    const p = parseKey(key);
+    const p = parseHexKey(key);
     return hexDistance(p.q, p.r, goal.q, goal.r);
   };
 

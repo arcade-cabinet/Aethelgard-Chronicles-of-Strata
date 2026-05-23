@@ -1,6 +1,6 @@
 import type { World } from 'koota';
 import type { BoardData } from '@/core/board';
-import { getHexKey, hexNeighbors } from '@/core/hex';
+import { getHexKey, hexNeighbors, parseHexKey } from '@/core/hex';
 import { findPath, type NavGraph } from '@/core/pathfinding';
 import {
   AssignedJob,
@@ -25,9 +25,9 @@ function leveledSteps(board: BoardData, path: string[]): string[] {
  * *next to* a resource or base, never on it. Returns null if none is reachable.
  */
 function pathToAdjacent(graph: NavGraph, startKey: string, targetKey: string): string[] | null {
-  const [tq, tr] = targetKey.split(',').map(Number);
+  const { q: tq, r: tr } = parseHexKey(targetKey);
   let best: string[] | null = null;
-  for (const adj of hexNeighbors(tq ?? 0, tr ?? 0)) {
+  for (const adj of hexNeighbors(tq, tr)) {
     if (!graph.has(adj)) continue;
     if (adj === startKey) return [];
     const route = findPath(graph, startKey, adj);

@@ -782,7 +782,7 @@ bug).
 
 - [ ] M_MICRO.2.1 — `board.ts:117` + `balance-audit.ts:26`
   inline `(|q|+|r|+|q+r|)/2` — replace with `hexDistance(q,r,0,0)`.
-- [ ] M_MICRO.2.2 — **PARSE-HEX-KEY HELPER** kills 13
+- [x] M_MICRO.2.2 — **PARSE-HEX-KEY HELPER** kills 13
   call sites. New `parseHexKey(key): {q,r}` in `src/core/hex.ts`,
   NaN-hardened. Replace `pathfinding.ts:39`, `hex.ts:48`, `PathLine
   .tsx:12`, `HomeBase.tsx:13`, `Crossings.tsx:11`, `RallyMarker.tsx

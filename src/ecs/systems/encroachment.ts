@@ -1,6 +1,6 @@
 import type { World } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
-import { getHexKey } from '@/core/hex';
+import { getHexKey, parseHexKey } from '@/core/hex';
 import { type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { Difficulty } from '@/game/difficulty';
 import { claimTile, releaseTile, type ZoneState } from '@/game/zone';
@@ -99,7 +99,7 @@ export function encroachmentSystem(
 
 /** Is any military unit of `set` on a tile adjacent to `tileKey`? */
 function hasAdjacentMilitary(tileKey: string, set: Set<string>): boolean {
-  const [q, r] = tileKey.split(',').map(Number);
+  const { q, r } = parseHexKey(tileKey);
   const dirs: Array<[number, number]> = [
     [1, 0],
     [0, 1],
@@ -109,7 +109,7 @@ function hasAdjacentMilitary(tileKey: string, set: Set<string>): boolean {
     [1, -1],
   ];
   for (const [dq, dr] of dirs) {
-    if (set.has(`${(q ?? 0) + dq},${(r ?? 0) + dr}`)) return true;
+    if (set.has(`${q + dq},${r + dr}`)) return true;
   }
   return false;
 }

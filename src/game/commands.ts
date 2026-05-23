@@ -1,6 +1,6 @@
 import type { Entity } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
-import { getHexKey, hexNeighbors } from '@/core/hex';
+import { getHexKey, hexNeighbors, parseHexKey } from '@/core/hex';
 import { findPath } from '@/core/pathfinding';
 import {
   AssignedJob,
@@ -290,9 +290,9 @@ export function trainUnit(
 
   // pick a walkable tile adjacent to the faction's base (the trainer building)
   const baseKey = faction === 'player' ? game.townHallKey : game.enemyBaseKey;
-  const [bq, br] = baseKey.split(',').map(Number);
+  const { q: bq, r: br } = parseHexKey(baseKey);
   let spawnTile: { q: number; r: number; level: number } | null = null;
-  for (const nKey of hexNeighbors(bq ?? 0, br ?? 0)) {
+  for (const nKey of hexNeighbors(bq, br)) {
     const tile = game.board.tiles.get(nKey);
     if (tile?.walkable && !game.buildSites.has(nKey)) {
       spawnTile = { q: tile.q, r: tile.r, level: tile.level };

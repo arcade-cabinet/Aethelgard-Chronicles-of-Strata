@@ -4,7 +4,7 @@ import { assets } from '@/assets/assets';
 import { TILE_HEIGHT } from '@/config/world';
 import type { BiomeType } from '@/core/biome';
 import type { BoardData } from '@/core/board';
-import { axialToWorld } from '@/core/hex';
+import { axialToWorld, parseHexKey } from '@/core/hex';
 import { createMapPrng } from '@/core/rng';
 
 // ---------------------------------------------------------------------------
@@ -435,8 +435,7 @@ function appendBaseAccretion(
   faction: 'player' | 'enemy',
 ): void {
   if (!baseKey) return;
-  const [bq, br] = baseKey.split(',').map(Number);
-  if (bq === undefined || br === undefined) return;
+  const { q: bq, r: br } = parseHexKey(baseKey);
   const cfg = BASE_ACCRETION[faction];
   const rng = createMapPrng(`${board.seedPhrase}:${cfg.seedTag}`);
   const [scaleLo, scaleHi] = cfg.scaleRange;

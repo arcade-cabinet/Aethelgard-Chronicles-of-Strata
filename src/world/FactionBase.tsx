@@ -24,7 +24,7 @@ import { Clone, useGLTF } from '@react-three/drei';
 import { useMemo } from 'react';
 import { assets } from '@/assets/assets';
 import { TILE_HEIGHT } from '@/config/world';
-import { axialToWorld } from '@/core/hex';
+import { axialToWorld, parseHexKey } from '@/core/hex';
 import {
   Building,
   type BuildingType,
@@ -37,11 +37,7 @@ import { SKINS } from '@/rules/skins';
 import { ConstructionRing } from './ConstructionRing';
 import { structureModel } from './structure-models';
 
-/** Parse a "q,r" hex key to axial coordinates. */
-function parseKey(key: string): { q: number; r: number } {
-  const [q, r] = key.split(',').map(Number);
-  return { q: q ?? 0, r: r ?? 0 };
-}
+// M_MICRO.2.2 — local parseKey replaced by shared parseHexKey.
 
 /**
  * One structure mesh. Loads the GLB for `(faction, type)` via the Skin
@@ -112,7 +108,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
   // Base-tile world position (TownHall for player, crypt for enemy).
   const basePos = useMemo(() => {
     if (faction === 'player') {
-      const { q, r } = parseKey(game.townHallKey);
+      const { q, r } = parseHexKey(game.townHallKey);
       const { x, z } = axialToWorld(q, r);
       const tile = game.board.tiles.get(game.townHallKey);
       return { x, y: (tile?.level ?? 0) * TILE_HEIGHT, z };

@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useState } from 'react';
 import { TILE_HEIGHT } from '@/config/world';
-import { axialToWorld } from '@/core/hex';
+import { axialToWorld, parseHexKey } from '@/core/hex';
 import type { GameState } from '@/game/game-state';
 
 /**
@@ -21,8 +21,8 @@ export function RallyMarker({ game }: { game: GameState }) {
   let y = 0;
   let z = 0;
   if (key !== '') {
-    const [q, r] = key.split(',').map(Number);
-    const world = axialToWorld(q ?? 0, r ?? 0);
+    const { q, r } = parseHexKey(key);
+    const world = axialToWorld(q, r);
     x = world.x;
     z = world.z;
     y = (game.board.tiles.get(key)?.level ?? 0) * TILE_HEIGHT;

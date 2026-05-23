@@ -1,5 +1,5 @@
 import { GameEntity, Goal, GoalEvaluator, Think } from 'yuka';
-import { hexNeighbors } from '@/core/hex';
+import { hexNeighbors, parseHexKey } from '@/core/hex';
 import {
   AssignedJob,
   Building,
@@ -134,11 +134,11 @@ function discoveredEnemyTile(game: GameState, faction: Faction): string | null {
 /** A free walkable tile adjacent to the faction's base for placing a building. */
 function freeBuildTile(game: GameState, faction: Faction): string | null {
   const baseKey = faction === 'player' ? game.townHallKey : game.enemyBaseKey;
-  const [bq, br] = baseKey.split(',').map(Number);
+  const { q: bq, r: br } = parseHexKey(baseKey);
   // Both faction-base tiles are off-limits (CodeRabbit HIGH-4 symmetric fix):
   // the AI must not stamp a Farm onto the player's TownHall if its base
   // happens to be adjacent.
-  for (const nKey of hexNeighbors(bq ?? 0, br ?? 0)) {
+  for (const nKey of hexNeighbors(bq, br)) {
     if (nKey === game.townHallKey || nKey === game.enemyBaseKey) continue;
     const tile = game.board.tiles.get(nKey);
     if (tile?.walkable && !game.buildSites.has(nKey)) return nKey;
