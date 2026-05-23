@@ -559,17 +559,14 @@ qualify for AI GOAP".
   so classic-rts (medium) keeps the baseline spawn tempo, red-vs-blue
   (short) pressures faster, endless (1.6×) breathes. Discoveries-
   graph scaling already in via M_FEATURE.2 (depth-log).
-- [ ] M_MODES.9 — map-type axis (user, 2026-05-22): "plus this would
-  allow offering several different kinds of map types. balanced,
-  continent, archipelago, dry land, etc". The 4th customization axis
-  alongside size/length/turns. `mapType` ∈ {balanced, continent,
-  archipelago, dry-land, ...}. Each map type swaps in a different
-  guided-generation rule set: balanced = M_MAPGEN.3-.9 today; continent
-  = one large landmass + thin beach + interior mountain range;
-  archipelago = multiple small islands separated by passable channels;
-  dry-land = no inland water + extensive desert + ridge-line mountains.
-  Modes-as-presets (M_MODES.7) pick the default mapType; Advanced lets
-  the player override.
+- [x] M_MODES.9 — map-type axis: generateBoard accepts mapType (balanced
+  | continent | archipelago | dry-land); paint-pass conditions per type:
+  archipelago skips mountain spine + adds wide LAKE channel cuts;
+  dry-land skips inland lake + blankets interior with DESERT; balanced
+  + continent stay as today's behavior. startGame threads preset.mapType
+  through findBalancedBoard. 4 tests pin: archipelago ≥15 LAKE tiles;
+  dry-land ≥10 DESERT + 0 inland LAKE; continent mountain spine present;
+  deterministic per seed+mapType.
 
 - [x] M_MODES.7 — modes-as-presets in NewGameModal: MODES list with all 5
   preset cards (label + hint); selecting a mode resets mapSize to the

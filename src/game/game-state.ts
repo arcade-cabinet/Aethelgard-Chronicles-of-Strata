@@ -63,11 +63,15 @@ function matchLengthScale(length: 'short' | 'medium' | 'long' | 'endless'): numb
  */
 const MAX_BALANCE_ATTEMPTS = 6;
 
-function findBalancedBoard(seedPhrase: string, mapSize: number): BoardData {
+function findBalancedBoard(
+  seedPhrase: string,
+  mapSize: number,
+  mapType: 'balanced' | 'continent' | 'archipelago' | 'dry-land',
+): BoardData {
   let last: BoardData | null = null;
   for (let attempt = 0; attempt < MAX_BALANCE_ATTEMPTS; attempt++) {
     const seed = attempt === 0 ? seedPhrase : `${seedPhrase}-rb${attempt}`;
-    const board = generateBoard(seed, mapSize, true);
+    const board = generateBoard(seed, mapSize, true, mapType);
     last = board;
     // pick centers by the same heuristic startGame uses below
     let centerTile: { q: number; r: number } | null = null;
@@ -89,7 +93,7 @@ function findBalancedBoard(seedPhrase: string, mapSize: number): BoardData {
     if (!centerTile || !edgeTile) continue;
     if (isBalanced(board, centerTile, edgeTile)) return board;
   }
-  return last ?? generateBoard(seedPhrase, mapSize, true);
+  return last ?? generateBoard(seedPhrase, mapSize, true, mapType);
 }
 
 /**
@@ -355,7 +359,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // reachable-buildable-area tolerance. Falls back to the original seed
   // if no attempt balances (logged).
   const board = preset.guidedMapGen
-    ? findBalancedBoard(seedPhrase, mapSize)
+    ? findBalancedBoard(seedPhrase, mapSize, preset.mapType)
     : generateBoard(seedPhrase, mapSize, preset.guidedMapGen);
   // A fresh ECS world — death timers and the portal spawn count are now ECS
   // components, so a new session starts clean with no module state to reset.

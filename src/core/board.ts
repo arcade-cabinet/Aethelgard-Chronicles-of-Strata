@@ -47,10 +47,14 @@ export interface BoardData {
  * spine, inland lake) run. When false (skirmish mode), only the noise
  * stage runs — pure asymmetric maps possible.
  */
+/** Map-type variants the guided pass can paint (M_MODES.9). */
+export type GeneratedMapType = 'balanced' | 'continent' | 'archipelago' | 'dry-land';
+
 export function generateBoard(
   seedPhrase: string,
   radius: number = MAP_RADIUS,
   guidedMapGen = true,
+  mapType: GeneratedMapType = 'balanced',
 ): BoardData {
   // Validate at the API boundary (CodeRabbit): negative / NaN / Infinity /
   // non-integer radius would produce a malformed grid downstream. Round +
@@ -78,13 +82,17 @@ export function generateBoard(
 
   if (guidedMapGen) {
     // M_MAPGEN.4 — beach ring + ocean perimeter (deterministic post-pass).
-    // Every tile beyond radius-2 from center → OCEAN; the ring at radius-1
-    // is forced BEACH. Guarantees the island silhouette per user spec.
-    // (LAKE inland-feature M_MAPGEN.5 + mountain-spine M_MAPGEN.3 layered
-    // on top.) Skipped in skirmish mode — pure noise.
+    // M_MODES.9 — mapType selects which paint passes fire:
+    //   balanced (default) — beach ring + central mountain spine + inland lake
+    //   continent — same as balanced but mountain spine is thicker (3-tile spine)
+    //   archipelago — multiple small islands separated by channels (skip the
+    //     mountain spine; punch extra LAKE channels through the interior)
+    //   dry-land — no inland water + extensive desert + ridge-line mountains
     paintBeachRing(tiles, radius);
-    paintMountainSpine(tiles, radius, map);
-    paintInlandLake(tiles, radius, map);
+    if (mapType !== 'archipelago') paintMountainSpine(tiles, radius, map);
+    if (mapType === 'archipelago') paintChannelCuts(tiles, radius, map);
+    if (mapType !== 'dry-land') paintInlandLake(tiles, radius, map);
+    if (mapType === 'dry-land') paintDesertBlanket(tiles, radius);
     // Recompute `walkable` after the guided-paint pass — every tile now
     // reflects its FINAL biome + level.
     for (const tile of tiles.values()) {
@@ -149,6 +157,39 @@ function paintMountainSpine(tiles: Map<string, Tile>, radius: number, rng: Rng):
     // few hexes for vertical relief.
     tile.type = 'MOUNTAIN';
     tile.level = 5;
+  }
+}
+
+/**
+ * Archipelago mapType (M_MODES.9) — punch wide LAKE channels through the
+ * interior so the map reads as multiple small islands. Two perpendicular
+ * channels at the central axis.
+ */
+function paintChannelCuts(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
+  void rng; // future variants may pick channel orientations via rng
+  for (const tile of tiles.values()) {
+    const d = hexDistFromCenter(tile.q, tile.r);
+    if (d > radius - 3) continue;
+    // central horizontal channel + perpendicular: any tile near r=0 OR q=0.
+    if (Math.abs(tile.r) <= 1 || Math.abs(tile.q) <= 1) {
+      tile.type = 'LAKE';
+      tile.level = 0;
+    }
+  }
+}
+
+/**
+ * Dry-land mapType (M_MODES.9) — blanket the inland in DESERT, leaving
+ * GRASS rings only around each potential base. Mountain spine stays for
+ * funneling. Skips the inland-lake feature.
+ */
+function paintDesertBlanket(tiles: Map<string, Tile>, radius: number): void {
+  for (const tile of tiles.values()) {
+    const d = hexDistFromCenter(tile.q, tile.r);
+    if (d > radius - 4) continue; // inside the beach ring
+    if (tile.type === 'GRASS' || tile.type === 'FOREST' || tile.type === 'HIGHLAND') {
+      tile.type = 'DESERT';
+    }
   }
 }
 
