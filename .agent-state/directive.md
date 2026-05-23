@@ -827,10 +827,10 @@ bug).
 - [x] M_MICRO.5.3 — `SelectionPanel.tsx:114,121-128`
   setView every RAF returns fresh object; add diff-equality
   short-circuit same as ResourceBar.
-- [ ] M_MICRO.5.4 — `GameCanvas.tsx:67-75` DecorationLive
+- [x] M_MICRO.5.4 — `GameCanvas.tsx:67-75` DecorationLive
   equality only checks key+isComplete; add `level === prev.level &&
   type === prev.type` to catch Wall→Gate composition swap.
-- [ ] M_MICRO.5.5 — `Minimap.tsx:62-72` redraw full
+- [x] M_MICRO.5.5 — `Minimap.tsx:62-72` redraw full
   overlay every RAF — cap to ~10 Hz via accumulator OR hash unit-
   count + camera-frustum.
 - [ ] M_MICRO.5.6 — `RallyMarker.tsx:14-18` switch to

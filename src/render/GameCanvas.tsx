@@ -66,7 +66,18 @@ function DecorationLive({
     setSites((prev) => {
       if (
         next.length === prev.length &&
-        next.every((s, i) => s.key === prev[i]?.key && s.isComplete === prev[i]?.isComplete)
+        next.every(
+          (s, i) =>
+            // M_MICRO.5.4 — also compare level + type so a Wall→Gate
+            // composition swap (same key, same isComplete) triggers a
+            // re-render of the Decoration mask. Without these, the
+            // gate would render visually but pathing/decoration would
+            // miss the swap for one frame.
+            s.key === prev[i]?.key &&
+            s.isComplete === prev[i]?.isComplete &&
+            s.level === prev[i]?.level &&
+            s.type === prev[i]?.type,
+        )
       ) {
         return prev;
       }

@@ -62,11 +62,19 @@ export function Minimap({ game, compact = false }: { game: GameState; compact?: 
 
   useEffect(() => {
     const terrain = renderTerrain(game);
+    // M_MICRO.5.5 — throttle full-overlay redraw to ~10Hz. The minimap
+    // doesn't need 60Hz precision — unit dots move ~2 tiles/sec, and
+    // the camera-frustum rect is a coarse hint. ~100ms accumulator
+    // cuts canvas work by 6x at no perceptual cost.
+    const FRAME_INTERVAL_MS = 100;
     let raf = 0;
-    const tick = () => {
+    let lastDraw = 0;
+    const tick = (t: number) => {
+      raf = requestAnimationFrame(tick);
+      if (t - lastDraw < FRAME_INTERVAL_MS) return;
+      lastDraw = t;
       const ctx = canvasRef.current?.getContext('2d');
       if (ctx) drawOverlay(ctx, terrain, game);
-      raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
