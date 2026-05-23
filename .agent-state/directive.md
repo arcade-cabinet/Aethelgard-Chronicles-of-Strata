@@ -155,9 +155,9 @@ rally, tracking ring. None fully shipped.
   clip; animationSystem leaves ATTACKING alone (already-correct contract).
   Particle FX is a separate FX layer when needed; the swing clip is the
   primary visual.
-- [ ] M_COMBAT_POLISH.3 — floating combat text — `-3 HP` red, `+1 Wood` /
-  `+1 Gold` floating popups. CombatText already exists; verify both damage
-  AND resource events fire it.
+- [x] M_COMBAT_POLISH.3 — resource popups (3eef3fa): ResourceText.tsx +
+  ResourceDepositEvent emit; "+N Wood" popups on every deposit, per-resource
+  color, drift+fade over 1.4s. CombatText already covered damage.
 - [ ] M_COMBAT_POLISH.4 — adaptive selection ring. Ring size scales with
   the selected entity's footprint (small for peon, larger for footman, big
   for Town Hall / enemy base / Watchtower).
