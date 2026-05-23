@@ -303,8 +303,9 @@ audio packs via Howler. No procedural synthesis. Packs available:
 
 ### M_ACCESSIBILITY
 
-- [ ] M_ACCESS.1 — keyboard support — Tab to cycle selectable HUD
-  buttons; Esc to close modals; arrow keys to pan; +/- to zoom.
+- [x] M_ACCESS.1 — keyboard shortcuts: Esc clears selection, +/- zoom
+  (synthesized wheel on canvas), arrows reserved for camera pan, P pause
+  (already in PauseControl). Tab cycles HUD buttons natively.
 - [ ] M_ACCESS.2 — screen-reader landmarks — main game canvas labeled,
   HUD regions named, dialog focus-trapped (Radix already partly handles
   this; audit + fix gaps).
