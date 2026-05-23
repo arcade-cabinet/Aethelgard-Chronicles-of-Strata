@@ -579,7 +579,7 @@ the smallest end-to-end proof, then drain in dependency order.
 - [ ] M_REGISTRY.15 — `spawn.ts pickRole()` escalation
   cascade becomes declarative ESCALATION_SCHEDULE table (threshold →
   weighted roster); replace 4-tier if-cascade.
-- [ ] M_REGISTRY.16 — `science.ts` literal player+enemy
+- [x] M_REGISTRY.16 — `science.ts` literal player+enemy
   adds become `for (const f of FACTIONS) addResource(...)`. Same
   fix for game-state.ts twice-called depositSystem/jobRoutingSystem.
   Foundation for >2 factions.

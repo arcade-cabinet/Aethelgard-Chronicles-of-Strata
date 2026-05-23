@@ -1,5 +1,11 @@
 import type { World } from 'koota';
-import { Building, type Faction, FactionTrait, ScienceProducer } from '@/ecs/components';
+import {
+  Building,
+  type Faction,
+  FACTIONS,
+  FactionTrait,
+  ScienceProducer,
+} from '@/ecs/components';
 import { addResource, type GameEconomy } from '@/game/economy';
 
 /**
@@ -21,10 +27,12 @@ export function scienceSystem(
   economy: Record<Faction, GameEconomy>,
   delta: number,
 ): void {
-  // Passive trickle — both factions accumulate slowly so Discoveries are
-  // always eventually reachable.
-  addResource(economy.player, 'science', PASSIVE_TRICKLE * delta);
-  addResource(economy.enemy, 'science', PASSIVE_TRICKLE * delta);
+  // Passive trickle — every faction accumulates slowly so Discoveries
+  // are always eventually reachable. M_REGISTRY.16: iterate FACTIONS
+  // instead of hand-unrolling player+enemy so future tribes auto-tick.
+  for (const f of FACTIONS) {
+    addResource(economy[f], 'science', PASSIVE_TRICKLE * delta);
+  }
   // Per-building producers (Library today). Only completed buildings
   // count — a half-built Library doesn't produce yet.
   for (const e of world.query(ScienceProducer, FactionTrait)) {

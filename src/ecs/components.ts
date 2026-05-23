@@ -15,6 +15,16 @@ export type UnitType =
 /** Faction ownership for targeting and AI. */
 export type Faction = 'player' | 'enemy';
 
+/**
+ * The complete set of factions in the current game. M_REGISTRY.16 —
+ * the single iteration target for any per-faction loop (science
+ * trickle, deposit pump, job routing, AI tick). Every literal
+ * player+enemy hand-unrolled pair across the codebase should iterate
+ * this constant instead. A future Necromancer tribe extends the
+ * Faction union AND this constant in one place; the loops auto-extend.
+ */
+export const FACTIONS: readonly Faction[] = ['player', 'enemy'] as const;
+
 /** Animation state — drives which clip a character plays. */
 export type AnimState = 'IDLE' | 'MOVING' | 'HARVESTING' | 'ATTACKING' | 'DYING' | 'BUILDING';
 

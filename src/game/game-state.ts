@@ -112,7 +112,7 @@ const AI_VISION_RADIUS: Record<Difficulty, number> = {
 import { spawnIntervalFor } from '@/config/combat';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
-import type { Faction } from '@/ecs/components';
+import { type Faction, FACTIONS } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
@@ -725,11 +725,17 @@ export function runEconomyTick(game: GameState, delta: number): void {
     }
   }
 
-  // resource deposit — each faction's carrying peons deposit at their own base
-  // fresh batch each tick — render layer detects new events by array-reference
+  // resource deposit — each faction's carrying peons deposit at their own base.
+  // M_REGISTRY.16: iterate FACTIONS instead of hand-unrolling player+enemy
+  // so a future tribe drops in by extending FACTIONS + the baseKey lookup.
   const resourceEvents: ResourceDepositEvent[] = [];
-  depositSystem(game.world, game.economy.player, game.townHallKey, 'player', resourceEvents);
-  depositSystem(game.world, game.economy.enemy, game.enemyBaseKey, 'enemy', resourceEvents);
+  const baseKeyForFaction: Record<Faction, string> = {
+    player: game.townHallKey,
+    enemy: game.enemyBaseKey,
+  };
+  for (const f of FACTIONS) {
+    depositSystem(game.world, game.economy[f], baseKeyForFaction[f], f, resourceEvents);
+  }
   game.lastResourceEvents = resourceEvents;
 
   // death resolution — deathSystem returns the enemies removed this tick;
