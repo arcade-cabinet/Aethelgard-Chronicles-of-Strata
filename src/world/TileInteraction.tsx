@@ -1,12 +1,99 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
-import { axialToWorld, getHexKey } from '@/core/hex';
-import { findSelectableAtTile, placeBuilding, planMoveOrder, setRally } from '@/game/commands';
+import { axialToWorld, getHexKey, hexNeighbors } from '@/core/hex';
+import {
+  findSelectableAtTile,
+  moveUnit,
+  placeBuilding,
+  planMoveOrder,
+  setRally,
+} from '@/game/commands';
 import type { GameState } from '@/game/game-state';
-import { selectEntity } from '@/game/selection';
-import { Building, Selectable } from '@/ecs/components';
+import { selectEntity, selectedEntities } from '@/game/selection';
+import { Building, FactionTrait, Selectable, Unit, type UnitType } from '@/ecs/components';
 import { PathLine } from './PathLine';
+
+/** Long-press threshold (ms) — touch hold beyond this fires as right-click. */
+const LONG_PRESS_MS = 500;
+
+/**
+ * Per-tile invisible pick collider. Routes mouse left/right OR touch tap/
+ * long-press to the parent's left/right callbacks (M_GAMEPLAY.3).
+ */
+function TilePick({
+  x,
+  y,
+  z,
+  onLeft,
+  onRight,
+}: {
+  x: number;
+  y: number;
+  z: number;
+  onLeft: () => void;
+  onRight: () => void;
+}) {
+  const longPressRef = useRef<{ timer: number; fired: boolean } | null>(null);
+  return (
+    <mesh
+      position={[x, y, z]}
+      rotation={[0, Math.PI / 6, 0]}
+      geometry={pickGeometry}
+      onPointerDown={(e) => {
+        e.stopPropagation();
+        const ne = e.nativeEvent as PointerEvent;
+        // mouse right-click → fire right immediately
+        if (ne.pointerType !== 'touch' && ne.button === 2) {
+          onRight();
+          return;
+        }
+        // touch: arm a long-press timer; release before threshold = left.
+        if (ne.pointerType === 'touch') {
+          const state = { timer: 0, fired: false };
+          state.timer = window.setTimeout(() => {
+            state.fired = true;
+            onRight();
+          }, LONG_PRESS_MS);
+          longPressRef.current = state;
+          return;
+        }
+        onLeft();
+      }}
+      onPointerUp={(e) => {
+        const ne = e.nativeEvent as PointerEvent;
+        if (ne.pointerType !== 'touch') return;
+        const state = longPressRef.current;
+        if (!state) return;
+        clearTimeout(state.timer);
+        longPressRef.current = null;
+        if (!state.fired) onLeft();
+      }}
+      onPointerLeave={() => {
+        const state = longPressRef.current;
+        if (state) {
+          clearTimeout(state.timer);
+          longPressRef.current = null;
+        }
+      }}
+      onContextMenu={(e) => {
+        e.nativeEvent.preventDefault();
+      }}
+    >
+      <meshBasicMaterial visible={false} />
+    </mesh>
+  );
+}
+
+/** Military roles right-click-move applies to (peons remain autonomous). */
+const MILITARY: ReadonlySet<UnitType> = new Set([
+  'Footman',
+  'Goblin',
+  'Orc',
+  'Vampire',
+  'Witch',
+  'BlackKnight',
+]);
 
 const pickGeometry = new CylinderGeometry(HEX_RADIUS * 0.95, HEX_RADIUS * 0.95, 0.2, 6);
 
@@ -40,6 +127,30 @@ export function TileInteraction({
 }) {
   const [pathKeys, setPathKeys] = useState<string[]>([]);
   const tiles = [...game.board.tiles.values()].filter((t) => t.walkable);
+
+  /**
+   * Right-click / context menu (M_GAMEPLAY.3): if the player has military
+   * units selected, route them toward the target tile via `moveUnit`. Peons
+   * are explicitly excluded — they remain autonomous (spec 101). Flocking-
+   * style ring offsets distribute units around the target so they don't
+   * stack on the same hex (offset by tile neighbours).
+   */
+  const onRightPick = (q: number, r: number): void => {
+    const targetKey = getHexKey(q, r);
+    const military = selectedEntities(game).filter((e) => {
+      const role = e.get(Unit)?.unitType;
+      return role && MILITARY.has(role) && e.get(FactionTrait)?.faction === 'player';
+    });
+    if (military.length === 0) return;
+    // For each military unit, target the nearest free neighbour of the target
+    // tile (so the army flocks around it rather than stacking on it).
+    const neighbours = [targetKey, ...hexNeighbors(q, r)];
+    military.forEach((unit, i) => {
+      const dest = neighbours[i % neighbours.length] ?? targetKey;
+      moveUnit(game, unit, dest, 'player');
+    });
+    setPathKeys([]);
+  };
 
   const onPick = (q: number, r: number): void => {
     const tileKey = getHexKey(q, r);
@@ -84,18 +195,14 @@ export function TileInteraction({
       {tiles.map((t) => {
         const { x, z } = axialToWorld(t.q, t.r);
         return (
-          <mesh
+          <TilePick
             key={`pick-${t.q},${t.r}`}
-            position={[x, t.level * TILE_HEIGHT + 0.1, z]}
-            rotation={[0, Math.PI / 6, 0]}
-            geometry={pickGeometry}
-            onPointerDown={(e) => {
-              e.stopPropagation();
-              onPick(t.q, t.r);
-            }}
-          >
-            <meshBasicMaterial visible={false} />
-          </mesh>
+            x={x}
+            y={t.level * TILE_HEIGHT + 0.1}
+            z={z}
+            onLeft={() => onPick(t.q, t.r)}
+            onRight={() => onRightPick(t.q, t.r)}
+          />
         );
       })}
     </>
