@@ -38,6 +38,8 @@
     "@capacitor/core": "^8.3.4",
     "@capacitor/device": "^8.0.2",
     "@capacitor/preferences": "^8.0.1",
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/metamorphous": "^5.2.8",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-progress": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",

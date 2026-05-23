@@ -142,10 +142,27 @@ export function deserializeWorld(snapshot: WorldSnapshot): World {
     // biome-ignore lint/suspicious/noExplicitAny: dynamic trait construction
     const initializers: any[] = [];
     for (const [name, data] of Object.entries(snap)) {
+      // M_SEC.6 — reject prototype-pollution keys at the trait-name layer.
+      // A snapshot containing `{ __proto__: {...}, constructor: {...} }`
+      // would walk into Object.prototype via `Object.entries` (it doesn't,
+      // but be explicit) AND the trait-name lookup must NOT silently match
+      // an inherited Map key. TRAIT_BY_NAME.get returns undefined for
+      // unknown / dangerous names, but the explicit reject documents intent.
+      if (name === '__proto__' || name === 'constructor' || name === 'prototype') continue;
       const traitObj = TRAIT_BY_NAME.get(name);
-      if (traitObj !== undefined && data !== null && typeof data === 'object') {
-        initializers.push(traitObj(data));
+      if (traitObj === undefined) continue;
+      if (data === null || typeof data !== 'object') continue;
+      // M_SEC.6 — trait payload is plain data, no nested __proto__ keys.
+      // `Object.assign({}, data)` strips inherited keys and any setter
+      // that would fire on a normal property assignment in koota's
+      // schema initializer. Trait factories accept partial data and
+      // fill defaults; rejecting unknown trait keys is koota's job.
+      const sanitised: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+        sanitised[k] = v;
       }
+      initializers.push(traitObj(sanitised));
     }
     if (initializers.length > 0) {
       world.spawn(...initializers);

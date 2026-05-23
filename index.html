@@ -6,14 +6,21 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <title>Aethelgard: Chronicles of Strata</title>
-    <!-- Epic-fantasy branding fonts (poc2) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Inter:wght@400;600;700;800;900&display=swap"
-      rel="stylesheet"
+    <!--
+      M_SEC.10 — Content-Security-Policy. Tight policy: same-origin only
+      for scripts/styles/fonts/connections; data: + blob: allowed for
+      images/audio (canvas screenshots, generated audio buffers,
+      asset blobs); no inline scripts. Self-hosted webfonts via
+      @fontsource/* (M_SEC.9) make font-src 'self' viable.
+      'unsafe-inline' on style-src is needed for r3f/emotion runtime
+      styles + drei effects; tightening this requires nonces or hashes
+      which Vite doesn't emit by default — tracked separately.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none';"
     />
+    <title>Aethelgard: Chronicles of Strata</title>
     <style>
       html,
       body,
