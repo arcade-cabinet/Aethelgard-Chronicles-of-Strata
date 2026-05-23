@@ -25,6 +25,14 @@ export type { Discovery } from './discoveries';
 export { DISCOVERIES, discoveryById } from './discovery-registry';
 export { depthOf, scaleForDepth, scaledCostFor } from './discovery-cost';
 export {
+  MODE_PRESETS,
+  type MapType,
+  type MatchLength,
+  type ModePreset,
+  type TurnsMode,
+  presetFor,
+} from './mode-presets';
+export {
   BUILDING_DISPLAY,
   type BuildingDisplay,
   displayFor,

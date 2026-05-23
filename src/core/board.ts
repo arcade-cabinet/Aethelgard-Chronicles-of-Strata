@@ -40,7 +40,18 @@ export interface BoardData {
  * (defaults to `MAP_RADIUS`); the same phrase + radius always yields the same
  * board.
  */
-export function generateBoard(seedPhrase: string, radius: number = MAP_RADIUS): BoardData {
+/**
+ * Generate a hex board for `seedPhrase` at `radius`. When `guidedMapGen`
+ * is true (default, used by red-vs-blue / endless / classic-rts / 4x via
+ * MODE_PRESETS), the deterministic paint passes (beach ring, mountain
+ * spine, inland lake) run. When false (skirmish mode), only the noise
+ * stage runs — pure asymmetric maps possible.
+ */
+export function generateBoard(
+  seedPhrase: string,
+  radius: number = MAP_RADIUS,
+  guidedMapGen = true,
+): BoardData {
   // Validate at the API boundary (CodeRabbit): negative / NaN / Infinity /
   // non-integer radius would produce a malformed grid downstream. Round +
   // clamp to a sane range — MAP_SIZES tops out at 43 (M_BALANCE_2 user-
@@ -65,19 +76,20 @@ export function generateBoard(seedPhrase: string, radius: number = MAP_RADIUS): 
     }
   }
 
-  // M_MAPGEN.4 — beach ring + ocean perimeter (deterministic post-pass).
-  // Every tile beyond radius-2 from center → OCEAN; the ring at radius-1
-  // is forced BEACH. Guarantees the island silhouette per user spec.
-  // (LAKE inland-feature M_MAPGEN.5 + mountain-spine M_MAPGEN.3 layered
-  // on top.)
-  paintBeachRing(tiles, radius);
-  paintMountainSpine(tiles, radius, map);
-  paintInlandLake(tiles, radius, map);
-
-  // Recompute `walkable` after the guided-paint pass — every tile now
-  // reflects its FINAL biome + level.
-  for (const tile of tiles.values()) {
-    tile.walkable = tile.type !== 'OCEAN' && tile.type !== 'LAKE' && tile.level < 5;
+  if (guidedMapGen) {
+    // M_MAPGEN.4 — beach ring + ocean perimeter (deterministic post-pass).
+    // Every tile beyond radius-2 from center → OCEAN; the ring at radius-1
+    // is forced BEACH. Guarantees the island silhouette per user spec.
+    // (LAKE inland-feature M_MAPGEN.5 + mountain-spine M_MAPGEN.3 layered
+    // on top.) Skipped in skirmish mode — pure noise.
+    paintBeachRing(tiles, radius);
+    paintMountainSpine(tiles, radius, map);
+    paintInlandLake(tiles, radius, map);
+    // Recompute `walkable` after the guided-paint pass — every tile now
+    // reflects its FINAL biome + level.
+    for (const tile of tiles.values()) {
+      tile.walkable = tile.type !== 'OCEAN' && tile.type !== 'LAKE' && tile.level < 5;
+    }
   }
 
   const crossings = placeCrossings(tiles, map);

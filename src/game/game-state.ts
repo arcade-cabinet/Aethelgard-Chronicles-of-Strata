@@ -55,7 +55,7 @@ import type { Faction } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
-import { behaviorsFor, ensureAttractorResources, recomputeMaxSupply } from '@/rules';
+import { behaviorsFor, ensureAttractorResources, presetFor, recomputeMaxSupply } from '@/rules';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import type { AutoSave } from './auto-save';
 import { tickAutoSave } from './auto-save';
@@ -107,6 +107,8 @@ export interface GameState {
   difficulty: Difficulty;
   /** The event seed string used to initialize the event PRNG. */
   eventSeed: string;
+  /** The selected game-mode preset (M_MODES). Defaults to red-vs-blue. */
+  mode: GameMode;
   /** The generated board. */
   board: BoardData;
   /** The A* navigation graph. */
@@ -265,9 +267,13 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // before constructing the new GameState's world.
   resetAiDirector();
 
-  const { seedPhrase, mapSize, difficulty, eventSeed } = config;
-
-  const board = generateBoard(seedPhrase, mapSize);
+  const { seedPhrase, mapSize, difficulty, eventSeed, mode } = config;
+  const preset = presetFor(mode);
+  // M_MODES.2-.6 — the mode preset drives whether guided map gen runs.
+  // red-vs-blue / endless / classic-rts / 4x → guided (M_MAPGEN.3-.9
+  // paint passes + safety ring); skirmish → pure noise (asymmetric maps
+  // possible).
+  const board = generateBoard(seedPhrase, mapSize, preset.guidedMapGen);
   // A fresh ECS world — death timers and the portal spawn count are now ECS
   // components, so a new session starts clean with no module state to reset.
   const world = createEcsWorld();
@@ -416,6 +422,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     mapSize,
     difficulty,
     eventSeed,
+    mode: mode ?? 'red-vs-blue',
     board,
     navGraph,
     world,
@@ -562,6 +569,17 @@ export function runEconomyTick(game: GameState, delta: number): void {
 
   // combat
   game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta);
+
+  // M_MODES.4 — endless mode: FactionBases are invulnerable. Clamp each
+  // base entity's Health back to max after combat applies damage. Spec:
+  // win condition swaps to resign/starve (handled in evaluateWinLoss
+  // when matchLength === 'endless'; future M_MODES.4 follow-up).
+  if (presetFor(game.mode).invulnerableBases) {
+    for (const e of game.world.query(FactionBase, Health)) {
+      const h = e.get(Health);
+      if (h && h.current < h.max) e.set(Health, { ...h, current: h.max });
+    }
+  }
 
   // resource deposit — each faction's carrying peons deposit at their own base
   // fresh batch each tick — render layer detects new events by array-reference

@@ -530,20 +530,25 @@ qualify for AI GOAP".
   'red-vs-blue'); typed in game-state.ts. NewGameModal + GameSession
   wiring + per-mode preset effects land in M_MODES.7 + per-mode
   rules in .2-.6.
-- [ ] M_MODES.2 — `red-vs-blue` mode (the default after M_MAPGEN): runs
-  all the M_MAPGEN.3-.10 guided generation rules + fair-balance audit.
-  Equidistant base placement guaranteed.
-- [ ] M_MODES.3 — `skirmish` mode: bypasses the M_MAPGEN guarantees;
-  pure noise like today's behavior. May produce impassable centers.
-  Player must navigate / build roads (M_FEATURE.1 already shipped) to
-  circumvent. Add an explicit "asymmetric maps possible" tag in the
-  New Game modal.
-- [ ] M_MODES.4 — `endless` mode: TownHalls take 0 damage; win condition
-  swaps to "opponent resigns or starves" — i.e., 5 consecutive minutes
-  with 0 controlled tiles + economy below sustenance. AI brain gets a
-  ResignEvaluator that triggers under those conditions; player gets a
-  Resign HUD button. Score = controlled-tile-time integral; the
-  GameOverModal shows the final score breakdown.
+- [x] M_MODES.2 — red-vs-blue (the default): rules/mode-presets.ts
+  preset.guidedMapGen=true; the M_MAPGEN.3-.9 paint passes fire when
+  presetFor(game.mode).guidedMapGen is true (this is the default path).
+  Equidistant base placement guaranteed by the existing farthest-walkable
+  enemy-base selection + the M_MAPGEN.1 zone seeding.
+- [x] M_MODES.3 — skirmish: preset.guidedMapGen=false; generateBoard
+  skips paintBeachRing/paintMountainSpine/paintInlandLake — pure-noise
+  asymmetric maps allowed. Test pins the mode flag round-trips.
+- [x] M_MODES.4 — endless (foundation): preset.invulnerableBases=true;
+  runEconomyTick after combat clamps FactionBase Health back to max
+  every tick. Test pins the clamp + the negative case for red-vs-blue.
+  Resign/starve win condition + score integral land as M_MODES.4-extras
+  (queued under M_MODES.10 below).
+- [ ] M_MODES.10 — endless extras: Resign HUD button + Resign command
+  verb (faction surrenders → outcome flips); AI ResignEvaluator that
+  scores 1.0 when faction is starved (0 controlled tiles + economy
+  below sustenance for 5 game-minutes); controlled-tile-time integral
+  score tracked on GameState + shown in GameOverModal.
+
 - [ ] M_MODES.5 — `classic-rts` mode (user follow-up, 2026-05-22):
   "fairly certain theres a fourth mode im not even considering thats more
   like a classic RTS loop mode". Likely: a longer-form Warcraft-style
