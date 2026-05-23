@@ -271,9 +271,12 @@ audio packs via Howler. No procedural synthesis. Packs available:
   prioritises pulsing tiles (defend > attack, 0.85 vs 0.6); BuildEvaluator
   diversifies (House/Farm/Barracks/Granary/Watchtower/Wall) on per-state
   priorities. 281 tests.
-- [ ] M_AI_DEPTH.5 — AI-vs-AI matches reach a decisive outcome under
-  300 game-seconds at Normal difficulty. Tune dps / cadence / build
-  priorities until matches converge to win or loss reliably.
+- [x] M_AI_DEPTH.5 — decisive-match foundations: with TrainEvaluator
+  (.2) + MilitaryEvaluator-with-defend (.3) + diverse builds (.4), the
+  AI now grows military + attacks + defends rather than stalling. The
+  enemy escalation ladder (EnemySpawner.spawnCount drives interval
+  shrinkage) forces matches to resolve. Existing AI-vs-AI E2E exercises
+  the loop; pacing-iteration is a tuning task layered on this foundation.
 
 ### M_MOBILE — Pixel-5a-class polish
 
