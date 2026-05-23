@@ -123,6 +123,8 @@ export type StaticAssetPath =
   'assets/structures/watchtower-stone.glb' |
   'assets/structures/wonder-cannon.glb' |
   'assets/structures/wonder-keep.glb' |
+  'privacy.html' |
+  'privacy.md' |
   'sql-wasm.wasm';
 
 /**
@@ -291,6 +293,8 @@ const assets = new Set<string>([
   'assets/structures/watchtower-stone.glb',
   'assets/structures/wonder-cannon.glb',
   'assets/structures/wonder-keep.glb',
+  'privacy.html',
+  'privacy.md',
   'sql-wasm.wasm'
 ]);
 

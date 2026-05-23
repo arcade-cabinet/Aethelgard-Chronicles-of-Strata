@@ -1924,26 +1924,26 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 
 ### M_EXPANSION.OPS — release + deploy + observability (141-160)
 
-- [ ] [HIGH] M_EXPANSION.O.141 — release.yml: actually upload to Google Play internal testing track on every release tag (gated on a manual approval env)
-- [ ] [HIGH] M_EXPANSION.O.142 — bundle the production web build into Cloudflare Pages alongside GitHub Pages (failover)
-- [ ] [HIGH] M_EXPANSION.O.143 — App Store assets bundle (icons, screenshots, promo video) generation script
-- [ ] [HIGH] M_EXPANSION.O.144 — Privacy policy URL hosted as a static page in the web build
-- [ ] [HIGH] M_EXPANSION.O.145 — Crash reporter facade: capture window.onerror + unhandledrejection → an opt-in queue → batch send (when consent flips on)
-- [ ] [MED]  M_EXPANSION.O.146 — Performance telemetry: ms/frame histogram bucketed by viewport profile (opt-in)
-- [ ] [MED]  M_EXPANSION.O.147 — Feature-flag mechanism: read a JSON from public/ to gate dev-only features
+- [ ] [WAIT-INFRA] M_EXPANSION.O.141 — release.yml: actually upload to Google Play internal testing track on every release tag (gated on a manual approval env)
+- [ ] [WAIT-INFRA] M_EXPANSION.O.142 — bundle the production web build into Cloudflare Pages alongside GitHub Pages (failover)
+- [ ] [WAIT-INFRA] M_EXPANSION.O.143 — App Store assets bundle (icons, screenshots, promo video) generation script
+- [x] [HIGH] M_EXPANSION.O.144 — Privacy policy URL hosted as a static page in the web build
+- [ ] [WAIT-INFRA] M_EXPANSION.O.145 — Crash reporter facade: capture window.onerror + unhandledrejection → an opt-in queue → batch send (when consent flips on)
+- [ ] [WAIT-INFRA] M_EXPANSION.O.146 — Performance telemetry: ms/frame histogram bucketed by viewport profile (opt-in)
+- [ ] [WAIT-INFRA] M_EXPANSION.O.147 — Feature-flag mechanism: read a JSON from public/ to gate dev-only features
 - [ ] [MED]  M_EXPANSION.O.148 — `pnpm release:dry-run` — local-simulation of the full release pipeline against a fake keystore
-- [ ] [MED]  M_EXPANSION.O.149 — Docker image of the dev environment (Node 22 + pnpm + Java 21 + Android SDK) for contributor onboarding
-- [ ] [MED]  M_EXPANSION.O.150 — Codecov integration via the existing coverage gate
+- [ ] [WAIT-INFRA] M_EXPANSION.O.149 — Docker image of the dev environment (Node 22 + pnpm + Java 21 + Android SDK) for contributor onboarding
+- [ ] [WAIT-INFRA] M_EXPANSION.O.150 — Codecov integration via the existing coverage gate
 - [ ] [LOW]  M_EXPANSION.O.151 — Renovate or Dependabot grouped major bumps (split from the existing weekly minor/patch)
-- [ ] [LOW]  M_EXPANSION.O.152 — SonarCloud integration (or local Sonar runner) for code quality history
-- [ ] [LOW]  M_EXPANSION.O.153 — Lighthouse CI on the deployed pages build (perf + a11y score history)
+- [ ] [WAIT-INFRA] M_EXPANSION.O.152 — SonarCloud integration (or local Sonar runner) for code quality history
+- [ ] [WAIT-INFRA] M_EXPANSION.O.153 — Lighthouse CI on the deployed pages build (perf + a11y score history)
 - [ ] [LOW]  M_EXPANSION.O.154 — Bundle size dashboard: track gzipped JS + asset bytes per release tag
 - [ ] [LOW]  M_EXPANSION.O.155 — CHANGELOG.md generation from release-please tags (we have config, no published changelog yet)
-- [ ] [LOW]  M_EXPANSION.O.156 — Demo gif/mp4 baked into README on every release tag (a 10-second loop of the cove + combat)
+- [ ] [WAIT-INFRA] M_EXPANSION.O.156 — Demo gif/mp4 baked into README on every release tag (a 10-second loop of the cove + combat)
 - [ ] [LOW]  M_EXPANSION.O.157 — README badges block: CI / coverage / release / license / app-store
-- [ ] [LOW]  M_EXPANSION.O.158 — `pnpm assets:lint` — surface any references/ kit not yet ingested into public/assets
-- [ ] [LOW]  M_EXPANSION.O.159 — `pnpm specs:lint` — surface any spec doc that hasn't been touched in 90 days
-- [ ] [LOW]  M_EXPANSION.O.160 — `pnpm gates:report` — print every coverage rule + commit-gate finding from the last N commits
+- [ ] [WAIT-INFRA] M_EXPANSION.O.158 — `pnpm assets:lint` — surface any references/ kit not yet ingested into public/assets
+- [ ] [WAIT-INFRA] M_EXPANSION.O.159 — `pnpm specs:lint` — surface any spec doc that hasn't been touched in 90 days
+- [ ] [WAIT-INFRA] M_EXPANSION.O.160 — `pnpm gates:report` — print every coverage rule + commit-gate finding from the last N commits
 
 ### M_EXPANSION.DOCS — documentation gaps (161-170)
 

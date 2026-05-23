@@ -195,12 +195,33 @@ export function CreditsModal({ open, onOpenChange }: CreditsModalProps) {
           </div>
         ))}
 
+        {/* M_EXPANSION.O.144 — privacy policy link (static page in
+            public/privacy.html). App-store listings + Play Store
+            require a public privacy URL; this is the in-game pointer
+            for users discovering through the app itself. */}
+        <p
+          style={{
+            margin: '14px 0 4px',
+            fontSize: '0.78rem',
+            color: HUD_THEME.color.muted,
+            textAlign: 'center',
+          }}
+        >
+          <a
+            href="./privacy.html"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: HUD_THEME.color.accent, textDecoration: 'underline' }}
+          >
+            Privacy Policy
+          </a>
+        </p>
         <button
           type="button"
           onClick={() => onOpenChange(false)}
           style={{
             width: '100%',
-            marginTop: 12,
+            marginTop: 4,
             padding: '12px',
             borderRadius: 10,
             border: `1px solid ${HUD_THEME.color.border}`,
