@@ -11,6 +11,8 @@ import type { AudioBuses } from './buses';
 /** All named game audio events. */
 export type GameAudioEvent =
   | 'combat-hit'
+  | 'combat-hit-siege'
+  | 'combat-hit-magic'
   | 'combat-crit'
   | 'harvest-chop'
   | 'harvest-mine'
@@ -65,9 +67,12 @@ export function resolveSoundId(mapping: SoundMapping): string {
 
 /** Maps every `GameAudioEvent` to the bus and asset id that plays it. */
 export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
-  // Combat
+  // Combat (M_EXPANSION.AU.45 — split per damageType so a sword
+  // landing on a wall sounds different from an arrow on a peon).
   'combat-hit': { bus: 'sfx', soundId: 'audio.sfx.hit' },
-  'combat-crit': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
+  'combat-hit-siege': { bus: 'sfx', soundId: 'audio.sfx.hit-stone' },
+  'combat-hit-magic': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
+  'combat-crit': { bus: 'sfx', soundId: 'audio.sfx.hit-metal' },
   'projectile-fire': { bus: 'sfx', soundId: 'audio.sfx.hit' },
   'projectile-impact': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
   // M_EXPANSION.AU.44 — wizard spell-cast SFX (PixelLoops Fantasy

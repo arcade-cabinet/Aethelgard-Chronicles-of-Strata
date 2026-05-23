@@ -14,6 +14,8 @@ export type StaticAssetPath =
   'assets/audio/sfx/footstep-grass.ogg' |
   'assets/audio/sfx/footstep-sand.ogg' |
   'assets/audio/sfx/footstep-stone.ogg' |
+  'assets/audio/sfx/hit-metal.ogg' |
+  'assets/audio/sfx/hit-stone.ogg' |
   'assets/audio/sfx/hit.ogg' |
   'assets/audio/sfx/magic-cast.wav' |
   'assets/audio/sfx/magic-impact.wav' |
@@ -179,6 +181,8 @@ const assets = new Set<string>([
   'assets/audio/sfx/footstep-grass.ogg',
   'assets/audio/sfx/footstep-sand.ogg',
   'assets/audio/sfx/footstep-stone.ogg',
+  'assets/audio/sfx/hit-metal.ogg',
+  'assets/audio/sfx/hit-stone.ogg',
   'assets/audio/sfx/hit.ogg',
   'assets/audio/sfx/magic-cast.wav',
   'assets/audio/sfx/magic-impact.wav',

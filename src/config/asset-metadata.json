@@ -1013,6 +1013,24 @@
     "pack": "PixelLoops Fantasy Magic Spell SFX",
     "license": "Royalty-Free"
   },
+  "audio.sfx.hit-metal": {
+    "id": "audio.sfx.hit-metal",
+    "path": "assets/audio/sfx/hit-metal.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops Impact + Hit SFX",
+    "license": "Royalty-Free"
+  },
+  "audio.sfx.hit-stone": {
+    "id": "audio.sfx.hit-stone",
+    "path": "assets/audio/sfx/hit-stone.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops Impact + Hit SFX",
+    "license": "Royalty-Free"
+  },
   "audio.sfx.chop": {
     "id": "audio.sfx.chop",
     "path": "assets/audio/sfx/chop.ogg",

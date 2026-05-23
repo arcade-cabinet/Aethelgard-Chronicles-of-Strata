@@ -52,16 +52,21 @@ export function useAudio(game: GameState): void {
     const events = game.lastDamageEvents;
     if (events !== lastBatchRef.current) {
       lastBatchRef.current = events;
-      const hitMap = SOUND_FOR_EVENT['combat-hit'];
+      // M_EXPANSION.AU.45 — pick hit sound per attacker damageType.
       const critMap = SOUND_FOR_EVENT['combat-crit'];
+      const hitMap = SOUND_FOR_EVENT['combat-hit'];
+      const siegeMap = SOUND_FOR_EVENT['combat-hit-siege'];
+      const magicMap = SOUND_FOR_EVENT['combat-hit-magic'];
       for (const ev of events) {
         if (ev.isCrit) {
           // Crit: play the magic-impact stab instead of (not in addition to) the
           // regular hit — one sound per crit event keeps it punchy.
           playSound(buses, critMap.bus, resolveSoundId(critMap));
-        } else {
-          playSound(buses, hitMap.bus, resolveSoundId(hitMap));
+          continue;
         }
+        const map =
+          ev.damageType === 'siege' ? siegeMap : ev.damageType === 'magic' ? magicMap : hitMap;
+        playSound(buses, map.bus, resolveSoundId(map));
       }
     }
 

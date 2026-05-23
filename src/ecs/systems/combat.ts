@@ -1,8 +1,17 @@
 import type { Entity, World } from 'koota';
 import { hexDistance } from '@/core/hex';
 import type { Rng } from '@/core/rng';
-import { AnimationState, Combatant, EnemyTarget, Health, HexPosition } from '@/ecs/components';
+import {
+  AnimationState,
+  Combatant,
+  type DamageType,
+  EnemyTarget,
+  Health,
+  HexPosition,
+  Unit,
+} from '@/ecs/components';
 import { rollDamage } from '@/game/combat-math';
+import { unitProfileFor } from '@/rules/unit-profiles';
 
 /** A damage event produced by the combat system this tick (for FX/text). */
 export interface DamageEvent {
@@ -12,6 +21,8 @@ export interface DamageEvent {
   damage: number;
   /** Whether it was a crit. */
   isCrit: boolean;
+  /** M_EXPANSION.AU.45 — damageType of the attacker (drives per-type SFX). */
+  damageType: DamageType;
 }
 
 /**
@@ -39,6 +50,7 @@ function resolveAttacks(
   delta: number,
   damageByTarget: Map<number, number>,
   events: DamageEvent[],
+  damageType: DamageType,
 ): number {
   combatant.attackTimer += delta;
   let fired = 0;
@@ -50,7 +62,12 @@ function resolveAttacks(
     const roll = rollDamage(combatant.attackDamage, rng);
     const id = target.targetId;
     damageByTarget.set(id, (damageByTarget.get(id) ?? 0) + roll.damage);
-    events.push({ target: targetEntity, damage: roll.damage, isCrit: roll.isCrit });
+    events.push({
+      target: targetEntity,
+      damage: roll.damage,
+      isCrit: roll.isCrit,
+      damageType,
+    });
     fired += 1;
   }
   return fired;
@@ -94,6 +111,13 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
     const dist = hexDistance(hex.q, hex.r, targetHex.q, targetHex.r);
     if (dist > combatant.attackRange) return; // AI moves it into range
 
+    // M_EXPANSION.AU.45 — damageType comes from the attacker's unit
+    // profile (Footman=normal, Trebuchet=siege, Wizard=magic).
+    // Buildings (Watchtower) lack a Unit trait — default 'normal'.
+    const attackerUnit = e.get(Unit)?.unitType;
+    const damageType: DamageType = attackerUnit
+      ? unitProfileFor(attackerUnit).damageType
+      : 'normal';
     const fired = resolveAttacks(
       combatant,
       target,
@@ -102,6 +126,7 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
       delta,
       damageByTarget,
       events,
+      damageType,
     );
     if (fired > 0 && e.has(AnimationState)) {
       // M_COMBAT_POLISH.2 — flash the attacker into ATTACKING; animationSystem
