@@ -12,6 +12,7 @@ import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
 import type { BuildContext } from '@/world/TileInteraction';
 import { costLabel } from './format';
 import { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
+import { useRafLoop } from './useRafLoop';
 
 /** Buildable types derived from the BUILDING_COSTS table — NOT hardcoded. */
 const BUILDABLE_TYPES = Object.keys(BUILDING_COSTS).sort() as ReadonlyArray<
@@ -40,6 +41,21 @@ function trainDisabledReason(
   }
   if (!canAfford(econ, cost)) {
     return `Not enough resources to train ${unitType}: need ${costLabel(cost)}.`;
+  }
+  return undefined;
+}
+
+/**
+ * M_AUDIT2.UX.9 — explain why placing a building is disabled.
+ * Only one gate today: insufficient resources.
+ */
+function buildDisabledReason(
+  game: GameState,
+  type: string,
+  cost: ResourceCost,
+): string | undefined {
+  if (!canAfford(game.economy.player, cost)) {
+    return `Not enough resources for ${type}: need ${costLabel(cost)}.`;
   }
   return undefined;
 }
@@ -132,7 +148,7 @@ function HudButton({
   onClick: () => void;
   disabled?: boolean;
   /** Shown via Tooltip + title when disabled. ≥3 words: explain the gate. */
-  disabledReason?: string;
+  disabledReason?: string | undefined;
 }) {
   const btn = (
     <button
@@ -202,31 +218,25 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
   // Track whether the panel was open last render to detect open transitions.
   const wasOpenRef = useRef<boolean>(view !== null);
 
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      // M_MICRO.5.3 — diff before setView so React skips reconcile
-      // when the SelectionView is identical to last frame (the common
-      // case: idle peon selected, nothing changing). viewOf returns a
-      // fresh object every call; compare fields, not refs.
-      setView((prev) => {
-        const next = viewOf(game);
-        if (next === null && prev === null) return prev;
-        if (
-          next !== null &&
-          prev !== null &&
-          next.name === prev.name &&
-          next.task === prev.task &&
-          next.buildingType === prev.buildingType
-        ) {
-          return prev;
-        }
-        return next;
-      });
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+  useRafLoop(() => {
+    // M_MICRO.5.3 — diff before setView so React skips reconcile
+    // when the SelectionView is identical to last frame (the common
+    // case: idle peon selected, nothing changing). viewOf returns a
+    // fresh object every call; compare fields, not refs.
+    setView((prev) => {
+      const next = viewOf(game);
+      if (next === null && prev === null) return prev;
+      if (
+        next !== null &&
+        prev !== null &&
+        next.name === prev.name &&
+        next.task === prev.task &&
+        next.buildingType === prev.buildingType
+      ) {
+        return prev;
+      }
+      return next;
+    });
   }, [game]);
 
   // Fire ui-panel-open sound when the panel transitions from closed → open.
@@ -313,7 +323,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                             emitUiSound('ui-button-click');
                         }}
                         disabled={!canAffordCost(game, UNIT_COSTS[meta.trains])}
-                        {...(trainReason ? { disabledReason: trainReason } : {})}
+                        disabledReason={trainReason}
                       />
                     );
                   })()}
@@ -321,18 +331,14 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                   {meta.showsBuildMenu &&
                     BUILDABLE_TYPES.map((type) => {
                       const cost = BUILDING_COSTS[type];
-                      const afford = canAffordCost(game, cost);
+                      const buildReason = buildDisabledReason(game, type, cost);
                       return (
                         <HudButton
                           key={type}
                           label={`Build ${type} — ${costLabel(cost)}`}
                           onClick={() => beginBuild({ type, onPlaced: () => {} })}
-                          disabled={!afford}
-                          {...(!afford
-                            ? {
-                                disabledReason: `Not enough resources for ${type}: need ${costLabel(cost)}`,
-                              }
-                            : {})}
+                          disabled={buildReason !== undefined}
+                          disabledReason={buildReason}
                         />
                       );
                     })}
@@ -347,7 +353,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                         label={`${d.name} — ${costLabel(d.cost)}`}
                         onClick={() => research(id)}
                         disabled={!canResearch(game.economy.player, game.research, id)}
-                        {...(reason ? { disabledReason: reason } : {})}
+                        disabledReason={reason}
                       />
                     );
                   })}

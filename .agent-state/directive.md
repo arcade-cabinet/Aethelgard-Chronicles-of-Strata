@@ -1581,9 +1581,12 @@ local-review-trio after each ~5-item batch.
 
 **Frontend post-CSP (42-45)**
 - [x] [MED] M_AUDIT2.SEC2.42 — Trusted Types opt-in via CSP (require-trusted-types-for 'script')
-  - Landed as report-only first (enforcing would trip drei Html portal +
-    r3f WebGLRenderer boot). Violations now visible in DevTools for
-    follow-up enforcement migration.
+  - REPORT-ONLY ONLY — provides ZERO enforcement (no DOM sink injection
+    blocked). Reviewer flagged this as a false security signal because
+    we have no report collector configured; violations are silently
+    dropped. Kept the directive as advertised intent + DevTools-visible
+    instrumentation; enforcement migration tracked separately when
+    drei + r3f publish TT-clean shims.
 - [x] [MED] M_AUDIT2.SEC2.43 — COOP/COEP/Referrer-Policy headers via WebView interceptor (Android)
   - Referrer-Policy added via meta=no-referrer (game has no outbound requests anyway).
   - COOP/COEP intentionally deferred — we don't use SharedArrayBuffer; the meta

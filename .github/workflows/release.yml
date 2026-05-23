@@ -60,19 +60,54 @@ jobs:
           ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
         run: cd android && ./gradlew assembleRelease
 
+      # Reviewer-fix: shred keystore + drop env-var path AS SOON AS
+      # signing is done. The previous `if: always()` rm was a backstop;
+      # an explicit early shred prevents any later step (or any debug-
+      # logging accident) from seeing the path or content.
+      - name: Shred signing keystore (early)
+        run: |
+          if command -v shred >/dev/null 2>&1; then
+            shred -uz "$RUNNER_TEMP/sign/release.keystore" 2>/dev/null || true
+          fi
+          rm -f "$RUNNER_TEMP/sign/release.keystore"
+          # Wipe the path env var so subsequent step env dumps don't echo it.
+          echo "ANDROID_SIGNING_KEYSTORE_PATH=" >> "$GITHUB_ENV"
+
+      # Reviewer-fix: guard the exact APK filename before attestation
+      # so a Gradle config drift that emits an unsigned variant can't
+      # smuggle an extra subject into the attestation.
+      - name: Verify exactly one signed APK exists
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          if [ ! -f "$APK" ]; then
+            echo "Expected exactly one signed APK at $APK; not found." >&2
+            ls -la android/app/build/outputs/apk/release/ >&2 || true
+            exit 1
+          fi
+          if ls android/app/build/outputs/apk/release/*-unsigned.apk 2>/dev/null; then
+            echo "Refusing to attest: unsigned APK variant present." >&2
+            exit 1
+          fi
+
       # --- SBOM (M_AUDIT2.SEC2.35) -----------------------------------------
+      # Reviewer-fix: cyclonedx-npm is in devDependencies + lockfile, NOT
+      # `pnpm dlx`. `pnpm dlx` resolves at run time and can pick up a
+      # tampered cache / registry response; lockfile install pins the
+      # exact tarball hash.
       - name: Generate CycloneDX SBOM
         run: |
-          pnpm dlx @cyclonedx/cyclonedx-npm@2.0.0 \
+          pnpm exec cyclonedx-npm \
             --output-format JSON \
             --output-file sbom.cdx.json
-        # produces a CycloneDX 1.5 spec doc covering every npm dep + version
 
       # --- Sigstore attestation over apk + sbom ----------------------------
+      # Reviewer-fix: subject-path now uses the exact APK filename
+      # verified above instead of a glob. Removes the silent-attest-zero
+      # failure mode if Gradle renames its output.
       - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v3.0.0
         with:
           subject-path: |
-            android/app/build/outputs/apk/release/*.apk
+            android/app/build/outputs/apk/release/app-release.apk
             sbom.cdx.json
 
       # --- upload assets to the release -----------------------------------
@@ -81,10 +116,10 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload "$GITHUB_REF_NAME" \
-            android/app/build/outputs/apk/release/*.apk \
+            android/app/build/outputs/apk/release/app-release.apk \
             sbom.cdx.json \
             --clobber
 
-      # --- shred the keystore --------------------------------------------
+      # --- shred the keystore (backstop) ---------------------------------
       - if: always()
         run: rm -f "$RUNNER_TEMP/sign/release.keystore"

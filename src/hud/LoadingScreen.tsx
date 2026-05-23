@@ -19,6 +19,11 @@ export function LoadingScreen({ label = 'Forging the realm…' }: { label?: stri
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    // performance.now() here is intentional — the LoadingScreen is
+    // pure presentation outside the sim/engine determinism scope
+    // (gates.json bans Math.random/performance.now in src/sim, /engine,
+    // /systems only). Snapshot tests of the loading animation would
+    // need to mock this; none planned.
     let raf = 0;
     const start = performance.now();
     const tick = () => {

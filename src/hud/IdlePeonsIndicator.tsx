@@ -1,7 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { AssignedJob, FactionTrait, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { HUD_THEME } from './hud-theme';
+// Reviewer-fix: keyframes loaded once via CSS import; previously inline.
+import './idle-peons-indicator.css';
+import { useRafLoop } from './useRafLoop';
 
 /**
  * M_AUDIT2.UX.13 — idle-peon HUD log strip.
@@ -23,20 +26,14 @@ import { HUD_THEME } from './hud-theme';
 export function IdlePeonsIndicator({ game }: { game: GameState }) {
   const [count, setCount] = useState(0);
 
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      let n = 0;
-      for (const e of game.world.query(AssignedJob, Unit, FactionTrait)) {
-        if (e.get(FactionTrait)?.faction !== 'player') continue;
-        if (e.get(Unit)?.unitType !== 'Peon') continue;
-        if (e.get(AssignedJob)?.state === 'IDLE') n += 1;
-      }
-      setCount((prev) => (prev === n ? prev : n));
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+  useRafLoop(() => {
+    let n = 0;
+    for (const e of game.world.query(AssignedJob, Unit, FactionTrait)) {
+      if (e.get(FactionTrait)?.faction !== 'player') continue;
+      if (e.get(Unit)?.unitType !== 'Peon') continue;
+      if (e.get(AssignedJob)?.state === 'IDLE') n += 1;
+    }
+    setCount((prev) => (prev === n ? prev : n));
   }, [game]);
 
   if (count <= 0) return null;
@@ -62,7 +59,6 @@ export function IdlePeonsIndicator({ game }: { game: GameState }) {
       }}
     >
       ⚠ {count} idle peon{count === 1 ? '' : 's'}
-      <style>{`@keyframes idle-peons-pulse{0%{opacity:.7}50%{opacity:1}100%{opacity:.7}}`}</style>
     </div>
   );
 }

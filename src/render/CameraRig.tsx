@@ -76,11 +76,23 @@ export function CameraRig({ viewport, boardRadius }: CameraRigProps) {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<{ dx: number; dz: number }>).detail;
       if (!detail) return;
+      // Reviewer-fix (UX.31): project the dx/dz step through the camera's
+      // current azimuth so ArrowRight pans in screen-right regardless of
+      // how the player has rotated. azimuth = atan2(camera-x-from-target,
+      // camera-z-from-target). Without this, a yawed camera pans in
+      // disorienting world-axis directions.
       const t = controls.target;
-      t.x = Math.max(-panLimit, Math.min(panLimit, t.x + detail.dx));
-      t.z = Math.max(-panLimit, Math.min(panLimit, t.z + detail.dz));
-      camera.position.x += detail.dx;
-      camera.position.z += detail.dz;
+      const dxCam = camera.position.x - t.x;
+      const dzCam = camera.position.z - t.z;
+      const azimuth = Math.atan2(dxCam, dzCam);
+      const cos = Math.cos(azimuth);
+      const sin = Math.sin(azimuth);
+      const worldDx = detail.dx * cos + detail.dz * sin;
+      const worldDz = -detail.dx * sin + detail.dz * cos;
+      t.x = Math.max(-panLimit, Math.min(panLimit, t.x + worldDx));
+      t.z = Math.max(-panLimit, Math.min(panLimit, t.z + worldDz));
+      camera.position.x += worldDx;
+      camera.position.z += worldDz;
       controls.update();
     };
     window.addEventListener('aethelgard:pan-camera', handler);

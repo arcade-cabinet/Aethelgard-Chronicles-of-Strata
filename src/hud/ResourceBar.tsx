@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { RESOURCE_TYPES } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { resourceDisplayFor } from '@/rules';
 import { formatInt } from './format';
 import { HUD_THEME } from './hud-theme';
+import { useRafLoop } from './useRafLoop';
 
 /** One resource readout. */
 interface Readout {
@@ -27,27 +28,21 @@ interface Readout {
 export function ResourceBar({ game, compact = false }: { game: GameState; compact?: boolean }) {
   const [readouts, setReadouts] = useState<Readout[]>(() => snapshot(game));
 
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      // Diff snapshot vs previous — skip the setState (and React reconcile)
-      // when readouts are unchanged. Resource totals only change on harvest/
-      // spend/training, not every frame. CodeRabbit-flagged: unconditional
-      // setState every RAF was a 60Hz waste.
-      setReadouts((prev) => {
-        const next = snapshot(game);
-        if (
-          next.length === prev.length &&
-          next.every((r, i) => r.value === prev[i]?.value && r.id === prev[i]?.id)
-        ) {
-          return prev;
-        }
-        return next;
-      });
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+  useRafLoop(() => {
+    // Diff snapshot vs previous — skip the setState (and React reconcile)
+    // when readouts are unchanged. Resource totals only change on harvest/
+    // spend/training, not every frame. CodeRabbit-flagged: unconditional
+    // setState every RAF was a 60Hz waste.
+    setReadouts((prev) => {
+      const next = snapshot(game);
+      if (
+        next.length === prev.length &&
+        next.every((r, i) => r.value === prev[i]?.value && r.id === prev[i]?.id)
+      ) {
+        return prev;
+      }
+      return next;
+    });
   }, [game]);
 
   return (

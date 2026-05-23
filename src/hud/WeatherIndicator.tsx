@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { GameState } from '@/game/game-state';
 import { WEATHER_PROFILES, type WeatherState } from '@/game/weather';
 import { announce } from './aria-live-bus';
 import { HudPill } from './HudPill';
+import { useRafLoop } from './useRafLoop';
 
 /**
  * M_AUDIT2.UX.15 — weather indicator pill.
@@ -18,21 +19,15 @@ import { HudPill } from './HudPill';
 export function WeatherIndicator({ game }: { game: GameState }) {
   const [state, setState] = useState<WeatherState>(game.weather.state);
 
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      const next = game.weather.state;
-      setState((prev) => {
-        if (prev !== next) {
-          // M_AUDIT2.UX.15 — announce on the edge.
-          announce(`Weather changed: ${WEATHER_PROFILES[next].label}`);
-        }
-        return prev === next ? prev : next;
-      });
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+  useRafLoop(() => {
+    const next = game.weather.state;
+    setState((prev) => {
+      if (prev !== next) {
+        // M_AUDIT2.UX.15 — announce on the edge.
+        announce(`Weather changed: ${WEATHER_PROFILES[next].label}`);
+      }
+      return prev === next ? prev : next;
+    });
   }, [game]);
 
   const profile = WEATHER_PROFILES[state];

@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { FactionBase, Health } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { announce } from './aria-live-bus';
 // M_AUDIT2.UX.33 — keyframes loaded once via CSS import; previously
 // re-mounted as inline <style> on every render of this component.
 import './critical-warning.css';
+import { useRafLoop } from './useRafLoop';
 
 /** Threshold below which the screen edges pulse red — base in critical danger. */
 const CRITICAL_FRACTION = 0.3;
@@ -20,34 +20,28 @@ const CRITICAL_FRACTION = 0.3;
 export function CriticalWarning({ game }: { game: GameState }) {
   const [critical, setCritical] = useState(false);
 
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      // find the player base entity each frame (cheap — one entity)
-      let frac = 1;
-      for (const e of game.world.query(FactionBase, Health)) {
-        if (e.get(FactionBase)?.faction !== 'player') continue;
-        const hp = e.get(Health);
-        if (hp && hp.max > 0) frac = hp.current / hp.max;
-        break;
+  useRafLoop(() => {
+    // find the player base entity each frame (cheap — one entity)
+    let frac = 1;
+    for (const e of game.world.query(FactionBase, Health)) {
+      if (e.get(FactionBase)?.faction !== 'player') continue;
+      const hp = e.get(Health);
+      if (hp && hp.max > 0) frac = hp.current / hp.max;
+      break;
+    }
+    const isCritical = frac > 0 && frac < CRITICAL_FRACTION;
+    setCritical((prev) => {
+      // fire the alarm chime only on the transition false → true so it
+      // doesn't spam every frame while the base is below threshold
+      if (!prev && isCritical) {
+        emitUiSound('critical-alarm');
+        // M_AUDIT2.UX.12 — SR announcement comes from the rendered
+        // role="alert" div mounting (auto-announces on insert).
+        // The previous announce() bus call would double-fire because
+        // the rendered div ALSO triggers SR speech — reviewer flagged.
       }
-      const isCritical = frac > 0 && frac < CRITICAL_FRACTION;
-      setCritical((prev) => {
-        // fire the alarm chime only on the transition false → true so it
-        // doesn't spam every frame while the base is below threshold
-        if (!prev && isCritical) {
-          emitUiSound('critical-alarm');
-          // M_AUDIT2.UX.12 — announce assertively on the false→true
-          // edge so SR users hear it once (the visual pulse fires
-          // continuously; the announcement does not).
-          announce('Your base is under attack — critical health', 'assertive');
-        }
-        return prev === isCritical ? prev : isCritical;
-      });
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+      return prev === isCritical ? prev : isCritical;
+    });
   }, [game]);
 
   if (!critical) return null;
