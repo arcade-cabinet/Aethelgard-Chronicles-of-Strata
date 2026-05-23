@@ -127,8 +127,9 @@ rally, tracking ring. None fully shipped.
 - [x] M_GAMEPLAY.6 — building destruction (fbf1047): buildingDeathSystem
   removes 0-HP non-base buildings, restores walkability, rebuilds navGraph.
   FactionBase exempt (win/loss anchor). 271 tests.
-- [ ] M_GAMEPLAY.7 — pause / resume. Top-right Pause button (or P key, or
-  app-suspend on mobile) freezes `runEconomyTick`; resume continues.
+- [x] M_GAMEPLAY.7 — pause/resume (c1b5711): PauseControl.tsx pill + P
+  key + visibilitychange auto-pause; GameState.paused honored by
+  runEconomyTick. 274 tests.
 
 ### M_CONSTRUCTION — construction visualisation per the original spec
 
