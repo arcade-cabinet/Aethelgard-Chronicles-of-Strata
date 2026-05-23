@@ -71,8 +71,15 @@ interface Candidate {
  * map-PRNG draw; its style comes from the higher tile's biome. Deterministic
  * given `rng` (the map stream).
  */
-export function placeCrossings(tiles: Map<string, Tile>, rng: Rng): Map<string, Crossing> {
-  // Gather every candidate edge once, in deterministic order.
+/**
+ * Enumerate every 1-tier edge in the board as a Candidate, with the lower
+ * tile as `lowKey`. Deterministic order (tile keys sorted) so the
+ * placement passes that consume it are byte-equal across runs.
+ *
+ * M_MICRO.7.5 — extracted from placeCrossings; the gathering step is
+ * self-contained and easier to reason about in isolation.
+ */
+function gatherCrossingCandidates(tiles: Map<string, Tile>): Candidate[] {
   const candidates: Candidate[] = [];
   const seen = new Set<string>();
   for (const key of [...tiles.keys()].sort()) {
@@ -93,6 +100,11 @@ export function placeCrossings(tiles: Map<string, Tile>, rng: Rng): Map<string, 
       });
     }
   }
+  return candidates;
+}
+
+export function placeCrossings(tiles: Map<string, Tile>, rng: Rng): Map<string, Crossing> {
+  const candidates = gatherCrossingCandidates(tiles);
 
   // Seed the union-find with same-level adjacency, so each flat walkable region
   // is already one set — crossings then only need to join distinct regions.

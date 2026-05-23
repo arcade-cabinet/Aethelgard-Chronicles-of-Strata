@@ -22,6 +22,40 @@ export interface DamageEvent {
  * would both read the pre-tick Health and the later write would discard the
  * earlier hit. Returns the damage events so the render layer can spawn text.
  */
+/**
+ * Resolve all attacks one attacker fires in the current tick at one
+ * target. Drains every elapsed cooldown window (DPS stays frame-rate
+ * independent under stuttering). Returns the count of attacks fired
+ * so the caller can flip the attacker into ATTACKING state.
+ *
+ * M_MICRO.7.7 — extracted from combatSystem; the per-attacker loop is
+ * the cognitively-dense block.
+ */
+function resolveAttacks(
+  combatant: { attackTimer: number; attackCooldown: number; attackDamage: number },
+  target: { targetId: number },
+  targetEntity: Entity,
+  rng: Rng,
+  delta: number,
+  damageByTarget: Map<number, number>,
+  events: DamageEvent[],
+): number {
+  combatant.attackTimer += delta;
+  let fired = 0;
+  // CodeRabbit-flagged: `while`, not `if`, so a long frame doesn't
+  // silently drop attacks. Cap at 8 to prevent a runaway cycle on
+  // pathological deltas.
+  while (combatant.attackTimer >= combatant.attackCooldown && fired < 8) {
+    combatant.attackTimer -= combatant.attackCooldown;
+    const roll = rollDamage(combatant.attackDamage, rng);
+    const id = target.targetId;
+    damageByTarget.set(id, (damageByTarget.get(id) ?? 0) + roll.damage);
+    events.push({ target: targetEntity, damage: roll.damage, isCrit: roll.isCrit });
+    fired += 1;
+  }
+  return fired;
+}
+
 export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent[] {
   const events: DamageEvent[] = [];
   // Index entities by numeric id for target lookup. `Number(entity)` returns
@@ -51,20 +85,15 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
     const dist = hexDistance(hex.q, hex.r, targetHex.q, targetHex.r);
     if (dist > combatant.attackRange) return; // AI moves it into range
 
-    combatant.attackTimer += delta;
-    // Drain ALL elapsed cooldown windows this tick (`while`, not `if`) so a
-    // long frame doesn't silently drop attacks — DPS stays frame-rate
-    // independent. CodeRabbit-flagged: under stuttering the previous `if`
-    // would mean a 0.3s frame on a 0.1s cooldown only fired one attack.
-    let fired = 0;
-    while (combatant.attackTimer >= combatant.attackCooldown && fired < 8) {
-      combatant.attackTimer -= combatant.attackCooldown;
-      const roll = rollDamage(combatant.attackDamage, rng);
-      const id = target.targetId;
-      damageByTarget.set(id, (damageByTarget.get(id) ?? 0) + roll.damage);
-      events.push({ target: targetEntity, damage: roll.damage, isCrit: roll.isCrit });
-      fired += 1;
-    }
+    const fired = resolveAttacks(
+      combatant,
+      target,
+      targetEntity,
+      rng,
+      delta,
+      damageByTarget,
+      events,
+    );
     if (fired > 0 && e.has(AnimationState)) {
       // M_COMBAT_POLISH.2 — flash the attacker into ATTACKING; animationSystem
       // will reset to IDLE/MOVING once the cooldown ends.

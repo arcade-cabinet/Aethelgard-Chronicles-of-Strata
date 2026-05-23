@@ -882,16 +882,16 @@ bug).
   classes (Build/Train/Military/Resign) collapse to ONE generic
   `RegistryGoal` + `GOALS: Array<{id, score, payload, execute}>`
   table. ~150 LOC → ~60. Couples to M_REGISTRY.18 (BrainArchetype).
-- [ ] M_MICRO.7.4 — `character-factory.ts createCharacter`
+- [x] M_MICRO.7.4 — `character-factory.ts createCharacter`
   86-LOC role-branch combat-stats block — replace with
   `combatStatsFor(role): CombatStats | null` lookup +
   `combatTraitsFor(stats)` composer. Couples to M_REGISTRY.1.
-- [ ] M_MICRO.7.5 — `crossings.ts placeCrossings` 68 LOC
+- [x] M_MICRO.7.5 — `crossings.ts placeCrossings` 68 LOC
   — extract `gatherCrossingCandidates(tiles, rng)`.
 - [ ] M_MICRO.7.6 — `job-routing.ts jobRoutingSystem`
   88 LOC, 3 sub-concerns — extract `assignIdlePeons`,
   `retargetExhausted`, `deliverToDeposit`.
-- [ ] M_MICRO.7.7 — `combat.ts combatSystem` 60 LOC —
+- [x] M_MICRO.7.7 — `combat.ts combatSystem` 60 LOC —
   extract `resolveAttack(attacker, target, rng): DamageEvent | null`.
 
 #### Category 8 — Pre-bitmask hand-rolled tile loops
