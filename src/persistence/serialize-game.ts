@@ -106,13 +106,19 @@ export function serializeGame(game: GameState): GameSnapshot {
  * consumes the live one (runEconomyTick, the HUD, the AI player tick).
  */
 export function deserializeGame(snap: GameSnapshot): GameState {
+  // M_AUDIT2.ARCH.36 — migrate old-version snapshots forward to the
+  // current SNAPSHOT_VERSION before validating. Empty table today;
+  // first schema bump adds entries here and existing saves carry
+  // through instead of bricking.
+  const migrated = migrateSnapshot(snap as unknown as Record<string, unknown>) as unknown as GameSnapshot;
   // M_SEC.5 — structural validation BEFORE any Object.assign. A tampered
   // snapshot (corrupted SQLite row on a rooted device, malicious save
   // upload in a future cloud-save feature, browser-DevTools-injected
   // IndexedDB write) can carry __proto__ keys, NaN/Infinity numbers,
   // out-of-bounds mapSize. Reject upfront so the renderer never sees
   // poisoned state.
-  validateSnapshot(snap);
+  validateSnapshot(migrated);
+  snap = migrated;
   // Step 1 — rebuild the deterministic baseline from the config.
   const game = startGame(snap.config);
   // Step 2 — discard the fresh world; replace with the persisted one.
@@ -184,10 +190,45 @@ function pickEconomy(eco: unknown): GameEconomy {
 }
 
 /**
+ * Snapshot migration table (M_AUDIT2.ARCH.36).
+ *
+ * Each entry takes a snapshot at version N and returns one at version N+1.
+ * `migrateSnapshot(snap)` walks the chain from `snap.version` up to
+ * `SNAPSHOT_VERSION`, applying every entry along the way. When a future
+ * schema change lands, add ONE row here; existing saves carry forward.
+ *
+ * Today the table is empty (we're at version 1 and no migrations are
+ * needed). The framework is in place so the first schema bump won't
+ * brick every existing player's save.
+ */
+type SnapshotMigration = (snap: Record<string, unknown>) => Record<string, unknown>;
+const SNAPSHOT_MIGRATIONS: Record<number, SnapshotMigration> = {
+  // 1: (snap) => { ...snap, version: 2, /* new field defaults */ },
+};
+
+function migrateSnapshot(snap: Record<string, unknown>): Record<string, unknown> {
+  let current = snap;
+  while (typeof current.version === 'number' && current.version < SNAPSHOT_VERSION) {
+    const migrate = SNAPSHOT_MIGRATIONS[current.version];
+    if (!migrate) {
+      throw new Error(
+        `serialize-game: no migration from snapshot version ${current.version} to ${SNAPSHOT_VERSION}`,
+      );
+    }
+    current = migrate(current);
+  }
+  return current;
+}
+
+/**
  * Reject snapshots whose shape would NaN-poison the renderer or wedge the
  * sim. Type assertions in deserializeGame then have a verified baseline.
  * Throws with a precise reason on failure so the App-level catch can show
  * the user "save corrupted".
+ *
+ * M_AUDIT2.ARCH.36 — validateSnapshot is called AFTER migrateSnapshot
+ * by deserializeGame, so version-N saves auto-upgrade to current
+ * SNAPSHOT_VERSION before the structural check.
  */
 function validateSnapshot(snap: unknown): asserts snap is GameSnapshot {
   if (!snap || typeof snap !== 'object') {
