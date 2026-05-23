@@ -57,6 +57,16 @@ export function parseHexLevelKey(key: string): { q: number; r: number; level: nu
   return { q: q ?? 0, r: r ?? 0, level: level ?? 0 };
 }
 
+/**
+ * Absolute elevation gap between two tiles. M_MICRO.2.4 — extracts
+ * the `Math.abs(a.level - b.level)` pattern duplicated in
+ * pathfinding.ts:25 and crossings.ts:85. Both consult elevation deltas
+ * with the same shape: "1-tier step (ramp) vs disallowed jump".
+ */
+export function levelDelta(a: { level: number }, b: { level: number }): number {
+  return Math.abs(a.level - b.level);
+}
+
 /** Cube-distance between two axial coordinates. */
 export function hexDistance(q1: number, r1: number, q2: number, r2: number): number {
   const s1 = -q1 - r1;

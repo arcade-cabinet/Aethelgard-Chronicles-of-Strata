@@ -1,5 +1,6 @@
 import type { World } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
+import { HEX_DIRECTIONS } from '@/config/world';
 import { getHexKey, parseHexKey } from '@/core/hex';
 import { FACTIONS, type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { Difficulty } from '@/game/difficulty';
@@ -105,16 +106,10 @@ export function encroachmentSystem(
 /** Is any military unit of `set` on a tile adjacent to `tileKey`? */
 function hasAdjacentMilitary(tileKey: string, set: Set<string>): boolean {
   const { q, r } = parseHexKey(tileKey);
-  const dirs: Array<[number, number]> = [
-    [1, 0],
-    [0, 1],
-    [-1, 1],
-    [-1, 0],
-    [0, -1],
-    [1, -1],
-  ];
-  for (const [dq, dr] of dirs) {
-    if (set.has(`${q + dq},${r + dr}`)) return true;
+  // M_MICRO.2.3 — direction pairs come from HEX_DIRECTIONS (shared
+  // config); the local literal was a duplicate.
+  for (const d of HEX_DIRECTIONS) {
+    if (set.has(`${q + d.q},${r + d.r}`)) return true;
   }
   return false;
 }

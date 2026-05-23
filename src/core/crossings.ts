@@ -1,7 +1,7 @@
 import { HEX_DIRECTIONS } from '@/config/world';
 import { biomeStyleFor, type CrossingStyle } from './biome';
 import type { Tile } from './board';
-import { getHexKey } from './hex';
+import { getHexKey, levelDelta } from './hex';
 import type { Rng } from './rng';
 
 /**
@@ -82,7 +82,7 @@ export function placeCrossings(tiles: Map<string, Tile>, rng: Rng): Map<string, 
       const nKey = getHexKey(tile.q + dir.q, tile.r + dir.r);
       const neighbor = tiles.get(nKey);
       if (!neighbor?.walkable) continue;
-      if (Math.abs(neighbor.level - tile.level) !== 1) continue;
+      if (levelDelta(neighbor, tile) !== 1) continue;
       const edge = crossingKey(key, nKey);
       if (seen.has(edge)) continue;
       seen.add(edge);

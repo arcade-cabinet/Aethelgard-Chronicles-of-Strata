@@ -1,7 +1,7 @@
 import { HEX_DIRECTIONS } from '@/config/world';
 import type { BoardData } from './board';
 import { crossingKey } from './crossings';
-import { getHexKey, hexDistance, parseHexKey } from './hex';
+import { getHexKey, hexDistance, levelDelta, parseHexKey } from './hex';
 
 /** The navigation graph: an adjacency list of walkable tile keys. */
 export type NavGraph = Map<string, Set<string>>;
@@ -22,7 +22,7 @@ export function buildNavGraph(board: BoardData): NavGraph {
       const nKey = getHexKey(tile.q + dir.q, tile.r + dir.r);
       const neighbor = board.tiles.get(nKey);
       if (!neighbor?.walkable) continue;
-      const delta = Math.abs(neighbor.level - tile.level);
+      const delta = levelDelta(neighbor, tile);
       if (delta === 0) {
         neighbors.add(nKey);
       } else if (delta === 1 && board.crossings.has(crossingKey(key, nKey))) {

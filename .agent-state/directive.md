@@ -780,7 +780,7 @@ bug).
 
 #### Category 2 — Duplicated formulas
 
-- [ ] M_MICRO.2.1 — `board.ts:117` + `balance-audit.ts:26`
+- [x] M_MICRO.2.1 — `board.ts:117` + `balance-audit.ts:26`
   inline `(|q|+|r|+|q+r|)/2` — replace with `hexDistance(q,r,0,0)`.
 - [x] M_MICRO.2.2 — **PARSE-HEX-KEY HELPER** kills 13
   call sites. New `parseHexKey(key): {q,r}` in `src/core/hex.ts`,
@@ -789,10 +789,10 @@ bug).
   :24`, `Decoration.tsx:438`, `encroachment.ts:109`, `job-routing.ts
   :28`, `path-follow.ts:12`, `commands.ts:287`, `ai-player.ts:137`,
   `steering.ts:75`.
-- [ ] M_MICRO.2.3 — `encroachment.ts:109-120
+- [x] M_MICRO.2.3 — `encroachment.ts:109-120
   hasAdjacentMilitary` inlines 6 direction pairs; use
   `HEX_DIRECTIONS` from `config/world.ts`.
-- [ ] M_MICRO.2.4 — extract `levelDelta(a, b): number`
+- [x] M_MICRO.2.4 — extract `levelDelta(a, b): number`
   helper used by `pathfinding.ts:25` + `crossings.ts:85`.
 
 #### Category 3 — Index-based React keys / id collisions
