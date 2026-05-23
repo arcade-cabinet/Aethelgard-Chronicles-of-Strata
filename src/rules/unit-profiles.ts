@@ -130,6 +130,17 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     combatRole: 'military',
     selectionRadius: 0.85,
   },
+  Scout: {
+    // M_EXPANSION.A.27 — player non-combat reconnaissance unit. High
+    // movement speed, low HP, no attack — reveals enemy positions but
+    // can't fight. Counted as civilian for combat role gates.
+    harvester: false,
+    nonCombat: true,
+    founder: false,
+    damageType: 'normal',
+    combatRole: 'civilian',
+    selectionRadius: 0.85,
+  },
   Goblin: {
     harvester: false,
     nonCombat: false,

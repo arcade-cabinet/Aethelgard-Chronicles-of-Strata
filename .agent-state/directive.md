@@ -1715,7 +1715,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 **KayKit Adventurers 2.0 EXTRA (25-30)** — heroes haven't all been wired
 - [x] [HIGH] M_EXPANSION.A.25 — audit KayKit_Adventurers_2.0_EXTRA roster vs UNIT_PROFILES; list every character with no UNIT_PROFILES row
 - [x] [HIGH] M_EXPANSION.A.26 — wire Mage (already in CC0 pack) as a Wizard unit type (Barracks tech tree extension)
-- [ ] [MED]  M_EXPANSION.A.27 — wire Rogue as a scout unit (high vision, low hp, no attack)
+- [x] [MED]  M_EXPANSION.A.27 — wire Rogue as a scout unit (high vision, low hp, no attack)
 - [ ] [MED]  M_EXPANSION.A.28 — Adventurers EXTRA shields/weapons subset for attachment points on Knight/Footman
 - [ ] [LOW]  M_EXPANSION.A.29 — character variant tinting via the shared Rig_Medium retargeting pipeline (cosmetic 5-color palette per faction)
 - [x] [LOW]  M_EXPANSION.A.30 — Mystery Monthly 4+5 minor enemies (slime, bat) as wandering neutral hostiles

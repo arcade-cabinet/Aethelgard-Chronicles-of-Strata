@@ -26,6 +26,14 @@
       "attackRange": 3,
       "attackCooldown": 2.0
     },
+    "Scout": {
+      "speed": 4.5,
+      "faction": "player",
+      "hp": 40,
+      "attackDamage": 0,
+      "attackRange": 0,
+      "attackCooldown": 0
+    },
     "Goblin": {
       "speed": 2,
       "faction": "enemy",

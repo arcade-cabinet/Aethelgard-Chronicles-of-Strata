@@ -161,6 +161,8 @@ const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
   Trebuchet: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
   // M_EXPANSION.A.26 — Wizard uses the KayKit Mage mesh.
   Wizard: { tier: 'medium', meshLogicalId: 'characters.heroes.mage' },
+  // M_EXPANSION.A.27 — Scout uses the KayKit Rogue mesh.
+  Scout: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },
   // Settler (M_MODES.6) — civilian appearance; reuse the engineer mesh.
   Settler: { tier: 'medium', meshLogicalId: 'characters.heroes.engineer' },
   // Goblin: no dedicated KayKit goblin; the hooded Rogue is the closest

@@ -6,6 +6,7 @@ export type UnitType =
   | 'Footman'
   | 'Trebuchet'
   | 'Wizard'
+  | 'Scout'
   | 'Settler'
   | 'Goblin'
   | 'Orc'
