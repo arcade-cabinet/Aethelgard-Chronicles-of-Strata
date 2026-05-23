@@ -19,11 +19,14 @@ describe('economy integration', () => {
     expect(game.economy.player.wood).toBeGreaterThanOrEqual(woodBefore);
   });
 
+  // 3600 ticks = 60 game-seconds; ~3-5s locally, occasionally over the
+  // 5s default on slower CI runners (esp after the science-system + endless-
+  // clamp added per-tick work). 30s headroom for CI.
   it('runs 3600 ticks without throwing', () => {
     const game = startGame('ancient-silver-forest');
     game.assignAllPeonsToHarvest();
     expect(() => {
       for (let i = 0; i < 3600; i++) runEconomyTick(game, 1 / 60);
     }).not.toThrow();
-  });
+  }, 30000);
 });
