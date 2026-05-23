@@ -431,9 +431,10 @@ re-listing. Both unblock as the relevant dependency lands.)
   the most-recently-unlocked enemy at each tier; Goblin share monotonically
   decreases 100% → 33% → 25% → 20% → 17% as escalation unlocks. New test
   `Goblin share strictly decreases` pins the invariant.
-- [ ] M_QUALITY.3 — runtime smoke test for the AI-vs-AI loop running a
-  full simulated match end-to-end with a fixed seed; pin the resulting
-  outcome so determinism regressions show as a test diff.
+- [x] M_QUALITY.3 — AI-vs-AI determinism smoke (test):
+  ai-vs-ai-determinism.test.ts fingerprints {outcome, clock, per-faction
+  economy, base HPs} after 900 ticks; same seed → byte-identical FP; second
+  test ensures different seed → different FP (no trivial constancy).
 
 ### M_POLISH — visual + audio coverage
 
