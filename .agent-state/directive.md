@@ -211,10 +211,12 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
   falloff. Unfactioned Consumers (resources) attract any peon faction.
   3 tests pin friendly-pull, enemy-repel, distance-falloff. Consumers
   (placement snap, pathfinding cost, AI motivation) wire onto this.
-- [ ] M_ARCHETYPE.7 — per-tile bitmask packing — `Uint32Array[tileIndex]`
-  holding walkable + crossingLanding + controlled×2 + observed×2 +
-  pulsing×2 + hasResource + hasBuilding + isRamp + biomeIndex + spare.
-  Force-field sampling becomes pointer-arithmetic.
+- [x] M_ARCHETYPE.7 — bitmask foundation: rules/tile-bits.ts — TILE_BIT
+  layout (walkable, crossingLanding, controlled×2, observed×2, pulsing×2,
+  hasResource, hasBuilding, isRamp, biomeIndex×3, spare); set/clear/has/
+  biomeOf/packBiome/setControlled helpers. 5 tests pin the layout. The
+  Uint32Array-per-board allocation + zone/observed/pulsing serialization
+  layer onto this when render paths need the speedup.
 
 ### M_ASSETS — replace the placeholder structure GLBs
 
