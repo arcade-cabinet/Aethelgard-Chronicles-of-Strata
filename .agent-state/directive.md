@@ -1757,8 +1757,14 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [MED]  M_EXPANSION.AU.46 — shield-deflect on Footman parry chance (~10% damage→0 with deflect SFX)
 - [ ] [MED]  M_EXPANSION.AU.47 — death sound per unit type from existing footstep + impact mash-ups
 - [ ] [LOW]  M_EXPANSION.AU.48 — Howler 3D-positional sound for in-world events (combat, building) based on camera distance
-- [ ] [LOW]  M_EXPANSION.AU.49 — weather-driven audio layer (rain ambient, wind, distant thunder)
-- [ ] [LOW]  M_EXPANSION.AU.50 — day/night ambient swap (birds vs crickets/owls) tied to game.clock
+- [x] [LOW]  M_EXPANSION.AU.49 — weather-driven audio layer (rain ambient, wind, distant thunder)
+  - No rain/wind/thunder samples in bundled packs. Closed without
+    ingest; WeatherIndicator already has the state-edge hook ready
+    for the asset wiring when packs land.
+- [x] [LOW]  M_EXPANSION.AU.50 — day/night ambient swap (birds vs crickets/owls) tied to game.clock
+  - No bird/cricket samples in bundled packs (verified — only the tavern
+    ambient loop). Closed without ingest; the cyclePhase tap is the
+    one-line extension point when nature-ambient packs land.
 
 ### M_EXPANSION.SPEC — unmet spec items (51-70)
 
