@@ -361,6 +361,49 @@ interface BaseAccretion {
   seedTag: string;
 }
 
+/**
+ * Per-building accretion config (M_MAPGEN.13). Each completed building's
+ * type drives a small prop scatter in a 1-hex ring around it (per user:
+ * "different buildings can have different adherence and accretion rules
+ * and so on"). Composes with BASE_ACCRETION (which is per-FactionBase).
+ * Adding a building accretion = ONE row.
+ */
+interface BuildingAccretion {
+  propPool: ReadonlyArray<string>;
+  radius: number;
+  density: number;
+  scaleRange: [number, number];
+}
+
+const BUILDING_ACCRETION: Partial<Record<string, BuildingAccretion>> = {
+  Farm: {
+    propPool: ['nature.grass-tuft', 'nature.flower-a', 'nature.flower-b'],
+    radius: 1,
+    density: 0.5,
+    scaleRange: [0.5, 0.8],
+  },
+  Barracks: {
+    propPool: ['nature.rock.small-a', 'nature.stump-a'],
+    radius: 1,
+    density: 0.3,
+    scaleRange: [0.7, 1.0],
+  },
+  Library: {
+    propPool: ['nature.mushroom-a', 'nature.mushroom-b'],
+    radius: 1,
+    density: 0.4,
+    scaleRange: [0.6, 0.9],
+  },
+  Granary: {
+    propPool: ['nature.grass-tuft', 'nature.bush-a'],
+    radius: 1,
+    density: 0.45,
+    scaleRange: [0.5, 0.75],
+  },
+  // House / Watchtower / Wall / TownHall / Wonder don't paint accretion
+  // (TownHall already gets BASE_ACCRETION; the rest stay minimal).
+};
+
 const BASE_ACCRETION: Record<'player' | 'enemy', BaseAccretion> = {
   player: {
     // Player base — town props (placeholder: small trees + buckets) until
@@ -427,6 +470,66 @@ function appendBaseAccretion(
   }
 }
 
+/**
+ * M_MAPGEN.13 — per-completed-building accretion scatter. Reads
+ * BUILDING_ACCRETION; iterates each build site that has a configured
+ * profile + is complete; paints a 1-hex ring of props.
+ */
+interface BuildSiteSnap {
+  key: string;
+  q: number;
+  r: number;
+  level: number;
+  type: string;
+  isComplete: boolean;
+}
+
+function appendBuildingAccretion(
+  out: DecoInstance[],
+  board: BoardData,
+  sites: ReadonlyArray<BuildSiteSnap>,
+): void {
+  const rng = createMapPrng(`${board.seedPhrase}:building-accretion`);
+  const NEIGHBORS = [
+    [1, 0],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [0, -1],
+    [1, -1],
+  ] as const;
+  for (const site of sites) {
+    if (!site.isComplete) continue;
+    const cfg = BUILDING_ACCRETION[site.type];
+    if (!cfg) continue;
+    const [scaleLo, scaleHi] = cfg.scaleRange;
+    for (const [dq, dr] of NEIGHBORS) {
+      const q = site.q + dq;
+      const r = site.r + dr;
+      const tile = board.tiles.get(`${q},${r}`);
+      if (!tile || tile.type === 'OCEAN' || tile.type === 'LAKE') continue;
+      if (tile.isCrossingLanding) continue;
+      if (rng() > cfg.density) continue;
+      const idx = Math.floor(rng() * cfg.propPool.length);
+      const assetId = cfg.propPool[idx] ?? cfg.propPool[0];
+      if (!assetId) continue;
+      const offsetX = (rng() - 0.5) * 0.6;
+      const offsetZ = (rng() - 0.5) * 0.6;
+      const rotY = rng() * Math.PI * 2;
+      const { x, z } = axialToWorld(q, r);
+      out.push({
+        key: `bld-${site.key}-${q},${r}`,
+        assetId,
+        x: x + offsetX,
+        y: tile.level * TILE_HEIGHT,
+        z: z + offsetZ,
+        rotY,
+        scale: scaleLo + rng() * (scaleHi - scaleLo),
+      });
+    }
+  }
+}
+
 /** Props for the Decoration component. */
 export interface DecorationProps {
   /** The generated board (supplies tile biomes + levels). */
@@ -442,6 +545,8 @@ export interface DecorationProps {
   enemyBaseKey?: string;
   /** Player base tile key — drives the player faction accretion cluster. */
   playerBaseKey?: string;
+  /** Live build-site snapshots — drives per-building accretion (M_MAPGEN.13). */
+  buildSites?: ReadonlyArray<BuildSiteSnap>;
 }
 
 /**
@@ -451,18 +556,27 @@ export interface DecorationProps {
  * no pathfinding impact. Geometry is owned by the useGLTF cache and shared via
  * Clone so no manual disposal is needed here.
  */
-export function Decoration({ board, occupiedKeys, enemyBaseKey, playerBaseKey }: DecorationProps) {
+export function Decoration({
+  board,
+  occupiedKeys,
+  enemyBaseKey,
+  playerBaseKey,
+  buildSites,
+}: DecorationProps) {
   const gltfs = useDecorationGltfs();
 
   // Compute the placement plan once per board + occupiedKeys change.
-  // occupiedKeys is a Set — use its size as a proxy dep so React detects changes.
+  // buildSitesKey condenses the per-tick snapshot into a string dep so the
+  // memo re-fires when buildings complete (not on every frame).
+  const buildSitesKey = (buildSites ?? []).map((s) => `${s.key}:${s.isComplete ? 1 : 0}`).join('|');
   const instances = useMemo(() => {
     const list = planDecoration(board, occupiedKeys);
     appendBaseAccretion(list, board, playerBaseKey, 'player');
     appendBaseAccretion(list, board, enemyBaseKey, 'enemy');
+    if (buildSites && buildSites.length > 0) appendBuildingAccretion(list, board, buildSites);
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [board, occupiedKeys, enemyBaseKey, playerBaseKey]);
+  }, [board, occupiedKeys, enemyBaseKey, playerBaseKey, buildSitesKey]);
 
   return (
     <group name="decoration">

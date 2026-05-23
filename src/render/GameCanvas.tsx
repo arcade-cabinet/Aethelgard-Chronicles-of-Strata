@@ -29,6 +29,61 @@ import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
 import { useViewport, type ViewportProfile } from './useViewport';
+import { Building, HexPosition } from '@/ecs/components';
+import { useState } from 'react';
+import { useFrame } from '@react-three/fiber';
+
+/**
+ * Decoration wrapper that snapshots game.buildSites per frame into the
+ * shape Decoration's M_MAPGEN.13 building-accretion expects. Keeps the
+ * snapshot diff-equal across frames so React's memo doesn't re-fire on
+ * no-op updates.
+ */
+function DecorationLive({
+  game,
+  occupiedKeys,
+}: {
+  game: GameState;
+  occupiedKeys: ReadonlySet<string>;
+}) {
+  const [sites, setSites] = useState<
+    Array<{ key: string; q: number; r: number; level: number; type: string; isComplete: boolean }>
+  >([]);
+  useFrame(() => {
+    const next: typeof sites = [];
+    for (const [key, entity] of game.buildSites) {
+      const b = entity.get(Building);
+      const h = entity.get(HexPosition);
+      if (!b || !h) continue;
+      next.push({
+        key,
+        q: h.q,
+        r: h.r,
+        level: h.level,
+        type: b.buildingType,
+        isComplete: b.isComplete,
+      });
+    }
+    setSites((prev) => {
+      if (
+        next.length === prev.length &&
+        next.every((s, i) => s.key === prev[i]?.key && s.isComplete === prev[i]?.isComplete)
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  });
+  return (
+    <Decoration
+      board={game.board}
+      occupiedKeys={occupiedKeys}
+      enemyBaseKey={game.enemyBaseKey}
+      playerBaseKey={game.townHallKey}
+      buildSites={sites}
+    />
+  );
+}
 
 /** Expose the active r3f camera to the parent via a callback. */
 function CameraTap({ onReady }: { onReady: (cam: Camera) => void }) {
@@ -76,12 +131,7 @@ function Scene({
       />
       <TrackingRings ref={ringsRef} board={game.board} />
       <Suspense fallback={null}>
-        <Decoration
-          board={game.board}
-          occupiedKeys={occupiedKeys}
-          enemyBaseKey={game.enemyBaseKey}
-          playerBaseKey={game.townHallKey}
-        />
+        <DecorationLive game={game} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
         <Roads game={game} />
         <BuildCompleteFX game={game} />

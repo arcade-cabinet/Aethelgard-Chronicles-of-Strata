@@ -603,12 +603,13 @@ qualify for AI GOAP".
   Per-BuildingType ACCRETION_PROFILE follow-up tracked under future
   M_MAPGEN.13 (when more building variants land).
 
-- [ ] M_MAPGEN.13 — per-BuildingType accretion follow-up (deferred from
-  M_MAPGEN.11): each building type gets its own ACCRETION_PROFILE config
-  (Farm → wheat-stalks, Barracks → training-dummies + barrels, Library →
-  scrolls + crates). Decoration reads the table at place-time. Composes
-  with the M_ARCHETYPE.6 force field — archetype weight drives accretion
-  density. Lands when more building variants are in play.
+- [x] M_MAPGEN.13 — per-BuildingType accretion: BUILDING_ACCRETION table
+  in Decoration.tsx (Farm → grass+flowers; Barracks → rocks+stumps;
+  Library → mushrooms; Granary → grass+bushes); appendBuildingAccretion
+  paints a 1-hex ring around each completed building site. Drives off
+  the same config-row pattern as BASE_ACCRETION. DecorationLive in
+  GameCanvas snapshots game.buildSites per frame with diff-equal
+  short-circuit so the memo re-fires only on completion transitions.
 
 - [x] M_MAPGEN.12 — balanced enemy placement: startGame now iterates
   ALL walkable candidates with d≥5 from center; for guided modes the
