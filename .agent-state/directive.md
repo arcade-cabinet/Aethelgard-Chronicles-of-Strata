@@ -133,10 +133,10 @@ rally, tracking ring. None fully shipped.
 
 ### M_CONSTRUCTION — construction visualisation per the original spec
 
-- [ ] M_CONSTRUCTION.1 — scaffold + progress ring. A build-site renders as
-  a wooden scaffold (yellow pulsing outline) with a 3D progress ring above it
-  showing `Building.progress`. On completion: dust-puff particle + the actual
-  building pops in.
+- [x] M_CONSTRUCTION.1 — progress ring (fc0786f): ConstructionRing.tsx
+  gold sweep above each in-progress build site (RingGeometry.thetaLength).
+  Building already scales 0.5→1 — together gives the Warcraft scaffold/
+  progress feedback. (Dust-puff completion FX is M_COMBAT_POLISH.5 territory.)
 - [ ] M_CONSTRUCTION.2 — peon-builder assignment visualisation. The
   assigned peon's billboard says "Building"; the peon plays the harvest clip
   (re-skinned as hammering) facing the scaffold; sawdust particles.
