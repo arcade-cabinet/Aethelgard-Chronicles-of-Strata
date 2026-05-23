@@ -47,4 +47,22 @@ describe('serializeGame ↔ deserializeGame round-trip (M_HARDENING.1)', () => {
     runEconomyTick(restored, 1);
     expect(restored.clock.elapsed).toBeGreaterThan(before);
   });
+
+  it('M_EXPANSION.S.57 — event seed round-trips byte-for-byte in the snapshot', () => {
+    // The eventSeed is the device-level event PRNG seed; spec 96 says it
+    // MUST embed in the snapshot so a save→load preserves the event-PRNG
+    // lineage (re-deriving from the map seed alone would collapse the
+    // two-PRNG model). Pin it.
+    const original = startGame({
+      seedPhrase: 'autumn-bronze-summit',
+      mapSize: 6,
+      difficulty: 'normal',
+      eventSeed: 'fixed-event-seed-for-test-only',
+    });
+    const wire = JSON.stringify(serializeGame(original));
+    const parsed = JSON.parse(wire);
+    expect(parsed.config.eventSeed).toBe('fixed-event-seed-for-test-only');
+    const restored = deserializeGame(parsed);
+    expect(restored.eventSeed).toBe('fixed-event-seed-for-test-only');
+  });
 });

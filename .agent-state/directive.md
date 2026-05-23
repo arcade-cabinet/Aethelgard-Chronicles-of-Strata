@@ -1788,7 +1788,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.S.54 — spec 70-rts-systems.md HealthBar §Health billboard — animate fill on damage (lerp toward target fraction over 0.3s)
 - [ ] [MED]  M_EXPANSION.S.55 — spec 100-ai-as-player.md "patrol" goal — AI military units idle into PatrolGoal between raids (currently sit at base)
 - [ ] [MED]  M_EXPANSION.S.56 — spec 102-zone-of-control.md "contested pulse" — yellow pulse when enemy military on player tile (M_GAMEPLAY.4) — verify rendered, currently latent
-- [ ] [MED]  M_EXPANSION.S.57 — spec 96-prng-and-landing.md "session save embeds seed" — verified done; add browser test snapshot of seed-round-trip
+- [x] [MED]  M_EXPANSION.S.57 — spec 96-prng-and-landing.md "session save embeds seed" — verified done; add browser test snapshot of seed-round-trip
 - [ ] [MED]  M_EXPANSION.S.58 — spec 90-ui-hud.md "build queue display" — currently no UI for queued buildings; show the build site count in HUD
 - [ ] [MED]  M_EXPANSION.S.59 — spec 50-ecs-model.md trait count guard — write a test that fails if SERIALIZED_TRAITS misses any trait that affects gameplay snapshot
 - [ ] [MED]  M_EXPANSION.S.60 — spec 60-characters.md M_CHARACTERS.14 — generic-fixed NPC archetype (named-but-randomised stats); currently only fixed + player exist
