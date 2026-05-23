@@ -1814,7 +1814,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
     are available.
 - [x] [LOW]  M_EXPANSION.S.65 — spec 20-visual-language.md palette extension — add an "evening" warm-tint variant of every biome palette
 - [x] [LOW]  M_EXPANSION.S.66 — spec 40-hex-world.md cliff-shadow rendering — cliffs cast no shadow; add subtle directional shadow from the cliff edge
-- [ ] [LOW]  M_EXPANSION.S.67 — spec 100-ai-as-player.md "personality presets" — aggressive/defensive/turtle AI personas with different goal weights
+- [x] [LOW]  M_EXPANSION.S.67 — spec 100-ai-as-player.md "personality presets" — aggressive/defensive/turtle AI personas with different goal weights
 - [x] [LOW]  M_EXPANSION.S.68 — spec 103-particle-archetype.md "weather wind drift" — particles drift downwind during rain/fog instead of straight down
 - [x] [LOW]  M_EXPANSION.S.69 — spec 99-passability-and-slopes.md "ramp visualization" — explicit ramp-tile decoration (currently slope is mesh-only)
   - Verified: Crossings.tsx already renders explicit stair/plank ramp
