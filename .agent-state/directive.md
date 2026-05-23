@@ -569,10 +569,10 @@ the smallest end-to-end proof, then drain in dependency order.
 - [ ] M_REGISTRY.12 — `Crossings.tsx` 6-variant (style ×
   form) rendering collapses into CrossingProfile slot table; remove
   the bespoke crossingColor switch.
-- [ ] M_REGISTRY.13 — collapse 4 `place*` verbs in
+- [x] M_REGISTRY.13 — collapse 4 `place*` verbs in
   commands.ts (placeBuilding, placeRoad, trainUnit + latent
   foundBase) into one `placeThing(game, profileId, hex, faction)`.
-- [ ] M_REGISTRY.14 — replace `townHallKey` /
+- [x] M_REGISTRY.14 — replace `townHallKey` /
   `enemyBaseKey` with `baseKeys: Record<Faction, string>`. Rewrite
   4 hard-coded ternaries in commands.ts (286, 414) + ai-player.ts
   (136) + game-state. Foundation for >2 factions.
@@ -803,7 +803,7 @@ bug).
 - [ ] M_MICRO.3.2 — `TrackingRings.tsx` lift opacity/
   scale into Ring state; drop the meshRefs Map (1-frame opacity pop
   on new rings).
-- [ ] M_MICRO.3.3 — `RallyMarker.tsx:24-28` use
+- [x] M_MICRO.3.3 — `RallyMarker.tsx:24-28` use
   `parseHexKey` (M_MICRO.2.2) + early-return on invalid key.
 
 #### Category 4 — Silent `?? 0` over `Number()` output

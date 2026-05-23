@@ -11,7 +11,7 @@ import {
 } from '@/ecs/components';
 import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
-import type { GameState } from '@/game/game-state';
+import { baseKeyFor, type GameState } from '@/game/game-state';
 import { canBuild, peonCap, UNIT_COSTS } from '@/rules';
 
 /**
@@ -133,7 +133,8 @@ function discoveredEnemyTile(game: GameState, faction: Faction): string | null {
 
 /** A free walkable tile adjacent to the faction's base for placing a building. */
 function freeBuildTile(game: GameState, faction: Faction): string | null {
-  const baseKey = faction === 'player' ? game.townHallKey : game.enemyBaseKey;
+  // M_REGISTRY.14 — baseKeyFor() is the single faction → baseKey source.
+  const baseKey = baseKeyFor(game, faction);
   const { q: bq, r: br } = parseHexKey(baseKey);
   // Both faction-base tiles are off-limits (CodeRabbit HIGH-4 symmetric fix):
   // the AI must not stamp a Farm onto the player's TownHall if its base

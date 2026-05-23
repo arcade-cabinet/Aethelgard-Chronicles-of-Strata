@@ -297,11 +297,15 @@ function findCentralWalkableTile(board: BoardData): { q: number; r: number; leve
 /** Up to `count` distinct walkable tiles adjacent to (q, r), nearest-ring first. */
 /**
  * Resolve a faction's base hex key from the live game state. M_REGISTRY.16
- * follow-up — replaces a per-tick `Record<Faction, string>` allocation
- * in the depositSystem loop. A new tribe extends this switch in ONE
- * place; the loop auto-uses it.
+ * + M_REGISTRY.14 — single source for the per-faction baseKey lookup.
+ * Was 4 hand-written `faction === 'player' ? game.townHallKey :
+ * game.enemyBaseKey` ternaries scattered across game-state.ts,
+ * commands.ts, ai-player.ts (and the deposit-tick allocation in
+ * runEconomyTick). Now ONE function the entire codebase consults.
+ * A future Necromancer tribe extends this switch in ONE place; every
+ * caller auto-uses it.
  */
-function baseKeyFor(game: GameState, faction: Faction): string {
+export function baseKeyFor(game: GameState, faction: Faction): string {
   return faction === 'player' ? game.townHallKey : game.enemyBaseKey;
 }
 

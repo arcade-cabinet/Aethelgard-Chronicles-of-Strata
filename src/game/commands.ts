@@ -32,7 +32,7 @@ import {
   UNIT_COSTS,
 } from '@/rules';
 import { spend } from './economy';
-import type { GameState } from './game-state';
+import { baseKeyFor, type GameState } from './game-state';
 import { setRallyPoint } from './rally';
 import { applyResearch, type ResearchId } from './research';
 
@@ -289,7 +289,8 @@ export function trainUnit(
   if (!spend(eco, UNIT_COSTS[role])) return false;
 
   // pick a walkable tile adjacent to the faction's base (the trainer building)
-  const baseKey = faction === 'player' ? game.townHallKey : game.enemyBaseKey;
+  // M_REGISTRY.14 — baseKeyFor() is the single faction → baseKey source.
+  const baseKey = baseKeyFor(game, faction);
   const { q: bq, r: br } = parseHexKey(baseKey);
   let spawnTile: { q: number; r: number; level: number } | null = null;
   for (const nKey of hexNeighbors(bq, br)) {
