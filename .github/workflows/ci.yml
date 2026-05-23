@@ -59,10 +59,15 @@ jobs:
       - name: Browser tests (maintainer PRs + push only)
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: pnpm test:browser
-      - name: Build web
-        run: pnpm build
       - name: Build GitHub Pages
         run: pnpm build:pages
+      # Reordered: build:pages first (verifies the pages-base path
+      # works), then `pnpm build` LAST so the resulting static-assets.ts
+      # uses the default base="/" — matching what's committed locally.
+      # Without this the diff gate below would always fire because
+      # build:pages bakes the repo subpath into BASE_PATH.
+      - name: Build web (default base — matches committed file)
+        run: pnpm build
       # M_AUDIT2.SEC2.22 — vite-static-assets-plugin writes src/static-
       # assets.ts at build time. A supply-chain attacker who landed a
       # malicious plugin update could inject code via this file. Diff
