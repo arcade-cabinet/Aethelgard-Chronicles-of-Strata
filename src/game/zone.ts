@@ -65,10 +65,14 @@ export function releaseTile(zone: ZoneState, key: string): void {
   }
 }
 
+// M_AUDIT2.ARCH.15 — vision constants moved to config/world.json
+// (WORLD.vision). The const exports stay for back-compat with existing
+// importers; values now derived from config.
+import { WORLD } from '@/config/world';
 /** Default vision-cone radius (hex tiles) of a unit. */
-export const BASE_UNIT_VISION_RADIUS = 5;
+export const BASE_UNIT_VISION_RADIUS = WORLD.vision.baseUnitRadius;
 /** Half-angle of a unit's forward vision cone, in radians (≈ 70° total). */
-const UNIT_CONE_HALF_ANGLE = Math.PI * 0.39;
+const UNIT_CONE_HALF_ANGLE = WORLD.vision.unitConeHalfAngle;
 /** Vision radius (hex tiles) of a base — a full 360° circle. */
 const BASE_VISION_RADIUS = 7;
 

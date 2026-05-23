@@ -8,12 +8,13 @@ import { axialToWorld, parseHexKey as parseKey } from '@/core/hex';
 // M_MICRO.2.2 — local parseKey aliased to shared parseHexKey to
 // keep call-sites unchanged.
 
-/** Half-width of a crossing surface, in world units. */
-const HALF_WIDTH = HEX_RADIUS * 0.44;
-/** How far the crossing surface is lifted clear of the slope line. */
-const LIFT = 0.1;
-/** Steps a staggered (stone-stair) crossing is cut into. */
-const STAIR_STEPS = 5;
+// M_AUDIT2.ARCH.17 — tuning moved to config/world.json
+// (WORLD.crossings). The const aliases here keep the call-sites
+// unchanged.
+import { WORLD } from '@/config/world';
+const HALF_WIDTH = HEX_RADIUS * WORLD.crossings.halfWidth;
+const LIFT = WORLD.crossings.lift;
+const STAIR_STEPS = WORLD.crossings.stairSteps;
 
 /**
  * M_REGISTRY.12 — per-(style, form) crossing material color lifted into

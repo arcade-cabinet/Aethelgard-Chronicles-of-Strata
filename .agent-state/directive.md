@@ -1436,11 +1436,11 @@ local-review-trio after each ~5-item batch.
 - [x] M_AUDIT2.ARCH.11 — PROJECTILE_LIFETIME per-kind table in projectiles.ts
 - [ ] M_AUDIT2.ARCH.12 — particle-archetypes tuning constants → ParticleEmitterSpec.tuning field
 - [x] M_AUDIT2.ARCH.13 — AUTO_SAVE_INTERVAL → config/persistence.ts
-- [ ] M_AUDIT2.ARCH.14 — FIXED_DT + MAX_STEPS_PER_FRAME → config/world.ts sim:{}
-- [ ] M_AUDIT2.ARCH.15 — BASE_UNIT_VISION_RADIUS + UNIT_CONE_HALF_ANGLE → config/world.ts vision:{}
+- [x] M_AUDIT2.ARCH.14 — FIXED_DT + MAX_STEPS_PER_FRAME → config/world.ts sim:{}
+- [x] M_AUDIT2.ARCH.15 — BASE_UNIT_VISION_RADIUS + UNIT_CONE_HALF_ANGLE → config/world.ts vision:{}
 - [x] M_AUDIT2.ARCH.16 — HealthBillboard tier thresholds → HEALTH_BAR_STOPS in rules/display.ts
-- [ ] M_AUDIT2.ARCH.17 — Crossings.tsx HALF_WIDTH/LIFT/STAIR_STEPS → config/world.ts crossings:{}
-- [ ] M_AUDIT2.ARCH.18 — FLOATING_TEXT (POPUP_LIFETIME/DRIFT) shared config used by ResourceText+CombatText
+- [x] M_AUDIT2.ARCH.17 — Crossings.tsx HALF_WIDTH/LIFT/STAIR_STEPS → config/world.ts crossings:{}
+- [x] M_AUDIT2.ARCH.18 — FLOATING_TEXT (POPUP_LIFETIME/DRIFT) shared config used by ResourceText+CombatText
 
 **Dead/shimmed code (19-23)**
 - [x] M_AUDIT2.ARCH.19 — DiscoveriesPanel.tsx:128 `void canResearch` — delete or wire per-row gating

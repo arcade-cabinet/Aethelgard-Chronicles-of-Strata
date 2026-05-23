@@ -1,16 +1,14 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import { useAudio } from '@/audio/useAudio';
+import { WORLD } from '@/config/world';
 import { type GameState, runEconomyTick } from '@/game/game-state';
 
-/** Fixed simulation step — 60 Hz. The sim ticks at this exact cadence regardless of render fps. */
-const FIXED_DT = 1 / 60;
-/**
- * Cap on accumulator drain per frame. Prevents the "spiral of death" — if
- * the tab is backgrounded for 30 s, we DON'T try to run 1800 catch-up ticks
- * in one frame. We discard the surplus and resume from now.
- */
-const MAX_STEPS_PER_FRAME = 8;
+// M_AUDIT2.ARCH.14 — both determinism-critical constants moved into
+// config/world.json (WORLD.sim). One source of truth; future
+// fixed-180Hz experiments etc don't grep across the codebase.
+const FIXED_DT = WORLD.sim.fixedDt;
+const MAX_STEPS_PER_FRAME = WORLD.sim.maxStepsPerFrame;
 
 /**
  * Fixed-timestep game loop (M_HARDENING.2 — closes the determinism gap the
