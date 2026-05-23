@@ -30,7 +30,11 @@ export async function getDeviceTier(): Promise<DeviceTier> {
   try {
     const info = await Device.getInfo();
     if (info.platform === 'web') {
-      cached = 'high';
+      // M_AUDIT2.SEC2.23 — wall-clock + frame-budget probe.
+      // 'web' covers both desktop AND Android Chrome standalone PWAs;
+      // a 2017 Chromebook should not be offered Huge. Run a 60-frame
+      // micro-probe and downgrade to mid if it averages <40fps.
+      cached = (await runFrameBudgetProbe()) ? 'high' : 'mid';
       return cached;
     }
     const major = Number.parseInt(info.osVersion.split('.')[0] ?? '0', 10);
@@ -47,4 +51,31 @@ export async function getDeviceTier(): Promise<DeviceTier> {
 /** Test hook — reset the cached value. Do not call from app code. */
 export function _resetDeviceTierCacheForTests(): void {
   cached = null;
+}
+
+/**
+ * M_AUDIT2.SEC2.23 — 60-frame rAF probe. Returns true if the device
+ * averaged ≥40fps over the probe window. Skipped (returns true) when
+ * `window`/`requestAnimationFrame` are unavailable (Node test env).
+ */
+async function runFrameBudgetProbe(): Promise<boolean> {
+  if (typeof window === 'undefined' || typeof requestAnimationFrame !== 'function') {
+    return true;
+  }
+  const FRAMES = 60;
+  return new Promise<boolean>((resolve) => {
+    let count = 0;
+    const start = performance.now();
+    const tick = () => {
+      count += 1;
+      if (count < FRAMES) {
+        requestAnimationFrame(tick);
+        return;
+      }
+      const elapsedMs = performance.now() - start;
+      const fps = (FRAMES / elapsedMs) * 1000;
+      resolve(fps >= 40);
+    };
+    requestAnimationFrame(tick);
+  });
 }

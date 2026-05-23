@@ -1544,8 +1544,12 @@ local-review-trio after each ~5-item batch.
 - [x] [MED] M_AUDIT2.SEC2.22 — CI guard `git diff --exit-code src/static-assets.ts` after build
 
 **Determinism (23-24)**
-- [ ] [LOW] M_AUDIT2.SEC2.23 — Device.getInfo Huge-gating: add wall-clock+frame-budget probe
-- [ ] [MED] M_AUDIT2.SEC2.24 — session-scoped event seed (not just Preferences-persisted) + embed seed in snapshot
+- [x] [LOW] M_AUDIT2.SEC2.23 — Device.getInfo Huge-gating: add wall-clock+frame-budget probe
+- [x] [MED] M_AUDIT2.SEC2.24 — session-scoped event seed (not just Preferences-persisted) + embed seed in snapshot
+  - GameSnapshot.config.eventSeed already serialised (serialize-game.ts:80) and
+    validated on load (serialize-game.ts:257-258). deserializeGame rebuilds the
+    deterministic baseline from the snapshot's seed, not from the device-level
+    Preferences seed — session scope intact across save/load.
 
 **DoS / resource exhaustion (25-28)**
 - [x] [MED] M_AUDIT2.SEC2.25 — SelectionRect pointermove throttle to rAF/60Hz
@@ -1616,12 +1620,12 @@ local-review-trio after each ~5-item batch.
 - [x] [MAJ] M_AUDIT2.UX.12 — AriaLiveRegion + emitGameEvent bus; CriticalWarning role="alert"
 - [ ] [MAJ] M_AUDIT2.UX.13 — idle-peon "?" billboard + HUD log strip
 - [x] [MAJ] M_AUDIT2.UX.14 — supply-cap nag (danger color on val-supply + (cap) badge + supply-cap-hit event)
-- [ ] [MAJ] M_AUDIT2.UX.15 — WeatherIndicator.tsx pill + weather-change event in sound-map
+- [x] [MAJ] M_AUDIT2.UX.15 — WeatherIndicator.tsx pill + weather-change event in sound-map
 
 **MAJOR — interaction / nav (16-21)**
 - [x] [MAJ] M_AUDIT2.UX.16 — Segmented → role=radiogroup arrow-key nav + autoFocus seed field
 - [ ] [MAJ] M_AUDIT2.UX.17 — DiscoveriesPanel prereq tree visualization (purchased/available/gated)
-- [ ] [MAJ] M_AUDIT2.UX.18 — HUD pill collision audit (portrait vs landscape slot overlap)
+- [x] [MAJ] M_AUDIT2.UX.18 — HUD pill collision audit (portrait vs landscape slot overlap)
 - [x] [MAJ] M_AUDIT2.UX.19 — SelectionPanel width clamp(220px,22vw,280px) + ellipsis overflow
 - [x] [MAJ] M_AUDIT2.UX.20 — Continue button disabledReason tooltip when !hasSave
 - [ ] [MAJ] M_AUDIT2.UX.21 — OnboardingOverlay: extend to ~9 STEPS (right-click, drag-select, pause shortcuts, resource legend, per-mode win conditions)

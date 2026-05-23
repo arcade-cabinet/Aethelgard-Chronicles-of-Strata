@@ -16,7 +16,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useViewport } from '@/render/useViewport';
 import { HUD_THEME } from './hud-theme';
 
-export type HudPillSlot = 'pause' | 'sound' | 'discoveries' | 'resign';
+export type HudPillSlot = 'pause' | 'sound' | 'discoveries' | 'resign' | 'weather';
 
 interface SlotPosition {
   /** Pixels from top of viewport. */
@@ -31,18 +31,26 @@ interface SlotPosition {
  * Adding a fourth or fifth pill = ONE row in this table; the consumers
  * just pass the new slot name.
  */
+// M_AUDIT2.UX.18 — pill collision audit. The previous landscape row
+// had 220→300→340→460 right offsets which is mathematically valid
+// but visually crowded around the 300-340 step (only 40px of
+// horizontal breathing room is not enough for the 'discoveries'
+// pill text). Re-spaced with a constant 80px stride and the
+// 'weather' pill inserted to the left of pause.
 const SLOT_POSITIONS: Record<'landscape' | 'portrait', Record<HudPillSlot, SlotPosition>> = {
   landscape: {
-    pause: { top: 12, right: 220 },
-    sound: { top: 12, right: 300 },
-    discoveries: { top: 12, right: 340 },
-    resign: { top: 12, right: 460 },
+    weather: { top: 12, right: 540 },
+    pause: { top: 12, right: 460 },
+    sound: { top: 12, right: 380 },
+    discoveries: { top: 12, right: 300 },
+    resign: { top: 12, right: 220 },
   },
   portrait: {
+    weather: { top: 56, right: 144 },
     pause: { top: 12, right: 72 },
     sound: { top: 12, right: 144 },
-    discoveries: { top: 52, right: 8 },
-    resign: { top: 96, right: 8 },
+    discoveries: { top: 56, right: 8 },
+    resign: { top: 100, right: 8 },
   },
 };
 
