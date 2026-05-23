@@ -1,9 +1,9 @@
-import { Billboard, Text } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 import type { ResourceDepositEvent } from '@/ecs/systems/deposit';
 import type { GameState } from '@/game/game-state';
 import { resourceDisplayFor } from '@/rules';
+import { WorldBadge } from './WorldBadge';
 
 /** Seconds a popup floats before it is removed. */
 const POPUP_LIFETIME = 1.4;
@@ -74,20 +74,18 @@ export function ResourceText({ game }: { game: GameState }) {
     <group name="resource-text">
       {popups.map((p) => {
         const opacity = 1 - p.age / POPUP_LIFETIME;
+        // M_AUDIT2.ARCH.6 — WorldBadge owns the Billboard + Text +
+        // outline defaults; this site declares only the per-popup data.
         return (
-          <Billboard key={p.id} position={[p.x, p.y, p.z]}>
-            <Text
-              fontSize={0.42}
-              color={p.color}
-              outlineWidth={0.04}
-              outlineColor="#000"
-              fillOpacity={opacity}
-              anchorX="center"
-              anchorY="middle"
-            >
-              {p.text}
-            </Text>
-          </Billboard>
+          <WorldBadge
+            key={p.id}
+            x={p.x}
+            y={p.y}
+            z={p.z}
+            text={p.text}
+            color={p.color}
+            fillOpacity={opacity}
+          />
         );
       })}
     </group>

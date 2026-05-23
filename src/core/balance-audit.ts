@@ -12,6 +12,13 @@
  */
 import type { BoardData } from './board';
 import { hexDistance } from './hex';
+// M_AUDIT2.ARCH.30 — `core/` is meant to be pure (no upward deps), but
+// balance-audit is the one exception that legitimately needs the
+// per-biome `habitable` flag from rules/. The alternative (duplicating
+// the BIOME_FLAGS table in core/) would be worse — two sources of
+// truth for the same data. This documented exception is the right
+// shape; if a second core→rules import lands, revisit the layering
+// in docs/specs/10-architecture.md.
 import { biomeFlagsFor } from '@/rules/biome-flags';
 
 /** Hexes within this radius of a base count toward its reachable buildable area. */

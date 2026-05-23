@@ -56,6 +56,13 @@ function resolveAttacks(
   return fired;
 }
 
+// M_AUDIT2.ARCH.55 — hoist per-tick allocations to module scope and
+// .clear() each tick. byId + damageByTarget are rebuilt every tick
+// from scratch (intentional, so dead targets don't stick); preserving
+// the Map identity skips the allocation cost.
+const REUSABLE_BY_ID: Map<number, Entity> = new Map();
+const REUSABLE_DAMAGE: Map<number, number> = new Map();
+
 export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent[] {
   const events: DamageEvent[] = [];
   // Index entities by numeric id for target lookup. `Number(entity)` returns
@@ -64,11 +71,13 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
   // respawn the generation bit changes so a recycled slot doesn't masquerade
   // as the old entity. The byId map is rebuilt each tick, so a dead target
   // simply fails the lookup.
-  const byId = new Map<number, Entity>();
+  const byId = REUSABLE_BY_ID;
+  byId.clear();
   for (const e of world.query(Health)) byId.set(Number(e), e);
 
   // accumulate total damage per target id this tick
-  const damageByTarget = new Map<number, number>();
+  const damageByTarget = REUSABLE_DAMAGE;
+  damageByTarget.clear();
 
   world.query(Combatant, EnemyTarget, HexPosition).updateEach(([combatant, target, hex], e) => {
     const targetEntity = byId.get(target.targetId);
