@@ -438,8 +438,10 @@ re-listing. Both unblock as the relevant dependency lands.)
 
 ### M_POLISH — visual + audio coverage
 
-- [ ] M_POLISH.1 — dust-puff particle FX on building completion
-  (M_CONSTRUCTION.1 referenced this but only the ring was wired).
+- [x] M_POLISH.1 — dust-puff FX: BuildCompleteFX.tsx r3f layer watches
+  Building entities; first time it sees isComplete, spawns a transient
+  expanding-+-fading sphere puff at the tile (lifetime 1s, scale 0.3→1.0,
+  rises 0.8 units). Pairs with the existing 'building-completed' audio cue.
 - [ ] M_POLISH.2 — sawdust particles on actively-building peons.
 - [ ] M_POLISH.3 — sword-clash / shield-deflect SFX variants on
   combat-hit by attacker class (not the generic hit cue).

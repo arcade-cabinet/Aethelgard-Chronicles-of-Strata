@@ -15,6 +15,7 @@ import { RallyMarker } from '@/world/RallyMarker';
 import { ResourceNodes } from '@/world/ResourceNodes';
 import { ResourceText } from '@/world/ResourceText';
 import { Roads } from '@/world/Roads';
+import { BuildCompleteFX } from '@/world/BuildCompleteFX';
 import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
@@ -76,6 +77,7 @@ function Scene({
         <Decoration board={game.board} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
         <Roads game={game} />
+        <BuildCompleteFX game={game} />
         <HomeBase game={game} />
         <EnemyBase game={game} />
         <Units game={game} />
