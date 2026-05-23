@@ -13,10 +13,20 @@ export type GameAudioEvent =
   | 'combat-hit'
   | 'combat-crit'
   | 'harvest-chop'
+  | 'harvest-mine'
+  | 'footstep-grass'
+  | 'footstep-stone'
+  | 'projectile-fire'
+  | 'projectile-impact'
   | 'resource-deposit'
   | 'unit-select'
+  | 'unit-trained'
   | 'building-placed'
   | 'building-completed'
+  | 'building-destroyed'
+  | 'gate-open'
+  | 'gate-close'
+  | 'critical-alarm'
   | 'ui-button-click'
   | 'ui-panel-open'
   | 'research-purchased'
@@ -34,22 +44,32 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   // Combat
   'combat-hit': { bus: 'sfx', soundId: 'audio.sfx.hit' },
   'combat-crit': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
+  'projectile-fire': { bus: 'sfx', soundId: 'audio.sfx.hit' },
+  'projectile-impact': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
 
   // World interaction
   'harvest-chop': { bus: 'sfx', soundId: 'audio.sfx.chop' },
+  'harvest-mine': { bus: 'sfx', soundId: 'audio.sfx.mine' },
+  'footstep-grass': { bus: 'sfx', soundId: 'audio.sfx.footstep-grass' },
+  'footstep-stone': { bus: 'sfx', soundId: 'audio.sfx.footstep-stone' },
   'resource-deposit': { bus: 'sfx', soundId: 'audio.sfx.deposit' },
 
   // Selection / building
   'unit-select': { bus: 'ui', soundId: 'audio.sfx.select' },
+  'unit-trained': { bus: 'sfx', soundId: 'audio.sfx.ui-confirm' },
   'building-placed': { bus: 'sfx', soundId: 'audio.sfx.build' },
   'building-completed': { bus: 'sfx', soundId: 'audio.sfx.ui-achievement' },
+  'building-destroyed': { bus: 'sfx', soundId: 'audio.stinger.defeat' },
+  'gate-open': { bus: 'sfx', soundId: 'audio.sfx.ui-panel-open' },
+  'gate-close': { bus: 'sfx', soundId: 'audio.sfx.ui-confirm' },
 
   // UI
   'ui-button-click': { bus: 'ui', soundId: 'audio.sfx.ui-click' },
   'ui-panel-open': { bus: 'ui', soundId: 'audio.sfx.ui-panel-open' },
   'research-purchased': { bus: 'ui', soundId: 'audio.sfx.ui-unlock' },
 
-  // Outcome stingers
+  // Critical-state alarms + outcome stingers
+  'critical-alarm': { bus: 'ui', soundId: 'audio.sfx.ui-confirm' },
   victory: { bus: 'music', soundId: 'audio.stinger.victory' },
   defeat: { bus: 'sfx', soundId: 'audio.stinger.defeat' },
 };

@@ -1,3 +1,4 @@
+import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { getHexKey, hexNeighbors } from '@/core/hex';
 import { findPath } from '@/core/pathfinding';
 import { createCharacter } from '@/entities/character-factory';
@@ -224,6 +225,10 @@ export function trainUnit(
   eco.usedSupply += SUPPLY_COST[role];
   // a fresh peon goes SEEKING immediately so the harvest loop assigns it
   if (role === 'Peon') entity.set(AssignedJob, { state: 'SEEKING', targetKey: '' });
+  // M_AUDIO.1 — confirm chime only for the player's own training (the enemy
+  // AI also calls trainUnit; we don't want enemy chimes leaking into the
+  // player's sfx bus).
+  if (faction === 'player') emitUiSound('unit-trained');
   return true;
 }
 

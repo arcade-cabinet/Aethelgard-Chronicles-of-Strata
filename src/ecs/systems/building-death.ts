@@ -1,4 +1,5 @@
 import type { World } from 'koota';
+import { emitUiSound } from '@/audio/ui-sound-emitter';
 import type { BoardData } from '@/core/board';
 import { type NavGraph, buildNavGraph } from '@/core/pathfinding';
 import { getHexKey } from '@/core/hex';
@@ -40,6 +41,8 @@ export function buildingDeathSystem(
     buildSites.delete(key);
     e.destroy();
     anyRemoved = true;
+    // M_AUDIO.1 — punchy "rubble" cue on every destruction (either side)
+    emitUiSound('building-destroyed');
   }
   return anyRemoved ? buildNavGraph(board) : null;
 }

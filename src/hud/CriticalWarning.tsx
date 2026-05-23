@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { FactionBase, Health } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 
@@ -27,7 +28,12 @@ export function CriticalWarning({ game }: { game: GameState }) {
         break;
       }
       const isCritical = frac > 0 && frac < CRITICAL_FRACTION;
-      setCritical((prev) => (prev === isCritical ? prev : isCritical));
+      setCritical((prev) => {
+        // fire the alarm chime only on the transition false → true so it
+        // doesn't spam every frame while the base is below threshold
+        if (!prev && isCritical) emitUiSound('critical-alarm');
+        return prev === isCritical ? prev : isCritical;
+      });
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);

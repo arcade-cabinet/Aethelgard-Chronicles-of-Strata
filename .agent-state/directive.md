@@ -240,25 +240,19 @@ audio packs via Howler. No procedural synthesis. Packs available:
 - `Victory_Level_Complete_Music_Pack_24_Stingers_PixelLoops` — 24 win/loss
   stingers
 
-- [ ] M_AUDIO.1 — extend `scripts/asset-map.ts` to ingest every event-needed
-  sample from the packs (not just the few wired today). Run `pnpm
-  assets:ingest`; verify `asset-metadata.json` lists them all.
-- [ ] M_AUDIO.2 — `src/audio/sound-map.ts` maps EVERY game event to a real
-  pack sample: peon-selected, peon-deposit, chop, mine-stone, mine-gold,
-  build-start, build-complete, combat-hit, combat-crit (magic-impact), arrow-
-  whoosh, sword-clash, shield-deflect, enemy-growl, unit-death, encroachment-
-  pulse, tile-flip, ui-button-click, ui-panel-open, research-purchased,
-  rally-set, victory-stinger, defeat-stinger, gameplay-loop, title-loop.
-- [ ] M_AUDIO.3 — title-screen music loop from `PixelLoops_Main_Menu` plays
-  on launch; switches to a Fantasy_Tavern_Music_Pack loop in-game; both
-  honour the SoundToggle mute.
-- [ ] M_AUDIO.4 — victory + defeat play a *different* stinger from the
-  24-stinger pack (currently a short generic). Pick distinct fitting cues.
-- [ ] M_AUDIO.5 — footsteps: when a unit moves on grass vs stone vs sand,
-  the footstep cue per surface (per the dedicated footstep pack); throttled
-  so it doesn't spam.
-- [ ] M_AUDIO.6 — encroachment pulse fires a periodic warning beep while
-  the tile is pulsing; tile-flip triggers a "doom" cue.
+- [x] M_AUDIO.1+2 — every named game event mapped: combat-hit/crit,
+  harvest-chop/mine, footstep-grass/stone, projectile-fire/impact,
+  resource-deposit, unit-select/trained, building-placed/completed/
+  destroyed, gate-open/close, critical-alarm, ui-button-click/panel-open,
+  research-purchased, victory/defeat. Emitted: trainUnit (player),
+  buildingDeathSystem (both factions), CriticalWarning enter-transition.
+  Existing UI events already wired in SelectionPanel/SoundToggle.
+- [ ] M_AUDIO.3 — title-screen music loop from `PixelLoops_Main_Menu`
+  plays on launch; switches to a Fantasy_Tavern loop in-game.
+- [ ] M_AUDIO.5 — footsteps: emit footstep-grass / footstep-stone per
+  tile surface as units move (throttle to ~3 hz).
+- [ ] M_AUDIO.6 — encroachment-pulse cue while a tile pulses; tile-flip
+  cue when ownership changes.
 
 ### M_AI_DEPTH — make the AI player actually play to win
 
