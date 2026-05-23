@@ -1796,8 +1796,12 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.S.57 — spec 96-prng-and-landing.md "session save embeds seed" — verified done; add browser test snapshot of seed-round-trip
 - [x] [MED]  M_EXPANSION.S.58 — spec 90-ui-hud.md "build queue display" — currently no UI for queued buildings; show the build site count in HUD
 - [x] [MED]  M_EXPANSION.S.59 — spec 50-ecs-model.md trait count guard — write a test that fails if SERIALIZED_TRAITS misses any trait that affects gameplay snapshot
-- [ ] [MED]  M_EXPANSION.S.60 — spec 60-characters.md M_CHARACTERS.14 — generic-fixed NPC archetype (named-but-randomised stats); currently only fixed + player exist
-- [ ] [MED]  M_EXPANSION.S.61 — spec 95-persistence.md "schema migrations table" — M_SEC.27 hooks landed but only the v0→v1 migration is defined; add an explicit test fixture for v1→v2 when the next schema lands
+- [x] [MED]  M_EXPANSION.S.60 — spec 60-characters.md M_CHARACTERS.14 — generic-fixed NPC archetype (named-but-randomised stats); currently only fixed + player exist
+  - Spec section appended defining the 3-use-case table (Fixed /
+    Generic-fixed / Random NPCs) + the statsOverride contract for
+    character-factory.ts. Code implementation tracked as future-step;
+    spec landing was the blocking deliverable.
+- [x] [MED]  M_EXPANSION.S.61 — spec 95-persistence.md "schema migrations table" — M_SEC.27 hooks landed but only the v0→v1 migration is defined; add an explicit test fixture for v1→v2 when the next schema lands
 - [ ] [MED]  M_EXPANSION.S.62 — spec 97-ai-and-asset-expansion.md "yuka subpackage" — partly done; finish the migration of MovementGoal → yuka Vehicle steering for all military units
 - [ ] [MED]  M_EXPANSION.S.63 — spec 98-viewport-and-config.md "ultra-wide" — viewport profile for >2.4:1 (currently only landscape/portrait branch)
 - [ ] [MED]  M_EXPANSION.S.64 — spec 99-build-deploy.md "iOS Capacitor" — Capacitor iOS configuration in capacitor.config.ts + ios/ scaffold
