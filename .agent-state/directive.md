@@ -1665,3 +1665,234 @@ local-review-trio after each ~5-item batch.
 - [x] [MIN] M_AUDIT2.UX.40 — EndTurnButton: setTick only when displayed integer changes (not every 100ms)
 - [x] [MIN] M_AUDIT2.UX.41 — Settings modal "Replay tutorial" link (reopen OnboardingOverlay)
 - [x] [MIN] M_AUDIT2.UX.42 — hint font size floor 0.78rem (mobile readability)
+
+---
+
+## Queue — M_EXPANSION (deep comprehensive sweep, 2026-05-23)
+
+Source of items: deep scan across docs/, references/, public/assets, src/,
+git history, prior M_AUDIT2 + reviewer findings. Each item is concrete +
+actionable; the list expands the directive to cover EVERY surface that has
+unfinished work, untapped assets, or planned-but-unbuilt feature scope.
+
+### M_EXPANSION.ASSETS — untapped references/ kits (1-30)
+
+**Castle Kit (1-6)** — currently zero usage; available for Wonder + Walls + advanced Watchtower variants
+- [ ] [HIGH] M_EXPANSION.A.1 — ingest Castle Kit `tower-square-top-color.glb` as `structures.watchtower-castle`; expose as Watchtower skin upgrade
+- [ ] [HIGH] M_EXPANSION.A.2 — ingest Castle Kit `wall-narrow*.glb` set as `structures.wall-stone`; replace generic Wall block
+- [ ] [MED]  M_EXPANSION.A.3 — Castle Kit `gate-doors.glb` as Wall->Gate composition completion mesh
+- [ ] [MED]  M_EXPANSION.A.4 — Castle Kit `flag-narrow.glb` as faction-colored base banner (SKINS[faction].baseProps.banner)
+- [ ] [LOW]  M_EXPANSION.A.5 — Castle Kit `keep.glb` as Wonder asset (no Wonder model exists today)
+- [ ] [LOW]  M_EXPANSION.A.6 — Castle Kit corner walls vs straight walls picked by neighbour count in WallSegment renderer
+
+**Fantasy Town Kit (7-12)** — Town Hall + Granary + Library candidates
+- [ ] [HIGH] M_EXPANSION.A.7 — Fantasy Town `house-block-big.glb` as Library mesh (Library currently uses a placeholder)
+- [ ] [HIGH] M_EXPANSION.A.8 — Fantasy Town `mill.glb` as Granary mesh
+- [ ] [MED]  M_EXPANSION.A.9 — Fantasy Town `house-bricks.glb` as House mesh
+- [ ] [MED]  M_EXPANSION.A.10 — Fantasy Town `well.glb` as decoration in player base footprint
+- [ ] [LOW]  M_EXPANSION.A.11 — Fantasy Town `lamp-post.glb` as night-time light source (auto-on after sunset)
+- [ ] [LOW]  M_EXPANSION.A.12 — Fantasy Town `chimney-smoke` particle: hook ParticleEmitter to House meshes (smoke = inhabited signal)
+
+**Graveyard Kit (13-18)** — enemy base skin upgrade + necropolis biome
+- [ ] [HIGH] M_EXPANSION.A.13 — Graveyard `crypt-small-roof.glb` as enemy TownHall skin (SKINS.enemy.structure.TownHall)
+- [ ] [MED]  M_EXPANSION.A.14 — Graveyard `iron-fence-bar.glb` as enemy ZoneBorder fence variant
+- [ ] [MED]  M_EXPANSION.A.15 — Graveyard `pine-crooked.glb` as decorative density entry in necropolis biome
+- [ ] [MED]  M_EXPANSION.A.16 — Graveyard `gravestone-*.glb` as base-accretion props around enemy spawn
+- [ ] [LOW]  M_EXPANSION.A.17 — Graveyard `coffin.glb` as Goblin death-drop visual (3s decay)
+- [ ] [LOW]  M_EXPANSION.A.18 — Graveyard `mushrooms.glb` as patchy decoration around necropolis
+
+**Tower Defense Kit (19-24)** — military variety
+- [ ] [HIGH] M_EXPANSION.A.19 — Tower Defense `tower-square-bottom-color.glb` as upgraded Watchtower variant (cost: stone + science)
+- [ ] [MED]  M_EXPANSION.A.20 — Tower Defense `weapon-cannon.glb` as Wonder secondary mesh + projectile source
+- [ ] [MED]  M_EXPANSION.A.21 — Tower Defense `crystal-large.glb` as Mana resource node (introduces 4th resource — already slot-extensible per RESOURCE_DISPLAY)
+- [ ] [LOW]  M_EXPANSION.A.22 — Tower Defense `enemy-rat.glb` as low-tier raid unit (faster than Goblin, lower hp)
+- [ ] [LOW]  M_EXPANSION.A.23 — Tower Defense `detail-rocks.glb` as alt biome rock variant
+- [ ] [LOW]  M_EXPANSION.A.24 — Tower Defense `tile-end-round.glb` as cul-de-sac road piece
+
+**KayKit Adventurers 2.0 EXTRA (25-30)** — heroes haven't all been wired
+- [ ] [HIGH] M_EXPANSION.A.25 — audit KayKit_Adventurers_2.0_EXTRA roster vs UNIT_PROFILES; list every character with no UNIT_PROFILES row
+- [ ] [HIGH] M_EXPANSION.A.26 — wire Mage (already in CC0 pack) as a Wizard unit type (Barracks tech tree extension)
+- [ ] [MED]  M_EXPANSION.A.27 — wire Rogue as a scout unit (high vision, low hp, no attack)
+- [ ] [MED]  M_EXPANSION.A.28 — Adventurers EXTRA shields/weapons subset for attachment points on Knight/Footman
+- [ ] [LOW]  M_EXPANSION.A.29 — character variant tinting via the shared Rig_Medium retargeting pipeline (cosmetic 5-color palette per faction)
+- [ ] [LOW]  M_EXPANSION.A.30 — Mystery Monthly 4+5 minor enemies (slime, bat) as wandering neutral hostiles
+
+### M_EXPANSION.AUDIO — untapped sound packs (31-50)
+
+**PixelLoops_UI_Sound_Effects_Pack (31-36)** — never ingested
+- [ ] [HIGH] M_EXPANSION.AU.31 — ingest UI SFX pack into public/assets/audio/ui/
+- [ ] [HIGH] M_EXPANSION.AU.32 — wire `pl_Notification_03.wav` to research-complete event
+- [ ] [MED]  M_EXPANSION.AU.33 — wire `pl_Achievement_04.wav` to first-zone-claim achievement
+- [ ] [MED]  M_EXPANSION.AU.34 — wire `pl_Unlock_04.wav` to Discoveries.purchased emission
+- [ ] [MED]  M_EXPANSION.AU.35 — wire `pl_button_click_*` set as the UI-button-click bus (today: one shared sound)
+- [ ] [LOW]  M_EXPANSION.AU.36 — wire `pl_Error_*` as the building-placement-failed error chime
+
+**GameLoops Vol5 Fantasy RPG (37-42)** — never ingested
+- [ ] [MED]  M_EXPANSION.AU.37 — ingest GameLoops Vol5 music pack into public/assets/audio/music/biome/
+- [ ] [MED]  M_EXPANSION.AU.38 — wire `GLV5_TownOfEldor.wav` as the dominant-player victory state music
+- [ ] [MED]  M_EXPANSION.AU.39 — wire `GLV5_CraftingHall.wav` as construction-in-progress ambient layer
+- [ ] [LOW]  M_EXPANSION.AU.40 — wire `GLV5_MapOfRealms.wav` as overlay music when DiscoveriesPanel is open
+- [ ] [LOW]  M_EXPANSION.AU.41 — duck music bus to 40% while critical-alarm is firing
+- [ ] [LOW]  M_EXPANSION.AU.42 — pre-victory crescendo: cross-fade combat→victory stinger over the final 3s before win
+
+**Footsteps + Impact + Magic SFX (43-50)** — partial usage
+- [ ] [HIGH] M_EXPANSION.AU.43 — footsteps per terrain biome (grass/sand/stone) — currently single sound
+- [ ] [HIGH] M_EXPANSION.AU.44 — magic SFX pack wired to Wizard (M_EXPANSION.A.26) attack
+- [ ] [MED]  M_EXPANSION.AU.45 — impact SFX per damageType (arrow vs sword vs magic) — currently one sound
+- [ ] [MED]  M_EXPANSION.AU.46 — shield-deflect on Footman parry chance (~10% damage→0 with deflect SFX)
+- [ ] [MED]  M_EXPANSION.AU.47 — death sound per unit type from existing footstep + impact mash-ups
+- [ ] [LOW]  M_EXPANSION.AU.48 — Howler 3D-positional sound for in-world events (combat, building) based on camera distance
+- [ ] [LOW]  M_EXPANSION.AU.49 — weather-driven audio layer (rain ambient, wind, distant thunder)
+- [ ] [LOW]  M_EXPANSION.AU.50 — day/night ambient swap (birds vs crickets/owls) tied to game.clock
+
+### M_EXPANSION.SPEC — unmet spec items (51-70)
+
+- [ ] [HIGH] M_EXPANSION.S.51 — spec 80-audio §M_REGISTRY.20 — move event→asset table into SKINS[faction].audio slot (currently the flag still says "planned"); enables per-faction sound theming (player crisp metallic, enemy bone/howl)
+- [ ] [HIGH] M_EXPANSION.S.52 — spec 104-archetype-unification.md M_REGISTRY.24 — resource-spawn unification (currently 3 parallel spawn paths in resource generation; consolidate to one driven by RESOURCE_PROFILES)
+- [ ] [MED]  M_EXPANSION.S.53 — spec 105-brain-archetype.md "future steps" §M_REGISTRY.18 — finish brain-archetype migration for ResignGoal + ScoutGoal + DefendGoal
+- [ ] [MED]  M_EXPANSION.S.54 — spec 70-rts-systems.md HealthBar §Health billboard — animate fill on damage (lerp toward target fraction over 0.3s)
+- [ ] [MED]  M_EXPANSION.S.55 — spec 100-ai-as-player.md "patrol" goal — AI military units idle into PatrolGoal between raids (currently sit at base)
+- [ ] [MED]  M_EXPANSION.S.56 — spec 102-zone-of-control.md "contested pulse" — yellow pulse when enemy military on player tile (M_GAMEPLAY.4) — verify rendered, currently latent
+- [ ] [MED]  M_EXPANSION.S.57 — spec 96-prng-and-landing.md "session save embeds seed" — verified done; add browser test snapshot of seed-round-trip
+- [ ] [MED]  M_EXPANSION.S.58 — spec 90-ui-hud.md "build queue display" — currently no UI for queued buildings; show the build site count in HUD
+- [ ] [MED]  M_EXPANSION.S.59 — spec 50-ecs-model.md trait count guard — write a test that fails if SERIALIZED_TRAITS misses any trait that affects gameplay snapshot
+- [ ] [MED]  M_EXPANSION.S.60 — spec 60-characters.md M_CHARACTERS.14 — generic-fixed NPC archetype (named-but-randomised stats); currently only fixed + player exist
+- [ ] [MED]  M_EXPANSION.S.61 — spec 95-persistence.md "schema migrations table" — M_SEC.27 hooks landed but only the v0→v1 migration is defined; add an explicit test fixture for v1→v2 when the next schema lands
+- [ ] [MED]  M_EXPANSION.S.62 — spec 97-ai-and-asset-expansion.md "yuka subpackage" — partly done; finish the migration of MovementGoal → yuka Vehicle steering for all military units
+- [ ] [MED]  M_EXPANSION.S.63 — spec 98-viewport-and-config.md "ultra-wide" — viewport profile for >2.4:1 (currently only landscape/portrait branch)
+- [ ] [MED]  M_EXPANSION.S.64 — spec 99-build-deploy.md "iOS Capacitor" — Capacitor iOS configuration in capacitor.config.ts + ios/ scaffold
+- [ ] [LOW]  M_EXPANSION.S.65 — spec 20-visual-language.md palette extension — add an "evening" warm-tint variant of every biome palette
+- [ ] [LOW]  M_EXPANSION.S.66 — spec 40-hex-world.md cliff-shadow rendering — cliffs cast no shadow; add subtle directional shadow from the cliff edge
+- [ ] [LOW]  M_EXPANSION.S.67 — spec 100-ai-as-player.md "personality presets" — aggressive/defensive/turtle AI personas with different goal weights
+- [ ] [LOW]  M_EXPANSION.S.68 — spec 103-particle-archetype.md "weather wind drift" — particles drift downwind during rain/fog instead of straight down
+- [ ] [LOW]  M_EXPANSION.S.69 — spec 99-passability-and-slopes.md "ramp visualization" — explicit ramp-tile decoration (currently slope is mesh-only)
+- [ ] [LOW]  M_EXPANSION.S.70 — spec 30-asset-pipeline.md "delta ingest" — ingest only changed files from references/ vs full re-curate
+
+### M_EXPANSION.FEATURE — gameplay scope expansions (71-100)
+
+- [ ] [HIGH] M_EXPANSION.F.71 — Wonder building: a victory-condition structure (build → 5-min countdown → wonder-win)
+- [ ] [HIGH] M_EXPANSION.F.72 — Mana resource (4th slot): drives Wizard training + Magic-spell SFX
+- [ ] [HIGH] M_EXPANSION.F.73 — Multiplayer-seed sharing: a "share seed" button in the New Game modal copies the current seed to clipboard
+- [ ] [HIGH] M_EXPANSION.F.74 — Replay export: save the EventLog ndjson to a downloadable file
+- [ ] [MED]  M_EXPANSION.F.75 — Replay import: load a EventLog ndjson and watch the deterministic playback
+- [ ] [MED]  M_EXPANSION.F.76 — Tutorial campaign: 3 scripted scenarios with fixed seed + objective overlay
+- [ ] [MED]  M_EXPANSION.F.77 — Achievements: track 'first-victory', 'no-build-wonder-win', etc; persist to Preferences
+- [ ] [MED]  M_EXPANSION.F.78 — Scenario editor: load a saved board state + spawn units interactively (debug mode only)
+- [ ] [MED]  M_EXPANSION.F.79 — Difficulty: hardcore mode (peons cost food, food depletes over time)
+- [ ] [MED]  M_EXPANSION.F.80 — Faction palette swap (player can choose red/blue/green/yellow on the New Game modal)
+- [ ] [MED]  M_EXPANSION.F.81 — Random-event system: weather-spike, raid-warning, refugee-arrival (one-shot ECS events from event PRNG)
+- [ ] [MED]  M_EXPANSION.F.82 — Custom map seed input: 64-char hex direct entry (bypass the adjective-adjective-noun mnemonic)
+- [ ] [MED]  M_EXPANSION.F.83 — Map preview thumbnail in New Game modal (render the seeded board at 256×256 before commit)
+- [ ] [MED]  M_EXPANSION.F.84 — Per-faction starting bonus picks (extra peons / extra wood / extra HP at start)
+- [ ] [MED]  M_EXPANSION.F.85 — Surrender consequences: AI keeps the surrendered player's tiles (currently they evaporate)
+- [ ] [LOW]  M_EXPANSION.F.86 — Building upgrade trees: Watchtower→Tower→Castle, each costs prior + delta
+- [ ] [LOW]  M_EXPANSION.F.87 — Day/night vision modifier: enemy vision halves at night, player vision halves at dawn
+- [ ] [LOW]  M_EXPANSION.F.88 — Idle peon priority queue: when player has idle peons, next building auto-claims them
+- [ ] [LOW]  M_EXPANSION.F.89 — Camera bookmarks: number-keys 1-5 set/restore camera position + selection
+- [ ] [LOW]  M_EXPANSION.F.90 — Minimap interaction: click on minimap centres the camera there
+- [ ] [LOW]  M_EXPANSION.F.91 — Selection groups: Ctrl+1..5 saves the current selection; press 1..5 to recall
+- [ ] [LOW]  M_EXPANSION.F.92 — Mass-rally: right-click on a destination with a Barracks selected sets rally for ALL Barracks of the faction
+- [ ] [LOW]  M_EXPANSION.F.93 — Resource trade UI: convert N wood → M stone at a 3:1 ratio (sink for surplus)
+- [ ] [LOW]  M_EXPANSION.F.94 — Diplomacy: a treaty system (truce, alliance) only meaningful for 3+ factions (future)
+- [ ] [LOW]  M_EXPANSION.F.95 — 3rd faction (neutral hostile spawn camp) that periodically raids both player + enemy
+- [ ] [LOW]  M_EXPANSION.F.96 — Hero unit: one player-named character with higher stats and a permadeath rule
+- [ ] [LOW]  M_EXPANSION.F.97 — Discoverable map tiles: 5% of tiles hide a one-shot resource bonus when a peon first walks on
+- [ ] [LOW]  M_EXPANSION.F.98 — Boat/water-crossing — ferries between islands; new building Dock
+- [ ] [LOW]  M_EXPANSION.F.99 — Trade caravans between cities (auto-route peons between two Granaries)
+- [ ] [LOW]  M_EXPANSION.F.100 — Endgame slot: a 4th game-mode "Coexist" (no win condition, infinite play)
+
+### M_EXPANSION.UX — UX/HUD polish backlog (101-125)
+
+- [ ] [MED]  M_EXPANSION.U.101 — Combat damage numbers: floating "−12" text on every hit (CombatText already exists, expand the surfaces)
+- [ ] [MED]  M_EXPANSION.U.102 — Building health-radial: a circular ring around in-progress buildings showing construction %
+- [ ] [MED]  M_EXPANSION.U.103 — Selection-marquee colour per faction (player blue, enemy red highlight when hover)
+- [ ] [MED]  M_EXPANSION.U.104 — HUD pill long-press on mobile = hold-to-confirm for destructive (Resign, Reset)
+- [ ] [MED]  M_EXPANSION.U.105 — Score bar at the top showing player vs enemy score integral (already tracked; not yet displayed)
+- [ ] [MED]  M_EXPANSION.U.106 — Minimap territory overlay: faction-colored fog of war
+- [ ] [MED]  M_EXPANSION.U.107 — Selection bracket: yellow corner-brackets around the selected unit (replace the green ring)
+- [ ] [MED]  M_EXPANSION.U.108 — Build-mode ghost: translucent ghost of the building snaps to the hover tile before placement
+- [ ] [MED]  M_EXPANSION.U.109 — Cursor hint: a sword icon when hovering an enemy with a selected military unit
+- [ ] [MED]  M_EXPANSION.U.110 — Right-side panel: enemy detail card (HP/type) on enemy hover, mirroring SelectionPanel
+- [ ] [LOW]  M_EXPANSION.U.111 — In-game speed control: 1x/2x/4x (existing pause + new fast-forward)
+- [ ] [LOW]  M_EXPANSION.U.112 — Volume slider per bus (sfx/music/ambient/ui) in Settings, replacing the master mute toggle
+- [ ] [LOW]  M_EXPANSION.U.113 — Colorblind mode: alternate palette (player→orange, enemy→cyan)
+- [ ] [LOW]  M_EXPANSION.U.114 — Subtitle/captions for every UI sound + critical event (deaf accessibility)
+- [ ] [LOW]  M_EXPANSION.U.115 — Hotkey customization (user remappable bindings; persist to Preferences)
+- [ ] [LOW]  M_EXPANSION.U.116 — Mini-map zoom (pinch / wheel within minimap region)
+- [ ] [LOW]  M_EXPANSION.U.117 — Touch-target hint: long-press shows the hex grid overlay
+- [ ] [LOW]  M_EXPANSION.U.118 — Build-button keyboard shortcut: B opens build menu, F=Farm, H=House, etc
+- [ ] [LOW]  M_EXPANSION.U.119 — Tap-and-hold-to-drag scroll on mobile (an alternative to two-finger pan)
+- [ ] [LOW]  M_EXPANSION.U.120 — Click-and-hold a Barracks shows the rally-point ghost continuously
+- [ ] [LOW]  M_EXPANSION.U.121 — Per-unit tooltip on hover (name + HP + behaviour)
+- [ ] [LOW]  M_EXPANSION.U.122 — End-of-game stats screen: kills, buildings, peak supply, time elapsed
+- [ ] [LOW]  M_EXPANSION.U.123 — Replay-of-the-match scrubber after victory
+- [ ] [LOW]  M_EXPANSION.U.124 — Discoveries panel: search-filter input (with > 8 discoveries the scroll-list grows)
+- [ ] [LOW]  M_EXPANSION.U.125 — Onboarding overlay: skip-button always visible (currently only on step 1)
+
+### M_EXPANSION.TEST — coverage gaps (126-140)
+
+- [ ] [HIGH] M_EXPANSION.T.126 — visual snapshot of every biome (sand, grass, forest, tundra, water) at noon + midnight; lock baselines
+- [ ] [HIGH] M_EXPANSION.T.127 — visual snapshot of every unit + every animation state (IDLE, WALK, ATTACK, DEATH)
+- [ ] [HIGH] M_EXPANSION.T.128 — visual snapshot of every building completed + in-progress at level 1/2/3
+- [ ] [MED]  M_EXPANSION.T.129 — Playwright e2e of the full player journey: title → new game → first build → first kill → victory
+- [ ] [MED]  M_EXPANSION.T.130 — property test (fast-check): seedPhrase determinism — 1000 seeds, each must produce identical snapshot byte-for-byte at t=0
+- [ ] [MED]  M_EXPANSION.T.131 — audio graph snapshot: every event in the SOUND_MAP fires exactly one AudioNode connection
+- [ ] [MED]  M_EXPANSION.T.132 — save-load round-trip property test: any in-game state → serialize → deserialize → in-game state is byte-equal
+- [ ] [MED]  M_EXPANSION.T.133 — encroachment system: tile-flip integration test with deterministic seed + 60-tick simulation
+- [ ] [MED]  M_EXPANSION.T.134 — AI brain arbitration: each evaluator's desirability curve has explicit test points
+- [ ] [MED]  M_EXPANSION.T.135 — combat damage falloff with weather: rain reduces ranged accuracy 30%, fog reduces sight 50%
+- [ ] [MED]  M_EXPANSION.T.136 — particle archetype: spawn/age/cull at 60Hz for 10s; no allocations in the steady state
+- [ ] [LOW]  M_EXPANSION.T.137 — performance regression: full game at 60fps on a mid-tier mock (Pixel 5a CPU profile)
+- [ ] [LOW]  M_EXPANSION.T.138 — accessibility test: axe-core scan of every modal (NewGame, Settings, Credits, GameOver, Onboarding)
+- [ ] [LOW]  M_EXPANSION.T.139 — i18n smoke: every user-facing string passes through a t() function (no hardcoded English in render)
+- [ ] [LOW]  M_EXPANSION.T.140 — coverage report: aim for ≥80% line coverage on src/game/, src/ecs/, src/ai/
+
+### M_EXPANSION.OPS — release + deploy + observability (141-160)
+
+- [ ] [HIGH] M_EXPANSION.O.141 — release.yml: actually upload to Google Play internal testing track on every release tag (gated on a manual approval env)
+- [ ] [HIGH] M_EXPANSION.O.142 — bundle the production web build into Cloudflare Pages alongside GitHub Pages (failover)
+- [ ] [HIGH] M_EXPANSION.O.143 — App Store assets bundle (icons, screenshots, promo video) generation script
+- [ ] [HIGH] M_EXPANSION.O.144 — Privacy policy URL hosted as a static page in the web build
+- [ ] [HIGH] M_EXPANSION.O.145 — Crash reporter facade: capture window.onerror + unhandledrejection → an opt-in queue → batch send (when consent flips on)
+- [ ] [MED]  M_EXPANSION.O.146 — Performance telemetry: ms/frame histogram bucketed by viewport profile (opt-in)
+- [ ] [MED]  M_EXPANSION.O.147 — Feature-flag mechanism: read a JSON from public/ to gate dev-only features
+- [ ] [MED]  M_EXPANSION.O.148 — `pnpm release:dry-run` — local-simulation of the full release pipeline against a fake keystore
+- [ ] [MED]  M_EXPANSION.O.149 — Docker image of the dev environment (Node 22 + pnpm + Java 21 + Android SDK) for contributor onboarding
+- [ ] [MED]  M_EXPANSION.O.150 — Codecov integration via the existing coverage gate
+- [ ] [LOW]  M_EXPANSION.O.151 — Renovate or Dependabot grouped major bumps (split from the existing weekly minor/patch)
+- [ ] [LOW]  M_EXPANSION.O.152 — SonarCloud integration (or local Sonar runner) for code quality history
+- [ ] [LOW]  M_EXPANSION.O.153 — Lighthouse CI on the deployed pages build (perf + a11y score history)
+- [ ] [LOW]  M_EXPANSION.O.154 — Bundle size dashboard: track gzipped JS + asset bytes per release tag
+- [ ] [LOW]  M_EXPANSION.O.155 — CHANGELOG.md generation from release-please tags (we have config, no published changelog yet)
+- [ ] [LOW]  M_EXPANSION.O.156 — Demo gif/mp4 baked into README on every release tag (a 10-second loop of the cove + combat)
+- [ ] [LOW]  M_EXPANSION.O.157 — README badges block: CI / coverage / release / license / app-store
+- [ ] [LOW]  M_EXPANSION.O.158 — `pnpm assets:lint` — surface any references/ kit not yet ingested into public/assets
+- [ ] [LOW]  M_EXPANSION.O.159 — `pnpm specs:lint` — surface any spec doc that hasn't been touched in 90 days
+- [ ] [LOW]  M_EXPANSION.O.160 — `pnpm gates:report` — print every coverage rule + commit-gate finding from the last N commits
+
+### M_EXPANSION.DOCS — documentation gaps (161-170)
+
+- [ ] [MED]  M_EXPANSION.D.161 — docs/specs/M_EXPANSION-roadmap.md — a single doc rolling up M_EXPANSION.F.* into a release-train (v0.3 → v0.4 → v1.0)
+- [ ] [MED]  M_EXPANSION.D.162 — docs/specs/106-replay-format.md — formal spec of the EventLog serialization (M_EXPANSION.F.74/.75)
+- [ ] [MED]  M_EXPANSION.D.163 — docs/specs/107-mana-resource.md — design for the 4th resource slot (M_EXPANSION.F.72)
+- [ ] [MED]  M_EXPANSION.D.164 — docs/specs/108-wonder-victory.md — Wonder building rules (M_EXPANSION.F.71)
+- [ ] [MED]  M_EXPANSION.D.165 — docs/specs/109-multifaction.md — design considerations for ≥3 factions (M_EXPANSION.F.94/.95)
+- [ ] [MED]  M_EXPANSION.D.166 — docs/contributors.md — a contributor onboarding doc (cloning, env setup, the dev loop)
+- [ ] [LOW]  M_EXPANSION.D.167 — docs/specs/20-visual-language.md — append a "post-launch palette" section consistent with M_EXPANSION.U.113 colorblind mode
+- [ ] [LOW]  M_EXPANSION.D.168 — docs/specs/80-audio.md — formalise the "audio-on-first-interaction" gate as a contract (we ship it; the spec still says planned)
+- [ ] [LOW]  M_EXPANSION.D.169 — docs/STATE.md — single page summarising the LAST verified game-state at commit time (auto-generated)
+- [ ] [LOW]  M_EXPANSION.D.170 — docs/migration-log.md — append-only log of every breaking change since v0.1 (informs save-format migrations)
+
+### M_EXPANSION.TECH-DEBT — known shapes worth fixing (171-180)
+
+- [ ] [MED]  M_EXPANSION.D.171 — `src/game/game-state.ts` is ~770 lines (CR finding); split mapgen helpers (findBalancedBoard, matchLengthScale) into a sibling module
+- [ ] [MED]  M_EXPANSION.D.172 — `SelectionPanel.tsx` has grown past 400 lines with the disabled-reason helpers; extract reason-helpers to a sibling
+- [ ] [MED]  M_EXPANSION.D.173 — `DayNightCycle.tsx` makeDitherTexture lives at module scope and would benefit from a `src/render/textures/` namespace as the family grows
+- [ ] [MED]  M_EXPANSION.D.174 — `useRafLoop` accepts a deps array but the underlying useEffect only re-runs on game change; type the deps as `[GameState]` to match
+- [ ] [MED]  M_EXPANSION.D.175 — `aria-live-bus.ts` — politeness=assertive coalescing window of 250ms is hard-coded; expose as a config var matching the rest of the engine
+- [ ] [LOW]  M_EXPANSION.D.176 — `CreditsModal.tsx` data table belongs in a `.json` so a localisation pass can ship without code review
+- [ ] [LOW]  M_EXPANSION.D.177 — `IdlePeonsIndicator` polls every frame for an event that only fires every few seconds; throttle to 4Hz
+- [ ] [LOW]  M_EXPANSION.D.178 — `WeatherIndicator` likewise; both could share a 4Hz tick driven by the engine clock
+- [ ] [LOW]  M_EXPANSION.D.179 — `Decoration.tsx` is past 600 lines (lint warning threshold); split base-accretion vs scatter into siblings
+- [ ] [LOW]  M_EXPANSION.D.180 — `entities/character-factory.ts` is the canonical spawn site; document the 3-use enumeration (fixed/generic-fixed/random) inline so a new contributor reads it BEFORE editing
+
