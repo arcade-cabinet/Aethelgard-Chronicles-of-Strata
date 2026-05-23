@@ -77,6 +77,10 @@ export function useAudio(game: GameState): void {
       if (currentOutcome === 'win') {
         const map = SOUND_FOR_EVENT.victory;
         playSound(buses, map.bus, resolveSoundId(map));
+        // M_EXPANSION.AU.38 — after the stinger, swap looping music to
+        // a peaceful village track for the victory state. playMusic
+        // stops the current track first.
+        playMusic(buses, 'audio.music.biome.town-of-eldor');
       } else if (currentOutcome === 'loss') {
         const map = SOUND_FOR_EVENT.defeat;
         playSound(buses, map.bus, resolveSoundId(map));
