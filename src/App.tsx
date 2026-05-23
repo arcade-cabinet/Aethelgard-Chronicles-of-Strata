@@ -11,6 +11,7 @@ import { CriticalWarning } from '@/hud/CriticalWarning';
 import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
 import { LoadingScreen } from '@/hud/LoadingScreen';
 import { PersistAchievements } from '@/hud/PersistAchievements';
+import { ScoreBar } from '@/hud/ScoreBar';
 import { SpeedControl } from '@/hud/SpeedControl';
 import { WeatherIndicator } from '@/hud/WeatherIndicator';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
@@ -135,6 +136,7 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />
       <SpeedControl game={game} />
+      <ScoreBar game={game} />
       <IdlePeonsIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />

@@ -1874,7 +1874,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [MED]  M_EXPANSION.U.102 — Building health-radial: a circular ring around in-progress buildings showing construction %
 - [ ] [MED]  M_EXPANSION.U.103 — Selection-marquee colour per faction (player blue, enemy red highlight when hover)
 - [ ] [MED]  M_EXPANSION.U.104 — HUD pill long-press on mobile = hold-to-confirm for destructive (Resign, Reset)
-- [ ] [MED]  M_EXPANSION.U.105 — Score bar at the top showing player vs enemy score integral (already tracked; not yet displayed)
+- [x] [MED]  M_EXPANSION.U.105 — Score bar at the top showing player vs enemy score integral (already tracked; not yet displayed)
 - [ ] [MED]  M_EXPANSION.U.106 — Minimap territory overlay: faction-colored fog of war
 - [ ] [MED]  M_EXPANSION.U.107 — Selection bracket: yellow corner-brackets around the selected unit (replace the green ring)
 - [ ] [MED]  M_EXPANSION.U.108 — Build-mode ghost: translucent ghost of the building snaps to the hover tile before placement
