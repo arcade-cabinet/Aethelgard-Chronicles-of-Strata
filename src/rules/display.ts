@@ -64,6 +64,10 @@ export const BUILDING_DISPLAY: Record<BuildingType, BuildingDisplay> = {
     name: 'Wonder',
     description: 'Composes all 3 archetypes — attractor + offensive + defensive.',
   },
+  Library: {
+    name: 'Library',
+    description: 'Produces science over time — fuels Discoveries.',
+  },
 };
 
 /** Resolve the display metadata for a building type. */

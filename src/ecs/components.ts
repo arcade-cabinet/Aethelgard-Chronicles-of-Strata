@@ -70,7 +70,8 @@ export type BuildingType =
   | 'Barracks'
   | 'Watchtower'
   | 'Wall'
-  | 'Wonder';
+  | 'Wonder'
+  | 'Library';
 
 /** The peon job state machine. */
 export type JobState = 'IDLE' | 'SEEKING' | 'HARVESTING' | 'CARRYING' | 'DEPOSITING' | 'BUILDING';
@@ -220,3 +221,11 @@ export const EnemyTarget = trait({ targetId: -1 });
  * (not module state) so a mid-death unit survives a save/load round-trip.
  */
 export const DeathTimer = trait({ elapsed: 0 });
+
+/**
+ * Science producer (M_FEATURE.3) — any building with this trait adds
+ * `rate` science per second to its faction's economy. Composes orthogonally
+ * with the ZoC archetypes — a Wonder could carry ScienceProducer too.
+ * Today only the Library building spawns with it.
+ */
+export const ScienceProducer = trait({ rate: 1 });

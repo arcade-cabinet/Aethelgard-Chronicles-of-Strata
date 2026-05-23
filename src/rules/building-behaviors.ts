@@ -29,6 +29,9 @@ export const BUILDING_BEHAVIORS: Record<BuildingType, BuildingBehaviorProfile> =
     offensive: { radius: 4, dps: 8 },
     defensive: { radius: 0 },
   },
+  // Library (M_FEATURE.3) — produces science. Behavior-orthogonal, so the
+  // building-spawn path adds ScienceProducer separately when type=Library.
+  Library: {},
 };
 
 /** Resolve a building type's behaviour profile. */

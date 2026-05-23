@@ -33,6 +33,8 @@ const STRUCTURE_MODELS: Record<Faction, Record<BuildingType, StructureModel>> = 
     Wall: { logicalId: 'structures.portal-fence', scale: 1.1, yOffset: 0 },
     // Wonder (M_FEATURE.4) — visually a scaled Town Hall pending dedicated asset.
     Wonder: { logicalId: 'structures.town-hall', scale: 1.3, yOffset: 0 },
+    // Library (M_FEATURE.3) — placeholder uses Granary footprint, scaled smaller.
+    Library: { logicalId: 'structures.barracks', scale: 0.6, yOffset: 0 },
   },
   enemy: {
     // the enemy hub is the graveyard crypt; its support structures reuse the
@@ -46,6 +48,8 @@ const STRUCTURE_MODELS: Record<Faction, Record<BuildingType, StructureModel>> = 
     Wall: { logicalId: 'structures.portal-fence', scale: 1.1, yOffset: 0 },
     // Wonder (M_FEATURE.4) — enemy variant; scaled portal-crypt.
     Wonder: { logicalId: 'structures.portal-crypt', scale: 1.6, yOffset: 0 },
+    // Library (M_FEATURE.3) — enemy variant; gravestone footprint.
+    Library: { logicalId: 'nature.gravestone.cross', scale: 0.9, yOffset: 0 },
   },
 };
 

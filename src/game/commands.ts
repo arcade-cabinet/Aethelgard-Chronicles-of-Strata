@@ -15,6 +15,7 @@ import {
   type MoverMaterial,
   OffensiveBehavior,
   PathQueue,
+  ScienceProducer,
   Selectable,
   Unit,
 } from '@/ecs/components';
@@ -156,6 +157,8 @@ export function placeBuilding(
     ...(profile.offensive ? [OffensiveBehavior(profile.offensive)] : []),
     ...(profile.defensive ? [DefensiveBehavior(profile.defensive)] : []),
     ...(profile.attractor ? [AttractorBehavior(profile.attractor)] : []),
+    // M_FEATURE.3 — Library carries ScienceProducer (rate: 1 science/sec).
+    ...(type === 'Library' ? [ScienceProducer({ rate: 1 })] : []),
   ];
   const buildingEntity = game.world.spawn(...traits);
   game.buildSites.set(tileKey, buildingEntity);

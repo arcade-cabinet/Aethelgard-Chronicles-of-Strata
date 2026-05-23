@@ -20,6 +20,7 @@ import { aiSystem, resetAiDirector } from '@/ecs/systems/ai';
 import { animationSystem } from '@/ecs/systems/animation';
 import { buildSystem } from '@/ecs/systems/build';
 import { buildingDeathSystem } from '@/ecs/systems/building-death';
+import { scienceSystem } from '@/ecs/systems/science';
 import { combatSystem, type DamageEvent } from '@/ecs/systems/combat';
 import { deathSystem } from '@/ecs/systems/death';
 import { depositSystem, type ResourceDepositEvent } from '@/ecs/systems/deposit';
@@ -499,6 +500,8 @@ export function runEconomyTick(game: GameState, delta: number): void {
   });
   harvestSystem(game.world, delta);
   buildSystem(game.world, game.buildSites, delta);
+  // M_FEATURE.3 — passive trickle + per-Library science accumulation.
+  scienceSystem(game.world, game.economy, delta);
   // Every offensive-behaviour entity (Watchtower today; future Wonder etc.)
   // damages enemy military in its radius — decoupled from building type.
   // Also emits visible projectile FX (cadence-gated; presentation only).

@@ -413,8 +413,11 @@ re-listing. Both unblock as the relevant dependency lands.)
   depth 0→1x, 1→2x, 3→3x, 7→4x), scaledCostFor returns per-slot ceil
   cost. research.ts canResearch + applyResearch consult the scaled cost;
   DiscoveriesPanel renders the effective cost.
-- [ ] M_FEATURE.3 — passive science accumulation tick + a "science-
-  producing" building variant (one new row in `building-behaviors.ts`).
+- [x] M_FEATURE.3 — science accumulation: ScienceProducer ECS trait;
+  Library building (cost 120w+60s+80g, ScienceProducer{rate:1});
+  scienceSystem ticks per-frame — passive 0.05/s trickle + per-completed-
+  Library rate. Both factions accumulate. 2 tests pin passive + Library
+  acceleration. Library rows in all 5 config tables.
 - [x] M_FEATURE.4 — Wonder building: composes Attractor (radius 3) +
   Offensive (radius 4, dps 8) + Defensive (radius 0). Cost 500w+400s+300g
   (late-game capstone); supply contribution 5. Rows in BuildingType,

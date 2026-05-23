@@ -6,7 +6,8 @@
     "Barracks": { "wood": 150, "stone": 100, "gold": 50 },
     "Watchtower": { "wood": 80, "stone": 120, "gold": 0 },
     "Wall": { "wood": 0, "stone": 60, "gold": 0 },
-    "Wonder": { "wood": 500, "stone": 400, "gold": 300 }
+    "Wonder": { "wood": 500, "stone": 400, "gold": 300 },
+    "Library": { "wood": 120, "stone": 60, "gold": 80 }
   },
   "buildingSupply": {
     "TownHall": 5,
@@ -16,7 +17,8 @@
     "Barracks": 0,
     "Watchtower": 0,
     "Wall": 0,
-    "Wonder": 5
+    "Wonder": 5,
+    "Library": 0
   },
   "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH"],
   "supplyCosts": {
