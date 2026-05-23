@@ -17,8 +17,10 @@ const PER_FRAME_CAP = 3;
  * unit destruction self-clean. PER_FRAME_CAP prevents stampedes from
  * flooding the audio bus.
  *
- * Surface detection: mountain/highland → stone, everything else → grass.
- * A future sand biome would add a row and one extra cue.
+ * Surface detection (M_EXPANSION.AU.43):
+ *   mountain/highland → stone
+ *   desert            → sand
+ *   everything else   → grass
  */
 export function FootstepEmitter({ game }: { game: GameState }) {
   const accRef = useRef<Map<number, number>>(new Map());
@@ -45,8 +47,13 @@ export function FootstepEmitter({ game }: { game: GameState }) {
       const hex = e.get(HexPosition);
       if (!hex) continue;
       const tile = game.board.tiles.get(`${hex.q},${hex.r}`);
-      const onStone = tile && (tile.type === 'MOUNTAIN' || tile.type === 'HIGHLAND');
-      emitUiSound(onStone ? 'footstep-stone' : 'footstep-grass');
+      const surface =
+        tile?.type === 'MOUNTAIN' || tile?.type === 'HIGHLAND'
+          ? 'footstep-stone'
+          : tile?.type === 'DESERT'
+            ? 'footstep-sand'
+            : 'footstep-grass';
+      emitUiSound(surface);
       emitted += 1;
     }
     // GC dead-entity accumulators

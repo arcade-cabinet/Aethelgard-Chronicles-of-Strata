@@ -822,6 +822,15 @@
     "pack": "PixelLoops Audio — Footsteps Pack",
     "license": "Royalty-Free"
   },
+  "audio.sfx.footstep-sand": {
+    "id": "audio.sfx.footstep-sand",
+    "path": "assets/audio/sfx/footstep-sand.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops Audio — Footsteps Pack",
+    "license": "Royalty-Free"
+  },
   "audio.sfx.chop": {
     "id": "audio.sfx.chop",
     "path": "assets/audio/sfx/chop.ogg",

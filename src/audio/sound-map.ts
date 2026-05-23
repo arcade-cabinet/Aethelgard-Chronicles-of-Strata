@@ -16,6 +16,7 @@ export type GameAudioEvent =
   | 'harvest-mine'
   | 'footstep-grass'
   | 'footstep-stone'
+  | 'footstep-sand'
   | 'projectile-fire'
   | 'projectile-impact'
   | 'resource-deposit'
@@ -52,6 +53,9 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   'harvest-mine': { bus: 'sfx', soundId: 'audio.sfx.mine' },
   'footstep-grass': { bus: 'sfx', soundId: 'audio.sfx.footstep-grass' },
   'footstep-stone': { bus: 'sfx', soundId: 'audio.sfx.footstep-stone' },
+  // M_EXPANSION.AU.43 — sand surface (desert biome). Falls back to
+  // grass if a biome is uncategorised.
+  'footstep-sand': { bus: 'sfx', soundId: 'audio.sfx.footstep-sand' },
   'resource-deposit': { bus: 'sfx', soundId: 'audio.sfx.deposit' },
 
   // Selection / building
