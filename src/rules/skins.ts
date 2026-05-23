@@ -185,7 +185,9 @@ export const SKINS: Record<Faction, Skin> = {
       // building; sits slightly above tile level to "anchor" the map.
       TownHall: { logicalId: 'structures.town-hall', scale: 1.5, yOffset: 0.15 },
       Farm: { logicalId: 'structures.farm', scale: 0.65, yOffset: 0 },
-      House: { logicalId: 'structures.farm', scale: 0.5, yOffset: 0 },
+      // M_EXPANSION.A.9 — distinct House silhouette (Fantasy Town stall)
+      // instead of a down-scaled farm; reads as "civic dwelling" vs barn.
+      House: { logicalId: 'structures.house', scale: 0.7, yOffset: 0 },
       // M_EXPANSION.A.8 — Granary uses Fantasy Town Kit `windmill.glb`.
       // Real mill silhouette beats the down-scaled barracks placeholder.
       Granary: { logicalId: 'structures.granary', scale: 0.7, yOffset: 0 },
