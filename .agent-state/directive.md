@@ -353,6 +353,6 @@ audio packs via Howler. No procedural synthesis. Packs available:
 - [x] M_RELEASE_FINAL.5 — `pnpm verify` clean (typecheck + lint + format
   + 293 tests). test:browser + test:e2e + test:visual continue running
   via PR CI on the branch.
-- [ ] [WAIT-CI+REVIEW] M_RELEASE_FINAL.6 — squash-merge to main; confirm
+- [ ] [WAIT-RELEASE] M_RELEASE_FINAL.6 — squash-merge to main; confirm
   cd.yml deploys GitHub Pages + APK artefact; flip Status to RELEASED.
   Blocked on PR #1 CI green + comprehensive review findings absorbed.
