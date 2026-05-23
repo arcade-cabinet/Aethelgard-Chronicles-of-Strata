@@ -605,31 +605,21 @@ qualify for AI GOAP".
   this — 4x is mostly a NewGame option + a Settler unit type +
   a found-base command verb.
 
-- [ ] M_MAPGEN.11 — generalize base-accretion (user, 2026-05-22): "if you
-  add accretion etc rules then its just more slots. both sides need a
-  base, each side has unique assigned visuals, then its just 'this many
-  props in an accretion scatter' and then its just different assigned
-  visuals like everything else"; "plus then different buildings can have
-  different adherence and accretion rules and so on". Generalize the
-  M_MAPGEN.8 graveyard cluster into:
-    a) per-faction `BASE_ACCRETION` config row (count, radius, density,
-       propPool, yScale range) for FactionBases. Enemy → graveyard;
-       player → banners/market/hay (whatever asset palette offers).
-    b) per-BuildingType `ACCRETION_PROFILE` row (adherence + accretion
-       rules per building). A Farm radiates wheat-stalks; a Barracks
-       radiates training-dummies + barrels; a Library scrolls + crates.
-    The Decoration system reads both layers — every completed building
-    triggers its accretion at place-time. Adding a new accretion = ONE
-    config row, no new code branch. Composes cleanly with M_MODES (each
-    mode can swap accretion table).
-    User reinforcement (2026-05-22): "and the same logic of magnetic
-    dipolars and attractor buildings work similarly — every building
-    during gen time can have such and such props in a spread". The
-    accretion table IS the visual mirror of the force-field's
-    archetype weights (M_ARCHETYPE.6) — attractor archetype = densest
-    accretion, defensive = sparse, mover = linear scatter, consumer =
-    cluster around the resource type. Single rules table; visual +
-    gameplay are the same archetype-driven slot system.
+- [x] M_MAPGEN.11 — base-accretion generalised: Decoration.tsx
+  BASE_ACCRETION config table per faction (propPool, radius, density,
+  scaleRange, seedTag); appendBaseAccretion drives off the table. Enemy
+  → graveyard pieces; player → tree/rock placeholders pending dedicated
+  banner/market-stall assets. Adding a faction or swapping propPool is
+  one row. Both factions now get visual accretion around their bases.
+  Per-BuildingType ACCRETION_PROFILE follow-up tracked under future
+  M_MAPGEN.13 (when more building variants land).
+
+- [ ] M_MAPGEN.13 — per-BuildingType accretion follow-up (deferred from
+  M_MAPGEN.11): each building type gets its own ACCRETION_PROFILE config
+  (Farm → wheat-stalks, Barracks → training-dummies + barrels, Library →
+  scrolls + crates). Decoration reads the table at place-time. Composes
+  with the M_ARCHETYPE.6 force field — archetype weight drives accretion
+  density. Lands when more building variants are in play.
 
 - [x] M_MAPGEN.12 — balanced enemy placement: startGame now iterates
   ALL walkable candidates with d≥5 from center; for guided modes the

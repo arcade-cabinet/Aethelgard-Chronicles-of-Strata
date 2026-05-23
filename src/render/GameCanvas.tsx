@@ -80,6 +80,7 @@ function Scene({
           board={game.board}
           occupiedKeys={occupiedKeys}
           enemyBaseKey={game.enemyBaseKey}
+          playerBaseKey={game.townHallKey}
         />
         <ResourceNodes game={game} />
         <Roads game={game} />

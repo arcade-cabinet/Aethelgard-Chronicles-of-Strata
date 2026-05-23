@@ -338,44 +338,90 @@ function planDecoration(board: BoardData, occupiedKeys: ReadonlySet<string>): De
 // ---------------------------------------------------------------------------
 
 /**
- * M_MAPGEN.8 — paint a graveyard cluster of `nature.gravestone.*` props
- * around the enemy base hex (radius 2). Visually reinforces "the
- * graveyard is the enemy base" without baking new geometry. Deterministic
- * from the board's seed.
+ * Per-faction base-accretion config (M_MAPGEN.11). Each faction declares
+ * a list of asset ids that scatter around its FactionBase + the radius +
+ * density. Adding a new prop = ONE row in `propPool`; adding a new
+ * accretion archetype = ONE new entry here. No code branch.
+ *
+ * Mirrors the user's "magnetic dipolars work similarly" insight: the
+ * accretion radius IS the visual analog of the AttractorBehavior radius
+ * (M_ARCHETYPE.6 force field); the propPool's spread is the visual
+ * analog of the field's falloff.
  */
-function appendGraveyardCluster(
+interface BaseAccretion {
+  /** Asset ids the accretion picks from (deterministic, equal-weighted). */
+  propPool: ReadonlyArray<string>;
+  /** Hex radius around the base to scatter into. */
+  radius: number;
+  /** Per-tile chance (0-1) within the radius. */
+  density: number;
+  /** Y-scale range [min, max] applied per-instance. */
+  scaleRange: [number, number];
+  /** Seed-tag for the dedicated PRNG stream — keeps each accretion deterministic. */
+  seedTag: string;
+}
+
+const BASE_ACCRETION: Record<'player' | 'enemy', BaseAccretion> = {
+  player: {
+    // Player base — town props (placeholder: small trees + buckets) until
+    // the dedicated banner/market-stall pack lands (POST_REL M_HARDENING.5).
+    propPool: ['nature.tree.pine-a', 'nature.rock.large-a'],
+    radius: 2,
+    density: 0.45,
+    scaleRange: [0.5, 0.8],
+    seedTag: 'player-accretion',
+  },
+  enemy: {
+    propPool: ['nature.gravestone.round', 'nature.gravestone.cross'],
+    radius: 2,
+    density: 0.55,
+    scaleRange: [0.8, 1.1],
+    seedTag: 'graveyard',
+  },
+};
+
+/**
+ * M_MAPGEN.8+.11 — paint a faction-base accretion cluster around the
+ * given base hex. Driven entirely by the BASE_ACCRETION config table;
+ * adding a faction or swapping a prop pool is one config-row change.
+ */
+function appendBaseAccretion(
   out: DecoInstance[],
   board: BoardData,
-  enemyBaseKey: string | undefined,
+  baseKey: string | undefined,
+  faction: 'player' | 'enemy',
 ): void {
-  if (!enemyBaseKey) return;
-  const [bq, br] = enemyBaseKey.split(',').map(Number);
+  if (!baseKey) return;
+  const [bq, br] = baseKey.split(',').map(Number);
   if (bq === undefined || br === undefined) return;
-  const rng = createMapPrng(`${board.seedPhrase}:graveyard`);
-  // 2-radius rosette around enemy base — skip the base tile itself
-  for (let dq = -2; dq <= 2; dq++) {
-    for (let dr = -2; dr <= 2; dr++) {
+  const cfg = BASE_ACCRETION[faction];
+  const rng = createMapPrng(`${board.seedPhrase}:${cfg.seedTag}`);
+  const [scaleLo, scaleHi] = cfg.scaleRange;
+  for (let dq = -cfg.radius; dq <= cfg.radius; dq++) {
+    for (let dr = -cfg.radius; dr <= cfg.radius; dr++) {
       const q = bq + dq;
       const r = br + dr;
       const dist = (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
-      if (dist === 0 || dist > 2) continue;
+      if (dist === 0 || dist > cfg.radius) continue;
       const tile = board.tiles.get(`${q},${r}`);
       if (!tile || tile.type === 'OCEAN' || tile.type === 'LAKE') continue;
       if (tile.isCrossingLanding) continue;
-      if (rng() > 0.55) continue; // ~55% per tile in the radius
-      const assetId = rng() < 0.5 ? 'nature.gravestone.round' : 'nature.gravestone.cross';
+      if (rng() > cfg.density) continue;
+      const idx = Math.floor(rng() * cfg.propPool.length);
+      const assetId = cfg.propPool[idx] ?? cfg.propPool[0];
+      if (!assetId) continue;
       const offsetX = (rng() - 0.5) * 0.7;
       const offsetZ = (rng() - 0.5) * 0.7;
       const rotY = rng() * Math.PI * 2;
       const { x, z } = axialToWorld(q, r);
       out.push({
-        key: `grave-${q},${r}`,
+        key: `${cfg.seedTag}-${q},${r}`,
         assetId,
         x: x + offsetX,
         y: tile.level * TILE_HEIGHT,
         z: z + offsetZ,
         rotY,
-        scale: 0.8 + rng() * 0.3,
+        scale: scaleLo + rng() * (scaleHi - scaleLo),
       });
     }
   }
@@ -392,8 +438,10 @@ export interface DecorationProps {
    * call site.
    */
   occupiedKeys: ReadonlySet<string>;
-  /** Enemy base tile key — drives the M_MAPGEN.8 graveyard cluster. */
+  /** Enemy base tile key — drives the enemy faction accretion cluster. */
   enemyBaseKey?: string;
+  /** Player base tile key — drives the player faction accretion cluster. */
+  playerBaseKey?: string;
 }
 
 /**
@@ -403,17 +451,18 @@ export interface DecorationProps {
  * no pathfinding impact. Geometry is owned by the useGLTF cache and shared via
  * Clone so no manual disposal is needed here.
  */
-export function Decoration({ board, occupiedKeys, enemyBaseKey }: DecorationProps) {
+export function Decoration({ board, occupiedKeys, enemyBaseKey, playerBaseKey }: DecorationProps) {
   const gltfs = useDecorationGltfs();
 
   // Compute the placement plan once per board + occupiedKeys change.
   // occupiedKeys is a Set — use its size as a proxy dep so React detects changes.
   const instances = useMemo(() => {
     const list = planDecoration(board, occupiedKeys);
-    appendGraveyardCluster(list, board, enemyBaseKey);
+    appendBaseAccretion(list, board, playerBaseKey, 'player');
+    appendBaseAccretion(list, board, enemyBaseKey, 'enemy');
     return list;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [board, occupiedKeys, enemyBaseKey]);
+  }, [board, occupiedKeys, enemyBaseKey, playerBaseKey]);
 
   return (
     <group name="decoration">
