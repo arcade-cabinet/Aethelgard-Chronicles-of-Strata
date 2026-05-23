@@ -11,6 +11,7 @@ import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
 import { Minimap } from '@/hud/Minimap';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
 import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
+import { EndTurnButton } from '@/hud/EndTurnButton';
 import { PauseControl } from '@/hud/PauseControl';
 import { ResignButton } from '@/hud/ResignButton';
 import { ResourceBar } from '@/hud/ResourceBar';
@@ -93,6 +94,7 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
       <SoundToggle persistence={persistence} />
       <PauseControl game={game} />
       <ResignButton game={game} />
+      <EndTurnButton game={game} />
       <DiscoveriesPanel game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />

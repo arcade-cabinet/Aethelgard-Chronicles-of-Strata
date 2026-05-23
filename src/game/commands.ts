@@ -344,6 +344,16 @@ function countByPredicate(world: GameState['world'], pred: (entity: Entity) => b
  * has a rally state; `faction` is accepted for the symmetric signature.
  */
 /**
+ * End the current turn (M_MODES.8). Flips `game.turn.active` and resets
+ * the budget. No-op when the game isn't turn-based.
+ */
+export function endTurn(game: GameState): void {
+  if (!game.turn) return;
+  game.turn.active = game.turn.active === 'player' ? 'enemy' : 'player';
+  game.turn.secondsRemaining = game.turn.turnLength;
+}
+
+/**
  * Resign the current match for `faction` (M_MODES.10). Sets `game.outcome`
  * to 'loss' if the resigning faction is the player, 'win' if the enemy.
  * Used by:

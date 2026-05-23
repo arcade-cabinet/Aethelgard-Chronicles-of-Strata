@@ -211,6 +211,20 @@ export interface GameState {
    */
   score: Record<Faction, number>;
   /**
+   * Optional turn-based state (M_MODES.8). Present only when the preset's
+   * turnsMode === 'turn-based'. `secondsRemaining` is decremented per tick;
+   * when it hits 0 the sim pauses + waits for the human to end their turn
+   * (button → endTurn(game) command).
+   */
+  turn?: {
+    /** Whose turn it is — 'player' or 'enemy'. */
+    active: Faction;
+    /** Seconds remaining in this turn before auto-end. */
+    secondsRemaining: number;
+    /** Total length of each turn (seconds). */
+    turnLength: number;
+  };
+  /**
    * Goal-driven AI players, keyed by faction. The enemy faction always has one;
    * the player faction gets one only in AI-vs-AI mode (M8.7 E2E harness).
    */
@@ -560,6 +574,11 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
       enemy: enemyBaseTile,
     }),
     score: { player: 0, enemy: 0 },
+    // M_MODES.8 — turn-based superposition (4x default; others opt-in via
+    // the Advanced toggle). 60s turns; player starts.
+    ...(preset.turnsMode === 'turn-based'
+      ? { turn: { active: 'player' as Faction, secondsRemaining: 60, turnLength: 60 } }
+      : {}),
     // the enemy faction always runs a yuka AI player; AI-vs-AI mode swaps in
     // the player faction's via the test harness (M8.7).
     aiPlayers: { enemy: new AiPlayer('enemy') },
@@ -614,6 +633,17 @@ export function runEconomyTick(game: GameState, delta: number): void {
   if (game.outcome !== 'playing') return;
   // M_GAMEPLAY.7 — pause flag freezes the simulation; rendering continues.
   if (game.paused) return;
+  // M_MODES.8 — turn-based: drain the active turn's budget; when the budget
+  // hits 0, auto-end the turn (flip active + reset budget). Simulation
+  // continues to run during the turn — the budget is a wall-clock
+  // pacing tool. endTurn() command flips the active mid-budget.
+  if (game.turn) {
+    game.turn.secondsRemaining -= delta;
+    if (game.turn.secondsRemaining <= 0) {
+      game.turn.active = game.turn.active === 'player' ? 'enemy' : 'player';
+      game.turn.secondsRemaining = game.turn.turnLength;
+    }
+  }
 
   // advance time-based systems
   advanceClock(game.clock, delta);

@@ -578,12 +578,14 @@ qualify for AI GOAP".
   via presetFor() (M_MODES.2-.4 already wired). Advanced "show full
   axes" toggle queued as part of M_MODES.7-extras when a 4th axis
   (matchLength/turnsMode/mapType) lands.
-- [ ] M_MODES.8 — end-turn mechanic (user, 2026-05-22): optional
-  `turnsMode` axis. When enabled, the sim pauses on each player's "end
-  turn" tap; the OTHER player (or AI) plays their turn until they end it.
-  Pure superimposition over real-time: each turn runs runEconomyTick for
-  a fixed turn-length budget, then halts. Compatible with all 5 game-mode
-  presets — turns-mode is an axis, not a separate mode.
+- [x] M_MODES.8 — end-turn mechanic: GameState.turn (active faction +
+  secondsRemaining + turnLength); endTurn() command flips active +
+  resets budget; runEconomyTick decrements budget per tick + auto-
+  flips at 0. EndTurnButton HUD pill shows whose turn + countdown,
+  enabled only on player turn. 4x preset initialises turn{60s}; other
+  presets are real-time (game.turn undefined). 5 tests pin: 4x init,
+  red-vs-blue undefined, auto-flip on 60s, endTurn flip+reset, no-op
+  on non-turn-based. 338 tests green.
 
 - [ ] M_MODES.6 — `4x` mode (user follow-up, 2026-05-22): "hell we have
   all the makings of a fifth mode thats more like a 4x". eXplore +
