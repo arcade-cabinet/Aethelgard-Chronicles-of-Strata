@@ -541,7 +541,7 @@ the smallest end-to-end proof, then drain in dependency order.
   into ONE `BUILDING_PROFILES` registry with composable slot fields
   {behaviors, display, cost, supply, producers}. Library's
   ScienceProducer becomes `producer: {kind: 'science', rate: 1}` slot.
-- [ ] M_REGISTRY.6 — collapse the 7 sibling particle FX
+- [x] M_REGISTRY.6 — collapse the 7 sibling particle FX
   (RainParticles, SawdustFX, BuildCompleteFX, VictoryConfetti,
   CombatText, ResourceText, TrackingRings, FootstepEmitter) into ONE
   ParticleSystem driven by `ParticleArchetype` slot configs (geometry,
@@ -1072,7 +1072,7 @@ The real architecture:
   'player'/'enemy' branches in structure-models / Decoration /
   zone-border / sound-map are replaced with skin lookup.
   Adding a 3rd tribe = ONE new skin entry. NO code changes anywhere.
-- [ ] M_ARCH_UNIFY.8 — supersede M_REFACTOR.1 (particles) as a
+- [x] M_ARCH_UNIFY.8 — supersede M_REFACTOR.1 (particles) as a
   CONSUMER of the unified registry: a particle effect is a Thing
   whose ParticleArchetype slot is set; the per-frame ParticleSystem
   runs as one runtime-pass handler. The Things doing the emitting
