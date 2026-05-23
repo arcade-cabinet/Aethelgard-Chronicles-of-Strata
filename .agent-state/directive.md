@@ -518,10 +518,10 @@ red vs blue layout".
   Currently the enemy base IS that role; make sure the graveyard reads
   visually (cluster of `nature.gravestone.*` decorations around the
   enemy base + the existing `portal-crypt` mesh).
-- [ ] M_MAPGEN.9 — red-vs-blue identity: player base + zone visuals
-  read as blue/azure; enemy base + zone read as red/crimson. Check
-  ZoneBorder colors — confirm they're already faction-tinted; if not,
-  paint them per-faction.
+- [x] M_MAPGEN.9 — red-vs-blue identity verified: ZoneBorder already
+  uses #38bdf8 (azure) for player + #f43f5e (crimson) for enemy. Base
+  meshes are faction-tinted via the existing structure-models split.
+  M_MAPGEN.2 will further distinguish the TownHall mesh.
 - [ ] M_MAPGEN.10 — fair-balance guarantee (user, 2026-05-22): the
   per-rule additions (.3-.9) MUST cooperate to produce a deterministic
   "fair, balanced, playable" golden path on every seed. Concretely:
