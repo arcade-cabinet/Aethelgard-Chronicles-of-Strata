@@ -610,7 +610,7 @@ the smallest end-to-end proof, then drain in dependency order.
   table duplication (4 copies of `(|dq|+|dr|+|dq+dr|)/2`, 3
   NEIGHBORS literals). Replace with `core/hex.hexDistance` + new
   `AXIAL_NEIGHBORS` export.
-- [ ] M_REGISTRY.24 — `resource-spawn.ts` +
+- [x] M_REGISTRY.24 — `resource-spawn.ts` +
   `rules/attractor.ts` collapse — both walk board placing per-
   ResourceType nodes. ONE `runResourcePlacement(board, [{kind:
   'attractor-guarantee', ...}, {kind: 'biome-scatter', ...}])`
@@ -625,7 +625,7 @@ the smallest end-to-end proof, then drain in dependency order.
 - [x] M_REGISTRY.27 — `Minimap.tsx:118` color ternary
   + literal base-marker tuple become Skin slot reads
   (`Skin[faction].minimap.color`).
-- [ ] M_REGISTRY.28 — `TileInteraction.tsx:145`
+- [x] M_REGISTRY.28 — `TileInteraction.tsx:145`
   `faction === 'player'` click-routing assumption goes away once
   `selectedEntities(game)` filters by `local-player-faction` from
   a session context — lets AI-vs-AI replays drive the same
@@ -740,7 +740,7 @@ overlap exists.
   via `CorruptSaveError`; UI shows "save corrupted" path.
 - [x] M_SEC.23 — `audio/buses.ts` Howler cache
   unbounded — add LRU cap of ~64 entries.
-- [ ] M_SEC.24 — KeyboardShortcuts/PauseControl/
+- [x] M_SEC.24 — KeyboardShortcuts/PauseControl/
   SelectionRect global listeners capture closure refs to `game`.
   On resume, three listeners coexist briefly. Switch to refs +
   effect cleanup that reads the current game.
@@ -870,15 +870,15 @@ bug).
 
 #### Category 7 — Helper functions > 30 LOC
 
-- [ ] M_MICRO.7.1 — `game-state.ts startGame` (294 LOC,
+- [x] M_MICRO.7.1 — `game-state.ts startGame` (294 LOC,
   8 phases). Extract `initWorld`, `placePlayerBase`, `placeEnemyBase`,
   `seedAttractorResources`, `initZones`; `startGame` becomes a
   30-line orchestrator. Couples to M_REGISTRY.13 (placeThing).
-- [ ] M_MICRO.7.2 — `game-state.ts runEconomyTick`
+- [x] M_MICRO.7.2 — `game-state.ts runEconomyTick`
   (119 LOC, 11 system invocations). Extract `SIM_PHASES:
   ReadonlyArray<(game, delta) => void>` table; pause/invuln-clamp
   stay inline. Foundation for M_REGISTRY runtime-pass collapse.
-- [ ] M_MICRO.7.3 — `ai-player.ts` 4 Evaluator/Goal
+- [x] M_MICRO.7.3 — `ai-player.ts` 4 Evaluator/Goal
   classes (Build/Train/Military/Resign) collapse to ONE generic
   `RegistryGoal` + `GOALS: Array<{id, score, payload, execute}>`
   table. ~150 LOC → ~60. Couples to M_REGISTRY.18 (BrainArchetype).
@@ -888,7 +888,7 @@ bug).
   `combatTraitsFor(stats)` composer. Couples to M_REGISTRY.1.
 - [x] M_MICRO.7.5 — `crossings.ts placeCrossings` 68 LOC
   — extract `gatherCrossingCandidates(tiles, rng)`.
-- [ ] M_MICRO.7.6 — `job-routing.ts jobRoutingSystem`
+- [x] M_MICRO.7.6 — `job-routing.ts jobRoutingSystem`
   88 LOC, 3 sub-concerns — extract `assignIdlePeons`,
   `retargetExhausted`, `deliverToDeposit`.
 - [x] M_MICRO.7.7 — `combat.ts combatSystem` 60 LOC —
