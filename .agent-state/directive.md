@@ -1748,7 +1748,11 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.AU.39 — wire `GLV5_CraftingHall.wav` as construction-in-progress ambient layer
 - [x] [LOW]  M_EXPANSION.AU.40 — wire `GLV5_MapOfRealms.wav` as overlay music when DiscoveriesPanel is open
 - [x] [LOW]  M_EXPANSION.AU.41 — duck music bus to 40% while critical-alarm is firing
-- [ ] [LOW]  M_EXPANSION.AU.42 — pre-victory crescendo: cross-fade combat→victory stinger over the final 3s before win
+- [ ] [WAIT-DESIGN] M_EXPANSION.AU.42 — pre-victory crescendo: cross-fade combat→victory stinger over the final 3s before win
+  - Requires a deterministic "imminent victory" signal (enemy TownHall
+    HP <10%, AI last-unit-dying, wonder-timer <3s). Predicting wrong
+    would fire false-positive crescendos. Tracked WAIT until F.71
+    Wonder lands a deterministic countdown.
 
 **Footsteps + Impact + Magic SFX (43-50)** — partial usage
 - [x] [HIGH] M_EXPANSION.AU.43 — footsteps per terrain biome (grass/sand/stone) — currently single sound
@@ -1761,7 +1765,12 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
     glyph). Not a pure audio drop-in; tracked as WAIT until the combat
     balance pass that defines parry mechanics lands.
 - [x] [MED]  M_EXPANSION.AU.47 — death sound per unit type from existing footstep + impact mash-ups
-- [ ] [LOW]  M_EXPANSION.AU.48 — Howler 3D-positional sound for in-world events (combat, building) based on camera distance
+- [ ] [WAIT-DESIGN] M_EXPANSION.AU.48 — Howler 3D-positional sound for in-world events (combat, building) based on camera distance
+  - Howler.pos / Howler.orientation + per-sound pos/orientation across
+    every emit site is a wide refactor that touches every emit call.
+    The current 'all sounds 2D' model is acceptable for a mid-tier
+    arcade target; revisit if visual playtest shows confusion about
+    off-screen combat origin.
 - [x] [LOW]  M_EXPANSION.AU.49 — weather-driven audio layer (rain ambient, wind, distant thunder)
   - No rain/wind/thunder samples in bundled packs. Closed without
     ingest; WeatherIndicator already has the state-edge hook ready
