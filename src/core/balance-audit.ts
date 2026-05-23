@@ -19,7 +19,7 @@ export const REACH_RADIUS = 6;
 export const BALANCE_TOLERANCE = 0.1;
 
 /** Count buildable-quality tiles within REACH_RADIUS of (cq, cr). */
-function reachableBuildableCount(board: BoardData, cq: number, cr: number): number {
+export function reachableBuildableCount(board: BoardData, cq: number, cr: number): number {
   let n = 0;
   for (const tile of board.tiles.values()) {
     const d =

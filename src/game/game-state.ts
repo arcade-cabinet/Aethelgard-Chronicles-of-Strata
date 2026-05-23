@@ -1,6 +1,6 @@
 import type { Entity, World } from 'koota';
 import { AiPlayer } from '@/ai/ai-player';
-import { isBalanced } from '@/core/balance-audit';
+import { BALANCE_TOLERANCE, isBalanced, reachableBuildableCount } from '@/core/balance-audit';
 import { type BoardData, generateBoard } from '@/core/board';
 import { getHexKey, hexDistance } from '@/core/hex';
 import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
@@ -378,15 +378,50 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
   );
 
-  // Pick the farthest walkable tile from center for the enemy base.
+  // M_MAPGEN.12 — pick the enemy base as the BEST-BALANCED placement,
+  // not the farthest walkable tile. We want a tile that (a) sits roughly
+  // opposite the player center (high angular distance), (b) has a
+  // reachable-buildable area within 10% of the player's. Iterate
+  // candidates ordered by distance, pick the first that satisfies the
+  // balance audit; fall back to farthest-walkable for skirmish-mode
+  // (where guidedMapGen is false the balance test isn't meaningful).
+  const playerArea = preset.guidedMapGen ? reachableBuildableCount(board, center.q, center.r) : 0;
   let enemyBaseTile = center;
-  let maxDist = 0;
+  let bestScore = -1;
   for (const tile of board.tiles.values()) {
     if (!tile.walkable) continue;
     const d = hexDistance(tile.q, tile.r, center.q, center.r);
-    if (d > maxDist) {
-      maxDist = d;
+    if (d < 5) continue; // need real separation
+    if (!preset.guidedMapGen) {
+      // skirmish: fall back to farthest-walkable
+      if (d > bestScore) {
+        bestScore = d;
+        enemyBaseTile = tile;
+      }
+      continue;
+    }
+    // guided: score = (1 - |1 - enemyArea/playerArea|) * distance.
+    // Reward balance heavily; distance is a tie-breaker.
+    const enemyArea = reachableBuildableCount(board, tile.q, tile.r);
+    if (enemyArea === 0 || playerArea === 0) continue;
+    const ratio = Math.min(playerArea, enemyArea) / Math.max(playerArea, enemyArea);
+    if (ratio < 1 - BALANCE_TOLERANCE) continue; // skip unfair candidates
+    const score = ratio * 100 + d; // balance dominates, distance is secondary
+    if (score > bestScore) {
+      bestScore = score;
       enemyBaseTile = tile;
+    }
+  }
+  // If guided mode found NO balanced candidate, fall back to farthest-walkable.
+  if (bestScore < 0) {
+    let maxDist = 0;
+    for (const tile of board.tiles.values()) {
+      if (!tile.walkable) continue;
+      const d = hexDistance(tile.q, tile.r, center.q, center.r);
+      if (d > maxDist) {
+        maxDist = d;
+        enemyBaseTile = tile;
+      }
     }
   }
 

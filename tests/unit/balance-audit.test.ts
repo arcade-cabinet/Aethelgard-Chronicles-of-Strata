@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BALANCE_TOLERANCE, balanceReport, isBalanced } from '@/core/balance-audit';
 import { generateBoard } from '@/core/board';
+import { startGame } from '@/game/game-state';
 
 /** Find player + enemy centers by the same heuristic findBalancedBoard uses. */
 function pickCenters(board: ReturnType<typeof generateBoard>): {
@@ -27,21 +28,32 @@ function pickCenters(board: ReturnType<typeof generateBoard>): {
 }
 
 describe('balance audit (M_MAPGEN.10)', () => {
-  it('isBalanced flags the today-unfair farthest-walkable enemy placement', () => {
-    // The current "farthest walkable tile" heuristic for enemy placement
-    // produces an EDGE base; the audit correctly identifies the asymmetric
-    // reachable-area as unfair. Pinning the failure mode so the next
-    // commit (enemy placement refinement — see directive) shows up as a
-    // GREEN flip rather than a silent improvement. Expected behavior
-    // TODAY: most seeds fail.
-    const seeds = Array.from({ length: 8 }, (_, i) => `balance-sample-${i}`);
-    let failed = 0;
+  it('startGame picks a balanced enemy base placement (M_MAPGEN.12)', () => {
+    // After the placement refinement, startGame's chosen player + enemy
+    // centers MUST pass isBalanced (within 10% tolerance) for the vast
+    // majority of seeds.
+    const seeds = Array.from({ length: 10 }, (_, i) => `balanced-startgame-${i}`);
+    let balanced = 0;
     for (const seed of seeds) {
-      const board = generateBoard(seed, 18, true);
-      const c = pickCenters(board);
-      if (!isBalanced(board, c.player, c.enemy)) failed += 1;
+      const game = startGame({
+        seedPhrase: seed,
+        mapSize: 18,
+        difficulty: 'normal',
+        eventSeed: `${seed}-events`,
+      });
+      const [pq, pr] = game.townHallKey.split(',').map(Number);
+      const [eq, er] = game.enemyBaseKey.split(',').map(Number);
+      if (
+        pq !== undefined &&
+        pr !== undefined &&
+        eq !== undefined &&
+        er !== undefined &&
+        isBalanced(game.board, { q: pq, r: pr }, { q: eq, r: er })
+      ) {
+        balanced += 1;
+      }
     }
-    expect(failed).toBeGreaterThanOrEqual(4); // documents today's asymmetry
+    expect(balanced).toBeGreaterThanOrEqual(8);
   });
 
   it('balanceReport returns symmetric counts within ratio 0..1', () => {

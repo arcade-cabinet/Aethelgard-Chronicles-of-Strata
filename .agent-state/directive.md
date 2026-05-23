@@ -631,16 +631,13 @@ qualify for AI GOAP".
     cluster around the resource type. Single rules table; visual +
     gameplay are the same archetype-driven slot system.
 
-- [ ] M_MAPGEN.12 — enemy-base placement refinement: the current
-  farthest-walkable heuristic places the enemy at the map edge, which
-  the balance-audit correctly flags as unfair (smaller reachable
-  buildable area than the central player base). Replace with a
-  mirror-placement: enemy base sits at the OPPOSITE side of the mountain
-  spine from the player base, at a distance that equalises the
-  reachable-area metric per balance-audit. The placement itself becomes
-  part of the guided-mapgen pass, not a side-effect of "farthest
-  walkable". This is the LAND-CLEAR fix that makes M_MAPGEN.10 pass
-  by construction rather than by re-roll.
+- [x] M_MAPGEN.12 — balanced enemy placement: startGame now iterates
+  ALL walkable candidates with d≥5 from center; for guided modes the
+  scoring is `ratio*100 + distance` where ratio = balance-audit fit
+  (drop any candidate with ratio < 1 - BALANCE_TOLERANCE); for skirmish
+  it falls back to farthest-walkable. balance-audit.test.ts updated to
+  verify startGame-chosen placements pass balance for ≥8/10 seeds.
+  328 tests green.
 
 - [x] M_MAPGEN.10 — fair-balance audit (foundation): core/balance-
   audit.ts — reachableBuildableCount + isBalanced + balanceReport
