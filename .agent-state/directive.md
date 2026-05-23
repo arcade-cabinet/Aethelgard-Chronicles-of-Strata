@@ -722,13 +722,13 @@ overlap exists.
   scrub before artifact upload; skip upload on fork PRs.
 - [ ] M_SEC.17 — add CodeQL workflow + dependency-review-
   action on pull_request. Currently no static analysis on PRs.
-- [ ] M_SEC.18 — `android/app/build.gradle:18-22`
+- [x] M_SEC.18 — `android/app/build.gradle:18-22`
   release block — set `minifyEnabled true`, `shrinkResources true`,
   `debuggable false` explicitly.
-- [ ] M_SEC.19 — `android/app/build.gradle` add
+- [x] M_SEC.19 — `android/app/build.gradle` add
   `signingConfigs.release` reading keystore from Gradle property;
   CI step decodes `secrets.RELEASE_KEYSTORE_BASE64`.
-- [ ] M_SEC.20 — `android/app/build.gradle:40-46`
+- [x] M_SEC.20 — `android/app/build.gradle:40-46`
   delete the conditional `apply plugin: 'com.google.gms.google-
   services'` block — game doesn't use Firebase; latent activation
   is a privacy footgun.
@@ -747,7 +747,7 @@ overlap exists.
 
 #### LOW
 
-- [ ] M_SEC.25 — `AndroidManifest.xml:14-22` either
+- [x] M_SEC.25 — `AndroidManifest.xml:14-22` either
   wire up the `custom_url_scheme` intent-filter explicitly or
   remove the dangling `custom_url_scheme` from strings.xml:5.
 - [x] M_SEC.26 — `App.tsx` Continue effect — guard
