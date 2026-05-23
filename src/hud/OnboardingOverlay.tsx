@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
-import type { Persistence } from '@/persistence/persistence';
+import { type Persistence, safePersistenceRead } from '@/persistence/persistence';
 import { HUD_THEME } from './hud-theme';
 
 /** Preferences key that marks the tutorial as seen. */
@@ -43,17 +43,19 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
 
   useEffect(() => {
     let cancelled = false;
-    persistence
-      .getSetting(ONBOARDING_KEY)
-      .then((value) => {
-        if (!cancelled && value !== 'true') setOpen(true);
-      })
-      .catch((err) => {
-        // Persistence read failed — log and default to showing the overlay
-        // (the safer fallback: the player sees onboarding once vs. never).
-        console.warn('[OnboardingOverlay] getSetting failed:', err);
-        if (!cancelled) setOpen(true);
-      });
+    // M_MICRO.B.1 — safer fallback: show the overlay if the read fails
+    // (the player sees onboarding once vs. never). safePersistenceRead
+    // owns the try/catch; this call site just describes the parse +
+    // fallback intent.
+    void safePersistenceRead(
+      persistence,
+      ONBOARDING_KEY,
+      (raw) => raw !== 'true',
+      true,
+      'OnboardingOverlay',
+    ).then((shouldOpen) => {
+      if (!cancelled && shouldOpen) setOpen(true);
+    });
     return () => {
       cancelled = true;
     };

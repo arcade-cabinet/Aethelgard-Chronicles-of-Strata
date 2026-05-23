@@ -72,6 +72,30 @@ export interface Persistence {
   advanceAndPersistEventSeed(currentRng: Rng): Promise<string>;
 }
 
+/**
+ * Safe persistence read with a typed parser + fallback (M_MICRO.B.1).
+ * Consolidates the catch-and-default pattern that previously lived
+ * inline in OnboardingOverlay + SettingsModal. The persistence
+ * read may reject (rooted device with corrupt SQLite, race with a
+ * concurrent setSetting); callers want a single contract:
+ * "give me a parsed value or my fallback."
+ */
+export async function safePersistenceRead<T>(
+  persistence: Persistence,
+  key: string,
+  parse: (raw: string | null) => T,
+  fallback: T,
+  source: string,
+): Promise<T> {
+  try {
+    const raw = await persistence.getSetting(key);
+    return parse(raw);
+  } catch (err) {
+    console.warn(`[${source}] safePersistenceRead(${key}) failed:`, err);
+    return fallback;
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Preferences keys (settings + event seed — NOT saves)
 // ---------------------------------------------------------------------------

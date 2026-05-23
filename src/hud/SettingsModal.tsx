@@ -1,7 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
 import { setMuted } from '@/audio/buses';
-import type { Persistence } from '@/persistence/persistence';
+import { type Persistence, safePersistenceRead } from '@/persistence/persistence';
 import { HUD_THEME } from './hud-theme';
 import { MUTE_PREF_KEY } from './SoundToggle';
 
@@ -25,8 +25,16 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
 
   useEffect(() => {
     let cancelled = false;
-    void persistence.getSetting(MUTE_PREF_KEY).then((value) => {
-      if (!cancelled) setMutedState(value === 'true');
+    // M_MICRO.B.1 — fallback to "not muted" if the read fails (a corrupt
+    // SQLite row shouldn't lock the user into a silent game).
+    void safePersistenceRead(
+      persistence,
+      MUTE_PREF_KEY,
+      (raw) => raw === 'true',
+      false,
+      'SettingsModal',
+    ).then((mutedValue) => {
+      if (!cancelled) setMutedState(mutedValue);
     });
     return () => {
       cancelled = true;

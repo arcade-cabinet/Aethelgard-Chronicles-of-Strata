@@ -935,7 +935,7 @@ bug).
 
 #### Bonus
 
-- [ ] M_MICRO.B.1 — `safePersistenceRead<T>(p, key,
+- [x] M_MICRO.B.1 — `safePersistenceRead<T>(p, key,
   fallback)` helper in `persistence.ts` consolidating
   `OnboardingOverlay` + `SettingsModal` catch shapes.
 - [ ] M_MICRO.B.2 — when SettingsModal grows, reuse
