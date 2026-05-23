@@ -527,6 +527,14 @@ export function Decoration({
   const gltfs = useDecorationGltfs();
 
   // Compute the placement plan once per board + occupiedKeys change.
+  // M_AUDIT2.ARCH.56 — buildSitesKey condenses the per-tick snapshot
+  // into a stable string dep. The caller already diff-checks `sites`
+  // for identity (GameCanvas DecorationLive), so this string is short
+  // (active build sites only) and only changes on actual placement
+  // events. Lifting to a counter would require threading
+  // buildSitesGeneration into Decoration's prop API; keep the string
+  // dep since the cost is bounded by the typical ~20 build sites.
+  //
   // buildSitesKey condenses the per-tick snapshot into a string dep so the
   // memo re-fires when buildings complete (not on every frame).
   const buildSitesKey = (buildSites ?? []).map((s) => `${s.key}:${s.isComplete ? 1 : 0}`).join('|');

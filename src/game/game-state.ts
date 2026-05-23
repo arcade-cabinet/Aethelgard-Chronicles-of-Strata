@@ -180,6 +180,14 @@ export interface GameState {
   resourceNodes: ResourceNodePlan[];
   /** Building-site entities keyed by hex tile key (for the build system). */
   buildSites: Map<string, Entity>;
+  /**
+   * Generation counter for `buildSites` (M_AUDIT2.ARCH.22 + .54). The
+   * Map ref doesn't change identity on insert/delete, so useMemo deps
+   * like `[game.buildSites]` never re-fire. Every commands.ts /
+   * building-death.ts mutation bumps this counter; renderers key
+   * their memos on it. Same pattern as ZoneState.generation.
+   */
+  buildSitesGeneration: number;
   /** The player home base ECS entity (the Town Hall — loss condition). */
   townHallEntity: Entity;
   /** The enemy base ECS entity (the graveyard spawner — win condition). */
@@ -565,6 +573,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     enemyBaseKey,
     resourceNodes,
     buildSites,
+    buildSitesGeneration: 0,
     townHallEntity,
     enemyBaseEntity,
     outcome: 'playing',
@@ -748,7 +757,12 @@ export function runEconomyTick(game: GameState, delta: number): void {
   // building destruction — 0-HP buildings (excluding FactionBase, which is
   // the win/loss anchor) are removed; tile walkability + nav graph rebuild.
   const newNavGraph = buildingDeathSystem(game.world, game.buildSites, game.board);
-  if (newNavGraph) game.navGraph = newNavGraph;
+  if (newNavGraph) {
+    game.navGraph = newNavGraph;
+    // M_AUDIT2.ARCH.22 — newNavGraph != null implies anyRemoved == true;
+    // bump the generation counter so renderer memos invalidate.
+    game.buildSitesGeneration += 1;
+  }
 
   // animation state + end-condition check
   animationSystem(game.world);

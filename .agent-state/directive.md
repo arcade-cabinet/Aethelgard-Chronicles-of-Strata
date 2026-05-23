@@ -1446,7 +1446,7 @@ local-review-trio after each ~5-item batch.
 - [x] M_AUDIT2.ARCH.19 — DiscoveriesPanel.tsx:128 `void canResearch` — delete or wire per-row gating
 - [x] M_AUDIT2.ARCH.20 — board.ts:214 `void rng` — drop unused param
 - [x] M_AUDIT2.ARCH.21 — discovery-cost.ts:39 `void seen` — same
-- [ ] M_AUDIT2.ARCH.22 — FactionBase.tsx placed-useMemo dep is Map ref (never invalidates) — key on buildSitesGeneration
+- [x] M_AUDIT2.ARCH.22 — FactionBase.tsx placed-useMemo dep is Map ref (never invalidates) — key on buildSitesGeneration
 - [x] M_AUDIT2.ARCH.23 — Mountains.tsx hardcoded fallback level=5 even with peakLevel slot — drop fallback
 
 **Code-shape duplication (24-29)**
@@ -1488,9 +1488,9 @@ local-review-trio after each ~5-item batch.
 - [x] M_AUDIT2.ARCH.51 — encroachment per-tick `new Set()` ×2 — hoist to module + .clear()
 - [x] M_AUDIT2.ARCH.52 — job-routing inner-loop per-peon `new Set` — hoist outside loop
 - [ ] M_AUDIT2.ARCH.53 — ai-director/ai-player multiple world.query — pass factionIndex from runEconomyTick
-- [ ] M_AUDIT2.ARCH.54 — FactionBase placed useMemo broken dep (Map ref) — generation key (dup of .22)
+- [x] M_AUDIT2.ARCH.54 — FactionBase placed useMemo broken dep (Map ref) — generation key (dup of .22)
 - [ ] M_AUDIT2.ARCH.55 — combat.ts builds byId Map every tick — keep between ticks
-- [ ] M_AUDIT2.ARCH.56 — Decoration buildSitesKey joined-string per render — generation counter
+- [x] M_AUDIT2.ARCH.56 — Decoration buildSitesKey joined-string per render — generation counter
 
 **Architectural debt (57-62)**
 - [ ] M_AUDIT2.ARCH.57 — Combat resolve scattered (combat-math/damage/combat/offensive-behavior) — rules/combat-resolve.ts as single source

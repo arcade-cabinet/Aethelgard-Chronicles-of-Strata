@@ -168,6 +168,9 @@ export function placeBuilding(
   ];
   const buildingEntity = game.world.spawn(...traits);
   game.buildSites.set(tileKey, buildingEntity);
+  // M_AUDIT2.ARCH.22 — bump the generation counter so memo'd renderer
+  // views (FactionBase placed, Decoration, etc) re-invalidate.
+  game.buildSitesGeneration += 1;
 
   // Assign the nearest idle peon OF THE ISSUING FACTION to build.
   let nearestPeon: Entity | null = null;
@@ -394,6 +397,7 @@ export function foundBase(game: GameState, settler: Entity): Entity | null {
   ];
   const baseEntity = game.world.spawn(...traits);
   game.buildSites.set(tileKey, baseEntity);
+  game.buildSitesGeneration += 1;
   if (tile) tile.walkable = false;
   return baseEntity;
 }

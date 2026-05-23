@@ -153,7 +153,9 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
       });
     }
     return result;
-  }, [game.buildSites, faction]);
+    // M_AUDIT2.ARCH.22 — depend on buildSitesGeneration (bumped per-
+    // mutation), NOT the Map ref (which never changes identity).
+  }, [game.buildSites, game.buildSitesGeneration, faction]);
 
   if (!basePos) return null;
   const skin = SKINS[faction];
