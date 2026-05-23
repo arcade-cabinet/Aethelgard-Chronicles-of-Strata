@@ -1,58 +1,13 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import { CanvasTexture, Color, type DirectionalLight, FogExp2, RepeatWrapping } from 'three';
+import { Color, type DirectionalLight, FogExp2 } from 'three';
 import { cyclePhase, lightIntensityAt, skyRgbAt } from '@/game/clock';
 import type { GameState } from '@/game/game-state';
+// M_EXPANSION.D.173 — dither-texture extracted to src/render/textures/.
+import { makeDitherTexture } from './textures/dither';
 
 /** Exponential-fog density — a soft distance haze, matching poc1. */
 const FOG_DENSITY = 0.01;
-
-/**
- * M_AUDIT2.UX.29 — generate a tiny 4×4 blue-noise dither texture
- * once. A back-side sphere multiplies this against the sky base
- * color so the smooth ramp across the dome doesn't band into 8-bit
- * stripes during sunset/sunrise. The pattern is so small the GPU
- * mipmaps it to true noise at horizon distance.
- */
-function makeDitherTexture(): CanvasTexture {
-  const size = 4;
-  const cv = document.createElement('canvas');
-  cv.width = size;
-  cv.height = size;
-  const ctx = cv.getContext('2d');
-  if (ctx) {
-    // Bayer 4×4 thresholds, normalised so the darkest = -2/255 LSB
-    // and the brightest = +2/255 LSB — only ±1 LSB modulation around
-    // gray (128), enough to break a band, invisible as 'noise'.
-    const bayer = [
-      [0, 8, 2, 10],
-      [12, 4, 14, 6],
-      [3, 11, 1, 9],
-      [15, 7, 13, 5],
-    ];
-    const img = ctx.createImageData(size, size);
-    for (let y = 0; y < size; y++) {
-      const row = bayer[y];
-      if (!row) continue;
-      for (let x = 0; x < size; x++) {
-        const cell = row[x];
-        if (cell === undefined) continue;
-        const v = 126 + (cell / 16) * 4; // 126..130
-        const i = (y * size + x) * 4;
-        img.data[i] = v;
-        img.data[i + 1] = v;
-        img.data[i + 2] = v;
-        img.data[i + 3] = 255;
-      }
-    }
-    ctx.putImageData(img, 0, 0);
-  }
-  const tex = new CanvasTexture(cv);
-  tex.wrapS = RepeatWrapping;
-  tex.wrapT = RepeatWrapping;
-  tex.repeat.set(80, 80);
-  return tex;
-}
 
 /**
  * Drives the day/night cycle each frame: the scene background and the distance

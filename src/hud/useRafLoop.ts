@@ -27,3 +27,31 @@ export function useRafLoop(tick: () => void, deps: readonly unknown[]): void {
     // biome-ignore lint/correctness/useExhaustiveDependencies: deps forwarded from caller
   }, deps);
 }
+
+/**
+ * M_EXPANSION.D.177/.178 — throttled RAF loop variant. Runs the
+ * tick at most every `minIntervalMs` (e.g. 250 = 4Hz). For HUD
+ * components watching slow-changing state (idle peons, weather)
+ * a 4Hz poll is plenty + cuts per-frame React state churn 15×.
+ */
+export function useRafLoopThrottled(
+  tick: () => void,
+  minIntervalMs: number,
+  deps: readonly unknown[],
+): void {
+  useEffect(() => {
+    let raf = 0;
+    let last = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const loop = () => {
+      const t = typeof performance !== 'undefined' ? performance.now() : Date.now();
+      if (t - last >= minIntervalMs) {
+        last = t;
+        tick();
+      }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: deps forwarded from caller
+  }, deps);
+}

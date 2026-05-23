@@ -3,7 +3,7 @@ import type { GameState } from '@/game/game-state';
 import { WEATHER_PROFILES, type WeatherState } from '@/game/weather';
 import { announce } from './aria-live-bus';
 import { HudPill } from './HudPill';
-import { useRafLoop } from './useRafLoop';
+import { useRafLoopThrottled } from './useRafLoop';
 
 /**
  * M_AUDIT2.UX.15 — weather indicator pill.
@@ -19,16 +19,21 @@ import { useRafLoop } from './useRafLoop';
 export function WeatherIndicator({ game }: { game: GameState }) {
   const [state, setState] = useState<WeatherState>(game.weather.state);
 
-  useRafLoop(() => {
-    const next = game.weather.state;
-    setState((prev) => {
-      if (prev !== next) {
-        // M_AUDIT2.UX.15 — announce on the edge.
-        announce(`Weather changed: ${WEATHER_PROFILES[next].label}`);
-      }
-      return prev === next ? prev : next;
-    });
-  }, [game]);
+  // M_EXPANSION.D.178 — 4Hz throttle; weather flips every ~minute.
+  useRafLoopThrottled(
+    () => {
+      const next = game.weather.state;
+      setState((prev) => {
+        if (prev !== next) {
+          // M_AUDIT2.UX.15 — announce on the edge.
+          announce(`Weather changed: ${WEATHER_PROFILES[next].label}`);
+        }
+        return prev === next ? prev : next;
+      });
+    },
+    250,
+    [game],
+  );
 
   const profile = WEATHER_PROFILES[state];
   const movePct = Math.round(profile.speedMultiplier * 100);

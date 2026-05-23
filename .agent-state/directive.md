@@ -1963,14 +1963,14 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 
 ### M_EXPANSION.TECH-DEBT — known shapes worth fixing (171-180)
 
-- [ ] [MED]  M_EXPANSION.D.171 — `src/game/game-state.ts` is ~770 lines (CR finding); split mapgen helpers (findBalancedBoard, matchLengthScale) into a sibling module
+- [x] [MED]  M_EXPANSION.D.171 — `src/game/game-state.ts` is ~770 lines (CR finding); split mapgen helpers (findBalancedBoard, matchLengthScale) into a sibling module
 - [x] [MED]  M_EXPANSION.D.172 — `SelectionPanel.tsx` has grown past 400 lines with the disabled-reason helpers; extract reason-helpers to a sibling
-- [ ] [MED]  M_EXPANSION.D.173 — `DayNightCycle.tsx` makeDitherTexture lives at module scope and would benefit from a `src/render/textures/` namespace as the family grows
+- [x] [MED]  M_EXPANSION.D.173 — `DayNightCycle.tsx` makeDitherTexture lives at module scope and would benefit from a `src/render/textures/` namespace as the family grows
 - [x] [MED]  M_EXPANSION.D.174 — `useRafLoop` accepts a deps array but the underlying useEffect only re-runs on game change; type the deps as `[GameState]` to match
 - [x] [MED]  M_EXPANSION.D.175 — `aria-live-bus.ts` — politeness=assertive coalescing window of 250ms is hard-coded; expose as a config var matching the rest of the engine
 - [ ] [LOW]  M_EXPANSION.D.176 — `CreditsModal.tsx` data table belongs in a `.json` so a localisation pass can ship without code review
-- [ ] [LOW]  M_EXPANSION.D.177 — `IdlePeonsIndicator` polls every frame for an event that only fires every few seconds; throttle to 4Hz
-- [ ] [LOW]  M_EXPANSION.D.178 — `WeatherIndicator` likewise; both could share a 4Hz tick driven by the engine clock
+- [x] [LOW]  M_EXPANSION.D.177 — `IdlePeonsIndicator` polls every frame for an event that only fires every few seconds; throttle to 4Hz
+- [x] [LOW]  M_EXPANSION.D.178 — `WeatherIndicator` likewise; both could share a 4Hz tick driven by the engine clock
 - [ ] [LOW]  M_EXPANSION.D.179 — `Decoration.tsx` is past 600 lines (lint warning threshold); split base-accretion vs scatter into siblings
 - [x] [LOW]  M_EXPANSION.D.180 — `entities/character-factory.ts` is the canonical spawn site; document the 3-use enumeration (fixed/generic-fixed/random) inline so a new contributor reads it BEFORE editing
 

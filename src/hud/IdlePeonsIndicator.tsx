@@ -4,7 +4,7 @@ import type { GameState } from '@/game/game-state';
 import { HUD_THEME } from './hud-theme';
 // Reviewer-fix: keyframes loaded once via CSS import; previously inline.
 import './idle-peons-indicator.css';
-import { useRafLoop } from './useRafLoop';
+import { useRafLoopThrottled } from './useRafLoop';
 
 /**
  * M_AUDIT2.UX.13 — idle-peon HUD log strip.
@@ -26,15 +26,20 @@ import { useRafLoop } from './useRafLoop';
 export function IdlePeonsIndicator({ game }: { game: GameState }) {
   const [count, setCount] = useState(0);
 
-  useRafLoop(() => {
-    let n = 0;
-    for (const e of game.world.query(AssignedJob, Unit, FactionTrait)) {
-      if (e.get(FactionTrait)?.faction !== 'player') continue;
-      if (e.get(Unit)?.unitType !== 'Peon') continue;
-      if (e.get(AssignedJob)?.state === 'IDLE') n += 1;
-    }
-    setCount((prev) => (prev === n ? prev : n));
-  }, [game]);
+  // M_EXPANSION.D.177 — 4Hz throttle; idle count changes seconds-apart.
+  useRafLoopThrottled(
+    () => {
+      let n = 0;
+      for (const e of game.world.query(AssignedJob, Unit, FactionTrait)) {
+        if (e.get(FactionTrait)?.faction !== 'player') continue;
+        if (e.get(Unit)?.unitType !== 'Peon') continue;
+        if (e.get(AssignedJob)?.state === 'IDLE') n += 1;
+      }
+      setCount((prev) => (prev === n ? prev : n));
+    },
+    250,
+    [game],
+  );
 
   if (count <= 0) return null;
   return (

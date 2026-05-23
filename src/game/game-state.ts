@@ -1,6 +1,6 @@
 import type { Entity, World } from 'koota';
 import { AiPlayer } from '@/ai/ai-player';
-import { BALANCE_TOLERANCE, isBalanced, reachableBuildableCount } from '@/core/balance-audit';
+import { BALANCE_TOLERANCE, reachableBuildableCount } from '@/core/balance-audit';
 import { type BoardData, generateBoard } from '@/core/board';
 import { getHexKey, hexDistance } from '@/core/hex';
 import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
@@ -36,71 +36,17 @@ import { advanceProjectiles, type Projectile } from './projectiles';
 /** Monotonic counter for projectile React keys — shared across all games. */
 const projectileIdRef = { current: 0 };
 
-/**
- * Match-length scaling for spawn cadence (M_MODES.5). Slower matches let the
- * player breathe; short matches keep pressure on. Identity for 'medium' so
- * existing tuning baselines stay intact.
- */
-function matchLengthScale(length: 'short' | 'medium' | 'long' | 'endless'): number {
-  switch (length) {
-    case 'short':
-      return 0.7;
-    case 'medium':
-      return 1;
-    case 'long':
-      return 1.4;
-    case 'endless':
-      return 1.6;
-  }
-}
-
-/**
- * M_MAPGEN.10 — try the seed + a few variants and return the first that
- * passes the balance audit. We assume the most-central walkable tile is
- * the player center + the farthest-walkable tile is the enemy center
- * (the same heuristic startGame uses). Caps at MAX_ATTEMPTS so a
- * pathological seed doesn't hang. Falls back to the last attempted board.
- */
-const MAX_BALANCE_ATTEMPTS = 6;
+// M_EXPANSION.D.171 — mapgen helpers (matchLengthScale,
+// findBalancedBoard) moved to a sibling (./mapgen-helpers.ts) so
+// this file stays under the 600-line cognitive-load threshold. The
+// exports are re-imported below alongside the rest of game-state's
+// imports.
 
 /**
  * M_EXPANSION.F.71 — seconds between Wonder completion and the
  * wonder-win flip. 300s = 5 minutes per the directive.
  */
 const WONDER_COUNTDOWN_SECONDS = 300;
-
-function findBalancedBoard(
-  seedPhrase: string,
-  mapSize: number,
-  mapType: 'balanced' | 'continent' | 'archipelago' | 'dry-land',
-): BoardData {
-  let last: BoardData | null = null;
-  for (let attempt = 0; attempt < MAX_BALANCE_ATTEMPTS; attempt++) {
-    const seed = attempt === 0 ? seedPhrase : `${seedPhrase}-rb${attempt}`;
-    const board = generateBoard(seed, mapSize, true, mapType);
-    last = board;
-    // pick centers by the same heuristic startGame uses below
-    let centerTile: { q: number; r: number } | null = null;
-    let centerDist = Infinity;
-    let edgeTile: { q: number; r: number } | null = null;
-    let edgeDist = 0;
-    for (const tile of board.tiles.values()) {
-      if (!tile.walkable) continue;
-      const d = (Math.abs(tile.q) + Math.abs(tile.r) + Math.abs(tile.q + tile.r)) / 2;
-      if (d < centerDist) {
-        centerDist = d;
-        centerTile = { q: tile.q, r: tile.r };
-      }
-      if (d > edgeDist) {
-        edgeDist = d;
-        edgeTile = { q: tile.q, r: tile.r };
-      }
-    }
-    if (!centerTile || !edgeTile) continue;
-    if (isBalanced(board, centerTile, edgeTile)) return board;
-  }
-  return last ?? generateBoard(seedPhrase, mapSize, true, mapType);
-}
 
 // M_AUDIT2.ARCH.8 — AI_VISION_RADIUS moved into config/combat.json
 // (COMBAT.ai.visionRadiusByDifficulty); accessor `aiVisionRadiusFor`.
@@ -119,6 +65,7 @@ import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spaw
 import type { AutoSave } from './auto-save';
 import { tickAutoSave } from './auto-save';
 import { advanceClock, createClock, type GameClock } from './clock';
+import { findBalancedBoard, matchLengthScale } from './mapgen-helpers';
 import type { Difficulty } from './difficulty';
 import { createEconomy, type GameEconomy } from './economy';
 import { createRally, type RallyState } from './rally';
