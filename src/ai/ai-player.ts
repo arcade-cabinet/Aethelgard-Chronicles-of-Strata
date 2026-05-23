@@ -164,13 +164,26 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     const granaries = ownedBuildingCount(game, faction, 'Granary');
     const atCap = peons >= peonCap(houses, granaries);
 
-    // priority — economy first (cap-pressure for more peons), then military
+    // Priority (M_AI_DEPTH.4 — building diversity): economy first, then
+    // military, then territorial defence. Earlier-priority types are tried
+    // first; placement succeeds when any is buildable on the chosen tile.
     const priority: Array<Exclude<BuildingType, 'TownHall'>> = [];
-    if (atCap) priority.push('House');
-    priority.push('Farm');
-    if (ownedBuildingCount(game, faction, 'Barracks') === 0 && discoveredEnemyTile(game, faction))
+    if (atCap) priority.push('House'); // immediate cap-pressure relief
+    priority.push('Farm'); // supply ceiling
+    const enemySighted = discoveredEnemyTile(game, faction) !== null;
+    if (ownedBuildingCount(game, faction, 'Barracks') === 0 && enemySighted)
       priority.push('Barracks');
-    if (atCap) priority.push('Granary');
+    if (atCap) priority.push('Granary'); // additional peon ceiling
+    // Watchtower if enemy seen + we don't already have one (defends the
+    // observed-battlefield gap).
+    if (ownedBuildingCount(game, faction, 'Watchtower') === 0 && enemySighted)
+      priority.push('Watchtower');
+    // Wall once we have a military presence (closes a gap in the perimeter).
+    if (
+      ownedBuildingCount(game, faction, 'Wall') < 2 &&
+      ownedBuildingCount(game, faction, 'Barracks') > 0
+    )
+      priority.push('Wall');
 
     const tile = freeBuildTile(game, faction);
     if (!tile) return null;
@@ -207,11 +220,17 @@ class BuildGoal extends Goal<AiPlayer> {
 // Military evaluator + goal — verb 3 of 3 (move-military)
 // ---------------------------------------------------------------------------
 
-/** Score the desire to send a military unit at a known enemy. */
+/**
+ * Score the desire to send a military unit. Defending a pulsing tile we
+ * own is prioritised over attacking (M_AI_DEPTH.3) — losing a tile to
+ * encroachment costs the AI its zone of control.
+ */
 class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
   calculateDesirability(owner: AiPlayer): number {
     if (!owner.game) return 0;
     if (!firstMilitary(owner.game, owner.faction)) return 0;
+    // higher score when a tile we own is pulsing — defence is urgent
+    if (firstPulsingTile(owner.game, owner.faction)) return 0.85;
     return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 : 0;
   }
 
@@ -221,19 +240,30 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
   }
 }
 
-/** Send the first ready military unit at the discovered enemy. */
+/** Find the first pulsing tile in our own zone — what needs defending. */
+function firstPulsingTile(game: GameState, faction: Faction): string | null {
+  const zone = game.zones[faction];
+  for (const key of zone.pulsing.keys()) return key;
+  return null;
+}
+
+/**
+ * Send the first ready military unit. Prefers a pulsing-tile defend target
+ * over attack; falls back to attack if nothing pulses.
+ */
 class MoveMilitaryGoal extends Goal<AiPlayer> {
   activate(): void {
     const owner = this.owner as AiPlayer;
     const unit = firstMilitary(owner.game, owner.faction);
-    const target = discoveredEnemyTile(owner.game, owner.faction);
+    const defendKey = firstPulsingTile(owner.game, owner.faction);
+    const target = defendKey ?? discoveredEnemyTile(owner.game, owner.faction);
     if (!unit || !target) {
       this.status = Goal.STATUS.FAILED;
       return;
     }
     const path = moveUnit(owner.game, unit, target, owner.faction);
     this.status = path ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
-    if (path) owner.lastGoal = 'move-military';
+    if (path) owner.lastGoal = defendKey ? 'defend' : 'move-military';
   }
 }
 

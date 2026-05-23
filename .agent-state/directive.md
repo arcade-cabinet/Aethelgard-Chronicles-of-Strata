@@ -261,18 +261,16 @@ audio packs via Howler. No procedural synthesis. Packs available:
 
 ### M_AI_DEPTH — make the AI player actually play to win
 
-- [ ] M_AI_DEPTH.1 — difficulty-scaled vision cones. AiPlayer reads
-  `game.difficulty` and passes a per-difficulty `unitVisionRadius` to
-  `updateObserved` for its own faction (Easy = narrow short; Hard = wide).
-- [ ] M_AI_DEPTH.2 — AI training. AiPlayer's TrainEvaluator scores
-  "train footman" (gated by `canTrain`); calls the `trainUnit` command.
-- [ ] M_AI_DEPTH.3 — AI defence reaction. When a controlled tile of the
-  AI's faction is pulsing, the AI moves its nearest military unit there.
-  (Currently MilitaryEvaluator only attacks; needs a defend goal.)
-- [ ] M_AI_DEPTH.4 — AI building diversity. AI builds House+Granary
-  when peon-cap pressure rises; Watchtower at the frontier when an enemy
-  is sighted; Wall to close a gap. The BuildEvaluator gets a proper
-  priority table (already started — extend with the new types).
+- [x] M_AI_DEPTH.1 — vision-cone difficulty (c6735c6): AI_VISION_RADIUS
+  table per Difficulty (easy:3, normal:5, hard:8); enemy updateObserved
+  passes the scaled radius. Player unchanged.
+- [x] M_AI_DEPTH.2 — AI training (405ae56): TrainEvaluator + TrainGoal —
+  Peon if under cap, Footman if Barracks; calls trainUnit. AI brain now
+  arbitrates all 3 commander verbs.
+- [x] M_AI_DEPTH.3+4 — defence + building diversity: MilitaryEvaluator
+  prioritises pulsing tiles (defend > attack, 0.85 vs 0.6); BuildEvaluator
+  diversifies (House/Farm/Barracks/Granary/Watchtower/Wall) on per-state
+  priorities. 281 tests.
 - [ ] M_AI_DEPTH.5 — AI-vs-AI matches reach a decisive outcome under
   300 game-seconds at Normal difficulty. Tune dps / cadence / build
   priorities until matches converge to win or loss reliably.
