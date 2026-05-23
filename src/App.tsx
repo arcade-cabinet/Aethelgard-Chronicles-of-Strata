@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
@@ -6,6 +6,7 @@ import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
 import { CriticalWarning } from '@/hud/CriticalWarning';
+import { LoadingScreen } from '@/hud/LoadingScreen';
 import { WeatherIndicator } from '@/hud/WeatherIndicator';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { EndTurnButton } from '@/hud/EndTurnButton';
@@ -31,6 +32,30 @@ import { useViewport } from '@/render/useViewport';
 import type { BuildContext } from '@/world/TileInteraction';
 
 /** Shown if the 3D scene fails to load (e.g. a missing asset). */
+/**
+ * M_AUDIT2.UX.32 — gates the child session mount on a 2-frame
+ * delay so the LoadingScreen paints first. Without this, React
+ * commits the GameSession (and startGame()'s synchronous terrain
+ * gen) in the same frame, the title screen freezes for 1–2s, and
+ * the user sees no progress signal.
+ */
+function DelayedSession({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    // double-rAF: one to commit the LoadingScreen paint, one for
+    // the browser to actually flush it before we kick startGame().
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setReady(true));
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, []);
+  return ready ? <>{children}</> : <LoadingScreen />;
+}
+
 function SceneError() {
   return (
     <div
@@ -140,10 +165,22 @@ export function App() {
   }, []);
 
   if (resumedGame !== null) {
-    return <GameSession initialGame={resumedGame} />;
+    // M_AUDIT2.UX.32 — paint the LoadingScreen for two frames before
+    // the GameSession mounts; startGame()'s synchronous terrain gen
+    // would otherwise block the first paint and the user sees a
+    // 1–2s frozen title screen.
+    return (
+      <DelayedSession>
+        <GameSession initialGame={resumedGame} />
+      </DelayedSession>
+    );
   }
   if (config !== null) {
-    return <GameSession config={config} />;
+    return (
+      <DelayedSession>
+        <GameSession config={config} />
+      </DelayedSession>
+    );
   }
 
   const beginGame = (choices: NewGameChoices) => {

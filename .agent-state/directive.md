@@ -1613,8 +1613,8 @@ local-review-trio after each ~5-item batch.
 - [x] [MAJ] M_AUDIT2.UX.7 — touch-action: none on #app-shell + MIN_DRAG_PX=12 for touch pointerType
 
 **MAJOR — feedback / info (8-15)**
-- [ ] [MAJ] M_AUDIT2.UX.8 — proper HealthBillboard bar (red bg + green fraction fill, fade at full)
-- [ ] [MAJ] M_AUDIT2.UX.9 — disabledReason tooltip on HudButton (cost/prereq/cap) via Radix Tooltip
+- [x] [MAJ] M_AUDIT2.UX.8 — proper HealthBillboard bar (red bg + green fraction fill, fade at full)
+- [x] [MAJ] M_AUDIT2.UX.9 — disabledReason tooltip on HudButton (cost/prereq/cap) via Radix Tooltip
 - [x] [MAJ] M_AUDIT2.UX.10 — formatInt(n) thousands separator; apply ResourceBar + GameOverModal
 - [x] [MAJ] M_AUDIT2.UX.11 — formatTime(sec)→MM:SS in EndTurnButton + GameOverModal + PauseControl
 - [x] [MAJ] M_AUDIT2.UX.12 — AriaLiveRegion + emitGameEvent bus; CriticalWarning role="alert"
@@ -1645,7 +1645,7 @@ local-review-trio after each ~5-item batch.
 - [ ] [MAJ] M_AUDIT2.UX.29 — day/night sky banding: noise dither overlay or fragment-shader gradient
 - [x] [MAJ] M_AUDIT2.UX.30 — Roads z-fighting: lift to 0.15 or polygonOffset on material
 - [x] [MAJ] M_AUDIT2.UX.31 — KeyboardShortcuts arrow-keys: implement pan or drop misleading comment
-- [ ] [MAJ] M_AUDIT2.UX.32 — Loading state TitleScreen→GameSession ("Forging the realm…" + Radix Progress)
+- [x] [MAJ] M_AUDIT2.UX.32 — Loading state TitleScreen→GameSession ("Forging the realm…" + Radix Progress)
 
 **MINOR (33-42)**
 - [x] [MIN] M_AUDIT2.UX.33 — CriticalWarning keyframe to CSS file (no per-mount style alloc)

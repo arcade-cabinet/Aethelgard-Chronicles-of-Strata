@@ -1,3 +1,4 @@
+import * as Tooltip from '@radix-ui/react-tooltip';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
@@ -20,6 +21,55 @@ const BUILDABLE_TYPES = Object.keys(BUILDING_COSTS).sort() as ReadonlyArray<
 /** Whether the player's economy can cover a building cost — thin wrapper over rules.canAfford. */
 function canAffordCost(game: GameState, cost: ResourceCost): boolean {
   return canAfford(game.economy.player, cost);
+}
+
+/**
+ * M_AUDIT2.UX.9 — explain why training is disabled. Three real
+ * gates: supply cap reached, insufficient resources, neither
+ * (rare — falls back to a generic message). Returns undefined when
+ * we don't have a reason worth surfacing.
+ */
+function trainDisabledReason(
+  game: GameState,
+  unitType: string,
+  cost: ResourceCost,
+): string | undefined {
+  const econ = game.economy.player;
+  if (econ.usedSupply >= econ.maxSupply) {
+    return `Supply at cap (${econ.usedSupply}/${econ.maxSupply}). Build a House to raise it.`;
+  }
+  if (!canAfford(econ, cost)) {
+    return `Not enough resources to train ${unitType}: need ${costLabel(cost)}.`;
+  }
+  return undefined;
+}
+
+/**
+ * M_AUDIT2.UX.9 — explain why research is disabled. canResearch's
+ * three checks (already-purchased, prereq missing, can't afford) all
+ * produce different player-facing reasons.
+ */
+function researchDisabledReason(
+  game: GameState,
+  id: string,
+  name: string,
+  cost: ResourceCost,
+): string | undefined {
+  const d = discoveryById(id);
+  if (!d) return undefined;
+  // discovery ids come from the discoveries.json registry; narrowing to
+  // ResearchId would require widening every JSON id — Set#has is safe.
+  const purchased = game.research.purchased as Set<string>;
+  if (purchased.has(id)) return `${name} already researched.`;
+  const missing = (d.prereqs ?? []).filter((p) => !purchased.has(p));
+  if (missing.length > 0) {
+    const names = missing.map((p) => discoveryById(p)?.name ?? p).join(', ');
+    return `${name} requires: ${names}.`;
+  }
+  if (!canAfford(game.economy.player, cost)) {
+    return `Not enough resources for ${name}: need ${costLabel(cost)}.`;
+  }
+  return undefined;
 }
 
 /** Props for the selection panel. */
@@ -66,21 +116,32 @@ function viewOf(game: GameState): SelectionView | null {
   return { name: 'Unknown', task: '', buildingType: null };
 }
 
-/** A Radix-styled HUD button. */
+/**
+ * A Radix-styled HUD button. M_AUDIT2.UX.9 — when `disabled` and
+ * `disabledReason` is set, wraps the button in a Radix Tooltip so the
+ * player learns WHY (cost / prereq / supply cap) on hover or focus
+ * instead of the button being mysteriously inert.
+ */
 function HudButton({
   label,
   onClick,
   disabled,
+  disabledReason,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
+  /** Shown via Tooltip + title when disabled. ≥3 words: explain the gate. */
+  disabledReason?: string;
 }) {
-  return (
+  const btn = (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      title={disabled ? disabledReason : undefined}
+      aria-disabled={disabled}
+      aria-describedby={disabled && disabledReason ? `${label}-reason` : undefined}
       style={{
         display: 'block',
         width: '100%',
@@ -99,6 +160,32 @@ function HudButton({
     >
       {label}
     </button>
+  );
+  if (!disabled || !disabledReason) return btn;
+  return (
+    <Tooltip.Root>
+      <Tooltip.Trigger asChild>{btn}</Tooltip.Trigger>
+      <Tooltip.Portal>
+        <Tooltip.Content
+          side="left"
+          sideOffset={6}
+          style={{
+            background: HUD_THEME.color.panel,
+            border: `1px solid ${HUD_THEME.color.border}`,
+            borderRadius: 6,
+            color: HUD_THEME.color.text,
+            fontFamily: HUD_THEME.font.body,
+            fontSize: '0.72rem',
+            padding: '6px 10px',
+            zIndex: 250,
+            boxShadow: '0 4px 14px rgba(0,0,0,0.45)',
+          }}
+        >
+          {disabledReason}
+          <Tooltip.Arrow style={{ fill: HUD_THEME.color.border }} />
+        </Tooltip.Content>
+      </Tooltip.Portal>
+    </Tooltip.Root>
   );
 }
 
@@ -167,6 +254,11 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
   };
 
   return (
+    // M_AUDIT2.UX.9 — Tooltip.Provider scoped here so the HudButton
+    // disabledReason tooltips render. delayDuration=300 matches the
+    // game's tap-vs-hover heuristic so a quick mouse pass doesn't
+    // flash a tip.
+    <Tooltip.Provider delayDuration={300}>
     <AnimatePresence>
       {view && (
         <motion.div
@@ -211,16 +303,20 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               return (
                 <div style={{ marginTop: 10 }}>
                   {/* Train button — driven by display.trains, NOT building type */}
-                  {meta.trains && (
-                    <HudButton
-                      label={`Train ${meta.trains} — ${costLabel(UNIT_COSTS[meta.trains])}`}
-                      onClick={() => {
-                        if (meta.trains && trainUnit(game, meta.trains, 'player'))
-                          emitUiSound('ui-button-click');
-                      }}
-                      disabled={!canAffordCost(game, UNIT_COSTS[meta.trains])}
-                    />
-                  )}
+                  {meta.trains && (() => {
+                    const trainReason = trainDisabledReason(game, meta.trains, UNIT_COSTS[meta.trains]);
+                    return (
+                      <HudButton
+                        label={`Train ${meta.trains} — ${costLabel(UNIT_COSTS[meta.trains])}`}
+                        onClick={() => {
+                          if (meta.trains && trainUnit(game, meta.trains, 'player'))
+                            emitUiSound('ui-button-click');
+                        }}
+                        disabled={!canAffordCost(game, UNIT_COSTS[meta.trains])}
+                        {...(trainReason ? { disabledReason: trainReason } : {})}
+                      />
+                    );
+                  })()}
                   {/* Build menu — only on buildings that show it (TownHall today) */}
                   {meta.showsBuildMenu &&
                     BUILDABLE_TYPES.map((type) => {
@@ -232,6 +328,11 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                           label={`Build ${type} — ${costLabel(cost)}`}
                           onClick={() => beginBuild({ type, onPlaced: () => {} })}
                           disabled={!afford}
+                          {...(!afford
+                            ? {
+                                disabledReason: `Not enough resources for ${type}: need ${costLabel(cost)}`,
+                              }
+                            : {})}
                         />
                       );
                     })}
@@ -239,12 +340,14 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                   {meta.research?.map((id) => {
                     const d = discoveryById(id);
                     if (!d) return null;
+                    const reason = researchDisabledReason(game, id, d.name, d.cost);
                     return (
                       <HudButton
                         key={id}
                         label={`${d.name} — ${costLabel(d.cost)}`}
                         onClick={() => research(id)}
                         disabled={!canResearch(game.economy.player, game.research, id)}
+                        {...(reason ? { disabledReason: reason } : {})}
                       />
                     );
                   })}
@@ -261,5 +364,6 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
         </motion.div>
       )}
     </AnimatePresence>
+    </Tooltip.Provider>
   );
 }
