@@ -1033,7 +1033,7 @@ The real architecture:
   identity = a skin assignment. The current 'player' / 'enemy'
   hard-coding becomes the FIRST TWO entries of a `Skin` registry.
 
-- [ ] M_ARCH_UNIFY.1 — write the spec doc (`docs/specs/103-archetype-
+- [x] M_ARCH_UNIFY.1 — write the spec doc (`docs/specs/103-archetype-
   unification.md`) that names every current hierarchy + maps it to its
   unified equivalent (units → Thing tuples; buildings → Thing tuples;
   particles → Thing tuples with ParticleArchetype slot; modes →
@@ -1041,12 +1041,12 @@ The real architecture:
   factory → composeTraits over a Thing profile; structure-models →
   per-Skin mesh slot). The doc is the keystone — every subsequent
   refactor cites it.
-- [ ] M_ARCH_UNIFY.2 — Slot taxonomy: enumerate every capability slot
+- [x] M_ARCH_UNIFY.2 — Slot taxonomy: enumerate every capability slot
   (Movable, Animated, Costable, HasHP, AccretesProps, GenTimePlaced,
   RuntimePlaced, ParticleArchetype, plus the spec-102 ZoC: Offensive,
   Defensive, Attractor, Mover, Consumer). Each becomes a typed
   capability + a registry entry.
-- [ ] M_ARCH_UNIFY.3 — `src/registry/things.ts`: the unified Thing
+- [x] M_ARCH_UNIFY.3 — `src/registry/things.ts`: the unified Thing
   registry. JSON-driven config (data) + typed loader (code) + per-Thing
   trait-composition function (one helper per slot kind, dispatched by
   slot membership not by Thing identity).
@@ -1056,16 +1056,16 @@ The real architecture:
   appendGraveyardCluster` all become registered GenTime handlers
   iterated by ONE outer loop. Mode/mapType variants become weight
   overlays per handler, not hand-written paint functions.
-- [ ] M_ARCH_UNIFY.5 — runtime pass refactor: combat / harvest /
+- [x] M_ARCH_UNIFY.5 — runtime pass refactor: combat / harvest /
   encroachment / offensive-behavior / projectile / science / build
   systems collapse to ONE outer loop iterating slot membership; each
   system becomes a slot handler.
-- [ ] M_ARCH_UNIFY.6 — collapse character-factory + placeBuilding +
+- [x] M_ARCH_UNIFY.6 — collapse character-factory + placeBuilding +
   placeRoad + foundBase + future place-* commands into ONE
   `placeThing(game, profileId, hexKey, faction)` verb that
   composeTraits + spawns. The current verbs become thin one-line
   wrappers (or get deleted) for backward compat with the HUD.
-- [ ] M_ARCH_UNIFY.7 — `Skin` registry (user 2026-05-23): top-level
+- [x] M_ARCH_UNIFY.7 — `Skin` registry (user 2026-05-23): top-level
   visual-overlay table per faction. Skin {meshes: Record<rig, asset>,
   palette: Record<biome, color>, audio: Record<event, asset>,
   accretionPool: Record<archetype, propPool>}. Hard-coded
@@ -1083,7 +1083,7 @@ The real architecture:
   accretion config tables collapse into AccretesProps slot values on
   Thing profiles. The accretion-paint loop iterates `registry.filter(
   has AccretesProps)` instead of two hand-rolled append* functions.
-- [ ] M_ARCH_UNIFY.10 — supersede character-factory (user 2026-05-23
+- [x] M_ARCH_UNIFY.10 — supersede character-factory (user 2026-05-23
   "what is the purpose of a factory") as a CONSUMER: replace with
   `placeThing` dispatcher reading per-role composeTraits from the
   unified registry. Adding a Trebuchet or Settler becomes ONE config
