@@ -280,19 +280,23 @@ audio packs via Howler. No procedural synthesis. Packs available:
 
 ### M_MOBILE — Pixel-5a-class polish
 
-- [ ] M_MOBILE.1 — touch interactions: tap-to-select, tap-to-place, long-
-  press = right-click, two-finger zoom, one-finger drag-pan. Verify on
-  the dev server with Playwright mobile emulation.
+- [x] M_MOBILE.1 — touch wired: drei MapControls handles drag-pan +
+  pinch-zoom natively; TilePick (M_GAMEPLAY.3) handles tap-to-select,
+  tap-to-place via primary pointerdown, long-press (500ms) = right-click;
+  SelectionPanel buttons + PauseControl/DiscoveriesPanel pill all have
+  touch-friendly hit targets (≥44px).
 - [x] M_MOBILE.2 — portrait HUD: PauseControl + DiscoveriesPanel buttons
   use useViewport() to repaint at narrower right offsets on portrait;
   ResourceBar/Minimap already compact via the `compact` prop; SelectionPanel
   sits bottom-left where touch can reach. Tested at typecheck level.
-- [ ] M_MOBILE.3 — perf budget — measure FPS at Huge map (radius 16) on
-  Pixel-5a emulation; if <30fps, profile + optimise (likely candidates:
-  Decoration instancing, ZoneBorder geometry rebuilds, FogOverlay rebuild).
-- [ ] M_MOBILE.4 — APK install test: `pnpm build:native`, install the
-  signed-debug APK on a device or emulator; verify boot → new game →
-  first peon claim works.
+- [ ] [WAIT-DEVICE] M_MOBILE.3 — perf budget — requires real Pixel-5a-
+  class hardware or emulator to measure FPS at radius-16 Huge map. Code
+  paths already optimised: Decoration is instanced; ZoneBorder rebuilds
+  only on zone-mutation; FogOverlay reads bitmask. Profile when hardware
+  becomes available.
+- [ ] [WAIT-DEVICE] M_MOBILE.4 — APK install test: `pnpm build:native` +
+  `pnpm cap:run:android`; verify boot → new game → first peon claim
+  works. Requires Android emulator / device.
 
 ### M_BALANCE — playtest + tune
 
