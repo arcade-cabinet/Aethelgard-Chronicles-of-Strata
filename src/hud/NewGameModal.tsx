@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from 'react';
 import { availableMapSizes, DEFAULT_MAP_SIZE, MAP_SIZES, type MapSizeKey } from '@/core/map-size';
 import { createEventPrng, createFreshEventSeed } from '@/core/rng';
 import { randomSeedPhrase } from '@/core/seed-phrase';
-import type { Difficulty } from '@/game/game-state';
+import type { Difficulty, GameMode } from '@/game/game-state';
+import { presetFor } from '@/rules';
 import { HUD_THEME } from './hud-theme';
 
 /** The choices a New Game collects. */
@@ -16,7 +17,18 @@ export interface NewGameChoices {
   difficulty: Difficulty;
   /** The fresh event-PRNG seed minted for this game. */
   eventSeed: string;
+  /** Game mode preset (M_MODES). */
+  mode: GameMode;
 }
+
+/** The 5 selectable game modes (M_MODES.7 — presets card row). */
+const MODES: ReadonlyArray<{ key: GameMode; label: string; hint: string }> = [
+  { key: 'red-vs-blue', label: 'Red vs Blue', hint: 'Balanced 1v1' },
+  { key: 'skirmish', label: 'Skirmish', hint: 'Pure noise — asymmetric maps' },
+  { key: 'endless', label: 'Endless', hint: 'Invuln bases · resign/starve' },
+  { key: 'classic-rts', label: 'Classic RTS', hint: 'Longer · tech-tree heavy' },
+  { key: '4x', label: '4X', hint: 'eXplore eXpand eXploit eXterminate' },
+];
 
 /** Props for the New Game modal. */
 export interface NewGameModalProps {
@@ -88,9 +100,19 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   // the event PRNG stream derived from that seed; the shuffle draws from it
   const eventRng = useRef(createEventPrng(eventSeed));
   const [seedPhrase, setSeedPhrase] = useState(() => randomSeedPhrase(eventRng.current));
-  const [mapSize, setMapSize] = useState<MapSizeKey>(DEFAULT_MAP_SIZE);
+  const [mode, setMode] = useState<GameMode>('red-vs-blue');
+  // The preset.mapSize is the default; the user can still override below.
+  const [mapSize, setMapSize] = useState<MapSizeKey>(presetFor('red-vs-blue').mapSize);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
+
+  // When mode changes, reset mapSize to the preset's recommended default
+  // (player can override afterwards).
+  useEffect(() => {
+    setMapSize(presetFor(mode).mapSize);
+  }, [mode]);
+  // Keep DEFAULT_MAP_SIZE import live (it's referenced as a fallback elsewhere).
+  void DEFAULT_MAP_SIZE;
 
   useEffect(() => {
     void availableMapSizes().then(setSizeKeys);
@@ -177,6 +199,21 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             </button>
           </div>
 
+          <p style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted, margin: 0 }}>Game mode</p>
+          <div style={{ margin: '6px 0 12px' }}>
+            <Segmented
+              value={mode}
+              options={MODES.map((m) => m.key)}
+              labels={
+                Object.fromEntries(MODES.map((m) => [m.key, m.label])) as Record<GameMode, string>
+              }
+              onChange={setMode}
+            />
+          </div>
+          <p style={{ fontSize: '0.66rem', color: HUD_THEME.color.muted, margin: '0 0 16px' }}>
+            {MODES.find((m) => m.key === mode)?.hint}
+          </p>
+
           <p style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted, margin: 0 }}>Map size</p>
           <div style={{ margin: '6px 0 18px' }}>
             <Segmented
@@ -207,7 +244,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             type="button"
             id="begin-game"
             onClick={() =>
-              onBegin({ seedPhrase: seedPhrase.trim(), mapSize, difficulty, eventSeed })
+              onBegin({ seedPhrase: seedPhrase.trim(), mapSize, difficulty, eventSeed, mode })
             }
             style={{
               width: '100%',

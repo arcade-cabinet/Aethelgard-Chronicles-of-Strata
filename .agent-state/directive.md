@@ -570,21 +570,13 @@ qualify for AI GOAP".
   Modes-as-presets (M_MODES.7) pick the default mapType; Advanced lets
   the player override.
 
-- [ ] M_MODES.7 — modes-as-presets (user, 2026-05-22): "we have a lot of
-  levers. maybe we inform the game type based on map size and game length?
-  because we could also easily add an end turn mechanic and then between
-  map size game length and whether to enable turns, you have an amazing
-  degree of customization. and then those game modes could be more like
-  defaults. e.g. select red vs blue and it sets a map type length etc to
-  best accommodate". Refactor: GameMode becomes a *preset* selector that
-  expands into the underlying axes (`mapSize`, `matchLength`, `turnsMode`,
-  `mapGenRules`). The New Game modal shows the preset cards first; an
-  "Advanced" toggle reveals the three axes for full custom. `red-vs-blue`
-  preset → medium map + short length + real-time + guided mapgen;
-  `skirmish` → small map + short + real-time + noise mapgen; `endless` →
-  large map + endless length + real-time + guided + invuln bases;
-  `classic-rts` → large + medium length + real-time + guided + scaled
-  Discoveries; `4x` → huge + long + turns-optional + guided + Settler unit.
+- [x] M_MODES.7 — modes-as-presets in NewGameModal: MODES list with all 5
+  preset cards (label + hint); selecting a mode resets mapSize to the
+  preset default but lets the player override; mode threads through
+  NewGameChoices → App.beginGame → NewGameConfig → startGame, applying
+  via presetFor() (M_MODES.2-.4 already wired). Advanced "show full
+  axes" toggle queued as part of M_MODES.7-extras when a 4th axis
+  (matchLength/turnsMode/mapType) lands.
 - [ ] M_MODES.8 — end-turn mechanic (user, 2026-05-22): optional
   `turnsMode` axis. When enabled, the sim pauses on each player's "end
   turn" tap; the OTHER player (or AI) plays their turn until they end it.

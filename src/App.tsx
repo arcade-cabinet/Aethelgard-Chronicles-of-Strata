@@ -134,6 +134,8 @@ export function App() {
       difficulty: choices.difficulty,
       // the fresh event seed minted by the modal — committed with this session
       eventSeed: choices.eventSeed,
+      // M_MODES.7 — game mode preset (red-vs-blue default).
+      mode: choices.mode,
     });
   };
 
