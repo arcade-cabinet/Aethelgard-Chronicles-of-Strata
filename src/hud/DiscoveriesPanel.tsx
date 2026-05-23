@@ -56,7 +56,11 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
             // M_FEATURE.2 — purchase cost scales with depth in the prereq DAG.
             const effectiveCost = scaledCostFor(d.id);
             const affordable = canAfford(eco, effectiveCost);
-            const available = !purchased && prereqMet && affordable;
+            // M_AUDIT2.ARCH.19 — `canResearch` is now the single source of
+            // truth for "is this row purchasable" (was a `void canResearch`
+            // shim). Drives the disabled state below; prereqMet+affordable
+            // are kept locally for the per-row status string formatting.
+            const available = canResearch(eco, game.research, d.id as ResearchId);
             const status = purchased
               ? 'Purchased'
               : !prereqMet
@@ -123,6 +127,3 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
   );
 }
 
-// canResearch is reserved for AI-side gating + a future per-row icon; ensure
-// the symbol stays imported so wiring it next is a one-line edit.
-void canResearch;

@@ -7,6 +7,7 @@ import type { BoardData } from '@/core/board';
 import { axialToWorld, parseHexKey } from '@/core/hex';
 import { createMapPrng } from '@/core/rng';
 import type { BuildingType } from '@/ecs/components';
+import { biomeFlagsFor } from '@/rules/biome-flags';
 import { profileFor } from '@/rules/building-profiles';
 import { skinFor } from '@/rules/skins';
 
@@ -30,15 +31,18 @@ interface PropEntry {
   scale?: number;
 }
 
-/** Weighted palette for one biome. `density` ∈ [0,1] — fraction of eligible tiles decorated. */
+/**
+ * Weighted prop pool for one biome. Density moved to
+ * `BIOME_FLAGS.decorationDensity` (M_AUDIT2.ARCH.1) so other systems
+ * can read it; the prop pool stays here (rules-of-hooks anchors the
+ * 18 useGLTF call order to DECO_IDS).
+ */
 interface BiomePalette {
-  density: number;
   props: PropEntry[];
 }
 
 const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
   FOREST: {
-    density: 0.55,
     props: [
       { id: 'nature.tree.broadleaf-a', weight: 20 },
       { id: 'nature.tree.broadleaf-b', weight: 15 },
@@ -55,7 +59,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   GRASS: {
-    density: 0.32,
     props: [
       { id: 'nature.tree.small-a', weight: 18 },
       { id: 'nature.tree.broadleaf-a', weight: 10 },
@@ -70,7 +73,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   BEACH: {
-    density: 0.18,
     props: [
       { id: 'nature.tree.palm-a', weight: 30 },
       { id: 'nature.tree.palm-bend', weight: 20 },
@@ -80,7 +82,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   DESERT: {
-    density: 0.22,
     props: [
       { id: 'nature.cactus.tall', weight: 25 },
       { id: 'nature.cactus.short', weight: 20 },
@@ -91,7 +92,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   HIGHLAND: {
-    density: 0.3,
     props: [
       { id: 'nature.rock.large-a', weight: 20 },
       { id: 'nature.rock.large-b', weight: 18 },
@@ -104,7 +104,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   MOUNTAIN: {
-    density: 0.35,
     props: [
       { id: 'nature.rock.large-a', weight: 18 },
       { id: 'nature.rock.large-b', weight: 16 },
@@ -328,8 +327,11 @@ function planDecoration(board: BoardData, occupiedKeys: ReadonlySet<string>): De
 
     const palette = PALETTES[tile.type];
     if (!palette) continue;
-
-    if (rng() > palette.density) continue;
+    // M_AUDIT2.ARCH.1 — density scalar moved onto BIOME_FLAGS so other
+    // systems can read it; PALETTES.props stay anchored here (the 18
+    // useGLTF call order is the rules-of-hooks anchor).
+    const density = biomeFlagsFor(tile.type).decorationDensity;
+    if (density === null || rng() > density) continue;
 
     const prop = pickWeighted(palette.props, rng);
 

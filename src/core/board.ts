@@ -210,8 +210,10 @@ function paintMountainSpine(tiles: Map<string, Tile>, radius: number, rng: Rng):
  * interior so the map reads as multiple small islands. Two perpendicular
  * channels at the central axis.
  */
-function paintChannelCuts(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
-  void rng; // future variants may pick channel orientations via rng
+function paintChannelCuts(tiles: Map<string, Tile>, radius: number, _rng: Rng): void {
+  // M_AUDIT2.ARCH.20 — rng param kept on signature (PaintPass type) but
+  // unused by this deterministic-channel implementation; underscore-prefix
+  // matches the convention used by paintBeachRing/paintDesertBlanket.
   for (const tile of tiles.values()) {
     const d = hexDistFromCenter(tile.q, tile.r);
     if (d > radius - 3) continue;

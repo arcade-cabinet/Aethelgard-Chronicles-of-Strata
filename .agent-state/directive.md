@@ -1421,11 +1421,11 @@ local-review-trio after each ~5-item batch.
 #### M_AUDIT2.ARCH — architecture, registry, perf, coupling (71)
 
 **Cross-cutting still scattered (1-7)**
-- [ ] M_AUDIT2.ARCH.1 — Decoration.tsx PALETTES → BIOME_FLAGS.decoration slot
+- [x] M_AUDIT2.ARCH.1 — Decoration.tsx PALETTES → BIOME_FLAGS.decoration slot
 - [ ] M_AUDIT2.ARCH.2 — ResourceText.tsx COLOR + HUD_THEME + SLOT_DISPLAY collapse → RESOURCE_DISPLAY in rules/display.ts
 - [ ] M_AUDIT2.ARCH.3 — ZoneBorder.tsx ZONE_COLOR → SKINS[faction].zoneBorderColor or reuse minimap.unitColor
 - [ ] M_AUDIT2.ARCH.4 — ResourceNodes.tsx NODE_MESH+NODE_TINT → src/rules/resource-profiles.ts (collapse with ECONOMY.harvestYield)
-- [ ] M_AUDIT2.ARCH.5 — weather.ts WEATHER_LABEL+WEATHER_SPEED_MULTIPLIER → WEATHER_PROFILES record
+- [x] M_AUDIT2.ARCH.5 — weather.ts WEATHER_LABEL+WEATHER_SPEED_MULTIPLIER → WEATHER_PROFILES record
 - [ ] M_AUDIT2.ARCH.6 — extract WorldBadge.tsx; CombatText/ResourceText/BuilderBadge/HealthBillboard become 5-line wrappers
 - [ ] M_AUDIT2.ARCH.7 — implement SKINS[faction].audio Skin slot (already in JSDoc)
 
@@ -1443,9 +1443,9 @@ local-review-trio after each ~5-item batch.
 - [ ] M_AUDIT2.ARCH.18 — FLOATING_TEXT (POPUP_LIFETIME/DRIFT) shared config used by ResourceText+CombatText
 
 **Dead/shimmed code (19-23)**
-- [ ] M_AUDIT2.ARCH.19 — DiscoveriesPanel.tsx:128 `void canResearch` — delete or wire per-row gating
-- [ ] M_AUDIT2.ARCH.20 — board.ts:214 `void rng` — drop unused param
-- [ ] M_AUDIT2.ARCH.21 — discovery-cost.ts:39 `void seen` — same
+- [x] M_AUDIT2.ARCH.19 — DiscoveriesPanel.tsx:128 `void canResearch` — delete or wire per-row gating
+- [x] M_AUDIT2.ARCH.20 — board.ts:214 `void rng` — drop unused param
+- [x] M_AUDIT2.ARCH.21 — discovery-cost.ts:39 `void seen` — same
 - [ ] M_AUDIT2.ARCH.22 — FactionBase.tsx placed-useMemo dep is Map ref (never invalidates) — key on buildSitesGeneration
 - [ ] M_AUDIT2.ARCH.23 — Mountains.tsx hardcoded fallback level=5 even with peakLevel slot — drop fallback
 

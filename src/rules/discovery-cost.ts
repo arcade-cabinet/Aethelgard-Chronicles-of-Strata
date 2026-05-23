@@ -22,7 +22,10 @@ const depthCache = new Map<string, number>();
 export function depthOf(id: string): number {
   const cached = depthCache.get(id);
   if (cached !== undefined) return cached;
-  const seen = new Set<string>();
+  // M_AUDIT2.ARCH.21 — `const seen` + `void seen` shim removed; the
+  // recursion uses its own `stack` Set for cycle detection, so the
+  // outer `seen` was dead code that only existed to keep itself
+  // import-referenced. The `stack` is the only state needed.
   const compute = (current: string, stack: Set<string>): number => {
     if (stack.has(current)) return 0; // cycle guard; treat as root
     const d = DISCOVERIES.find((x) => x.id === current);
@@ -36,7 +39,6 @@ export function depthOf(id: string): number {
     stack.delete(current);
     return max;
   };
-  void seen;
   const d = compute(id, new Set());
   depthCache.set(id, d);
   return d;

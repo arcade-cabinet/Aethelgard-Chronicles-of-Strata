@@ -40,17 +40,26 @@ export interface BiomeFlags {
    * future tribe / map type opt biomes in/out without code edits.
    */
   peakLevel: number | null;
+  /**
+   * Decoration scatter density (M_AUDIT2.ARCH.1) — fraction of eligible
+   * tiles of this biome that receive a scattered prop. The per-biome
+   * prop pools stay in Decoration.tsx (rules-of-hooks anchor 18 useGLTF
+   * calls in fixed order); only the scalar density crosses the
+   * boundary so other systems (M_REGISTRY future work) can read it.
+   * `null` = no scatter on this biome (water, etc).
+   */
+  decorationDensity: number | null;
 }
 
 export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
-  OCEAN: { walkable: false, buildable: false, habitable: false, lushBlend: false, cliffColor: 'water', peakLevel: null },
-  LAKE: { walkable: false, buildable: false, habitable: false, lushBlend: false, cliffColor: 'water', peakLevel: null },
-  BEACH: { walkable: true, buildable: true, habitable: false, lushBlend: false, cliffColor: null, peakLevel: null },
-  DESERT: { walkable: true, buildable: false, habitable: false, lushBlend: false, cliffColor: 'desert', peakLevel: null },
-  GRASS: { walkable: true, buildable: true, habitable: true, lushBlend: true, cliffColor: null, peakLevel: null },
-  FOREST: { walkable: true, buildable: false, habitable: true, lushBlend: true, cliffColor: null, peakLevel: null },
-  HIGHLAND: { walkable: true, buildable: true, habitable: true, lushBlend: false, cliffColor: null, peakLevel: 5 },
-  MOUNTAIN: { walkable: false, buildable: false, habitable: false, lushBlend: false, cliffColor: null, peakLevel: 5 },
+  OCEAN:    { walkable: false, buildable: false, habitable: false, lushBlend: false, cliffColor: 'water',  peakLevel: null, decorationDensity: null },
+  LAKE:     { walkable: false, buildable: false, habitable: false, lushBlend: false, cliffColor: 'water',  peakLevel: null, decorationDensity: null },
+  BEACH:    { walkable: true,  buildable: true,  habitable: false, lushBlend: false, cliffColor: null,     peakLevel: null, decorationDensity: 0.18 },
+  DESERT:   { walkable: true,  buildable: false, habitable: false, lushBlend: false, cliffColor: 'desert', peakLevel: null, decorationDensity: 0.22 },
+  GRASS:    { walkable: true,  buildable: true,  habitable: true,  lushBlend: true,  cliffColor: null,     peakLevel: null, decorationDensity: 0.32 },
+  FOREST:   { walkable: true,  buildable: false, habitable: true,  lushBlend: true,  cliffColor: null,     peakLevel: null, decorationDensity: 0.55 },
+  HIGHLAND: { walkable: true,  buildable: true,  habitable: true,  lushBlend: false, cliffColor: null,     peakLevel: 5,    decorationDensity: 0.30 },
+  MOUNTAIN: { walkable: false, buildable: false, habitable: false, lushBlend: false, cliffColor: null,     peakLevel: 5,    decorationDensity: 0.35 },
 };
 
 /** Resolve the flag tuple for a biome type. */

@@ -16,18 +16,35 @@ export interface Weather {
 const MIN_INTERVAL: number = WORLD.weather.minInterval;
 const MAX_INTERVAL: number = WORLD.weather.maxInterval;
 
-/** The HUD label for each weather state. */
-export const WEATHER_LABEL: Record<WeatherState, string> = {
-  sunny: '☀️ Sunny Skies',
-  fog: '🌫️ Thick Fog',
-  rain: '🌧️ Heavy Rain',
+/**
+ * Per-WeatherState properties (M_AUDIT2.ARCH.5) — was two parallel
+ * Records (WEATHER_LABEL + WEATHER_SPEED_MULTIPLIER). One profile per
+ * state; adding a property (e.g. visionRadiusMultiplier, audioStingId)
+ * is ONE column not a new top-level table.
+ */
+export interface WeatherProfile {
+  /** HUD label including emoji. */
+  label: string;
+  /** Movement-speed multiplier applied while this weather is active. */
+  speedMultiplier: number;
+}
+
+export const WEATHER_PROFILES: Record<WeatherState, WeatherProfile> = {
+  sunny: { label: '☀️ Sunny Skies', speedMultiplier: 1 },
+  fog:   { label: '🌫️ Thick Fog',  speedMultiplier: 1 },
+  rain:  { label: '🌧️ Heavy Rain', speedMultiplier: 0.8 },
 };
 
-/** The movement-speed multiplier each weather state imposes. */
+/** Back-compat re-exports — derived from WEATHER_PROFILES. */
+export const WEATHER_LABEL: Record<WeatherState, string> = {
+  sunny: WEATHER_PROFILES.sunny.label,
+  fog: WEATHER_PROFILES.fog.label,
+  rain: WEATHER_PROFILES.rain.label,
+};
 export const WEATHER_SPEED_MULTIPLIER: Record<WeatherState, number> = {
-  sunny: 1,
-  fog: 1,
-  rain: 0.8,
+  sunny: WEATHER_PROFILES.sunny.speedMultiplier,
+  fog: WEATHER_PROFILES.fog.speedMultiplier,
+  rain: WEATHER_PROFILES.rain.speedMultiplier,
 };
 
 /**
