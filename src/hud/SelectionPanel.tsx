@@ -10,7 +10,7 @@ import { selectedEntity } from '@/game/selection';
 import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
 import type { BuildContext } from '@/world/TileInteraction';
 import { costLabel } from './format';
-import { HUD_THEME } from './hud-theme';
+import { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
 
 /** Buildable types derived from the BUILDING_COSTS table — NOT hardcoded. */
 const BUILDABLE_TYPES = Object.keys(BUILDING_COSTS).sort() as ReadonlyArray<
@@ -179,16 +179,12 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
           exit={{ x: -40, opacity: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
           style={{
+            ...HUD_CARD_STYLE,
             position: 'absolute',
             left: 16,
             bottom: 16,
             width: 200,
             padding: '14px 16px',
-            borderRadius: HUD_THEME.radius,
-            background: HUD_THEME.color.panel,
-            border: `1px solid ${HUD_THEME.color.border}`,
-            color: HUD_THEME.color.text,
-            fontFamily: HUD_THEME.font.body,
           }}
         >
           <div

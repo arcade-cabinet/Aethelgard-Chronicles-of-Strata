@@ -48,3 +48,21 @@ export const HUD_THEME = {
   /** Standard panel radius. */
   radius: 12,
 } as const;
+
+/**
+ * Shared "card" style — panel background + accent border + standard
+ * radius + body font + text color (M_MICRO.10.3). Reach for this when
+ * a component needs the project's panel look; per-card overrides (e.g.
+ * absolute positioning, custom padding) extend via spread.
+ *
+ * Was duplicated across TitleScreen page-shell, SelectionPanel
+ * motion.div card, and several modal contents (now centralised here
+ * AND in ModalShell — M_MICRO.10.1).
+ */
+export const HUD_CARD_STYLE = {
+  background: HUD_THEME.color.panel,
+  border: `1px solid ${HUD_THEME.color.border}`,
+  borderRadius: HUD_THEME.radius,
+  color: HUD_THEME.color.text,
+  fontFamily: HUD_THEME.font.body,
+} as const;

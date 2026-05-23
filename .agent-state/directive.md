@@ -929,7 +929,7 @@ bug).
   index>` extracts the repeated top-right HUD pill pattern
   (DiscoveriesPanel + ResignButton + PauseControl) + viewport-
   aware top/right calc.
-- [ ] M_MICRO.10.3 — `TitleScreen` page-shell div +
+- [x] M_MICRO.10.3 — `TitleScreen` page-shell div +
   `SelectionPanel` motion.div card both reach for a "card" token
   — lift to `hud-theme.cardStyle`.
 
