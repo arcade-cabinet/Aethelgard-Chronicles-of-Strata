@@ -72,8 +72,14 @@ export const rainArchetype: ParticleEmitterSpec<RainDrop> = {
   },
   renderParticle(p) {
     const y = p.startY - RAIN_FALL_SPEED * p.age;
+    // M_EXPANSION.S.68 — wind drift. Each drop drifts +x/+z over age
+    // for a wind-bent rainfall look (vs perfectly-vertical drops).
+    // Drift coefficients are tuned for a 'breezy rain' read; storms
+    // would multiply these once a wind-intensity slot lands on Weather.
+    const WIND_X = 1.4;
+    const WIND_Z = 0.6;
     return (
-      <mesh key={p.id} position={[p.x, y, p.z]}>
+      <mesh key={p.id} position={[p.x + WIND_X * p.age, y, p.z + WIND_Z * p.age]}>
         <sphereGeometry args={[0.05, 4, 3]} />
         <meshBasicMaterial color="#9ec5e8" transparent opacity={0.6} />
       </mesh>
