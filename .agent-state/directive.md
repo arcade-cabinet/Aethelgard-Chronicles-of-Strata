@@ -146,10 +146,10 @@ rally, tracking ring. None fully shipped.
 
 ### M_COMBAT_POLISH — the combat loop the original conversation specified
 
-- [ ] M_COMBAT_POLISH.1 — projectile system. `OffensiveBehavior` entities
-  emit a visible arrow/bolt at their target (every fire-cadence tick).
-  Generic `ProjectileSystem` renders + arcs them; siege uses a heavy stone
-  ball; archers an arrow; mages a glowing orb (decoupled per damage-type).
+- [x] M_COMBAT_POLISH.1 — projectile FX (8c0ace2): game/projectiles.ts
+  list+spawn/advance; offensive-behavior emits one arrow per source per
+  FIRE_CADENCE; ProjectileLayer.tsx lerps + arcs per-frame. Kind enum
+  extensible to bolt/magic. 277 tests.
 - [ ] M_COMBAT_POLISH.2 — attack animations on melee units. The
   AnimatedCharacter ATTACK clip fires on each combat hit; weapon-swing
   particle FX.

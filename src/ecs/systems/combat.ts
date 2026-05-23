@@ -1,7 +1,7 @@
 import type { Entity, World } from 'koota';
 import { hexDistance } from '@/core/hex';
 import type { Rng } from '@/core/rng';
-import { Combatant, EnemyTarget, Health, HexPosition } from '@/ecs/components';
+import { AnimationState, Combatant, EnemyTarget, Health, HexPosition } from '@/ecs/components';
 import { rollDamage } from '@/game/combat-math';
 
 /** A damage event produced by the combat system this tick (for FX/text). */
@@ -31,7 +31,7 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
   // accumulate total damage per target id this tick
   const damageByTarget = new Map<number, number>();
 
-  world.query(Combatant, EnemyTarget, HexPosition).updateEach(([combatant, target, hex]) => {
+  world.query(Combatant, EnemyTarget, HexPosition).updateEach(([combatant, target, hex], e) => {
     const targetEntity = byId.get(target.targetId);
     const targetHealth = targetEntity?.get(Health);
     if (!targetEntity || !targetHealth || targetHealth.current <= 0) {
@@ -54,6 +54,10 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
       const id = target.targetId;
       damageByTarget.set(id, (damageByTarget.get(id) ?? 0) + roll.damage);
       events.push({ target: targetEntity, damage: roll.damage, isCrit: roll.isCrit });
+      // M_COMBAT_POLISH.2 — flash the attacker into ATTACKING so its
+      // AnimatedCharacter plays the swing clip this beat; animationSystem
+      // will reset to IDLE/MOVING once the cooldown ends.
+      if (e.has(AnimationState)) e.set(AnimationState, { state: 'ATTACKING' });
     }
   });
 
