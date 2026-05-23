@@ -525,8 +525,11 @@ scoring the most points and controlling the most territory until you or
 your opponent resigns because they're starved out, thats easy enough to
 qualify for AI GOAP".
 
-- [ ] M_MODES.1 — `GameMode` union: `'red-vs-blue' | 'skirmish' | 'endless'`.
-  NewGameConfig + NewGameModal + GameSession all gain a `mode` field.
+- [x] M_MODES.1 — GameMode union: ('red-vs-blue' | 'skirmish' | 'endless'
+  | 'classic-rts' | '4x'). NewGameConfig.mode (optional, defaults to
+  'red-vs-blue'); typed in game-state.ts. NewGameModal + GameSession
+  wiring + per-mode preset effects land in M_MODES.7 + per-mode
+  rules in .2-.6.
 - [ ] M_MODES.2 — `red-vs-blue` mode (the default after M_MAPGEN): runs
   all the M_MAPGEN.3-.10 guided generation rules + fair-balance audit.
   Equidistant base placement guaranteed.
@@ -596,6 +599,32 @@ qualify for AI GOAP".
   pieces (M_DATA.7 / M_ARCHETYPE.6 / .7) already support most of
   this — 4x is mostly a NewGame option + a Settler unit type +
   a found-base command verb.
+
+- [ ] M_MAPGEN.11 — generalize base-accretion (user, 2026-05-22): "if you
+  add accretion etc rules then its just more slots. both sides need a
+  base, each side has unique assigned visuals, then its just 'this many
+  props in an accretion scatter' and then its just different assigned
+  visuals like everything else"; "plus then different buildings can have
+  different adherence and accretion rules and so on". Generalize the
+  M_MAPGEN.8 graveyard cluster into:
+    a) per-faction `BASE_ACCRETION` config row (count, radius, density,
+       propPool, yScale range) for FactionBases. Enemy → graveyard;
+       player → banners/market/hay (whatever asset palette offers).
+    b) per-BuildingType `ACCRETION_PROFILE` row (adherence + accretion
+       rules per building). A Farm radiates wheat-stalks; a Barracks
+       radiates training-dummies + barrels; a Library scrolls + crates.
+    The Decoration system reads both layers — every completed building
+    triggers its accretion at place-time. Adding a new accretion = ONE
+    config row, no new code branch. Composes cleanly with M_MODES (each
+    mode can swap accretion table).
+    User reinforcement (2026-05-22): "and the same logic of magnetic
+    dipolars and attractor buildings work similarly — every building
+    during gen time can have such and such props in a spread". The
+    accretion table IS the visual mirror of the force-field's
+    archetype weights (M_ARCHETYPE.6) — attractor archetype = densest
+    accretion, defensive = sparse, mover = linear scatter, consumer =
+    cluster around the resource type. Single rules table; visual +
+    gameplay are the same archetype-driven slot system.
 
 - [ ] M_MAPGEN.10 — fair-balance guarantee (user, 2026-05-22): the
   per-rule additions (.3-.9) MUST cooperate to produce a deterministic

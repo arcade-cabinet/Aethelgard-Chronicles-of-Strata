@@ -81,7 +81,21 @@ export interface NewGameConfig {
   mapSize: number;
   difficulty: Difficulty;
   eventSeed: string;
+  /**
+   * Game mode preset (M_MODES.1). Drives default mapSize / matchLength /
+   * turnsMode / mapType / win-condition rules. Defaults to 'red-vs-blue'
+   * when omitted so existing call sites keep current behaviour.
+   *   red-vs-blue: balanced 2-base RTS — the M_MAPGEN guided generation.
+   *   skirmish:    pure-noise map; may be asymmetric.
+   *   endless:     TownHalls invulnerable; resign/starve outcome only.
+   *   classic-rts: longer match + scaled Discoveries progression.
+   *   4x:          eXplore/eXpand/eXploit/eXterminate — multi-base, Wonder race.
+   */
+  mode?: GameMode;
 }
+
+/** The 5 selectable game-mode presets (M_MODES). */
+export type GameMode = 'red-vs-blue' | 'skirmish' | 'endless' | 'classic-rts' | '4x';
 
 /** The live state of one play session. */
 export interface GameState {
