@@ -15,11 +15,16 @@
  */
 
 export { ATTRACTOR_GUARANTEE, ATTRACTOR_RADIUS, ensureAttractorResources } from './attractor';
+export { type BuildingBehaviorProfile, behaviorsFor } from './building-behaviors';
+// M_REGISTRY.5 — unified building Thing registry. Re-exported for the
+// surfaces (HUD, AI, commands) that previously read 5 different tables.
 export {
-  BUILDING_BEHAVIORS,
-  type BuildingBehaviorProfile,
-  behaviorsFor,
-} from './building-behaviors';
+  BUILDING_PROFILES,
+  type BuildingProfile,
+  type DisplaySlot,
+  type ProducerSlot,
+  profileFor,
+} from './building-profiles';
 export { applyArmor, armorMultiplier } from './damage';
 export type { Discovery } from './discoveries';
 export { DISCOVERIES, discoveryById } from './discovery-registry';
@@ -32,13 +37,9 @@ export {
   type TurnsMode,
   presetFor,
 } from './mode-presets';
-export {
-  BUILDING_DISPLAY,
-  type BuildingDisplay,
-  displayFor,
-  trainableUnits,
-  trainerFor,
-} from './display';
+export { type BuildingDisplay, displayFor } from './display';
+// trainableUnits / trainerFor now live on the unified registry (M_REGISTRY.5).
+export { trainableUnits, trainerFor } from './building-profiles';
 export {
   canAddPeon,
   canTrain,

@@ -27,6 +27,7 @@ import {
   behaviorsFor,
   canBuild,
   canTrainComplete,
+  profileFor,
   SUPPLY_COST,
   UNIT_COSTS,
 } from '@/rules';
@@ -149,16 +150,21 @@ export function placeBuilding(
   // engine (spec 102) — orthogonal traits, not type-coupled logic. Build the
   // full trait list FIRST so the spawn is atomic (M_QUALITY.1, CodeRabbit
   // MED-8): a single world.spawn(...) leaves no half-state on failure.
-  const profile = behaviorsFor(type);
+  // M_REGISTRY.5 — read every slot off the unified Thing registry. The
+  // Library `type === 'Library'` if-branch is gone; ANY building that
+  // declares a `producer: { kind: 'science', rate }` slot picks up
+  // ScienceProducer. Future producer kinds (gold/wood/stone) drop in by
+  // extending the kind union here only.
+  const profile = profileFor(type);
+  const { behaviors, producer } = profile;
   const traits = [
     HexPosition({ q: tile?.q ?? 0, r: tile?.r ?? 0, level }),
     Building({ buildingType: type, isComplete: false, progress: 0 }),
     FactionTrait({ faction }),
-    ...(profile.offensive ? [OffensiveBehavior(profile.offensive)] : []),
-    ...(profile.defensive ? [DefensiveBehavior(profile.defensive)] : []),
-    ...(profile.attractor ? [AttractorBehavior(profile.attractor)] : []),
-    // M_FEATURE.3 — Library carries ScienceProducer (rate: 1 science/sec).
-    ...(type === 'Library' ? [ScienceProducer({ rate: 1 })] : []),
+    ...(behaviors.offensive ? [OffensiveBehavior(behaviors.offensive)] : []),
+    ...(behaviors.defensive ? [DefensiveBehavior(behaviors.defensive)] : []),
+    ...(behaviors.attractor ? [AttractorBehavior(behaviors.attractor)] : []),
+    ...(producer?.kind === 'science' ? [ScienceProducer({ rate: producer.rate })] : []),
   ];
   const buildingEntity = game.world.spawn(...traits);
   game.buildSites.set(tileKey, buildingEntity);
