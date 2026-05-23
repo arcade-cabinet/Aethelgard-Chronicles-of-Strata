@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import type { GameState } from '@/game/game-state';
+import { formatInt } from './format';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -40,9 +41,10 @@ export function GameOverModal({ game }: { game: GameState }) {
   const playerScore = Math.round(game.score.player);
   const enemyScore = Math.round(game.score.enemy);
   const stats: StatLine[] = [
-    { label: 'Gold Earned', value: String(game.economy.player.gold) },
-    { label: 'Lumber Harvested', value: String(game.economy.player.wood) },
-    { label: 'Enemies Vanquished', value: String(game.economy.player.kills) },
+    // M_AUDIT2.UX.10 — locale-formatted thousands separator.
+    { label: 'Gold Earned', value: formatInt(game.economy.player.gold) },
+    { label: 'Lumber Harvested', value: formatInt(game.economy.player.wood) },
+    { label: 'Enemies Vanquished', value: formatInt(game.economy.player.kills) },
     { label: 'Territory Score', value: `${playerScore} vs ${enemyScore}` },
   ];
 

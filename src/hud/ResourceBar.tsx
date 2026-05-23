@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { formatInt } from './format';
 import { HUD_THEME } from './hud-theme';
 
 /** One resource readout. */
@@ -104,7 +105,8 @@ function snapshot(game: GameState): Readout[] {
   for (const slot of RESOURCE_TYPES) {
     const d = SLOT_DISPLAY[slot];
     if (!d) continue;
-    rows.push({ id: d.id, label: d.label, color: d.color, value: String(e[slot]) });
+    // M_AUDIT2.UX.10 — locale-formatted with thousands separator.
+    rows.push({ id: d.id, label: d.label, color: d.color, value: formatInt(e[slot]) });
   }
   rows.push({
     id: 'val-supply',

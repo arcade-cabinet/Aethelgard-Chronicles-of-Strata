@@ -1435,7 +1435,7 @@ local-review-trio after each ~5-item batch.
 - [ ] M_AUDIT2.ARCH.10 — FIRE_CADENCE (1.2) → OffensiveBehavior trait OR BUILDING_PROFILES.behaviors.offensive.cadence
 - [ ] M_AUDIT2.ARCH.11 — PROJECTILE_LIFETIME per-kind table in projectiles.ts
 - [ ] M_AUDIT2.ARCH.12 — particle-archetypes tuning constants → ParticleEmitterSpec.tuning field
-- [ ] M_AUDIT2.ARCH.13 — AUTO_SAVE_INTERVAL → config/persistence.ts
+- [x] M_AUDIT2.ARCH.13 — AUTO_SAVE_INTERVAL → config/persistence.ts
 - [ ] M_AUDIT2.ARCH.14 — FIXED_DT + MAX_STEPS_PER_FRAME → config/world.ts sim:{}
 - [ ] M_AUDIT2.ARCH.15 — BASE_UNIT_VISION_RADIUS + UNIT_CONE_HALF_ANGLE → config/world.ts vision:{}
 - [ ] M_AUDIT2.ARCH.16 — HealthBillboard tier thresholds → HEALTH_BAR_STOPS in rules/display.ts
@@ -1601,8 +1601,8 @@ local-review-trio after each ~5-item batch.
 **MAJOR — feedback / info (8-15)**
 - [ ] [MAJ] M_AUDIT2.UX.8 — proper HealthBillboard bar (red bg + green fraction fill, fade at full)
 - [ ] [MAJ] M_AUDIT2.UX.9 — disabledReason tooltip on HudButton (cost/prereq/cap) via Radix Tooltip
-- [ ] [MAJ] M_AUDIT2.UX.10 — formatInt(n) thousands separator; apply ResourceBar + GameOverModal
-- [ ] [MAJ] M_AUDIT2.UX.11 — formatTime(sec)→MM:SS in EndTurnButton + GameOverModal + PauseControl
+- [x] [MAJ] M_AUDIT2.UX.10 — formatInt(n) thousands separator; apply ResourceBar + GameOverModal
+- [x] [MAJ] M_AUDIT2.UX.11 — formatTime(sec)→MM:SS in EndTurnButton + GameOverModal + PauseControl
 - [ ] [MAJ] M_AUDIT2.UX.12 — AriaLiveRegion + emitGameEvent bus; CriticalWarning role="alert"
 - [ ] [MAJ] M_AUDIT2.UX.13 — idle-peon "?" billboard + HUD log strip
 - [ ] [MAJ] M_AUDIT2.UX.14 — supply-cap nag (danger color on val-supply + (cap) badge + supply-cap-hit event)
@@ -1641,6 +1641,6 @@ local-review-trio after each ~5-item batch.
 - [ ] [MIN] M_AUDIT2.UX.37 — PauseControl pointer-events visual test
 - [ ] [MIN] M_AUDIT2.UX.38 — ZoneLegend top viewport-aware (60/80)
 - [ ] [MIN] M_AUDIT2.UX.39 — TitleBackground: verify low-poly biome teaser (or add rotating tiles)
-- [ ] [MIN] M_AUDIT2.UX.40 — EndTurnButton: setTick only when displayed integer changes (not every 100ms)
+- [x] [MIN] M_AUDIT2.UX.40 — EndTurnButton: setTick only when displayed integer changes (not every 100ms)
 - [ ] [MIN] M_AUDIT2.UX.41 — Settings modal "Replay tutorial" link (reopen OnboardingOverlay)
 - [ ] [MIN] M_AUDIT2.UX.42 — hint font size floor 0.78rem (mobile readability)

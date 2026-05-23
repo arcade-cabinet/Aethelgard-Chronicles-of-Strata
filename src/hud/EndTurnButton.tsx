@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { endTurn } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { useViewport } from '@/render/useViewport';
+import { formatTime } from './format';
 import { HUD_THEME } from './hud-theme';
 
 /**
@@ -11,11 +12,21 @@ import { HUD_THEME } from './hud-theme';
  */
 export function EndTurnButton({ game }: { game: GameState }) {
   const [, setTick] = useState(0);
-  // re-render at ~10 Hz so the countdown ticks visibly without holding the
-  // whole HUD in a continuous RAF loop.
+  // M_AUDIT2.UX.40 — re-render only when the DISPLAYED integer would
+  // change, not every 100 ms. lastDisplayedRef tracks the last whole-
+  // second value we painted; we still poll at 100 ms (responsiveness)
+  // but skip setState when the visible text is unchanged.
+  const lastDisplayedRef = useRef<number>(-1);
   useEffect(() => {
     if (!game.turn) return;
-    const id = setInterval(() => setTick((n) => (n + 1) & 0xffff), 100);
+    const id = setInterval(() => {
+      const turn = game.turn;
+      if (!turn) return;
+      const displayed = Math.max(0, Math.ceil(turn.secondsRemaining));
+      if (displayed === lastDisplayedRef.current) return;
+      lastDisplayedRef.current = displayed;
+      setTick((n) => (n + 1) & 0xffff);
+    }, 100);
     return () => clearInterval(id);
   }, [game.turn]);
   const viewport = useViewport();
@@ -50,7 +61,8 @@ export function EndTurnButton({ game }: { game: GameState }) {
         pointerEvents: 'auto',
       }}
     >
-      {isPlayer ? `End turn · ${secs}s` : `Enemy turn · ${secs}s`}
+      {/* M_AUDIT2.UX.11 — formatTime keeps MM:SS for long turns. */}
+      {isPlayer ? `End turn · ${formatTime(secs)}` : `Enemy turn · ${formatTime(secs)}`}
     </button>
   );
 }
