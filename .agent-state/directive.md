@@ -150,9 +150,11 @@ rally, tracking ring. None fully shipped.
   list+spawn/advance; offensive-behavior emits one arrow per source per
   FIRE_CADENCE; ProjectileLayer.tsx lerps + arcs per-frame. Kind enum
   extensible to bolt/magic. 277 tests.
-- [ ] M_COMBAT_POLISH.2 — attack animations on melee units. The
-  AnimatedCharacter ATTACK clip fires on each combat hit; weapon-swing
-  particle FX.
+- [x] M_COMBAT_POLISH.2 — attack-anim (811cd9e): combat.ts sets
+  AnimationState→ATTACKING on each hit; AnimatedCharacter plays swing
+  clip; animationSystem leaves ATTACKING alone (already-correct contract).
+  Particle FX is a separate FX layer when needed; the swing clip is the
+  primary visual.
 - [ ] M_COMBAT_POLISH.3 — floating combat text — `-3 HP` red, `+1 Wood` /
   `+1 Gold` floating popups. CombatText already exists; verify both damage
   AND resource events fire it.

@@ -23,7 +23,7 @@ import { buildSystem } from '@/ecs/systems/build';
 import { type DamageEvent, combatSystem } from '@/ecs/systems/combat';
 import { deathSystem } from '@/ecs/systems/death';
 import { buildingDeathSystem } from '@/ecs/systems/building-death';
-import { depositSystem } from '@/ecs/systems/deposit';
+import { type ResourceDepositEvent, depositSystem } from '@/ecs/systems/deposit';
 import { harvestSystem } from '@/ecs/systems/harvest';
 import { AiPlayer } from '@/ai/ai-player';
 import { encroachmentSystem } from '@/ecs/systems/encroachment';
@@ -147,6 +147,13 @@ export interface GameState {
   projectiles: Projectile[];
   /** Per-source cadence accumulators — last-fired age per OffensiveBehavior entity id. */
   projectileCooldowns: Map<number, number>;
+  /**
+   * Resource-deposit events from the most recent tick — fuels the
+   * `+N Wood` floating-text popups (M_COMBAT_POLISH.3). Reassigned each
+   * tick by `runEconomyTick` so the render layer detects new batches by
+   * array-reference identity (same pattern as `lastDamageEvents`).
+   */
+  lastResourceEvents: ResourceDepositEvent[];
   /**
    * Auto-save timer. Attached by the App layer (which owns the persistence
    * facade); when present, `runEconomyTick` advances it. Absent in tests and
@@ -381,6 +388,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     enemyBaseEntity,
     outcome: 'playing',
     lastDamageEvents: [],
+    lastResourceEvents: [],
     selectedIds: [],
     paused: false,
     projectiles: [],
@@ -505,8 +513,11 @@ export function runEconomyTick(game: GameState, delta: number): void {
   game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta);
 
   // resource deposit — each faction's carrying peons deposit at their own base
-  depositSystem(game.world, game.economy.player, game.townHallKey, 'player');
-  depositSystem(game.world, game.economy.enemy, game.enemyBaseKey, 'enemy');
+  // fresh batch each tick — render layer detects new events by array-reference
+  const resourceEvents: ResourceDepositEvent[] = [];
+  depositSystem(game.world, game.economy.player, game.townHallKey, 'player', resourceEvents);
+  depositSystem(game.world, game.economy.enemy, game.enemyBaseKey, 'enemy', resourceEvents);
+  game.lastResourceEvents = resourceEvents;
 
   // death resolution — deathSystem returns the enemies removed this tick;
   // a removed enemy is a player kill.
