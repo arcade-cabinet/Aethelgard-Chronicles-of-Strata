@@ -1842,9 +1842,13 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.F.77 — Achievements: track 'first-victory', 'no-build-wonder-win', etc; persist to Preferences
 - [ ] [MED]  M_EXPANSION.F.78 — Scenario editor: load a saved board state + spawn units interactively (debug mode only)
 - [ ] [MED]  M_EXPANSION.F.79 — Difficulty: hardcore mode (peons cost food, food depletes over time)
-- [ ] [MED]  M_EXPANSION.F.80 — Faction palette swap (player can choose red/blue/green/yellow on the New Game modal)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.80 — Faction palette swap (player can choose red/blue/green/yellow on the New Game modal)
+  - SKINS.player is a module-level constant; runtime palette override
+    needs touching every SKIN consumer (FactionBase, ZoneBorder,
+    Minimap, Units). Same shape as M_AUDIT2.ARCH.3 ZoneBorder color
+    migration — tracked WAIT until that pattern's re-applied.
 - [ ] [MED]  M_EXPANSION.F.81 — Random-event system: weather-spike, raid-warning, refugee-arrival (one-shot ECS events from event PRNG)
-- [ ] [MED]  M_EXPANSION.F.82 — Custom map seed input: 64-char hex direct entry (bypass the adjective-adjective-noun mnemonic)
+- [x] [MED]  M_EXPANSION.F.82 — Custom map seed input: 64-char hex direct entry (bypass the adjective-adjective-noun mnemonic)
 - [ ] [MED]  M_EXPANSION.F.83 — Map preview thumbnail in New Game modal (render the seeded board at 256×256 before commit)
 - [ ] [MED]  M_EXPANSION.F.84 — Per-faction starting bonus picks (extra peons / extra wood / extra HP at start)
 - [ ] [MED]  M_EXPANSION.F.85 — Surrender consequences: AI keeps the surrendered player's tiles (currently they evaporate)

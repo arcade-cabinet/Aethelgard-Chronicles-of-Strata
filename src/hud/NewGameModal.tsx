@@ -189,9 +189,12 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             // biome-ignore lint/a11y/noAutofocus: modal-open autofocus is the expected UX.
             autoFocus
             // M_SEC.8 — seed input cap + sanitise: 64 chars max, letters
-            // and hyphens and spaces only, NFC-normalise (rejects RTL
-            // overrides / zero-width joiners), autoComplete off so
+            // and digits and hyphens and spaces, NFC-normalise (rejects
+            // RTL overrides / zero-width joiners), autoComplete off so
             // browser autofill doesn't dump arbitrary text.
+            // M_EXPANSION.F.82 — digits 0-9 now allowed so a player can
+            // paste a 64-char hex seed directly (bypassing the adj-adj-
+            // noun mnemonic). seedrandom accepts either shape.
             maxLength={64}
             autoComplete="off"
             spellCheck={false}
@@ -199,7 +202,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             onChange={(e) => {
               const cleaned = e.target.value
                 .normalize('NFC')
-                .replace(/[^a-z\- ]/gi, '')
+                .replace(/[^a-z0-9\- ]/gi, '')
                 .slice(0, 64);
               setSeedPhrase(cleaned);
             }}
