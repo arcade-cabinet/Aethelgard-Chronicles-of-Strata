@@ -576,7 +576,7 @@ the smallest end-to-end proof, then drain in dependency order.
   `enemyBaseKey` with `baseKeys: Record<Faction, string>`. Rewrite
   4 hard-coded ternaries in commands.ts (286, 414) + ai-player.ts
   (136) + game-state. Foundation for >2 factions.
-- [ ] M_REGISTRY.15 — `spawn.ts pickRole()` escalation
+- [x] M_REGISTRY.15 — `spawn.ts pickRole()` escalation
   cascade becomes declarative ESCALATION_SCHEDULE table (threshold →
   weighted roster); replace 4-tier if-cascade.
 - [x] M_REGISTRY.16 — `science.ts` literal player+enemy

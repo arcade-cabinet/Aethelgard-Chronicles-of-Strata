@@ -6,57 +6,73 @@ import { EnemySpawner, HexPosition, type UnitType } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import type { Difficulty } from '@/game/difficulty';
 
-/** Thresholds at which new enemy archetypes unlock (game-seconds). */
-const ORC_THRESHOLD: number = COMBAT.spawn.orcThreshold;
-const VAMPIRE_THRESHOLD: number = COMBAT.spawn.vampireThreshold;
-const WITCH_THRESHOLD: number = COMBAT.spawn.witchThreshold;
-const BLACK_KNIGHT_THRESHOLD: number = COMBAT.spawn.blackKnightThreshold;
+/**
+ * Declarative enemy-escalation schedule (M_REGISTRY.15) — replaces the
+ * 4-tier if-cascade in pickEnemyRole. Each tier names its unlock
+ * threshold (game-seconds) and the weighted roster the wave cycles
+ * through. The cycle length = roster.length; spawnCount % length picks
+ * the slot. The roster's last-unlocked enemy is **duplicated** so it
+ * gets ~2x weight (the most recent threat dominates the wave).
+ *
+ * Ordering matters: tiers ranked by `unlockAt` DESCENDING so the first
+ * match wins. Adding a new threshold is one row insert — no new
+ * if-branch in pickEnemyRole.
+ */
+interface EscalationTier {
+  /** Game-seconds at which this tier unlocks. 0 = baseline. */
+  unlockAt: number;
+  /** Weighted roster; tier's newest enemy is duplicated for 2x weight. */
+  roster: readonly UnitType[];
+}
+
+const ESCALATION_SCHEDULE: readonly EscalationTier[] = (() => {
+  // Bind config.json thresholds to tier rows. Last roster entry is the
+  // "newest" enemy duplicated for 2x cycle weight.
+  return [
+    {
+      unlockAt: COMBAT.spawn.blackKnightThreshold,
+      roster: ['Goblin', 'Vampire', 'Orc', 'Witch', 'BlackKnight', 'BlackKnight'],
+    },
+    {
+      unlockAt: COMBAT.spawn.witchThreshold,
+      roster: ['Goblin', 'Vampire', 'Orc', 'Witch', 'Witch'],
+    },
+    {
+      unlockAt: COMBAT.spawn.orcThreshold,
+      roster: ['Goblin', 'Vampire', 'Orc', 'Orc'],
+    },
+    {
+      unlockAt: COMBAT.spawn.vampireThreshold,
+      roster: ['Goblin', 'Vampire', 'Vampire'],
+    },
+    {
+      unlockAt: 0,
+      roster: ['Goblin'],
+    },
+  ];
+})();
 
 /**
  * Pick the enemy role for a spawn event. Uses `spawnCount` (deterministic,
  * ECS-persisted) as the selection index — no Math.random(), no external PRNG.
  *
- * Escalation schedule (game-seconds elapsed):
- *  0–299   → Goblin only
- *  300–599 → Goblin, Vampire, Vampire  (3-cycle, 1/3 Goblin)
- *  600–899 → Goblin, Vampire, Orc, Orc  (4-cycle, 1/4 Goblin)
- *  900–1199→ Goblin, Vampire, Orc, Witch, Witch  (5-cycle, 1/5 Goblin)
- *  1200+   → Goblin, Vampire, Orc, Witch, BlackKnight, BlackKnight (6-cycle, 1/6 Goblin)
+ * M_REGISTRY.15 — the old 4-tier if-cascade became a single lookup over
+ * ESCALATION_SCHEDULE: first tier whose `unlockAt <= gameElapsed` wins,
+ * then `spawnCount % roster.length` indexes into the weighted roster.
  *
- * M_QUALITY.2 — late-game share rebalanced (CR MED-10): the previous
- * cycles kept Goblin at 33-40% throughout escalation, plateauing difficulty.
- * Now Goblin's share strictly DECREASES as tougher enemies unlock; the most
- * recently unlocked enemy gets a 2x weight so the *new* threat dominates
- * the wave each tier.
+ * M_QUALITY.2 — late-game share rebalanced (CR MED-10): Goblin's share
+ * strictly DECREASES as tougher enemies unlock; each tier's newest
+ * threat is duplicated in the roster for 2x cycle weight.
  */
 export function pickEnemyRole(spawnCount: number, gameElapsed: number): UnitType {
-  if (gameElapsed >= BLACK_KNIGHT_THRESHOLD) {
-    const cycle = spawnCount % 6;
-    // [Goblin, Vampire, Orc, Witch, BlackKnight, BlackKnight] — newly unlocked enemy 2x weighted
-    if (cycle === 0) return 'Goblin';
-    if (cycle === 1) return 'Vampire';
-    if (cycle === 2) return 'Orc';
-    if (cycle === 3) return 'Witch';
-    return 'BlackKnight';
+  for (const tier of ESCALATION_SCHEDULE) {
+    if (gameElapsed >= tier.unlockAt) {
+      const idx = spawnCount % tier.roster.length;
+      // tier.roster.length > 0 by construction; idx is a valid index.
+      return tier.roster[idx] as UnitType;
+    }
   }
-  if (gameElapsed >= WITCH_THRESHOLD) {
-    const cycle = spawnCount % 5;
-    if (cycle === 0) return 'Goblin';
-    if (cycle === 1) return 'Vampire';
-    if (cycle === 2) return 'Orc';
-    return 'Witch'; // 2/5 weight on the new enemy
-  }
-  if (gameElapsed >= ORC_THRESHOLD) {
-    const cycle = spawnCount % 4;
-    if (cycle === 0) return 'Goblin';
-    if (cycle === 1) return 'Vampire';
-    return 'Orc'; // 2/4 weight on the new enemy
-  }
-  if (gameElapsed >= VAMPIRE_THRESHOLD) {
-    const cycle = spawnCount % 3;
-    if (cycle === 0) return 'Goblin';
-    return 'Vampire'; // 2/3 weight on the new enemy
-  }
+  // Unreachable — the unlockAt=0 baseline tier always matches.
   return 'Goblin';
 }
 
