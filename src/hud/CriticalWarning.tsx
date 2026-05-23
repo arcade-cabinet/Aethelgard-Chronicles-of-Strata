@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { duckMusic, restoreMusic } from '@/audio/buses';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { FactionBase, Health } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
@@ -35,11 +36,15 @@ export function CriticalWarning({ game }: { game: GameState }) {
       // doesn't spam every frame while the base is below threshold
       if (!prev && isCritical) {
         emitUiSound('critical-alarm');
+        // M_EXPANSION.AU.41 — duck music to 40% so the alarm cuts
+        // through. Restored on the true→false edge below.
+        duckMusic();
         // M_AUDIT2.UX.12 — SR announcement comes from the rendered
         // role="alert" div mounting (auto-announces on insert).
         // The previous announce() bus call would double-fire because
         // the rendered div ALSO triggers SR speech — reviewer flagged.
       }
+      if (prev && !isCritical) restoreMusic();
       return prev === isCritical ? prev : isCritical;
     });
   }, [game]);

@@ -145,6 +145,31 @@ export function stopMusic(): void {
   }
 }
 
+/**
+ * M_EXPANSION.AU.41 — duck the music volume for the duration of an
+ * urgent event (today: the critical-alarm pulse). Lerps the live
+ * Howl's volume toward `ducked` (default 0.4) over 250ms; the caller
+ * must invoke restoreMusic() to fade it back.
+ */
+let musicBaselineVolume = 0.5;
+let duckActive = false;
+export function duckMusic(ducked = 0.4): void {
+  if (!currentMusicHowl) return;
+  if (duckActive) return;
+  duckActive = true;
+  musicBaselineVolume = currentMusicHowl.volume();
+  currentMusicHowl.fade(musicBaselineVolume, ducked, 250);
+}
+export function restoreMusic(): void {
+  if (!currentMusicHowl) {
+    duckActive = false;
+    return;
+  }
+  if (!duckActive) return;
+  duckActive = false;
+  currentMusicHowl.fade(currentMusicHowl.volume(), musicBaselineVolume, 600);
+}
+
 /** Mute or unmute all Howler audio globally. */
 export function setMuted(muted: boolean): void {
   Howler.mute(muted);
