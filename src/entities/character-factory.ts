@@ -21,6 +21,7 @@ import {
   type UnitType,
 } from '@/ecs/components';
 import type { Difficulty } from '@/game/difficulty';
+import { unitProfileFor } from '@/rules/unit-profiles';
 
 /** Parameters for spawning a character entity. */
 export interface CreateCharacterParams {
@@ -50,10 +51,13 @@ export interface CreateCharacterParams {
 }
 
 /**
- * Spawn a character ECS entity. One parameterized factory for every unit role:
- * it assembles the archetype's trait set (Transform, HexPosition, Unit, Faction,
- * Movement, PathQueue, AnimationState, Selectable) with role-appropriate values.
- * The r3f layer renders entities that carry these traits.
+ * Spawn a character ECS entity. ONE parameterised factory for every unit
+ * role — the role-switch and damage-type-ternary that used to live here
+ * are gone (M_REGISTRY.1). The factory now reads the unified UNIT_PROFILES
+ * registry (`src/rules/unit-profiles.ts`) for slot toggles
+ * (harvester/founder/nonCombat) + damageType, and composes the trait
+ * tuple from slot reads. Adding a new unit role is ONE row in
+ * UNIT_PROFILES + ONE stat block in combat.json — no code change here.
  */
 export function createCharacter(params: CreateCharacterParams): Entity {
   const {
@@ -67,6 +71,7 @@ export function createCharacter(params: CreateCharacterParams): Entity {
     factionOverride,
   } = params;
   const stats = unitStatFor(role);
+  const profile = unitProfileFor(role);
   const faction = factionOverride ?? stats.faction;
   const { x, z } = axialToWorld(q, r);
   const base = [
@@ -80,64 +85,60 @@ export function createCharacter(params: CreateCharacterParams): Entity {
     Selectable({ isSelected: selected }),
   ] as const;
 
-  // Peons participate in the harvest loop — add economy traits.
-  if (role === 'Peon') {
-    return world.spawn(
-      ...base,
-      Harvester({ harvestRate: 1, harvestTimer: 0 }),
-      Carrier({ carryType: 'none', amount: 0 }),
-      AssignedJob({ state: 'IDLE', targetKey: '' }),
-    );
-  }
-  // Settlers (M_MODES.6) — civilian, non-combat, no harvest loop. Carries
-  // only base traits + an AssignedJob for the founding-state machine when
-  // routed toward a target tile. Distinct from Peon via the foundBase
-  // command verb (commands.ts).
-  if (role === 'Settler') {
-    return world.spawn(...base, AssignedJob({ state: 'IDLE', targetKey: '' }));
+  // Non-combat civilian roles (Peon + Settler today). Skip the combat
+  // trait block entirely — these roles are governed by the worker /
+  // founding subsystems, not the combat tick.
+  if (profile.nonCombat) {
+    const civilian: Parameters<World['spawn']> = [...base];
+    if (profile.harvester) {
+      civilian.push(Harvester({ harvestRate: 1, harvestTimer: 0 }));
+      civilian.push(Carrier({ carryType: 'none', amount: 0 }));
+      civilian.push(AssignedJob({ state: 'IDLE', targetKey: '' }));
+    } else if (profile.founder) {
+      // Founder carries an AssignedJob for the founding state machine
+      // routed by the foundBase command verb (commands.ts).
+      civilian.push(AssignedJob({ state: 'IDLE', targetKey: '' }));
+    }
+    return world.spawn(...civilian);
   }
 
-  // Combat units (Footman, Goblin, Orc) get Health, Combatant, and EnemyTarget.
+  // Combat roles — Footman, Trebuchet, Witch, all enemy units. Require
+  // the full combat-stat tuple in combat.json. A combat-role config
+  // missing hp/attackDamage/attackRange/attackCooldown is a config bug —
+  // fail fast instead of silently spawning a broken combatant.
   const { hp, attackDamage, attackRange, attackCooldown } = stats;
   if (
-    hp !== undefined &&
-    attackDamage !== undefined &&
-    attackRange !== undefined &&
-    attackCooldown !== undefined
+    hp === undefined ||
+    attackDamage === undefined ||
+    attackRange === undefined ||
+    attackCooldown === undefined
   ) {
-    // Apply difficulty multiplier to enemy roles only. Player roles are unaffected.
-    const mult = stats.faction === 'enemy' ? difficultyMultiplierFor(difficulty) : 1.0;
-    const scaledHp = Math.round(hp * mult);
-    const scaledDamage = Math.round(attackDamage * mult);
-    const combatTraits = [
-      Health({ current: scaledHp, max: scaledHp }),
-      Combatant({ attackDamage: scaledDamage, attackRange, attackCooldown, attackTimer: 0 }),
-      EnemyTarget({ targetId: -1 }),
-      // M_ARCHETYPE.5 — military units are OFFENSIVE EMITTERS on legs. They
-      // adopt the same trait Watchtowers have (spec 102). dps approximates
-      // attackDamage/attackCooldown so the offensive-behavior system applies
-      // continuous damage in range at the same rate combat.ts would. The
-      // damageType is per-role (M_FEATURE.5+.6): Trebuchet→siege (melts
-      // walls); Witch→magic (cuts magic-armor); everything else→normal.
-      OffensiveBehavior({
-        radius: attackRange,
-        // Use SCALED damage so difficulty multiplier feeds into the unified-
-        // emitter damage stream too (CodeRabbit MAJOR — was base attackDamage,
-        // letting Combatant scale but OffensiveBehavior bypass the scale).
-        dps: scaledDamage / attackCooldown,
-        damageType: role === 'Trebuchet' ? 'siege' : role === 'Witch' ? 'magic' : 'normal',
-      }),
-    ] as const;
-    return world.spawn(...base, ...combatTraits);
+    throw new Error(
+      `character-factory: ${role} is a combat role (UNIT_PROFILES.nonCombat=false) but is ` +
+        `missing combat stats (hp/attackDamage/attackRange/attackCooldown). ` +
+        `Check src/config/combat.json + src/rules/unit-profiles.ts.`,
+    );
   }
-
-  // CodeRabbit: fail fast — a non-Peon role missing combat stats is a
-  // config bug, not a silently-broken combat entity. The only legitimate
-  // stat-less role is Peon (handled above). Hitting this branch means
-  // config/combat.json + character-factory disagree about a unit type;
-  // throw so the failure surfaces at spawn time, not mid-fight.
-  throw new Error(
-    `character-factory: ${role} is missing combat stats (hp/attackDamage/attackRange/attackCooldown). ` +
-      `Check src/config/combat.json + UnitType union.`,
+  // Apply difficulty multiplier to enemy roles only. Player roles unaffected.
+  const mult = stats.faction === 'enemy' ? difficultyMultiplierFor(difficulty) : 1.0;
+  const scaledHp = Math.round(hp * mult);
+  const scaledDamage = Math.round(attackDamage * mult);
+  return world.spawn(
+    ...base,
+    Health({ current: scaledHp, max: scaledHp }),
+    Combatant({ attackDamage: scaledDamage, attackRange, attackCooldown, attackTimer: 0 }),
+    EnemyTarget({ targetId: -1 }),
+    // M_ARCHETYPE.5 — military units are OFFENSIVE EMITTERS on legs. They
+    // adopt the same trait Watchtowers have (spec 102). dps approximates
+    // scaledDamage/attackCooldown so the offensive-behavior system applies
+    // continuous damage in range at the same rate combat.ts would. damageType
+    // is now a slot read off UNIT_PROFILES (M_REGISTRY.1) — was a per-role
+    // ternary; new combat roles drop in via UNIT_PROFILES + a DamageType
+    // union extension if needed.
+    OffensiveBehavior({
+      radius: attackRange,
+      dps: scaledDamage / attackCooldown,
+      damageType: profile.damageType,
+    }),
   );
 }

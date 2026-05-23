@@ -9,12 +9,13 @@
 import { type GameState, runEconomyTick, startGame } from '@/game/game-state';
 import type { GameEconomy } from '@/game/economy';
 import type { GameClock } from '@/game/clock';
-import type { Weather } from '@/game/weather';
+import type { Weather, WeatherState } from '@/game/weather';
 import type { ResearchId } from '@/game/research';
 import type { RallyState } from '@/game/rally';
 import type { ZoneState } from '@/game/zone';
 import type { Faction } from '@/ecs/components';
 import { type WorldSnapshot, deserializeWorld, serializeWorld } from './serialize';
+import { ECONOMY } from '@/config/economy';
 
 /** Serialized form of one faction's ZoneState — Sets/Maps as arrays. */
 interface ZoneSnapshot {
@@ -120,7 +121,12 @@ export function deserializeGame(snap: GameSnapshot): GameState {
   game.economy.player = pickEconomy(snap.economy.player);
   game.economy.enemy = pickEconomy(snap.economy.enemy);
   game.clock.elapsed = safeFinite(snap.clock.elapsed, 0);
-  game.weather.state = snap.weather.state;
+  // M_SEC.5 follow-up (security audit HIGH) — validate weather.state
+  // against the WeatherState enum. An attacker-controlled `"__proto__"`
+  // (or any unknown string) makes WEATHER_SPEED_MULTIPLIER[state]
+  // resolve to undefined, NaN-poisoning the pathFollowSystem multiplier
+  // and silently stalling/teleporting every unit each tick.
+  game.weather.state = isValidWeatherState(snap.weather.state) ? snap.weather.state : 'sunny';
   game.weather.timer = safeFinite(snap.weather.timer, 0);
   // ResearchId is a narrow union but stored as strings on disk; runtime
   // safety comes from the registry lookup, not the union tag.
@@ -145,6 +151,14 @@ const MAX_ENTITY_COUNT = 5000;
 /** Hard cap on board radius (covers Huge tier + headroom). */
 const MAX_MAP_SIZE = 50;
 
+/** Allowlist of valid weather states — must mirror WeatherState union. */
+const VALID_WEATHER_STATES: ReadonlySet<WeatherState> = new Set(['sunny', 'fog', 'rain']);
+
+/** True if `s` is one of the WeatherState enum values. */
+function isValidWeatherState(s: unknown): s is WeatherState {
+  return typeof s === 'string' && VALID_WEATHER_STATES.has(s as WeatherState);
+}
+
 /** Coerce to finite number; fallback if NaN / Infinity / non-number. */
 function safeFinite(n: unknown, fallback: number): number {
   return typeof n === 'number' && Number.isFinite(n) ? n : fallback;
@@ -159,7 +173,8 @@ function pickEconomy(eco: unknown): GameEconomy {
     gold: safeFinite(e.gold, 0),
     science: safeFinite(e.science, 0),
     usedSupply: safeFinite(e.usedSupply, 0),
-    maxSupply: safeFinite(e.maxSupply, 5),
+    // Default to the fresh-game cap, not a magic 5 (simplifier feedback).
+    maxSupply: safeFinite(e.maxSupply, ECONOMY.startingResources.maxSupply),
     kills: safeFinite(e.kills, 0),
   };
 }

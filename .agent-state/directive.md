@@ -535,7 +535,7 @@ the smallest end-to-end proof, then drain in dependency order.
   `EnemyBase.tsx` into ONE `<FactionBase entity={...} />` component
   reading Skin slot for prop GLBs + offsets. Per-faction divergence
   becomes 100% data.
-- [ ] M_REGISTRY.5 — **FIRST PROOF** — unify per-Building-
+- [x] M_REGISTRY.5 — **FIRST PROOF** — unify per-Building-
   Type tables (BUILDING_BEHAVIORS, BUILDING_DISPLAY, BUILDING_COSTS,
   BUILDING_SUPPLY, ScienceProducer Library-branch in commands.ts:161)
   into ONE `BUILDING_PROFILES` registry with composable slot fields
@@ -648,16 +648,16 @@ overlap exists.
 
 #### BLOCKER
 
-- [ ] M_SEC.1 — strip Cordova `<access origin="*" />`
+- [x] M_SEC.1 — strip Cordova `<access origin="*" />`
   from `android/app/src/main/res/xml/config.xml:3`; scope to
   `https://com.arcadecabinet.aethelgard/*` or delete entirely.
   Add explicit `usesCleartextTraffic="false"` + a
   `networkSecurityConfig` to AndroidManifest.
-- [ ] M_SEC.2 — tighten `android/app/src/main/res/xml/
+- [x] M_SEC.2 — tighten `android/app/src/main/res/xml/
   file_paths.xml:3-4` FileProvider config. Replace `path="."`
   (entire ext+cache root) with explicit named subdirectories
   (`path="screenshots/"`).
-- [ ] M_SEC.3 — `android:allowBackup="false"` +
+- [x] M_SEC.3 — `android:allowBackup="false"` +
   `android:fullBackupContent="@xml/backup_rules"` (deny-list
   databases/ + shared_prefs/) + `android:dataExtractionRules`
   for Android 12+. Currently `allowBackup=true` permits `adb backup`
@@ -668,7 +668,7 @@ overlap exists.
 
 #### HIGH
 
-- [ ] M_SEC.5 — `persistence/serialize-game.ts:48-78`
+- [x] M_SEC.5 — `persistence/serialize-game.ts:48-78`
   `deserializeGame` performs zero structural validation before
   `Object.assign(game.clock, snap.clock)` etc. Add zod (or hand-
   rolled) schema validator that rejects tampered payloads:
@@ -676,30 +676,30 @@ overlap exists.
   - type-check economy numbers (finite, not Infinity/NaN)
   - bounds-check config.mapSize (cap at 50)
   - reject `__proto__` / `constructor` keys (prototype pollution)
-- [ ] M_SEC.6 — `persistence/serialize.ts:117-138`
+- [x] M_SEC.6 — `persistence/serialize.ts:117-138`
   `deserializeWorld` feeds arbitrary trait DATA into `traitObj(data)`
   unchecked. Per-trait schema validator at load: numbers finite,
   enums in declared set, faction in ['player','enemy'], q/r in
   board radius bounds. Couples to M_REGISTRY.25.
-- [ ] M_SEC.7 — `App.tsx` resume-fallback path sets
+- [x] M_SEC.7 — `App.tsx` resume-fallback path sets
   `eventSeed: record.seedPhrase` on deserializeGame failure —
   collapses two-PRNG model. Either delete fallback (force fresh
   start on corrupt save) or mint fresh via createFreshEventSeed().
-- [ ] M_SEC.8 — `NewGameModal.tsx:168-172` seed input
+- [x] M_SEC.8 — `NewGameModal.tsx:168-172` seed input
   has zero validation. Add `maxLength={64}`, regex
   `/^[a-z\- ]+$/i`, NFC normalize, `autoComplete="off"`,
   `spellCheck={false}`, `inputMode="text"`.
-- [ ] M_SEC.9 — `index.html:9-13` loads fonts from
+- [x] M_SEC.9 — `index.html:9-13` loads fonts from
   fonts.googleapis.com. Self-host Metamorphous + Inter under
   `public/fonts/` (both OFL-licensed). Removes GDPR/privacy leak
   + CDN-compromise vector.
-- [ ] M_SEC.10 — `index.html` no CSP. Add
+- [x] M_SEC.10 — `index.html` no CSP. Add
   `<meta http-equiv="Content-Security-Policy" content="default-src
   'self'; script-src 'self'; style-src 'self' 'unsafe-inline';
   img-src 'self' data:; connect-src 'self'; object-src 'none';
   base-uri 'self'; frame-ancestors 'none'">` (allow capacitor:
   scheme for Android).
-- [ ] M_SEC.11 — cap entity count at deserialize. A
+- [x] M_SEC.11 — cap entity count at deserialize. A
   tampered snapshot with 100k Unit entities would (after M_SEC.6
   bypass) spawn 100k yuka Vehicles. Reject snapshots > 5000
   entities.
