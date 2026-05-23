@@ -1521,7 +1521,7 @@ local-review-trio after each ~5-item batch.
 - [x] [LOW] M_AUDIT2.SEC2.5 — delete legacy Cordova config.xml shell
 
 **Storage (6-9)**
-- [ ] [HIGH] M_AUDIT2.SEC2.6 — Persistence.reset() to delete DB + jeep-sqlite element
+- [x] [HIGH] M_AUDIT2.SEC2.6 — Persistence.reset() to delete DB + jeep-sqlite element
 - [x] [MED] M_AUDIT2.SEC2.7 — saves row count cap (>N delete oldest) + QuotaExceededError UI surface
 - [ ] [MED] M_AUDIT2.SEC2.8 — DB_NAME prefix with appId slug + version suffix
 - [x] [MED] M_AUDIT2.SEC2.9 — cap row.snapshot.length pre-JSON.parse (2MB)
@@ -1532,7 +1532,7 @@ local-review-trio after each ~5-item batch.
 - [x] [MED] M_AUDIT2.SEC2.12 — @types/node pinned to 22.x (matches runtime)
 - [x] [HIGH] M_AUDIT2.SEC2.13 — `pnpm audit --audit-level=high --prod` CI step
 - [x] [MED] M_AUDIT2.SEC2.14 — .npmrc enable-pre-post-scripts=false + onlyBuiltDependencies allowlist
-- [ ] [MED] M_AUDIT2.SEC2.15 — SHA-pin dependency-review-action@v4 + codeql-action/init+analyze@v3
+- [x] [MED] M_AUDIT2.SEC2.15 — SHA-pin dependency-review-action@v4 + codeql-action/init+analyze@v3
 
 **Build/CI (16-22)**
 - [ ] [HIGH] M_AUDIT2.SEC2.16 — Gradle cache restore-keys cross-PR poisoning — scope by branch or drop restore-keys

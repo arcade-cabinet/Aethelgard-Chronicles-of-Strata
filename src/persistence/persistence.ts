@@ -70,6 +70,16 @@ export interface Persistence {
    * so each session gets a distinct, deterministic event stream.
    */
   advanceAndPersistEventSeed(currentRng: Rng): Promise<string>;
+  /**
+   * M_AUDIT2.SEC2.6 — wipe ALL persisted state: every save row + every
+   * Preference key (mute, onboarding, event seed). Used by the
+   * "Reset all data" settings option (planned UX hook) and exposed
+   * for tests that need a clean slate without re-creating the
+   * persistence facade. Best-effort: errors on individual rows or
+   * keys are logged + swallowed so a partial failure doesn't strand
+   * the user.
+   */
+  reset(): Promise<void>;
 }
 
 /**
@@ -407,6 +417,25 @@ export function createPersistence(): Persistence {
       const next = advanceEventSeed(currentRng);
       await Preferences.set({ key: EVENT_SEED_KEY, value: next });
       return next;
+    },
+
+    async reset(): Promise<void> {
+      // M_AUDIT2.SEC2.6 — wipe saves table.
+      try {
+        const db = await openDb();
+        if (db) await db.run(`DELETE FROM saves;`);
+      } catch (err) {
+        console.warn('[persistence] reset: clearing saves failed', err);
+      }
+      // Wipe every namespaced Preference key, including the event
+      // seed (regenerated on the next getEventSeed call).
+      for (const key of Object.values(PREF_KEYS)) {
+        try {
+          await Preferences.remove({ key });
+        } catch (err) {
+          console.warn(`[persistence] reset: clearing preference ${key} failed`, err);
+        }
+      }
     },
   };
 }

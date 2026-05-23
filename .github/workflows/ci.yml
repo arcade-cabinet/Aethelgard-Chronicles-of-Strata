@@ -113,7 +113,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: actions/dependency-review-action@v4
+      # M_AUDIT2.SEC2.15 — SHA-pinned (GitHub OpenSSF best practice).
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         with:
           fail-on-severity: high
 
@@ -126,10 +127,11 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      - uses: github/codeql-action/init@v3
+      # M_AUDIT2.SEC2.15 — SHA-pinned to v3 stable.
+      - uses: github/codeql-action/init@fee9466b8957867761f2d78f922ab084e3e2dd17 # v3
         with:
           languages: javascript-typescript
-      - uses: github/codeql-action/analyze@v3
+      - uses: github/codeql-action/analyze@fee9466b8957867761f2d78f922ab084e3e2dd17 # v3
 
   android-apk:
     name: Build debug APK
