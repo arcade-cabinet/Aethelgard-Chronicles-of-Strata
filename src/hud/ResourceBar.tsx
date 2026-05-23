@@ -101,11 +101,17 @@ function snapshot(game: GameState): Readout[] {
     // M_AUDIT2.UX.10 — locale-formatted with thousands separator.
     rows.push({ id: d.domId, label: d.label, color: d.color, value: formatInt(e[slot]) });
   }
+  // M_AUDIT2.UX.14 — supply-cap nag. When the player hits cap, the
+  // value flashes danger-red + appends "(cap)" so they know why Train
+  // buttons grey out. Without this the player tries to train, the
+  // button does nothing, and there's no inline signal.
+  const atCap = e.usedSupply >= e.maxSupply;
+  const supplyLabel = atCap ? `${e.usedSupply}/${e.maxSupply} (cap)` : `${e.usedSupply}/${e.maxSupply}`;
   rows.push({
     id: 'val-supply',
     label: 'Supply',
-    color: HUD_THEME.color.supply,
-    value: `${e.usedSupply}/${e.maxSupply}`,
+    color: atCap ? HUD_THEME.color.danger : HUD_THEME.color.supply,
+    value: supplyLabel,
   });
   return rows;
 }

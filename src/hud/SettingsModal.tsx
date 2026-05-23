@@ -1,7 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
 import { setMuted } from '@/audio/buses';
-import { type Persistence, safePersistenceRead } from '@/persistence/persistence';
+import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 import { MUTE_PREF_KEY } from './SoundToggle';
@@ -107,12 +107,39 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
             </button>
           </div>
 
+          {/* M_AUDIT2.UX.41 — Replay tutorial. Clears the
+              `aethelgard.onboardingSeen` Preference; on the next page
+              load (or new game) the OnboardingOverlay re-opens because
+              its first render checks the same key. */}
+          <button
+            type="button"
+            id="settings-replay-tutorial"
+            onClick={() => {
+              void persistence.setSetting(PREF_KEYS.onboarding, '');
+              onOpenChange(false);
+            }}
+            style={{
+              width: '100%',
+              marginTop: 14,
+              padding: '10px',
+              borderRadius: 10,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(56,189,248,0.06)',
+              color: HUD_THEME.color.muted,
+              fontFamily: HUD_THEME.font.body,
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+            }}
+          >
+            Replay tutorial on next session
+          </button>
+
           <button
             type="button"
             onClick={() => onOpenChange(false)}
             style={{
               width: '100%',
-              marginTop: 18,
+              marginTop: 14,
               padding: '12px',
               borderRadius: 10,
               border: `1px solid ${HUD_THEME.color.border}`,

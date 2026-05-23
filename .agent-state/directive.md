@@ -1605,11 +1605,11 @@ local-review-trio after each ~5-item batch.
 - [x] [MAJ] M_AUDIT2.UX.11 — formatTime(sec)→MM:SS in EndTurnButton + GameOverModal + PauseControl
 - [ ] [MAJ] M_AUDIT2.UX.12 — AriaLiveRegion + emitGameEvent bus; CriticalWarning role="alert"
 - [ ] [MAJ] M_AUDIT2.UX.13 — idle-peon "?" billboard + HUD log strip
-- [ ] [MAJ] M_AUDIT2.UX.14 — supply-cap nag (danger color on val-supply + (cap) badge + supply-cap-hit event)
+- [x] [MAJ] M_AUDIT2.UX.14 — supply-cap nag (danger color on val-supply + (cap) badge + supply-cap-hit event)
 - [ ] [MAJ] M_AUDIT2.UX.15 — WeatherIndicator.tsx pill + weather-change event in sound-map
 
 **MAJOR — interaction / nav (16-21)**
-- [ ] [MAJ] M_AUDIT2.UX.16 — Segmented → role=radiogroup arrow-key nav + autoFocus seed field
+- [x] [MAJ] M_AUDIT2.UX.16 — Segmented → role=radiogroup arrow-key nav + autoFocus seed field
 - [ ] [MAJ] M_AUDIT2.UX.17 — DiscoveriesPanel prereq tree visualization (purchased/available/gated)
 - [ ] [MAJ] M_AUDIT2.UX.18 — HUD pill collision audit (portrait vs landscape slot overlap)
 - [x] [MAJ] M_AUDIT2.UX.19 — SelectionPanel width clamp(220px,22vw,280px) + ellipsis overflow
@@ -1642,5 +1642,5 @@ local-review-trio after each ~5-item batch.
 - [x] [MIN] M_AUDIT2.UX.38 — ZoneLegend top viewport-aware (60/80)
 - [ ] [MIN] M_AUDIT2.UX.39 — TitleBackground: verify low-poly biome teaser (or add rotating tiles)
 - [x] [MIN] M_AUDIT2.UX.40 — EndTurnButton: setTick only when displayed integer changes (not every 100ms)
-- [ ] [MIN] M_AUDIT2.UX.41 — Settings modal "Replay tutorial" link (reopen OnboardingOverlay)
+- [x] [MIN] M_AUDIT2.UX.41 — Settings modal "Replay tutorial" link (reopen OnboardingOverlay)
 - [x] [MIN] M_AUDIT2.UX.42 — hint font size floor 0.78rem (mobile readability)

@@ -56,14 +56,34 @@ function Segmented<T extends string>({
   labels: Record<T, string>;
   onChange: (v: T) => void;
 }) {
+  // M_AUDIT2.UX.16 — semantic radiogroup. Arrow keys move between
+  // options; only the active option is in the tab order
+  // (tabIndex={active ? 0 : -1}) so keyboard navigation through the
+  // modal traverses 1 stop per group instead of N options per group.
+  const onKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const idx = options.indexOf(value);
+    const len = options.length;
+    const nextIdx = e.key === 'ArrowRight' ? (idx + 1) % len : (idx - 1 + len) % len;
+    const next = options[nextIdx];
+    if (next !== undefined) onChange(next);
+  };
   return (
-    <div style={{ display: 'flex', gap: 6 }}>
+    <div
+      role="radiogroup"
+      onKeyDown={onKey}
+      style={{ display: 'flex', gap: 6 }}
+    >
       {options.map((opt) => {
         const active = opt === value;
         return (
           <button
             key={opt}
             type="button"
+            role="radio"
+            aria-checked={active}
+            tabIndex={active ? 0 : -1}
             onClick={() => onChange(opt)}
             style={{
               flex: 1,
@@ -158,6 +178,10 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             <input
               id="seed-input"
               value={seedPhrase}
+              // M_AUDIT2.UX.16 — autoFocus the seed input so the modal
+              // opens with the cursor where the player will start typing.
+              // biome-ignore lint/a11y/noAutofocus: modal-open autofocus is the expected UX.
+              autoFocus
               // M_SEC.8 — seed input cap + sanitise: 64 chars max, letters
               // and hyphens and spaces only, NFC-normalise (rejects RTL
               // overrides / zero-width joiners), autoComplete off so
