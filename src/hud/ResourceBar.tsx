@@ -28,7 +28,20 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
   useEffect(() => {
     let raf = 0;
     const tick = () => {
-      setReadouts(snapshot(game));
+      // Diff snapshot vs previous — skip the setState (and React reconcile)
+      // when readouts are unchanged. Resource totals only change on harvest/
+      // spend/training, not every frame. CodeRabbit-flagged: unconditional
+      // setState every RAF was a 60Hz waste.
+      setReadouts((prev) => {
+        const next = snapshot(game);
+        if (
+          next.length === prev.length &&
+          next.every((r, i) => r.value === prev[i]?.value && r.id === prev[i]?.id)
+        ) {
+          return prev;
+        }
+        return next;
+      });
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
