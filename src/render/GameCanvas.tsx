@@ -29,6 +29,7 @@ import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
 import { Units } from '@/world/Units';
 import { Water } from '@/world/Water';
+import { ContestedPulse } from '@/world/ContestedPulse';
 import { ZoneBorder } from '@/world/ZoneBorder';
 import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';
@@ -179,6 +180,10 @@ function Scene({
       <RallyMarker game={game} />
       <SelectionRing game={game} />
       <ZoneBorder game={game} />
+      {/* M_EXPANSION.S.56 — render the contested-tile pulse on top of
+          encroached tiles (encroachment system already maintains
+          zone.pulsing on the sim side). */}
+      <ContestedPulse game={game} />
       <CameraRig viewport={viewport} boardRadius={game.board.radius} />
       {onCameraReady && <CameraTap onReady={onCameraReady} />}
     </>
