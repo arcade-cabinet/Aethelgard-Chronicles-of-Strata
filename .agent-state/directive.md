@@ -1931,7 +1931,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [WAIT-INFRA] M_EXPANSION.O.145 — Crash reporter facade: capture window.onerror + unhandledrejection → an opt-in queue → batch send (when consent flips on)
 - [ ] [WAIT-INFRA] M_EXPANSION.O.146 — Performance telemetry: ms/frame histogram bucketed by viewport profile (opt-in)
 - [ ] [WAIT-INFRA] M_EXPANSION.O.147 — Feature-flag mechanism: read a JSON from public/ to gate dev-only features
-- [ ] [MED]  M_EXPANSION.O.148 — `pnpm release:dry-run` — local-simulation of the full release pipeline against a fake keystore
+- [x] [MED]  M_EXPANSION.O.148 — `pnpm release:dry-run` — local-simulation of the full release pipeline against a fake keystore
 - [ ] [WAIT-INFRA] M_EXPANSION.O.149 — Docker image of the dev environment (Node 22 + pnpm + Java 21 + Android SDK) for contributor onboarding
 - [ ] [WAIT-INFRA] M_EXPANSION.O.150 — Codecov integration via the existing coverage gate
 - [ ] [LOW]  M_EXPANSION.O.151 — Renovate or Dependabot grouped major bumps (split from the existing weekly minor/patch)

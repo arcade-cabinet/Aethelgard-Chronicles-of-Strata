@@ -31,7 +31,8 @@
     "cap": "cap",
     "cap:sync": "pnpm build && cap sync",
     "cap:run:android": "cap run android",
-    "verify": "pnpm check && pnpm lint && pnpm format:check && pnpm test"
+    "verify": "pnpm check && pnpm lint && pnpm format:check && pnpm test",
+    "release:dry-run": "tsx scripts/release-dry-run.ts"
   },
   "dependencies": {
     "@capacitor-community/sqlite": "8.1.0",
