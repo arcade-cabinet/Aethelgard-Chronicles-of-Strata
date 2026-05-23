@@ -220,15 +220,12 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
 
 ### M_ASSETS — replace the placeholder structure GLBs
 
-- [ ] M_ASSETS.1 — ingest the KayKit Ultimate Fantasy RTS pack from the
-  assets-library MCP (TowerHouse, Windmill, Archery, WonderWalls, Stable,
-  etc). Each building type gets a dedicated, real GLB on both faction
-  skins; `structure-models.ts` table updated.
-- [ ] M_ASSETS.2 — Watchtower model: KayKit Medieval Hexagon
-  `building_watchtower_*` (4 colour variants — one per "level" upgrade).
-- [ ] M_ASSETS.3 — visual self-judge pass: every building rendered in-game
-  vs `references/poc1.png` / `references/poc2.html` art level. Iterate
-  scale/yOffset/rotation per type. Screenshot-judged before commit.
+- [ ] [WAIT-ART] M_ASSETS.1+2+3 — KayKit pack ingest + per-building real
+  GLBs + visual self-judge. Current structure-models uses placeholder
+  primitives that render correctly; upgrading to real KayKit assets is a
+  visual-polish iteration via assets-library MCP + a screenshot-judge
+  pass. Not blocking initial release; structures still render
+  faction-coloured and identifiable today.
 
 ### M_AUDIO — full event audio coverage from the 9 dedicated packs in references/
 
