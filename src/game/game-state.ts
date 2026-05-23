@@ -295,6 +295,16 @@ function findCentralWalkableTile(board: BoardData): { q: number; r: number; leve
 }
 
 /** Up to `count` distinct walkable tiles adjacent to (q, r), nearest-ring first. */
+/**
+ * Resolve a faction's base hex key from the live game state. M_REGISTRY.16
+ * follow-up — replaces a per-tick `Record<Faction, string>` allocation
+ * in the depositSystem loop. A new tribe extends this switch in ONE
+ * place; the loop auto-uses it.
+ */
+function baseKeyFor(game: GameState, faction: Faction): string {
+  return faction === 'player' ? game.townHallKey : game.enemyBaseKey;
+}
+
 function adjacentWalkableTiles(
   board: BoardData,
   q: number,
@@ -726,15 +736,12 @@ export function runEconomyTick(game: GameState, delta: number): void {
   }
 
   // resource deposit — each faction's carrying peons deposit at their own base.
-  // M_REGISTRY.16: iterate FACTIONS instead of hand-unrolling player+enemy
-  // so a future tribe drops in by extending FACTIONS + the baseKey lookup.
+  // M_REGISTRY.16: iterate FACTIONS instead of hand-unrolling player+enemy.
+  // Reviewer follow-up: avoid the per-tick `baseKeyForFaction` allocation;
+  // baseKeyFor() reads the stable game-state fields directly.
   const resourceEvents: ResourceDepositEvent[] = [];
-  const baseKeyForFaction: Record<Faction, string> = {
-    player: game.townHallKey,
-    enemy: game.enemyBaseKey,
-  };
   for (const f of FACTIONS) {
-    depositSystem(game.world, game.economy[f], baseKeyForFaction[f], f, resourceEvents);
+    depositSystem(game.world, game.economy[f], baseKeyFor(game, f), f, resourceEvents);
   }
   game.lastResourceEvents = resourceEvents;
 

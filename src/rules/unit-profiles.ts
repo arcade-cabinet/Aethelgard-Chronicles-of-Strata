@@ -72,6 +72,12 @@ export interface UnitProfile {
    * units). Trebuchet is military despite being slow; Witch is military.
    */
   combatRole: CombatRole;
+  /**
+   * Selection-ring scale for this role (M_REGISTRY.19) — the selection
+   * ring sizes itself to match what's selected. Was a 4-branch ladder
+   * in SelectionRing.tsx; now a per-profile slot read.
+   */
+  selectionRadius: number;
 }
 
 /**
@@ -86,6 +92,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     founder: false,
     damageType: 'normal',
     combatRole: 'civilian',
+    selectionRadius: 0.65,
   },
   Settler: {
     harvester: false,
@@ -93,6 +100,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     founder: true,
     damageType: 'normal',
     combatRole: 'civilian',
+    selectionRadius: 0.85,
   },
   Footman: {
     harvester: false,
@@ -100,6 +108,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     founder: false,
     damageType: 'normal',
     combatRole: 'military',
+    selectionRadius: 0.85,
   },
   Trebuchet: {
     harvester: false,
@@ -108,6 +117,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     // Siege damage melts walls (M_FEATURE.5).
     damageType: 'siege',
     combatRole: 'military',
+    selectionRadius: 0.85,
   },
   Goblin: {
     harvester: false,
@@ -115,6 +125,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     founder: false,
     damageType: 'normal',
     combatRole: 'military',
+    selectionRadius: 0.85,
   },
   Orc: {
     harvester: false,
@@ -122,6 +133,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     founder: false,
     damageType: 'normal',
     combatRole: 'military',
+    selectionRadius: 0.85,
   },
   Vampire: {
     harvester: false,
@@ -129,6 +141,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     founder: false,
     damageType: 'normal',
     combatRole: 'military',
+    selectionRadius: 0.85,
   },
   BlackKnight: {
     harvester: false,
@@ -136,6 +149,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     founder: false,
     damageType: 'normal',
     combatRole: 'military',
+    selectionRadius: 0.85,
   },
   Witch: {
     harvester: false,
@@ -144,6 +158,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     // Magic damage cuts magic-armor (M_FEATURE.6).
     damageType: 'magic',
     combatRole: 'military',
+    selectionRadius: 0.85,
   },
 };
 

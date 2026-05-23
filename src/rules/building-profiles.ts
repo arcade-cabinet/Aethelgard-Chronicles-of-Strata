@@ -84,6 +84,13 @@ export interface BuildingProfile {
   supply: number;
   /** Per-tick resource production (M_REGISTRY.5 — was Library if-branch). */
   producer?: ProducerSlot;
+  /**
+   * Selection-ring scale for this building (M_REGISTRY.19) — was a
+   * branch in SelectionRing.tsx; TownHall + FactionBase get 1.5 (the
+   * largest ring); regular buildings get 1.25; Wall + similar minor
+   * structures could get smaller in future.
+   */
+  selectionRadius: number;
 }
 
 /**
@@ -102,6 +109,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     },
     // No cost — TownHall is the starting structure, placed by startGame.
     supply: 5,
+    selectionRadius: 1.5,
   },
   Farm: {
     behaviors: {},
@@ -111,6 +119,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     },
     cost: { wood: 100, stone: 0, gold: 50 },
     supply: 10,
+    selectionRadius: 1.25,
   },
   House: {
     behaviors: {},
@@ -120,6 +129,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     },
     cost: { wood: 60, stone: 0, gold: 0 },
     supply: 4,
+    selectionRadius: 1.25,
   },
   Granary: {
     behaviors: {},
@@ -129,6 +139,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     },
     cost: { wood: 80, stone: 40, gold: 0 },
     supply: 2,
+    selectionRadius: 1.25,
   },
   Barracks: {
     behaviors: {},
@@ -141,6 +152,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     },
     cost: { wood: 150, stone: 100, gold: 50 },
     supply: 0,
+    selectionRadius: 1.25,
   },
   Watchtower: {
     behaviors: { offensive: { radius: 3, dps: 6 } },
@@ -150,6 +162,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     },
     cost: { wood: 80, stone: 120, gold: 0 },
     supply: 0,
+    selectionRadius: 1.25,
   },
   Wall: {
     behaviors: { defensive: { radius: 0 } },
@@ -159,6 +172,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     },
     cost: { wood: 0, stone: 60, gold: 0 },
     supply: 0,
+    selectionRadius: 1,
   },
   Wonder: {
     behaviors: {
@@ -172,6 +186,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     },
     cost: { wood: 500, stone: 400, gold: 300 },
     supply: 5,
+    selectionRadius: 1.5,
   },
   Library: {
     behaviors: {},
@@ -181,6 +196,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     },
     cost: { wood: 120, stone: 60, gold: 80 },
     supply: 0,
+    selectionRadius: 1.25,
     // M_REGISTRY.5 — was the `type === 'Library'` branch in commands.ts:160.
     producer: { kind: 'science', rate: 1 },
   },

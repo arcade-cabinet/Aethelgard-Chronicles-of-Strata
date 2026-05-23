@@ -592,7 +592,7 @@ the smallest end-to-end proof, then drain in dependency order.
   ai-player, perception, steering, vehicle-factory, ecs/systems/ai)
   into ONE `BrainArchetype` slot consumed by ONE per-tick AI system.
   yuka Vehicle becomes implementation detail of the brain slot.
-- [ ] M_REGISTRY.19 — `SelectionRing.tsx ringScale`
+- [x] M_REGISTRY.19 — `SelectionRing.tsx ringScale`
   4-branch ladder becomes `selectionRadius` Skin slot read off
   the selected thing's profile.
 - [ ] M_REGISTRY.20 — `audio/sound-map.ts` event→asset
