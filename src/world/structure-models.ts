@@ -24,7 +24,10 @@ export interface StructureModel {
  */
 const STRUCTURE_MODELS: Record<Faction, Record<BuildingType, StructureModel>> = {
   player: {
-    TownHall: { logicalId: 'structures.town-hall', scale: 1.0, yOffset: 0 },
+    // M_MAPGEN.2 — TownHall stands distinctly larger than any other player
+    // building (Farm 0.65, House 0.5, Barracks 0.9). Bump scale + lift to
+    // sit slightly above tile level so it visually "anchors" the map.
+    TownHall: { logicalId: 'structures.town-hall', scale: 1.5, yOffset: 0.15 },
     Farm: { logicalId: 'structures.farm', scale: 0.65, yOffset: 0 },
     House: { logicalId: 'structures.farm', scale: 0.5, yOffset: 0 },
     Granary: { logicalId: 'structures.barracks', scale: 0.55, yOffset: 0 },
@@ -39,7 +42,8 @@ const STRUCTURE_MODELS: Record<Faction, Record<BuildingType, StructureModel>> = 
   enemy: {
     // the enemy hub is the graveyard crypt; its support structures reuse the
     // graveyard kit so the enemy base reads as a coherent necropolis.
-    TownHall: { logicalId: 'structures.portal-crypt', scale: 1.4, yOffset: 0 },
+    // Enemy "TownHall" = the graveyard crypt; matched grandeur to player base.
+    TownHall: { logicalId: 'structures.portal-crypt', scale: 1.8, yOffset: 0.15 },
     Farm: { logicalId: 'nature.gravestone.round', scale: 1.0, yOffset: 0 },
     House: { logicalId: 'nature.gravestone.round', scale: 0.8, yOffset: 0 },
     Granary: { logicalId: 'structures.portal-crypt', scale: 0.7, yOffset: 0 },

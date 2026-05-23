@@ -486,11 +486,10 @@ red vs blue layout".
   faction's `controlled` set with every walkable tile within
   ATTRACTOR_RADIUS (2 hexes) of its anchor at startGame. The TownHall
   now visibly emits a 2-radius zone (ZoneBorder paints it) from t=0.
-- [ ] M_MAPGEN.2 — TownHall visual identity: distinct mesh/scale/color
-  vs Farm/Barracks/etc. Currently structure-models.player.TownHall
-  uses `structures.town-hall` at scale 1.0 — verify it actually reads as
-  distinctly grander; bump scale + add a faction-banner accent or roof
-  highlight if the base mesh is too plain.
+- [x] M_MAPGEN.2 — TownHall distinct mesh: player TownHall scale bumped
+  1.0→1.5 with yOffset 0.15 lift; enemy crypt scale 1.4→1.8 with same
+  lift. Both factions' bases visually anchor the map vs the smaller
+  utility buildings (Farm 0.65, House 0.5, Barracks 0.9).
 - [ ] M_MAPGEN.3 — guaranteed mountain range with peaks running through
   the map center, creating funneling. New deterministic pass over the
   noise output that ALWAYS forces a 3-tile-wide MOUNTAIN band somewhere
@@ -522,6 +521,44 @@ red vs blue layout".
   uses #38bdf8 (azure) for player + #f43f5e (crimson) for enemy. Base
   meshes are faction-tinted via the existing structure-models split.
   M_MAPGEN.2 will further distinguish the TownHall mesh.
+### M_MODES — selectable game modes (user feedback, 2026-05-22)
+
+User: "in new game we COULD offer multiple game types. red vs blue type
+thats what i just described with two well balanced equidistant starting
+locations, and something thats more... skirmish? where its totally random
+like we have now and you could end up with a completely impassible
+center, need to make a bunch of paths and circumvent, and then an
+endless mode where town halls are impossible to destroy and its about
+scoring the most points and controlling the most territory until you or
+your opponent resigns because they're starved out, thats easy enough to
+qualify for AI GOAP".
+
+- [ ] M_MODES.1 — `GameMode` union: `'red-vs-blue' | 'skirmish' | 'endless'`.
+  NewGameConfig + NewGameModal + GameSession all gain a `mode` field.
+- [ ] M_MODES.2 — `red-vs-blue` mode (the default after M_MAPGEN): runs
+  all the M_MAPGEN.3-.10 guided generation rules + fair-balance audit.
+  Equidistant base placement guaranteed.
+- [ ] M_MODES.3 — `skirmish` mode: bypasses the M_MAPGEN guarantees;
+  pure noise like today's behavior. May produce impassable centers.
+  Player must navigate / build roads (M_FEATURE.1 already shipped) to
+  circumvent. Add an explicit "asymmetric maps possible" tag in the
+  New Game modal.
+- [ ] M_MODES.4 — `endless` mode: TownHalls take 0 damage; win condition
+  swaps to "opponent resigns or starves" — i.e., 5 consecutive minutes
+  with 0 controlled tiles + economy below sustenance. AI brain gets a
+  ResignEvaluator that triggers under those conditions; player gets a
+  Resign HUD button. Score = controlled-tile-time integral; the
+  GameOverModal shows the final score breakdown.
+- [ ] M_MODES.5 — `classic-rts` mode (user follow-up, 2026-05-22):
+  "fairly certain theres a fourth mode im not even considering thats more
+  like a classic RTS loop mode". Likely: a longer-form Warcraft-style
+  match — build economy, tech up via Discoveries, field a full army,
+  raze the enemy base; emphasis on Discoveries progression + larger maps
+  + multiple offensive/defensive layers rather than the quick-engage of
+  red-vs-blue. Clarify the exact loop rules in the spec doc before
+  implementing; differentiate from red-vs-blue's competitive tempo via
+  longer escalation thresholds + larger map default.
+
 - [ ] M_MAPGEN.10 — fair-balance guarantee (user, 2026-05-22): the
   per-rule additions (.3-.9) MUST cooperate to produce a deterministic
   "fair, balanced, playable" golden path on every seed. Concretely:
