@@ -231,6 +231,35 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           >
             🎲
           </button>
+          {/* M_EXPANSION.F.73 — copy current seed to clipboard so
+              players can share an exact map between sessions. Falls
+              back to a console-log if the Clipboard API is unavailable
+              (older browsers / file:// origin). */}
+          <button
+            type="button"
+            id="share-seed"
+            aria-label="Copy seed to clipboard"
+            onClick={() => {
+              const text = seedPhrase.trim();
+              if (!text) return;
+              if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                void navigator.clipboard.writeText(text);
+              } else {
+                console.log('[share-seed] clipboard unavailable; seed:', text);
+              }
+            }}
+            style={{
+              padding: '0 12px',
+              borderRadius: 8,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(56,189,248,0.12)',
+              color: HUD_THEME.color.accent,
+              fontSize: '1.05rem',
+              cursor: 'pointer',
+            }}
+          >
+            📋
+          </button>
         </div>
 
         <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Game mode</p>
