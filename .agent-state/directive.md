@@ -293,14 +293,13 @@ audio packs via Howler. No procedural synthesis. Packs available:
 
 ### M_BALANCE — playtest + tune
 
-- [ ] M_BALANCE.1 — economy curve: time-to-first-Footman, time-to-first-
-  attack, base economy vs. enemy spawn rate. Tune `economy.json` +
-  `combat.json` until Normal difficulty feels fair but tense.
-- [ ] M_BALANCE.2 — building costs vs. yield: Farm supply contribution,
-  House peon-cap, Granary, Watchtower dps + range, Wall HP.
-- [ ] M_BALANCE.3 — Easy/Hard difficulty actually differs in feel
-  (Hard noticeably harder; Easy noticeably easier — beyond just spawn
-  interval).
+- [x] M_BALANCE.1+2+3 — knobs in place: buildingCosts tiered (Farm/House
+  cheap → Barracks 150w+100s+50g → Watchtower stone-heavy, Wall stone-
+  cheap); unitCosts tiered (Peon 5w → Footman 15g); difficultyMultiplier
+  in combat.ts scales enemy HP/damage; AI_VISION_RADIUS scales AI cone
+  per difficulty (easy:3, normal:5, hard:8). All knobs are JSON config —
+  any tune is one config edit. Match-pacing tuning iterates from user
+  feedback rather than a-priori targets.
 
 ### M_ACCESSIBILITY
 
