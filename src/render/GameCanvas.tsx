@@ -1,6 +1,7 @@
 import { Canvas, useThree } from '@react-three/fiber';
-import { Suspense, useEffect, useMemo } from 'react';
+import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { PCFSoftShadowMap, type Camera } from 'three';
+import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
 import type { GameState } from '@/game/game-state';
 import { CameraRig } from './CameraRig';
 import { type ViewportProfile, useViewport } from './useViewport';
@@ -44,6 +45,7 @@ function Scene({
   onCameraReady?: (cam: Camera) => void;
 }) {
   useGameLoop(game);
+  const ringsRef = useRef<TrackingRingsHandle | null>(null);
 
   // Build a set of hex tile keys that already have a resource node so the
   // Decoration component can skip those tiles. Memoised on the resource node
@@ -60,7 +62,12 @@ function Scene({
       <Mountains board={game.board} />
       <Crossings board={game.board} />
       <Water mapRadius={game.board.radius} />
-      <TileInteraction game={game} buildContext={buildContext} />
+      <TileInteraction
+        game={game}
+        buildContext={buildContext}
+        spawnTrackingRing={(q, r) => ringsRef.current?.spawn(q, r)}
+      />
+      <TrackingRings ref={ringsRef} board={game.board} />
       <Suspense fallback={null}>
         <Decoration board={game.board} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />

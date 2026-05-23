@@ -121,9 +121,12 @@ export interface BuildContext {
 export function TileInteraction({
   game,
   buildContext = null,
+  spawnTrackingRing,
 }: {
   game: GameState;
   buildContext?: BuildContext | null;
+  /** Optional callback to drop a tracking ring at a tile — M_GAMEPLAY.5. */
+  spawnTrackingRing?: (q: number, r: number) => void;
 }) {
   const [pathKeys, setPathKeys] = useState<string[]>([]);
   const tiles = [...game.board.tiles.values()].filter((t) => t.walkable);
@@ -150,6 +153,8 @@ export function TileInteraction({
       moveUnit(game, unit, dest, 'player');
     });
     setPathKeys([]);
+    // M_GAMEPLAY.5 — drop a tracking-ring at the destination as feedback.
+    spawnTrackingRing?.(q, r);
   };
 
   const onPick = (q: number, r: number): void => {
