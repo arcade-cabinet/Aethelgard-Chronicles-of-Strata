@@ -39,7 +39,7 @@ function probe(game: ReturnType<typeof newAiVsAiGame>) {
   const eco = game.economy;
   // micro: every unit has finite position + non-negative HP
   let units = 0;
-  let totalHp = 0;
+  const totalHp = 0;
   for (const e of game.world.query(Unit, HexPosition)) {
     units += 1;
     const h = e.get(HexPosition);

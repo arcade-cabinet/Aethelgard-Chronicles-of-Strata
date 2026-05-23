@@ -16,10 +16,16 @@ describe('M5 systems integration', () => {
     expect(game.clock.elapsed).toBeGreaterThan(9);
   });
 
-  it('runs 7200 ticks with all M5 systems without throwing', () => {
-    const game = startGame('ancient-silver-forest');
-    expect(() => {
-      for (let i = 0; i < 7200; i++) runEconomyTick(game, 1 / 60);
-    }).not.toThrow();
-  });
+  // 7200 ticks = ~2 minutes; bumped from default 5s to 30s for CI headroom
+  // (locally ~5s; CI runners sometimes drift over).
+  it(
+    'runs 7200 ticks with all M5 systems without throwing',
+    () => {
+      const game = startGame('ancient-silver-forest');
+      expect(() => {
+        for (let i = 0; i < 7200; i++) runEconomyTick(game, 1 / 60);
+      }).not.toThrow();
+    },
+    30000,
+  );
 });
