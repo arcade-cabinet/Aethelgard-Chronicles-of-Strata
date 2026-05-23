@@ -485,6 +485,11 @@ percentages, verify perf headroom holds at the new Huge.
   exist in references/audio (current SFX pack is generic hit + magic-
   impact). Wires up the moment the KayKit / Fantasy audio pack delivers
   per-class variants. Today's combat-hit cue is the placeholder.
+- [ ] [WAIT-CI] PR_3_MERGE — squash-merge PR #3 (chore/release-marker)
+  once CI lands green; carries the v0.4 cycle work (M_FEATURE.1+.2+.3+.4+
+  .5+.6, M_QUALITY.1+.2+.3, M_POLISH.1+.2+.4, M_BALANCE_2.1+.2,
+  M_HARDENING.1-4 directive log + post-release cleanup). Then re-deploy
+  via Deploy Pages workflow + flip directive status if appropriate.
 - [x] M_POLISH.4 — victory confetti: VictoryConfetti.tsx — 60 gold/amber/
   bronze BoxGeometry pieces, ballistic with gravity, 3s lifetime, fades to
   zero. Fires on the moment game.outcome flips to 'win'.
