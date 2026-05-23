@@ -141,6 +141,10 @@ export const PREF_KEYS = {
   eventSeed: 'aethelgard.eventPrngSeed',
   muted: 'aethelgard.muted',
   onboarding: 'aethelgard.onboardingSeen',
+  // M_EXPANSION.F.77 — comma-separated list of unlocked achievement ids.
+  // Stored as a string (Preferences API) for portability; the
+  // achievements helper parses + writes.
+  achievements: 'aethelgard.achievements',
 } as const;
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
 

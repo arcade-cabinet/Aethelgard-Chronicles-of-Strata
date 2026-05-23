@@ -10,6 +10,7 @@ import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
 import { LoadingScreen } from '@/hud/LoadingScreen';
+import { PersistAchievements } from '@/hud/PersistAchievements';
 import { WeatherIndicator } from '@/hud/WeatherIndicator';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { EndTurnButton } from '@/hud/EndTurnButton';
@@ -135,6 +136,7 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
       <IdlePeonsIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
+      <PersistAchievements game={game} persistence={persistence} />
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
       <GameOverModal game={game} />

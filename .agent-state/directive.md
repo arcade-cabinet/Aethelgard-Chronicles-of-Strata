@@ -1839,7 +1839,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [WAIT-DESIGN] M_EXPANSION.F.75 — Replay import: load a EventLog ndjson and watch the deterministic playback
   - Co-depends on F.74; same design spec.
 - [ ] [MED]  M_EXPANSION.F.76 — Tutorial campaign: 3 scripted scenarios with fixed seed + objective overlay
-- [ ] [MED]  M_EXPANSION.F.77 — Achievements: track 'first-victory', 'no-build-wonder-win', etc; persist to Preferences
+- [x] [MED]  M_EXPANSION.F.77 — Achievements: track 'first-victory', 'no-build-wonder-win', etc; persist to Preferences
 - [ ] [MED]  M_EXPANSION.F.78 — Scenario editor: load a saved board state + spawn units interactively (debug mode only)
 - [ ] [MED]  M_EXPANSION.F.79 — Difficulty: hardcore mode (peons cost food, food depletes over time)
 - [ ] [MED]  M_EXPANSION.F.80 — Faction palette swap (player can choose red/blue/green/yellow on the New Game modal)
