@@ -70,9 +70,18 @@ The primary panel has three sub-sections:
   seed phrase.
 
 **Inventory grid** (`.inventory`):
-- 4-column grid showing Gold, Wood, Stone, Supply.
-- Colors: Gold `#fbbf24`, Wood `#f97316`, Stone `#94a3b8`, Supply `#a855f7`.
-- Label text: 0.6rem uppercase, letter-spacing 0.5px.
+- 5-column grid showing Wood, Stone, Gold, Science, Supply
+  (M_AUDIT2.ARCH.38 — Science was added in M_FEATURE.3 / Library /
+  Discoveries; spec previously omitted it).
+- Colors come from `RESOURCE_DISPLAY` in `src/rules/display.ts`
+  (M_AUDIT2.ARCH.2 — single source for both HUD bar + world popups):
+  Wood `#f97316` (theme `wood`), Stone `#94a3b8` (`stone`), Gold
+  `#fbbf24` (`coin`), Science `#38bdf8` (`accent`), Supply `#a855f7`
+  (`supply`, non-resource — separate counter).
+- Numbers are rendered via `formatInt()` (M_AUDIT2.UX.10) so 12,845
+  reads correctly.
+- Label text: 0.78rem (M_AUDIT2.UX.42 mobile-readable floor — was
+  0.6rem and unreadable at phone-portrait sizes).
 - Supply shows `current/max` format.
 
 **Selection panel** (`.selection-panel`, `#sel-panel`):

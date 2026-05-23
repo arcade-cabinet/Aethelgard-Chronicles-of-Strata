@@ -87,19 +87,39 @@ The core economic loop runs autonomously once peons exist and resources are on t
 
 ### Supply System
 
-Each unit consumes supply capacity. Farm buildings provide supply. The TownHall
-provides a base supply of 5.
+Each unit consumes supply capacity from its faction's pool; buildings
+add supply when complete. The TownHall is the starting structure and
+provides the base capacity.
+
+> **M_AUDIT2.ARCH.37 — regenerated from data sources 2026-05-23.**
+> Supply values below are derived from `src/config/economy.json` +
+> `src/rules/unit-profiles.ts`. If these tables disagree with code,
+> the code is truth (per spec drift rule); re-regenerate this section.
+
+**Supply costs** (from `economy.json` → `supplyCosts`):
 
 | Unit | Supply cost |
 |---|---|
 | Peon | 1 |
+| Settler | 4 |
 | Footman | 2 |
-| Goblin | — (enemy, not tracked) |
+| Trebuchet | 3 |
+| Goblin | 0 (enemy — not supply-tracked) |
+| Orc | 0 |
+| Vampire | 0 |
+| Witch | 0 |
+| BlackKnight | 0 |
+
+**Supply provided** (from `economy.json` → `buildingSupply`):
 
 | Building | Supply provided |
 |---|---|
 | TownHall | 5 |
 | Farm | 10 |
+| House | 4 |
+| Granary | 2 |
+| Wonder | 5 |
+| Barracks / Watchtower / Wall / Library | 0 (not supply structures) |
 
 **Hard cap:** total supply is capped at the sum of all owned buildings' supply. Players
 cannot train units that would exceed their current supply cap. The HUD displays

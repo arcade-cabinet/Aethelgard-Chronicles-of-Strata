@@ -1467,10 +1467,10 @@ local-review-trio after each ~5-item batch.
 - [x] M_AUDIT2.ARCH.34 — spec 95 says Preferences; code uses SQLite — pick truth, fix loser
 - [x] M_AUDIT2.ARCH.35 — spec 95 §SQLite Save Schema doesn't match actual GameSnapshot — rewrite
 - [x] M_AUDIT2.ARCH.36 — SNAPSHOT_VERSION migration path — add migrations table + spec section
-- [ ] M_AUDIT2.ARCH.37 — spec 70 §Supply System incomplete vs unit roster — regenerate from UNIT_PROFILES
-- [ ] M_AUDIT2.ARCH.38 — spec 90 §Resource Panel predates 4-resource economy — add science
+- [x] M_AUDIT2.ARCH.37 — spec 70 §Supply System incomplete vs unit roster — regenerate from UNIT_PROFILES
+- [x] M_AUDIT2.ARCH.38 — spec 90 §Resource Panel predates 4-resource economy — add science
 - [x] M_AUDIT2.ARCH.39 — spec 104 §Migration status body empty — backfill rollout actuals
-- [ ] M_AUDIT2.ARCH.40 — spec 103 ParticleEmitterSpec contract — verify matches actual interface
+- [x] M_AUDIT2.ARCH.40 — spec 103 ParticleEmitterSpec contract — verify matches actual interface
 
 **Test coverage gaps (41-50)**
 - [x] M_AUDIT2.ARCH.41 — encroachment.ts: no test (tile flip, defended cancels, peon never encroach)
