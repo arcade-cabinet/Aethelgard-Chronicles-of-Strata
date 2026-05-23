@@ -314,13 +314,14 @@ audio packs via Howler. No procedural synthesis. Packs available:
 
 ### M_TITLE — title-screen polish per the original spec
 
-- [ ] M_TITLE.1 — animated golden ocean + sky behind the title screen
-  (per the original "Seeded Menu Environment"). r3f Canvas mounted on
-  the title screen with a simplified scene.
+- [x] M_TITLE.1 — animated title bg (4e0d101): TitleBackground.tsx own
+  r3f Canvas behind title-screen; rotating golden ocean + 3 biome hex
+  props; warm sky gradient.
 - [ ] M_TITLE.2 — title music — a fitting Kenney/licensed loop in the
   audio buses; muted by default if SoundToggle off.
-- [ ] M_TITLE.3 — version line + author/license credits row in a small
-  font at the bottom (commercial release — minimal but present).
+- [x] M_TITLE.3 — title footer: small version+credits row at the bottom of
+  the title screen (Kenney/KayKit CC0/CC-BY + PixelLoops/GameLoops audio +
+  r3f/koota/yuka stack).
 
 ### M_RELEASE_FINAL
 

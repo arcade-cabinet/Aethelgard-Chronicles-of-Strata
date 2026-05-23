@@ -123,6 +123,25 @@ export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenPr
         />
         <MenuButton id="menu-settings" label="Settings" onClick={onSettings} />
       </div>
+
+      {/* M_TITLE.3 — version + license row (commercial release) */}
+      <div
+        id="title-footer"
+        style={{
+          position: 'absolute',
+          bottom: 12,
+          left: 0,
+          right: 0,
+          textAlign: 'center',
+          fontSize: '0.62rem',
+          color: HUD_THEME.color.muted,
+          letterSpacing: 0.6,
+          pointerEvents: 'none',
+        }}
+      >
+        v0.2.0 · low-poly assets © Kenney / KayKit (CC0 / CC-BY) · audio © PixelLoops / GameLoops ·
+        built with r3f · koota · yuka
+      </div>
     </div>
   );
 }
