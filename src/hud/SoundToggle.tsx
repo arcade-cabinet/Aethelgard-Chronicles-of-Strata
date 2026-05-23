@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { setMuted } from '@/audio/buses';
-import type { Persistence } from '@/persistence/persistence';
+import { type Persistence, safePersistenceRead } from '@/persistence/persistence';
 import { HUD_THEME } from './hud-theme';
 
 /** The Preferences key the mute state is persisted under. */
@@ -14,12 +14,20 @@ export const MUTE_PREF_KEY = 'muted';
 export function SoundToggle({ persistence }: { persistence: Persistence }) {
   const [muted, setMutedState] = useState(false);
 
-  // restore the persisted mute state on mount
+  // restore the persisted mute state on mount.
+  // M_SEC.15 — strict ternary: only `'true'` activates mute; any
+  // other value (including a tampered Preferences string) defaults
+  // to unmuted. safePersistenceRead also catches the read failure.
   useEffect(() => {
     let cancelled = false;
-    void persistence.getSetting(MUTE_PREF_KEY).then((value) => {
+    void safePersistenceRead(
+      persistence,
+      MUTE_PREF_KEY,
+      (raw) => raw === 'true',
+      false,
+      'SoundToggle',
+    ).then((isMuted) => {
       if (cancelled) return;
-      const isMuted = value === 'true';
       setMutedState(isMuted);
       setMuted(isMuted);
     });

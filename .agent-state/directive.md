@@ -706,16 +706,16 @@ overlap exists.
 
 #### MEDIUM
 
-- [ ] M_SEC.12 — `persistence.ts:218` save() name
+- [x] M_SEC.12 — `persistence.ts:218` save() name
   parameter — add 256-char cap.
-- [ ] M_SEC.13 — `persistence.ts:243` list() runs
+- [x] M_SEC.13 — `persistence.ts:243` list() runs
   SELECT * without LIMIT or pagination. Add `LIMIT 50` + separate
   `listMetadata()` that does `SELECT id,name,seed,saved_at` (no
   snapshot) for list views.
-- [ ] M_SEC.14 — `persistence.ts:271 getEventSeed()`
+- [x] M_SEC.14 — `persistence.ts:271 getEventSeed()`
   trusts stored value. Validate `/^[a-z0-9-]{1,256}$/`; re-mint
   if invalid.
-- [ ] M_SEC.15 — `SoundToggle.tsx:24` +
+- [x] M_SEC.15 — `SoundToggle.tsx:24` +
   `SettingsModal.tsx:30` strict-ternary on muted pref; return
   null for unrecognized values, default false.
 - [ ] M_SEC.16 — `.github/workflows/ci.yml` add fork-PR
@@ -732,10 +732,10 @@ overlap exists.
   delete the conditional `apply plugin: 'com.google.gms.google-
   services'` block — game doesn't use Firebase; latent activation
   is a privacy footgun.
-- [ ] M_SEC.21 — `persistence.ts:249-256` list() row
+- [x] M_SEC.21 — `persistence.ts:249-256` list() row
   parse swallow — log `console.warn('[persistence] skipping
   corrupt save row', id)`.
-- [ ] M_SEC.22 — `persistence.ts:240` load() catch
+- [x] M_SEC.22 — `persistence.ts:240` load() catch
   returns null masks corruption from "no row found". Differentiate
   via `CorruptSaveError`; UI shows "save corrupted" path.
 - [ ] M_SEC.23 — `audio/buses.ts` Howler cache

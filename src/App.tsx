@@ -160,7 +160,16 @@ export function App() {
                 void persistence.list().then(async (saves) => {
                   const latest = saves[0];
                   if (!latest) return;
-                  const record = await persistence.load(latest.id);
+                  // M_SEC.22 — load() now throws CorruptSaveError instead
+                  // of returning null on corruption; catch separately
+                  // from the deserialize step so the user sees a useful
+                  // message either way.
+                  let record: Awaited<ReturnType<typeof persistence.load>> = null;
+                  try {
+                    record = await persistence.load(latest.id);
+                  } catch (err) {
+                    console.warn('[App] save corrupted; starting fresh game', err);
+                  }
                   if (!record) return;
                   try {
                     setResumedGame(deserializeGame(record.snapshot));

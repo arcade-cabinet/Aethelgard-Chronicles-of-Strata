@@ -73,6 +73,22 @@ export interface Persistence {
 }
 
 /**
+ * M_SEC.22 — thrown by `Persistence.load(id)` when the row exists
+ * but its snapshot column fails to parse / validate. Lets the App's
+ * resume path differentiate "no save here" (returns null) from "save
+ * corrupted" (throws).
+ */
+export class CorruptSaveError extends Error {
+  constructor(
+    public readonly saveId: number,
+    public readonly reason: string,
+  ) {
+    super(`Save ${saveId} is corrupt: ${reason}`);
+    this.name = 'CorruptSaveError';
+  }
+}
+
+/**
  * Safe persistence read with a typed parser + fallback (M_MICRO.B.1).
  * Consolidates the catch-and-default pattern that previously lived
  * inline in OnboardingOverlay + SettingsModal. The persistence
@@ -241,11 +257,15 @@ export function createPersistence(): Persistence {
     async save(name: string, game: GameState): Promise<void> {
       const db = await openDb();
       if (!db) return;
+      // M_SEC.12 — cap the save name at 256 chars. UI doesn't expose
+      // longer names today, but a future cloud-sync feature could
+      // receive arbitrarily-long input; truncate at the storage layer.
+      const safeName = name.length > 256 ? name.slice(0, 256) : name;
       const seed = game.seedPhrase;
       const savedAt = new Date().toISOString();
       const snapshot = JSON.stringify(serializeGame(game));
       await db.run(`INSERT INTO saves (name, seed, saved_at, snapshot) VALUES (?, ?, ?, ?);`, [
-        name,
+        safeName,
         seed,
         savedAt,
         snapshot,
@@ -259,24 +279,39 @@ export function createPersistence(): Persistence {
       const rows = result.values ?? [];
       const row = rows[0];
       if (!row) return null;
+      // M_SEC.22 — differentiate "no row found" from "corrupt row".
+      // Returning null for both masks corruption; throw so the UI's
+      // resume path can show "save corrupted" instead of silently
+      // dropping the user into a new game.
       try {
         return rowToSaveRecord(row);
-      } catch {
-        return null;
+      } catch (err) {
+        throw new CorruptSaveError(id, err instanceof Error ? err.message : String(err));
       }
     },
 
     async list(): Promise<SaveRecord[]> {
       const db = await openDb();
       if (!db) return [];
-      const result = await db.query(`SELECT * FROM saves ORDER BY saved_at DESC;`);
+      // M_SEC.13 — cap at 50 most-recent saves. A million-save corrupted
+      // db would otherwise pull every row into memory just for the list
+      // view, hanging the UI thread on a slow device.
+      const result = await db.query(
+        `SELECT * FROM saves ORDER BY saved_at DESC LIMIT 50;`,
+      );
       const rows = result.values ?? [];
       const records: SaveRecord[] = [];
       for (const row of rows) {
         try {
           records.push(rowToSaveRecord(row));
-        } catch {
-          // skip corrupt row rather than failing the whole list
+        } catch (err) {
+          // M_SEC.21 — skip corrupt row rather than failing the whole
+          // list, but LOG it so a developer notices in a debug build.
+          const id = (row as { id?: unknown }).id;
+          console.warn(
+            `[persistence] skipping corrupt save row${typeof id === 'number' ? ` id=${id}` : ''}:`,
+            err,
+          );
         }
       }
       return records;
@@ -293,10 +328,15 @@ export function createPersistence(): Persistence {
 
     async getEventSeed(): Promise<string> {
       const { value } = await Preferences.get({ key: EVENT_SEED_KEY });
-      if (value !== null) return value;
-      // First launch: generate a fresh random seed from crypto.getRandomValues.
-      // This is the one allowed non-determinism — it seeds the PRNG, it is not
-      // simulation logic. Lives here in persistence.ts, outside src/core|ecs|game.
+      // M_SEC.14 — validate the stored seed shape before trusting it.
+      // A tampered Preferences value (rooted device, debugger write)
+      // could carry arbitrary content; the seed is consumed by
+      // seedrandom which accepts anything, but the rest of the
+      // codebase passes it through string-concat keys
+      // (`${seed}:sawdust`) so a control-character seed would NaN-
+      // poison the PRNG-keyed material. Whitelist alnum + hyphen,
+      // 1–256 chars; mint a fresh one if invalid.
+      if (value !== null && /^[a-z0-9-]{1,256}$/i.test(value)) return value;
       const buf = new Uint32Array(4);
       crypto.getRandomValues(buf);
       const seed = Array.from(buf)
