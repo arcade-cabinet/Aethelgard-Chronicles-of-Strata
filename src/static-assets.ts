@@ -56,6 +56,7 @@ export type StaticAssetPath =
   'assets/nature/bush-c.glb' |
   'assets/nature/cactus/short.glb' |
   'assets/nature/cactus/tall.glb' |
+  'assets/nature/coffin.glb' |
   'assets/nature/crystal-large.glb' |
   'assets/nature/flower-a.glb' |
   'assets/nature/flower-b.glb' |
@@ -208,6 +209,7 @@ const assets = new Set<string>([
   'assets/nature/bush-c.glb',
   'assets/nature/cactus/short.glb',
   'assets/nature/cactus/tall.glb',
+  'assets/nature/coffin.glb',
   'assets/nature/crystal-large.glb',
   'assets/nature/flower-a.glb',
   'assets/nature/flower-b.glb',

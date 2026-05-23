@@ -596,6 +596,16 @@
     "license": "CC0",
     "triangles": 300
   },
+  "nature.coffin": {
+    "id": "nature.coffin",
+    "path": "assets/nature/coffin.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Graveyard Kit",
+    "license": "CC0",
+    "triangles": 200
+  },
   "structures.fountain": {
     "id": "structures.fountain",
     "path": "assets/structures/fountain.glb",

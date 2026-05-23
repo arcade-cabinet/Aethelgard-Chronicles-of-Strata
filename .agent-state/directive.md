@@ -1698,7 +1698,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.A.14 — Graveyard `iron-fence-bar.glb` as enemy ZoneBorder fence variant
 - [x] [MED]  M_EXPANSION.A.15 — Graveyard `pine-crooked.glb` as decorative density entry in necropolis biome
 - [x] [MED]  M_EXPANSION.A.16 — Graveyard `gravestone-*.glb` as base-accretion props around enemy spawn
-- [ ] [LOW]  M_EXPANSION.A.17 — Graveyard `coffin.glb` as Goblin death-drop visual (3s decay)
+- [x] [LOW]  M_EXPANSION.A.17 — Graveyard `coffin.glb` as Goblin death-drop visual (3s decay)
 - [ ] [LOW]  M_EXPANSION.A.18 — Graveyard `mushrooms.glb` as patchy decoration around necropolis
 
 **Tower Defense Kit (19-24)** — military variety

@@ -1,6 +1,13 @@
 import type { World } from 'koota';
 import { COMBAT } from '@/config/combat';
-import { AnimationState, DeathTimer, FactionTrait, Health, Unit } from '@/ecs/components';
+import {
+  AnimationState,
+  DeathTimer,
+  FactionTrait,
+  Health,
+  HexPosition,
+  Unit,
+} from '@/ecs/components';
 
 /** Seconds a corpse lingers (plays the death clip) before removal. */
 const DEATH_DELAY: number = COMBAT.deathDelay;
@@ -30,7 +37,20 @@ export function deathSystem(world: World, delta: number): number {
     const timer = entity.get(DeathTimer);
     const elapsed = (timer?.elapsed ?? 0) + delta;
     if (elapsed >= DEATH_DELAY) {
-      if (entity.get(FactionTrait)?.faction === 'enemy') enemyKills += 1;
+      const faction = entity.get(FactionTrait)?.faction;
+      if (faction === 'enemy') enemyKills += 1;
+      // M_EXPANSION.A.17 — drop a coffin visual at the death tile for
+      // 3s after the unit removal. Enemy deaths only (player corpses
+      // wouldn't be coffin-themed). DeathDropLayer (world component)
+      // listens for this event and renders + ages the drops.
+      if (faction === 'enemy' && typeof window !== 'undefined') {
+        const hex = entity.get(HexPosition);
+        if (hex) {
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:enemy-death-drop', { detail: { q: hex.q, r: hex.r } }),
+          );
+        }
+      }
       entity.destroy();
     } else {
       entity.set(DeathTimer, { elapsed });

@@ -5,6 +5,7 @@ import { Building, type BuildingType, HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { CombatText } from '@/world/CombatText';
 import { Crossings } from '@/world/Crossings';
+import { DeathDropLayer } from '@/world/DeathDropLayer';
 import { Decoration } from '@/world/Decoration';
 import { FactionBase } from '@/world/FactionBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
@@ -169,6 +170,8 @@ function Scene({
       <ResourceText game={game} />
       <ProjectileLayer game={game} />
       <FootstepEmitter game={game} />
+      {/* M_EXPANSION.A.17 — coffin death-drop for enemy units. */}
+      <DeathDropLayer />
       <ParticleEmitter game={game} spec={rainArchetype} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
