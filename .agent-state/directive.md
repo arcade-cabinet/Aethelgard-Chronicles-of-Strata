@@ -602,7 +602,7 @@ the smallest end-to-end proof, then drain in dependency order.
 - [ ] M_REGISTRY.21 — `terrain-mesh.ts` cliff-color +
   lush-blend type-switches become per-biome SurfaceProfile slot
   reads (cliffColor / lushBlendBiomes / dither bias as data).
-- [ ] M_REGISTRY.22 — Decoration / board / resource-spawn
+- [x] M_REGISTRY.22 — Decoration / board / resource-spawn
   / balance-audit duplicate "is tile habitable / buildable" predicate
   via type-switches. Promote to `BIOME_FLAGS: Record<BiomeType,
   {walkable, decoratable, buildable, footstepKind}>` table.

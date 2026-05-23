@@ -2,6 +2,7 @@ import { Color } from 'three';
 import { TILE_HEIGHT } from '@/config/world';
 import type { BoardData, Tile } from '@/core/board';
 import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
+import { biomeFlagsFor } from '@/rules/biome-flags';
 import { BIOME_COLORS } from './palette';
 
 /** The raw vertex arrays for the merged terrain mesh. */
@@ -41,9 +42,9 @@ const CLIFF_DIRT = new Color('#78350f');
  */
 function surfaceColor(tile: Tile): Color {
   const c = new Color(BIOME_COLORS[tile.type]);
-  if (tile.type === 'GRASS' || tile.type === 'FOREST') {
-    c.lerp(LUSH, tile.moisture);
-  }
+  // M_REGISTRY.22 — lushBlend slot is the data answer to "does this
+  // biome moisture-shift toward green?" (was a hand-rolled disjunction).
+  if (biomeFlagsFor(tile.type).lushBlend) c.lerp(LUSH, tile.moisture);
   if (tile.level >= 6) {
     c.lerp(SNOW, 0.8);
   }

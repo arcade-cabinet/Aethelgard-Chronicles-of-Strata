@@ -1,6 +1,7 @@
 import { MAP_RADIUS } from '@/config/world';
 import { assignBiome, type Biome } from './biome';
 import { type Crossing, placeCrossings } from './crossings';
+import { biomeFlagsFor } from '@/rules/biome-flags';
 import { getHexKey, hexDistance } from './hex';
 import { createNoise2D } from './noise';
 import { createMapPrng, type Rng } from './rng';
@@ -191,9 +192,9 @@ function paintDesertBlanket(tiles: Map<string, Tile>, radius: number): void {
   for (const tile of tiles.values()) {
     const d = hexDistFromCenter(tile.q, tile.r);
     if (d > radius - 4) continue; // inside the beach ring
-    if (tile.type === 'GRASS' || tile.type === 'FOREST' || tile.type === 'HIGHLAND') {
-      tile.type = 'DESERT';
-    }
+    // M_REGISTRY.22 — desert blanket targets habitable (land+lush+
+    // highland) tiles via the unified flag table.
+    if (biomeFlagsFor(tile.type).habitable) tile.type = 'DESERT';
   }
 }
 

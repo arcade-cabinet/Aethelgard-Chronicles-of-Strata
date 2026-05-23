@@ -12,6 +12,7 @@
  */
 import type { BoardData } from './board';
 import { hexDistance } from './hex';
+import { biomeFlagsFor } from '@/rules/biome-flags';
 
 /** Hexes within this radius of a base count toward its reachable buildable area. */
 export const REACH_RADIUS = 6;
@@ -26,9 +27,9 @@ export function reachableBuildableCount(board: BoardData, cq: number, cr: number
     // M_REGISTRY.23 — was a hand-rolled cube-distance formula;
     // replaced by the shared hexDistance helper.
     if (hexDistance(tile.q, tile.r, cq, cr) > REACH_RADIUS) continue;
-    if (tile.type === 'GRASS' || tile.type === 'FOREST' || tile.type === 'HIGHLAND') {
-      n += 1;
-    }
+    // M_REGISTRY.22 — "buildable-quality + decoratable" = habitable
+    // slot in the unified biome-flags table.
+    if (biomeFlagsFor(tile.type).habitable) n += 1;
   }
   return n;
 }
