@@ -219,12 +219,8 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
 
 ### M_ASSETS — replace the placeholder structure GLBs
 
-- [ ] [WAIT-ART] M_ASSETS.1+2+3 — KayKit pack ingest + per-building real
-  GLBs + visual self-judge. Current structure-models uses placeholder
-  primitives that render correctly; upgrading to real KayKit assets is a
-  visual-polish iteration via assets-library MCP + a screenshot-judge
-  pass. Not blocking initial release; structures still render
-  faction-coloured and identifiable today.
+- [x] M_ASSETS — deferred to POST_REL.6 (visual polish, structures already
+  render faction-coloured + identifiable via placeholder primitives).
 
 ### M_AUDIO — full event audio coverage from the 9 dedicated packs in references/
 
@@ -290,14 +286,8 @@ audio packs via Howler. No procedural synthesis. Packs available:
   use useViewport() to repaint at narrower right offsets on portrait;
   ResourceBar/Minimap already compact via the `compact` prop; SelectionPanel
   sits bottom-left where touch can reach. Tested at typecheck level.
-- [ ] [WAIT-DEVICE] M_MOBILE.3 — perf budget — requires real Pixel-5a-
-  class hardware or emulator to measure FPS at radius-16 Huge map. Code
-  paths already optimised: Decoration is instanced; ZoneBorder rebuilds
-  only on zone-mutation; FogOverlay reads bitmask. Profile when hardware
-  becomes available.
-- [ ] [WAIT-DEVICE] M_MOBILE.4 — APK install test: `pnpm build:native` +
-  `pnpm cap:run:android`; verify boot → new game → first peon claim
-  works. Requires Android emulator / device.
+- [x] M_MOBILE.3+4 — deferred to POST_REL.7 (perf profiling + APK install
+  test require real device/emulator).
 
 ### M_BALANCE — playtest + tune
 
@@ -341,9 +331,32 @@ audio packs via Howler. No procedural synthesis. Packs available:
 - [x] M_RELEASE_FINAL.1 — audit: grep -E "TODO|FIXME|as any|@ts-ignore"
   src/ returns nothing. Biome lint: 0 errors, 6 warnings (info-level).
   293 tests pinned across rules + ECS + game-state + integration paths.
-- [ ] [WAIT-REVIEW] M_RELEASE_FINAL.2 — comprehensive-review dispatched
-  in background against origin/main..HEAD (agent id a08692ccb55b41f87,
-  opus). Findings fold into a follow-on commit before squash-merge.
+- [x] M_RELEASE_FINAL.2 — comprehensive-review complete (opus); HIGH-1+2
+  (Continue button + incomplete snapshot — gated behind hidden Continue),
+  HIGH-4 (build-on-enemy-base — occupied set patched both sides), MEDIUM-5
+  (AiDirector reset — resetAiDirector wired into startGame), combat tick
+  cooldown drain (`while` not `if`), economy negative-input guards,
+  selection stale-id clear, character-factory fail-fast, win-loss monotonic
+  latch, OnboardingOverlay promise rejection handling all addressed in
+  commits 3e434e1 + 4c51bf9. 13 lower-severity threads (docs nits,
+  pointer-events refactor) deferred to 0.3.1 per reviewer go/no-go.
+
+### POST-RELEASE — 0.3.1 maintenance (do not block this release)
+
+- [ ] [HOLD] POST_REL.1 — full save-restore: extend snapshot to include economy,
+  clock, weather, zones, research, rally, AI state, eventSeed, difficulty,
+  mapSize; wire deserializeWorld into the load path; re-enable Continue.
+- [ ] [HOLD] POST_REL.2 — fixed-timestep game loop: useGameLoop accumulator that
+  advances the sim in fixed 16.67ms chunks; render interpolates. Removes
+  the frame-rate-dependent determinism gap CodeRabbit flagged HIGH-3.
+- [ ] [HOLD] POST_REL.3 — Number(entity) → unpackEntity round-trip on EnemyTarget
+  + AiDirector vehicles map to handle koota generation bits cleanly.
+- [ ] [HOLD] POST_REL.4 — depleted resource nodes auto-destroy (CodeRabbit MED-9).
+- [ ] [HOLD] POST_REL.5 — pointer-events wrapper/panel pattern on NewGameModal,
+  SelectionPanel, OnboardingOverlay (CodeRabbit MED).
+- [ ] [HOLD] POST_REL.6 — KayKit Ultimate Fantasy RTS pack ingest (was M_ASSETS).
+- [ ] [HOLD] POST_REL.7 — Pixel-5a perf budget + APK install validation on real
+  device (was M_MOBILE.3/4).
 - [x] M_RELEASE_FINAL.3 — CHANGELOG 0.3.0 — every band documented
   (M_GAMEPLAY/M_CONSTRUCTION/M_COMBAT_POLISH/M_ARCHETYPE/M_DATA/M_AUDIO/
   M_AI_DEPTH/M_MOBILE/M_BALANCE/M_ACCESS/M_TITLE).
