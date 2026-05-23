@@ -75,6 +75,15 @@ batch green one task at a time.
   Don't drop the in-flight commit to chase the new ask; capture it as work
   so it actually happens in sequence. The directive is the running plan;
   feedback IS plan input.
+- **ONE UNIFIED PRODUCTION CODEBASE — own it architecturally top to
+  bottom, side to side.** No "I'll fix later" / "work around for now" /
+  "match the existing shape so I don't break anything". If a discovery
+  reveals the existing code is wrong, the existing code changes — the
+  whole stack moves together in the same commit arc. Discovering a
+  parallel hierarchy = tear it down NOW, not queue a follow-up. Cost
+  is irrelevant: deleting 500 LOC + rewriting 1000 against the right
+  registry IS the work. Small-fix-that-preserves-bad-shape is the
+  wrong move every time.
 - **LOCAL REVIEWERS DRIVE THE LOOP — NOT REMOTE CI.** Stop pushing after
   every item and stop arbitrarily cutting PRs. The user does NOT care about
   session length or PR size; they care that I PERIODICALLY run local code-
@@ -479,6 +488,58 @@ The standards (just established in M_ARCH_UNIFY):
   unification (most of them) get a "see spec 103" cross-reference; any
   that contradict the unified layer model get explicit corrigenda.
   CHANGELOG 0.4.0 entry drafted for M_AUDIT.0-.6 findings landed.
+- [ ] M_AUDIT.8 — PILLAR DOC OVERHAUL (user, 2026-05-23): every pillar
+  doc in `docs/specs/` updated to reflect the FULL hierarchy from
+  archetypes → things → skins, INCLUDING the layers in the middle
+  (slot capabilities, gen-time vs runtime pass, registry shape, config
+  three-layer split, particle-as-archetype, accretion-as-slot).
+  Mermaid diagrams included in every pillar doc — the prose alone
+  doesn't carry the layered shape. Concrete deliverables:
+  - `docs/specs/10-architecture.md` — gain a Mermaid C4-style diagram
+    of the 4-layer model (Archetypes → Things → Pass-handlers → Skins)
+    with arrows showing which layer ingests which config.
+  - `docs/specs/50-ecs-model.md` — Mermaid showing the slot taxonomy
+    + which traits feed which slot capabilities.
+  - `docs/specs/70-rts-systems.md` — Mermaid showing the gen-time +
+    runtime pass loops + how each system collapses to a slot handler.
+  - `docs/specs/80-audio.md` — Mermaid showing audio events as
+    skin-overridable slot lookups (third tribe = one row).
+  - `docs/specs/102-zone-of-control.md` — Mermaid showing the spec-102
+    archetypes as the FIRST FIVE slot capabilities + the cross-cutting
+    capability slots (Movable / Animated / Costable / HasHP /
+    AccretesProps / GenTimePlaced / RuntimePlaced / ParticleArchetype).
+  - `docs/specs/103-archetype-unification.md` (NEW per M_ARCH_UNIFY.1)
+    — Mermaid showing the full registry + how a new Thing or Skin is
+    added with zero code changes.
+  - Every other spec doc: cross-reference to spec 103; flag any
+    statement that contradicts the unified model with a corrigendum
+    block and a follow-up directive item.
+
+### M_DOCTRINE — own it architecturally top to bottom (user, 2026-05-23)
+
+User: "we HAVE to start treating this as ONE unified production codebase
+constantly striving to not be lazy but OWN IT architecturally top
+bottom side to side. you find shit then even if it requires throwing
+half the codebase out to fix it, you fix it and eat the cost."
+
+This is a permanent doctrine update; encoded into the autonomy contract:
+
+- The codebase is ONE unified production system. There is no "I'll fix
+  it later" / "let me work around it for now" / "the existing code
+  expects X so I'll match X". If the existing code is wrong, the
+  existing code changes — the whole stack moves together.
+- Architectural discovery is the trigger to refactor, not to defer.
+  Discovering a parallel hierarchy means tearing it down NOW, not
+  queuing a follow-up. M_ARCH_UNIFY is the operational example: the
+  audit will surface half the codebase is misaligned — that's the
+  signal to refactor half the codebase, not to negotiate scope.
+- Cost is irrelevant. If fixing a finding correctly means deleting
+  500 LOC and rewriting 1000 LOC against the new registry, that's
+  the work. The wrong move is the "small fix" that preserves the
+  bug-prone shape.
+- This is recorded in `docs/specs/00-pillars.md` as a non-negotiable
+  pillar; the autonomy contract in this directive's preamble
+  inherits it.
 
 **HARD GATE — M_AUDIT runs FIRST** (user, 2026-05-23): no normal
 directive work resumes until (a) all M_AUDIT reviewer trio sweeps
