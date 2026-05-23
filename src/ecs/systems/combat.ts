@@ -24,7 +24,12 @@ export interface DamageEvent {
  */
 export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent[] {
   const events: DamageEvent[] = [];
-  // index entities by numeric id for target lookup
+  // Index entities by numeric id for target lookup. `Number(entity)` returns
+  // the full packed (worldId, generation, entityId) value — two simultaneously
+  // alive entities can't collide (different entityIds), AND across destroy/
+  // respawn the generation bit changes so a recycled slot doesn't masquerade
+  // as the old entity. The byId map is rebuilt each tick, so a dead target
+  // simply fails the lookup.
   const byId = new Map<number, Entity>();
   for (const e of world.query(Health)) byId.set(Number(e), e);
 

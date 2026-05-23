@@ -357,9 +357,12 @@ flagged. No "POST_REL" parking lot — work them now.
 - [x] M_HARDENING.3 — depleted-node auto-destroy: harvestSystem sweep at
   end of tick destroys ResourceTrait entities at amount<=0. Per-tick
   query no longer walks dead nodes.
-- [ ] M_HARDENING.4 — pointer-events wrapper/panel pattern (where it
-  actually applies — modal overlay Dialogs already correctly capture).
-  Audit each HUD region; ensure non-modal regions don't block raycasts.
+- [x] M_HARDENING.4 — pointer-events audit: every full-viewport overlay
+  is either a Radix Dialog (correctly captures by design — modal scrims
+  in DiscoveriesPanel/GameOverModal/SettingsModal/NewGameModal) or a
+  decorative banner with explicit `pointerEvents: 'none'` (CriticalWarning
+  vignette + PauseControl "PAUSED" banner). No raycast-blocking overlay
+  remains.
 - [ ] [WAIT-MCP] M_HARDENING.5 — KayKit Ultimate Fantasy RTS pack ingest
   via assets-library MCP; replace placeholder structures.
 - [ ] [WAIT-DEVICE] M_HARDENING.6 — Pixel-5a perf profile + APK install
