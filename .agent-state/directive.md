@@ -480,8 +480,11 @@ percentages, verify perf headroom holds at the new Huge.
   Difficulty-coupled timings (encroachment grace, spawn interval) stay
   size-independent by construction; actual pacing tuning at Huge is a
   hands-on playtest signal that loops back here when needed.
-- [ ] M_POLISH.3 — sword-clash / shield-deflect SFX variants on
-  combat-hit by attacker class (not the generic hit cue).
+- [ ] [WAIT-ASSETS] M_POLISH.3 — sword-clash / shield-deflect SFX per
+  attacker class: requires dedicated per-role audio assets that don't yet
+  exist in references/audio (current SFX pack is generic hit + magic-
+  impact). Wires up the moment the KayKit / Fantasy audio pack delivers
+  per-class variants. Today's combat-hit cue is the placeholder.
 - [x] M_POLISH.4 — victory confetti: VictoryConfetti.tsx — 60 gold/amber/
   bronze BoxGeometry pieces, ballistic with gravity, 3s lifetime, fades to
   zero. Fires on the moment game.outcome flips to 'win'.
