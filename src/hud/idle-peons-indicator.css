@@ -3,12 +3,21 @@
    the inline style block re-parses on every mount of the chip. */
 
 @keyframes idle-peons-pulse {
-  0% { opacity: 0.7; }
-  50% { opacity: 1; }
-  100% { opacity: 0.7; }
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   /* biome-ignore lint/complexity/noImportantStyles: inline-style animation property requires !important to override; intentional vestibular-safe escape. */
-  #idle-peons { animation: none !important; opacity: 0.9; }
+  #idle-peons {
+    animation: none !important;
+    opacity: 0.9;
+  }
 }

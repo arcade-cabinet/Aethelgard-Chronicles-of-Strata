@@ -269,107 +269,112 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
     // game's tap-vs-hover heuristic so a quick mouse pass doesn't
     // flash a tip.
     <Tooltip.Provider delayDuration={300}>
-    <AnimatePresence>
-      {view && (
-        <motion.div
-          id="selection-panel"
-          role="region"
-          aria-label={`Selected: ${view.name}`}
-          data-hud-panel
-          initial={{ x: -40, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: -40, opacity: 0 }}
-          transition={{ duration: 0.35, ease: 'easeOut' }}
-          style={{
-            ...HUD_CARD_STYLE,
-            position: 'absolute',
-            left: 16,
-            bottom: 16,
-            // M_AUDIT2.UX.19 — clamp() so labels like "Build Watchtower
-            // — 60w 40s" stop truncating at the old 200px floor; still
-            // capped to avoid pushing the minimap on portrait viewports.
-            width: 'clamp(220px, 22vw, 280px)',
-            padding: '14px 16px',
-          }}
-        >
-          <div
+      <AnimatePresence>
+        {view && (
+          <motion.div
+            id="selection-panel"
+            role="region"
+            aria-label={`Selected: ${view.name}`}
+            data-hud-panel
+            initial={{ x: -40, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -40, opacity: 0 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
             style={{
-              fontSize: '0.78rem',
-              textTransform: 'uppercase',
-              letterSpacing: 1,
-              color: HUD_THEME.color.muted,
+              ...HUD_CARD_STYLE,
+              position: 'absolute',
+              left: 16,
+              bottom: 16,
+              // M_AUDIT2.UX.19 — clamp() so labels like "Build Watchtower
+              // — 60w 40s" stop truncating at the old 200px floor; still
+              // capped to avoid pushing the minimap on portrait viewports.
+              width: 'clamp(220px, 22vw, 280px)',
+              padding: '14px 16px',
             }}
           >
-            Selected
-          </div>
-          <div style={{ fontSize: '1.05rem', fontWeight: 800, color: HUD_THEME.color.friendly }}>
-            {view.name}
-          </div>
-          <div style={{ fontSize: '0.78rem', color: '#fde047', marginTop: 2 }}>{view.task}</div>
+            <div
+              style={{
+                fontSize: '0.78rem',
+                textTransform: 'uppercase',
+                letterSpacing: 1,
+                color: HUD_THEME.color.muted,
+              }}
+            >
+              Selected
+            </div>
+            <div style={{ fontSize: '1.05rem', fontWeight: 800, color: HUD_THEME.color.friendly }}>
+              {view.name}
+            </div>
+            <div style={{ fontSize: '0.78rem', color: '#fde047', marginTop: 2 }}>{view.task}</div>
 
-          {view.buildingType &&
-            (() => {
-              const meta = displayFor(view.buildingType);
-              return (
-                <div style={{ marginTop: 10 }}>
-                  {/* Train button — driven by display.trains, NOT building type */}
-                  {meta.trains && (() => {
-                    const trainReason = trainDisabledReason(game, meta.trains, UNIT_COSTS[meta.trains]);
-                    return (
-                      <HudButton
-                        label={`Train ${meta.trains} — ${costLabel(UNIT_COSTS[meta.trains])}`}
-                        onClick={() => {
-                          if (meta.trains && trainUnit(game, meta.trains, 'player'))
-                            emitUiSound('ui-button-click');
-                        }}
-                        disabled={!canAffordCost(game, UNIT_COSTS[meta.trains])}
-                        disabledReason={trainReason}
-                      />
-                    );
-                  })()}
-                  {/* Build menu — only on buildings that show it (TownHall today) */}
-                  {meta.showsBuildMenu &&
-                    BUILDABLE_TYPES.map((type) => {
-                      const cost = BUILDING_COSTS[type];
-                      const buildReason = buildDisabledReason(game, type, cost);
+            {view.buildingType &&
+              (() => {
+                const meta = displayFor(view.buildingType);
+                return (
+                  <div style={{ marginTop: 10 }}>
+                    {/* Train button — driven by display.trains, NOT building type */}
+                    {meta.trains &&
+                      (() => {
+                        const trainReason = trainDisabledReason(
+                          game,
+                          meta.trains,
+                          UNIT_COSTS[meta.trains],
+                        );
+                        return (
+                          <HudButton
+                            label={`Train ${meta.trains} — ${costLabel(UNIT_COSTS[meta.trains])}`}
+                            onClick={() => {
+                              if (meta.trains && trainUnit(game, meta.trains, 'player'))
+                                emitUiSound('ui-button-click');
+                            }}
+                            disabled={!canAffordCost(game, UNIT_COSTS[meta.trains])}
+                            disabledReason={trainReason}
+                          />
+                        );
+                      })()}
+                    {/* Build menu — only on buildings that show it (TownHall today) */}
+                    {meta.showsBuildMenu &&
+                      BUILDABLE_TYPES.map((type) => {
+                        const cost = BUILDING_COSTS[type];
+                        const buildReason = buildDisabledReason(game, type, cost);
+                        return (
+                          <HudButton
+                            key={type}
+                            label={`Build ${type} — ${costLabel(cost)}`}
+                            onClick={() => beginBuild({ type, onPlaced: () => {} })}
+                            disabled={buildReason !== undefined}
+                            disabledReason={buildReason}
+                          />
+                        );
+                      })}
+                    {/* Discoveries — name, cost, gating all from the discoveries.json table */}
+                    {meta.research?.map((id) => {
+                      const d = discoveryById(id);
+                      if (!d) return null;
+                      const reason = researchDisabledReason(game, id, d.name, d.cost);
                       return (
                         <HudButton
-                          key={type}
-                          label={`Build ${type} — ${costLabel(cost)}`}
-                          onClick={() => beginBuild({ type, onPlaced: () => {} })}
-                          disabled={buildReason !== undefined}
-                          disabledReason={buildReason}
+                          key={id}
+                          label={`${d.name} — ${costLabel(d.cost)}`}
+                          onClick={() => research(id)}
+                          disabled={!canResearch(game.economy.player, game.research, id)}
+                          disabledReason={reason}
                         />
                       );
                     })}
-                  {/* Discoveries — name, cost, gating all from the discoveries.json table */}
-                  {meta.research?.map((id) => {
-                    const d = discoveryById(id);
-                    if (!d) return null;
-                    const reason = researchDisabledReason(game, id, d.name, d.cost);
-                    return (
-                      <HudButton
-                        key={id}
-                        label={`${d.name} — ${costLabel(d.cost)}`}
-                        onClick={() => research(id)}
-                        disabled={!canResearch(game.economy.player, game.research, id)}
-                        disabledReason={reason}
-                      />
-                    );
-                  })}
-                  {meta.hasRally && (
-                    <div
-                      style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, marginTop: 6 }}
-                    >
-                      Tap a tile to set the rally point.
-                    </div>
-                  )}
-                </div>
-              );
-            })()}
-        </motion.div>
-      )}
-    </AnimatePresence>
+                    {meta.hasRally && (
+                      <div
+                        style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, marginTop: 6 }}
+                      >
+                        Tap a tile to set the rally point.
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </Tooltip.Provider>
   );
 }

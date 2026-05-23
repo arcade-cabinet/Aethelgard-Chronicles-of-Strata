@@ -45,13 +45,9 @@ export function KeyboardShortcuts({ game }: { game: GameState }) {
           // become no-ops without us having to know the radius here.
           e.preventDefault();
           const step = e.shiftKey ? 4 : 1;
-          const dx =
-            e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
-          const dz =
-            e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
-          window.dispatchEvent(
-            new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }),
-          );
+          const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+          const dz = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+          window.dispatchEvent(new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }));
           break;
         }
       }

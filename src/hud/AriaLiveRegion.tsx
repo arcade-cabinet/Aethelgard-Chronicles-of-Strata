@@ -38,13 +38,7 @@ export function AriaLiveRegion() {
 
   return (
     <>
-      <div
-        id="aria-live-polite"
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        style={hidden}
-      >
+      <div id="aria-live-polite" role="status" aria-live="polite" aria-atomic="true" style={hidden}>
         {polite}
       </div>
       <div

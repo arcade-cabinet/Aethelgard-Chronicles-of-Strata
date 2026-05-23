@@ -1,12 +1,6 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
-import {
-  CanvasTexture,
-  Color,
-  type DirectionalLight,
-  FogExp2,
-  RepeatWrapping,
-} from 'three';
+import { CanvasTexture, Color, type DirectionalLight, FogExp2, RepeatWrapping } from 'three';
 import { cyclePhase, lightIntensityAt, skyRgbAt } from '@/game/clock';
 import type { GameState } from '@/game/game-state';
 
