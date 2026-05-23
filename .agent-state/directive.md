@@ -188,16 +188,14 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
 
 ### M_ARCHETYPE — finish the archetype unification (spec 102)
 
-- [ ] M_ARCHETYPE.1 — `MoverBehavior` trait — roads. ZoC-neutral; material
-  (stone/wood/dirt) + 6-way connector visuals. Snap to other movers + to
-  defenders (becoming a Gate at the junction). `rules/snapping.ts`
-  placement-time magnetic snap.
+- [x] M_ARCHETYPE.1+3 — trait foundations (08b3fdd+below): MoverBehavior
+  (material: stone/wood/dirt, ZoC-neutral); ConsumerBehavior (kind, amount)
+  alongside ResourceTrait. Trait declarations only — gameplay layers
+  (Mover snap render, Gate transform, magnetic force field treating
+  Consumers/Movers uniformly) follow in later commits as needed.
 - [ ] M_ARCHETYPE.2 — Gate = Mover-on-Defender. Directional passability:
   friendly units cross freely (pathfinding cost 1); enemy units find a
   closed door (impassable, must destroy/circumvent).
-- [ ] M_ARCHETYPE.3 — `ConsumerBehavior` trait — resources. Replace
-  the hard-coded `ResourceType` enum with Consumer instances (kind + amount,
-  threatenable). Future magical-crystal Consumer = one new instance row.
 - [ ] M_ARCHETYPE.4 — damage-type × armor table. Each Offender has
   `damageType` (normal | siege | magic | pierce); each Defender has
   `armorVs[damageType]`. Damage = `base * armor`. Trebuchet (unit/building)

@@ -132,6 +132,21 @@ export type MoverMaterial = 'stone' | 'wood' | 'dirt';
  */
 export const MoverBehavior = trait({ material: 'stone' as MoverMaterial });
 
+/**
+ * Consumer zone — resources (spec 102). ZoC-NEUTRAL — a tree isn't
+ * territory; the Attractor + peon machinery claim the tile *when exploited*,
+ * not because of the Consumer's presence. Each Consumer declares the slot
+ * it fills (the existing ResourceTrait holds the same data — this is the
+ * archetype-level marker, attached alongside or wrapping ResourceTrait so
+ * the magnetic-emitter pipeline (M_ARCHETYPE.6) treats it uniformly with the
+ * other archetypes). `kind` matches a ResourceType slot; `amount` is the
+ * remaining yield.
+ */
+export const ConsumerBehavior = trait({
+  kind: 'wood' as ResourceType,
+  amount: 100,
+});
+
 /** Hit points. */
 export const Health = trait({ current: 50, max: 50 });
 
