@@ -22,6 +22,9 @@ import { ModalShell } from './ModalShell';
  */
 export function DiscoveriesPanel({ game }: { game: GameState }) {
   const [open, setOpen] = useState(false);
+  // M_EXPANSION.U.124 — search filter (case-insensitive substring on
+  // name OR description; empty = show all).
+  const [filter, setFilter] = useState('');
   const eco = game.economy.player;
   // M_EXPANSION.AU.40 — overlay map-of-realms ambient while the
   // panel is open. The ambient slot is single — this takes
@@ -64,7 +67,36 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
         >
           Discoveries
         </Dialog.Title>
-        {DISCOVERIES.map((d) => {
+        {/* M_EXPANSION.U.124 — search filter. Hidden until the
+            registry grows past 6 rows so a small library doesn't
+            need the chrome. */}
+        {DISCOVERIES.length > 6 && (
+          <input
+            id="discoveries-filter"
+            type="text"
+            value={filter}
+            placeholder="Filter discoveries…"
+            onChange={(e) => setFilter(e.target.value)}
+            aria-label="Filter discoveries"
+            style={{
+              width: '100%',
+              padding: '6px 10px',
+              borderRadius: 8,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(9,13,22,0.7)',
+              color: HUD_THEME.color.text,
+              fontFamily: HUD_THEME.font.body,
+              fontSize: '0.82rem',
+              margin: '0 0 12px',
+              boxSizing: 'border-box',
+            }}
+          />
+        )}
+        {DISCOVERIES.filter((d) => {
+          const q = filter.trim().toLowerCase();
+          if (!q) return true;
+          return d.name.toLowerCase().includes(q) || d.description.toLowerCase().includes(q);
+        }).map((d) => {
           const purchased = game.research.purchased.has(d.id as ResearchId);
           const prereqMet = (d.prereqs ?? []).every((p) =>
             game.research.purchased.has(p as ResearchId),

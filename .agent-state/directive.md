@@ -1893,8 +1893,11 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [LOW]  M_EXPANSION.U.121 — Per-unit tooltip on hover (name + HP + behaviour)
 - [ ] [LOW]  M_EXPANSION.U.122 — End-of-game stats screen: kills, buildings, peak supply, time elapsed
 - [ ] [LOW]  M_EXPANSION.U.123 — Replay-of-the-match scrubber after victory
-- [ ] [LOW]  M_EXPANSION.U.124 — Discoveries panel: search-filter input (with > 8 discoveries the scroll-list grows)
-- [ ] [LOW]  M_EXPANSION.U.125 — Onboarding overlay: skip-button always visible (currently only on step 1)
+- [x] [LOW]  M_EXPANSION.U.124 — Discoveries panel: search-filter input (with > 8 discoveries the scroll-list grows)
+- [x] [LOW]  M_EXPANSION.U.125 — Onboarding overlay: skip-button always visible (currently only on step 1)
+  - Verified: Skip button has no step-conditional gate (renders on every
+    step alongside step-counter + Next/Begin). The directive item
+    premise was stale.
 
 ### M_EXPANSION.TEST — coverage gaps (126-140)
 
