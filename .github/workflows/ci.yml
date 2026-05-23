@@ -23,6 +23,20 @@ jobs:
       - run: corepack enable
       - run: corepack prepare pnpm@9.15.0 --activate
       - run: pnpm install --frozen-lockfile
+      # M_AUDIT2.SEC2.13 — fail PRs that introduce HIGH/CRITICAL dep CVEs.
+      # `--prod` scopes to runtime deps only; devDeps are caught separately
+      # by dependency-review on PR diff.
+      - name: pnpm audit (prod, high+)
+        run: pnpm audit --audit-level=high --prod
+        continue-on-error: false
+      # M_AUDIT2.SEC2.49 — verify lockfile matches package.json. A
+      # hand-edited package.json with forgotten lockfile update would
+      # silently float deps when --frozen-lockfile flips to install
+      # mode in a downstream pipeline.
+      - name: Lockfile is in sync with package.json
+        run: |
+          pnpm install --lockfile-only
+          git diff --exit-code pnpm-lock.yaml
       - name: Typecheck
         run: pnpm check
       - name: Lint
@@ -42,6 +56,13 @@ jobs:
         run: pnpm build
       - name: Build GitHub Pages
         run: pnpm build:pages
+      # M_AUDIT2.SEC2.22 — vite-static-assets-plugin writes src/static-
+      # assets.ts at build time. A supply-chain attacker who landed a
+      # malicious plugin update could inject code via this file. Diff
+      # check fails CI if the build produced a tree-different output
+      # than was committed.
+      - name: Static assets file is deterministic
+        run: git diff --exit-code src/static-assets.ts
       - name: E2E tests
         run: pnpm test:e2e
       # M_SEC.16 — skip artifact upload on fork PRs. Fork PRs run
@@ -118,3 +139,7 @@ jobs:
         with:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
+          # M_AUDIT2.SEC2.18 — cap retention at 7 days. Debug APKs are
+          # signed with the predictable Android debug keystore; 90-day
+          # default retention on a public repo is a re-signing surface.
+          retention-days: 7

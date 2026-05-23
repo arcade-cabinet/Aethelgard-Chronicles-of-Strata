@@ -1516,9 +1516,9 @@ local-review-trio after each ~5-item batch.
 **Capacitor/WebView (1-5)**
 - [ ] [HIGH] M_AUDIT2.SEC2.1 — MainActivity exported=true with no permission guard — drop singleTask or guard intent extras
 - [ ] [HIGH] M_AUDIT2.SEC2.2 — add taskAffinity="" + allowTaskReparenting=false on activity (task-hijack defence)
-- [ ] [MED] M_AUDIT2.SEC2.3 — capacitor.config.ts: explicit android.webContentsDebuggingEnabled=false + allowMixedContent=false + captureInput=true
-- [ ] [MED] M_AUDIT2.SEC2.4 — server.hostname: 'aethelgard.local' (unique WebView storage partition)
-- [ ] [LOW] M_AUDIT2.SEC2.5 — delete legacy Cordova config.xml shell
+- [x] [MED] M_AUDIT2.SEC2.3 — capacitor.config.ts: explicit android.webContentsDebuggingEnabled=false + allowMixedContent=false + captureInput=true
+- [x] [MED] M_AUDIT2.SEC2.4 — server.hostname: 'aethelgard.local' (unique WebView storage partition)
+- [x] [LOW] M_AUDIT2.SEC2.5 — delete legacy Cordova config.xml shell
 
 **Storage (6-9)**
 - [ ] [HIGH] M_AUDIT2.SEC2.6 — Persistence.reset() to delete DB + jeep-sqlite element
@@ -1529,19 +1529,19 @@ local-review-trio after each ~5-item batch.
 **Supply chain (10-15)**
 - [ ] [HIGH] M_AUDIT2.SEC2.10 — exact-pin all ^/~ in package.json (M_SEC.28 deferred — close it)
 - [ ] [HIGH] M_AUDIT2.SEC2.11 — exact-pin three+r3f+drei triplet
-- [ ] [MED] M_AUDIT2.SEC2.12 — @types/node pinned to 22.x (matches runtime)
-- [ ] [HIGH] M_AUDIT2.SEC2.13 — `pnpm audit --audit-level=high --prod` CI step
-- [ ] [MED] M_AUDIT2.SEC2.14 — .npmrc enable-pre-post-scripts=false + onlyBuiltDependencies allowlist
+- [x] [MED] M_AUDIT2.SEC2.12 — @types/node pinned to 22.x (matches runtime)
+- [x] [HIGH] M_AUDIT2.SEC2.13 — `pnpm audit --audit-level=high --prod` CI step
+- [x] [MED] M_AUDIT2.SEC2.14 — .npmrc enable-pre-post-scripts=false + onlyBuiltDependencies allowlist
 - [ ] [MED] M_AUDIT2.SEC2.15 — SHA-pin dependency-review-action@v4 + codeql-action/init+analyze@v3
 
 **Build/CI (16-22)**
 - [ ] [HIGH] M_AUDIT2.SEC2.16 — Gradle cache restore-keys cross-PR poisoning — scope by branch or drop restore-keys
 - [ ] [MED] M_AUDIT2.SEC2.17 — explicit permissions: block on android-apk job
-- [ ] [MED] M_AUDIT2.SEC2.18 — debug APK upload retention-days: 7 cap
+- [x] [MED] M_AUDIT2.SEC2.18 — debug APK upload retention-days: 7 cap
 - [ ] [HIGH] M_AUDIT2.SEC2.19 — add .github/workflows/release.yml + release-please.yml (signed APK + SBOM)
 - [ ] [HIGH] M_AUDIT2.SEC2.20 — Android release signingConfig + keystore from CI secret
 - [ ] [MED] M_AUDIT2.SEC2.21 — fork-PR gate on expensive CI steps (Playwright)
-- [ ] [MED] M_AUDIT2.SEC2.22 — CI guard `git diff --exit-code src/static-assets.ts` after build
+- [x] [MED] M_AUDIT2.SEC2.22 — CI guard `git diff --exit-code src/static-assets.ts` after build
 
 **Determinism (23-24)**
 - [ ] [LOW] M_AUDIT2.SEC2.23 — Device.getInfo Huge-gating: add wall-clock+frame-budget probe
@@ -1582,7 +1582,7 @@ local-review-trio after each ~5-item batch.
 - [x] [MED] M_AUDIT2.SEC2.46 — ErrorBoundary prod-mode log strips stack/componentStack
 - [x] [LOW] M_AUDIT2.SEC2.47 — window.onerror + unhandledrejection global handlers
 - [ ] [LOW] M_AUDIT2.SEC2.48 — vite.config explicit build.sourcemap=false for github-pages
-- [ ] [LOW] M_AUDIT2.SEC2.49 — CI verify-lockfile step (`pnpm install --lockfile-only && git diff --exit-code`)
+- [x] [LOW] M_AUDIT2.SEC2.49 — CI verify-lockfile step (`pnpm install --lockfile-only && git diff --exit-code`)
 - [ ] [LOW] M_AUDIT2.SEC2.50 — narrow biome.json a11y-off override; allow a11y on TileInteraction
 
 #### M_AUDIT2.UX — visual, a11y, polish (42)
