@@ -39,5 +39,10 @@ export function characterMeshId(role: UnitType): string {
       return 'characters.enemies.black-knight';
     case 'Witch':
       return 'characters.enemies.witch';
+    default: {
+      // Exhaustiveness guard — TS catches missing variants at compile time.
+      const _exhaustive: never = role;
+      throw new Error(`characterMeshId: unhandled UnitType ${_exhaustive}`);
+    }
   }
 }

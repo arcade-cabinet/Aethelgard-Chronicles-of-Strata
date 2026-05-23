@@ -77,35 +77,6 @@ export function isTargetAlive(byId: Map<number, Entity>, targetId: number): bool
   return !!e && (e.get(Health)?.current ?? 0) > 0;
 }
 
-/**
- * Run the full retarget pass for one enemy entity.
- *
- * Mutates `enemyTarget.targetId` in place. Returns true when a retarget was
- * performed (so the caller can deduct from the retarget budget). Returns
- * false when no retarget was needed (target still alive) or the budget was
- * exhausted.
- *
- * The `onNewTarget` callback receives the chosen Entity (or null) and should
- * set the yuka Vehicle's path accordingly.
- */
-export function runPerception(opts: {
-  byId: Map<number, Entity>;
-  candidates: readonly Entity[];
-  targetComp: { targetId: number };
-  hexComp: { q: number; r: number };
-  retargetsUsed: number;
-  onNewTarget: (target: Entity | null, dist: number) => void;
-}): boolean {
-  const { byId, candidates, targetComp, hexComp, retargetsUsed, onNewTarget } = opts;
-
-  // Target still alive — no retarget needed.
-  if (isTargetAlive(byId, targetComp.targetId)) return false;
-
-  // Budget exhausted — defer to next tick.
-  if (retargetsUsed >= MAX_RETARGETS_PER_TICK) return false;
-
-  const { target, distance } = selectNearestTarget(candidates, hexComp.q, hexComp.r);
-  targetComp.targetId = target ? Number(target) : -1;
-  onNewTarget(target, distance);
-  return true;
-}
+// runPerception was a public export with no consumers — AiDirector inlines
+// the equivalent pass. Removed per CodeRabbit nitpick to drop dead code.
+// `selectNearestTarget` + `isTargetAlive` remain exported for use elsewhere.
