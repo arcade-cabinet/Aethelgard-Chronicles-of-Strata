@@ -518,7 +518,7 @@ M_ARCH_UNIFY keystone establishes. **Ordering follows the agent's
 risk-ranked rollout**: ship M_REGISTRY.5 (BUILDING_PROFILES) first as
 the smallest end-to-end proof, then drain in dependency order.
 
-- [ ] M_REGISTRY.1 — collapse `src/entities/character-
+- [x] M_REGISTRY.1 — collapse `src/entities/character-
   factory.ts` role-switch into `placeThing('unit', profileId, hex,
   faction)` consuming `UNIT_PROFILES` (peon/settler/combat trait
   bundles as composeTraits per role). Eliminates: 3 role branches,
