@@ -1,5 +1,5 @@
 import { Canvas, useThree } from '@react-three/fiber';
-import { Suspense, useEffect, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { type Camera, PCFSoftShadowMap } from 'three';
 import type { GameState } from '@/game/game-state';
 import { CombatText } from '@/world/CombatText';
@@ -32,7 +32,6 @@ import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
 import { useViewport, type ViewportProfile } from './useViewport';
 import { Building, type BuildingType, HexPosition } from '@/ecs/components';
-import { useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 
 /**
@@ -199,11 +198,21 @@ export interface GameCanvasProps {
  */
 export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCanvasProps) {
   const viewport = useViewport();
+  // M_AUDIT2.SEC2.28 — pause the render loop while the page is hidden.
+  // Without this r3f keeps drawing 60fps in a background tab, draining
+  // the battery on phones with no perceptible benefit. 'always' resumes
+  // when visible; 'never' parks the loop entirely while hidden. The
+  // koota world's update tick is wall-clock driven by the EconomyTick
+  // useFrame() callback, so pausing here also pauses simulation — which
+  // is the correct behaviour (no surprise weather changes / training
+  // completions while the user has the app in the background).
+  const visible = useDocumentVisible();
   return (
     <Canvas
       shadows={{ type: PCFSoftShadowMap }}
       camera={{ position: [0, 55, 62], fov: viewport.camera.fov }}
       style={{ position: 'absolute', inset: 0 }}
+      frameloop={visible ? 'always' : 'never'}
     >
       <Scene
         game={game}
@@ -213,4 +222,18 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
       />
     </Canvas>
   );
+}
+
+/** Tracks document.visibilityState; rerenders the host on change. */
+function useDocumentVisible(): boolean {
+  const [visible, setVisible] = useState(
+    typeof document === 'undefined' ? true : document.visibilityState === 'visible',
+  );
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const update = () => setVisible(document.visibilityState === 'visible');
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
+  return visible;
 }

@@ -14,6 +14,13 @@ export default defineConfig(({ mode }) => ({
   build: {
     chunkSizeWarningLimit: 2000,
     target: 'es2022',
+    // M_AUDIT2.SEC2.48 — never emit sourcemaps in production builds.
+    // GitHub Pages serves the dist/ tree publicly; a stray .map file
+    // would expose the full original TS source + comment-marked
+    // architecture decisions. Vite's default is already false, but
+    // setting it explicitly defends against a future plugin or
+    // env-driven override flipping it on by accident.
+    sourcemap: false,
     rollupOptions: {
       output: {
         manualChunks(id) {

@@ -16,6 +16,25 @@ import { App } from './App';
 
 // M_AUDIT2.SEC2.47 — global error capture wired into the telemetry
 // facade so prod builds strip stack/componentStack per M_AUDIT2.SEC2.46.
+// M_AUDIT2.SEC2.30 — mask WEBGL_debug_renderer_info. Three.js never
+// reads it but a copy-pasted dependency or a future devtools probe
+// could leak the GPU vendor/renderer string (a known browser-
+// fingerprint surface). Wrap getExtension on both WebGL1 + WebGL2
+// prototypes so the extension always reports unavailable.
+if (typeof WebGLRenderingContext !== 'undefined') {
+  const wrap = (proto: { getExtension: (name: string) => unknown }) => {
+    const original = proto.getExtension;
+    proto.getExtension = function (this: unknown, name: string) {
+      if (name === 'WEBGL_debug_renderer_info') return null;
+      return original.call(this, name);
+    };
+  };
+  wrap(WebGLRenderingContext.prototype as unknown as { getExtension: (name: string) => unknown });
+  if (typeof WebGL2RenderingContext !== 'undefined') {
+    wrap(WebGL2RenderingContext.prototype as unknown as { getExtension: (name: string) => unknown });
+  }
+}
+
 if (typeof window !== 'undefined') {
   window.addEventListener('unhandledrejection', (e) => {
     reportError(e.reason, { source: 'unhandledrejection' });
@@ -40,6 +59,16 @@ if (typeof window !== 'undefined') {
       void import('@/audio/buses').then((m) => m.resumeAudioContextIfSuspended());
     }
   });
+  // M_AUDIT2.SEC2.31 — first-interaction gate for Howler. Listen
+  // once on pointerdown + keydown + touchstart; flip the gate so
+  // any pending playMusic() drains. The listeners are { once: true }
+  // so they unregister themselves after firing.
+  const unlock = () => {
+    void import('@/audio/buses').then((m) => m.recordUserInteraction());
+  };
+  document.addEventListener('pointerdown', unlock, { once: true, passive: true });
+  document.addEventListener('keydown', unlock, { once: true });
+  document.addEventListener('touchstart', unlock, { once: true, passive: true });
 }
 
 const rootEl = document.getElementById('root');

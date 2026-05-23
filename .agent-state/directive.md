@@ -1514,8 +1514,8 @@ local-review-trio after each ~5-item batch.
 #### M_AUDIT2.SEC2 — security + production hardening (50)
 
 **Capacitor/WebView (1-5)**
-- [ ] [HIGH] M_AUDIT2.SEC2.1 — MainActivity exported=true with no permission guard — drop singleTask or guard intent extras
-- [ ] [HIGH] M_AUDIT2.SEC2.2 — add taskAffinity="" + allowTaskReparenting=false on activity (task-hijack defence)
+- [x] [HIGH] M_AUDIT2.SEC2.1 — MainActivity exported=true with no permission guard — drop singleTask or guard intent extras
+- [x] [HIGH] M_AUDIT2.SEC2.2 — add taskAffinity="" + allowTaskReparenting=false on activity (task-hijack defence)
 - [x] [MED] M_AUDIT2.SEC2.3 — capacitor.config.ts: explicit android.webContentsDebuggingEnabled=false + allowMixedContent=false + captureInput=true
 - [x] [MED] M_AUDIT2.SEC2.4 — server.hostname: 'aethelgard.local' (unique WebView storage partition)
 - [x] [LOW] M_AUDIT2.SEC2.5 — delete legacy Cordova config.xml shell
@@ -1551,12 +1551,12 @@ local-review-trio after each ~5-item batch.
 - [x] [MED] M_AUDIT2.SEC2.25 — SelectionRect pointermove throttle to rAF/60Hz
 - [x] [MED] M_AUDIT2.SEC2.26 — TileInteraction.onPointerDown click cooldown 100ms; rate-limit placements
 - [x] [MED] M_AUDIT2.SEC2.27 — auto-save concurrency guard (saving:bool) + skipped-saves counter
-- [ ] [LOW] M_AUDIT2.SEC2.28 — r3f frameloop=demand|never when document.visibilityState!=='visible'
+- [x] [LOW] M_AUDIT2.SEC2.28 — r3f frameloop=demand|never when document.visibilityState!=='visible'
 
 **PII / fingerprint (29-31)**
 - [ ] [MED] M_AUDIT2.SEC2.29 — Device.getInfo confined to src/core/device-tier.ts; expose only tier
-- [ ] [LOW] M_AUDIT2.SEC2.30 — wrap gl.getExtension to mask WEBGL_debug_renderer_info
-- [ ] [LOW] M_AUDIT2.SEC2.31 — gate Howler init on first user interaction (audio fingerprint surface)
+- [x] [LOW] M_AUDIT2.SEC2.30 — wrap gl.getExtension to mask WEBGL_debug_renderer_info
+- [x] [LOW] M_AUDIT2.SEC2.31 — gate Howler init on first user interaction (audio fingerprint surface)
 
 **Process/release (32-37)**
 - [x] [HIGH] M_AUDIT2.SEC2.32 — add .github/SECURITY.md (vuln disclosure policy + SLA)
@@ -1587,7 +1587,7 @@ local-review-trio after each ~5-item batch.
 **Misc (46-50)**
 - [x] [MED] M_AUDIT2.SEC2.46 — ErrorBoundary prod-mode log strips stack/componentStack
 - [x] [LOW] M_AUDIT2.SEC2.47 — window.onerror + unhandledrejection global handlers
-- [ ] [LOW] M_AUDIT2.SEC2.48 — vite.config explicit build.sourcemap=false for github-pages
+- [x] [LOW] M_AUDIT2.SEC2.48 — vite.config explicit build.sourcemap=false for github-pages
 - [x] [LOW] M_AUDIT2.SEC2.49 — CI verify-lockfile step (`pnpm install --lockfile-only && git diff --exit-code`)
 - [ ] [LOW] M_AUDIT2.SEC2.50 — narrow biome.json a11y-off override; allow a11y on TileInteraction
 

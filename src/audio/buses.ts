@@ -51,6 +51,30 @@ export function createAudioBuses(): AudioBuses {
  */
 const BUS_CACHE_CAP = 64;
 
+// M_AUDIT2.SEC2.31 — gate Howler init on the first user interaction.
+// Without this, calling playSound() before the user has tapped/clicked
+// constructs an AudioContext that browsers immediately suspend (which
+// works) AND that contributes to audio fingerprint (the SR sample
+// rate + capabilities are observable). On a hard-refresh of the title
+// screen, useTitleMusic.ts attempts to play before any input —
+// recordUserInteraction below is wired in main.tsx visibility / event
+// listeners and flips the gate. playSound() / playMusic() consult the
+// gate and silently drop the call if it's not yet flipped.
+let interactionGate = false;
+const pendingInteractionListeners: Array<() => void> = [];
+export function recordUserInteraction(): void {
+  if (interactionGate) return;
+  interactionGate = true;
+  for (const cb of pendingInteractionListeners.splice(0)) cb();
+}
+export function isAudioUnlocked(): boolean {
+  return interactionGate;
+}
+export function onAudioUnlock(cb: () => void): void {
+  if (interactionGate) cb();
+  else pendingInteractionListeners.push(cb);
+}
+
 /** Get or lazily create the Howl for `id` on a bus (LRU-capped). */
 function getHowl(bus: AudioBus, id: string): Howl {
   // Map iteration order is insertion order — deletes from the front
@@ -80,6 +104,10 @@ function getHowl(bus: AudioBus, id: string): Howl {
 
 /** Play a one-shot sound on `bus` identified by asset `id`. */
 export function playSound(buses: AudioBuses, busName: keyof AudioBuses, id: string): void {
+  // M_AUDIT2.SEC2.31 — drop the call silently before the user has
+  // interacted (Chrome/Safari would block AudioContext startup anyway;
+  // skipping the Howl construction also avoids the fingerprint surface).
+  if (!interactionGate) return;
   const bus = buses[busName];
   getHowl(bus, id).play();
 }
@@ -92,6 +120,14 @@ let currentMusicHowl: Howl | null = null;
  * Uses the `music` bus.
  */
 export function playMusic(buses: AudioBuses, id: string): void {
+  // M_AUDIT2.SEC2.31 — defer until first user interaction. The most
+  // common caller is useTitleMusic which fires on mount of the title
+  // screen — before any tap. Queue the call via onAudioUnlock so the
+  // first menu-button press plays the track without losing it.
+  if (!interactionGate) {
+    onAudioUnlock(() => playMusic(buses, id));
+    return;
+  }
   if (currentMusicHowl) {
     currentMusicHowl.stop();
   }
