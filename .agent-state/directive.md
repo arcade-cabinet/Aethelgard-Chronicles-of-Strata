@@ -424,71 +424,65 @@ The standards (just established in M_ARCH_UNIFY):
   7. No "factory" files that internally branch on type — every such
      branch is hiding an un-extracted archetype config.
 
-- [ ] [WAIT-AUDIT] M_AUDIT.0 — reviewer trio DISPATCHED (in flight):
-  a4267c0258c37dbd5 — comprehensive-review:code-reviewer (opus) for
-    MACRO+MESO parallel hierarchies + role-discriminator branches.
-  af4744c8cb3392a4e — code-simplifier (opus) for MICRO sweeps:
-    Math.random / duplicated formulas / index keys / NaN handling /
-    setState-per-frame / vacuous tests / >30LOC helpers / dead code.
-  a37a26f880ba9bfd5 — security-scanning:security-auditor (opus) for
-    persistence + PRNG boundary + workflow least-privilege + Capacitor
-    surface.
-  Each instructed to be EXHAUSTIVE + aim for 25-50+ findings + report
-  how big the unification refactor actually is. Findings forward-apply
-  to M_AUDIT.1-.7 + new sub-items as discovered.
-- [ ] [WAIT-AUDIT] M_AUDIT.1 — MACRO: every `src/<dir>/` that owns a parallel
-  hierarchy. Concrete first-pass list (will grow from reviewer
-  output): `src/entities/character-factory.ts` (role branch — should
-  be Thing dispatcher per M_ARCH_UNIFY.6/.10); `src/world/structure-
-  models.ts` (per-faction hardcoded table — should be Skin slot per
-  .7); `src/world/RainParticles.tsx` / `SawdustFX.tsx` /
-  `VictoryConfetti.tsx` / `BuildCompleteFX.tsx` / `ProjectileLayer.tsx`
-  / `TrackingRings.tsx` (6 hand-rolled FX — should be ParticleArchetype
-  consumers per .8); `src/rules/building-behaviors.ts` +
-  `src/rules/display.ts` + `src/world/structure-models.ts` (3 tables
-  keyed by BuildingType — should fold into the Thing registry per .3);
-  `src/world/Decoration.tsx`'s BASE_ACCRETION + BUILDING_ACCRETION
-  tables (per .9 consumer).
-- [ ] [WAIT-AUDIT] M_AUDIT.2 — MESO: every function/system that branches on a
-  *role / type / faction* discriminator. Discover via grep for
-  `case '<UnitType>'`, `if (type === '<BuildingType>')`, `faction ===
-  'player'`. Each such branch is either (a) legitimately dispatching
-  to a slot handler (acceptable), or (b) hiding an archetype config
-  row that should be data-driven (bug — replace with a registry lookup).
-- [ ] [WAIT-AUDIT] M_AUDIT.3 — MICRO: per-file pass for: Math.random in src/world
-  / src/render / src/sim (CodeRabbit already flagged 2 — sweep the
-  rest); duplicated formulas (CodeRabbit flagged hex-distance in
-  zone.ts — sweep); index-based identity used as React keys (CodeRabbit
-  flagged Roads.tsx — sweep); silent `default` returns / fallback
-  `?? 0` over `Number()` output (path-follow.ts fix pattern — sweep);
-  unconditional per-frame setState (ResourceBar fix pattern — sweep);
-  vacuous test assertions that pass when the inner loop is empty
-  (CodeRabbit flagged mode-presets.test.ts + place-road.test.ts +
-  science-system.test.ts — sweep test/ directory).
-- [ ] [WAIT-AUDIT] M_AUDIT.4 — SECURITY: full security-auditor sweep. Confirm no
-  user-input pathway can break out of the sandboxed PRNG /
-  Capacitor persistence; check the persistence facade for SQL
-  injection (parameterised queries verified earlier — re-verify
-  every new save path including the M_HARDENING.1 game-snapshot
-  serializer); workflow least-privilege audit (deploy-pages.yml
-  already done, sweep ci.yml + release.yml for similar gaps);
-  Howler audio + AudioContext autoplay-policy compliance.
-- [ ] [WAIT-AUDIT] M_AUDIT.5 — CODE-QUALITY: complexity + maintainability. Files
-  >400 lines reviewed against "reader-can-hold-it-in-head" test;
-  Biome lint at strictest level we run; tsc strict + noUncheckedIndexedAccess
-  consistent across the tree; cyclomatic complexity per function ≤8;
-  inheritance / class hierarchy reviewed against composition
-  preference.
-- [ ] [WAIT-AUDIT] M_AUDIT.6 — CODE-SIMPLIFICATION: every helper > 30 lines reviewed
-  for whether it could be expressed via the registry pattern (config
-  lookup + composeTraits) instead of bespoke code. Every Set/Map ops
-  reviewed for whether they should be the future bitmask (M_ARCHETYPE.7).
-- [ ] [WAIT-AUDIT] M_AUDIT.7 — DOC ALIGNMENT: every spec doc in `docs/specs/` reviewed
+- [x] M_AUDIT.0 — reviewer trio COMPLETE. All 3 agents reported.
+  Findings forward-applied across **130 concrete tickets**:
+    - 30 in M_REGISTRY (macro/meso parallel-hierarchy collapses).
+    - 33 in M_SEC (4 BLOCKER + 7 HIGH + 13 MEDIUM + 9 LOW).
+    - 67 in M_MICRO (10 categories of micro/simplification wins).
+  Net refactor scope estimate (from macro agent): 70-90 files, ~2-3K
+  LOC net reduction. The user's "100%+ hidden" intuition was correct
+  — initial M_AUDIT.1-6 placeholder named 3 hierarchies, sweep found
+  20 + 30 hidden branches. Top-line risk (from security agent):
+  tampered GameSnapshot → NaN-poisoned renderer; mitigation =
+  schema-validate + entity cap + SQLCipher + Android allowBackup
+  off + CSP.
+- [x] M_AUDIT.1 — MACRO sweep complete (agent a4267c0258c37dbd5):
+  **20 distinct parallel hierarchies** discovered. Net refactor scope
+  ~70-90 files, ~2-3K LOC reduction (registries add 1.5-2K, deletions
+  remove 4-5K). Risk hotspots ranked: commands.ts+game-state.ts (446+
+  753 LOC, all commander verbs + per-faction tick wiring); Decoration.
+  tsx (599 LOC, 3 painter passes + 32-asset preload); 6 AI files
+  (biggest behavioral-test exposure); serialize.ts (save-version
+  bump needed for migration); runtime systems (must preserve
+  determinism — event-PRNG draw count cannot shift). Concrete tickets
+  M_REGISTRY.* enumerated below.
+- [x] M_AUDIT.2 — MESO sweep complete (agent a4267c0258c37dbd5):
+  **30 hidden archetype-config branches** found. 4 legitimate slot
+  dispatches confirmed (encroachment.opposite, death.enemyKills,
+  win-loss attribution, perception target-pick). 26 bugs filed as
+  M_REGISTRY.* tickets — see expanded list below.
+- [x] M_AUDIT.3 — MICRO sweep complete (agent af4744c8cb3392a4e):
+  **67 findings** in 10 categories. Math.random in src/world clean.
+  Duplicated formulas: 4 (hex-distance, key-parse, neighbors, level-
+  delta). Index keys: 3. NaN-trap `?? 0` over Number(): 10 (collapse
+  to 1 parseHexKey helper). Per-frame setState: 8 (ZoneBorder is the
+  hottest perf bug — 60Hz Float32Array alloc). Vacuous tests: 11.
+  Helpers > 30 LOC: 7 (startGame is 294 LOC, runEconomyTick 119).
+  Pre-bitmask hand-rolled loops: 4. Dead code: 5. Inline-styled JSX
+  > 50 LOC: 9 (5 modals share the same shell — one ModalShell kills
+  200 LOC). Concrete tickets M_MICRO.* enumerated below.
+- [x] M_AUDIT.4 — SECURITY sweep complete (agent a37a26f880ba9bfd5):
+  **33 findings** filed (4 BLOCKER, 7 HIGH, 13 MEDIUM, 9 LOW).
+  Top-line risk: tampered GameSnapshot via IndexedDB (web) or
+  /data/data/.../databases (rooted Android) → deserialize{World,Game}
+  consume arbitrary trait data → NaN propagates into renderer →
+  unrecoverable wedge. Fix path: schema-validate snapshot before any
+  Object.assign + cap entity count + Android allowBackup=false +
+  Keystore-bound SQLCipher + CSP + self-hosted fonts + CodeQL.
+  Concrete tickets M_SEC.* enumerated below.
+- [x] M_AUDIT.5 — CODE-QUALITY covered by M_MICRO.* + M_REGISTRY.*
+  (especially M_MICRO.7.1+.7.2 startGame + runEconomyTick phase
+  extraction; M_MICRO.7.3 AI RegistryGoal; M_MICRO.10.1-.10.6
+  ModalShell extraction).
+- [x] M_AUDIT.6 — CODE-SIMPLIFICATION covered by M_MICRO.* + M_REGISTRY.*
+  (especially M_MICRO.7.* helper splits + M_MICRO.8.* bitmask
+  migration candidates).
+- [ ] M_AUDIT.7 — DOC ALIGNMENT: every spec doc in `docs/specs/` reviewed
   against the M_ARCH_UNIFY architecture. Specs that pre-date the
   unification (most of them) get a "see spec 103" cross-reference; any
   that contradict the unified layer model get explicit corrigenda.
   CHANGELOG 0.4.0 entry drafted for M_AUDIT.0-.6 findings landed.
-- [ ] [WAIT-AUDIT] M_AUDIT.8 — PILLAR DOC OVERHAUL (user, 2026-05-23): every pillar
+- [ ] M_AUDIT.8 — PILLAR DOC OVERHAUL (user, 2026-05-23): every pillar
   doc in `docs/specs/` updated to reflect the FULL hierarchy from
   archetypes → things → skins, INCLUDING the layers in the middle
   (slot capabilities, gen-time vs runtime pass, registry shape, config
@@ -514,6 +508,442 @@ The standards (just established in M_ARCH_UNIFY):
   - Every other spec doc: cross-reference to spec 103; flag any
     statement that contradicts the unified model with a corrigendum
     block and a follow-up directive item.
+
+### M_REGISTRY — forward-applied MACRO+MESO refactor tickets (audit 2026-05-23)
+
+The 30 concrete tickets emitted by the macro/meso reviewer agent
+(a4267c0258c37dbd5). Each collapses a parallel hierarchy or hidden
+archetype-config branch into the unified Thing/Skin registry the
+M_ARCH_UNIFY keystone establishes. **Ordering follows the agent's
+risk-ranked rollout**: ship M_REGISTRY.5 (BUILDING_PROFILES) first as
+the smallest end-to-end proof, then drain in dependency order.
+
+- [ ] M_REGISTRY.1 — collapse `src/entities/character-
+  factory.ts` role-switch into `placeThing('unit', profileId, hex,
+  faction)` consuming `UNIT_PROFILES` (peon/settler/combat trait
+  bundles as composeTraits per role). Eliminates: 3 role branches,
+  1 difficulty ternary, 1 damageType ternary.
+- [ ] M_REGISTRY.2 — collapse `src/entities/rig.ts` two
+  role switches into Skin slot reads: `Skin[faction].rig[role] =
+  {tier, mesh}`. Delete `rigForRole` + `characterMeshId`;
+  AnimatedCharacter reads the Skin slot directly.
+- [ ] M_REGISTRY.3 — kill `src/world/structure-models.ts`
+  as a top-level table. Move per-(faction, BuildingType) GLB + scale
+  + yOffset under `Skin[faction].structure[type]`. structureModel()
+  becomes a 2-key lookup.
+- [ ] M_REGISTRY.4 — collapse `HomeBase.tsx` +
+  `EnemyBase.tsx` into ONE `<FactionBase entity={...} />` component
+  reading Skin slot for prop GLBs + offsets. Per-faction divergence
+  becomes 100% data.
+- [ ] M_REGISTRY.5 — **FIRST PROOF** — unify per-Building-
+  Type tables (BUILDING_BEHAVIORS, BUILDING_DISPLAY, BUILDING_COSTS,
+  BUILDING_SUPPLY, ScienceProducer Library-branch in commands.ts:161)
+  into ONE `BUILDING_PROFILES` registry with composable slot fields
+  {behaviors, display, cost, supply, producers}. Library's
+  ScienceProducer becomes `producer: {kind: 'science', rate: 1}` slot.
+- [ ] M_REGISTRY.6 — collapse the 7 sibling particle FX
+  (RainParticles, SawdustFX, BuildCompleteFX, VictoryConfetti,
+  CombatText, ResourceText, TrackingRings, FootstepEmitter) into ONE
+  ParticleSystem driven by `ParticleArchetype` slot configs (geometry,
+  lifetime, emit trigger, drift fn, batch source). Supersedes the
+  earlier M_REFACTOR.1 — this IS its realization.
+- [ ] M_REGISTRY.7 — `src/world/Decoration.tsx` (599 LOC,
+  biggest world file) splits along 3 painter passes; all 3 collapse
+  into AccretesProps slot values on gen-time pass. Replace trio with
+  one `paintAccretion(target, AccretesProps)` invoked per Accreting
+  entity.
+- [ ] M_REGISTRY.8 — `useDecorationGltfs()` hand-built
+  32-key Record of preloads collapses into derived list from unified
+  asset registry — every asset referenced by any Skin or
+  AccretesProps auto-preloaded.
+- [ ] M_REGISTRY.9 — collapse 5 board paint passes
+  (paintBeachRing / Mountain / Channel / Lake / Desert) + assignBiome
+  into ONE `runGenTimePass(board, slots)` iterating slot membership
+  + dispatching per slot kind.
+- [ ] M_REGISTRY.10 — `Mountains.tsx` (peak placement)
+  + `Crossings.tsx` (ramp placement) join the gen-time pass — both
+  are AccretesProps consumers, not bespoke renderers.
+- [ ] M_REGISTRY.11 — `Roads.tsx` MATERIAL_COLOR table +
+  Roads layer become a Skin-driven generic MoverRenderer. Same
+  shape as StructureRenderer.
+- [ ] M_REGISTRY.12 — `Crossings.tsx` 6-variant (style ×
+  form) rendering collapses into CrossingProfile slot table; remove
+  the bespoke crossingColor switch.
+- [ ] M_REGISTRY.13 — collapse 4 `place*` verbs in
+  commands.ts (placeBuilding, placeRoad, trainUnit + latent
+  foundBase) into one `placeThing(game, profileId, hex, faction)`.
+- [ ] M_REGISTRY.14 — replace `townHallKey` /
+  `enemyBaseKey` with `baseKeys: Record<Faction, string>`. Rewrite
+  4 hard-coded ternaries in commands.ts (286, 414) + ai-player.ts
+  (136) + game-state. Foundation for >2 factions.
+- [ ] M_REGISTRY.15 — `spawn.ts pickRole()` escalation
+  cascade becomes declarative ESCALATION_SCHEDULE table (threshold →
+  weighted roster); replace 4-tier if-cascade.
+- [ ] M_REGISTRY.16 — `science.ts` literal player+enemy
+  adds become `for (const f of FACTIONS) addResource(...)`. Same
+  fix for game-state.ts twice-called depositSystem/jobRoutingSystem.
+  Foundation for >2 factions.
+- [ ] M_REGISTRY.17 — extract MILITARY set duplicated
+  in TileInteraction.tsx, offensive-behavior.ts, encroachment.ts
+  into ONE `rules/unit-roles.MILITARY_ROLES` export OR push down
+  to a `combatRole: 'military' | 'peon' | 'civilian'` slot per
+  unit profile.
+- [ ] M_REGISTRY.18 — collapse 6 AI files (ai-director,
+  ai-player, perception, steering, vehicle-factory, ecs/systems/ai)
+  into ONE `BrainArchetype` slot consumed by ONE per-tick AI system.
+  yuka Vehicle becomes implementation detail of the brain slot.
+- [ ] M_REGISTRY.19 — `SelectionRing.tsx ringScale`
+  4-branch ladder becomes `selectionRadius` Skin slot read off
+  the selected thing's profile.
+- [ ] M_REGISTRY.20 — `audio/sound-map.ts` event→asset
+  map becomes audio half of Skin slot — `Skin[faction].audio[event]`.
+  Fixes the encroachment.ts:99 `faction === 'player'` critical-alarm
+  hard-branch.
+- [ ] M_REGISTRY.21 — `terrain-mesh.ts` cliff-color +
+  lush-blend type-switches become per-biome SurfaceProfile slot
+  reads (cliffColor / lushBlendBiomes / dither bias as data).
+- [ ] M_REGISTRY.22 — Decoration / board / resource-spawn
+  / balance-audit duplicate "is tile habitable / buildable" predicate
+  via type-switches. Promote to `BIOME_FLAGS: Record<BiomeType,
+  {walkable, decoratable, buildable, footstepKind}>` table.
+- [ ] M_REGISTRY.23 — eliminate hex-distance + neighbor-
+  table duplication (4 copies of `(|dq|+|dr|+|dq+dr|)/2`, 3
+  NEIGHBORS literals). Replace with `core/hex.hexDistance` + new
+  `AXIAL_NEIGHBORS` export.
+- [ ] M_REGISTRY.24 — `resource-spawn.ts` +
+  `rules/attractor.ts` collapse — both walk board placing per-
+  ResourceType nodes. ONE `runResourcePlacement(board, [{kind:
+  'attractor-guarantee', ...}, {kind: 'biome-scatter', ...}])`
+  driven by config.
+- [ ] M_REGISTRY.25 — `persistence/serialize.ts` per-
+  component-type table collapses into derived loop over unified
+  component registry — every koota trait registered in
+  ecs/components.ts auto-serialises. (Couples to M_SEC.5/6 below.)
+- [ ] M_REGISTRY.26 — `static-assets.ts` (242 LOC)
+  becomes derived view over asset half of Skin registry; manual
+  table goes away.
+- [ ] M_REGISTRY.27 — `Minimap.tsx:118` color ternary
+  + literal base-marker tuple become Skin slot reads
+  (`Skin[faction].minimap.color`).
+- [ ] M_REGISTRY.28 — `TileInteraction.tsx:145`
+  `faction === 'player'` click-routing assumption goes away once
+  `selectedEntities(game)` filters by `local-player-faction` from
+  a session context — lets AI-vs-AI replays drive the same
+  interaction layer.
+- [ ] M_REGISTRY.29 — `encroachment.ts` `for faction of
+  ['player','enemy']` literal loop becomes `for faction of
+  FACTIONS`. Same fix wherever two-faction literal escapes.
+- [ ] M_REGISTRY.30 — `offensive-behavior.ts:87`
+  `s.faction === unitFaction` should be generalised `targetsRule:
+  {includeFactions, excludeFactions, includeRoles, excludeRoles}`
+  slot on OffensiveBehavior. Same trait drives Watchtowers,
+  Footmen, Witches, future Trojan-horse units.
+
+### M_SEC — forward-applied SECURITY refactor tickets (audit 2026-05-23)
+
+The 33 findings emitted by the security-auditor agent
+(a37a26f880ba9bfd5). **Ship BLOCKERs first**, then HIGH, then
+absorb MEDIUM/LOW into the relevant M_REGISTRY tickets where
+overlap exists.
+
+#### BLOCKER
+
+- [ ] M_SEC.1 — strip Cordova `<access origin="*" />`
+  from `android/app/src/main/res/xml/config.xml:3`; scope to
+  `https://com.arcadecabinet.aethelgard/*` or delete entirely.
+  Add explicit `usesCleartextTraffic="false"` + a
+  `networkSecurityConfig` to AndroidManifest.
+- [ ] M_SEC.2 — tighten `android/app/src/main/res/xml/
+  file_paths.xml:3-4` FileProvider config. Replace `path="."`
+  (entire ext+cache root) with explicit named subdirectories
+  (`path="screenshots/"`).
+- [ ] M_SEC.3 — `android:allowBackup="false"` +
+  `android:fullBackupContent="@xml/backup_rules"` (deny-list
+  databases/ + shared_prefs/) + `android:dataExtractionRules`
+  for Android 12+. Currently `allowBackup=true` permits `adb backup`
+  exfiltration of save DB.
+- [ ] M_SEC.4 — encrypt SQLite saves. Change
+  `persistence.ts:88` mode `'no-encryption'` → `'encryption'`
+  (SQLCipher) with per-install key bound via Android Keystore.
+
+#### HIGH
+
+- [ ] M_SEC.5 — `persistence/serialize-game.ts:48-78`
+  `deserializeGame` performs zero structural validation before
+  `Object.assign(game.clock, snap.clock)` etc. Add zod (or hand-
+  rolled) schema validator that rejects tampered payloads:
+  - whitelist keys per Object.assign target
+  - type-check economy numbers (finite, not Infinity/NaN)
+  - bounds-check config.mapSize (cap at 50)
+  - reject `__proto__` / `constructor` keys (prototype pollution)
+- [ ] M_SEC.6 — `persistence/serialize.ts:117-138`
+  `deserializeWorld` feeds arbitrary trait DATA into `traitObj(data)`
+  unchecked. Per-trait schema validator at load: numbers finite,
+  enums in declared set, faction in ['player','enemy'], q/r in
+  board radius bounds. Couples to M_REGISTRY.25.
+- [ ] M_SEC.7 — `App.tsx` resume-fallback path sets
+  `eventSeed: record.seedPhrase` on deserializeGame failure —
+  collapses two-PRNG model. Either delete fallback (force fresh
+  start on corrupt save) or mint fresh via createFreshEventSeed().
+- [ ] M_SEC.8 — `NewGameModal.tsx:168-172` seed input
+  has zero validation. Add `maxLength={64}`, regex
+  `/^[a-z\- ]+$/i`, NFC normalize, `autoComplete="off"`,
+  `spellCheck={false}`, `inputMode="text"`.
+- [ ] M_SEC.9 — `index.html:9-13` loads fonts from
+  fonts.googleapis.com. Self-host Metamorphous + Inter under
+  `public/fonts/` (both OFL-licensed). Removes GDPR/privacy leak
+  + CDN-compromise vector.
+- [ ] M_SEC.10 — `index.html` no CSP. Add
+  `<meta http-equiv="Content-Security-Policy" content="default-src
+  'self'; script-src 'self'; style-src 'self' 'unsafe-inline';
+  img-src 'self' data:; connect-src 'self'; object-src 'none';
+  base-uri 'self'; frame-ancestors 'none'">` (allow capacitor:
+  scheme for Android).
+- [ ] M_SEC.11 — cap entity count at deserialize. A
+  tampered snapshot with 100k Unit entities would (after M_SEC.6
+  bypass) spawn 100k yuka Vehicles. Reject snapshots > 5000
+  entities.
+
+#### MEDIUM
+
+- [ ] M_SEC.12 — `persistence.ts:218` save() name
+  parameter — add 256-char cap.
+- [ ] M_SEC.13 — `persistence.ts:243` list() runs
+  SELECT * without LIMIT or pagination. Add `LIMIT 50` + separate
+  `listMetadata()` that does `SELECT id,name,seed,saved_at` (no
+  snapshot) for list views.
+- [ ] M_SEC.14 — `persistence.ts:271 getEventSeed()`
+  trusts stored value. Validate `/^[a-z0-9-]{1,256}$/`; re-mint
+  if invalid.
+- [ ] M_SEC.15 — `SoundToggle.tsx:24` +
+  `SettingsModal.tsx:30` strict-ternary on muted pref; return
+  null for unrecognized values, default false.
+- [ ] M_SEC.16 — `.github/workflows/ci.yml` add fork-PR
+  scrub before artifact upload; skip upload on fork PRs.
+- [ ] M_SEC.17 — add CodeQL workflow + dependency-review-
+  action on pull_request. Currently no static analysis on PRs.
+- [ ] M_SEC.18 — `android/app/build.gradle:18-22`
+  release block — set `minifyEnabled true`, `shrinkResources true`,
+  `debuggable false` explicitly.
+- [ ] M_SEC.19 — `android/app/build.gradle` add
+  `signingConfigs.release` reading keystore from Gradle property;
+  CI step decodes `secrets.RELEASE_KEYSTORE_BASE64`.
+- [ ] M_SEC.20 — `android/app/build.gradle:40-46`
+  delete the conditional `apply plugin: 'com.google.gms.google-
+  services'` block — game doesn't use Firebase; latent activation
+  is a privacy footgun.
+- [ ] M_SEC.21 — `persistence.ts:249-256` list() row
+  parse swallow — log `console.warn('[persistence] skipping
+  corrupt save row', id)`.
+- [ ] M_SEC.22 — `persistence.ts:240` load() catch
+  returns null masks corruption from "no row found". Differentiate
+  via `CorruptSaveError`; UI shows "save corrupted" path.
+- [ ] M_SEC.23 — `audio/buses.ts` Howler cache
+  unbounded — add LRU cap of ~64 entries.
+- [ ] M_SEC.24 — KeyboardShortcuts/PauseControl/
+  SelectionRect global listeners capture closure refs to `game`.
+  On resume, three listeners coexist briefly. Switch to refs +
+  effect cleanup that reads the current game.
+
+#### LOW
+
+- [ ] M_SEC.25 — `AndroidManifest.xml:14-22` either
+  wire up the `custom_url_scheme` intent-filter explicitly or
+  remove the dangling `custom_url_scheme` from strings.xml:5.
+- [ ] M_SEC.26 — `App.tsx` Continue effect — guard
+  StrictMode double-fire via idempotent UPSERT-by-name in
+  persistence or de-dupe in createAutoSave.
+- [ ] M_SEC.27 — `audio/useTitleMusic.ts:14-23` add
+  `bus.cache.forEach(h => h.unload())` to cleanup.
+- [ ] M_SEC.28 — `package.json` exact-pin all `^x.y.z`
+  versions OR document `--frozen-lockfile` only.
+- [ ] M_SEC.29 — `vite.config.ts:9` base URL: read
+  from `process.env.VITE_BASE` with fallback.
+- [ ] M_SEC.30 — `vite.config.ts:25-31` staticAssetsPlugin
+  trusts every file in public/. Add CI lint failing if anything
+  under `public/assets/` isn't referenced from
+  `src/config/asset-metadata.json`.
+- [ ] M_SEC.31 — `package.json:8` copywasm — move body
+  to `scripts/copy-wasm.mjs`; call via `node scripts/copy-wasm.mjs`.
+- [ ] M_SEC.32 — `vite.config.ts` vitest project
+  staticAssetsPlugin — set `watch: false`.
+- [ ] M_SEC.33 — namespace all Capacitor Preferences
+  keys with `aethelgard.` prefix; wrap in single typed enum.
+
+### M_MICRO — forward-applied MICRO/SIMPLIFICATION tickets (audit 2026-05-23)
+
+The 67 findings emitted by the code-simplifier agent
+(af4744c8cb3392a4e). Grouped by category; ROI-ranked at the bottom.
+**Ship the biggest-win tickets first**: parseHexKey (kills 10 sites),
+ModalShell (kills 200 LOC), ZoneBorder rebuild fix (hottest perf
+bug).
+
+#### Category 2 — Duplicated formulas
+
+- [ ] M_MICRO.2.1 — `board.ts:117` + `balance-audit.ts:26`
+  inline `(|q|+|r|+|q+r|)/2` — replace with `hexDistance(q,r,0,0)`.
+- [ ] M_MICRO.2.2 — **PARSE-HEX-KEY HELPER** kills 13
+  call sites. New `parseHexKey(key): {q,r}` in `src/core/hex.ts`,
+  NaN-hardened. Replace `pathfinding.ts:39`, `hex.ts:48`, `PathLine
+  .tsx:12`, `HomeBase.tsx:13`, `Crossings.tsx:11`, `RallyMarker.tsx
+  :24`, `Decoration.tsx:438`, `encroachment.ts:109`, `job-routing.ts
+  :28`, `path-follow.ts:12`, `commands.ts:287`, `ai-player.ts:137`,
+  `steering.ts:75`.
+- [ ] M_MICRO.2.3 — `encroachment.ts:109-120
+  hasAdjacentMilitary` inlines 6 direction pairs; use
+  `HEX_DIRECTIONS` from `config/world.ts`.
+- [ ] M_MICRO.2.4 — extract `levelDelta(a, b): number`
+  helper used by `pathfinding.ts:25` + `crossings.ts:85`.
+
+#### Category 3 — Index-based React keys / id collisions
+
+- [ ] M_MICRO.3.1 — `Roads.tsx` snapshot sort by entity
+  id OR diff via `Map<id,RoadView>` so koota query-order changes
+  don't trigger full reconcile.
+- [ ] M_MICRO.3.2 — `TrackingRings.tsx` lift opacity/
+  scale into Ring state; drop the meshRefs Map (1-frame opacity pop
+  on new rings).
+- [ ] M_MICRO.3.3 — `RallyMarker.tsx:24-28` use
+  `parseHexKey` (M_MICRO.2.2) + early-return on invalid key.
+
+#### Category 4 — Silent `?? 0` over `Number()` output
+
+- [x] M_MICRO.4.1-4.10 — **ALL TEN COLLAPSE into M_MICRO.2.2's
+  parseHexKey helper.** Tracked individually for completeness;
+  resolved by the one parseHexKey commit. (RallyMarker, PathLine,
+  HomeBase, Crossings, encroachment, job-routing, commands,
+  ai-player, steering, RainParticles dead-?? on Float32Array.)
+
+#### Category 5 — Unconditional per-frame setState
+
+- [ ] M_MICRO.5.1 — `ProjectileLayer.tsx:46-49` 60Hz
+  setTick regardless of projectile count. Diff
+  `game.projectiles.length` + first/last id; bail when unchanged.
+- [ ] M_MICRO.5.2 — **HOTTEST PERF BUG** — `ZoneBorder.
+  tsx:51-55` rebuilds Float32Array every frame even when controlled
+  set unchanged. Hash `[...zone.controlled].sort().join(',')` (or
+  generation counter bumped by claimTile/releaseTile); skip rebuild
+  on match.
+- [ ] M_MICRO.5.3 — `SelectionPanel.tsx:114,121-128`
+  setView every RAF returns fresh object; add diff-equality
+  short-circuit same as ResourceBar.
+- [ ] M_MICRO.5.4 — `GameCanvas.tsx:67-75` DecorationLive
+  equality only checks key+isComplete; add `level === prev.level &&
+  type === prev.type` to catch Wall→Gate composition swap.
+- [ ] M_MICRO.5.5 — `Minimap.tsx:62-72` redraw full
+  overlay every RAF — cap to ~10 Hz via accumulator OR hash unit-
+  count + camera-frustum.
+- [ ] M_MICRO.5.6 — `RallyMarker.tsx:14-18` switch to
+  `useSyncExternalStore` over `game.rally.subscribe(...)` OR
+  collapse to a pure read driven by parent re-renders.
+- [ ] M_MICRO.5.7 — `CombatText.tsx:56-66` short-circuit
+  empty pre-allocation: `if (prev.length === 0) return prev;`.
+- [ ] M_MICRO.5.8 — `BuildCompleteFX.tsx:34-56` same
+  short-circuit.
+
+#### Category 6 — Vacuous test assertions
+
+- [ ] M_MICRO.6.1 — `crossings.test.ts:43-44` assert
+  `board.crossings.size > 0` + count natural vs artificial.
+- [ ] M_MICRO.6.2 — `resource-spawn.test.ts:22-26`
+  assert `woodNodes.length > 0` before the per-node check.
+- [ ] M_MICRO.6.3 — `attractor.test.ts:24-27` assert
+  `nearby.length > 0` AND at least one type reaches guarantee.
+- [ ] M_MICRO.6.4 — `prng.test.ts:25-26` add
+  `expect(v).toBeLessThan(1)` + statistical mean-in-[0.45,0.55]
+  over 10k draws.
+- [ ] M_MICRO.6.5 — `ai-vs-ai.test.ts:65-67` assert
+  `wood > initialWood` (verify economy progress, not just signedness).
+- [ ] M_MICRO.6.6 — `weather-system.test.ts:31-33`
+  assert `seen.size > 0` first.
+- [ ] M_MICRO.6.7 — `economy-integration.test.ts:18-19`
+  `expect(after).toBeGreaterThan(before + 10)` for meaningful
+  harvest progress.
+- [ ] M_MICRO.6.8 — `audio-events.test.ts:20-21,32-33`
+  assert `events.length === EXPECTED_COUNT` before the loop.
+- [ ] M_MICRO.6.9 — `place-road.test.ts:25-29` query
+  for placed key specifically + assert stone material.
+- [ ] M_MICRO.6.10 — `day-night.test.ts:27-28` sample
+  full phase + assert `min < max - 0.5` so curve isn't flat.
+- [ ] M_MICRO.6.11 — `science-system.test.ts:7-13`
+  constrain magnitude: `~= expectedRate * 60 * (1/60) ± 5%`.
+
+#### Category 7 — Helper functions > 30 LOC
+
+- [ ] M_MICRO.7.1 — `game-state.ts startGame` (294 LOC,
+  8 phases). Extract `initWorld`, `placePlayerBase`, `placeEnemyBase`,
+  `seedAttractorResources`, `initZones`; `startGame` becomes a
+  30-line orchestrator. Couples to M_REGISTRY.13 (placeThing).
+- [ ] M_MICRO.7.2 — `game-state.ts runEconomyTick`
+  (119 LOC, 11 system invocations). Extract `SIM_PHASES:
+  ReadonlyArray<(game, delta) => void>` table; pause/invuln-clamp
+  stay inline. Foundation for M_REGISTRY runtime-pass collapse.
+- [ ] M_MICRO.7.3 — `ai-player.ts` 4 Evaluator/Goal
+  classes (Build/Train/Military/Resign) collapse to ONE generic
+  `RegistryGoal` + `GOALS: Array<{id, score, payload, execute}>`
+  table. ~150 LOC → ~60. Couples to M_REGISTRY.18 (BrainArchetype).
+- [ ] M_MICRO.7.4 — `character-factory.ts createCharacter`
+  86-LOC role-branch combat-stats block — replace with
+  `combatStatsFor(role): CombatStats | null` lookup +
+  `combatTraitsFor(stats)` composer. Couples to M_REGISTRY.1.
+- [ ] M_MICRO.7.5 — `crossings.ts placeCrossings` 68 LOC
+  — extract `gatherCrossingCandidates(tiles, rng)`.
+- [ ] M_MICRO.7.6 — `job-routing.ts jobRoutingSystem`
+  88 LOC, 3 sub-concerns — extract `assignIdlePeons`,
+  `retargetExhausted`, `deliverToDeposit`.
+- [ ] M_MICRO.7.7 — `combat.ts combatSystem` 60 LOC —
+  extract `resolveAttack(attacker, target, rng): DamageEvent | null`.
+
+#### Category 8 — Pre-bitmask hand-rolled tile loops
+
+- [ ] M_MICRO.8.1 — `ZoneBorder.tsx:32-44 buildBorder`
+  → AND-NOT over two tile-bitmasks (controlled XOR neighbours).
+- [ ] M_MICRO.8.2 — `encroachment.ts:109-120` neighbor-
+  of-tile via inline direction → bit-shift + AND.
+- [ ] M_MICRO.8.3 — `Roads.tsx` snapshot full-scan
+  per frame → `tile-has-road` bitmask + popcount diff.
+- [ ] M_MICRO.8.4 — `zone.ts:117-129 updateObserved`
+  O(tiles × sources) → per-source vision-cone bitmask OR.
+
+#### Category 9 — Dead code / unused exports
+
+- [ ] M_MICRO.9.1 — `ai-player.ts:340` remove
+  `void AssignedJob;` + the dead import.
+- [ ] M_MICRO.9.2 — `rules/gates.ts:54` remove
+  `void MoverBehavior;` + import.
+- [ ] M_MICRO.9.3 — `NewGameModal.tsx:115` remove
+  `void DEFAULT_MAP_SIZE;` + import.
+- [ ] M_MICRO.9.4 — `RainParticles.tsx:52-53` drop dead
+  `?? 0` on Float32Array index.
+- [ ] M_MICRO.9.5 — strip obvious doc-comments in
+  RainParticles + RallyMarker (keep load-bearing determinism note).
+
+#### Category 10 — Inline-styled JSX > 50 LOC
+
+- [ ] M_MICRO.10.1 — **MODALSHELL EXTRACTION** —
+  `NewGameModal` + `OnboardingOverlay` + `GameOverModal` +
+  `SettingsModal` + `ResignButton` confirm + `DiscoveriesPanel`
+  (6 dialogs) share Dialog.Overlay + Content + Title styling. One
+  `<ModalShell zIndex={...}>` wrapper kills ~200 LOC.
+- [ ] M_MICRO.10.2 — `<HudPill icon label position
+  index>` extracts the repeated top-right HUD pill pattern
+  (DiscoveriesPanel + ResignButton + PauseControl) + viewport-
+  aware top/right calc.
+- [ ] M_MICRO.10.3 — `TitleScreen` page-shell div +
+  `SelectionPanel` motion.div card both reach for a "card" token
+  — lift to `hud-theme.cardStyle`.
+
+#### Bonus
+
+- [ ] M_MICRO.B.1 — `safePersistenceRead<T>(p, key,
+  fallback)` helper in `persistence.ts` consolidating
+  `OnboardingOverlay` + `SettingsModal` catch shapes.
+- [ ] M_MICRO.B.2 — when SettingsModal grows, reuse
+  `Segmented` from NewGameModal.
+- [ ] M_MICRO.B.3 — `TileInteraction.tsx TilePick`
+  separate "pointer state machine" from "command dispatch".
+- [ ] M_MICRO.B.4 — `Decoration.tsx useDecorationGltfs`
+  auto-derive asset-ids-to-preload from PALETTES at build time.
 
 ### M_DOCTRINE — own it architecturally top to bottom (user, 2026-05-23)
 
@@ -603,7 +1033,7 @@ The real architecture:
   identity = a skin assignment. The current 'player' / 'enemy'
   hard-coding becomes the FIRST TWO entries of a `Skin` registry.
 
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.1 — write the spec doc (`docs/specs/103-archetype-
+- [ ] M_ARCH_UNIFY.1 — write the spec doc (`docs/specs/103-archetype-
   unification.md`) that names every current hierarchy + maps it to its
   unified equivalent (units → Thing tuples; buildings → Thing tuples;
   particles → Thing tuples with ParticleArchetype slot; modes →
@@ -611,49 +1041,49 @@ The real architecture:
   factory → composeTraits over a Thing profile; structure-models →
   per-Skin mesh slot). The doc is the keystone — every subsequent
   refactor cites it.
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.2 — Slot taxonomy: enumerate every capability slot
+- [ ] M_ARCH_UNIFY.2 — Slot taxonomy: enumerate every capability slot
   (Movable, Animated, Costable, HasHP, AccretesProps, GenTimePlaced,
   RuntimePlaced, ParticleArchetype, plus the spec-102 ZoC: Offensive,
   Defensive, Attractor, Mover, Consumer). Each becomes a typed
   capability + a registry entry.
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.3 — `src/registry/things.ts`: the unified Thing
+- [ ] M_ARCH_UNIFY.3 — `src/registry/things.ts`: the unified Thing
   registry. JSON-driven config (data) + typed loader (code) + per-Thing
   trait-composition function (one helper per slot kind, dispatched by
   slot membership not by Thing identity).
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.4 — gen-time pass refactor: `paintBeachRing /
+- [ ] M_ARCH_UNIFY.4 — gen-time pass refactor: `paintBeachRing /
   paintMountainSpine / paintInlandLake / paintChannelCuts /
   paintDesertBlanket / appendBaseAccretion / appendBuildingAccretion /
   appendGraveyardCluster` all become registered GenTime handlers
   iterated by ONE outer loop. Mode/mapType variants become weight
   overlays per handler, not hand-written paint functions.
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.5 — runtime pass refactor: combat / harvest /
+- [ ] M_ARCH_UNIFY.5 — runtime pass refactor: combat / harvest /
   encroachment / offensive-behavior / projectile / science / build
   systems collapse to ONE outer loop iterating slot membership; each
   system becomes a slot handler.
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.6 — collapse character-factory + placeBuilding +
+- [ ] M_ARCH_UNIFY.6 — collapse character-factory + placeBuilding +
   placeRoad + foundBase + future place-* commands into ONE
   `placeThing(game, profileId, hexKey, faction)` verb that
   composeTraits + spawns. The current verbs become thin one-line
   wrappers (or get deleted) for backward compat with the HUD.
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.7 — `Skin` registry (user 2026-05-23): top-level
+- [ ] M_ARCH_UNIFY.7 — `Skin` registry (user 2026-05-23): top-level
   visual-overlay table per faction. Skin {meshes: Record<rig, asset>,
   palette: Record<biome, color>, audio: Record<event, asset>,
   accretionPool: Record<archetype, propPool>}. Hard-coded
   'player'/'enemy' branches in structure-models / Decoration /
   zone-border / sound-map are replaced with skin lookup.
   Adding a 3rd tribe = ONE new skin entry. NO code changes anywhere.
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.8 — supersede M_REFACTOR.1 (particles) as a
+- [ ] M_ARCH_UNIFY.8 — supersede M_REFACTOR.1 (particles) as a
   CONSUMER of the unified registry: a particle effect is a Thing
   whose ParticleArchetype slot is set; the per-frame ParticleSystem
   runs as one runtime-pass handler. The Things doing the emitting
   (combat-hit, building-complete, weather, rain) declare which
   ParticleArchetype they emit per event.
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.9 — supersede M_MAPGEN.13 (per-building accretion)
+- [ ] M_ARCH_UNIFY.9 — supersede M_MAPGEN.13 (per-building accretion)
   + M_MAPGEN.11 (per-faction base accretion) as CONSUMERS: the
   accretion config tables collapse into AccretesProps slot values on
   Thing profiles. The accretion-paint loop iterates `registry.filter(
   has AccretesProps)` instead of two hand-rolled append* functions.
-- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.10 — supersede character-factory (user 2026-05-23
+- [ ] M_ARCH_UNIFY.10 — supersede character-factory (user 2026-05-23
   "what is the purpose of a factory") as a CONSUMER: replace with
   `placeThing` dispatcher reading per-role composeTraits from the
   unified registry. Adding a Trebuchet or Settler becomes ONE config
