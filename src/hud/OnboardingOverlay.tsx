@@ -14,10 +14,19 @@ interface Step {
   body: string;
 }
 
+// M_AUDIT2.UX.21 — extended from 4 → 9 steps. The original four
+// covered the core loop but skipped right-click move orders,
+// drag-select, pause/keyboard shortcuts, the resource legend, and
+// per-mode win conditions. New players were running into all of
+// these blind.
 const STEPS: Step[] = [
   {
     title: 'Welcome to Aethelgard',
     body: "You command a kingdom on a hex-tile island. The enemy commands one too. The first to raze the other's base wins. Watch your peons auto-harvest; the resources you see at the top fund your buildings.",
+  },
+  {
+    title: 'Reading the HUD',
+    body: 'Top-left shows your resources: 🌲 wood, 🪨 stone, 🪙 gold, 🧪 science, and Supply (used/cap). Top-right pills show weather (movement modifier), pause, and Discoveries. Bottom-left flashes if any peon is idle.',
   },
   {
     title: 'Peons are autonomous',
@@ -28,8 +37,24 @@ const STEPS: Step[] = [
     body: 'Tap your Town Hall to open the build menu. Farms raise your supply, Houses raise the peon cap, Barracks train Footmen, Watchtowers shoot intruders, Walls block enemy pathing. Each building also extends your zone.',
   },
   {
+    title: 'Commanding military',
+    body: 'Tap a Footman (or any military unit) to select it. RIGHT-CLICK any tile to issue a move order. To select MANY units at once, click-drag a rectangle on empty ground — every player military unit inside becomes selected.',
+  },
+  {
     title: 'Defend the border',
     body: 'If an enemy military unit steps onto a tile YOU control, it pulses yellow. Send a Footman to defend it before the pulse expires — otherwise the tile flips to the enemy. Lose your Town Hall and you lose.',
+  },
+  {
+    title: 'Pause + keyboard shortcuts',
+    body: 'Press P (or tap the Pause pill) to pause the simulation. Arrow keys pan the camera (Shift = faster). + / - zoom. Escape clears your current selection. The full list is in Settings.',
+  },
+  {
+    title: 'Discoveries',
+    body: "Open the Discoveries pill (⚗) at any time. Each Discovery's prereqs are listed inline; ✓ means met, ✗ means missing. Status pip on the left: green=owned, amber=ready to buy, red=can't afford, gray=gated by prereqs.",
+  },
+  {
+    title: 'Winning the realm',
+    body: 'In red-vs-blue mode (default), raze the enemy Town Hall to win. Other modes — set in New Game — change the victory condition (timed score, conquest, wonder). Resign at any time from the top-right ⚑ pill.',
   },
 ];
 

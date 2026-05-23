@@ -77,7 +77,34 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
               }}
             >
               <div style={{ flex: 1, marginRight: 12 }}>
-                <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>{d.name}</div>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    fontWeight: 700,
+                    fontSize: '0.92rem',
+                  }}
+                >
+                  {/* M_AUDIT2.UX.17 — status pip: green=purchased,
+                      amber=available, gray=gated, red=unaffordable. */}
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 8,
+                      background: purchased
+                        ? '#10b981'
+                        : !prereqMet
+                          ? '#64748b'
+                          : !affordable
+                            ? '#ef4444'
+                            : '#f59e0b',
+                    }}
+                  />
+                  {d.name}
+                </div>
                 <div
                   style={{
                     fontSize: '0.78rem',
@@ -88,6 +115,39 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
                 >
                   {d.description}
                 </div>
+                {/* M_AUDIT2.UX.17 — prereq tree row. Lists each prereq
+                    with its own status (✓ met, ✗ missing) so the
+                    player sees the dependency at a glance. Empty for
+                    root Discoveries. */}
+                {(d.prereqs ?? []).length > 0 && (
+                  <div
+                    style={{
+                      fontSize: '0.72rem',
+                      color: HUD_THEME.color.muted,
+                      marginTop: 4,
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 6,
+                    }}
+                  >
+                    <span>Requires:</span>
+                    {(d.prereqs ?? []).map((p) => {
+                      const ok = game.research.purchased.has(p as ResearchId);
+                      const prereqName = DISCOVERIES.find((x) => x.id === p)?.name ?? p;
+                      return (
+                        <span
+                          key={p}
+                          style={{
+                            color: ok ? '#10b981' : '#ef4444',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {ok ? '✓' : '✗'} {prereqName}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
                 <div
                   style={{
                     fontSize: '0.78rem',

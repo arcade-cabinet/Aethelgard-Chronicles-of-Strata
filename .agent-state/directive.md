@@ -1626,11 +1626,11 @@ local-review-trio after each ~5-item batch.
 
 **MAJOR — interaction / nav (16-21)**
 - [x] [MAJ] M_AUDIT2.UX.16 — Segmented → role=radiogroup arrow-key nav + autoFocus seed field
-- [ ] [MAJ] M_AUDIT2.UX.17 — DiscoveriesPanel prereq tree visualization (purchased/available/gated)
+- [x] [MAJ] M_AUDIT2.UX.17 — DiscoveriesPanel prereq tree visualization (purchased/available/gated)
 - [x] [MAJ] M_AUDIT2.UX.18 — HUD pill collision audit (portrait vs landscape slot overlap)
 - [x] [MAJ] M_AUDIT2.UX.19 — SelectionPanel width clamp(220px,22vw,280px) + ellipsis overflow
 - [x] [MAJ] M_AUDIT2.UX.20 — Continue button disabledReason tooltip when !hasSave
-- [ ] [MAJ] M_AUDIT2.UX.21 — OnboardingOverlay: extend to ~9 STEPS (right-click, drag-select, pause shortcuts, resource legend, per-mode win conditions)
+- [x] [MAJ] M_AUDIT2.UX.21 — OnboardingOverlay: extend to ~9 STEPS (right-click, drag-select, pause shortcuts, resource legend, per-mode win conditions)
 
 **MAJOR — brand / consistency (22-25)**
 - [x] [MAJ] M_AUDIT2.UX.22 — verify @fontsource/metamorphous + inter actually imported (post-CSP regression check)
@@ -1644,7 +1644,7 @@ local-review-trio after each ~5-item batch.
 - [x] [MAJ] M_AUDIT2.UX.28 — color contrast fix: muted #94a3b8 fails 4.5:1 — shift to #a8b3c5 or drop panel alpha to 0.94
 
 **MAJOR — render polish (29-32)**
-- [ ] [MAJ] M_AUDIT2.UX.29 — day/night sky banding: noise dither overlay or fragment-shader gradient
+- [x] [MAJ] M_AUDIT2.UX.29 — day/night sky banding: noise dither overlay or fragment-shader gradient
 - [x] [MAJ] M_AUDIT2.UX.30 — Roads z-fighting: lift to 0.15 or polygonOffset on material
 - [x] [MAJ] M_AUDIT2.UX.31 — KeyboardShortcuts arrow-keys: implement pan or drop misleading comment
 - [x] [MAJ] M_AUDIT2.UX.32 — Loading state TitleScreen→GameSession ("Forging the realm…" + Radix Progress)
