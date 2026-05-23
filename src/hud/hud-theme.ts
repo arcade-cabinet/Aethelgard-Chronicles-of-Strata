@@ -15,8 +15,13 @@ export const HUD_THEME = {
     border: 'rgba(56, 189, 248, 0.28)',
     /** Primary text. */
     text: '#f1f5f9',
-    /** Muted text. */
-    muted: '#94a3b8',
+    /**
+     * Muted text. M_AUDIT2.UX.28 — shifted from #94a3b8 (4.27:1 contrast
+     * against panel rgba(9,13,22,0.88), fails WCAG AA 4.5:1) to #a8b3c5
+     * (~5.1:1, AA-compliant for body text). Visual delta minimal; the
+     * a11y win is large.
+     */
+    muted: '#a8b3c5',
     /** Accent blue. */
     accent: '#38bdf8',
     /** Gold — headings, victory. */

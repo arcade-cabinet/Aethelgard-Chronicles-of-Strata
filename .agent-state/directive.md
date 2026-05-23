@@ -1482,7 +1482,7 @@ local-review-trio after each ~5-item batch.
 - [x] M_AUDIT2.ARCH.47 — rally.ts: no test
 - [x] M_AUDIT2.ARCH.48 — research.ts: no test
 - [ ] M_AUDIT2.ARCH.49 — ai-player.ts + ai-director.ts: no test (MAX_RETARGETS_PER_TICK regression)
-- [ ] M_AUDIT2.ARCH.50 — ErrorBoundary.tsx: no test
+- [x] M_AUDIT2.ARCH.50 — ErrorBoundary.tsx: no test
 
 **Per-tick perf (51-56)**
 - [ ] M_AUDIT2.ARCH.51 — encroachment per-tick `new Set()` ×2 — hoist to module + .clear()
@@ -1625,7 +1625,7 @@ local-review-trio after each ~5-item batch.
 **MAJOR — accessibility (26-28)**
 - [ ] [MAJ] M_AUDIT2.UX.26 — CriticalWarning: remove aria-hidden, add role=alert + reduced-motion static variant
 - [ ] [MAJ] M_AUDIT2.UX.27 — SoundToggle uses HudPill slot=sound (kill duplicate position)
-- [ ] [MAJ] M_AUDIT2.UX.28 — color contrast fix: muted #94a3b8 fails 4.5:1 — shift to #a8b3c5 or drop panel alpha to 0.94
+- [x] [MAJ] M_AUDIT2.UX.28 — color contrast fix: muted #94a3b8 fails 4.5:1 — shift to #a8b3c5 or drop panel alpha to 0.94
 
 **MAJOR — render polish (29-32)**
 - [ ] [MAJ] M_AUDIT2.UX.29 — day/night sky banding: noise dither overlay or fragment-shader gradient
