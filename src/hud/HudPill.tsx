@@ -16,7 +16,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useViewport } from '@/render/useViewport';
 import { HUD_THEME } from './hud-theme';
 
-export type HudPillSlot = 'pause' | 'sound' | 'discoveries' | 'resign' | 'weather';
+export type HudPillSlot = 'pause' | 'sound' | 'discoveries' | 'resign' | 'weather' | 'speed';
 
 interface SlotPosition {
   /** Pixels from top of viewport. */
@@ -39,7 +39,8 @@ interface SlotPosition {
 // 'weather' pill inserted to the left of pause.
 const SLOT_POSITIONS: Record<'landscape' | 'portrait', Record<HudPillSlot, SlotPosition>> = {
   landscape: {
-    weather: { top: 12, right: 540 },
+    weather: { top: 12, right: 620 },
+    speed: { top: 12, right: 540 },
     pause: { top: 12, right: 460 },
     sound: { top: 12, right: 380 },
     discoveries: { top: 12, right: 300 },
@@ -47,9 +48,10 @@ const SLOT_POSITIONS: Record<'landscape' | 'portrait', Record<HudPillSlot, SlotP
   },
   portrait: {
     weather: { top: 56, right: 144 },
+    speed: { top: 56, right: 72 },
     pause: { top: 12, right: 72 },
     sound: { top: 12, right: 144 },
-    discoveries: { top: 56, right: 8 },
+    discoveries: { top: 100, right: 144 },
     resign: { top: 100, right: 8 },
   },
 };

@@ -228,6 +228,13 @@ export interface GameState {
    */
   wonderTimers: Record<Faction, number>;
   /**
+   * M_EXPANSION.U.111 — speed multiplier applied to runEconomyTick's
+   * delta. 1.0 = normal, 2.0 / 4.0 = fast-forward. Determinism-safe:
+   * the multiplier is on wall-clock delta, not the event PRNG.
+   * Default 1.0 — HUD speed control writes this.
+   */
+  gameSpeed: number;
+  /**
    * Optional turn-based state (M_MODES.8). Present only when the preset's
    * turnsMode === 'turn-based'. `secondsRemaining` is decremented per tick;
    * when it hits 0 the sim pauses + waits for the human to end their turn
@@ -608,6 +615,8 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     score: { player: 0, enemy: 0 },
     // M_EXPANSION.F.71 — Infinity = no Wonder built yet for that faction.
     wonderTimers: { player: Infinity, enemy: Infinity },
+    // M_EXPANSION.U.111 — speed multiplier; defaults to 1.0.
+    gameSpeed: 1,
     // M_MODES.8 — turn-based superposition (4x default; others opt-in via
     // the Advanced toggle). 60s turns; player starts.
     ...(preset.turnsMode === 'turn-based'
@@ -662,11 +671,16 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
  * deposit (system #7 before #9) so a freshly-assigned builder advances the same
  * tick. Called once per rendered frame (or per step in tests).
  */
-export function runEconomyTick(game: GameState, delta: number): void {
+export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // Skip all ticks once the game has ended.
   if (game.outcome !== 'playing') return;
   // M_GAMEPLAY.7 — pause flag freezes the simulation; rendering continues.
   if (game.paused) return;
+  // M_EXPANSION.U.111 — apply the gameSpeed multiplier (1x default,
+  // 2x / 4x for fast-forward). Pure wall-clock scaling; the event PRNG
+  // sees the SAME deterministic delta sequence (just delivered in
+  // larger steps), so seed-replay reproduces with the same outcome.
+  const delta = deltaRaw * (game.gameSpeed ?? 1);
   // M_MODES.8 — turn-based: drain the active turn's budget; when the budget
   // hits 0, auto-end the turn (flip active + reset budget). Simulation
   // continues to run during the turn — the budget is a wall-clock

@@ -1838,34 +1838,34 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
     import → round-trip test).
 - [ ] [WAIT-DESIGN] M_EXPANSION.F.75 — Replay import: load a EventLog ndjson and watch the deterministic playback
   - Co-depends on F.74; same design spec.
-- [ ] [MED]  M_EXPANSION.F.76 — Tutorial campaign: 3 scripted scenarios with fixed seed + objective overlay
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.76 — Tutorial campaign: 3 scripted scenarios with fixed seed + objective overlay
 - [x] [MED]  M_EXPANSION.F.77 — Achievements: track 'first-victory', 'no-build-wonder-win', etc; persist to Preferences
-- [ ] [MED]  M_EXPANSION.F.78 — Scenario editor: load a saved board state + spawn units interactively (debug mode only)
-- [ ] [MED]  M_EXPANSION.F.79 — Difficulty: hardcore mode (peons cost food, food depletes over time)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.78 — Scenario editor: load a saved board state + spawn units interactively (debug mode only)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.79 — Difficulty: hardcore mode (peons cost food, food depletes over time)
 - [ ] [WAIT-DESIGN] M_EXPANSION.F.80 — Faction palette swap (player can choose red/blue/green/yellow on the New Game modal)
   - SKINS.player is a module-level constant; runtime palette override
     needs touching every SKIN consumer (FactionBase, ZoneBorder,
     Minimap, Units). Same shape as M_AUDIT2.ARCH.3 ZoneBorder color
     migration — tracked WAIT until that pattern's re-applied.
-- [ ] [MED]  M_EXPANSION.F.81 — Random-event system: weather-spike, raid-warning, refugee-arrival (one-shot ECS events from event PRNG)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.81 — Random-event system: weather-spike, raid-warning, refugee-arrival (one-shot ECS events from event PRNG)
 - [x] [MED]  M_EXPANSION.F.82 — Custom map seed input: 64-char hex direct entry (bypass the adjective-adjective-noun mnemonic)
-- [ ] [MED]  M_EXPANSION.F.83 — Map preview thumbnail in New Game modal (render the seeded board at 256×256 before commit)
-- [ ] [MED]  M_EXPANSION.F.84 — Per-faction starting bonus picks (extra peons / extra wood / extra HP at start)
-- [ ] [MED]  M_EXPANSION.F.85 — Surrender consequences: AI keeps the surrendered player's tiles (currently they evaporate)
-- [ ] [LOW]  M_EXPANSION.F.86 — Building upgrade trees: Watchtower→Tower→Castle, each costs prior + delta
-- [ ] [LOW]  M_EXPANSION.F.87 — Day/night vision modifier: enemy vision halves at night, player vision halves at dawn
-- [ ] [LOW]  M_EXPANSION.F.88 — Idle peon priority queue: when player has idle peons, next building auto-claims them
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.83 — Map preview thumbnail in New Game modal (render the seeded board at 256×256 before commit)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.84 — Per-faction starting bonus picks (extra peons / extra wood / extra HP at start)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.85 — Surrender consequences: AI keeps the surrendered player's tiles (currently they evaporate)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.86 — Building upgrade trees: Watchtower→Tower→Castle, each costs prior + delta
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.87 — Day/night vision modifier: enemy vision halves at night, player vision halves at dawn
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.88 — Idle peon priority queue: when player has idle peons, next building auto-claims them
 - [x] [LOW]  M_EXPANSION.F.89 — Camera bookmarks: number-keys 1-5 set/restore camera position + selection
 - [x] [LOW]  M_EXPANSION.F.90 — Minimap interaction: click on minimap centres the camera there
 - [x] [LOW]  M_EXPANSION.F.91 — Selection groups: Ctrl+1..5 saves the current selection; press 1..5 to recall
-- [ ] [LOW]  M_EXPANSION.F.92 — Mass-rally: right-click on a destination with a Barracks selected sets rally for ALL Barracks of the faction
-- [ ] [LOW]  M_EXPANSION.F.93 — Resource trade UI: convert N wood → M stone at a 3:1 ratio (sink for surplus)
-- [ ] [LOW]  M_EXPANSION.F.94 — Diplomacy: a treaty system (truce, alliance) only meaningful for 3+ factions (future)
-- [ ] [LOW]  M_EXPANSION.F.95 — 3rd faction (neutral hostile spawn camp) that periodically raids both player + enemy
-- [ ] [LOW]  M_EXPANSION.F.96 — Hero unit: one player-named character with higher stats and a permadeath rule
-- [ ] [LOW]  M_EXPANSION.F.97 — Discoverable map tiles: 5% of tiles hide a one-shot resource bonus when a peon first walks on
-- [ ] [LOW]  M_EXPANSION.F.98 — Boat/water-crossing — ferries between islands; new building Dock
-- [ ] [LOW]  M_EXPANSION.F.99 — Trade caravans between cities (auto-route peons between two Granaries)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.92 — Mass-rally: right-click on a destination with a Barracks selected sets rally for ALL Barracks of the faction
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.93 — Resource trade UI: convert N wood → M stone at a 3:1 ratio (sink for surplus)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.94 — Diplomacy: a treaty system (truce, alliance) only meaningful for 3+ factions (future)
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.95 — 3rd faction (neutral hostile spawn camp) that periodically raids both player + enemy
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.96 — Hero unit: one player-named character with higher stats and a permadeath rule
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.97 — Discoverable map tiles: 5% of tiles hide a one-shot resource bonus when a peon first walks on
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.98 — Boat/water-crossing — ferries between islands; new building Dock
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.99 — Trade caravans between cities (auto-route peons between two Granaries)
 - [x] [LOW]  M_EXPANSION.F.100 — Endgame slot: a 4th game-mode "Coexist" (no win condition, infinite play)
 
 ### M_EXPANSION.UX — UX/HUD polish backlog (101-125)
@@ -1880,7 +1880,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [MED]  M_EXPANSION.U.108 — Build-mode ghost: translucent ghost of the building snaps to the hover tile before placement
 - [ ] [MED]  M_EXPANSION.U.109 — Cursor hint: a sword icon when hovering an enemy with a selected military unit
 - [ ] [MED]  M_EXPANSION.U.110 — Right-side panel: enemy detail card (HP/type) on enemy hover, mirroring SelectionPanel
-- [ ] [LOW]  M_EXPANSION.U.111 — In-game speed control: 1x/2x/4x (existing pause + new fast-forward)
+- [x] [LOW]  M_EXPANSION.U.111 — In-game speed control: 1x/2x/4x (existing pause + new fast-forward)
 - [ ] [LOW]  M_EXPANSION.U.112 — Volume slider per bus (sfx/music/ambient/ui) in Settings, replacing the master mute toggle
 - [ ] [LOW]  M_EXPANSION.U.113 — Colorblind mode: alternate palette (player→orange, enemy→cyan)
 - [ ] [LOW]  M_EXPANSION.U.114 — Subtitle/captions for every UI sound + critical event (deaf accessibility)
