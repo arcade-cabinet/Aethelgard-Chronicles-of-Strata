@@ -44,7 +44,11 @@ export function CriticalWarning({ game }: { game: GameState }) {
   return (
     <div
       id="critical-warning"
-      aria-hidden="true"
+      // M_AUDIT2.UX.26 — was aria-hidden=true (hid the alarm from SR).
+      // role=alert + aria-live=assertive auto-announces the visually-
+      // hidden span on mount.
+      role="alert"
+      aria-live="assertive"
       style={{
         position: 'fixed',
         inset: 0,
@@ -54,11 +58,31 @@ export function CriticalWarning({ game }: { game: GameState }) {
         animation: 'critical-pulse 1.2s ease-in-out infinite',
       }}
     >
+      <span
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          padding: 0,
+          margin: -1,
+          overflow: 'hidden',
+          clip: 'rect(0,0,0,0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        Your base is under attack — critical health
+      </span>
       <style>{`
         @keyframes critical-pulse {
           0% { opacity: 0.4; }
           50% { opacity: 1; }
           100% { opacity: 0.4; }
+        }
+        /* M_AUDIT2.UX.1 — vestibular-safe: kill the infinite pulse for
+           users who prefer reduced motion; static vignette remains. */
+        @media (prefers-reduced-motion: reduce) {
+          #critical-warning { animation: none !important; opacity: 0.85; }
         }
       `}</style>
     </div>

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useTitleMusic } from '@/audio/useTitleMusic';
 import { HUD_THEME } from './hud-theme';
 import { TitleBackground } from './TitleBackground';
@@ -20,12 +20,15 @@ function MenuButton({
   onClick,
   primary,
   disabled,
+  disabledReason,
 }: {
   id: string;
   label: string;
   onClick: () => void;
   primary?: boolean;
   disabled?: boolean;
+  /** M_AUDIT2.UX.20 — when disabled, the title attribute explains why. */
+  disabledReason?: string;
 }) {
   return (
     <button
@@ -33,6 +36,8 @@ function MenuButton({
       id={id}
       onClick={onClick}
       disabled={disabled}
+      title={disabled ? disabledReason : undefined}
+      aria-disabled={disabled}
       style={{
         width: 260,
         padding: '14px',
@@ -63,6 +68,9 @@ function MenuButton({
  */
 export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenProps) {
   useTitleMusic();
+  // M_AUDIT2.UX.1 — respect prefers-reduced-motion: skip the
+  // infinite bob (vestibular-disorder users); keep static layout.
+  const reducedMotion = useReducedMotion();
   return (
     <div
       id="title-screen"
@@ -83,8 +91,14 @@ export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenPr
       <TitleBackground />
       <motion.div
         style={{ textAlign: 'center', marginBottom: 50 }}
-        animate={{ y: [0, -12, 0] }}
-        transition={{ duration: 6, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }}
+        // M_AUDIT2.UX.1 — `animate={false}` disables motion entirely
+        // when the user prefers reduced motion.
+        animate={reducedMotion ? false : { y: [0, -12, 0] }}
+        transition={
+          reducedMotion
+            ? { duration: 0 }
+            : { duration: 6, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }
+        }
       >
         <h1
           id="title-heading"
@@ -121,7 +135,9 @@ export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenPr
           id="menu-continue"
           label="Continue"
           onClick={onContinue ?? (() => {})}
-          {...(onContinue ? {} : { disabled: true })}
+          {...(onContinue
+            ? {}
+            : { disabled: true, disabledReason: 'No saved game yet — start a New Game' })}
         />
         <MenuButton id="menu-settings" label="Settings" onClick={onSettings} />
       </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useViewport } from '@/render/useViewport';
 import { HUD_THEME } from './hud-theme';
 
 /** One legend entry — a coloured swatch + a one-line meaning. */
@@ -62,12 +63,16 @@ const ROWS: LegendRow[] = [
  */
 export function ZoneLegend() {
   const [open, setOpen] = useState(false);
+  // M_AUDIT2.UX.38 — ResourceBar shrinks on portrait, so the legend
+  // pill can move closer to the top edge. Avoid the prior 2-px overlap.
+  const viewport = useViewport();
+  const topPx = viewport.isPortrait ? 60 : 80;
   return (
     <div
       style={{
         position: 'absolute',
         left: 16,
-        top: 70,
+        top: topPx,
         // wrapper must NOT block canvas raycasts — only the interactive
         // children below opt back into pointer events.
         pointerEvents: 'none',

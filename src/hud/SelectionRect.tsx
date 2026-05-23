@@ -91,6 +91,10 @@ export function SelectionRect({
       document.removeEventListener('pointerdown', onDown);
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
+      // M_AUDIT2.UX.36 — clear in-flight drag state so a remount
+      // (HMR, route change) doesn't inherit a half-finished drag.
+      startRef.current = null;
+      setRect(null);
     };
   }, [game, rect, getCamera]);
 

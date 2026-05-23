@@ -183,7 +183,10 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
             position: 'absolute',
             left: 16,
             bottom: 16,
-            width: 200,
+            // M_AUDIT2.UX.19 — clamp() so labels like "Build Watchtower
+            // — 60w 40s" stop truncating at the old 200px floor; still
+            // capped to avoid pushing the minimap on portrait viewports.
+            width: 'clamp(220px, 22vw, 280px)',
             padding: '14px 16px',
           }}
         >

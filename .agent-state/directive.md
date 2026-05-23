@@ -1588,7 +1588,7 @@ local-review-trio after each ~5-item batch.
 #### M_AUDIT2.UX — visual, a11y, polish (42)
 
 **CRITICAL (1-3)**
-- [ ] [CRIT] M_AUDIT2.UX.1 — useReducedMotion wired through title bob, CriticalWarning pulse, panel slides, particles
+- [x] [CRIT] M_AUDIT2.UX.1 — useReducedMotion wired through title bob, CriticalWarning pulse, panel slides, particles
 - [x] [CRIT] M_AUDIT2.UX.2 — aria-label on SoundToggle, SettingsModal mute, ZoneLegend close button
 - [x] [CRIT] M_AUDIT2.UX.3 — global *:focus-visible outline (Tab keyboard nav blocker)
 
@@ -1612,8 +1612,8 @@ local-review-trio after each ~5-item batch.
 - [ ] [MAJ] M_AUDIT2.UX.16 — Segmented → role=radiogroup arrow-key nav + autoFocus seed field
 - [ ] [MAJ] M_AUDIT2.UX.17 — DiscoveriesPanel prereq tree visualization (purchased/available/gated)
 - [ ] [MAJ] M_AUDIT2.UX.18 — HUD pill collision audit (portrait vs landscape slot overlap)
-- [ ] [MAJ] M_AUDIT2.UX.19 — SelectionPanel width clamp(220px,22vw,280px) + ellipsis overflow
-- [ ] [MAJ] M_AUDIT2.UX.20 — Continue button disabledReason tooltip when !hasSave
+- [x] [MAJ] M_AUDIT2.UX.19 — SelectionPanel width clamp(220px,22vw,280px) + ellipsis overflow
+- [x] [MAJ] M_AUDIT2.UX.20 — Continue button disabledReason tooltip when !hasSave
 - [ ] [MAJ] M_AUDIT2.UX.21 — OnboardingOverlay: extend to ~9 STEPS (right-click, drag-select, pause shortcuts, resource legend, per-mode win conditions)
 
 **MAJOR — brand / consistency (22-25)**
@@ -1623,8 +1623,8 @@ local-review-trio after each ~5-item batch.
 - [ ] [MAJ] M_AUDIT2.UX.25 — costLabel: replace single-letter abbreviations with color chips + unicode glyphs
 
 **MAJOR — accessibility (26-28)**
-- [ ] [MAJ] M_AUDIT2.UX.26 — CriticalWarning: remove aria-hidden, add role=alert + reduced-motion static variant
-- [ ] [MAJ] M_AUDIT2.UX.27 — SoundToggle uses HudPill slot=sound (kill duplicate position)
+- [x] [MAJ] M_AUDIT2.UX.26 — CriticalWarning: remove aria-hidden, add role=alert + reduced-motion static variant
+- [x] [MAJ] M_AUDIT2.UX.27 — SoundToggle uses HudPill slot=sound (kill duplicate position)
 - [x] [MAJ] M_AUDIT2.UX.28 — color contrast fix: muted #94a3b8 fails 4.5:1 — shift to #a8b3c5 or drop panel alpha to 0.94
 
 **MAJOR — render polish (29-32)**
@@ -1637,9 +1637,9 @@ local-review-trio after each ~5-item batch.
 - [ ] [MIN] M_AUDIT2.UX.33 — CriticalWarning keyframe to CSS file (no per-mount style alloc)
 - [x] [MIN] M_AUDIT2.UX.34 — Minimap base markers scale with displaySize (max(3, displaySize/24))
 - [x] [MIN] M_AUDIT2.UX.35 — Roads snapshot throttle to 5Hz
-- [ ] [MIN] M_AUDIT2.UX.36 — SelectionRect cleanup: clear startRef on unmount
+- [x] [MIN] M_AUDIT2.UX.36 — SelectionRect cleanup: clear startRef on unmount
 - [ ] [MIN] M_AUDIT2.UX.37 — PauseControl pointer-events visual test
-- [ ] [MIN] M_AUDIT2.UX.38 — ZoneLegend top viewport-aware (60/80)
+- [x] [MIN] M_AUDIT2.UX.38 — ZoneLegend top viewport-aware (60/80)
 - [ ] [MIN] M_AUDIT2.UX.39 — TitleBackground: verify low-poly biome teaser (or add rotating tiles)
 - [x] [MIN] M_AUDIT2.UX.40 — EndTurnButton: setTick only when displayed integer changes (not every 100ms)
 - [ ] [MIN] M_AUDIT2.UX.41 — Settings modal "Replay tutorial" link (reopen OnboardingOverlay)
