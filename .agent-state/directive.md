@@ -558,6 +558,18 @@ qualify for AI GOAP".
   red-vs-blue. Clarify the exact loop rules in the spec doc before
   implementing; differentiate from red-vs-blue's competitive tempo via
   longer escalation thresholds + larger map default.
+- [ ] M_MODES.6 — `4x` mode (user follow-up, 2026-05-22): "hell we have
+  all the makings of a fifth mode thats more like a 4x". eXplore +
+  eXpand + eXploit + eXterminate — Civilization/Endless-Legend feel:
+  multiple settler-style starting locations to FOUND new bases
+  (rather than one TownHall), Discoveries graph as the full tech tree
+  (already shipped — just longer), per-faction Wonder race (Wonder
+  composes all 3 ZoC archetypes M_FEATURE.4), territory-claim
+  victory threshold. Larger map (Huge default), longer match (~30
+  min target). The Discoveries + force-field + bitmask rules-layer
+  pieces (M_DATA.7 / M_ARCHETYPE.6 / .7) already support most of
+  this — 4x is mostly a NewGame option + a Settler unit type +
+  a found-base command verb.
 
 - [ ] M_MAPGEN.10 — fair-balance guarantee (user, 2026-05-22): the
   per-rule additions (.3-.9) MUST cooperate to produce a deterministic
