@@ -53,3 +53,4 @@ export type { Discovery } from './discoveries';
 export { DISCOVERIES, discoveryById } from './discovery-registry';
 export { applyArmor, armorMultiplier } from './damage';
 export { buildGateMap, materialiseGate, tilePassable } from './gates';
+export { type FieldParams, sampleField } from './force-field';

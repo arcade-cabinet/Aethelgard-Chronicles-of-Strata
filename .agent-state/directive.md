@@ -204,10 +204,13 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
   combat unit spawns with the trait — radius=attackRange, dps=damage/
   cooldown, damageType='normal'. Unified with buildings; siege = single
   row change.
-- [ ] M_ARCHETYPE.6 — `rules/force-field.ts` — bi-signed magnetic field.
-  Each archetype declares attract/repel per (faction, target-kind). Three
-  consumers: placement snapping, pathfinding cost, AI targeting/motivation.
-  Enemy-base placement becomes principled Attractor-repels-Attractor.
+- [x] M_ARCHETYPE.6 — force-field foundation: rules/force-field.ts
+  sampleField(world, {faction, q, r}) iterates HexPosition entities;
+  signs by friendly/enemy faction; per-archetype weights (Attractor 2.0,
+  Offensive 1.5, Defensive 1.0, Mover 0.4, Consumer 0.5); 1/(1+d²)
+  falloff. Unfactioned Consumers (resources) attract any peon faction.
+  3 tests pin friendly-pull, enemy-repel, distance-falloff. Consumers
+  (placement snap, pathfinding cost, AI motivation) wire onto this.
 - [ ] M_ARCHETYPE.7 — per-tile bitmask packing — `Uint32Array[tileIndex]`
   holding walkable + crossingLanding + controlled×2 + observed×2 +
   pulsing×2 + hasResource + hasBuilding + isRamp + biomeIndex + spare.
