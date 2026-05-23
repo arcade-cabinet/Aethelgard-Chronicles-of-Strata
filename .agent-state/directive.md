@@ -1856,7 +1856,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [LOW]  M_EXPANSION.F.87 — Day/night vision modifier: enemy vision halves at night, player vision halves at dawn
 - [ ] [LOW]  M_EXPANSION.F.88 — Idle peon priority queue: when player has idle peons, next building auto-claims them
 - [ ] [LOW]  M_EXPANSION.F.89 — Camera bookmarks: number-keys 1-5 set/restore camera position + selection
-- [ ] [LOW]  M_EXPANSION.F.90 — Minimap interaction: click on minimap centres the camera there
+- [x] [LOW]  M_EXPANSION.F.90 — Minimap interaction: click on minimap centres the camera there
 - [ ] [LOW]  M_EXPANSION.F.91 — Selection groups: Ctrl+1..5 saves the current selection; press 1..5 to recall
 - [ ] [LOW]  M_EXPANSION.F.92 — Mass-rally: right-click on a destination with a Barracks selected sets rally for ALL Barracks of the faction
 - [ ] [LOW]  M_EXPANSION.F.93 — Resource trade UI: convert N wood → M stone at a 3:1 ratio (sink for surplus)

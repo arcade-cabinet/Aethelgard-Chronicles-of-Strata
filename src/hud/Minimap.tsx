@@ -104,7 +104,34 @@ export function Minimap({ game, compact = false }: { game: GameState; compact?: 
         id="minimap-canvas"
         width={SIZE}
         height={SIZE}
-        style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}
+        // M_EXPANSION.F.90 — click-to-pan. Translates the click
+        // position (canvas-px) into a target world (x, z) via the
+        // inverse of worldToCanvas, then dispatches the existing
+        // 'aethelgard:pan-camera' event with the delta from the
+        // current cameraView target. CameraRig handles the clamp.
+        onClick={(e) => {
+          const canvas = canvasRef.current;
+          if (!canvas) return;
+          const rect = canvas.getBoundingClientRect();
+          const cx = ((e.clientX - rect.left) / rect.width) * SIZE;
+          const cy = ((e.clientY - rect.top) / rect.height) * SIZE;
+          // Inverse of worldToCanvas: (cx - SIZE/2) / SIZE * worldSpan = wx.
+          const worldSpan = game.board.radius * HEX_RADIUS * 1.8 * 2;
+          const wx = ((cx - SIZE / 2) / SIZE) * worldSpan;
+          const wz = ((cy - SIZE / 2) / SIZE) * worldSpan;
+          const dx = wx - cameraView.targetX;
+          const dz = wz - cameraView.targetZ;
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }),
+          );
+        }}
+        style={{
+          width: '100%',
+          height: '100%',
+          imageRendering: 'pixelated',
+          cursor: 'crosshair',
+          pointerEvents: 'auto',
+        }}
       />
     </section>
   );
