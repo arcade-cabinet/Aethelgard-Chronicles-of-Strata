@@ -343,6 +343,19 @@ function countByPredicate(world: GameState['world'], pred: (entity: Entity) => b
  * Set a faction's rally point to `tileKey`. Currently only the player faction
  * has a rally state; `faction` is accepted for the symmetric signature.
  */
+/**
+ * Resign the current match for `faction` (M_MODES.10). Sets `game.outcome`
+ * to 'loss' if the resigning faction is the player, 'win' if the enemy.
+ * Used by:
+ *  - The Resign HUD button (player-initiated surrender).
+ *  - The AI ResignEvaluator (auto-resigns when starved out).
+ * No-op if the game is already over.
+ */
+export function resign(game: GameState, faction: Faction = 'player'): void {
+  if (game.outcome !== 'playing') return;
+  game.outcome = faction === 'player' ? 'loss' : 'win';
+}
+
 export function setRally(game: GameState, tileKey: string, faction: Faction = 'player'): void {
   if (faction !== 'player') return;
   setRallyPoint(game.rally, tileKey);

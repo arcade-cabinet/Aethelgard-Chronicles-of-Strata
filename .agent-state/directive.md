@@ -543,11 +543,14 @@ qualify for AI GOAP".
   every tick. Test pins the clamp + the negative case for red-vs-blue.
   Resign/starve win condition + score integral land as M_MODES.4-extras
   (queued under M_MODES.10 below).
-- [ ] M_MODES.10 — endless extras: Resign HUD button + Resign command
-  verb (faction surrenders → outcome flips); AI ResignEvaluator that
-  scores 1.0 when faction is starved (0 controlled tiles + economy
-  below sustenance for 5 game-minutes); controlled-tile-time integral
-  score tracked on GameState + shown in GameOverModal.
+- [x] M_MODES.10 — endless extras shipped: resign(faction) command in
+  commands.ts (game.outcome flips player→loss / enemy→win); ResignButton
+  HUD with confirm dialog; AiPlayer.starvedFor accumulator + Resign-
+  Evaluator (desirability 1.0 when starved 5 game-minutes) + ResignGoal;
+  GameState.score: Record<Faction, number> integrates controlled.size *
+  delta each tick; GameOverModal shows "Territory Score: P vs E".
+  5 new tests pin: player/enemy resign outcome, no-op-after-over, score
+  accumulates, both factions independent. 333 tests green.
 
 - [x] M_MODES.5 — classic-rts: preset already chose 'large' + 'medium'
   matchLength + 'continent' mapType. Concrete rules wired:

@@ -35,10 +35,14 @@ export function GameOverModal({ game }: { game: GameState }) {
   }, [game]);
 
   const isWin = outcome === 'win';
+  // M_MODES.10 — controlled-tile-time score integral; rounded to whole units.
+  const playerScore = Math.round(game.score.player);
+  const enemyScore = Math.round(game.score.enemy);
   const stats: StatLine[] = [
     { label: 'Gold Earned', value: String(game.economy.player.gold) },
     { label: 'Lumber Harvested', value: String(game.economy.player.wood) },
     { label: 'Enemies Vanquished', value: String(game.economy.player.kills) },
+    { label: 'Territory Score', value: `${playerScore} vs ${enemyScore}` },
   ];
 
   return (

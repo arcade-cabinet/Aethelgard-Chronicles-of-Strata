@@ -9,7 +9,7 @@ import {
   HexPosition,
   Unit,
 } from '@/ecs/components';
-import { moveUnit, placeBuilding, trainUnit } from '@/game/commands';
+import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canBuild, peonCap, UNIT_COSTS } from '@/rules';
@@ -43,6 +43,9 @@ export class AiPlayer extends GameEntity {
   /** Name of the goal chosen on the last arbitration — for tests / transcripts. */
   lastGoal: string | null = null;
 
+  /** Seconds the faction has been "starved" (M_MODES.10) — accumulates across ticks. */
+  starvedFor = 0;
+
   constructor(faction: Faction) {
     super();
     this.faction = faction;
@@ -50,6 +53,7 @@ export class AiPlayer extends GameEntity {
     this.brain.addEvaluator(new BuildEvaluator());
     this.brain.addEvaluator(new TrainEvaluator());
     this.brain.addEvaluator(new MilitaryEvaluator());
+    this.brain.addEvaluator(new ResignEvaluator());
   }
 
   /**
@@ -58,6 +62,12 @@ export class AiPlayer extends GameEntity {
    */
   tick(game: GameState, delta: number): void {
     this.game = game;
+    // Accumulate starvation continuously (independent of decisionInterval) —
+    // ResignEvaluator reads this each arbitration.
+    const zone = game.zones[this.faction];
+    const eco = game.economy[this.faction];
+    const starved = zone.controlled.size === 0 && eco.wood < 10 && eco.gold < 10 && eco.stone < 10;
+    this.starvedFor = starved ? this.starvedFor + delta : 0;
     this.elapsed += delta;
     if (this.elapsed < this.decisionInterval) return;
     this.elapsed -= this.decisionInterval;
@@ -328,3 +338,46 @@ class TrainGoal extends Goal<AiPlayer> {
 // idle peon to a specific consumer); kept in the import set so adding a goal
 // later is a one-line trait change.
 void AssignedJob;
+
+// ---------------------------------------------------------------------------
+// Resign evaluator + goal (M_MODES.10) — AI surrender when starved out.
+// ---------------------------------------------------------------------------
+
+/** Seconds of continuous starvation before the AI resigns. */
+const STARVATION_THRESHOLD = 300;
+
+/**
+ * The AI surrenders when its faction is "starved" for STARVATION_THRESHOLD
+ * seconds (0 controlled tiles AND economy below sustenance). Wins arbitration
+ * (desirability 1.0) the moment the threshold is crossed so the brain
+ * immediately fires the ResignGoal instead of futile build/train/move.
+ */
+class ResignEvaluator extends GoalEvaluator<AiPlayer> {
+  calculateDesirability(owner: AiPlayer): number {
+    if (!owner.game) return 0;
+    if (owner.game.outcome !== 'playing') return 0;
+    const zone = owner.game.zones[owner.faction];
+    const eco = owner.game.economy[owner.faction];
+    const starved = zone.controlled.size === 0 && eco.wood < 10 && eco.gold < 10 && eco.stone < 10;
+    if (!starved) {
+      owner.starvedFor = 0;
+      return 0;
+    }
+    return owner.starvedFor >= STARVATION_THRESHOLD ? 1 : 0;
+  }
+
+  setGoal(owner: AiPlayer): void {
+    owner.brain.clearSubgoals();
+    owner.brain.addSubgoal(new ResignGoal(owner));
+  }
+}
+
+/** Issue the resign command on behalf of the AI's faction. */
+class ResignGoal extends Goal<AiPlayer> {
+  activate(): void {
+    const owner = this.owner as AiPlayer;
+    resign(owner.game, owner.faction);
+    owner.lastGoal = 'resign';
+    this.status = Goal.STATUS.COMPLETED;
+  }
+}

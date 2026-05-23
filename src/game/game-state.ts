@@ -205,6 +205,12 @@ export interface GameState {
   /** Per-faction zone of control + observed battlefield (spec 102). */
   zones: Record<Faction, ZoneState>;
   /**
+   * Controlled-tile-time score per faction (M_MODES.10). Each tick adds
+   * `zones[faction].controlled.size * delta` — area under the curve of
+   * territory held. GameOverModal renders the final per-faction score.
+   */
+  score: Record<Faction, number>;
+  /**
    * Goal-driven AI players, keyed by faction. The enemy faction always has one;
    * the player faction gets one only in AI-vs-AI mode (M8.7 E2E harness).
    */
@@ -553,6 +559,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
       player: center,
       enemy: enemyBaseTile,
     }),
+    score: { player: 0, enemy: 0 },
     // the enemy faction always runs a yuka AI player; AI-vs-AI mode swaps in
     // the player faction's via the test harness (M8.7).
     aiPlayers: { enemy: new AiPlayer('enemy') },
@@ -702,5 +709,11 @@ export function runEconomyTick(game: GameState, delta: number): void {
 
   // animation state + end-condition check
   animationSystem(game.world);
-  game.outcome = evaluateWinLoss(game.world);
+  game.outcome = evaluateWinLoss(game.world, game.outcome);
+
+  // M_MODES.10 — controlled-tile-time score integral. Track area under the
+  // territory curve for each faction; rendered in GameOverModal. Even in
+  // non-endless modes this is a useful match summary.
+  game.score.player += game.zones.player.controlled.size * delta;
+  game.score.enemy += game.zones.enemy.controlled.size * delta;
 }

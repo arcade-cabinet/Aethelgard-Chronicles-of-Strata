@@ -12,6 +12,7 @@ import { Minimap } from '@/hud/Minimap';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
 import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
 import { PauseControl } from '@/hud/PauseControl';
+import { ResignButton } from '@/hud/ResignButton';
 import { ResourceBar } from '@/hud/ResourceBar';
 import { SelectionPanel } from '@/hud/SelectionPanel';
 import { SelectionRect } from '@/hud/SelectionRect';
@@ -91,6 +92,7 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
       <SelectionRect game={game} getCamera={getCamera} />
       <SoundToggle persistence={persistence} />
       <PauseControl game={game} />
+      <ResignButton game={game} />
       <DiscoveriesPanel game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
