@@ -1857,7 +1857,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [LOW]  M_EXPANSION.F.88 — Idle peon priority queue: when player has idle peons, next building auto-claims them
 - [x] [LOW]  M_EXPANSION.F.89 — Camera bookmarks: number-keys 1-5 set/restore camera position + selection
 - [x] [LOW]  M_EXPANSION.F.90 — Minimap interaction: click on minimap centres the camera there
-- [ ] [LOW]  M_EXPANSION.F.91 — Selection groups: Ctrl+1..5 saves the current selection; press 1..5 to recall
+- [x] [LOW]  M_EXPANSION.F.91 — Selection groups: Ctrl+1..5 saves the current selection; press 1..5 to recall
 - [ ] [LOW]  M_EXPANSION.F.92 — Mass-rally: right-click on a destination with a Barracks selected sets rally for ALL Barracks of the faction
 - [ ] [LOW]  M_EXPANSION.F.93 — Resource trade UI: convert N wood → M stone at a 3:1 ratio (sink for surplus)
 - [ ] [LOW]  M_EXPANSION.F.94 — Diplomacy: a treaty system (truce, alliance) only meaningful for 3+ factions (future)

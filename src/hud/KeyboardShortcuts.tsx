@@ -1,10 +1,15 @@
+import { type Entity, unpackEntity } from 'koota';
 import { useEffect } from 'react';
+import { Selectable } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { clearSelection } from '@/game/selection';
+import { clearSelection, selectEntities } from '@/game/selection';
 import { cameraView } from '@/render/camera-view';
 
 /** M_EXPANSION.F.89 — module-local camera bookmark slots (1..5). */
 const cameraBookmarks = new Map<number, { x: number; z: number }>();
+
+/** M_EXPANSION.F.91 — module-local selection group slots (1..5). */
+const selectionGroups = new Map<number, number[]>();
 
 /**
  * Keyboard shortcuts (M_ACCESS.1). Pure side-effect component — no DOM
@@ -25,17 +30,30 @@ export function KeyboardShortcuts({ game }: { game: GameState }) {
       // ignore inputs
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
-      // M_EXPANSION.F.89 — camera bookmarks. Shift+1..5 saves the
-      // current target; 1..5 alone restores it (delta-pan via the
-      // existing pan-camera event). Stored in module-local memory —
-      // intentionally not persisted (bookmarks are per-session).
+      // M_EXPANSION.F.89 + F.91 — number-row bindings:
+      //   1..5             camera bookmark recall
+      //   Shift+1..5       camera bookmark save
+      //   Ctrl/Meta+1..5   selection group save
+      //   Alt+1..5         selection group recall
       if (e.key >= '1' && e.key <= '5') {
         const slot = Number(e.key);
+        if (e.ctrlKey || e.metaKey) {
+          selectionGroups.set(slot, (game.selectedIds ?? []).slice());
+          return;
+        }
+        if (e.altKey) {
+          const ids = selectionGroups.get(slot);
+          if (ids && ids.length > 0) {
+            const entities: Entity[] = [];
+            for (const ent of game.world.query(Selectable)) {
+              if (ids.includes(unpackEntity(ent).entityId)) entities.push(ent);
+            }
+            selectEntities(game, entities);
+          }
+          return;
+        }
         if (e.shiftKey) {
-          cameraBookmarks.set(slot, {
-            x: cameraView.targetX,
-            z: cameraView.targetZ,
-          });
+          cameraBookmarks.set(slot, { x: cameraView.targetX, z: cameraView.targetZ });
         } else {
           const saved = cameraBookmarks.get(slot);
           if (saved) {
