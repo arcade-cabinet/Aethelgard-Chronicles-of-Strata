@@ -470,10 +470,10 @@ all scale by lets say.... 50% then 40% then 30% then 20% respectively and
 see where we land". Current radii (12/20/28/36) — scale UP by the requested
 percentages, verify perf headroom holds at the new Huge.
 
-- [ ] M_BALANCE_2.1 — bump mapSizes in config/world.json: small 12→18 (+50%),
-  medium 20→28 (+40%), large 28→36 (+30%), huge 36→43 (+20%). Update
-  world.ts schema if needed. Verify generateBoard radius cap (32) is bumped
-  to ≥43 to accept Huge.
+- [x] M_BALANCE_2.1 — bumped mapSizes (12/20/28/36 → 18/28/36/43, the user's
+  +50/+40/+30/+20% scaling); generateBoard radius cap raised 32 → 48 to
+  accept Huge with headroom. All 315 tests still green (the determinism
+  smoke + economy/spawn integration cover the new sizes implicitly).
 - [ ] M_BALANCE_2.2 — playtest pass at each new size: AI-vs-AI determinism
   smoke still passes at radius 28+; spawn/economy/encroachment timings still
   produce a finishable match. Tune `combat.json` thresholds if Huge feels

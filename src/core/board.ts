@@ -43,9 +43,10 @@ export interface BoardData {
 export function generateBoard(seedPhrase: string, radius: number = MAP_RADIUS): BoardData {
   // Validate at the API boundary (CodeRabbit): negative / NaN / Infinity /
   // non-integer radius would produce a malformed grid downstream. Round +
-  // clamp to a sane range — MAP_SIZES tops out at 16, so 32 is a hard ceiling.
-  if (!Number.isFinite(radius) || radius < 1 || radius > 32) {
-    throw new Error(`generateBoard: radius must be a finite integer in [1, 32], got ${radius}`);
+  // clamp to a sane range — MAP_SIZES tops out at 43 (M_BALANCE_2 user-
+  // scaled), 48 leaves headroom for one more bump tier.
+  if (!Number.isFinite(radius) || radius < 1 || radius > 48) {
+    throw new Error(`generateBoard: radius must be a finite integer in [1, 48], got ${radius}`);
   }
   radius = Math.round(radius);
   const map = createMapPrng(seedPhrase);
