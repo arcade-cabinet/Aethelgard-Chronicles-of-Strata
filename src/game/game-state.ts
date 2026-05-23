@@ -29,6 +29,10 @@ import { AiPlayer } from '@/ai/ai-player';
 import { encroachmentSystem } from '@/ecs/systems/encroachment';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
 import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
+import { type Projectile, advanceProjectiles } from './projectiles';
+
+/** Monotonic counter for projectile React keys — shared across all games. */
+const projectileIdRef = { current: 0 };
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { type GameOutcome, evaluateWinLoss } from '@/ecs/systems/win-loss';
@@ -135,6 +139,14 @@ export interface GameState {
    * also by the app-suspend handler on mobile.
    */
   paused: boolean;
+  /**
+   * Active visible projectiles (arrows/bolts) — M_COMBAT_POLISH.1. The
+   * offensive-behavior system pushes one per source per fire cadence; the
+   * r3f ProjectileLayer animates + despawns. Purely presentation.
+   */
+  projectiles: Projectile[];
+  /** Per-source cadence accumulators — last-fired age per OffensiveBehavior entity id. */
+  projectileCooldowns: Map<number, number>;
   /**
    * Auto-save timer. Attached by the App layer (which owns the persistence
    * facade); when present, `runEconomyTick` advances it. Absent in tests and
@@ -371,6 +383,8 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     lastDamageEvents: [],
     selectedIds: [],
     paused: false,
+    projectiles: [],
+    projectileCooldowns: new Map(),
     eventRng,
     clock: createClock(),
     weather: createWeather(),
@@ -460,7 +474,17 @@ export function runEconomyTick(game: GameState, delta: number): void {
   buildSystem(game.world, game.buildSites, delta);
   // Every offensive-behaviour entity (Watchtower today; future Wonder etc.)
   // damages enemy military in its radius — decoupled from building type.
-  offensiveBehaviorSystem(game.world, delta, game.eventRng);
+  // Also emits visible projectile FX (cadence-gated; presentation only).
+  offensiveBehaviorSystem(
+    game.world,
+    delta,
+    game.eventRng,
+    game.projectiles,
+    game.projectileCooldowns,
+    projectileIdRef,
+  );
+  // advance + cull projectile FX
+  advanceProjectiles(game.projectiles, delta);
 
   // recompute each faction's observed battlefield from current unit/base cones
   updateObserved(game.zones.player, game.world, 'player', game.board.tiles.values());

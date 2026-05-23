@@ -9,6 +9,7 @@ import { HomeBase } from '@/world/HomeBase';
 import { CombatText } from '@/world/CombatText';
 import { Decoration } from '@/world/Decoration';
 import { EnemyBase } from '@/world/EnemyBase';
+import { ProjectileLayer } from '@/world/ProjectileLayer';
 import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { Mountains } from '@/world/Mountains';
@@ -76,6 +77,7 @@ function Scene({
         <Units game={game} />
       </Suspense>
       <CombatText game={game} />
+      <ProjectileLayer game={game} />
       <RainParticles game={game} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
