@@ -1953,8 +1953,8 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.D.161 — docs/specs/M_EXPANSION-roadmap.md — a single doc rolling up M_EXPANSION.F.* into a release-train (v0.3 → v0.4 → v1.0)
 - [x] [MED]  M_EXPANSION.D.162 — docs/specs/106-replay-format.md — formal spec of the EventLog serialization (M_EXPANSION.F.74/.75)
 - [x] [MED]  M_EXPANSION.D.163 — docs/specs/107-mana-resource.md — design for the 4th resource slot (M_EXPANSION.F.72)
-- [ ] [MED]  M_EXPANSION.D.164 — docs/specs/108-wonder-victory.md — Wonder building rules (M_EXPANSION.F.71)
-- [ ] [MED]  M_EXPANSION.D.165 — docs/specs/109-multifaction.md — design considerations for ≥3 factions (M_EXPANSION.F.94/.95)
+- [x] [MED]  M_EXPANSION.D.164 — docs/specs/108-wonder-victory.md — Wonder building rules (M_EXPANSION.F.71)
+- [x] [MED]  M_EXPANSION.D.165 — docs/specs/109-multifaction.md — design considerations for ≥3 factions (M_EXPANSION.F.94/.95)
 - [x] [MED]  M_EXPANSION.D.166 — docs/contributors.md — a contributor onboarding doc (cloning, env setup, the dev loop)
 - [x] [LOW]  M_EXPANSION.D.167 — docs/specs/20-visual-language.md — append a "post-launch palette" section consistent with M_EXPANSION.U.113 colorblind mode
 - [x] [LOW]  M_EXPANSION.D.168 — docs/specs/80-audio.md — formalise the "audio-on-first-interaction" gate as a contract (we ship it; the spec still says planned)
