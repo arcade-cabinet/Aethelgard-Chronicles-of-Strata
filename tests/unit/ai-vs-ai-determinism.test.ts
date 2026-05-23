@@ -72,6 +72,33 @@ describe('AI-vs-AI determinism smoke (M_QUALITY.3)', () => {
     expect(fpA).toBe(fpB);
   });
 
+  it('determinism holds at Huge map size (M_BALANCE_2.2)', () => {
+    // user's +20%-bumped Huge tier; ensure the larger board doesn't introduce
+    // an order-of-iteration determinism break.
+    const make = () => {
+      const g = startGame({
+        seedPhrase: 'huge-determinism',
+        mapSize: 43,
+        difficulty: 'normal',
+        eventSeed: 'huge-events',
+      });
+      for (const f of ['player', 'enemy'] as const) {
+        g.economy[f].wood = 1000;
+        g.economy[f].stone = 1000;
+        g.economy[f].gold = 1000;
+        g.aiPlayers[f] = new AiPlayer(f);
+      }
+      return g;
+    };
+    const a = make();
+    const b = make();
+    for (let i = 0; i < TICKS; i++) {
+      runEconomyTick(a, DELTA);
+      runEconomyTick(b, DELTA);
+    }
+    expect(fingerprint(a)).toBe(fingerprint(b));
+  }, 30000);
+
   it('different seed → different fingerprint (sanity: determinism isnt just trivial constancy)', () => {
     const a = newAiVsAiGame();
     const b = startGame({

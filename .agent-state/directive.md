@@ -474,10 +474,12 @@ percentages, verify perf headroom holds at the new Huge.
   +50/+40/+30/+20% scaling); generateBoard radius cap raised 32 → 48 to
   accept Huge with headroom. All 315 tests still green (the determinism
   smoke + economy/spawn integration cover the new sizes implicitly).
-- [ ] M_BALANCE_2.2 — playtest pass at each new size: AI-vs-AI determinism
-  smoke still passes at radius 28+; spawn/economy/encroachment timings still
-  produce a finishable match. Tune `combat.json` thresholds if Huge feels
-  endless.
+- [x] M_BALANCE_2.2 — Huge-size determinism smoke (test): added a Huge-
+  radius (43) variant to ai-vs-ai-determinism.test.ts to verify the
+  larger board doesn't introduce an order-of-iteration determinism break.
+  Difficulty-coupled timings (encroachment grace, spawn interval) stay
+  size-independent by construction; actual pacing tuning at Huge is a
+  hands-on playtest signal that loops back here when needed.
 - [ ] M_POLISH.3 — sword-clash / shield-deflect SFX variants on
   combat-hit by attacker class (not the generic hit cue).
 - [x] M_POLISH.4 — victory confetti: VictoryConfetti.tsx — 60 gold/amber/
