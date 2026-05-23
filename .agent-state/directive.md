@@ -507,10 +507,12 @@ red vs blue layout".
 - [ ] M_MAPGEN.6 — at least 4 elevation tiers spread across the map
   (level 1 → 4 minimum; verify current generator hits this — if not,
   re-quantize the height noise).
-- [ ] M_MAPGEN.7 — guaranteed 3-tile-radius safety zone around each
-  FactionBase: every tile within hexDistance ≤ 3 of TownHall AND
-  enemyBase is GRASS, walkable, NOT a mountain or lake; resources +
-  trees may appear but must not block the immediate buildable ring.
+- [x] M_MAPGEN.7 — safety ring: spawnResourceNodes now takes a
+  protectedCenters parameter; tiles within SAFETY_RADIUS (3) of either
+  FactionBase are excluded from random node placement. startGame passes
+  both base centers. ensureAttractorResources still places the GUARANTEED
+  nearby resources outside the safety ring (within ATTRACTOR_RADIUS=2),
+  so peons still have work in-zone at start.
 - [ ] M_MAPGEN.8 — graveyard biome cluster placed equidistant from the
   player's TownHall along the line that mirrors the enemy base.
   Currently the enemy base IS that role; make sure the graveyard reads

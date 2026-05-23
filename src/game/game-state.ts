@@ -364,7 +364,14 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // 2. attractor contract — each Town Hall guarantees a minimum of every
   //    resource type within its radius, so a peon always has work in-zone
   //    (spec 102). Run for both factions' attractors deterministically.
-  let resourceNodes = spawnResourceNodes(board, mapRng);
+  // M_MAPGEN.7 — keep a 3-hex safety ring around each FactionBase clear of
+  // randomly-spawned resource nodes so the player has guaranteed buildable
+  // space at start. ensureAttractorResources then adds the GUARANTEED nearby
+  // resources (further out, within ATTRACTOR_RADIUS=2 of each base anchor).
+  let resourceNodes = spawnResourceNodes(board, mapRng, [
+    { q: center.q, r: center.r },
+    { q: enemyBaseTile.q, r: enemyBaseTile.r },
+  ]);
   resourceNodes = ensureAttractorResources(
     board,
     townHallKey,

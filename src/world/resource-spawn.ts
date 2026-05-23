@@ -32,8 +32,19 @@ const SPAWN_RULES: Array<{
  * (the map PRNG stream). Each tile gets at most one node — the first matching
  * rule wins. Mountain tiles (level >= 5) are not walkable but their rock is
  * still harvestable from an adjacent tile.
+ *
+ * `protectedCenters` (M_MAPGEN.7) — tiles within `SAFETY_RADIUS` hexes of
+ * any center are excluded from random resource placement so each faction's
+ * starting ring stays buildable. Trees + ores can still spawn farther out
+ * via the normal rules.
  */
-export function spawnResourceNodes(board: BoardData, rng: Rng): ResourceNodePlan[] {
+export const SAFETY_RADIUS = 3;
+
+export function spawnResourceNodes(
+  board: BoardData,
+  rng: Rng,
+  protectedCenters: ReadonlyArray<{ q: number; r: number }> = [],
+): ResourceNodePlan[] {
   const nodes: ResourceNodePlan[] = [];
   const sortedKeys = [...board.tiles.keys()].sort();
   for (const key of sortedKeys) {
@@ -41,6 +52,19 @@ export function spawnResourceNodes(board: BoardData, rng: Rng): ResourceNodePlan
     if (!tile) continue;
     // never place a resource node on a crossing landing — it would block it
     if (tile.isCrossingLanding) continue;
+    // M_MAPGEN.7 — keep the 3-tile safety radius around each FactionBase
+    // clear so the player has guaranteed buildable space at start.
+    let blocked = false;
+    for (const c of protectedCenters) {
+      const d =
+        (Math.abs(tile.q - c.q) + Math.abs(tile.r - c.r) + Math.abs(tile.q + tile.r - c.q - c.r)) /
+        2;
+      if (d <= SAFETY_RADIUS) {
+        blocked = true;
+        break;
+      }
+    }
+    if (blocked) continue;
     for (const rule of SPAWN_RULES) {
       if (!rule.biomes.has(tile.type)) continue;
       if (rng() < rule.chance) {
