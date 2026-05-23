@@ -170,6 +170,37 @@ export function restoreMusic(): void {
   currentMusicHowl.fade(currentMusicHowl.volume(), musicBaselineVolume, 600);
 }
 
+/**
+ * M_EXPANSION.AU.39 — single looping ambient track on the ambient
+ * bus. start() is idempotent — calling it while the track is already
+ * playing is a no-op. stop() fades out over 400ms.
+ */
+let currentAmbientHowl: Howl | null = null;
+let currentAmbientId: string | null = null;
+export function startAmbient(buses: AudioBuses, id: string): void {
+  if (!interactionGate) {
+    onAudioUnlock(() => startAmbient(buses, id));
+    return;
+  }
+  if (currentAmbientId === id && currentAmbientHowl?.playing()) return;
+  if (currentAmbientHowl) currentAmbientHowl.stop();
+  const howl = getHowl(buses.ambient, id);
+  howl.loop(true);
+  howl.volume(0);
+  howl.play();
+  howl.fade(0, buses.ambient.volume, 600);
+  currentAmbientHowl = howl;
+  currentAmbientId = id;
+}
+export function stopAmbient(): void {
+  if (!currentAmbientHowl) return;
+  const h = currentAmbientHowl;
+  h.fade(h.volume(), 0, 400);
+  setTimeout(() => h.stop(), 420);
+  currentAmbientHowl = null;
+  currentAmbientId = null;
+}
+
 /** Mute or unmute all Howler audio globally. */
 export function setMuted(muted: boolean): void {
   Howler.mute(muted);

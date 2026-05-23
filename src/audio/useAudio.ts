@@ -15,7 +15,7 @@ import { useEffect, useRef } from 'react';
 import { Building } from '@/ecs/components';
 import type { DamageEvent } from '@/ecs/systems/combat';
 import type { GameState } from '@/game/game-state';
-import { createAudioBuses, playMusic, playSound } from './buses';
+import { createAudioBuses, playMusic, playSound, startAmbient, stopAmbient } from './buses';
 import { resolveSoundId, SOUND_FOR_EVENT } from './sound-map';
 import { registerUiSoundPlayer } from './ui-sound-emitter';
 
@@ -88,10 +88,15 @@ export function useAudio(game: GameState): void {
     }
 
     // Detect newly-completed buildings by counting entities with isComplete.
-    // One building-completed sound per new completion.
+    // One building-completed sound per new completion. Also tracks
+    // in-progress count for the M_EXPANSION.AU.39 ambient layer below.
     let completeCount = 0;
+    let inProgressCount = 0;
     for (const e of game.world.query(Building)) {
-      if (e.get(Building)?.isComplete) completeCount++;
+      const b = e.get(Building);
+      if (!b) continue;
+      if (b.isComplete) completeCount++;
+      else inProgressCount++;
     }
     const prev = lastCompleteBuildingsRef.current;
     if (completeCount > prev) {
@@ -102,5 +107,10 @@ export function useAudio(game: GameState): void {
       }
     }
     lastCompleteBuildingsRef.current = completeCount;
+    // M_EXPANSION.AU.39 — crafting-hall ambient while ≥1 build site
+    // is mid-construction. start/stop are idempotent so calling them
+    // every frame is safe.
+    if (inProgressCount > 0) startAmbient(buses, 'audio.music.biome.crafting-hall');
+    else stopAmbient();
   });
 }
