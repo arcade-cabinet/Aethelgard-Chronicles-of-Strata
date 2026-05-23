@@ -65,7 +65,7 @@ import { createEconomy, type GameEconomy } from './economy';
 import { createRally, type RallyState } from './rally';
 import { createResearch, type ResearchState } from './research';
 import { advanceWeather, createWeather, WEATHER_SPEED_MULTIPLIER, type Weather } from './weather';
-import { createZoneState, updateObserved, type ZoneState } from './zone';
+import { createZoneState, seedZonesFromAttractors, updateObserved, type ZoneState } from './zone';
 
 export type { Difficulty } from './difficulty';
 
@@ -418,7 +418,10 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     weather: createWeather(),
     research: createResearch(),
     rally: createRally(),
-    zones: { player: createZoneState(), enemy: createZoneState() },
+    zones: seedZonesFromAttractors({ player: createZoneState(), enemy: createZoneState() }, board, {
+      player: center,
+      enemy: enemyBaseTile,
+    }),
     // the enemy faction always runs a yuka AI player; AI-vs-AI mode swaps in
     // the player faction's via the test harness (M8.7).
     aiPlayers: { enemy: new AiPlayer('enemy') },

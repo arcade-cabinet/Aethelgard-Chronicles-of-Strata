@@ -480,13 +480,12 @@ placement for buildings plus resources. grass and trees. then beyond
 that any other props features and varied terrain but always that kind of
 red vs blue layout".
 
-- [ ] M_MAPGEN.1 — TownHall ZoC fix: TownHall's BUILDING_BEHAVIORS row
-  carries `attractor: { radius: 2 }` but the player's home base entity
-  is spawned in game-state.ts NOT through placeBuilding — it likely
-  doesn't get the AttractorBehavior trait attached. Audit the home-base
-  spawn path, ensure AttractorBehavior is composed onto the FactionBase
-  entity for BOTH factions; ZoneState shows it as controlled territory
-  emitting outward.
+- [x] M_MAPGEN.1 — TownHall ZoC seeded: the home-base entity already
+  composed AttractorBehavior; the missing piece was the ZoneState
+  initialisation. New zone.ts.seedZonesFromAttractors seeds each
+  faction's `controlled` set with every walkable tile within
+  ATTRACTOR_RADIUS (2 hexes) of its anchor at startGame. The TownHall
+  now visibly emits a 2-radius zone (ZoneBorder paints it) from t=0.
 - [ ] M_MAPGEN.2 — TownHall visual identity: distinct mesh/scale/color
   vs Farm/Barracks/etc. Currently structure-models.player.TownHall
   uses `structures.town-hall` at scale 1.0 — verify it actually reads as
@@ -521,6 +520,17 @@ red vs blue layout".
   read as blue/azure; enemy base + zone read as red/crimson. Check
   ZoneBorder colors — confirm they're already faction-tinted; if not,
   paint them per-faction.
+- [ ] M_MAPGEN.10 — fair-balance guarantee (user, 2026-05-22): the
+  per-rule additions (.3-.9) MUST cooperate to produce a deterministic
+  "fair, balanced, playable" golden path on every seed. Concretely:
+  resource yield within each faction's reachable area equalised (no
+  seed where one side gets 3x the wood); travel time to confront
+  equalised (mountain range placed so neither side circumvents
+  trivially); both bases get the same buildable-tile count in their
+  3-tile radius. Add a fair-balance audit pass at startGame that
+  re-rolls the seed (or applies a corrective bias) if the metric is
+  out of tolerance. Pin with a test that runs 50 random seeds and
+  asserts the balance metric stays within ±10%.
 
 ### M_BALANCE_2 — map-size scaling (user feedback, 2026-05-22)
 

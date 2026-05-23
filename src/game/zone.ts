@@ -143,3 +143,31 @@ export function tileController(zones: Record<Faction, ZoneState>, key: string): 
   if (zones.enemy.controlled.has(key)) return 'enemy';
   return null;
 }
+
+/**
+ * Seed each faction's `controlled` set with the attractor footprint around
+ * its base — every walkable tile within ATTRACTOR_RADIUS hexes of the
+ * faction's anchor counts as initially-controlled (M_MAPGEN.1). Without
+ * this, the home base appeared to emit no zone of control because the
+ * encroachment system only flips tiles, never seeds them.
+ */
+export function seedZonesFromAttractors(
+  zones: Record<Faction, ZoneState>,
+  board: import('@/core/board').BoardData,
+  centers: Record<Faction, { q: number; r: number }>,
+): Record<Faction, ZoneState> {
+  const RADIUS = 2;
+  for (const f of ['player', 'enemy'] as const) {
+    const center = centers[f];
+    for (const tile of board.tiles.values()) {
+      if (!tile.walkable) continue;
+      const d =
+        (Math.abs(tile.q - center.q) +
+          Math.abs(tile.r - center.r) +
+          Math.abs(tile.q + tile.r - center.q - center.r)) /
+        2;
+      if (d <= RADIUS) zones[f].controlled.add(getHexKey(tile.q, tile.r));
+    }
+  }
+  return zones;
+}
