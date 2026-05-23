@@ -21,10 +21,13 @@
  * actually places structures is gameplay, not visual.
  */
 import { Clone, useGLTF } from '@react-three/drei';
-import { useMemo } from 'react';
+import { useFrame } from '@react-three/fiber';
+import { useMemo, useRef } from 'react';
+import type { PointLight } from 'three';
 import { assets } from '@/assets/assets';
 import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, parseHexKey } from '@/core/hex';
+import { cyclePhase, lightIntensityAt } from '@/game/clock';
 import {
   Building,
   type BuildingType,
@@ -107,6 +110,37 @@ function BasePropMesh({
     <group position={[x, y, z]} scale={scale} rotation={[0, rotationY, 0]}>
       <Clone object={glb.scene} />
     </group>
+  );
+}
+
+/**
+ * M_EXPANSION.A.11 — warm point light at the faction base that fades
+ * up at night. Reads game.clock each frame; intensity is the inverse
+ * of the directional-light intensity (peaks at midnight, off at noon).
+ * Local-space child of the faction base group, so it sits at the base
+ * regardless of where the player has placed their Town Hall.
+ */
+function BaseNightLight({ game, faction }: { game: GameState; faction: Faction }) {
+  const ref = useRef<PointLight | null>(null);
+  useFrame(() => {
+    if (!ref.current) return;
+    const day = lightIntensityAt(cyclePhase(game.clock));
+    // Night intensity = 1 - day, ramped a bit so it's invisible at
+    // dusk and only really lights up midnight.
+    const night = Math.max(0, 1 - day) ** 1.4;
+    ref.current.intensity = night * 2.4;
+  });
+  // Warm amber light, scoped to the base footprint. Position is local
+  // to the parent baseProps group (already at basePos).
+  return (
+    <pointLight
+      ref={ref}
+      position={[0, 1.6, 0]}
+      color={faction === 'player' ? '#fcd34d' : '#a855f7'}
+      distance={6}
+      decay={2}
+      intensity={0}
+    />
   );
 }
 
@@ -230,6 +264,11 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
             rotationY={p.rotationY}
           />
         ))}
+        {/* M_EXPANSION.A.11 — warm point light at the base, auto-fades
+            up at night. Placeholder for a future lamp-post asset; for
+            now the banner-faction baseProp serves as the visual anchor
+            (the light origin coincides with it). */}
+        <BaseNightLight game={game} faction={faction} />
       </group>
       {/* Placed structures this faction has constructed mid-game. */}
       {placed.map((b) => (

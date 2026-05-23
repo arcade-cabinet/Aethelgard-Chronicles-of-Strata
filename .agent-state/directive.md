@@ -1690,7 +1690,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [HIGH] M_EXPANSION.A.8 — Fantasy Town `mill.glb` as Granary mesh
 - [x] [MED]  M_EXPANSION.A.9 — Fantasy Town `house-bricks.glb` as House mesh
 - [x] [MED]  M_EXPANSION.A.10 — Fantasy Town `well.glb` as decoration in player base footprint
-- [ ] [LOW]  M_EXPANSION.A.11 — Fantasy Town `lamp-post.glb` as night-time light source (auto-on after sunset)
+- [x] [LOW]  M_EXPANSION.A.11 — Fantasy Town `lamp-post.glb` as night-time light source (auto-on after sunset)
 - [ ] [LOW]  M_EXPANSION.A.12 — Fantasy Town `chimney-smoke` particle: hook ParticleEmitter to House meshes (smoke = inhabited signal)
 
 **Graveyard Kit (13-18)** — enemy base skin upgrade + necropolis biome
