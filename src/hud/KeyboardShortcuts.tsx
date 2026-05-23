@@ -1,6 +1,10 @@
 import { useEffect } from 'react';
 import type { GameState } from '@/game/game-state';
 import { clearSelection } from '@/game/selection';
+import { cameraView } from '@/render/camera-view';
+
+/** M_EXPANSION.F.89 — module-local camera bookmark slots (1..5). */
+const cameraBookmarks = new Map<number, { x: number; z: number }>();
 
 /**
  * Keyboard shortcuts (M_ACCESS.1). Pure side-effect component — no DOM
@@ -21,6 +25,27 @@ export function KeyboardShortcuts({ game }: { game: GameState }) {
       // ignore inputs
       const t = e.target as HTMLElement | null;
       if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+      // M_EXPANSION.F.89 — camera bookmarks. Shift+1..5 saves the
+      // current target; 1..5 alone restores it (delta-pan via the
+      // existing pan-camera event). Stored in module-local memory —
+      // intentionally not persisted (bookmarks are per-session).
+      if (e.key >= '1' && e.key <= '5') {
+        const slot = Number(e.key);
+        if (e.shiftKey) {
+          cameraBookmarks.set(slot, {
+            x: cameraView.targetX,
+            z: cameraView.targetZ,
+          });
+        } else {
+          const saved = cameraBookmarks.get(slot);
+          if (saved) {
+            const dx = saved.x - cameraView.targetX;
+            const dz = saved.z - cameraView.targetZ;
+            window.dispatchEvent(new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }));
+          }
+        }
+        return;
+      }
       switch (e.key) {
         case 'Escape':
           clearSelection(game);

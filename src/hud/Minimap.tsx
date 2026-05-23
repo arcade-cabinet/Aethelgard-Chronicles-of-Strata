@@ -121,9 +121,7 @@ export function Minimap({ game, compact = false }: { game: GameState; compact?: 
           const wz = ((cy - SIZE / 2) / SIZE) * worldSpan;
           const dx = wx - cameraView.targetX;
           const dz = wz - cameraView.targetZ;
-          window.dispatchEvent(
-            new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }),
-          );
+          window.dispatchEvent(new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }));
         }}
         style={{
           width: '100%',
