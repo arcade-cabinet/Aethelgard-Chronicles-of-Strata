@@ -199,10 +199,10 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
 - [x] M_ARCHETYPE.4 — damage-type × armor table (336c611): DamageType
   union; OffensiveBehavior.damageType; DefensiveBehavior.armorVs*; rules/
   damage.ts armorMultiplier + applyArmor. 281 tests.
-- [ ] M_ARCHETYPE.5 — units adopt `OffensiveBehavior`. Footman has the
-  trait on spawn; `combat.ts` collapses into the offensive-behavior system
-  + the damage-type table. Same projectile/cadence law for units as
-  buildings.
+- [x] M_ARCHETYPE.5 — units adopt OffensiveBehavior (1d55136): every
+  combat unit spawns with the trait — radius=attackRange, dps=damage/
+  cooldown, damageType='normal'. Unified with buildings; siege = single
+  row change.
 - [ ] M_ARCHETYPE.6 — `rules/force-field.ts` — bi-signed magnetic field.
   Each archetype declares attract/repel per (faction, target-kind). Three
   consumers: placement snapping, pathfinding cost, AI targeting/motivation.
