@@ -193,9 +193,10 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
   alongside ResourceTrait. Trait declarations only — gameplay layers
   (Mover snap render, Gate transform, magnetic force field treating
   Consumers/Movers uniformly) follow in later commits as needed.
-- [ ] M_ARCHETYPE.2 — Gate = Mover-on-Defender. Directional passability:
-  friendly units cross freely (pathfinding cost 1); enemy units find a
-  closed door (impassable, must destroy/circumvent).
+- [x] M_ARCHETYPE.2 — Gate composition: ECS Gate trait + rules/gates.ts
+  (buildGateMap, tilePassable, materialiseGate). Gate is a composition of
+  Mover + Defender; tilePassable resolves the directional passability per
+  faction. 285 tests.
 - [x] M_ARCHETYPE.4 — damage-type × armor table (336c611): DamageType
   union; OffensiveBehavior.damageType; DefensiveBehavior.armorVs*; rules/
   damage.ts armorMultiplier + applyArmor. 281 tests.

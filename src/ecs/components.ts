@@ -169,6 +169,20 @@ export const ConsumerBehavior = trait({
   amount: 100,
 });
 
+/**
+ * Gate — a Mover + Defender composition (spec 102). A Gate occupies a tile
+ * and is directionally passable: friendly units of `faction` cross freely
+ * (the existing pathfinding sees it as walkable); enemy units find it
+ * impassable (the existing wall semantics apply). Spawned when a Mover is
+ * placed on a tile that already has a DefensiveBehavior: the gate inherits
+ * the wall's material (via MoverBehavior.material) AND the wall's defence
+ * (via the existing DefensiveBehavior trait kept on the entity).
+ *
+ * The faction field encodes WHICH side the gate is open for. Today it
+ * matches the placing faction; future neutral gates could leave it ''.
+ */
+export const Gate = trait({ faction: 'player' as Faction });
+
 /** Hit points. */
 export const Health = trait({ current: 50, max: 50 });
 
