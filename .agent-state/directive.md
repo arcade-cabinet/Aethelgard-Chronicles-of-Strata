@@ -436,7 +436,7 @@ The standards (just established in M_ARCH_UNIFY):
   Each instructed to be EXHAUSTIVE + aim for 25-50+ findings + report
   how big the unification refactor actually is. Findings forward-apply
   to M_AUDIT.1-.7 + new sub-items as discovered.
-- [ ] M_AUDIT.1 — MACRO: every `src/<dir>/` that owns a parallel
+- [ ] [WAIT-AUDIT] M_AUDIT.1 — MACRO: every `src/<dir>/` that owns a parallel
   hierarchy. Concrete first-pass list (will grow from reviewer
   output): `src/entities/character-factory.ts` (role branch — should
   be Thing dispatcher per M_ARCH_UNIFY.6/.10); `src/world/structure-
@@ -449,13 +449,13 @@ The standards (just established in M_ARCH_UNIFY):
   keyed by BuildingType — should fold into the Thing registry per .3);
   `src/world/Decoration.tsx`'s BASE_ACCRETION + BUILDING_ACCRETION
   tables (per .9 consumer).
-- [ ] M_AUDIT.2 — MESO: every function/system that branches on a
+- [ ] [WAIT-AUDIT] M_AUDIT.2 — MESO: every function/system that branches on a
   *role / type / faction* discriminator. Discover via grep for
   `case '<UnitType>'`, `if (type === '<BuildingType>')`, `faction ===
   'player'`. Each such branch is either (a) legitimately dispatching
   to a slot handler (acceptable), or (b) hiding an archetype config
   row that should be data-driven (bug — replace with a registry lookup).
-- [ ] M_AUDIT.3 — MICRO: per-file pass for: Math.random in src/world
+- [ ] [WAIT-AUDIT] M_AUDIT.3 — MICRO: per-file pass for: Math.random in src/world
   / src/render / src/sim (CodeRabbit already flagged 2 — sweep the
   rest); duplicated formulas (CodeRabbit flagged hex-distance in
   zone.ts — sweep); index-based identity used as React keys (CodeRabbit
@@ -465,7 +465,7 @@ The standards (just established in M_ARCH_UNIFY):
   vacuous test assertions that pass when the inner loop is empty
   (CodeRabbit flagged mode-presets.test.ts + place-road.test.ts +
   science-system.test.ts — sweep test/ directory).
-- [ ] M_AUDIT.4 — SECURITY: full security-auditor sweep. Confirm no
+- [ ] [WAIT-AUDIT] M_AUDIT.4 — SECURITY: full security-auditor sweep. Confirm no
   user-input pathway can break out of the sandboxed PRNG /
   Capacitor persistence; check the persistence facade for SQL
   injection (parameterised queries verified earlier — re-verify
@@ -473,22 +473,22 @@ The standards (just established in M_ARCH_UNIFY):
   serializer); workflow least-privilege audit (deploy-pages.yml
   already done, sweep ci.yml + release.yml for similar gaps);
   Howler audio + AudioContext autoplay-policy compliance.
-- [ ] M_AUDIT.5 — CODE-QUALITY: complexity + maintainability. Files
+- [ ] [WAIT-AUDIT] M_AUDIT.5 — CODE-QUALITY: complexity + maintainability. Files
   >400 lines reviewed against "reader-can-hold-it-in-head" test;
   Biome lint at strictest level we run; tsc strict + noUncheckedIndexedAccess
   consistent across the tree; cyclomatic complexity per function ≤8;
   inheritance / class hierarchy reviewed against composition
   preference.
-- [ ] M_AUDIT.6 — CODE-SIMPLIFICATION: every helper > 30 lines reviewed
+- [ ] [WAIT-AUDIT] M_AUDIT.6 — CODE-SIMPLIFICATION: every helper > 30 lines reviewed
   for whether it could be expressed via the registry pattern (config
   lookup + composeTraits) instead of bespoke code. Every Set/Map ops
   reviewed for whether they should be the future bitmask (M_ARCHETYPE.7).
-- [ ] M_AUDIT.7 — DOC ALIGNMENT: every spec doc in `docs/specs/` reviewed
+- [ ] [WAIT-AUDIT] M_AUDIT.7 — DOC ALIGNMENT: every spec doc in `docs/specs/` reviewed
   against the M_ARCH_UNIFY architecture. Specs that pre-date the
   unification (most of them) get a "see spec 103" cross-reference; any
   that contradict the unified layer model get explicit corrigenda.
   CHANGELOG 0.4.0 entry drafted for M_AUDIT.0-.6 findings landed.
-- [ ] M_AUDIT.8 — PILLAR DOC OVERHAUL (user, 2026-05-23): every pillar
+- [ ] [WAIT-AUDIT] M_AUDIT.8 — PILLAR DOC OVERHAUL (user, 2026-05-23): every pillar
   doc in `docs/specs/` updated to reflect the FULL hierarchy from
   archetypes → things → skins, INCLUDING the layers in the middle
   (slot capabilities, gen-time vs runtime pass, registry shape, config
@@ -603,7 +603,7 @@ The real architecture:
   identity = a skin assignment. The current 'player' / 'enemy'
   hard-coding becomes the FIRST TWO entries of a `Skin` registry.
 
-- [ ] M_ARCH_UNIFY.1 — write the spec doc (`docs/specs/103-archetype-
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.1 — write the spec doc (`docs/specs/103-archetype-
   unification.md`) that names every current hierarchy + maps it to its
   unified equivalent (units → Thing tuples; buildings → Thing tuples;
   particles → Thing tuples with ParticleArchetype slot; modes →
@@ -611,49 +611,49 @@ The real architecture:
   factory → composeTraits over a Thing profile; structure-models →
   per-Skin mesh slot). The doc is the keystone — every subsequent
   refactor cites it.
-- [ ] M_ARCH_UNIFY.2 — Slot taxonomy: enumerate every capability slot
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.2 — Slot taxonomy: enumerate every capability slot
   (Movable, Animated, Costable, HasHP, AccretesProps, GenTimePlaced,
   RuntimePlaced, ParticleArchetype, plus the spec-102 ZoC: Offensive,
   Defensive, Attractor, Mover, Consumer). Each becomes a typed
   capability + a registry entry.
-- [ ] M_ARCH_UNIFY.3 — `src/registry/things.ts`: the unified Thing
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.3 — `src/registry/things.ts`: the unified Thing
   registry. JSON-driven config (data) + typed loader (code) + per-Thing
   trait-composition function (one helper per slot kind, dispatched by
   slot membership not by Thing identity).
-- [ ] M_ARCH_UNIFY.4 — gen-time pass refactor: `paintBeachRing /
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.4 — gen-time pass refactor: `paintBeachRing /
   paintMountainSpine / paintInlandLake / paintChannelCuts /
   paintDesertBlanket / appendBaseAccretion / appendBuildingAccretion /
   appendGraveyardCluster` all become registered GenTime handlers
   iterated by ONE outer loop. Mode/mapType variants become weight
   overlays per handler, not hand-written paint functions.
-- [ ] M_ARCH_UNIFY.5 — runtime pass refactor: combat / harvest /
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.5 — runtime pass refactor: combat / harvest /
   encroachment / offensive-behavior / projectile / science / build
   systems collapse to ONE outer loop iterating slot membership; each
   system becomes a slot handler.
-- [ ] M_ARCH_UNIFY.6 — collapse character-factory + placeBuilding +
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.6 — collapse character-factory + placeBuilding +
   placeRoad + foundBase + future place-* commands into ONE
   `placeThing(game, profileId, hexKey, faction)` verb that
   composeTraits + spawns. The current verbs become thin one-line
   wrappers (or get deleted) for backward compat with the HUD.
-- [ ] M_ARCH_UNIFY.7 — `Skin` registry (user 2026-05-23): top-level
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.7 — `Skin` registry (user 2026-05-23): top-level
   visual-overlay table per faction. Skin {meshes: Record<rig, asset>,
   palette: Record<biome, color>, audio: Record<event, asset>,
   accretionPool: Record<archetype, propPool>}. Hard-coded
   'player'/'enemy' branches in structure-models / Decoration /
   zone-border / sound-map are replaced with skin lookup.
   Adding a 3rd tribe = ONE new skin entry. NO code changes anywhere.
-- [ ] M_ARCH_UNIFY.8 — supersede M_REFACTOR.1 (particles) as a
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.8 — supersede M_REFACTOR.1 (particles) as a
   CONSUMER of the unified registry: a particle effect is a Thing
   whose ParticleArchetype slot is set; the per-frame ParticleSystem
   runs as one runtime-pass handler. The Things doing the emitting
   (combat-hit, building-complete, weather, rain) declare which
   ParticleArchetype they emit per event.
-- [ ] M_ARCH_UNIFY.9 — supersede M_MAPGEN.13 (per-building accretion)
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.9 — supersede M_MAPGEN.13 (per-building accretion)
   + M_MAPGEN.11 (per-faction base accretion) as CONSUMERS: the
   accretion config tables collapse into AccretesProps slot values on
   Thing profiles. The accretion-paint loop iterates `registry.filter(
   has AccretesProps)` instead of two hand-rolled append* functions.
-- [ ] M_ARCH_UNIFY.10 — supersede character-factory (user 2026-05-23
+- [ ] [WAIT-AUDIT] M_ARCH_UNIFY.10 — supersede character-factory (user 2026-05-23
   "what is the purpose of a factory") as a CONSUMER: replace with
   `placeThing` dispatcher reading per-role composeTraits from the
   unified registry. Adding a Trebuchet or Settler becomes ONE config
@@ -667,7 +667,7 @@ M_ARCH_UNIFY drains.
 
 ### M_FEATURE_QUEUED — paused until M_ARCH_UNIFY ships
 
-- [ ] M_REFACTOR.1 — generic particle ARCHETYPE system (user, 2026-05-22):
+- [ ] [WAIT-AUDIT] M_REFACTOR.1 — generic particle ARCHETYPE system (user, 2026-05-22):
   "snow, sawdust, rain, all that shit are all particles" + "even blood
   effects, splashes, its the whole thing of we apply archetypes to units
   and buildings and use what they attract repel etc to dictate type and
