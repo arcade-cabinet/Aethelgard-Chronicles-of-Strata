@@ -5,8 +5,16 @@ import { canAfford, type GameEconomy, type ResourceCost } from '@/game/economy';
 /** Supply each trainable unit consumes. Enemies are not supply-tracked. */
 export const SUPPLY_COST: Record<UnitType, number> = ECONOMY.supplyCosts;
 
-/** Resource cost to train a trainable unit (Peon at Town Hall, Footman at Barracks). */
-export const UNIT_COSTS: Record<'Peon' | 'Footman', ResourceCost> = ECONOMY.unitCosts;
+/**
+ * Resource cost to train a trainable unit. The set of keys is the
+ * trainable-unit subset of UnitType; widening as new trainable units
+ * land (Wizard, etc.) only requires adding the row to economy.json.
+ */
+export type TrainableUnit = 'Peon' | 'Footman' | 'Wizard';
+export const UNIT_COSTS: Record<TrainableUnit, ResourceCost> = ECONOMY.unitCosts as Record<
+  TrainableUnit,
+  ResourceCost
+>;
 
 /**
  * Whether `unit` can be trained without exceeding `economy`'s supply cap.

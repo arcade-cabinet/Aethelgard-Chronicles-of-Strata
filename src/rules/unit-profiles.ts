@@ -120,6 +120,16 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     combatRole: 'military',
     selectionRadius: 0.85,
   },
+  Wizard: {
+    // M_EXPANSION.A.26 — player magic-damage ranged unit. Mid HP,
+    // expensive (science prereq), spell visual (magic-spell SFX pack).
+    harvester: false,
+    nonCombat: false,
+    founder: false,
+    damageType: 'magic',
+    combatRole: 'military',
+    selectionRadius: 0.85,
+  },
   Goblin: {
     harvester: false,
     nonCombat: false,

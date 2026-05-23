@@ -159,6 +159,8 @@ const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
   // siege identity comes from damageType + range; mesh is a stand-in
   // until a dedicated KayKit siege model lands.
   Trebuchet: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
+  // M_EXPANSION.A.26 — Wizard uses the KayKit Mage mesh.
+  Wizard: { tier: 'medium', meshLogicalId: 'characters.heroes.mage' },
   // Settler (M_MODES.6) — civilian appearance; reuse the engineer mesh.
   Settler: { tier: 'medium', meshLogicalId: 'characters.heroes.engineer' },
   // Goblin: no dedicated KayKit goblin; the hooded Rogue is the closest

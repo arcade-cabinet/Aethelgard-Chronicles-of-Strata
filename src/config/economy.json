@@ -25,6 +25,7 @@
     "Peon": 1,
     "Footman": 2,
     "Trebuchet": 3,
+    "Wizard": 2,
     "Settler": 4,
     "Goblin": 0,
     "Orc": 0,
@@ -34,7 +35,8 @@
   },
   "unitCosts": {
     "Peon": { "wood": 5, "stone": 0, "gold": 0 },
-    "Footman": { "wood": 0, "stone": 0, "gold": 15 }
+    "Footman": { "wood": 0, "stone": 0, "gold": 15 },
+    "Wizard": { "wood": 0, "stone": 0, "gold": 20, "science": 25 }
   },
   "roadCosts": {
     "stone": { "stone": 5, "wood": 0, "gold": 0 },

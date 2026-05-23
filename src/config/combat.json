@@ -18,6 +18,14 @@
       "attackRange": 4,
       "attackCooldown": 3.0
     },
+    "Wizard": {
+      "speed": 2.0,
+      "faction": "player",
+      "hp": 70,
+      "attackDamage": 18,
+      "attackRange": 3,
+      "attackCooldown": 2.0
+    },
     "Goblin": {
       "speed": 2,
       "faction": "enemy",
