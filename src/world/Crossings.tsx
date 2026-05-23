@@ -16,32 +16,35 @@ const LIFT = 0.1;
 const STAIR_STEPS = 5;
 
 /**
- * Material colour for a `(style, form)` pair. Artificial crossings read as
- * built (wood / cut stone); natural crossings as terrain (rock / earth / sand).
+ * M_REGISTRY.12 — per-(style, form) crossing material color lifted into
+ * a CROSSING_PROFILES table. The 2 nested switches collapsed into ONE
+ * keyed lookup. Adding a new CrossingStyle = ONE row per form (or one
+ * row total if natural+artificial share); the lookup stays a table read.
+ *
+ * Key shape: `${form}:${style}` — keeps the table flat + grep-friendly.
  * See `docs/specs/99-passability-and-slopes.md`.
  */
+const CROSSING_PROFILES: Record<string, string> = {
+  // Artificial — built surfaces.
+  'artificial:stone': '#9ca3af', // carved stone
+  'artificial:mountain': '#9ca3af', // carved stone
+  'artificial:sand': '#b45309', // boardwalk planks (sun-bleached)
+  'artificial:dirt': '#92400e', // wooden plank ramp (default)
+  // Natural — terrain features.
+  'natural:stone': '#6b7280', // rockfall / scree
+  'natural:mountain': '#6b7280', // rockfall / scree
+  'natural:sand': '#d9b772', // sand rise
+  'natural:dirt': '#4d7c0f', // graded grassy hill (default)
+};
+
 function crossingColor(style: CrossingStyle, form: Crossing['form']): string {
-  if (form === 'artificial') {
-    switch (style) {
-      case 'stone':
-      case 'mountain':
-        return '#9ca3af'; // carved stone
-      case 'sand':
-        return '#b45309'; // boardwalk planks (sun-bleached)
-      default:
-        return '#92400e'; // wooden plank ramp
-    }
-  }
-  // natural
-  switch (style) {
-    case 'stone':
-    case 'mountain':
-      return '#6b7280'; // rockfall / scree
-    case 'sand':
-      return '#d9b772'; // sand rise
-    default:
-      return '#4d7c0f'; // graded grassy hill
-  }
+  return (
+    CROSSING_PROFILES[`${form}:${style}`] ??
+    // Fallback to the per-form default style (dirt) when an unknown
+    // style is encountered — preserves the legacy switch's behaviour.
+    CROSSING_PROFILES[`${form}:dirt`] ??
+    '#92400e'
+  );
 }
 
 /** XYZ point. */

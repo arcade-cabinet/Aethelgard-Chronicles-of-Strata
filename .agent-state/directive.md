@@ -566,7 +566,7 @@ the smallest end-to-end proof, then drain in dependency order.
 - [x] M_REGISTRY.11 — `Roads.tsx` MATERIAL_COLOR table +
   Roads layer become a Skin-driven generic MoverRenderer. Same
   shape as StructureRenderer.
-- [ ] M_REGISTRY.12 — `Crossings.tsx` 6-variant (style ×
+- [x] M_REGISTRY.12 — `Crossings.tsx` 6-variant (style ×
   form) rendering collapses into CrossingProfile slot table; remove
   the bespoke crossingColor switch.
 - [x] M_REGISTRY.13 — collapse 4 `place*` verbs in
@@ -588,7 +588,7 @@ the smallest end-to-end proof, then drain in dependency order.
   into ONE `rules/unit-roles.MILITARY_ROLES` export OR push down
   to a `combatRole: 'military' | 'peon' | 'civilian'` slot per
   unit profile.
-- [ ] M_REGISTRY.18 — collapse 6 AI files (ai-director,
+- [x] M_REGISTRY.18 — collapse 6 AI files (ai-director,
   ai-player, perception, steering, vehicle-factory, ecs/systems/ai)
   into ONE `BrainArchetype` slot consumed by ONE per-tick AI system.
   yuka Vehicle becomes implementation detail of the brain slot.
