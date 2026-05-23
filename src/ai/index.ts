@@ -36,3 +36,12 @@ export function aiSystem(world: World, board: BoardData, graph: NavGraph): void 
 
 export { AiDirector } from './ai-director';
 export { MAX_RETARGETS_PER_TICK } from './perception';
+
+/**
+ * Clear all Vehicle records from the singleton director. Call from
+ * `startGame` so a previous session's entity-id → Vehicle Map doesn't
+ * collide with the new session's entity ids (CodeRabbit MEDIUM-5).
+ */
+export function resetAiDirector(): void {
+  director.reset();
+}

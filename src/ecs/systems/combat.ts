@@ -47,17 +47,23 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
     if (dist > combatant.attackRange) return; // AI moves it into range
 
     combatant.attackTimer += delta;
-    if (combatant.attackTimer >= combatant.attackCooldown) {
-      // carry the remainder so attack cadence is frame-rate independent
+    // Drain ALL elapsed cooldown windows this tick (`while`, not `if`) so a
+    // long frame doesn't silently drop attacks — DPS stays frame-rate
+    // independent. CodeRabbit-flagged: under stuttering the previous `if`
+    // would mean a 0.3s frame on a 0.1s cooldown only fired one attack.
+    let fired = 0;
+    while (combatant.attackTimer >= combatant.attackCooldown && fired < 8) {
       combatant.attackTimer -= combatant.attackCooldown;
       const roll = rollDamage(combatant.attackDamage, rng);
       const id = target.targetId;
       damageByTarget.set(id, (damageByTarget.get(id) ?? 0) + roll.damage);
       events.push({ target: targetEntity, damage: roll.damage, isCrit: roll.isCrit });
-      // M_COMBAT_POLISH.2 — flash the attacker into ATTACKING so its
-      // AnimatedCharacter plays the swing clip this beat; animationSystem
+      fired += 1;
+    }
+    if (fired > 0 && e.has(AnimationState)) {
+      // M_COMBAT_POLISH.2 — flash the attacker into ATTACKING; animationSystem
       // will reset to IDLE/MOVING once the cooldown ends.
-      if (e.has(AnimationState)) e.set(AnimationState, { state: 'ATTACKING' });
+      e.set(AnimationState, { state: 'ATTACKING' });
     }
   });
 

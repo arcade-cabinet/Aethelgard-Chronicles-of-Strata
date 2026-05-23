@@ -76,6 +76,11 @@ export function selectedEntity(game: GameState): Entity | undefined {
     const { entityId } = unpackEntity(e);
     if (entityId === id) return e;
   }
+  // The stored id no longer references a live Selectable entity — the unit
+  // was destroyed under selection. Clear it so subsequent calls don't keep
+  // scanning + so HUD consumers don't render a stale selection panel.
+  delete game.selectedId;
+  if (game.selectedIds.length > 0) game.selectedIds = [];
   return undefined;
 }
 

@@ -11,4 +11,4 @@
  *    within `AGGRO_RADIUS` and is given an A* path toward it.
  *  - An enemy whose target died retargets (rate-limited to MAX_RETARGETS_PER_TICK).
  */
-export { aiSystem } from '@/ai/index';
+export { aiSystem, resetAiDirector } from '@/ai/index';

@@ -51,28 +51,38 @@ export function createEconomy(): GameEconomy {
   };
 }
 
-/** Add `amount` to an economy slot. */
+/**
+ * Add `amount` to an economy slot. Negative inputs are clamped to 0 — a
+ * production code path should never add negative resources, and silently
+ * minting via subtraction would be a bug, not a feature.
+ */
 export function addResource(eco: GameEconomy, type: ResourceType, amount: number): void {
+  if (amount <= 0) return;
   eco[type] += amount;
 }
 
 /**
- * Whether the economy can pay every slot in `cost`. Slot-iterating — adding a
- * 4th slot needs no change here.
+ * Whether the economy can pay every slot in `cost`. Negative cost entries
+ * are treated as 0 — a Discovery / building can't grant resources via
+ * affordability checks. Slot-iterating — adding a 4th slot needs no change.
  */
 export function canAfford(eco: GameEconomy, cost: ResourceCost): boolean {
   for (const slot of RESOURCE_TYPES) {
-    const need = cost[slot] ?? 0;
+    const need = Math.max(0, cost[slot] ?? 0);
     if (eco[slot] < need) return false;
   }
   return true;
 }
 
-/** Deduct every slot in `cost` if affordable. Returns whether the spend succeeded. */
+/**
+ * Deduct every slot in `cost` if affordable. Returns whether the spend
+ * succeeded. Negative cost entries deduct nothing (clamped to 0) — a cost
+ * row is a one-way debit, never a sneaky credit.
+ */
 export function spend(eco: GameEconomy, cost: ResourceCost): boolean {
   if (!canAfford(eco, cost)) return false;
   for (const slot of RESOURCE_TYPES) {
-    eco[slot] -= cost[slot] ?? 0;
+    eco[slot] -= Math.max(0, cost[slot] ?? 0);
   }
   return true;
 }

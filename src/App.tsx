@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { createAutoSave } from '@/game/auto-save';
@@ -105,12 +105,9 @@ export function App() {
   const [config, setConfig] = useState<NewGameConfig | null>(null);
   const [showNewGame, setShowNewGame] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  const [hasSave, setHasSave] = useState(false);
-
-  // check for an existing committed save (enables the Continue button)
-  useEffect(() => {
-    void persistence.list().then((saves) => setHasSave(saves.length > 0));
-  }, []);
+  // Continue button is currently hidden — see TitleScreen below. The
+  // hasSave / persistence.list() check is restored when full save-restore
+  // lands (CodeRabbit HIGH-1+2).
 
   if (config !== null) {
     return <GameSession config={config} />;
@@ -128,30 +125,17 @@ export function App() {
 
   return (
     <>
+      {/*
+        Continue is intentionally hidden until full save-restore lands
+        (CodeRabbit HIGH-1+2): the current snapshot only contains the ECS
+        world, not economy/clock/zones/research/weather/AI state, AND the
+        load path never calls deserializeWorld. Clicking Continue today
+        would silently restart with the same seed — a worse UX than no
+        button. Re-enable when persistence covers the full GameState.
+      */}
       <TitleScreen
         onNewGame={() => setShowNewGame(true)}
         onSettings={() => setShowSettings(true)}
-        {...(hasSave
-          ? {
-              onContinue: () => {
-                // resume the most recent committed save
-                void persistence.list().then((saves) => {
-                  const latest = saves[0];
-                  if (latest) {
-                    setConfig({
-                      seedPhrase: latest.seedPhrase,
-                      mapSize: MAP_SIZES.medium.radius,
-                      difficulty: 'normal',
-                      // a saved session carries its own committed event seed;
-                      // until full save-restore lands, derive a stable one
-                      // from the save's seed phrase
-                      eventSeed: latest.seedPhrase,
-                    });
-                  }
-                });
-              },
-            }
-          : {})}
       />
       <NewGameModal open={showNewGame} onOpenChange={setShowNewGame} onBegin={beginGame} />
       <SettingsModal open={showSettings} onOpenChange={setShowSettings} persistence={persistence} />

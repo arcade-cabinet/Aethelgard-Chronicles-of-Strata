@@ -118,7 +118,15 @@ export function placeBuilding(
   type: Exclude<BuildingType, 'TownHall'>,
   faction: Faction = 'player',
 ): boolean {
-  const occupied = new Set<string>([game.townHallKey, ...game.buildSites.keys()]);
+  // CodeRabbit HIGH-4: the enemy base tile (and player TownHall) are
+  // BOTH unbuildable — without including enemyBaseKey, a player click on
+  // the enemy hex would let placeBuilding stamp a second FactionBase-
+  // adjacent entity right on top of the enemy base.
+  const occupied = new Set<string>([
+    game.townHallKey,
+    game.enemyBaseKey,
+    ...game.buildSites.keys(),
+  ]);
   const economy = game.economy[faction];
 
   const check = canBuild(game.board, occupied, tileKey, type, economy);

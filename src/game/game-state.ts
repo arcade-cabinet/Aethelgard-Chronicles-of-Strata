@@ -16,7 +16,7 @@ import {
   ResourceTrait,
   Unit,
 } from '@/ecs/components';
-import { aiSystem } from '@/ecs/systems/ai';
+import { aiSystem, resetAiDirector } from '@/ecs/systems/ai';
 import { animationSystem } from '@/ecs/systems/animation';
 import { buildSystem } from '@/ecs/systems/build';
 import { buildingDeathSystem } from '@/ecs/systems/building-death';
@@ -243,6 +243,12 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
           eventSeed: 'default-event-seed',
         }
       : configOrPhrase;
+
+  // CodeRabbit MEDIUM-5 — the AiDirector is a module-level singleton with a
+  // Vehicle Map keyed by koota entity ids. A previous session's stale ids
+  // would collide with the new session's freshly-allocated entities. Reset
+  // before constructing the new GameState's world.
+  resetAiDirector();
 
   const { seedPhrase, mapSize, difficulty, eventSeed } = config;
 

@@ -121,5 +121,13 @@ export function createCharacter(params: CreateCharacterParams): Entity {
     return world.spawn(...base, ...combatTraits);
   }
 
-  return world.spawn(...base);
+  // CodeRabbit: fail fast — a non-Peon role missing combat stats is a
+  // config bug, not a silently-broken combat entity. The only legitimate
+  // stat-less role is Peon (handled above). Hitting this branch means
+  // config/combat.json + character-factory disagree about a unit type;
+  // throw so the failure surfaces at spawn time, not mid-fight.
+  throw new Error(
+    `character-factory: ${role} is missing combat stats (hp/attackDamage/attackRange/attackCooldown). ` +
+      `Check src/config/combat.json + UnitType union.`,
+  );
 }
