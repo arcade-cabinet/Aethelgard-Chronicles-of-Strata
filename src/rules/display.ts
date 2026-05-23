@@ -60,6 +60,10 @@ export const BUILDING_DISPLAY: Record<BuildingType, BuildingDisplay> = {
     name: 'Wall',
     description: 'A hard pathing border. Enemies cannot cross it.',
   },
+  Wonder: {
+    name: 'Wonder',
+    description: 'Composes all 3 archetypes — attractor + offensive + defensive.',
+  },
 };
 
 /** Resolve the display metadata for a building type. */

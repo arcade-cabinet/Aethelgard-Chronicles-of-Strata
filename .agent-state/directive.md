@@ -414,9 +414,11 @@ re-listing. Both unblock as the relevant dependency lands.)
   refinement).
 - [ ] M_FEATURE.3 — passive science accumulation tick + a "science-
   producing" building variant (one new row in `building-behaviors.ts`).
-- [ ] M_FEATURE.4 — Wonder building — composes all three ZoC archetypes
-  (Attractor + Offensive + Defensive). Spec 102 explicitly anticipated
-  this; building-behaviors.ts becomes the proof.
+- [x] M_FEATURE.4 — Wonder building: composes Attractor (radius 3) +
+  Offensive (radius 4, dps 8) + Defensive (radius 0). Cost 500w+400s+300g
+  (late-game capstone); supply contribution 5. Rows in BuildingType,
+  BUILDING_BEHAVIORS, BUILDING_DISPLAY, BUILDING_COSTS, buildingSupply,
+  structure-models (both factions). Test pins the 3-archetype composition.
 - [ ] M_FEATURE.5 — siege-unit class: declares `damageType: 'siege'` on
   OffensiveBehavior; melts walls per the damage-type table.
 - [ ] M_FEATURE.6 — magic-unit class: `damageType: 'magic'`; pairs with

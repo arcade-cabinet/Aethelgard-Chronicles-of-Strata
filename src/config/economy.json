@@ -5,7 +5,8 @@
     "Granary": { "wood": 80, "stone": 40, "gold": 0 },
     "Barracks": { "wood": 150, "stone": 100, "gold": 50 },
     "Watchtower": { "wood": 80, "stone": 120, "gold": 0 },
-    "Wall": { "wood": 0, "stone": 60, "gold": 0 }
+    "Wall": { "wood": 0, "stone": 60, "gold": 0 },
+    "Wonder": { "wood": 500, "stone": 400, "gold": 300 }
   },
   "buildingSupply": {
     "TownHall": 5,
@@ -14,7 +15,8 @@
     "Granary": 2,
     "Barracks": 0,
     "Watchtower": 0,
-    "Wall": 0
+    "Wall": 0,
+    "Wonder": 5
   },
   "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH"],
   "supplyCosts": {

@@ -69,7 +69,8 @@ export type BuildingType =
   | 'Granary'
   | 'Barracks'
   | 'Watchtower'
-  | 'Wall';
+  | 'Wall'
+  | 'Wonder';
 
 /** The peon job state machine. */
 export type JobState = 'IDLE' | 'SEEKING' | 'HARVESTING' | 'CARRYING' | 'DEPOSITING' | 'BUILDING';
