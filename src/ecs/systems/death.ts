@@ -51,6 +51,16 @@ export function deathSystem(world: World, delta: number): number {
           );
         }
       }
+      // M_EXPANSION.AU.47 — death SFX per unit type. main.tsx listens
+      // and routes to emitUiSound('unit-death-*') so the audio layer
+      // can pick a sample appropriate to the unit (rocky thump for
+      // Trebuchet, normal for Footman, magic-impact for Wizard).
+      if (typeof window !== 'undefined') {
+        const unitType = entity.get(Unit)?.unitType;
+        if (unitType) {
+          window.dispatchEvent(new CustomEvent('aethelgard:unit-death', { detail: { unitType } }));
+        }
+      }
       entity.destroy();
     } else {
       entity.set(DeathTimer, { elapsed });

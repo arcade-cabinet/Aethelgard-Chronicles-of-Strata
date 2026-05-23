@@ -24,6 +24,9 @@ export type GameAudioEvent =
   | 'magic-cast'
   | 'achievement'
   | 'ui-error'
+  | 'unit-death-normal'
+  | 'unit-death-magic'
+  | 'unit-death-siege'
   | 'resource-deposit'
   | 'unit-select'
   | 'unit-trained'
@@ -87,6 +90,12 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   // afford, prereq missing, supply at cap). Fires from HudButton's
   // disabled-onClick handler.
   'ui-error': { bus: 'ui', soundId: 'audio.ui.error' },
+  // M_EXPANSION.AU.47 — death SFX per unit damageType. Routed from
+  // deathSystem via the unit-death window event; main.tsx picks the
+  // event per the unit's UNIT_PROFILES.damageType.
+  'unit-death-normal': { bus: 'sfx', soundId: 'audio.sfx.death-thud' },
+  'unit-death-magic': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
+  'unit-death-siege': { bus: 'sfx', soundId: 'audio.sfx.hit-stone' },
 
   // World interaction
   'harvest-chop': { bus: 'sfx', soundId: 'audio.sfx.chop' },

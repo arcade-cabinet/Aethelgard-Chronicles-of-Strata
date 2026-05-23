@@ -1031,6 +1031,15 @@
     "pack": "PixelLoops Impact + Hit SFX",
     "license": "Royalty-Free"
   },
+  "audio.sfx.death-thud": {
+    "id": "audio.sfx.death-thud",
+    "path": "assets/audio/sfx/death-thud.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops Impact + Hit SFX",
+    "license": "Royalty-Free"
+  },
   "audio.sfx.chop": {
     "id": "audio.sfx.chop",
     "path": "assets/audio/sfx/chop.ogg",
