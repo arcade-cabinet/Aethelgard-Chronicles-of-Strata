@@ -347,10 +347,10 @@ The user's mandate: review feedback is the next-best signal for actionable
 work. These are concrete bugs/gaps comprehensive-review + CodeRabbit + Gemini
 flagged. No "POST_REL" parking lot — work them now.
 
-- [ ] M_HARDENING.1 — full save-restore. Extend serializeWorld to a full
-  game-snapshot (economy, clock, weather, zones, research, rally, AI
-  state, eventSeed, difficulty, mapSize); wire deserializeWorld into the
-  load path; re-enable Continue with the real restoration.
+- [x] M_HARDENING.1 — full save-restore: serialize-game.ts holds
+  serializeGame/deserializeGame; persistence.save writes the full
+  GameSnapshot; App.tsx Continue path uses deserializeGame to rebuild;
+  GameSession accepts initialGame. 4 round-trip tests; 297 total green.
 - [x] M_HARDENING.2 — fixed-timestep useGameLoop: 60-Hz accumulator with
   per-frame cap of 8 (spiral-of-death guard); aiSystem comment clarified
   to align with FIXED_DT. Closes the determinism gap.

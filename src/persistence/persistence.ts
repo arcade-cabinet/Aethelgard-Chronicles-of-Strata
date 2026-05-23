@@ -24,7 +24,7 @@ import {
 } from '@capacitor-community/sqlite';
 import { advanceEventSeed, type Rng } from '@/core/rng';
 import type { GameState } from '@/game/game-state';
-import { serializeWorld, type WorldSnapshot } from './serialize';
+import { type GameSnapshot, serializeGame } from './serialize-game';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -40,8 +40,8 @@ export interface SaveRecord {
   seedPhrase: string;
   /** ISO timestamp the save was written. */
   savedAt: string;
-  /** The serialized ECS world. */
-  snapshot: WorldSnapshot;
+  /** The full game-state snapshot (M_HARDENING.1) — restorable via deserializeGame. */
+  snapshot: GameSnapshot;
 }
 
 /** The persistence facade interface. */
@@ -129,7 +129,7 @@ function rowToSaveRecord(row: any): SaveRecord {
     name: row.name as string,
     seedPhrase: row.seed as string,
     savedAt: row.saved_at as string,
-    snapshot: JSON.parse(row.snapshot as string) as WorldSnapshot,
+    snapshot: JSON.parse(row.snapshot as string) as GameSnapshot,
   };
 }
 
@@ -219,7 +219,7 @@ export function createPersistence(): Persistence {
       if (!db) return;
       const seed = game.seedPhrase;
       const savedAt = new Date().toISOString();
-      const snapshot = JSON.stringify(serializeWorld(game.world));
+      const snapshot = JSON.stringify(serializeGame(game));
       await db.run(`INSERT INTO saves (name, seed, saved_at, snapshot) VALUES (?, ?, ?, ?);`, [
         name,
         seed,

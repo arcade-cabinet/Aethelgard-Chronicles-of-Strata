@@ -2,7 +2,8 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { createAutoSave } from '@/game/auto-save';
-import { type NewGameConfig, startGame } from '@/game/game-state';
+import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
+import { deserializeGame } from '@/persistence/serialize-game';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { GameOverModal } from '@/hud/GameOverModal';
@@ -47,16 +48,21 @@ function SceneError() {
 /** The persistence facade — created once for the whole app. */
 const persistence = createPersistence();
 
-/** The active game session, rendered once a config has been chosen. */
-function GameSession({ config }: { config: NewGameConfig }) {
+/**
+ * The active game session. Accepts either a `config` (new game — fresh
+ * startGame call) or a pre-built `initialGame` (resumed from a save —
+ * caller has already called deserializeGame).
+ */
+function GameSession({ config, initialGame }: { config?: NewGameConfig; initialGame?: GameState }) {
   const game = useMemo(() => {
-    const g = startGame(config);
+    const g = initialGame ?? (config ? startGame(config) : startGame('default'));
     // Attach the 5-minute auto-save — runEconomyTick advances the timer.
     g.autoSave = createAutoSave(() => {
       void persistence.save('AutoSave', g);
     });
     return g;
-  }, [config]);
+    // initialGame is intentionally a one-shot prop; remounts on config change.
+  }, [config, initialGame]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const viewport = useViewport();
   // r3f camera ref for HUD overlays that project world → screen (SelectionRect).
@@ -103,12 +109,20 @@ function GameSession({ config }: { config: NewGameConfig }) {
  */
 export function App() {
   const [config, setConfig] = useState<NewGameConfig | null>(null);
+  const [resumedGame, setResumedGame] = useState<GameState | null>(null);
   const [showNewGame, setShowNewGame] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
-  // Continue button is currently hidden — see TitleScreen below. The
-  // hasSave / persistence.list() check is restored when full save-restore
-  // lands (CodeRabbit HIGH-1+2).
+  const [hasSave, setHasSave] = useState(false);
 
+  // Detect an existing committed save on mount so the Continue button can
+  // appear. Re-runs are harmless — persistence.list is a cheap query.
+  useMemo(() => {
+    void persistence.list().then((saves) => setHasSave(saves.length > 0));
+  }, []);
+
+  if (resumedGame !== null) {
+    return <GameSession initialGame={resumedGame} />;
+  }
   if (config !== null) {
     return <GameSession config={config} />;
   }
@@ -125,17 +139,37 @@ export function App() {
 
   return (
     <>
-      {/*
-        Continue is intentionally hidden until full save-restore lands
-        (CodeRabbit HIGH-1+2): the current snapshot only contains the ECS
-        world, not economy/clock/zones/research/weather/AI state, AND the
-        load path never calls deserializeWorld. Clicking Continue today
-        would silently restart with the same seed — a worse UX than no
-        button. Re-enable when persistence covers the full GameState.
-      */}
       <TitleScreen
         onNewGame={() => setShowNewGame(true)}
         onSettings={() => setShowSettings(true)}
+        {...(hasSave
+          ? {
+              onContinue: () => {
+                // Resume the most recent committed save via the full
+                // game-snapshot path (M_HARDENING.1). deserializeGame
+                // rebuilds the deterministic baseline from the snapshot's
+                // config then overlays world + economy + clock + weather +
+                // research + rally + zones + outcome.
+                void persistence.list().then(async (saves) => {
+                  const latest = saves[0];
+                  if (!latest) return;
+                  const record = await persistence.load(latest.id);
+                  if (!record) return;
+                  try {
+                    setResumedGame(deserializeGame(record.snapshot));
+                  } catch (err) {
+                    console.warn('[App] resume failed; falling back to new game', err);
+                    setConfig({
+                      seedPhrase: record.seedPhrase,
+                      mapSize: MAP_SIZES.medium.radius,
+                      difficulty: 'normal',
+                      eventSeed: record.seedPhrase,
+                    });
+                  }
+                });
+              },
+            }
+          : {})}
       />
       <NewGameModal open={showNewGame} onOpenChange={setShowNewGame} onBegin={beginGame} />
       <SettingsModal open={showSettings} onOpenChange={setShowSettings} persistence={persistence} />
