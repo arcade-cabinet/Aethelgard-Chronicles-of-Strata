@@ -1,4 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
+import creditsJson from '@/config/credits.json';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -20,103 +21,15 @@ export interface CreditsModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+// M_EXPANSION.D.176 — credits data lives in src/config/credits.json
+// so a localisation pass or asset-pack rotation can ship without
+// re-reviewing this component. Shape matches the local interface.
 interface CreditSection {
   heading: string;
   entries: Array<{ name: string; license: string; author?: string; url?: string }>;
 }
 
-const SECTIONS: ReadonlyArray<CreditSection> = [
-  {
-    heading: 'Characters & Creatures',
-    entries: [
-      {
-        name: 'KayKit Adventurers Character Pack',
-        license: 'CC0',
-        author: 'Kay Lousberg',
-        url: 'https://www.kaylousberg.com',
-      },
-      {
-        name: 'KayKit Mystery Monthly (4 & 5)',
-        license: 'CC0',
-        author: 'Kay Lousberg',
-        url: 'https://www.kaylousberg.com',
-      },
-    ],
-  },
-  {
-    heading: 'World, Tiles & Structures',
-    entries: [
-      { name: 'Hexagon Kit', license: 'CC0', author: 'Kenney', url: 'https://kenney.nl' },
-      { name: 'Nature Kit', license: 'CC0', author: 'Kenney', url: 'https://kenney.nl' },
-      { name: 'Castle Kit', license: 'CC0', author: 'Kenney', url: 'https://kenney.nl' },
-      { name: 'Fantasy Town Kit', license: 'CC0', author: 'Kenney', url: 'https://kenney.nl' },
-      { name: 'Graveyard Kit', license: 'CC0', author: 'Kenney', url: 'https://kenney.nl' },
-      { name: 'Tower Defense Kit', license: 'CC0', author: 'Kenney', url: 'https://kenney.nl' },
-    ],
-  },
-  {
-    heading: 'Audio',
-    entries: [
-      {
-        name: 'Footsteps SFX Pack',
-        license: 'PixelLoops Royalty-Free',
-        author: 'PixelLoops Audio',
-      },
-      {
-        name: 'Impact & Hit SFX Pack',
-        license: 'PixelLoops Royalty-Free',
-        author: 'PixelLoops Audio',
-      },
-      {
-        name: 'Fantasy Magic Spell SFX Pack',
-        license: 'PixelLoops Royalty-Free',
-        author: 'PixelLoops Audio',
-      },
-      {
-        name: 'Inventory & Item SFX Pack',
-        license: 'PixelLoops Royalty-Free',
-        author: 'PixelLoops Audio',
-      },
-      {
-        name: 'Fantasy Tavern Music Pack (12 loops)',
-        license: 'PixelLoops Royalty-Free',
-        author: 'PixelLoops Audio',
-      },
-      {
-        name: 'Main Menu Music Pack v1.0',
-        license: 'PixelLoops Royalty-Free',
-        author: 'PixelLoops Audio',
-      },
-      {
-        name: 'Victory & Level-Complete Stingers (24)',
-        license: 'PixelLoops Royalty-Free',
-        author: 'PixelLoops Audio',
-      },
-      {
-        name: 'GameLoops Vol.5 — Fantasy RPG',
-        license: 'GameLoops Royalty-Free',
-        author: 'GameLoops Audio',
-      },
-    ],
-  },
-  {
-    heading: 'Engine & Libraries',
-    entries: [
-      { name: 'React + React Three Fiber', license: 'MIT', author: 'Meta + Poimandres' },
-      { name: 'Three.js + drei', license: 'MIT', author: 'mrdoob et al. / Poimandres' },
-      { name: 'koota (ECS)', license: 'MIT', author: 'Poimandres' },
-      { name: 'Radix UI + framer-motion', license: 'MIT', author: 'WorkOS / Framer' },
-      { name: 'Capacitor', license: 'MIT', author: 'Ionic' },
-      { name: '@capacitor-community/sqlite', license: 'MIT', author: 'jeep-sqlite contributors' },
-      { name: 'seedrandom', license: 'MIT', author: 'David Bau' },
-      {
-        name: 'Vite + Vitest + Biome',
-        license: 'MIT',
-        author: 'Evan You / Anthony Fu / Biome team',
-      },
-    ],
-  },
-];
+const SECTIONS: ReadonlyArray<CreditSection> = creditsJson as ReadonlyArray<CreditSection>;
 
 export function CreditsModal({ open, onOpenChange }: CreditsModalProps) {
   return (
