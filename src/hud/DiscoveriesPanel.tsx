@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { doResearch } from '@/game/commands';
 import { canAfford } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
@@ -23,6 +23,25 @@ import { ModalShell } from './ModalShell';
 export function DiscoveriesPanel({ game }: { game: GameState }) {
   const [open, setOpen] = useState(false);
   const eco = game.economy.player;
+  // M_EXPANSION.AU.40 — overlay map-of-realms ambient while the
+  // panel is open. The ambient slot is single — this takes
+  // precedence over the crafting-hall ambient while the panel is up.
+  // On close, useAudio's next frame restores crafting-hall if
+  // build sites are still active.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    void Promise.all([import('@/audio/buses'), import('@/audio/ui-sound-emitter')]).then(
+      ([buses, emitter]) => {
+        if (cancelled) return;
+        const b = emitter.getRegisteredBuses();
+        if (b) buses.startAmbient(b, 'audio.music.biome.map-of-realms');
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
