@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
 import { unpackEntity } from 'koota';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
@@ -34,7 +34,14 @@ export function Roads({ game }: { game: GameState }) {
   // Re-snapshot each frame so newly-placed roads appear without a re-render
   // tick; setViews bails on identity-equal arrays so React doesn't reconcile
   // when nothing changed.
-  useFrame(() => {
+  // M_AUDIT2.UX.35 — throttle to ~5 Hz. Roads only appear/destroy on
+  // build/destroy events; sampling them every frame (60Hz) burns
+  // alloc + scan budget for no visual benefit. 200ms accumulator.
+  const lastSnapshotMsRef = useRef<number>(0);
+  useFrame((_, delta) => {
+    lastSnapshotMsRef.current += delta * 1000;
+    if (lastSnapshotMsRef.current < 200) return;
+    lastSnapshotMsRef.current = 0;
     setViews((prev) => {
       const next = snapshot(game);
       if (
@@ -58,7 +65,19 @@ export function Roads({ game }: { game: GameState }) {
           rotation={[0, Math.PI / 6, 0]}
           geometry={roadGeo}
         >
-          <meshStandardMaterial color={moverProfileFor(v.material).color} flatShading />
+          <meshStandardMaterial
+            color={moverProfileFor(v.material).color}
+            flatShading
+            // M_AUDIT2.UX.30 — polygonOffset defends against z-fighting
+            // between the road disc and the terrain top face. The 0.06
+            // world-unit lift is sufficient on desktop float-depth but
+            // 16-bit depth on mid-tier Mali GPUs still flickers at
+            // far camera distances. Polygon offset shifts the rasterised
+            // depth value at draw time, immune to camera distance.
+            polygonOffset
+            polygonOffsetFactor={-1}
+            polygonOffsetUnits={-1}
+          />
         </mesh>
       ))}
     </group>

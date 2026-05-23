@@ -120,7 +120,7 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
               alignItems: 'center',
             }}
           >
-            <span style={{ color: HUD_THEME.color.muted, fontSize: '0.72rem' }}>
+            <span style={{ color: HUD_THEME.color.muted, fontSize: '0.78rem' }}>
               {step + 1} / {STEPS.length}
             </span>
             <div style={{ display: 'flex', gap: 8 }}>

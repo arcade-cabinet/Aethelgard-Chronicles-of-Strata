@@ -83,7 +83,7 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
                   <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>{d.name}</div>
                   <div
                     style={{
-                      fontSize: '0.72rem',
+                      fontSize: '0.78rem',
                       color: HUD_THEME.color.muted,
                       marginTop: 2,
                       lineHeight: 1.4,
@@ -93,7 +93,7 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
                   </div>
                   <div
                     style={{
-                      fontSize: '0.68rem',
+                      fontSize: '0.78rem',
                       color: HUD_THEME.color.accent,
                       marginTop: 4,
                     }}

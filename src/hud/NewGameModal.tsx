@@ -151,7 +151,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             New Realm
           </Dialog.Title>
 
-          <label htmlFor="seed-input" style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted }}>
+          <label htmlFor="seed-input" style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted }}>
             Seed phrase
           </label>
           <div style={{ display: 'flex', gap: 8, margin: '6px 0 18px' }}>
@@ -203,7 +203,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             </button>
           </div>
 
-          <p style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted, margin: 0 }}>Game mode</p>
+          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Game mode</p>
           <div style={{ margin: '6px 0 12px' }}>
             <Segmented
               value={mode}
@@ -214,11 +214,11 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
               onChange={setMode}
             />
           </div>
-          <p style={{ fontSize: '0.66rem', color: HUD_THEME.color.muted, margin: '0 0 16px' }}>
+          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: '0 0 16px' }}>
             {MODES.find((m) => m.key === mode)?.hint}
           </p>
 
-          <p style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted, margin: 0 }}>Map size</p>
+          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Map size</p>
           <div style={{ margin: '6px 0 18px' }}>
             <Segmented
               value={mapSize}
@@ -232,7 +232,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             />
           </div>
 
-          <p style={{ fontSize: '0.72rem', color: HUD_THEME.color.muted, margin: 0 }}>
+          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>
             AI difficulty
           </p>
           <div style={{ margin: '6px 0 24px' }}>

@@ -128,7 +128,10 @@ function drawOverlay(
     // faction; no more `=== 'enemy' ? ...` hand-branch.
     const fac = e.get(FactionTrait)?.faction ?? 'player';
     ctx.fillStyle = SKINS[fac].minimap.unitColor;
-    ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+    // M_AUDIT2.UX.34 — dot drawn at 4 internal-px so the compact (96px
+    // CSS) viewport keeps unit dots visible at ≥2.7 device-px instead
+    // of nearly-invisible 2.06px from the prior 3 internal-px.
+    ctx.fillRect(x - 2, y - 2, 4, 4);
   }
 
   // home base + enemy base markers — colors live on each faction's
@@ -143,7 +146,9 @@ function drawOverlay(
     const { x, y } = projectAxial(hex.q, hex.r, radius);
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    // M_AUDIT2.UX.34 — base marker at 5 internal-px stays visible at
+    // ≥3.4 device-px on the compact 96-px display.
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
     ctx.fill();
   }
 

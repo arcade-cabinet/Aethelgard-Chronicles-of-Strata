@@ -1617,7 +1617,7 @@ local-review-trio after each ~5-item batch.
 - [ ] [MAJ] M_AUDIT2.UX.21 — OnboardingOverlay: extend to ~9 STEPS (right-click, drag-select, pause shortcuts, resource legend, per-mode win conditions)
 
 **MAJOR — brand / consistency (22-25)**
-- [ ] [MAJ] M_AUDIT2.UX.22 — verify @fontsource/metamorphous + inter actually imported (post-CSP regression check)
+- [x] [MAJ] M_AUDIT2.UX.22 — verify @fontsource/metamorphous + inter actually imported (post-CSP regression check)
 - [ ] [MAJ] M_AUDIT2.UX.23 — SelectionRect: skip onDown when [role=dialog][data-state=open] (or tag ModalShell with data-hud-panel)
 - [x] [MAJ] M_AUDIT2.UX.24 — global contextmenu prevent inside #app-shell (right-click HUD)
 - [ ] [MAJ] M_AUDIT2.UX.25 — costLabel: replace single-letter abbreviations with color chips + unicode glyphs
@@ -1629,18 +1629,18 @@ local-review-trio after each ~5-item batch.
 
 **MAJOR — render polish (29-32)**
 - [ ] [MAJ] M_AUDIT2.UX.29 — day/night sky banding: noise dither overlay or fragment-shader gradient
-- [ ] [MAJ] M_AUDIT2.UX.30 — Roads z-fighting: lift to 0.15 or polygonOffset on material
+- [x] [MAJ] M_AUDIT2.UX.30 — Roads z-fighting: lift to 0.15 or polygonOffset on material
 - [ ] [MAJ] M_AUDIT2.UX.31 — KeyboardShortcuts arrow-keys: implement pan or drop misleading comment
 - [ ] [MAJ] M_AUDIT2.UX.32 — Loading state TitleScreen→GameSession ("Forging the realm…" + Radix Progress)
 
 **MINOR (33-42)**
 - [ ] [MIN] M_AUDIT2.UX.33 — CriticalWarning keyframe to CSS file (no per-mount style alloc)
-- [ ] [MIN] M_AUDIT2.UX.34 — Minimap base markers scale with displaySize (max(3, displaySize/24))
-- [ ] [MIN] M_AUDIT2.UX.35 — Roads snapshot throttle to 5Hz
+- [x] [MIN] M_AUDIT2.UX.34 — Minimap base markers scale with displaySize (max(3, displaySize/24))
+- [x] [MIN] M_AUDIT2.UX.35 — Roads snapshot throttle to 5Hz
 - [ ] [MIN] M_AUDIT2.UX.36 — SelectionRect cleanup: clear startRef on unmount
 - [ ] [MIN] M_AUDIT2.UX.37 — PauseControl pointer-events visual test
 - [ ] [MIN] M_AUDIT2.UX.38 — ZoneLegend top viewport-aware (60/80)
 - [ ] [MIN] M_AUDIT2.UX.39 — TitleBackground: verify low-poly biome teaser (or add rotating tiles)
 - [x] [MIN] M_AUDIT2.UX.40 — EndTurnButton: setTick only when displayed integer changes (not every 100ms)
 - [ ] [MIN] M_AUDIT2.UX.41 — Settings modal "Replay tutorial" link (reopen OnboardingOverlay)
-- [ ] [MIN] M_AUDIT2.UX.42 — hint font size floor 0.78rem (mobile readability)
+- [x] [MIN] M_AUDIT2.UX.42 — hint font size floor 0.78rem (mobile readability)

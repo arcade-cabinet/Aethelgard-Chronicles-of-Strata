@@ -189,7 +189,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
         >
           <div
             style={{
-              fontSize: '0.62rem',
+              fontSize: '0.78rem',
               textTransform: 'uppercase',
               letterSpacing: 1,
               color: HUD_THEME.color.muted,
@@ -247,7 +247,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                   })}
                   {meta.hasRally && (
                     <div
-                      style={{ fontSize: '0.68rem', color: HUD_THEME.color.muted, marginTop: 6 }}
+                      style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, marginTop: 6 }}
                     >
                       Tap a tile to set the rally point.
                     </div>
