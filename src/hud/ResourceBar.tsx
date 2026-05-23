@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
+import { RESOURCE_TYPES } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { resourceDisplayFor } from '@/rules';
 import { formatInt } from './format';
 import { HUD_THEME } from './hud-theme';
 
@@ -86,27 +87,19 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
   );
 }
 
-/** Display config per resource slot — label, theme color, HUD id. */
-const SLOT_DISPLAY: Record<ResourceType, { label: string; color: string; id: string }> = {
-  wood: { label: 'Wood', color: HUD_THEME.color.wood, id: 'val-wood' },
-  stone: { label: 'Stone', color: HUD_THEME.color.stone, id: 'val-stone' },
-  gold: { label: 'Gold', color: HUD_THEME.color.coin, id: 'val-gold' },
-  science: { label: 'Science', color: HUD_THEME.color.accent, id: 'val-science' },
-};
-
 /**
- * Snapshot the economy into HUD readouts. Slot-iterating: adding a 4th slot
- * means one row in SLOT_DISPLAY + one entry in RESOURCE_TYPES; no code change
- * here. Supply is non-slot (separate counter), shown last.
+ * Snapshot the economy into HUD readouts. Slot-iterating via the
+ * unified RESOURCE_DISPLAY registry (M_AUDIT2.ARCH.2): adding a 4th
+ * slot is ONE row in rules/display.ts + ONE entry in RESOURCE_TYPES;
+ * no code change here. Supply is non-slot (separate counter), shown last.
  */
 function snapshot(game: GameState): Readout[] {
   const e = game.economy.player;
   const rows: Readout[] = [];
   for (const slot of RESOURCE_TYPES) {
-    const d = SLOT_DISPLAY[slot];
-    if (!d) continue;
+    const d = resourceDisplayFor(slot);
     // M_AUDIT2.UX.10 — locale-formatted with thousands separator.
-    rows.push({ id: d.id, label: d.label, color: d.color, value: formatInt(e[slot]) });
+    rows.push({ id: d.domId, label: d.label, color: d.color, value: formatInt(e[slot]) });
   }
   rows.push({
     id: 'val-supply',

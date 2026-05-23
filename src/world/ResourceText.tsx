@@ -3,19 +3,18 @@ import { useFrame } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 import type { ResourceDepositEvent } from '@/ecs/systems/deposit';
 import type { GameState } from '@/game/game-state';
+import { resourceDisplayFor } from '@/rules';
 
 /** Seconds a popup floats before it is removed. */
 const POPUP_LIFETIME = 1.4;
 /** World-units the popup drifts up over its lifetime. */
 const POPUP_DRIFT = 1.8;
 
-/** Per-resource colour for the popup. */
-const COLOR: Record<string, string> = {
-  wood: '#f97316',
-  stone: '#94a3b8',
-  gold: '#fbbf24',
-  science: '#38bdf8',
-};
+// M_AUDIT2.ARCH.2 — COLOR table collapsed into RESOURCE_DISPLAY in
+// rules/display.ts; one source for the HUD bar text + this floating-
+// popup color. Note: the wood color shift from the local '#f97316'
+// (orange) to HUD_THEME.color.wood (matches HUD bar) is intentional;
+// the prior table drifted from the HUD theme.
 
 /** One floating "+N <kind>" popup. */
 interface Popup {
@@ -51,7 +50,7 @@ export function ResourceText({ game }: { game: GameState }) {
         .map((e) => ({
           id: nextIdRef.current++,
           text: `+${e.amount} ${e.type}`,
-          color: COLOR[e.type] ?? '#fff',
+          color: resourceDisplayFor(e.type).color,
           x: e.x,
           y: e.y + 1,
           z: e.z,

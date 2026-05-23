@@ -1422,7 +1422,7 @@ local-review-trio after each ~5-item batch.
 
 **Cross-cutting still scattered (1-7)**
 - [x] M_AUDIT2.ARCH.1 — Decoration.tsx PALETTES → BIOME_FLAGS.decoration slot
-- [ ] M_AUDIT2.ARCH.2 — ResourceText.tsx COLOR + HUD_THEME + SLOT_DISPLAY collapse → RESOURCE_DISPLAY in rules/display.ts
+- [x] M_AUDIT2.ARCH.2 — ResourceText.tsx COLOR + HUD_THEME + SLOT_DISPLAY collapse → RESOURCE_DISPLAY in rules/display.ts
 - [x] M_AUDIT2.ARCH.3 — ZoneBorder.tsx ZONE_COLOR → SKINS[faction].zoneBorderColor or reuse minimap.unitColor
 - [ ] M_AUDIT2.ARCH.4 — ResourceNodes.tsx NODE_MESH+NODE_TINT → src/rules/resource-profiles.ts (collapse with ECONOMY.harvestYield)
 - [x] M_AUDIT2.ARCH.5 — weather.ts WEATHER_LABEL+WEATHER_SPEED_MULTIPLIER → WEATHER_PROFILES record

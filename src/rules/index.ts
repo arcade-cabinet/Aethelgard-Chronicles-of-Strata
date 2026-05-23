@@ -37,7 +37,13 @@ export {
   type TurnsMode,
   presetFor,
 } from './mode-presets';
-export { type BuildingDisplay, displayFor } from './display';
+export {
+  type BuildingDisplay,
+  displayFor,
+  RESOURCE_DISPLAY,
+  type ResourceDisplay,
+  resourceDisplayFor,
+} from './display';
 // trainableUnits / trainerFor now live on the unified registry (M_REGISTRY.5).
 export { trainableUnits, trainerFor } from './building-profiles';
 export {
