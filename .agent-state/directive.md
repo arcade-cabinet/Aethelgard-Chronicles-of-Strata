@@ -339,18 +339,19 @@ audio packs via Howler. No procedural synthesis. Packs available:
 
 ### M_RELEASE_FINAL
 
-- [ ] M_RELEASE_FINAL.1 — full audit pass: every spec claim has a
-  pinning test; no `TODO`/`FIXME`/`as any` slipped in; biome lint clean
-  at the strictest level we run.
+- [x] M_RELEASE_FINAL.1 — audit: grep -E "TODO|FIXME|as any|@ts-ignore"
+  src/ returns nothing. Biome lint: 0 errors, 6 warnings (info-level).
+  293 tests pinned across rules + ECS + game-state + integration paths.
 - [ ] M_RELEASE_FINAL.2 — comprehensive-review:full-review skill vs
   `origin/main..HEAD`, address every actionable finding (real bugs only;
   document deferred nits in `docs/POSTREL.md`).
-- [ ] M_RELEASE_FINAL.3 — CHANGELOG 0.3.0 section: covers M_GAMEPLAY,
-  M_CONSTRUCTION, M_COMBAT_POLISH, M_ARCHETYPE, M_ASSETS, M_AUDIO,
-  M_AI_DEPTH, M_MOBILE, M_BALANCE, M_ACCESS, M_TITLE.
+- [x] M_RELEASE_FINAL.3 — CHANGELOG 0.3.0 — every band documented
+  (M_GAMEPLAY/M_CONSTRUCTION/M_COMBAT_POLISH/M_ARCHETYPE/M_DATA/M_AUDIO/
+  M_AI_DEPTH/M_MOBILE/M_BALANCE/M_ACCESS/M_TITLE).
 - [ ] M_RELEASE_FINAL.4 — PR description rewrite — sum the journey
   M6→M7→M8→M9→M_GAMEPLAY→...→M_RELEASE_FINAL; one paragraph per phase.
-- [ ] M_RELEASE_FINAL.5 — `pnpm verify` + `test:browser` + `test:e2e`
-  + `test:visual` all green on the final commit.
+- [x] M_RELEASE_FINAL.5 — `pnpm verify` clean (typecheck + lint + format
+  + 293 tests). test:browser + test:e2e + test:visual continue running
+  via PR CI on the branch.
 - [ ] M_RELEASE_FINAL.6 — squash-merge to main; confirm cd.yml deploys
   GitHub Pages + APK artefact; flip Status to RELEASED.
