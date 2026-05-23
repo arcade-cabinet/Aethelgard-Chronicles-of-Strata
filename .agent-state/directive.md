@@ -1707,7 +1707,10 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.A.21 — Tower Defense `crystal-large.glb` as Mana resource node (introduces 4th resource — already slot-extensible per RESOURCE_DISPLAY)
 - [ ] [LOW]  M_EXPANSION.A.22 — Tower Defense `enemy-rat.glb` as low-tier raid unit (faster than Goblin, lower hp)
 - [x] [LOW]  M_EXPANSION.A.23 — Tower Defense `detail-rocks.glb` as alt biome rock variant
-- [ ] [LOW]  M_EXPANSION.A.24 — Tower Defense `tile-end-round.glb` as cul-de-sac road piece
+- [x] [LOW]  M_EXPANSION.A.24 — Tower Defense `tile-end-round.glb` as cul-de-sac road piece
+  - Decided NOT to ingest: Roads in Aethelgard are procedural strip-mesh
+    segments (Roads.tsx), not per-tile GLBs. A cul-de-sac would need a
+    full roads-mesh refactor for one cosmetic gain. Closed without ingest.
 
 **KayKit Adventurers 2.0 EXTRA (25-30)** — heroes haven't all been wired
 - [x] [HIGH] M_EXPANSION.A.25 — audit KayKit_Adventurers_2.0_EXTRA roster vs UNIT_PROFILES; list every character with no UNIT_PROFILES row
