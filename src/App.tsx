@@ -54,7 +54,7 @@ function DelayedSession({ children }: { children: React.ReactNode }) {
       cancelAnimationFrame(raf2);
     };
   }, []);
-  return ready ? <>{children}</> : <LoadingScreen />;
+  return ready ? children : <LoadingScreen />;
 }
 
 function SceneError() {

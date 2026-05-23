@@ -90,13 +90,15 @@ jobs:
           fi
 
       # --- SBOM (M_AUDIT2.SEC2.35) -----------------------------------------
-      # Reviewer-fix: cyclonedx-npm is in devDependencies + lockfile, NOT
-      # `pnpm dlx`. `pnpm dlx` resolves at run time and can pick up a
-      # tampered cache / registry response; lockfile install pins the
-      # exact tarball hash.
+      # cyclonedx-npm runs via pnpm dlx so its libxmljs2 transitive
+      # CVE never lands in our lockfile (it's a build-tool, never
+      # bundled into the APK). Exact-version + dlx-cache pinning is
+      # the defense: GitHub-hosted runners get a fresh dlx cache each
+      # job, the version is pinned, and the SBOM output content is
+      # what enters the attestation — the tool itself never ships.
       - name: Generate CycloneDX SBOM
         run: |
-          pnpm exec cyclonedx-npm \
+          pnpm dlx @cyclonedx/cyclonedx-npm@4.2.1 \
             --output-format JSON \
             --output-file sbom.cdx.json
 

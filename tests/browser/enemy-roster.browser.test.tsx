@@ -27,8 +27,6 @@ describe('enemy roster — new archetypes', () => {
         }}
       >
         <Suspense fallback={null}>
-          {/* biome-ignore lint/a11y/useValidAriaRole: `role` is a domain prop
-              of the r3f AnimatedCharacter (unit role), not a DOM ARIA role. */}
           <AnimatedCharacter role={role} clip={clip} />
         </Suspense>
       </Canvas>,

@@ -38,8 +38,12 @@ function makeDitherTexture(): CanvasTexture {
     ];
     const img = ctx.createImageData(size, size);
     for (let y = 0; y < size; y++) {
+      const row = bayer[y];
+      if (!row) continue;
       for (let x = 0; x < size; x++) {
-        const v = 126 + bayer[y]![x]! / 16 * 4; // 126..130
+        const cell = row[x];
+        if (cell === undefined) continue;
+        const v = 126 + (cell / 16) * 4; // 126..130
         const i = (y * size + x) * 4;
         img.data[i] = v;
         img.data[i + 1] = v;

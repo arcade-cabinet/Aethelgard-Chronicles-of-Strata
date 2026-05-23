@@ -74,10 +74,10 @@ function Segmented<T extends string>({
       {options.map((opt) => {
         const active = opt === value;
         return (
+          // biome-ignore lint/a11y/useSemanticElements: a real <input type=radio> can't carry the rich Segmented label styling we need (border/bg per state); the role=radio + arrow-key wiring below provides equivalent SR semantics.
           <button
             key={opt}
             type="button"
-            // biome-ignore lint/a11y/useSemanticElements: a real <input type=radio> can't carry the rich Segmented label styling we need (border/bg per state); the role=radio + arrow-key wiring below provides equivalent SR semantics.
             role="radio"
             aria-checked={active}
             tabIndex={active ? 0 : -1}

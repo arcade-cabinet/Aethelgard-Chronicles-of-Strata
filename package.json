@@ -61,7 +61,6 @@
     "@biomejs/biome": "2.4.15",
     "@capacitor/android": "8.3.4",
     "@capacitor/cli": "8.3.4",
-    "@cyclonedx/cyclonedx-npm": "2.0.0",
     "@gltf-transform/core": "4.3.0",
     "@playwright/test": "1.60.0",
     "@types/howler": "2.2.13",

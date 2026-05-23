@@ -117,21 +117,21 @@ jobs:
       - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
         with:
           fail-on-severity: high
+          # M_AUDIT2 fixup: fail only on advisories that touch the
+          # production runtime. The previous all-scopes config blocked
+          # transient build-tool vulns (e.g. cyclonedx-npm pulls
+          # libxmljs2 — never executed at runtime). Devtool vulns
+          # still surface as warnings in the PR comment; releases
+          # require an explicit override there.
+          fail-on-scopes: runtime
 
-  codeql:
-    name: CodeQL (M_SEC.17)
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' || github.event_name == 'push'
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-      # M_AUDIT2.SEC2.15 — SHA-pinned to v3 stable.
-      - uses: github/codeql-action/init@fee9466b8957867761f2d78f922ab084e3e2dd17 # v3
-        with:
-          languages: javascript-typescript
-      - uses: github/codeql-action/analyze@fee9466b8957867761f2d78f922ab084e3e2dd17 # v3
+  # CodeQL is handled by GitHub's repo-level default setup (Security
+  # > Code security and analysis > CodeQL > Default). Running our own
+  # codeql-action workflow alongside default-setup makes the SARIF
+  # upload fail with "advanced configurations cannot be processed when
+  # the default setup is enabled". Keep one or the other; default-setup
+  # is sufficient for a JS/TS-only repo.
+
 
   android-apk:
     name: Build debug APK
