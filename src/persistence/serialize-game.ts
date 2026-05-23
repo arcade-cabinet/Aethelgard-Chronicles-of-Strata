@@ -101,11 +101,13 @@ export function serializeGame(game: GameState): GameSnapshot {
  * consumes the live one (runEconomyTick, the HUD, the AI player tick).
  */
 export function deserializeGame(snap: GameSnapshot): GameState {
-  if (snap.version !== SNAPSHOT_VERSION) {
-    throw new Error(
-      `serialize-game: snapshot version ${snap.version} not supported (expected ${SNAPSHOT_VERSION})`,
-    );
-  }
+  // M_SEC.5 — structural validation BEFORE any Object.assign. A tampered
+  // snapshot (corrupted SQLite row on a rooted device, malicious save
+  // upload in a future cloud-save feature, browser-DevTools-injected
+  // IndexedDB write) can carry __proto__ keys, NaN/Infinity numbers,
+  // out-of-bounds mapSize. Reject upfront so the renderer never sees
+  // poisoned state.
+  validateSnapshot(snap);
   // Step 1 — rebuild the deterministic baseline from the config.
   const game = startGame(snap.config);
   // Step 2 — discard the fresh world; replace with the persisted one.
@@ -113,20 +115,115 @@ export function deserializeGame(snap: GameSnapshot): GameState {
   // koota worlds are object refs; swap in place so r3f components keep
   // their `game` reference. Replace the property; consumers re-query on tick.
   (game as { world: typeof restoredWorld }).world = restoredWorld;
-  // Step 3 — overlay all mutable game-level state.
-  game.economy.player = { ...snap.economy.player };
-  game.economy.enemy = { ...snap.economy.enemy };
-  Object.assign(game.clock, snap.clock);
-  Object.assign(game.weather, snap.weather);
+  // Step 3 — overlay all mutable game-level state. Whitelisted keys ONLY
+  // (no Object.assign with snapshot data — caller-controlled keys).
+  game.economy.player = pickEconomy(snap.economy.player);
+  game.economy.enemy = pickEconomy(snap.economy.enemy);
+  game.clock.elapsed = safeFinite(snap.clock.elapsed, 0);
+  game.weather.state = snap.weather.state;
+  game.weather.timer = safeFinite(snap.weather.timer, 0);
   // ResearchId is a narrow union but stored as strings on disk; runtime
   // safety comes from the registry lookup, not the union tag.
   game.research.purchased = new Set(snap.research.purchased as ResearchId[]);
-  Object.assign(game.rally, snap.rally);
+  game.rally.targetKey = typeof snap.rally.targetKey === 'string' ? snap.rally.targetKey : '';
   game.zones.player = zoneFromSnapshot(snap.zones.player);
   game.zones.enemy = zoneFromSnapshot(snap.zones.enemy);
-  game.outcome = snap.outcome;
+  game.outcome = snap.outcome === 'win' || snap.outcome === 'loss' ? snap.outcome : 'playing';
   // Step 4 — run a zero-delta tick so derived caches (buildSites map,
   // selection ids) re-sync with the restored world.
   runEconomyTick(game, 0);
   return game;
+}
+
+// ---------------------------------------------------------------------------
+// Validation (M_SEC.5) — reject tampered / prototype-polluted snapshots.
+// ---------------------------------------------------------------------------
+
+/** Hard cap on world-entity count a snapshot may contain (M_SEC.11). */
+const MAX_ENTITY_COUNT = 5000;
+
+/** Hard cap on board radius (covers Huge tier + headroom). */
+const MAX_MAP_SIZE = 50;
+
+/** Coerce to finite number; fallback if NaN / Infinity / non-number. */
+function safeFinite(n: unknown, fallback: number): number {
+  return typeof n === 'number' && Number.isFinite(n) ? n : fallback;
+}
+
+/** Whitelisted economy keys; rejects __proto__ / constructor / unknown slots. */
+function pickEconomy(eco: unknown): GameEconomy {
+  const e = (eco ?? {}) as Record<string, unknown>;
+  return {
+    wood: safeFinite(e.wood, 0),
+    stone: safeFinite(e.stone, 0),
+    gold: safeFinite(e.gold, 0),
+    science: safeFinite(e.science, 0),
+    usedSupply: safeFinite(e.usedSupply, 0),
+    maxSupply: safeFinite(e.maxSupply, 5),
+    kills: safeFinite(e.kills, 0),
+  };
+}
+
+/**
+ * Reject snapshots whose shape would NaN-poison the renderer or wedge the
+ * sim. Type assertions in deserializeGame then have a verified baseline.
+ * Throws with a precise reason on failure so the App-level catch can show
+ * the user "save corrupted".
+ */
+function validateSnapshot(snap: unknown): asserts snap is GameSnapshot {
+  if (!snap || typeof snap !== 'object') {
+    throw new Error('serialize-game: snapshot is not an object');
+  }
+  const s = snap as Record<string, unknown>;
+  if (s.version !== SNAPSHOT_VERSION) {
+    throw new Error(
+      `serialize-game: snapshot version ${String(s.version)} not supported (expected ${SNAPSHOT_VERSION})`,
+    );
+  }
+  const cfg = s.config as Record<string, unknown> | undefined;
+  if (!cfg || typeof cfg.seedPhrase !== 'string' || cfg.seedPhrase.length > 256) {
+    throw new Error('serialize-game: snapshot.config.seedPhrase missing or too long');
+  }
+  const mapSize = safeFinite(cfg.mapSize, 0);
+  if (mapSize < 1 || mapSize > MAX_MAP_SIZE) {
+    throw new Error(`serialize-game: snapshot.config.mapSize out of bounds (got ${mapSize})`);
+  }
+  if (cfg.difficulty !== 'easy' && cfg.difficulty !== 'normal' && cfg.difficulty !== 'hard') {
+    throw new Error('serialize-game: snapshot.config.difficulty not a known tier');
+  }
+  if (typeof cfg.eventSeed !== 'string' || cfg.eventSeed.length > 256) {
+    throw new Error('serialize-game: snapshot.config.eventSeed missing or too long');
+  }
+  // Entity-count cap (M_SEC.11) — a 100k-entity snapshot would spawn
+  // 100k yuka Vehicles on the next AI tick. Reject early.
+  const world = s.world as { entities?: unknown[] } | undefined;
+  if (!world || !Array.isArray(world.entities)) {
+    throw new Error('serialize-game: snapshot.world.entities is not an array');
+  }
+  if (world.entities.length > MAX_ENTITY_COUNT) {
+    throw new Error(
+      `serialize-game: snapshot has ${world.entities.length} entities (cap ${MAX_ENTITY_COUNT})`,
+    );
+  }
+  // Shape gates for the nested overlays we Object.assign-replace.
+  const eco = s.economy as Record<string, unknown> | undefined;
+  if (!eco || typeof eco.player !== 'object' || typeof eco.enemy !== 'object') {
+    throw new Error('serialize-game: snapshot.economy.{player,enemy} missing');
+  }
+  if (!s.clock || typeof s.clock !== 'object') {
+    throw new Error('serialize-game: snapshot.clock missing');
+  }
+  if (!s.weather || typeof s.weather !== 'object') {
+    throw new Error('serialize-game: snapshot.weather missing');
+  }
+  if (!s.research || typeof (s.research as Record<string, unknown>).purchased !== 'object') {
+    throw new Error('serialize-game: snapshot.research.purchased missing');
+  }
+  if (!s.rally || typeof s.rally !== 'object') {
+    throw new Error('serialize-game: snapshot.rally missing');
+  }
+  const zones = s.zones as Record<string, unknown> | undefined;
+  if (!zones || typeof zones.player !== 'object' || typeof zones.enemy !== 'object') {
+    throw new Error('serialize-game: snapshot.zones.{player,enemy} missing');
+  }
 }

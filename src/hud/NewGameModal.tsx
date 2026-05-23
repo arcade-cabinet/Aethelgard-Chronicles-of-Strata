@@ -168,7 +168,21 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             <input
               id="seed-input"
               value={seedPhrase}
-              onChange={(e) => setSeedPhrase(e.target.value)}
+              // M_SEC.8 — seed input cap + sanitise: 64 chars max, letters
+              // and hyphens and spaces only, NFC-normalise (rejects RTL
+              // overrides / zero-width joiners), autoComplete off so
+              // browser autofill doesn't dump arbitrary text.
+              maxLength={64}
+              autoComplete="off"
+              spellCheck={false}
+              inputMode="text"
+              onChange={(e) => {
+                const cleaned = e.target.value
+                  .normalize('NFC')
+                  .replace(/[^a-z\- ]/gi, '')
+                  .slice(0, 64);
+                setSeedPhrase(cleaned);
+              }}
               style={{
                 flex: 1,
                 padding: '10px 12px',

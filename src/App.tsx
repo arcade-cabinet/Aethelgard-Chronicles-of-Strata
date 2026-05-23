@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
+import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
 import { deserializeGame } from '@/persistence/serialize-game';
@@ -164,12 +165,17 @@ export function App() {
                   try {
                     setResumedGame(deserializeGame(record.snapshot));
                   } catch (err) {
-                    console.warn('[App] resume failed; falling back to new game', err);
+                    // M_SEC.7 — resume failed (likely corrupt / tampered
+                    // snapshot). DO NOT fall back to a derived event seed
+                    // from the map seed (would collapse the two-PRNG model
+                    // per spec 96). Mint a fresh event seed instead so the
+                    // new game preserves the determinism contract.
+                    console.warn('[App] resume failed; starting fresh game', err);
                     setConfig({
                       seedPhrase: record.seedPhrase,
                       mapSize: MAP_SIZES.medium.radius,
                       difficulty: 'normal',
-                      eventSeed: record.seedPhrase,
+                      eventSeed: createFreshEventSeed(),
                     });
                   }
                 });
