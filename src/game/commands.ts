@@ -344,6 +344,45 @@ function countByPredicate(world: GameState['world'], pred: (entity: Entity) => b
  * has a rally state; `faction` is accepted for the symmetric signature.
  */
 /**
+ * Found a new base from a Settler unit (M_MODES.6 / 4X mode). Consumes
+ * the Settler entity, spawns a FactionBase+AttractorBehavior+Building at
+ * its tile. Returns the new base entity, or null if the unit isn't a
+ * Settler or the tile is occupied.
+ *
+ * Settlers are how 4X mode lets a faction EXPAND beyond its starting
+ * base. The Wonder-race win condition (M_FEATURE.4) plus multiple
+ * bases per faction = the classic 4X texture.
+ */
+export function foundBase(game: GameState, settler: Entity): Entity | null {
+  const unit = settler.get(Unit);
+  if (unit?.unitType !== 'Settler') return null;
+  const faction = settler.get(FactionTrait)?.faction ?? 'player';
+  const hex = settler.get(HexPosition);
+  if (!hex) return null;
+  const tileKey = getHexKey(hex.q, hex.r);
+  if (game.buildSites.has(tileKey)) return null;
+  if (tileKey === game.townHallKey || tileKey === game.enemyBaseKey) return null;
+  // Consume the Settler.
+  settler.destroy();
+  // Compose the new base. TownHall-style: AttractorBehavior + Building +
+  // FactionBase + Health.
+  const tile = game.board.tiles.get(tileKey);
+  const profile = behaviorsFor('TownHall');
+  const traits = [
+    HexPosition({ q: hex.q, r: hex.r, level: hex.level }),
+    Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
+    FactionTrait({ faction }),
+    ...(profile.attractor ? [AttractorBehavior(profile.attractor)] : []),
+    // NB: FactionBase NOT added — only the ORIGINAL base counts as the
+    // win/loss anchor. Founded bases are pure economic outposts.
+  ];
+  const baseEntity = game.world.spawn(...traits);
+  game.buildSites.set(tileKey, baseEntity);
+  if (tile) tile.walkable = false;
+  return baseEntity;
+}
+
+/**
  * End the current turn (M_MODES.8). Flips `game.turn.active` and resets
  * the budget. No-op when the game isn't turn-based.
  */

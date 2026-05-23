@@ -31,6 +31,10 @@ export function characterMeshId(role: UnitType): string {
       // The siege identity comes from damageType + range; the mesh is a
       // placeholder until a dedicated KayKit siege model lands.
       return 'characters.heroes.knight';
+    case 'Settler':
+      // 4X settler unit — civilian appearance; reuse the engineer mesh.
+      // Distinct from peon via the foundBase command verb (M_MODES.6).
+      return 'characters.heroes.engineer';
     case 'Goblin':
       // The KayKit bundle has no dedicated goblin mesh; the hooded Rogue is the
       // closest small humanoid. Goblins are tinted/scaled distinctly at render

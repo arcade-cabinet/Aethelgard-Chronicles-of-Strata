@@ -587,18 +587,15 @@ qualify for AI GOAP".
   red-vs-blue undefined, auto-flip on 60s, endTurn flip+reset, no-op
   on non-turn-based. 338 tests green.
 
-- [ ] M_MODES.6 — `4x` mode (user follow-up, 2026-05-22): "hell we have
-  all the makings of a fifth mode thats more like a 4x". eXplore +
-  eXpand + eXploit + eXterminate — Civilization/Endless-Legend feel:
-  multiple settler-style starting locations to FOUND new bases
-  (rather than one TownHall), Discoveries graph as the full tech tree
-  (already shipped — just longer), per-faction Wonder race (Wonder
-  composes all 3 ZoC archetypes M_FEATURE.4), territory-claim
-  victory threshold. Larger map (Huge default), longer match (~30
-  min target). The Discoveries + force-field + bitmask rules-layer
-  pieces (M_DATA.7 / M_ARCHETYPE.6 / .7) already support most of
-  this — 4x is mostly a NewGame option + a Settler unit type +
-  a found-base command verb.
+- [x] M_MODES.6 — 4X mode: Settler UnitType (civilian, speed 2.2,
+  supply 4); foundBase(game, settler) command verb consumes the
+  Settler + spawns a new TownHall+AttractorBehavior at its tile
+  (without FactionBase — only the original counts as the win/loss
+  anchor). 4X preset already covers huge map / long match / turn-based /
+  continent mapType via MODE_PRESETS. Discoveries graph (M_FEATURE.2),
+  Wonder race (M_FEATURE.4), force-field (M_ARCHETYPE.6), bitmask
+  layout (M_ARCHETYPE.7) all already in. 3 tests pin: settler→base
+  conversion, non-settler-rejected, occupied-tile-rejected.
 
 - [x] M_MAPGEN.11 — base-accretion generalised: Decoration.tsx
   BASE_ACCRETION config table per faction (propPool, radius, density,

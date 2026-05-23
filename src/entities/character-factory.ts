@@ -89,6 +89,13 @@ export function createCharacter(params: CreateCharacterParams): Entity {
       AssignedJob({ state: 'IDLE', targetKey: '' }),
     );
   }
+  // Settlers (M_MODES.6) — civilian, non-combat, no harvest loop. Carries
+  // only base traits + an AssignedJob for the founding-state machine when
+  // routed toward a target tile. Distinct from Peon via the foundBase
+  // command verb (commands.ts).
+  if (role === 'Settler') {
+    return world.spawn(...base, AssignedJob({ state: 'IDLE', targetKey: '' }));
+  }
 
   // Combat units (Footman, Goblin, Orc) get Health, Combatant, and EnemyTarget.
   const { hp, attackDamage, attackRange, attackCooldown } = stats;

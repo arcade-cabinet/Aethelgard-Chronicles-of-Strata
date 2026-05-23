@@ -5,6 +5,7 @@ export type UnitType =
   | 'Peon'
   | 'Footman'
   | 'Trebuchet'
+  | 'Settler'
   | 'Goblin'
   | 'Orc'
   | 'Vampire'

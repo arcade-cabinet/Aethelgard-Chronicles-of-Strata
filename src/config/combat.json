@@ -1,6 +1,7 @@
 {
   "unitStats": {
     "Peon": { "speed": 3, "faction": "player" },
+    "Settler": { "speed": 2.2, "faction": "player" },
     "Footman": {
       "speed": 2.5,
       "faction": "player",

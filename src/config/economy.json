@@ -25,6 +25,7 @@
     "Peon": 1,
     "Footman": 2,
     "Trebuchet": 3,
+    "Settler": 4,
     "Goblin": 0,
     "Orc": 0,
     "Vampire": 0,
