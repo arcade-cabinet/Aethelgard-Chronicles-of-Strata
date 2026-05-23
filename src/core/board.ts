@@ -1,7 +1,7 @@
 import { MAP_RADIUS } from '@/config/world';
+import { biomeFlagsFor } from '@/rules/biome-flags';
 import { assignBiome, type Biome } from './biome';
 import { type Crossing, placeCrossings } from './crossings';
-import { biomeFlagsFor } from '@/rules/biome-flags';
 import { getHexKey, hexDistance } from './hex';
 import { createNoise2D } from './noise';
 import { createMapPrng, type Rng } from './rng';

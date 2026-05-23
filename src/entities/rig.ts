@@ -20,7 +20,7 @@
  * follow-up.
  */
 import type { UnitType } from '@/ecs/components';
-import { SKINS, type RigTier } from '@/rules/skins';
+import { type RigTier, SKINS } from '@/rules/skins';
 
 export type { RigTier };
 

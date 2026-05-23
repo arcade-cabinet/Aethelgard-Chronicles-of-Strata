@@ -44,7 +44,7 @@ describe('Crossings render', () => {
       for (const dir of HEX_DIRECTIONS) {
         const nKey = getHexKey(tile.q + dir.q, tile.r + dir.r);
         const n = board.tiles.get(nKey);
-        if (!n || !n.walkable || Math.abs(n.level - tile.level) !== 1) continue;
+        if (!n?.walkable || Math.abs(n.level - tile.level) !== 1) continue;
         const edge = crossingKey(getHexKey(tile.q, tile.r), nKey);
         if (!seen.has(edge)) {
           seen.add(edge);

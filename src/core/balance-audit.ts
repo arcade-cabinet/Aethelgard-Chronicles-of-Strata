@@ -10,8 +10,7 @@
  * factions getting similar terrain area produces fair starts even when
  * the surrounding map is asymmetric.
  */
-import type { BoardData } from './board';
-import { hexDistance } from './hex';
+
 // M_AUDIT2.ARCH.30 — `core/` is meant to be pure (no upward deps), but
 // balance-audit is the one exception that legitimately needs the
 // per-biome `habitable` flag from rules/. The alternative (duplicating
@@ -20,6 +19,8 @@ import { hexDistance } from './hex';
 // shape; if a second core→rules import lands, revisit the layering
 // in docs/specs/10-architecture.md.
 import { biomeFlagsFor } from '@/rules/biome-flags';
+import type { BoardData } from './board';
+import { hexDistance } from './hex';
 
 /** Hexes within this radius of a base count toward its reachable buildable area. */
 export const REACH_RADIUS = 6;

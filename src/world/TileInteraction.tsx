@@ -36,6 +36,10 @@ function TilePick({
 }) {
   const longPressRef = useRef<{ timer: number; fired: boolean } | null>(null);
   return (
+    // <mesh> is an r3f three.js node, not a DOM element — the a11y
+    // rule misfires on the JSX intrinsic. Suppress here so the broader
+    // override (M_AUDIT2.SEC2.50) doesn't have to re-blanket the file.
+    // biome-ignore lint/a11y/noStaticElementInteractions: r3f mesh, not DOM
     <mesh
       position={[x, y, z]}
       rotation={[0, Math.PI / 6, 0]}

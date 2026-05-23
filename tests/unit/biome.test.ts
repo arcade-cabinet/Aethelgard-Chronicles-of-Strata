@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type BiomeType, assignBiome, levelToType } from '@/core/biome';
+import { assignBiome, type BiomeType, levelToType } from '@/core/biome';
 
 describe('biome assignment', () => {
   it('maps level 0 to OCEAN', () => {

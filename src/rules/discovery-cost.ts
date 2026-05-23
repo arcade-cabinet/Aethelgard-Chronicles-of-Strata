@@ -9,8 +9,9 @@
  * HUD panel + the research command) call `scaledCostFor(id)` instead of
  * reading `discovery.cost` directly.
  */
-import type { ResourceCost } from '@/game/economy';
+
 import { RESOURCE_TYPES } from '@/ecs/components';
+import type { ResourceCost } from '@/game/economy';
 import { DISCOVERIES } from './discovery-registry';
 
 /**
@@ -29,7 +30,7 @@ export function depthOf(id: string): number {
   const compute = (current: string, stack: Set<string>): number => {
     if (stack.has(current)) return 0; // cycle guard; treat as root
     const d = DISCOVERIES.find((x) => x.id === current);
-    if (!d || !d.prereqs || d.prereqs.length === 0) return 0;
+    if (!d?.prereqs || d.prereqs.length === 0) return 0;
     stack.add(current);
     let max = 0;
     for (const p of d.prereqs) {

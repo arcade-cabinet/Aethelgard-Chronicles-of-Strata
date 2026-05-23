@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { HEX_DIRECTIONS } from '@/config/world';
 import { biomeStyleFor } from '@/core/biome';
 import { generateBoard } from '@/core/board';
 import { type Crossing, crossingKey, placeCrossings } from '@/core/crossings';
-import { HEX_DIRECTIONS } from '@/config/world';
 import { getHexKey } from '@/core/hex';
 
 const SEED = 'ancient-silver-forest';
@@ -66,7 +66,7 @@ describe('placeCrossings', () => {
       for (const dir of HEX_DIRECTIONS) {
         const nKey = getHexKey(tile.q + dir.q, tile.r + dir.r);
         const n = board.tiles.get(nKey);
-        if (!n || !n.walkable || Math.abs(n.level - tile.level) !== 1) continue;
+        if (!n?.walkable || Math.abs(n.level - tile.level) !== 1) continue;
         const edge = crossingKey(getHexKey(tile.q, tile.r), nKey);
         if (!seen.has(edge)) {
           seen.add(edge);

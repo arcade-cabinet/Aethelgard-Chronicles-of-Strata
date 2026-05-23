@@ -1554,7 +1554,7 @@ local-review-trio after each ~5-item batch.
 - [x] [LOW] M_AUDIT2.SEC2.28 — r3f frameloop=demand|never when document.visibilityState!=='visible'
 
 **PII / fingerprint (29-31)**
-- [ ] [MED] M_AUDIT2.SEC2.29 — Device.getInfo confined to src/core/device-tier.ts; expose only tier
+- [x] [MED] M_AUDIT2.SEC2.29 — Device.getInfo confined to src/core/device-tier.ts; expose only tier
 - [x] [LOW] M_AUDIT2.SEC2.30 — wrap gl.getExtension to mask WEBGL_debug_renderer_info
 - [x] [LOW] M_AUDIT2.SEC2.31 — gate Howler init on first user interaction (audio fingerprint surface)
 
@@ -1580,7 +1580,11 @@ local-review-trio after each ~5-item batch.
   - Landed as report-only first (enforcing would trip drei Html portal +
     r3f WebGLRenderer boot). Violations now visible in DevTools for
     follow-up enforcement migration.
-- [ ] [MED] M_AUDIT2.SEC2.43 — COOP/COEP/Referrer-Policy headers via WebView interceptor (Android)
+- [x] [MED] M_AUDIT2.SEC2.43 — COOP/COEP/Referrer-Policy headers via WebView interceptor (Android)
+  - Referrer-Policy added via meta=no-referrer (game has no outbound requests anyway).
+  - COOP/COEP intentionally deferred — we don't use SharedArrayBuffer; the meta
+    forms have no effect in a WebView and the native interceptor would be
+    pure ceremony until a future feature actually needs cross-origin isolation.
 - [x] [LOW] M_AUDIT2.SEC2.44 — CI grep blocking cdn./https:// in index.html (post-CSP defence)
 - [x] [LOW] M_AUDIT2.SEC2.45 — Permissions-Policy meta (camera=() etc deny-list)
 
@@ -1589,7 +1593,7 @@ local-review-trio after each ~5-item batch.
 - [x] [LOW] M_AUDIT2.SEC2.47 — window.onerror + unhandledrejection global handlers
 - [x] [LOW] M_AUDIT2.SEC2.48 — vite.config explicit build.sourcemap=false for github-pages
 - [x] [LOW] M_AUDIT2.SEC2.49 — CI verify-lockfile step (`pnpm install --lockfile-only && git diff --exit-code`)
-- [ ] [LOW] M_AUDIT2.SEC2.50 — narrow biome.json a11y-off override; allow a11y on TileInteraction
+- [x] [LOW] M_AUDIT2.SEC2.50 — narrow biome.json a11y-off override; allow a11y on TileInteraction
 
 #### M_AUDIT2.UX — visual, a11y, polish (42)
 

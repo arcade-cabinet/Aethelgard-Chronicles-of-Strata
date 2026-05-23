@@ -12,8 +12,6 @@
  */
 
 export class SQLiteConnection {
-  // biome-ignore lint/suspicious/noExplicitAny: stub must accept any args
-  constructor(_plugin: any) {}
   async initWebStore() {}
   async isConnection(_db: string, _readonly: boolean) {
     return { result: false };

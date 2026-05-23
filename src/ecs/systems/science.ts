@@ -1,11 +1,5 @@
 import type { World } from 'koota';
-import {
-  Building,
-  type Faction,
-  FACTIONS,
-  FactionTrait,
-  ScienceProducer,
-} from '@/ecs/components';
+import { Building, FACTIONS, type Faction, FactionTrait, ScienceProducer } from '@/ecs/components';
 import { addResource, type GameEconomy } from '@/game/economy';
 
 /**

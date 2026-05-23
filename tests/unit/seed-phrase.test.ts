@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { randomSeedPhrase } from '@/core/seed-phrase';
 import { createEventPrng } from '@/core/rng';
+import { randomSeedPhrase } from '@/core/seed-phrase';
 
 describe('seed phrase', () => {
   it('produces an adjective-adjective-noun phrase', () => {

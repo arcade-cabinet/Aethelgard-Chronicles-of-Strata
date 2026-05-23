@@ -31,7 +31,9 @@ if (typeof WebGLRenderingContext !== 'undefined') {
   };
   wrap(WebGLRenderingContext.prototype as unknown as { getExtension: (name: string) => unknown });
   if (typeof WebGL2RenderingContext !== 'undefined') {
-    wrap(WebGL2RenderingContext.prototype as unknown as { getExtension: (name: string) => unknown });
+    wrap(
+      WebGL2RenderingContext.prototype as unknown as { getExtension: (name: string) => unknown },
+    );
   }
 }
 

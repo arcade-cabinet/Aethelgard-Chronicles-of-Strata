@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { FactionBase, FactionTrait, HexPosition, Transform, Unit } from '@/ecs/components';
 import { createEcsWorld } from '@/ecs/world';
 import {
-  type ZoneState,
   claimTile,
   createZoneState,
   isObserved,
   releaseTile,
   tileController,
   updateObserved,
+  type ZoneState,
 } from '@/game/zone';
 
 /** A small square of tile coords for vision tests. */

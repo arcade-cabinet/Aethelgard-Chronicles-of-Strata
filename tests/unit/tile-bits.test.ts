@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TILE_BIT, biomeOf, clearBit, hasBit, packBiome, setBit, setControlled } from '@/rules';
+import { biomeOf, clearBit, hasBit, packBiome, setBit, setControlled, TILE_BIT } from '@/rules';
 
 describe('tile bitmask (M_ARCHETYPE.7)', () => {
   it('setBit + hasBit round-trip a single flag', () => {

@@ -12,6 +12,7 @@ import { axialToWorld, parseHexKey as parseKey } from '@/core/hex';
 // (WORLD.crossings). The const aliases here keep the call-sites
 // unchanged.
 import { WORLD } from '@/config/world';
+
 const HALF_WIDTH = HEX_RADIUS * WORLD.crossings.halfWidth;
 const LIFT = WORLD.crossings.lift;
 const STAIR_STEPS = WORLD.crossings.stairSteps;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { OffensiveBehavior } from '@/ecs/components';
-import { createCharacter } from '@/entities/character-factory';
 import { createEcsWorld } from '@/ecs/world';
+import { createCharacter } from '@/entities/character-factory';
 
 describe('damageType per role (M_FEATURE.5+.6)', () => {
   it('Trebuchet has damageType: siege', () => {

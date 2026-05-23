@@ -10,7 +10,7 @@
  *   - dependabot / supply-chain auditing can see the require() shape
  *   - future copy steps land here without growing package.json
  */
-import { mkdirSync, copyFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import path from 'node:path';
 

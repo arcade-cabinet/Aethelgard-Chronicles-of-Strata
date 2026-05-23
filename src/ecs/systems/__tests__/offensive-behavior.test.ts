@@ -7,6 +7,7 @@
  */
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
+import { createMapPrng } from '@/core/rng';
 import {
   Building,
   type Faction,
@@ -18,7 +19,6 @@ import {
   Unit,
 } from '@/ecs/components';
 import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
-import { createMapPrng } from '@/core/rng';
 
 function spawnTower(world: ReturnType<typeof createWorld>, faction: Faction, q: number, r: number) {
   return world.spawn(
@@ -30,7 +30,14 @@ function spawnTower(world: ReturnType<typeof createWorld>, faction: Faction, q: 
   );
 }
 
-function spawnVictim(world: ReturnType<typeof createWorld>, faction: Faction, role: 'Footman' | 'Peon', q: number, r: number, hp = 100) {
+function spawnVictim(
+  world: ReturnType<typeof createWorld>,
+  faction: Faction,
+  role: 'Footman' | 'Peon',
+  q: number,
+  r: number,
+  hp = 100,
+) {
   return world.spawn(
     HexPosition({ q, r, level: 0 }),
     Transform({ x: 0, y: 0, z: 0, rotationY: 0 }),

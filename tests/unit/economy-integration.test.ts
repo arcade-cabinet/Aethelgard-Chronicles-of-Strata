@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { startGame } from '@/game/game-state';
-import { runEconomyTick } from '@/game/game-state';
+import { runEconomyTick, startGame } from '@/game/game-state';
 
 describe('economy integration', () => {
   it('startGame creates an economy, a Town Hall, and resource nodes', () => {

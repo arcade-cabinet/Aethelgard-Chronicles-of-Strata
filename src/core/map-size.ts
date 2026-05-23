@@ -1,5 +1,5 @@
-import { Device } from '@capacitor/device';
 import { WORLD } from '@/config/world';
+import { getDeviceTier } from './device-tier';
 
 /** A named map size and its hex radius. */
 export interface MapSizeOption {
@@ -24,23 +24,13 @@ export type MapSizeKey = keyof typeof MAP_SIZES;
 export const DEFAULT_MAP_SIZE: MapSizeKey = 'medium';
 
 /**
- * Resolve which map sizes the current device can offer. "Huge" (a 36-radius
- * board, ≈ 4000 tiles) is offered on web/desktop unconditionally and on native
- * devices running a sufficiently recent OS — older mobile OS versions are
- * excluded because the GPU/memory headroom for that tile count is unreliable.
- * Any query failure falls back to excluding Huge.
+ * Resolve which map sizes the current device can offer.
+ * "Huge" requires a `high` device tier (see device-tier.ts).
+ * M_AUDIT2.SEC2.29 — the underlying device probe is confined to
+ * src/core/device-tier.ts; we only consume the opaque tier.
  */
 export async function availableMapSizes(): Promise<MapSizeKey[]> {
   const base: MapSizeKey[] = ['small', 'medium', 'large'];
-  try {
-    const info = await Device.getInfo();
-    if (info.platform === 'web') return [...base, 'huge'];
-    // native: require a reasonably modern OS for the largest board
-    const major = Number.parseInt(info.osVersion.split('.')[0] ?? '0', 10);
-    const recentEnough =
-      (info.platform === 'android' && major >= 12) || (info.platform === 'ios' && major >= 15);
-    return recentEnough ? [...base, 'huge'] : base;
-  } catch {
-    return base;
-  }
+  const tier = await getDeviceTier();
+  return tier === 'high' ? [...base, 'huge'] : base;
 }

@@ -63,95 +63,95 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
           fontFamily: HUD_THEME.font.body,
         }}
       >
-          <Dialog.Title
+        <Dialog.Title
+          style={{
+            fontFamily: HUD_THEME.font.display,
+            fontSize: '1.4rem',
+            color: HUD_THEME.color.gold,
+            margin: '0 0 18px',
+          }}
+        >
+          Settings
+        </Dialog.Title>
+
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '10px 0',
+          }}
+        >
+          <span style={{ fontSize: '0.9rem' }}>Audio</span>
+          <button
+            type="button"
+            id="settings-mute"
+            // M_AUDIT2.UX.2 — explicit aria-label; the emoji prefix
+            // ("🔇 Audio OFF") is not a reliable SR announcement.
+            aria-label={muted ? 'Unmute audio' : 'Mute audio'}
+            aria-pressed={muted}
+            onClick={toggleMute}
             style={{
-              fontFamily: HUD_THEME.font.display,
-              fontSize: '1.4rem',
-              color: HUD_THEME.color.gold,
-              margin: '0 0 18px',
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(56,189,248,0.12)',
+              color: muted ? HUD_THEME.color.muted : HUD_THEME.color.accent,
+              fontFamily: HUD_THEME.font.body,
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer',
             }}
           >
-            Settings
-          </Dialog.Title>
+            {muted ? '🔇 Audio OFF' : '🔊 Audio ON'}
+          </button>
+        </div>
 
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '10px 0',
-            }}
-          >
-            <span style={{ fontSize: '0.9rem' }}>Audio</span>
-            <button
-              type="button"
-              id="settings-mute"
-              // M_AUDIT2.UX.2 — explicit aria-label; the emoji prefix
-              // ("🔇 Audio OFF") is not a reliable SR announcement.
-              aria-label={muted ? 'Unmute audio' : 'Mute audio'}
-              aria-pressed={muted}
-              onClick={toggleMute}
-              style={{
-                padding: '8px 14px',
-                borderRadius: 8,
-                border: `1px solid ${HUD_THEME.color.border}`,
-                background: 'rgba(56,189,248,0.12)',
-                color: muted ? HUD_THEME.color.muted : HUD_THEME.color.accent,
-                fontFamily: HUD_THEME.font.body,
-                fontWeight: 700,
-                fontSize: '0.8rem',
-                cursor: 'pointer',
-              }}
-            >
-              {muted ? '🔇 Audio OFF' : '🔊 Audio ON'}
-            </button>
-          </div>
-
-          {/* M_AUDIT2.UX.41 — Replay tutorial. Clears the
+        {/* M_AUDIT2.UX.41 — Replay tutorial. Clears the
               `aethelgard.onboardingSeen` Preference; on the next page
               load (or new game) the OnboardingOverlay re-opens because
               its first render checks the same key. */}
-          <button
-            type="button"
-            id="settings-replay-tutorial"
-            onClick={() => {
-              void persistence.setSetting(PREF_KEYS.onboarding, '');
-              onOpenChange(false);
-            }}
-            style={{
-              width: '100%',
-              marginTop: 14,
-              padding: '10px',
-              borderRadius: 10,
-              border: `1px solid ${HUD_THEME.color.border}`,
-              background: 'rgba(56,189,248,0.06)',
-              color: HUD_THEME.color.muted,
-              fontFamily: HUD_THEME.font.body,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-            }}
-          >
-            Replay tutorial on next session
-          </button>
+        <button
+          type="button"
+          id="settings-replay-tutorial"
+          onClick={() => {
+            void persistence.setSetting(PREF_KEYS.onboarding, '');
+            onOpenChange(false);
+          }}
+          style={{
+            width: '100%',
+            marginTop: 14,
+            padding: '10px',
+            borderRadius: 10,
+            border: `1px solid ${HUD_THEME.color.border}`,
+            background: 'rgba(56,189,248,0.06)',
+            color: HUD_THEME.color.muted,
+            fontFamily: HUD_THEME.font.body,
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+          }}
+        >
+          Replay tutorial on next session
+        </button>
 
-          <button
-            type="button"
-            onClick={() => onOpenChange(false)}
-            style={{
-              width: '100%',
-              marginTop: 14,
-              padding: '12px',
-              borderRadius: 10,
-              border: `1px solid ${HUD_THEME.color.border}`,
-              background: 'rgba(56,189,248,0.14)',
-              color: HUD_THEME.color.accent,
-              fontFamily: HUD_THEME.font.body,
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            Done
-          </button>
+        <button
+          type="button"
+          onClick={() => onOpenChange(false)}
+          style={{
+            width: '100%',
+            marginTop: 14,
+            padding: '12px',
+            borderRadius: 10,
+            border: `1px solid ${HUD_THEME.color.border}`,
+            background: 'rgba(56,189,248,0.14)',
+            color: HUD_THEME.color.accent,
+            fontFamily: HUD_THEME.font.body,
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Done
+        </button>
       </ModalShell>
     </Dialog.Root>
   );

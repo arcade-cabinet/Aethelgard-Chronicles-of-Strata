@@ -12,7 +12,7 @@ vi.mock('@/assets/assets', () => ({
 }));
 
 import { createAudioBuses, playSound } from '@/audio/buses';
-import { registerUiSoundPlayer, emitUiSound } from '@/audio/ui-sound-emitter';
+import { emitUiSound, registerUiSoundPlayer } from '@/audio/ui-sound-emitter';
 
 vi.mock('@/audio/buses', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/audio/buses')>();

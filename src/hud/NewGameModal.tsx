@@ -70,17 +70,14 @@ function Segmented<T extends string>({
     if (next !== undefined) onChange(next);
   };
   return (
-    <div
-      role="radiogroup"
-      onKeyDown={onKey}
-      style={{ display: 'flex', gap: 6 }}
-    >
+    <div role="radiogroup" onKeyDown={onKey} style={{ display: 'flex', gap: 6 }}>
       {options.map((opt) => {
         const active = opt === value;
         return (
           <button
             key={opt}
             type="button"
+            // biome-ignore lint/a11y/useSemanticElements: a real <input type=radio> can't carry the rich Segmented label styling we need (border/bg per state); the role=radio + arrow-key wiring below provides equivalent SR semantics.
             role="radio"
             aria-checked={active}
             tabIndex={active ? 0 : -1}
@@ -160,134 +157,134 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           fontFamily: HUD_THEME.font.body,
         }}
       >
-          <Dialog.Title
-            style={{
-              fontFamily: HUD_THEME.font.display,
-              fontSize: '1.4rem',
-              color: HUD_THEME.color.gold,
-              margin: '0 0 18px',
+        <Dialog.Title
+          style={{
+            fontFamily: HUD_THEME.font.display,
+            fontSize: '1.4rem',
+            color: HUD_THEME.color.gold,
+            margin: '0 0 18px',
+          }}
+        >
+          New Realm
+        </Dialog.Title>
+
+        <label htmlFor="seed-input" style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted }}>
+          Seed phrase
+        </label>
+        <div style={{ display: 'flex', gap: 8, margin: '6px 0 18px' }}>
+          <input
+            id="seed-input"
+            value={seedPhrase}
+            // M_AUDIT2.UX.16 — autoFocus the seed input so the modal
+            // opens with the cursor where the player will start typing.
+            // biome-ignore lint/a11y/noAutofocus: modal-open autofocus is the expected UX.
+            autoFocus
+            // M_SEC.8 — seed input cap + sanitise: 64 chars max, letters
+            // and hyphens and spaces only, NFC-normalise (rejects RTL
+            // overrides / zero-width joiners), autoComplete off so
+            // browser autofill doesn't dump arbitrary text.
+            maxLength={64}
+            autoComplete="off"
+            spellCheck={false}
+            inputMode="text"
+            onChange={(e) => {
+              const cleaned = e.target.value
+                .normalize('NFC')
+                .replace(/[^a-z\- ]/gi, '')
+                .slice(0, 64);
+              setSeedPhrase(cleaned);
             }}
-          >
-            New Realm
-          </Dialog.Title>
-
-          <label htmlFor="seed-input" style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted }}>
-            Seed phrase
-          </label>
-          <div style={{ display: 'flex', gap: 8, margin: '6px 0 18px' }}>
-            <input
-              id="seed-input"
-              value={seedPhrase}
-              // M_AUDIT2.UX.16 — autoFocus the seed input so the modal
-              // opens with the cursor where the player will start typing.
-              // biome-ignore lint/a11y/noAutofocus: modal-open autofocus is the expected UX.
-              autoFocus
-              // M_SEC.8 — seed input cap + sanitise: 64 chars max, letters
-              // and hyphens and spaces only, NFC-normalise (rejects RTL
-              // overrides / zero-width joiners), autoComplete off so
-              // browser autofill doesn't dump arbitrary text.
-              maxLength={64}
-              autoComplete="off"
-              spellCheck={false}
-              inputMode="text"
-              onChange={(e) => {
-                const cleaned = e.target.value
-                  .normalize('NFC')
-                  .replace(/[^a-z\- ]/gi, '')
-                  .slice(0, 64);
-                setSeedPhrase(cleaned);
-              }}
-              style={{
-                flex: 1,
-                padding: '10px 12px',
-                borderRadius: 8,
-                border: `1px solid ${HUD_THEME.color.border}`,
-                background: 'rgba(0,0,0,0.4)',
-                color: HUD_THEME.color.text,
-                fontFamily: HUD_THEME.font.body,
-                fontSize: '0.9rem',
-              }}
-            />
-            <button
-              type="button"
-              id="randomize-seed"
-              aria-label="Randomize seed"
-              onClick={() => setSeedPhrase(randomSeedPhrase(eventRng.current))}
-              style={{
-                padding: '0 12px',
-                borderRadius: 8,
-                border: `1px solid ${HUD_THEME.color.border}`,
-                background: 'rgba(56,189,248,0.12)',
-                color: HUD_THEME.color.accent,
-                fontSize: '1.05rem',
-                cursor: 'pointer',
-              }}
-            >
-              🎲
-            </button>
-          </div>
-
-          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Game mode</p>
-          <div style={{ margin: '6px 0 12px' }}>
-            <Segmented
-              value={mode}
-              options={MODES.map((m) => m.key)}
-              labels={
-                Object.fromEntries(MODES.map((m) => [m.key, m.label])) as Record<GameMode, string>
-              }
-              onChange={setMode}
-            />
-          </div>
-          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: '0 0 16px' }}>
-            {MODES.find((m) => m.key === mode)?.hint}
-          </p>
-
-          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Map size</p>
-          <div style={{ margin: '6px 0 18px' }}>
-            <Segmented
-              value={mapSize}
-              options={sizeKeys}
-              labels={
-                Object.fromEntries(
-                  (Object.keys(MAP_SIZES) as MapSizeKey[]).map((k) => [k, MAP_SIZES[k].label]),
-                ) as Record<MapSizeKey, string>
-              }
-              onChange={setMapSize}
-            />
-          </div>
-
-          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>
-            AI difficulty
-          </p>
-          <div style={{ margin: '6px 0 24px' }}>
-            <Segmented
-              value={difficulty}
-              options={DIFFICULTIES}
-              labels={{ easy: 'Easy', normal: 'Normal', hard: 'Hard' }}
-              onChange={setDifficulty}
-            />
-          </div>
-
+            style={{
+              flex: 1,
+              padding: '10px 12px',
+              borderRadius: 8,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(0,0,0,0.4)',
+              color: HUD_THEME.color.text,
+              fontFamily: HUD_THEME.font.body,
+              fontSize: '0.9rem',
+            }}
+          />
           <button
             type="button"
-            id="begin-game"
-            onClick={() =>
-              onBegin({ seedPhrase: seedPhrase.trim(), mapSize, difficulty, eventSeed, mode })
-            }
+            id="randomize-seed"
+            aria-label="Randomize seed"
+            onClick={() => setSeedPhrase(randomSeedPhrase(eventRng.current))}
             style={{
-              width: '100%',
-              padding: '14px',
-              borderRadius: 12,
-              border: 'none',
-              background: HUD_THEME.blueGradient,
-              color: '#fff',
-              fontFamily: HUD_THEME.font.display,
-              fontSize: '1.1rem',
+              padding: '0 12px',
+              borderRadius: 8,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(56,189,248,0.12)',
+              color: HUD_THEME.color.accent,
+              fontSize: '1.05rem',
               cursor: 'pointer',
             }}
           >
-            Begin
+            🎲
           </button>
+        </div>
+
+        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Game mode</p>
+        <div style={{ margin: '6px 0 12px' }}>
+          <Segmented
+            value={mode}
+            options={MODES.map((m) => m.key)}
+            labels={
+              Object.fromEntries(MODES.map((m) => [m.key, m.label])) as Record<GameMode, string>
+            }
+            onChange={setMode}
+          />
+        </div>
+        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: '0 0 16px' }}>
+          {MODES.find((m) => m.key === mode)?.hint}
+        </p>
+
+        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Map size</p>
+        <div style={{ margin: '6px 0 18px' }}>
+          <Segmented
+            value={mapSize}
+            options={sizeKeys}
+            labels={
+              Object.fromEntries(
+                (Object.keys(MAP_SIZES) as MapSizeKey[]).map((k) => [k, MAP_SIZES[k].label]),
+              ) as Record<MapSizeKey, string>
+            }
+            onChange={setMapSize}
+          />
+        </div>
+
+        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>
+          AI difficulty
+        </p>
+        <div style={{ margin: '6px 0 24px' }}>
+          <Segmented
+            value={difficulty}
+            options={DIFFICULTIES}
+            labels={{ easy: 'Easy', normal: 'Normal', hard: 'Hard' }}
+            onChange={setDifficulty}
+          />
+        </div>
+
+        <button
+          type="button"
+          id="begin-game"
+          onClick={() =>
+            onBegin({ seedPhrase: seedPhrase.trim(), mapSize, difficulty, eventSeed, mode })
+          }
+          style={{
+            width: '100%',
+            padding: '14px',
+            borderRadius: 12,
+            border: 'none',
+            background: HUD_THEME.blueGradient,
+            color: '#fff',
+            fontFamily: HUD_THEME.font.display,
+            fontSize: '1.1rem',
+            cursor: 'pointer',
+          }}
+        >
+          Begin
+        </button>
       </ModalShell>
     </Dialog.Root>
   );

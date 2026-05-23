@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type PeonView, type PeonWorld, nextPeonAction } from '@/rules';
+import { nextPeonAction, type PeonView, type PeonWorld } from '@/rules';
 
 /** A baseline world: one resource at 5,0, base at 0,0, nothing threatened. */
 function world(overrides: Partial<PeonWorld> = {}): PeonWorld {

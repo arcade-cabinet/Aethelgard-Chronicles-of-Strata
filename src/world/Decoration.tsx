@@ -538,6 +538,7 @@ export function Decoration({
   // buildSitesKey condenses the per-tick snapshot into a string dep so the
   // memo re-fires when buildings complete (not on every frame).
   const buildSitesKey = (buildSites ?? []).map((s) => `${s.key}:${s.isComplete ? 1 : 0}`).join('|');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: buildSitesKey is the intentional snapshot dep (see comment above); raw buildSites would re-run every frame.
   const instances = useMemo(() => {
     const list = planDecoration(board, occupiedKeys);
     appendBaseAccretion(list, board, playerBaseKey, 'player');

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
 import { hexDistance } from '@/core/hex';
-import { ATTRACTOR_GUARANTEE, ATTRACTOR_RADIUS, ensureAttractorResources } from '@/rules';
 import { createMapPrng } from '@/core/rng';
+import { ATTRACTOR_GUARANTEE, ATTRACTOR_RADIUS, ensureAttractorResources } from '@/rules';
 import { spawnResourceNodes } from '@/world/resource-spawn';
 
 describe('attractor map-gen contract (M8.6e, spec 102)', () => {

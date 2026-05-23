@@ -100,13 +100,11 @@ export function ZoneLegend() {
       >
         {open ? (
           <>
-            <span aria-hidden="true">×</span>{' '}
-            <span>Legend</span>
+            <span aria-hidden="true">×</span> <span>Legend</span>
           </>
         ) : (
           <>
-            <span aria-hidden="true">?</span>{' '}
-            <span>Legend</span>
+            <span aria-hidden="true">?</span> <span>Legend</span>
           </>
         )}
       </button>

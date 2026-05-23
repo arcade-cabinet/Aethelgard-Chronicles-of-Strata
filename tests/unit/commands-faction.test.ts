@@ -14,7 +14,9 @@ describe('command API — faction parameter (M8.3)', () => {
     expect(hex).toBeDefined();
     // find any reachable tile via the nav graph
     const startKey = `${hex?.q},${hex?.r}`;
-    const reachable = [...game.navGraph.get(startKey)!][0];
+    const neighbours = game.navGraph.get(startKey);
+    if (!neighbours) throw new Error('expected nav graph entry');
+    const reachable = [...neighbours][0];
     expect(reachable).toBeDefined();
     const path = moveUnit(game, pawn, reachable as string, 'player');
     expect(path).not.toBeNull();
@@ -27,7 +29,9 @@ describe('command API — faction parameter (M8.3)', () => {
     const pawn = game.playerPawn;
     const hex = pawn.get(HexPosition);
     const startKey = `${hex?.q},${hex?.r}`;
-    const reachable = [...game.navGraph.get(startKey)!][0] as string;
+    const neighbours = game.navGraph.get(startKey);
+    if (!neighbours) throw new Error('expected nav graph entry');
+    const reachable = [...neighbours][0] as string;
     const path = moveUnit(game, pawn, reachable, 'enemy');
     expect(path).toBeNull();
   });

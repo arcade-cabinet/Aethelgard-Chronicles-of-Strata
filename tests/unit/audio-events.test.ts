@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SOUND_FOR_EVENT, type GameAudioEvent } from '@/audio/sound-map';
+import { type GameAudioEvent, SOUND_FOR_EVENT } from '@/audio/sound-map';
 
 describe('event-sound map', () => {
   it('maps every game audio event to a sound id', () => {

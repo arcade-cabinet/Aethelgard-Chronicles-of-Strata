@@ -98,66 +98,66 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
           fontFamily: HUD_THEME.font.body,
         }}
       >
-          <Dialog.Title
-            style={{
-              fontFamily: HUD_THEME.font.display,
-              fontSize: '1.4rem',
-              fontWeight: 700,
-              color: HUD_THEME.color.gold,
-              margin: '0 0 10px',
-            }}
-          >
-            {current.title}
-          </Dialog.Title>
-          <p style={{ fontSize: '0.86rem', lineHeight: 1.5, color: HUD_THEME.color.muted }}>
-            {current.body}
-          </p>
-          <div
-            style={{
-              marginTop: 18,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <span style={{ color: HUD_THEME.color.muted, fontSize: '0.78rem' }}>
-              {step + 1} / {STEPS.length}
-            </span>
-            <div style={{ display: 'flex', gap: 8 }}>
-              <button
-                type="button"
-                onClick={markSeen}
-                style={{
-                  padding: '6px 12px',
-                  borderRadius: 8,
-                  border: `1px solid ${HUD_THEME.color.border}`,
-                  background: 'transparent',
-                  color: HUD_THEME.color.muted,
-                  fontSize: '0.78rem',
-                  cursor: 'pointer',
-                }}
-              >
-                Skip
-              </button>
-              <button
-                id="onboarding-next"
-                type="button"
-                onClick={next}
-                style={{
-                  padding: '6px 16px',
-                  borderRadius: 8,
-                  border: 'none',
-                  background: HUD_THEME.blueGradient,
-                  color: '#fff',
-                  fontSize: '0.84rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                {step + 1 >= STEPS.length ? 'Begin' : 'Next'}
-              </button>
-            </div>
+        <Dialog.Title
+          style={{
+            fontFamily: HUD_THEME.font.display,
+            fontSize: '1.4rem',
+            fontWeight: 700,
+            color: HUD_THEME.color.gold,
+            margin: '0 0 10px',
+          }}
+        >
+          {current.title}
+        </Dialog.Title>
+        <p style={{ fontSize: '0.86rem', lineHeight: 1.5, color: HUD_THEME.color.muted }}>
+          {current.body}
+        </p>
+        <div
+          style={{
+            marginTop: 18,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span style={{ color: HUD_THEME.color.muted, fontSize: '0.78rem' }}>
+            {step + 1} / {STEPS.length}
+          </span>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              type="button"
+              onClick={markSeen}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 8,
+                border: `1px solid ${HUD_THEME.color.border}`,
+                background: 'transparent',
+                color: HUD_THEME.color.muted,
+                fontSize: '0.78rem',
+                cursor: 'pointer',
+              }}
+            >
+              Skip
+            </button>
+            <button
+              id="onboarding-next"
+              type="button"
+              onClick={next}
+              style={{
+                padding: '6px 16px',
+                borderRadius: 8,
+                border: 'none',
+                background: HUD_THEME.blueGradient,
+                color: '#fff',
+                fontSize: '0.84rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+              }}
+            >
+              {step + 1 >= STEPS.length ? 'Begin' : 'Next'}
+            </button>
           </div>
+        </div>
       </ModalShell>
     </Dialog.Root>
   );

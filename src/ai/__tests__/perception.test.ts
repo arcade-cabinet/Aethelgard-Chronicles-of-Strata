@@ -13,14 +13,15 @@ import {
   MAX_RETARGETS_PER_TICK,
   selectNearestTarget,
 } from '@/ai/perception';
-import {
-  type Faction,
-  FactionTrait,
-  Health,
-  HexPosition,
-} from '@/ecs/components';
+import { type Faction, FactionTrait, Health, HexPosition } from '@/ecs/components';
 
-function spawn(world: ReturnType<typeof createWorld>, faction: Faction, q: number, r: number, hp = 100) {
+function spawn(
+  world: ReturnType<typeof createWorld>,
+  faction: Faction,
+  q: number,
+  r: number,
+  hp = 100,
+) {
   return world.spawn(
     HexPosition({ q, r, level: 0 }),
     FactionTrait({ faction }),

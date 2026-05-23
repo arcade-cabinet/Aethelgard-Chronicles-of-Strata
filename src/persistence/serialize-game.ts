@@ -6,16 +6,17 @@
  * aiPlayers) is rebuilt by re-running startGame(config) at load time; only
  * mutable state needs to round-trip.
  */
-import { type GameState, runEconomyTick, startGame } from '@/game/game-state';
-import type { GameEconomy } from '@/game/economy';
-import type { GameClock } from '@/game/clock';
-import type { Weather, WeatherState } from '@/game/weather';
-import type { ResearchId } from '@/game/research';
-import type { RallyState } from '@/game/rally';
-import type { ZoneState } from '@/game/zone';
-import type { Faction } from '@/ecs/components';
-import { type WorldSnapshot, deserializeWorld, serializeWorld } from './serialize';
+
 import { ECONOMY } from '@/config/economy';
+import type { Faction } from '@/ecs/components';
+import type { GameClock } from '@/game/clock';
+import type { GameEconomy } from '@/game/economy';
+import { type GameState, runEconomyTick, startGame } from '@/game/game-state';
+import type { RallyState } from '@/game/rally';
+import type { ResearchId } from '@/game/research';
+import type { Weather, WeatherState } from '@/game/weather';
+import type { ZoneState } from '@/game/zone';
+import { deserializeWorld, serializeWorld, type WorldSnapshot } from './serialize';
 
 /** Serialized form of one faction's ZoneState — Sets/Maps as arrays. */
 interface ZoneSnapshot {
@@ -110,7 +111,9 @@ export function deserializeGame(snap: GameSnapshot): GameState {
   // current SNAPSHOT_VERSION before validating. Empty table today;
   // first schema bump adds entries here and existing saves carry
   // through instead of bricking.
-  const migrated = migrateSnapshot(snap as unknown as Record<string, unknown>) as unknown as GameSnapshot;
+  const migrated = migrateSnapshot(
+    snap as unknown as Record<string, unknown>,
+  ) as unknown as GameSnapshot;
   // M_SEC.5 — structural validation BEFORE any Object.assign. A tampered
   // snapshot (corrupted SQLite row on a rooted device, malicious save
   // upload in a future cloud-save feature, browser-DevTools-injected

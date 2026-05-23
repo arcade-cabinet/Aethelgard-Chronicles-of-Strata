@@ -68,55 +68,55 @@ export function GameOverModal({ game }: { game: GameState }) {
           fontFamily: HUD_THEME.font.body,
         }}
       >
-          <Dialog.Title
-            className={isWin ? 'modal-title-win' : 'modal-title-loss'}
+        <Dialog.Title
+          className={isWin ? 'modal-title-win' : 'modal-title-loss'}
+          style={{
+            fontFamily: HUD_THEME.font.display,
+            fontSize: '2.6rem',
+            fontWeight: 800,
+            margin: '0 0 10px',
+            color: isWin ? HUD_THEME.color.gold : HUD_THEME.color.danger,
+          }}
+        >
+          {isWin ? 'Victory!' : 'Defeat!'}
+        </Dialog.Title>
+        <p style={{ color: HUD_THEME.color.muted, marginBottom: 24 }}>
+          {isWin
+            ? 'You have razed the enemy base and defended Aethelgard.'
+            : 'The enemy razed your home base. Aethelgard has fallen.'}
+        </p>
+        {stats.map((s) => (
+          <div
+            key={s.label}
             style={{
-              fontFamily: HUD_THEME.font.display,
-              fontSize: '2.6rem',
-              fontWeight: 800,
-              margin: '0 0 10px',
-              color: isWin ? HUD_THEME.color.gold : HUD_THEME.color.danger,
+              display: 'flex',
+              justifyContent: 'space-between',
+              padding: '8px 0',
+              borderBottom: '1px solid rgba(255,255,255,0.08)',
+              fontSize: '0.9rem',
             }}
           >
-            {isWin ? 'Victory!' : 'Defeat!'}
-          </Dialog.Title>
-          <p style={{ color: HUD_THEME.color.muted, marginBottom: 24 }}>
-            {isWin
-              ? 'You have razed the enemy base and defended Aethelgard.'
-              : 'The enemy razed your home base. Aethelgard has fallen.'}
-          </p>
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '8px 0',
-                borderBottom: '1px solid rgba(255,255,255,0.08)',
-                fontSize: '0.9rem',
-              }}
-            >
-              <span>{s.label}</span>
-              <span style={{ color: HUD_THEME.color.accent }}>{s.value}</span>
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={() => location.reload()}
-            style={{
-              marginTop: 28,
-              padding: '12px 28px',
-              borderRadius: 12,
-              border: 'none',
-              background: HUD_THEME.blueGradient,
-              color: '#fff',
-              fontSize: '1.05rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            Re-enter Aethelgard
-          </button>
+            <span>{s.label}</span>
+            <span style={{ color: HUD_THEME.color.accent }}>{s.value}</span>
+          </div>
+        ))}
+        <button
+          type="button"
+          onClick={() => location.reload()}
+          style={{
+            marginTop: 28,
+            padding: '12px 28px',
+            borderRadius: 12,
+            border: 'none',
+            background: HUD_THEME.blueGradient,
+            color: '#fff',
+            fontSize: '1.05rem',
+            fontWeight: 700,
+            cursor: 'pointer',
+          }}
+        >
+          Re-enter Aethelgard
+        </button>
       </ModalShell>
     </Dialog.Root>
   );

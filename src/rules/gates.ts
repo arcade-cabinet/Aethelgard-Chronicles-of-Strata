@@ -48,4 +48,3 @@ export function materialiseGate(entity: Entity, faction: Faction): void {
   // road was placed neutrally elsewhere
   if (!entity.has(FactionTrait)) entity.add(FactionTrait({ faction }));
 }
-

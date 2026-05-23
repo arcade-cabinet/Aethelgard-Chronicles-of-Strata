@@ -31,8 +31,8 @@ export interface WeatherProfile {
 
 export const WEATHER_PROFILES: Record<WeatherState, WeatherProfile> = {
   sunny: { label: '☀️ Sunny Skies', speedMultiplier: 1 },
-  fog:   { label: '🌫️ Thick Fog',  speedMultiplier: 1 },
-  rain:  { label: '🌧️ Heavy Rain', speedMultiplier: 0.8 },
+  fog: { label: '🌫️ Thick Fog', speedMultiplier: 1 },
+  rain: { label: '🌧️ Heavy Rain', speedMultiplier: 0.8 },
 };
 
 /** Back-compat re-exports — derived from WEATHER_PROFILES. */

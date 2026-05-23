@@ -32,8 +32,10 @@ function deriveBuildingCosts(): Record<Exclude<BuildingType, 'TownHall'>, Resour
   return out as Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
 }
 
-export const BUILDING_COSTS: Record<Exclude<BuildingType, 'TownHall'>, ResourceCost> =
-  Object.freeze(deriveBuildingCosts()) as Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
+export const BUILDING_COSTS: Record<
+  Exclude<BuildingType, 'TownHall'>,
+  ResourceCost
+> = Object.freeze(deriveBuildingCosts()) as Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
 
 /**
  * Supply each building contributes once complete. M_REGISTRY.5 — derived

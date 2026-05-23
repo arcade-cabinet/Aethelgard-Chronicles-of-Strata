@@ -51,7 +51,10 @@ describe('nextPeonAction (covers job-routing switch arms — M_AUDIT2.ARCH.43)',
 
   it('keeps harvesting while target is live and adjacent', () => {
     // peon at 4,0 is adjacent to 5,0 (the resource).
-    const action = nextPeonAction(peon({ q: 4, r: 0, state: 'HARVESTING', targetKey: '5,0' }), BASE);
+    const action = nextPeonAction(
+      peon({ q: 4, r: 0, state: 'HARVESTING', targetKey: '5,0' }),
+      BASE,
+    );
     expect(action.kind).toBe('harvest');
   });
 

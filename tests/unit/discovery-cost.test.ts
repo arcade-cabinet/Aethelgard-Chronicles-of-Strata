@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { depthOf, scaleForDepth, scaledCostFor } from '@/rules';
+import { depthOf, scaledCostFor, scaleForDepth } from '@/rules';
 
 describe('Discovery cost scaling (M_FEATURE.2)', () => {
   it('scaleForDepth: 0 → 1.0, 1 → 2.0, 3 → 3.0', () => {

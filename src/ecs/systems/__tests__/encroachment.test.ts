@@ -9,12 +9,7 @@
  * actually runs.
  */
 import { describe, expect, it } from 'vitest';
-import {
-  type Faction,
-  FactionTrait,
-  HexPosition,
-  Unit,
-} from '@/ecs/components';
+import { type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import { encroachmentSystem } from '@/ecs/systems/encroachment';
 import { startGame } from '@/game/game-state';
 import { claimTile } from '@/game/zone';

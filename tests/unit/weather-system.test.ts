@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createEventPrng } from '@/core/rng';
-import { type WeatherState, advanceWeather, createWeather } from '@/game/weather';
+import { advanceWeather, createWeather, type WeatherState } from '@/game/weather';
 
 describe('weather state machine', () => {
   it('starts Sunny', () => {

@@ -62,9 +62,7 @@ export function CombatText({ game }: { game: GameState }) {
     // empty array reference 60 times a second.
     setPopups((prev) => {
       if (prev.length === 0) return prev;
-      return prev
-        .map((p) => ({ ...p, age: p.age + delta }))
-        .filter((p) => p.age < POPUP_LIFETIME);
+      return prev.map((p) => ({ ...p, age: p.age + delta })).filter((p) => p.age < POPUP_LIFETIME);
     });
   });
 

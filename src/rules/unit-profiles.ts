@@ -18,8 +18,9 @@
  * fourth role type drops in by adding ONE row and ONE damageType union
  * extension — no factory edit needed.
  */
-import type { UnitType } from '@/ecs/components';
+
 import { unitStatFor } from '@/config/combat';
+import type { UnitType } from '@/ecs/components';
 
 /** Damage type for the OffensiveBehavior trait. */
 export type DamageType = 'normal' | 'siege' | 'magic';

@@ -35,6 +35,18 @@
       content="require-trusted-types-for 'script'; trusted-types default;"
     />
     <!--
+      M_AUDIT2.SEC2.43 — Referrer-Policy. The game has no outbound
+      requests (PRIVACY.md no-network), but the WebView can be
+      navigated to a deeplink and we should NEVER leak the in-app
+      URL (which encodes seed/state) as a Referer header. Strictest
+      sensible setting is 'no-referrer'.
+      COOP/COEP are not settable via meta in a WebView, but the
+      Capacitor server.androidScheme=https origin policy + no-network
+      posture already isolates us — tracked as native interceptor
+      work if we ever add SharedArrayBuffer (not currently needed).
+    -->
+    <meta name="referrer" content="no-referrer" />
+    <!--
       M_AUDIT2.SEC2.45 — Permissions-Policy: explicitly deny every
       browser capability the game doesn't use (camera/mic/geo/USB/
       serial/payment) so a future XSS or dependency injection can't

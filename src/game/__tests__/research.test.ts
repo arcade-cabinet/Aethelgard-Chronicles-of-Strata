@@ -7,12 +7,7 @@
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
 import { createEconomy } from '@/game/economy';
-import {
-  applyResearch,
-  canResearch,
-  createResearch,
-  type ResearchId,
-} from '@/game/research';
+import { applyResearch, canResearch, createResearch, type ResearchId } from '@/game/research';
 
 function richEconomy() {
   const e = createEconomy();
@@ -61,9 +56,7 @@ describe('research', () => {
     expect(ok).toBe(true);
     expect(r.purchased.has('forgedBlades' as ResearchId)).toBe(true);
     // economy spent SOMETHING (cost depends on DAG depth — assert change).
-    expect(
-      eco.wood + eco.stone + eco.gold + eco.science,
-    ).toBeLessThan(goldBefore + 9999 * 3);
+    expect(eco.wood + eco.stone + eco.gold + eco.science).toBeLessThan(goldBefore + 9999 * 3);
   });
 
   it('applyResearch returns false when canResearch is false', () => {

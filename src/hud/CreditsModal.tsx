@@ -109,7 +109,11 @@ const SECTIONS: ReadonlyArray<CreditSection> = [
       { name: 'Capacitor', license: 'MIT', author: 'Ionic' },
       { name: '@capacitor-community/sqlite', license: 'MIT', author: 'jeep-sqlite contributors' },
       { name: 'seedrandom', license: 'MIT', author: 'David Bau' },
-      { name: 'Vite + Vitest + Biome', license: 'MIT', author: 'Evan You / Anthony Fu / Biome team' },
+      {
+        name: 'Vite + Vitest + Biome',
+        license: 'MIT',
+        author: 'Evan You / Anthony Fu / Biome team',
+      },
     ],
   },
 ];
@@ -146,8 +150,8 @@ export function CreditsModal({ open, onOpenChange }: CreditsModalProps) {
             margin: '0 0 20px',
           }}
         >
-          Aethelgard ships with assets and libraries from the people listed
-          below. License terms vary per entry — see the right-hand column.
+          Aethelgard ships with assets and libraries from the people listed below. License terms
+          vary per entry — see the right-hand column.
         </Dialog.Description>
 
         {SECTIONS.map((section) => (

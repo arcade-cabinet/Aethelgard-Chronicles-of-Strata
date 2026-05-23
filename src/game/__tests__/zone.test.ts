@@ -6,13 +6,7 @@
  * tileController dispatch.
  */
 import { describe, expect, it } from 'vitest';
-import {
-  claimTile,
-  createZoneState,
-  isObserved,
-  releaseTile,
-  tileController,
-} from '@/game/zone';
+import { claimTile, createZoneState, isObserved, releaseTile, tileController } from '@/game/zone';
 
 describe('zone state', () => {
   it('createZoneState starts empty with generation=0', () => {

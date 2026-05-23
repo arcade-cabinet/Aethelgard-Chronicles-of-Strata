@@ -373,9 +373,7 @@ export function createPersistence(): Persistence {
       // M_SEC.13 — cap at 50 most-recent saves. A million-save corrupted
       // db would otherwise pull every row into memory just for the list
       // view, hanging the UI thread on a slow device.
-      const result = await db.query(
-        `SELECT * FROM saves ORDER BY saved_at DESC LIMIT 50;`,
-      );
+      const result = await db.query(`SELECT * FROM saves ORDER BY saved_at DESC LIMIT 50;`);
       const rows = result.values ?? [];
       const records: SaveRecord[] = [];
       for (const row of rows) {

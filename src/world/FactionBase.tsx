@@ -155,7 +155,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
     return result;
     // M_AUDIT2.ARCH.22 — depend on buildSitesGeneration (bumped per-
     // mutation), NOT the Map ref (which never changes identity).
-  }, [game.buildSites, game.buildSitesGeneration, faction]);
+  }, [game.buildSites, faction]);
 
   if (!basePos) return null;
   const skin = SKINS[faction];
@@ -175,6 +175,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
       <group position={[basePos.x, basePos.y, basePos.z]}>
         {skin.baseProps.map((p, idx) => (
           <BasePropMesh
+            // biome-ignore lint/suspicious/noArrayIndexKey: idx is one component of a composite key alongside logicalId+x+z which together stay stable for the skin lifetime.
             key={`prop-${idx}-${p.logicalId}-${p.x}-${p.z}`}
             logicalId={p.logicalId}
             x={p.x}

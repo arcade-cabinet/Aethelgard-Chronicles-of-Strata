@@ -4,9 +4,9 @@ import { doResearch } from '@/game/commands';
 import { canAfford } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
-import { HudPill } from './HudPill';
 import { DISCOVERIES, scaledCostFor } from '@/rules';
 import { costLabel } from './format';
+import { HudPill } from './HudPill';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -34,96 +34,92 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
       {/* M_MICRO.10.1 — ModalShell collapses the per-dialog Overlay +
           Content styling. Only DiscoveriesPanel-specific overrides
           (font-family) come through contentStyle. */}
-      <ModalShell
-        contentId="discoveries-panel"
-        contentStyle={{ fontFamily: HUD_THEME.font.body }}
-      >
-          <Dialog.Title
-            style={{
-              fontFamily: HUD_THEME.font.display,
-              fontSize: '1.5rem',
-              color: HUD_THEME.color.gold,
-              margin: '0 0 14px',
-            }}
-          >
-            Discoveries
-          </Dialog.Title>
-          {DISCOVERIES.map((d) => {
-            const purchased = game.research.purchased.has(d.id as ResearchId);
-            const prereqMet = (d.prereqs ?? []).every((p) =>
-              game.research.purchased.has(p as ResearchId),
-            );
-            // M_FEATURE.2 — purchase cost scales with depth in the prereq DAG.
-            const effectiveCost = scaledCostFor(d.id);
-            const affordable = canAfford(eco, effectiveCost);
-            // M_AUDIT2.ARCH.19 — `canResearch` is now the single source of
-            // truth for "is this row purchasable" (was a `void canResearch`
-            // shim). Drives the disabled state below; prereqMet+affordable
-            // are kept locally for the per-row status string formatting.
-            const available = canResearch(eco, game.research, d.id as ResearchId);
-            const status = purchased
-              ? 'Purchased'
-              : !prereqMet
-                ? 'Prereqs needed'
-                : !affordable
-                  ? 'Unaffordable'
-                  : 'Available';
-            return (
-              <div
-                key={d.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  padding: '10px 0',
-                  borderBottom: '1px solid rgba(255,255,255,0.08)',
-                }}
-              >
-                <div style={{ flex: 1, marginRight: 12 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>{d.name}</div>
-                  <div
-                    style={{
-                      fontSize: '0.78rem',
-                      color: HUD_THEME.color.muted,
-                      marginTop: 2,
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {d.description}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '0.78rem',
-                      color: HUD_THEME.color.accent,
-                      marginTop: 4,
-                    }}
-                  >
-                    Cost: {costLabel(effectiveCost)} · {status}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  disabled={!available}
-                  onClick={() => doResearch(game, d.id as ResearchId)}
+      <ModalShell contentId="discoveries-panel" contentStyle={{ fontFamily: HUD_THEME.font.body }}>
+        <Dialog.Title
+          style={{
+            fontFamily: HUD_THEME.font.display,
+            fontSize: '1.5rem',
+            color: HUD_THEME.color.gold,
+            margin: '0 0 14px',
+          }}
+        >
+          Discoveries
+        </Dialog.Title>
+        {DISCOVERIES.map((d) => {
+          const purchased = game.research.purchased.has(d.id as ResearchId);
+          const prereqMet = (d.prereqs ?? []).every((p) =>
+            game.research.purchased.has(p as ResearchId),
+          );
+          // M_FEATURE.2 — purchase cost scales with depth in the prereq DAG.
+          const effectiveCost = scaledCostFor(d.id);
+          const affordable = canAfford(eco, effectiveCost);
+          // M_AUDIT2.ARCH.19 — `canResearch` is now the single source of
+          // truth for "is this row purchasable" (was a `void canResearch`
+          // shim). Drives the disabled state below; prereqMet+affordable
+          // are kept locally for the per-row status string formatting.
+          const available = canResearch(eco, game.research, d.id as ResearchId);
+          const status = purchased
+            ? 'Purchased'
+            : !prereqMet
+              ? 'Prereqs needed'
+              : !affordable
+                ? 'Unaffordable'
+                : 'Available';
+          return (
+            <div
+              key={d.id}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                padding: '10px 0',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <div style={{ flex: 1, marginRight: 12 }}>
+                <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>{d.name}</div>
+                <div
                   style={{
-                    padding: '6px 14px',
-                    borderRadius: 8,
-                    border: 'none',
-                    background: available ? HUD_THEME.blueGradient : 'rgba(255,255,255,0.06)',
-                    color: available ? '#fff' : HUD_THEME.color.muted,
                     fontSize: '0.78rem',
-                    fontWeight: 700,
-                    cursor: available ? 'pointer' : 'default',
-                    minWidth: 86,
+                    color: HUD_THEME.color.muted,
+                    marginTop: 2,
+                    lineHeight: 1.4,
                   }}
                 >
-                  {purchased ? '✓' : 'Buy'}
-                </button>
+                  {d.description}
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.78rem',
+                    color: HUD_THEME.color.accent,
+                    marginTop: 4,
+                  }}
+                >
+                  Cost: {costLabel(effectiveCost)} · {status}
+                </div>
               </div>
-            );
-          })}
+              <button
+                type="button"
+                disabled={!available}
+                onClick={() => doResearch(game, d.id as ResearchId)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: available ? HUD_THEME.blueGradient : 'rgba(255,255,255,0.06)',
+                  color: available ? '#fff' : HUD_THEME.color.muted,
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: available ? 'pointer' : 'default',
+                  minWidth: 86,
+                }}
+              >
+                {purchased ? '✓' : 'Buy'}
+              </button>
+            </div>
+          );
+        })}
       </ModalShell>
     </Dialog.Root>
   );
 }
-

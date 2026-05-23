@@ -106,7 +106,9 @@ function snapshot(game: GameState): Readout[] {
   // buttons grey out. Without this the player tries to train, the
   // button does nothing, and there's no inline signal.
   const atCap = e.usedSupply >= e.maxSupply;
-  const supplyLabel = atCap ? `${e.usedSupply}/${e.maxSupply} (cap)` : `${e.usedSupply}/${e.maxSupply}`;
+  const supplyLabel = atCap
+    ? `${e.usedSupply}/${e.maxSupply} (cap)`
+    : `${e.usedSupply}/${e.maxSupply}`;
   rows.push({
     id: 'val-supply',
     label: 'Supply',

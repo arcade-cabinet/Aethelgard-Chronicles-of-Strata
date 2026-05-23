@@ -14,8 +14,8 @@
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { App } from '@/App';
-import { generateBoard } from '@/core/board';
 import { assets } from '@/assets/assets';
+import { generateBoard } from '@/core/board';
 import { createMapPrng } from '@/core/rng';
 import { spawnResourceNodes } from '@/world/resource-spawn';
 import { enterGame } from './enter-game';

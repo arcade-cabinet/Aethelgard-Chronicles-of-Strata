@@ -1,5 +1,6 @@
 import type { Entity } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
+import { roadCostFor } from '@/config/economy';
 import { getHexKey, hexNeighbors, parseHexKey } from '@/core/hex';
 import { findPath } from '@/core/pathfinding';
 import {
@@ -19,14 +20,13 @@ import {
   Selectable,
   Unit,
 } from '@/ecs/components';
-import { roadCostFor } from '@/config/economy';
-import { materialiseGate } from '@/rules';
 import { createCharacter } from '@/entities/character-factory';
 import {
   BUILDING_COSTS,
   behaviorsFor,
   canBuild,
   canTrainComplete,
+  materialiseGate,
   profileFor,
   SUPPLY_COST,
   UNIT_COSTS,

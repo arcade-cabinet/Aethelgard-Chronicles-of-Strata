@@ -121,9 +121,5 @@ export function ParticleEmitter<P extends BaseParticle>({
   });
 
   if (state.particles.length === 0) return null;
-  return (
-    <group name={spec.name}>
-      {state.particles.map((p) => spec.renderParticle(p))}
-    </group>
-  );
+  return <group name={spec.name}>{state.particles.map((p) => spec.renderParticle(p))}</group>;
 }

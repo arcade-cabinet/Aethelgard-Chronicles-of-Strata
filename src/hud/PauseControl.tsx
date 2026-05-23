@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './hud-theme';
 import { HudPill } from './HudPill';
+import { HUD_THEME } from './hud-theme';
 
 /**
  * Pause / resume control (M_GAMEPLAY.7). A top-right pill button + the P key

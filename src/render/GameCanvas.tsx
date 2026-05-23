@@ -1,6 +1,7 @@
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { type Camera, PCFSoftShadowMap } from 'three';
+import { Building, type BuildingType, HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { CombatText } from '@/world/CombatText';
 import { Crossings } from '@/world/Crossings';
@@ -9,13 +10,13 @@ import { FactionBase } from '@/world/FactionBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
 import { Mountains } from '@/world/Mountains';
 import { ParticleEmitter } from '@/world/ParticleEmitter';
+import { ProjectileLayer } from '@/world/ProjectileLayer';
 import {
   buildCompleteArchetype,
   rainArchetype,
   sawdustArchetype,
   victoryConfettiArchetype,
 } from '@/world/particle-archetypes';
-import { ProjectileLayer } from '@/world/ProjectileLayer';
 import { RallyMarker } from '@/world/RallyMarker';
 import { ResourceNodes } from '@/world/ResourceNodes';
 import { ResourceText } from '@/world/ResourceText';
@@ -31,8 +32,6 @@ import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
 import { useViewport, type ViewportProfile } from './useViewport';
-import { Building, type BuildingType, HexPosition } from '@/ecs/components';
-import { useFrame } from '@react-three/fiber';
 
 /**
  * Decoration wrapper that snapshots game.buildSites per frame into the

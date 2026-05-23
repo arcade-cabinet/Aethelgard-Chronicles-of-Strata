@@ -8,8 +8,7 @@ export default defineConfig(({ mode }) => ({
   // root. Lets CI deploy to a custom path without touching this file
   // (set VITE_BASE in the deploy job's env).
   base:
-    process.env.VITE_BASE ??
-    (mode === 'github-pages' ? '/Aethelgard-Chronicles-of-Strata/' : '/'),
+    process.env.VITE_BASE ?? (mode === 'github-pages' ? '/Aethelgard-Chronicles-of-Strata/' : '/'),
   cacheDir: '.vite',
   build: {
     chunkSizeWarningLimit: 2000,

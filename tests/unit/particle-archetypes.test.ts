@@ -52,7 +52,7 @@ describe('M_REGISTRY.6 — particle archetype specs', () => {
       });
       expect(fresh).not.toBeNull();
       // Top up from 0 → target = full batch.
-      expect(fresh!.length).toBe(1200);
+      expect(fresh?.length).toBe(1200);
     });
 
     it('is deterministic — same seed produces same drop positions', () => {
@@ -72,8 +72,8 @@ describe('M_REGISTRY.6 — particle archetype specs', () => {
         live: [],
         nextId: () => 0,
       });
-      expect(a![0]?.x).toBe(b![0]?.x);
-      expect(a![0]?.z).toBe(b![0]?.z);
+      expect(a?.[0]?.x).toBe(b?.[0]?.x);
+      expect(a?.[0]?.z).toBe(b?.[0]?.z);
     });
   });
 
