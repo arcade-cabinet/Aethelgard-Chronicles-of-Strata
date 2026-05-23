@@ -1476,11 +1476,11 @@ local-review-trio after each ~5-item batch.
 - [ ] M_AUDIT2.ARCH.41 — encroachment.ts: no test (tile flip, defended cancels, peon never encroach)
 - [ ] M_AUDIT2.ARCH.42 — offensive-behavior.ts: no test (one-source-per-target, cadence)
 - [ ] M_AUDIT2.ARCH.43 — job-routing.ts: no test (5-case switch on action.kind)
-- [ ] M_AUDIT2.ARCH.44 — zone.ts: no test (generation bump, vision cones)
-- [ ] M_AUDIT2.ARCH.45 — projectiles.ts: no test (advanceProjectiles mutates+returns changed)
+- [x] M_AUDIT2.ARCH.44 — zone.ts: no test (generation bump, vision cones)
+- [x] M_AUDIT2.ARCH.45 — projectiles.ts: no test (advanceProjectiles mutates+returns changed)
 - [x] M_AUDIT2.ARCH.46 — auto-save.ts: no test (interval+accumulator)
-- [ ] M_AUDIT2.ARCH.47 — rally.ts: no test
-- [ ] M_AUDIT2.ARCH.48 — research.ts: no test
+- [x] M_AUDIT2.ARCH.47 — rally.ts: no test
+- [x] M_AUDIT2.ARCH.48 — research.ts: no test
 - [ ] M_AUDIT2.ARCH.49 — ai-player.ts + ai-director.ts: no test (MAX_RETARGETS_PER_TICK regression)
 - [ ] M_AUDIT2.ARCH.50 — ErrorBoundary.tsx: no test
 
