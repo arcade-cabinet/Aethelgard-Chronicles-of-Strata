@@ -43,9 +43,17 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
 
   useEffect(() => {
     let cancelled = false;
-    void persistence.getSetting(ONBOARDING_KEY).then((value) => {
-      if (!cancelled && value !== 'true') setOpen(true);
-    });
+    persistence
+      .getSetting(ONBOARDING_KEY)
+      .then((value) => {
+        if (!cancelled && value !== 'true') setOpen(true);
+      })
+      .catch((err) => {
+        // Persistence read failed — log and default to showing the overlay
+        // (the safer fallback: the player sees onboarding once vs. never).
+        console.warn('[OnboardingOverlay] getSetting failed:', err);
+        if (!cancelled) setOpen(true);
+      });
     return () => {
       cancelled = true;
     };
@@ -53,7 +61,11 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
 
   const markSeen = () => {
     setOpen(false);
-    void persistence.setSetting(ONBOARDING_KEY, 'true');
+    persistence.setSetting(ONBOARDING_KEY, 'true').catch((err) => {
+      // Persistence write failed — the overlay will show again next session.
+      // Acceptable degradation; the player can dismiss it again.
+      console.warn('[OnboardingOverlay] setSetting failed:', err);
+    });
   };
 
   const next = () => {
