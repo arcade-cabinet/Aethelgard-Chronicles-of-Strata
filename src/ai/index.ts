@@ -27,10 +27,9 @@ const director = new AiDirector();
  * @param graph  - Pre-built A* navigation graph.
  */
 export function aiSystem(world: World, board: BoardData, graph: NavGraph): void {
-  // Use a fixed 1/60 delta when called without an explicit delta (legacy call
-  // sites in game-state pass only the three positional args). The economy tick
-  // passes its own `delta`; the director receives it here via the closure so
-  // that callers don't need to update their call site.
+  // 1/60 matches the fixed-timestep useGameLoop (M_HARDENING.2) — the sim
+  // always advances in FIXED_DT chunks, so the AI director's steering integ-
+  // ration is aligned with the rest of the systems.
   director.tick(world, board, graph, 1 / 60);
 }
 

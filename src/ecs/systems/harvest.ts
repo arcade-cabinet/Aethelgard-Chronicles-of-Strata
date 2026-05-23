@@ -47,4 +47,12 @@ export function harvestSystem(world: World, delta: number): void {
         job.state = 'CARRYING';
       }
     });
+
+  // M_HARDENING.3 — auto-destroy depleted nodes. ResourceTrait at amount=0
+  // is dead; leaving it in the world means every per-tick query walks it.
+  // Sweep once at the end so a node depleted THIS tick still scored its
+  // final harvest above.
+  for (const node of world.query(ResourceTrait)) {
+    if ((node.get(ResourceTrait)?.amount ?? 0) <= 0) node.destroy();
+  }
 }

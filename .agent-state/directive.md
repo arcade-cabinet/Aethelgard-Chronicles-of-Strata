@@ -341,22 +341,29 @@ audio packs via Howler. No procedural synthesis. Packs available:
   commits 3e434e1 + 4c51bf9. 13 lower-severity threads (docs nits,
   pointer-events refactor) deferred to 0.3.1 per reviewer go/no-go.
 
-### POST-RELEASE — 0.3.1 maintenance (do not block this release)
+### M_HARDENING — bugs the review surfaced; do BEFORE release, not after
 
-- [ ] [HOLD] POST_REL.1 — full save-restore: extend snapshot to include economy,
-  clock, weather, zones, research, rally, AI state, eventSeed, difficulty,
-  mapSize; wire deserializeWorld into the load path; re-enable Continue.
-- [ ] [HOLD] POST_REL.2 — fixed-timestep game loop: useGameLoop accumulator that
-  advances the sim in fixed 16.67ms chunks; render interpolates. Removes
-  the frame-rate-dependent determinism gap CodeRabbit flagged HIGH-3.
-- [ ] [HOLD] POST_REL.3 — Number(entity) → unpackEntity round-trip on EnemyTarget
-  + AiDirector vehicles map to handle koota generation bits cleanly.
-- [ ] [HOLD] POST_REL.4 — depleted resource nodes auto-destroy (CodeRabbit MED-9).
-- [ ] [HOLD] POST_REL.5 — pointer-events wrapper/panel pattern on NewGameModal,
-  SelectionPanel, OnboardingOverlay (CodeRabbit MED).
-- [ ] [HOLD] POST_REL.6 — KayKit Ultimate Fantasy RTS pack ingest (was M_ASSETS).
-- [ ] [HOLD] POST_REL.7 — Pixel-5a perf budget + APK install validation on real
-  device (was M_MOBILE.3/4).
+The user's mandate: review feedback is the next-best signal for actionable
+work. These are concrete bugs/gaps comprehensive-review + CodeRabbit + Gemini
+flagged. No "POST_REL" parking lot — work them now.
+
+- [ ] M_HARDENING.1 — full save-restore. Extend serializeWorld to a full
+  game-snapshot (economy, clock, weather, zones, research, rally, AI
+  state, eventSeed, difficulty, mapSize); wire deserializeWorld into the
+  load path; re-enable Continue with the real restoration.
+- [x] M_HARDENING.2 — fixed-timestep useGameLoop: 60-Hz accumulator with
+  per-frame cap of 8 (spiral-of-death guard); aiSystem comment clarified
+  to align with FIXED_DT. Closes the determinism gap.
+- [x] M_HARDENING.3 — depleted-node auto-destroy: harvestSystem sweep at
+  end of tick destroys ResourceTrait entities at amount<=0. Per-tick
+  query no longer walks dead nodes.
+- [ ] M_HARDENING.4 — pointer-events wrapper/panel pattern (where it
+  actually applies — modal overlay Dialogs already correctly capture).
+  Audit each HUD region; ensure non-modal regions don't block raycasts.
+- [ ] [WAIT-MCP] M_HARDENING.5 — KayKit Ultimate Fantasy RTS pack ingest
+  via assets-library MCP; replace placeholder structures.
+- [ ] [WAIT-DEVICE] M_HARDENING.6 — Pixel-5a perf profile + APK install
+  validation on real device/emulator.
 - [x] M_RELEASE_FINAL.3 — CHANGELOG 0.3.0 — every band documented
   (M_GAMEPLAY/M_CONSTRUCTION/M_COMBAT_POLISH/M_ARCHETYPE/M_DATA/M_AUDIO/
   M_AI_DEPTH/M_MOBILE/M_BALANCE/M_ACCESS/M_TITLE).
