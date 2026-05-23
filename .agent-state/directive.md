@@ -463,6 +463,65 @@ re-listing. Both unblock as the relevant dependency lands.)
   puff spawn (350ms interval, per-frame cap 4); each cone drifts + arcs +
   fades over 600ms. GC accumulators for vanished entities.
 
+### M_MAPGEN — guided map generation (user feedback, 2026-05-22)
+
+User: "no emitting zone of control from the town hall building and it is
+not distinct visually as a town hall. and we need things to not be purely
+random. seeding for map generation should ALWAYS include at least one
+mountain range with peaks and should ALWAYS Feature a graveyard
+equidistant from town hall. i would say we ALWAYS paint every map with
+these rules: some kind of mountain range creating necessary funneling
+and movement challenges in the middle. a ring of beach surrounding the
+entire island transitioning first to shallow and then deep water. some
+kind of inland water feature. at least 4 layers of stacked mixed tile
+spread out depth. and a radius from each starting location that
+guarantees 3 tiles in any direction from center to guarantee accessible
+placement for buildings plus resources. grass and trees. then beyond
+that any other props features and varied terrain but always that kind of
+red vs blue layout".
+
+- [ ] M_MAPGEN.1 — TownHall ZoC fix: TownHall's BUILDING_BEHAVIORS row
+  carries `attractor: { radius: 2 }` but the player's home base entity
+  is spawned in game-state.ts NOT through placeBuilding — it likely
+  doesn't get the AttractorBehavior trait attached. Audit the home-base
+  spawn path, ensure AttractorBehavior is composed onto the FactionBase
+  entity for BOTH factions; ZoneState shows it as controlled territory
+  emitting outward.
+- [ ] M_MAPGEN.2 — TownHall visual identity: distinct mesh/scale/color
+  vs Farm/Barracks/etc. Currently structure-models.player.TownHall
+  uses `structures.town-hall` at scale 1.0 — verify it actually reads as
+  distinctly grander; bump scale + add a faction-banner accent or roof
+  highlight if the base mesh is too plain.
+- [ ] M_MAPGEN.3 — guaranteed mountain range with peaks running through
+  the map center, creating funneling. New deterministic pass over the
+  noise output that ALWAYS forces a 3-tile-wide MOUNTAIN band somewhere
+  in the central third of the radius; peaks (level≥4) form along the
+  spine.
+- [ ] M_MAPGEN.4 — beach ring around the island: every tile at distance
+  > radius - 3 from center is forced BEACH (then OCEAN beyond the
+  radius). Shallow → deep water rendered with a transitional gradient
+  (today Water already has gradient via DayNightCycle; verify the
+  transition reads).
+- [ ] M_MAPGEN.5 — guaranteed inland water feature (a LAKE biome cluster
+  of at least 4 connected tiles somewhere not adjacent to the beach
+  ring).
+- [ ] M_MAPGEN.6 — at least 4 elevation tiers spread across the map
+  (level 1 → 4 minimum; verify current generator hits this — if not,
+  re-quantize the height noise).
+- [ ] M_MAPGEN.7 — guaranteed 3-tile-radius safety zone around each
+  FactionBase: every tile within hexDistance ≤ 3 of TownHall AND
+  enemyBase is GRASS, walkable, NOT a mountain or lake; resources +
+  trees may appear but must not block the immediate buildable ring.
+- [ ] M_MAPGEN.8 — graveyard biome cluster placed equidistant from the
+  player's TownHall along the line that mirrors the enemy base.
+  Currently the enemy base IS that role; make sure the graveyard reads
+  visually (cluster of `nature.gravestone.*` decorations around the
+  enemy base + the existing `portal-crypt` mesh).
+- [ ] M_MAPGEN.9 — red-vs-blue identity: player base + zone visuals
+  read as blue/azure; enemy base + zone read as red/crimson. Check
+  ZoneBorder colors — confirm they're already faction-tinted; if not,
+  paint them per-faction.
+
 ### M_BALANCE_2 — map-size scaling (user feedback, 2026-05-22)
 
 User: "map size has to be significantly bigger. small, medium, large, huge,
