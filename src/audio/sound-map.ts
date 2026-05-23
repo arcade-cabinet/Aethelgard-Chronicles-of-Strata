@@ -20,6 +20,7 @@ export type GameAudioEvent =
   | 'projectile-fire'
   | 'projectile-impact'
   | 'magic-cast'
+  | 'achievement'
   | 'resource-deposit'
   | 'unit-select'
   | 'unit-trained'
@@ -52,6 +53,10 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   // Magic). Wired in projectile-spawn when the projectile's
   // damageType is 'magic' (see ProjectileLayer / combat path).
   'magic-cast': { bus: 'sfx', soundId: 'audio.sfx.magic-cast' },
+  // M_EXPANSION.AU.33 — generic achievement chime (PixelLoops UI
+  // achievement). Fires today on first zone claim; later milestones
+  // (first kill, first wonder build) reuse the same event.
+  achievement: { bus: 'ui', soundId: 'audio.ui.achievement' },
 
   // World interaction
   'harvest-chop': { bus: 'sfx', soundId: 'audio.sfx.chop' },

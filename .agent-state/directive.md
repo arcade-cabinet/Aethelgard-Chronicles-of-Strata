@@ -1737,7 +1737,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 **PixelLoops_UI_Sound_Effects_Pack (31-36)** — never ingested
 - [x] [HIGH] M_EXPANSION.AU.31 — ingest UI SFX pack into public/assets/audio/ui/
 - [x] [HIGH] M_EXPANSION.AU.32 — wire `pl_Notification_03.wav` to research-complete event
-- [ ] [MED]  M_EXPANSION.AU.33 — wire `pl_Achievement_04.wav` to first-zone-claim achievement
+- [x] [MED]  M_EXPANSION.AU.33 — wire `pl_Achievement_04.wav` to first-zone-claim achievement
 - [x] [MED]  M_EXPANSION.AU.34 — wire `pl_Unlock_04.wav` to Discoveries.purchased emission
 - [ ] [MED]  M_EXPANSION.AU.35 — wire `pl_button_click_*` set as the UI-button-click bus (today: one shared sound)
 - [ ] [LOW]  M_EXPANSION.AU.36 — wire `pl_Error_*` as the building-placement-failed error chime

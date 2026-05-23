@@ -4,6 +4,7 @@ import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
+import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
@@ -131,6 +132,7 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />
       <IdlePeonsIndicator game={game} />
+      <AchievementWatcher game={game} />
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
       <GameOverModal game={game} />
