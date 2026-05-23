@@ -1447,7 +1447,7 @@ local-review-trio after each ~5-item batch.
 - [x] M_AUDIT2.ARCH.20 — board.ts:214 `void rng` — drop unused param
 - [x] M_AUDIT2.ARCH.21 — discovery-cost.ts:39 `void seen` — same
 - [ ] M_AUDIT2.ARCH.22 — FactionBase.tsx placed-useMemo dep is Map ref (never invalidates) — key on buildSitesGeneration
-- [ ] M_AUDIT2.ARCH.23 — Mountains.tsx hardcoded fallback level=5 even with peakLevel slot — drop fallback
+- [x] M_AUDIT2.ARCH.23 — Mountains.tsx hardcoded fallback level=5 even with peakLevel slot — drop fallback
 
 **Code-shape duplication (24-29)**
 - [ ] M_AUDIT2.ARCH.24 — useFloatingPopups<T> hook (CombatText+ResourceText share lifecycle)
@@ -1475,13 +1475,13 @@ local-review-trio after each ~5-item batch.
 **Test coverage gaps (41-50)**
 - [x] M_AUDIT2.ARCH.41 — encroachment.ts: no test (tile flip, defended cancels, peon never encroach)
 - [x] M_AUDIT2.ARCH.42 — offensive-behavior.ts: no test (one-source-per-target, cadence)
-- [ ] M_AUDIT2.ARCH.43 — job-routing.ts: no test (5-case switch on action.kind)
+- [x] M_AUDIT2.ARCH.43 — job-routing.ts: no test (5-case switch on action.kind)
 - [x] M_AUDIT2.ARCH.44 — zone.ts: no test (generation bump, vision cones)
 - [x] M_AUDIT2.ARCH.45 — projectiles.ts: no test (advanceProjectiles mutates+returns changed)
 - [x] M_AUDIT2.ARCH.46 — auto-save.ts: no test (interval+accumulator)
 - [x] M_AUDIT2.ARCH.47 — rally.ts: no test
 - [x] M_AUDIT2.ARCH.48 — research.ts: no test
-- [ ] M_AUDIT2.ARCH.49 — ai-player.ts + ai-director.ts: no test (MAX_RETARGETS_PER_TICK regression)
+- [x] M_AUDIT2.ARCH.49 — ai-player.ts + ai-director.ts: no test (MAX_RETARGETS_PER_TICK regression)
 - [x] M_AUDIT2.ARCH.50 — ErrorBoundary.tsx: no test
 
 **Per-tick perf (51-56)**
