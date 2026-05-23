@@ -122,12 +122,9 @@ export function TileInteraction({
   spawnTrackingRing?: (q: number, r: number) => void;
 }) {
   const [pathKeys, setPathKeys] = useState<string[]>([]);
-  // M_AUDIT2.SEC2.26 — 100ms click cooldown to defeat auto-clickers
-  // and held-mouse build spam. Without this an auto-clicker can chain
-  // build placements faster than the economy tick can validate
-  // (multiple resource-spends + multiple buildSites entries before
-  // any tick can run). The cooldown applies to all click verbs since
-  // a 100ms human delay is invisible.
+  // M_AUDIT2.SEC2.26 — 100ms click cooldown. Auto-clickers can chain
+  // build placements faster than the economy tick can validate (multiple
+  // resource-spends before any tick runs). 100ms is invisible to humans.
   const lastClickMsRef = useRef<number>(0);
   const tiles = [...game.board.tiles.values()].filter((t) => t.walkable);
 
@@ -158,10 +155,7 @@ export function TileInteraction({
   };
 
   const onPick = (q: number, r: number): void => {
-    // M_AUDIT2.SEC2.26 — drop clicks within 100ms of the previous
-    // accepted one (auto-clicker / held-fire guard). Uses
-    // performance.now() since this is render-layer code (the sim
-    // determinism contract applies to src/ecs/** and src/game/**).
+    // performance.now() is allowed here — render-layer code, not sim.
     const now = performance.now();
     if (now - lastClickMsRef.current < 100) return;
     lastClickMsRef.current = now;

@@ -21,6 +21,20 @@
       content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none';"
     />
     <!--
+      M_AUDIT2.SEC2.42 — Trusted Types report-only. Promoting this to
+      an enforcing directive (require-trusted-types-for 'script')
+      would also require sanitising every drei/r3f internal
+      innerHTML/script-src assignment — drei uses raw HTML for the
+      DOM Html portal and r3f boots WebGLRenderer in a way Chrome
+      flags as a TT sink without a wrapper policy. Report-Only keeps
+      the policy advertised + violations visible in DevTools so we
+      can prove the migration before flipping enforcement on.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy-Report-Only"
+      content="require-trusted-types-for 'script'; trusted-types default;"
+    />
+    <!--
       M_AUDIT2.SEC2.45 — Permissions-Policy: explicitly deny every
       browser capability the game doesn't use (camera/mic/geo/USB/
       serial/payment) so a future XSS or dependency injection can't

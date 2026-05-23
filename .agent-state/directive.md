@@ -1523,7 +1523,7 @@ local-review-trio after each ~5-item batch.
 **Storage (6-9)**
 - [x] [HIGH] M_AUDIT2.SEC2.6 — Persistence.reset() to delete DB + jeep-sqlite element
 - [x] [MED] M_AUDIT2.SEC2.7 — saves row count cap (>N delete oldest) + QuotaExceededError UI surface
-- [ ] [MED] M_AUDIT2.SEC2.8 — DB_NAME prefix with appId slug + version suffix
+- [x] [MED] M_AUDIT2.SEC2.8 — DB_NAME prefix with appId slug + version suffix
 - [x] [MED] M_AUDIT2.SEC2.9 — cap row.snapshot.length pre-JSON.parse (2MB)
 
 **Supply chain (10-15)**
@@ -1535,7 +1535,7 @@ local-review-trio after each ~5-item batch.
 - [x] [MED] M_AUDIT2.SEC2.15 — SHA-pin dependency-review-action@v4 + codeql-action/init+analyze@v3
 
 **Build/CI (16-22)**
-- [ ] [HIGH] M_AUDIT2.SEC2.16 — Gradle cache restore-keys cross-PR poisoning — scope by branch or drop restore-keys
+- [x] [HIGH] M_AUDIT2.SEC2.16 — Gradle cache restore-keys cross-PR poisoning — scope by branch or drop restore-keys
 - [x] [MED] M_AUDIT2.SEC2.17 — explicit permissions: block on android-apk job
 - [x] [MED] M_AUDIT2.SEC2.18 — debug APK upload retention-days: 7 cap
 - [ ] [HIGH] M_AUDIT2.SEC2.19 — add .github/workflows/release.yml + release-please.yml (signed APK + SBOM)
@@ -1570,13 +1570,16 @@ local-review-trio after each ~5-item batch.
 - [ ] [LOW] M_AUDIT2.SEC2.37 — docs/specs/99-build-deploy.md GitHub repo-settings section
 
 **Native Android (38-41)**
-- [ ] [HIGH] M_AUDIT2.SEC2.38 — proguard-rules.pro: -keep for Capacitor plugins + sql.js
-- [ ] [MED] M_AUDIT2.SEC2.39 — network_security_config.xml (system trust only, no user CAs)
-- [ ] [MED] M_AUDIT2.SEC2.40 — lint{abortOnError true; checkReleaseBuilds true} in build.gradle
-- [ ] [LOW] M_AUDIT2.SEC2.41 — MainActivity StrictMode in debug builds
+- [x] [HIGH] M_AUDIT2.SEC2.38 — proguard-rules.pro: -keep for Capacitor plugins + sql.js
+- [x] [MED] M_AUDIT2.SEC2.39 — network_security_config.xml (system trust only, no user CAs)
+- [x] [MED] M_AUDIT2.SEC2.40 — lint{abortOnError true; checkReleaseBuilds true} in build.gradle
+- [x] [LOW] M_AUDIT2.SEC2.41 — MainActivity StrictMode in debug builds
 
 **Frontend post-CSP (42-45)**
-- [ ] [MED] M_AUDIT2.SEC2.42 — Trusted Types opt-in via CSP (require-trusted-types-for 'script')
+- [x] [MED] M_AUDIT2.SEC2.42 — Trusted Types opt-in via CSP (require-trusted-types-for 'script')
+  - Landed as report-only first (enforcing would trip drei Html portal +
+    r3f WebGLRenderer boot). Violations now visible in DevTools for
+    follow-up enforcement migration.
 - [ ] [MED] M_AUDIT2.SEC2.43 — COOP/COEP/Referrer-Policy headers via WebView interceptor (Android)
 - [x] [LOW] M_AUDIT2.SEC2.44 — CI grep blocking cdn./https:// in index.html (post-CSP defence)
 - [x] [LOW] M_AUDIT2.SEC2.45 — Permissions-Policy meta (camera=() etc deny-list)

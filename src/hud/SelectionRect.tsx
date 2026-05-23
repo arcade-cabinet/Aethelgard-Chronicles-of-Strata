@@ -36,6 +36,10 @@ export function SelectionRect({
 }) {
   const startRef = useRef<{ x: number; y: number } | null>(null);
   const [rect, setRect] = useState<Rect | null>(null);
+  // Ref mirror so onUp always reads the latest rect without being listed
+  // in the useEffect dependency array (which would re-register all listeners
+  // on every pointermove frame).
+  const rectRef = useRef<Rect | null>(null);
 
   useEffect(() => {
     const onDown = (e: PointerEvent) => {
@@ -64,18 +68,21 @@ export function SelectionRect({
         const dx = ev.clientX - start.x;
         const dy = ev.clientY - start.y;
         if (Math.abs(dx) < MIN_DRAG_PX && Math.abs(dy) < MIN_DRAG_PX) return;
-        setRect({
+        const next = {
           x: Math.min(start.x, ev.clientX),
           y: Math.min(start.y, ev.clientY),
           w: Math.abs(dx),
           h: Math.abs(dy),
-        });
+        };
+        rectRef.current = next;
+        setRect(next);
       });
     };
     const onUp = () => {
       const start = startRef.current;
-      const r = rect;
+      const r = rectRef.current;
       startRef.current = null;
+      rectRef.current = null;
       setRect(null);
       if (!start || !r || r.w < MIN_DRAG_PX || r.h < MIN_DRAG_PX) return;
       // a real drag — select every player unit inside the rect
@@ -111,9 +118,10 @@ export function SelectionRect({
       // M_AUDIT2.UX.36 — clear in-flight drag state so a remount
       // (HMR, route change) doesn't inherit a half-finished drag.
       startRef.current = null;
+      rectRef.current = null;
       setRect(null);
     };
-  }, [game, rect, getCamera]);
+  }, [game, getCamera]);
 
   if (!rect) return null;
   return (

@@ -151,7 +151,17 @@ const EVENT_SEED_KEY: PrefKey = PREF_KEYS.eventSeed;
 // SQLite helpers
 // ---------------------------------------------------------------------------
 
-const DB_NAME = 'aethelgard';
+// M_AUDIT2.SEC2.8 — namespaced DB name. The bare 'aethelgard' name
+// collides with any other app sharing the same WebSQL/IDB origin
+// (the Capacitor webview can be hijacked by side-loaded sibling
+// apps if installed under the same scheme). Prefixing with the
+// reverse-domain appId + version suffix makes the namespace
+// collision-free AND lets future schema migrations rename to
+// `_v2.sqlite` without colliding with the v1 store on the same
+// device. Keep the suffix decoupled from DB_VERSION (which drives
+// the runtime migration path) so this string never changes once
+// chosen.
+const DB_NAME = 'com.aethelgard.chronicles_v1';
 const DB_VERSION = 1;
 
 function isWebPlatform(): boolean {
@@ -420,21 +430,29 @@ export function createPersistence(): Persistence {
     },
 
     async reset(): Promise<void> {
-      // M_AUDIT2.SEC2.6 — wipe saves table.
+      // M_AUDIT2.SEC2.6 — wipe ALL persisted state. Reviewer-fix
+      // (post-commit): collect per-step failures and rethrow at the
+      // end so the caller sees a useful error. The previous swallow-
+      // and-log silently corrupted PRNG continuity: saves could
+      // survive while the event seed was deleted, regenerating to a
+      // mismatched stream on next launch.
+      const failures: string[] = [];
       try {
         const db = await openDb();
         if (db) await db.run(`DELETE FROM saves;`);
+        else failures.push('saves (db unavailable)');
       } catch (err) {
-        console.warn('[persistence] reset: clearing saves failed', err);
+        failures.push(`saves: ${err instanceof Error ? err.message : String(err)}`);
       }
-      // Wipe every namespaced Preference key, including the event
-      // seed (regenerated on the next getEventSeed call).
       for (const key of Object.values(PREF_KEYS)) {
         try {
           await Preferences.remove({ key });
         } catch (err) {
-          console.warn(`[persistence] reset: clearing preference ${key} failed`, err);
+          failures.push(`pref:${key} ${err instanceof Error ? err.message : String(err)}`);
         }
+      }
+      if (failures.length > 0) {
+        throw new Error(`[persistence] reset partial failure: ${failures.join('; ')}`);
       }
     },
   };

@@ -147,7 +147,7 @@ export function CreditsModal({ open, onOpenChange }: CreditsModalProps) {
           }}
         >
           Aethelgard ships with assets and libraries from the people listed
-          below. All licenses are CC0, royalty-free, or MIT.
+          below. License terms vary per entry — see the right-hand column.
         </Dialog.Description>
 
         {SECTIONS.map((section) => (
