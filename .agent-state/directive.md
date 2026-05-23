@@ -1706,7 +1706,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.A.20 — Tower Defense `weapon-cannon.glb` as Wonder secondary mesh + projectile source
 - [x] [MED]  M_EXPANSION.A.21 — Tower Defense `crystal-large.glb` as Mana resource node (introduces 4th resource — already slot-extensible per RESOURCE_DISPLAY)
 - [ ] [LOW]  M_EXPANSION.A.22 — Tower Defense `enemy-rat.glb` as low-tier raid unit (faster than Goblin, lower hp)
-- [ ] [LOW]  M_EXPANSION.A.23 — Tower Defense `detail-rocks.glb` as alt biome rock variant
+- [x] [LOW]  M_EXPANSION.A.23 — Tower Defense `detail-rocks.glb` as alt biome rock variant
 - [ ] [LOW]  M_EXPANSION.A.24 — Tower Defense `tile-end-round.glb` as cul-de-sac road piece
 
 **KayKit Adventurers 2.0 EXTRA (25-30)** — heroes haven't all been wired

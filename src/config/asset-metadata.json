@@ -606,6 +606,16 @@
     "license": "CC0",
     "triangles": 200
   },
+  "nature.rocks-mossy": {
+    "id": "nature.rocks-mossy",
+    "path": "assets/nature/rocks-mossy.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Tower Defense Kit",
+    "license": "CC0",
+    "triangles": 300
+  },
   "structures.fountain": {
     "id": "structures.fountain",
     "path": "assets/structures/fountain.glb",

@@ -281,7 +281,10 @@ export const SKINS: Record<Faction, Skin> = {
     minimap: { unitColor: '#ef4444', baseColor: '#a855f7' },
     zoneBorderColor: '#f43f5e',
     baseAccretion: {
-      propPool: ['nature.gravestone.round', 'nature.gravestone.cross'],
+      // M_EXPANSION.A.23 — mossy rocks added to the necropolis biome
+      // accretion pool for visual variety beyond the all-gravestone
+      // baseline.
+      propPool: ['nature.gravestone.round', 'nature.gravestone.cross', 'nature.rocks-mossy'],
       radius: 2,
       density: 0.55,
       scaleRange: [0.8, 1.1],
