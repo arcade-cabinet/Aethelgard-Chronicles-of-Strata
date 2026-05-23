@@ -232,9 +232,9 @@ export const SKINS: Record<Faction, Skin> = {
       Farm: { logicalId: 'nature.gravestone.round', scale: 1.0, yOffset: 0 },
       House: { logicalId: 'nature.gravestone.round', scale: 0.8, yOffset: 0 },
       Granary: { logicalId: 'structures.portal-crypt', scale: 0.7, yOffset: 0 },
-      Barracks: { logicalId: 'structures.portal-fence', scale: 1.0, yOffset: 0 },
+      Barracks: { logicalId: 'structures.iron-fence', scale: 1.0, yOffset: 0 },
       Watchtower: { logicalId: 'nature.gravestone.cross', scale: 1.2, yOffset: 0 },
-      Wall: { logicalId: 'structures.portal-fence', scale: 1.1, yOffset: 0 },
+      Wall: { logicalId: 'structures.iron-fence', scale: 1.1, yOffset: 0 },
       // M_EXPANSION.A.20 — Wonder now mounts the Tower Defense cannon
       // (literal siege-piece silhouette signals 'final game-changer
       // building' way better than another reskinned crypt).
@@ -261,7 +261,7 @@ export const SKINS: Record<Faction, Skin> = {
       { logicalId: 'nature.gravestone.round', x: 0.25, y: 0, z: 0.7, scale: 0.75, rotationY: 0.1 },
       // Iron fence sections framing the base.
       {
-        logicalId: 'structures.portal-fence',
+        logicalId: 'structures.iron-fence',
         x: 0.9,
         y: 0,
         z: -0.1,
@@ -269,14 +269,14 @@ export const SKINS: Record<Faction, Skin> = {
         rotationY: Math.PI / 2,
       },
       {
-        logicalId: 'structures.portal-fence',
+        logicalId: 'structures.iron-fence',
         x: -0.9,
         y: 0,
         z: -0.1,
         scale: 0.8,
         rotationY: -Math.PI / 2,
       },
-      { logicalId: 'structures.portal-fence', x: 0, y: 0, z: -0.9, scale: 0.8, rotationY: 0 },
+      { logicalId: 'structures.iron-fence', x: 0, y: 0, z: -0.9, scale: 0.8, rotationY: 0 },
     ],
     minimap: { unitColor: '#ef4444', baseColor: '#a855f7' },
     zoneBorderColor: '#f43f5e',

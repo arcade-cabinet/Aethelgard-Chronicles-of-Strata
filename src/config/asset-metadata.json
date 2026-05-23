@@ -616,6 +616,26 @@
     "license": "CC0",
     "triangles": 300
   },
+  "structures.iron-fence": {
+    "id": "structures.iron-fence",
+    "path": "assets/structures/iron-fence.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Graveyard Kit",
+    "license": "CC0",
+    "triangles": 200
+  },
+  "structures.iron-fence-column": {
+    "id": "structures.iron-fence-column",
+    "path": "assets/structures/iron-fence-column.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Graveyard Kit",
+    "license": "CC0",
+    "triangles": 200
+  },
   "characters.heroes.knight": {
     "id": "characters.heroes.knight",
     "path": "assets/characters/heroes/knight.glb",
