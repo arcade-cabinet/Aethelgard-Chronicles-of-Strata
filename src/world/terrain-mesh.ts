@@ -1,7 +1,7 @@
-import type { BoardData, Tile } from '@/core/board';
-import { TILE_HEIGHT } from '@/config/world';
-import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
 import { Color } from 'three';
+import { TILE_HEIGHT } from '@/config/world';
+import type { BoardData, Tile } from '@/core/board';
+import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
 import { BIOME_COLORS } from './palette';
 
 /** The raw vertex arrays for the merged terrain mesh. */

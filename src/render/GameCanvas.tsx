@@ -1,30 +1,30 @@
 import { Canvas, useThree } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef } from 'react';
-import { PCFSoftShadowMap, type Camera } from 'three';
-import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
+import { type Camera, PCFSoftShadowMap } from 'three';
 import type { GameState } from '@/game/game-state';
-import { CameraRig } from './CameraRig';
-import { type ViewportProfile, useViewport } from './useViewport';
-import { HomeBase } from '@/world/HomeBase';
 import { CombatText } from '@/world/CombatText';
+import { Crossings } from '@/world/Crossings';
 import { Decoration } from '@/world/Decoration';
 import { EnemyBase } from '@/world/EnemyBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
+import { HomeBase } from '@/world/HomeBase';
+import { Mountains } from '@/world/Mountains';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
-import { ResourceText } from '@/world/ResourceText';
 import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
-import { Mountains } from '@/world/Mountains';
-import { Crossings } from '@/world/Crossings';
 import { ResourceNodes } from '@/world/ResourceNodes';
+import { ResourceText } from '@/world/ResourceText';
 import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
+import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
 import { Units } from '@/world/Units';
 import { Water } from '@/world/Water';
 import { ZoneBorder } from '@/world/ZoneBorder';
+import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';
 import { useGameLoop } from './useGameLoop';
+import { useViewport, type ViewportProfile } from './useViewport';
 
 /** Expose the active r3f camera to the parent via a callback. */
 function CameraTap({ onReady }: { onReady: (cam: Camera) => void }) {

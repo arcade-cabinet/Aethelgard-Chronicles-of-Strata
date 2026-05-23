@@ -1,8 +1,8 @@
 import type { World } from 'koota';
 import { axialToWorld, getHexKey, hexDistance } from '@/core/hex';
 import {
-  FactionBase,
   type Faction,
+  FactionBase,
   FactionTrait,
   HexPosition,
   Transform,

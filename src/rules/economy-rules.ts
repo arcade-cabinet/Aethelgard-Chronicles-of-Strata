@@ -1,6 +1,6 @@
-import { ECONOMY, buildingSupplyFor, supplyCostFor, unitCostFor } from '@/config/economy';
+import { buildingSupplyFor, ECONOMY, supplyCostFor, unitCostFor } from '@/config/economy';
 import type { BuildingType, UnitType } from '@/ecs/components';
-import { type GameEconomy, type ResourceCost, canAfford } from '@/game/economy';
+import { canAfford, type GameEconomy, type ResourceCost } from '@/game/economy';
 
 /** Supply each trainable unit consumes. Enemies are not supply-tracked. */
 export const SUPPLY_COST: Record<UnitType, number> = ECONOMY.supplyCosts;

@@ -1,4 +1,5 @@
 import type { World } from 'koota';
+import { hexDistance } from '@/core/hex';
 import {
   AttractorBehavior,
   ConsumerBehavior,
@@ -9,7 +10,6 @@ import {
   MoverBehavior,
   OffensiveBehavior,
 } from '@/ecs/components';
-import { hexDistance } from '@/core/hex';
 
 /**
  * The bi-signed magnetic force field (spec 102 + M_ARCHETYPE.6). Every

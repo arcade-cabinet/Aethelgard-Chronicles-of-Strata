@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { GameState } from '@/game/game-state';
 import { useViewport } from '@/render/useViewport';
 import { HUD_THEME } from './hud-theme';
@@ -13,10 +13,10 @@ export function PauseControl({ game }: { game: GameState }) {
   const [paused, setPaused] = useState(game.paused);
   const viewport = useViewport();
 
-  const toggle = () => {
+  const toggle = useCallback(() => {
     game.paused = !game.paused;
     setPaused(game.paused);
-  };
+  }, [game]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -38,9 +38,7 @@ export function PauseControl({ game }: { game: GameState }) {
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('visibilitychange', onVisible);
     };
-    // toggle uses game by reference; deps intentionally exclude `paused` state
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [game]);
+  }, [game, toggle]);
 
   // narrower viewports stack the buttons closer to the right edge
   const rightPx = viewport.isPortrait ? 72 : 220;

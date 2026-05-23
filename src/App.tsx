@@ -1,27 +1,27 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
-import { GameOverModal } from '@/hud/GameOverModal';
+import { createAutoSave } from '@/game/auto-save';
+import { type NewGameConfig, startGame } from '@/game/game-state';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
+import { GameOverModal } from '@/hud/GameOverModal';
 import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
+import { Minimap } from '@/hud/Minimap';
+import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
 import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
 import { PauseControl } from '@/hud/PauseControl';
-import { SelectionRect } from '@/hud/SelectionRect';
-import { ZoneLegend } from '@/hud/ZoneLegend';
-import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
-import { Minimap } from '@/hud/Minimap';
 import { ResourceBar } from '@/hud/ResourceBar';
 import { SelectionPanel } from '@/hud/SelectionPanel';
+import { SelectionRect } from '@/hud/SelectionRect';
 import { SettingsModal } from '@/hud/SettingsModal';
 import { SoundToggle } from '@/hud/SoundToggle';
 import { TitleScreen } from '@/hud/TitleScreen';
+import { ZoneLegend } from '@/hud/ZoneLegend';
 import { createPersistence } from '@/persistence/persistence';
-import { createAutoSave } from '@/game/auto-save';
-import { useViewport } from '@/render/useViewport';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
-import { type NewGameConfig, startGame } from '@/game/game-state';
+import { useViewport } from '@/render/useViewport';
 import type { BuildContext } from '@/world/TileInteraction';
 
 /** Shown if the 3D scene fails to load (e.g. a missing asset). */

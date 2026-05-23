@@ -76,8 +76,7 @@ export function Minimap({ game, compact = false }: { game: GameState; compact?: 
   const displaySize = compact ? 96 : SIZE;
 
   return (
-    <div
-      role="region"
+    <section
       aria-label="Minimap"
       style={{
         position: 'absolute',
@@ -98,7 +97,7 @@ export function Minimap({ game, compact = false }: { game: GameState; compact?: 
         height={SIZE}
         style={{ width: '100%', height: '100%', imageRendering: 'pixelated' }}
       />
-    </div>
+    </section>
   );
 }
 

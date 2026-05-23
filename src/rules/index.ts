@@ -14,34 +14,15 @@
  * interface test.
  */
 
-export {
-  BUILDING_COSTS,
-  BUILDING_SUPPLY,
-  type PlacementCheck,
-  canBuild,
-} from './placement';
-export {
-  SUPPLY_COST,
-  UNIT_COSTS,
-  canAddPeon,
-  canTrain,
-  canTrainComplete,
-  peonCap,
-  recomputeMaxSupply,
-} from './economy-rules';
-export {
-  type PeonAction,
-  type PeonView,
-  type PeonWorld,
-  type ResourceSite,
-  nextPeonAction,
-} from './peon-rules';
 export { ATTRACTOR_GUARANTEE, ATTRACTOR_RADIUS, ensureAttractorResources } from './attractor';
 export {
   BUILDING_BEHAVIORS,
   type BuildingBehaviorProfile,
   behaviorsFor,
 } from './building-behaviors';
+export { applyArmor, armorMultiplier } from './damage';
+export type { Discovery } from './discoveries';
+export { DISCOVERIES, discoveryById } from './discovery-registry';
 export {
   BUILDING_DISPLAY,
   type BuildingDisplay,
@@ -49,17 +30,36 @@ export {
   trainableUnits,
   trainerFor,
 } from './display';
-export type { Discovery } from './discoveries';
-export { DISCOVERIES, discoveryById } from './discovery-registry';
-export { applyArmor, armorMultiplier } from './damage';
-export { buildGateMap, materialiseGate, tilePassable } from './gates';
-export { type FieldParams, sampleField } from './force-field';
 export {
-  TILE_BIT,
+  canAddPeon,
+  canTrain,
+  canTrainComplete,
+  peonCap,
+  recomputeMaxSupply,
+  SUPPLY_COST,
+  UNIT_COSTS,
+} from './economy-rules';
+export { type FieldParams, sampleField } from './force-field';
+export { buildGateMap, materialiseGate, tilePassable } from './gates';
+export {
+  nextPeonAction,
+  type PeonAction,
+  type PeonView,
+  type PeonWorld,
+  type ResourceSite,
+} from './peon-rules';
+export {
+  BUILDING_COSTS,
+  BUILDING_SUPPLY,
+  canBuild,
+  type PlacementCheck,
+} from './placement';
+export {
   biomeOf,
   clearBit,
   hasBit,
   packBiome,
   setBit,
   setControlled,
+  TILE_BIT,
 } from './tile-bits';

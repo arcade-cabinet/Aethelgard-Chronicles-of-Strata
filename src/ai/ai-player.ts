@@ -1,4 +1,5 @@
 import { GameEntity, Goal, GoalEvaluator, Think } from 'yuka';
+import { hexNeighbors } from '@/core/hex';
 import {
   AssignedJob,
   Building,
@@ -8,11 +9,10 @@ import {
   HexPosition,
   Unit,
 } from '@/ecs/components';
-import { hexNeighbors } from '@/core/hex';
-import type { GameState } from '@/game/game-state';
 import { moveUnit, placeBuilding, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
-import { UNIT_COSTS, canBuild, peonCap } from '@/rules';
+import type { GameState } from '@/game/game-state';
+import { canBuild, peonCap, UNIT_COSTS } from '@/rules';
 
 /**
  * Goal-driven AI player for one faction (spec 100/101/102).
@@ -67,11 +67,7 @@ export class AiPlayer extends GameEntity {
 }
 
 /** The Think brain over the AiPlayer's evaluators. */
-class AiBrain extends Think<AiPlayer> {
-  constructor(owner: AiPlayer) {
-    super(owner);
-  }
-}
+class AiBrain extends Think<AiPlayer> {}
 
 // ---------------------------------------------------------------------------
 // Shared helpers (faction-scoped reads from KNOWN state)

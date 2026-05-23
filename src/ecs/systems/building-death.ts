@@ -1,8 +1,8 @@
 import type { World } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import type { BoardData } from '@/core/board';
-import { type NavGraph, buildNavGraph } from '@/core/pathfinding';
 import { getHexKey } from '@/core/hex';
+import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
 import { Building, FactionBase, Health, HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 

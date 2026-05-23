@@ -18,22 +18,23 @@
  * authoritative; yuka only provides the steering force that moves the vehicle
  * between ticks.
  */
-import { EntityManager } from 'yuka';
-import type { Vehicle, ArriveBehavior, FollowPathBehavior } from 'yuka';
+
 import type { World } from 'koota';
-import { EnemyTarget, FactionTrait, HexPosition, PathQueue, Transform } from '@/ecs/components';
+import type { ArriveBehavior, FollowPathBehavior, Vehicle } from 'yuka';
+import { EntityManager } from 'yuka';
 import type { BoardData } from '@/core/board';
 import { axialToWorld, getHexKey } from '@/core/hex';
-import { type NavGraph, findPath } from '@/core/pathfinding';
-import { createVehicle } from './vehicle-factory';
+import { findPath, type NavGraph } from '@/core/pathfinding';
+import { EnemyTarget, FactionTrait, HexPosition, PathQueue, Transform } from '@/ecs/components';
 import {
-  MAX_RETARGETS_PER_TICK,
   buildEntityIndex,
   gatherPlayerTargets,
   isTargetAlive,
+  MAX_RETARGETS_PER_TICK,
   selectNearestTarget,
 } from './perception';
 import { setArriveTarget, updatePath } from './steering';
+import { createVehicle } from './vehicle-factory';
 
 interface EnemyRecord {
   vehicle: Vehicle;

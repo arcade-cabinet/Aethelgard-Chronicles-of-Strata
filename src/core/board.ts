@@ -1,5 +1,5 @@
-import { type Biome, assignBiome } from './biome';
 import { MAP_RADIUS } from '@/config/world';
+import { assignBiome, type Biome } from './biome';
 import { type Crossing, placeCrossings } from './crossings';
 import { getHexKey } from './hex';
 import { createNoise2D } from './noise';

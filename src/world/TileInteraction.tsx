@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexKey, hexNeighbors } from '@/core/hex';
+import { Building, FactionTrait, Selectable, Unit, type UnitType } from '@/ecs/components';
 import {
   findSelectableAtTile,
   moveUnit,
@@ -11,7 +12,6 @@ import {
 } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { selectEntity, selectedEntities } from '@/game/selection';
-import { Building, FactionTrait, Selectable, Unit, type UnitType } from '@/ecs/components';
 import { PathLine } from './PathLine';
 
 /** Long-press threshold (ms) — touch hold beyond this fires as right-click. */

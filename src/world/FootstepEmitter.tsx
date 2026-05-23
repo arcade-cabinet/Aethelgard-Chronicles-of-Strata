@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
+import { unpackEntity } from 'koota';
 import { useRef } from 'react';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
-import { unpackEntity } from 'koota';
 import { HexPosition, Movement, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 

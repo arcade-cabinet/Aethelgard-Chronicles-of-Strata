@@ -1,7 +1,7 @@
 import { ECONOMY } from '@/config/economy';
 import type { BoardData } from '@/core/board';
 import type { BuildingType } from '@/ecs/components';
-import { type GameEconomy, type ResourceCost, canAfford } from '@/game/economy';
+import { canAfford, type GameEconomy, type ResourceCost } from '@/game/economy';
 
 /**
  * Resource cost per buildable building type. `TownHall` is excluded — it is a

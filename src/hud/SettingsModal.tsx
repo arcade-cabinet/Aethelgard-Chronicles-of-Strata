@@ -2,8 +2,8 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
 import { setMuted } from '@/audio/buses';
 import type { Persistence } from '@/persistence/persistence';
-import { MUTE_PREF_KEY } from './SoundToggle';
 import { HUD_THEME } from './hud-theme';
+import { MUTE_PREF_KEY } from './SoundToggle';
 
 /** Props for the Settings modal. */
 export interface SettingsModalProps {

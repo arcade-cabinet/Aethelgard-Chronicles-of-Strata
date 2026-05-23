@@ -1,6 +1,6 @@
 import metadataJson from '../config/asset-metadata.json';
-import { staticAssets } from '../static-assets';
 import type { StaticAssetPath } from '../static-assets';
+import { staticAssets } from '../static-assets';
 import type { AssetAccessor } from './manifest';
 import type { AssetEntry } from './manifest-types';
 

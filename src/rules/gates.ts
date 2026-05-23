@@ -1,6 +1,6 @@
 import type { Entity, World } from 'koota';
-import { type Faction, FactionTrait, Gate, HexPosition, MoverBehavior } from '@/ecs/components';
 import { getHexKey } from '@/core/hex';
+import { type Faction, FactionTrait, Gate, HexPosition, MoverBehavior } from '@/ecs/components';
 
 /**
  * Gate-passability lookup (M_ARCHETYPE.2). For each tile holding a Gate,

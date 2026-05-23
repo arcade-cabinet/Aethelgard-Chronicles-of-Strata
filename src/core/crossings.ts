@@ -1,6 +1,6 @@
-import { type CrossingStyle, biomeStyleFor } from './biome';
-import type { Tile } from './board';
 import { HEX_DIRECTIONS } from '@/config/world';
+import { biomeStyleFor, type CrossingStyle } from './biome';
+import type { Tile } from './board';
 import { getHexKey } from './hex';
 import type { Rng } from './rng';
 
@@ -77,11 +77,11 @@ export function placeCrossings(tiles: Map<string, Tile>, rng: Rng): Map<string, 
   const seen = new Set<string>();
   for (const key of [...tiles.keys()].sort()) {
     const tile = tiles.get(key);
-    if (!tile || !tile.walkable) continue;
+    if (!tile?.walkable) continue;
     for (const dir of HEX_DIRECTIONS) {
       const nKey = getHexKey(tile.q + dir.q, tile.r + dir.r);
       const neighbor = tiles.get(nKey);
-      if (!neighbor || !neighbor.walkable) continue;
+      if (!neighbor?.walkable) continue;
       if (Math.abs(neighbor.level - tile.level) !== 1) continue;
       const edge = crossingKey(key, nKey);
       if (seen.has(edge)) continue;
@@ -99,11 +99,11 @@ export function placeCrossings(tiles: Map<string, Tile>, rng: Rng): Map<string, 
   const uf = new UnionFind();
   for (const key of [...tiles.keys()].sort()) {
     const tile = tiles.get(key);
-    if (!tile || !tile.walkable) continue;
+    if (!tile?.walkable) continue;
     for (const dir of HEX_DIRECTIONS) {
       const nKey = getHexKey(tile.q + dir.q, tile.r + dir.r);
       const neighbor = tiles.get(nKey);
-      if (neighbor && neighbor.walkable && neighbor.level === tile.level) {
+      if (neighbor?.walkable && neighbor.level === tile.level) {
         uf.union(key, nKey);
       }
     }

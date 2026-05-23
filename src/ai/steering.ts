@@ -10,8 +10,9 @@
  * Hex coordinates map to world-space via axialToWorld (from core/hex) scaled
  * so one hex tile ≈ 1 world unit.
  */
-import { ArriveBehavior, FollowPathBehavior, Path, Vector3 } from 'yuka';
+
 import type { Vehicle } from 'yuka';
+import { ArriveBehavior, FollowPathBehavior, Path, Vector3 } from 'yuka';
 import { axialToWorld } from '@/core/hex';
 
 /** Distance (world units) at which the vehicle advances to the next waypoint. */

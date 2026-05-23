@@ -1,5 +1,4 @@
-import { WORLD } from '@/config/world';
-import { MAP_RADIUS } from '@/config/world';
+import { MAP_RADIUS, WORLD } from '@/config/world';
 import type { Noise2D } from './noise';
 
 const {

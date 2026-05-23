@@ -1,9 +1,9 @@
 import { useFrame } from '@react-three/fiber';
-import { useImperativeHandle, useRef, forwardRef, useState } from 'react';
-import { RingGeometry, type Mesh } from 'three';
+import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { type Mesh, RingGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
-import { axialToWorld } from '@/core/hex';
 import type { BoardData } from '@/core/board';
+import { axialToWorld } from '@/core/hex';
 
 /** One animated tracking ring — a glowing hex marker that fades over ~1s. */
 interface Ring {

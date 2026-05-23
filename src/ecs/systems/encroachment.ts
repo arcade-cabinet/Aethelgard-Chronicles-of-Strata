@@ -3,7 +3,7 @@ import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { getHexKey } from '@/core/hex';
 import { type Faction, FactionTrait, HexPosition, Unit, type UnitType } from '@/ecs/components';
 import type { Difficulty } from '@/game/difficulty';
-import { type ZoneState, claimTile, releaseTile } from '@/game/zone';
+import { claimTile, releaseTile, type ZoneState } from '@/game/zone';
 
 /** Military unit roles — peons are nonviolent and never encroach. */
 const MILITARY: ReadonlySet<UnitType> = new Set([

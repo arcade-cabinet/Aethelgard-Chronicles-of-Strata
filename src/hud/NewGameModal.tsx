@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useRef, useState } from 'react';
-import { type MapSizeKey, MAP_SIZES, availableMapSizes, DEFAULT_MAP_SIZE } from '@/core/map-size';
+import { availableMapSizes, DEFAULT_MAP_SIZE, MAP_SIZES, type MapSizeKey } from '@/core/map-size';
 import { createEventPrng, createFreshEventSeed } from '@/core/rng';
 import { randomSeedPhrase } from '@/core/seed-phrase';
 import type { Difficulty } from '@/game/game-state';

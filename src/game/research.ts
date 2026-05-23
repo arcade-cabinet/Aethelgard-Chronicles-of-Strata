@@ -1,6 +1,6 @@
 import type { World } from 'koota';
 import { type Discovery, discoveryById } from '@/rules';
-import { type GameEconomy, canAfford, spend } from './economy';
+import { canAfford, type GameEconomy, spend } from './economy';
 
 /**
  * Research / Discoveries (M_DATA.7) — the tech-tree archetype, spec 102.

@@ -1,5 +1,5 @@
 import type { World } from 'koota';
-import { type AnimState, AnimationState, Movement } from '@/ecs/components';
+import { AnimationState, type AnimState, Movement } from '@/ecs/components';
 
 /** The KayKit clip name each animation state maps to. Source: 60-characters.md. */
 const STATE_CLIP = {

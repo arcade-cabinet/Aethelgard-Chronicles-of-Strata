@@ -1,9 +1,8 @@
 import type { Entity, World } from 'koota';
+import { AiPlayer } from '@/ai/ai-player';
 import { type BoardData, generateBoard } from '@/core/board';
 import { getHexKey, hexDistance } from '@/core/hex';
-import { type NavGraph, buildNavGraph } from '@/core/pathfinding';
-import { createEcsWorld } from '@/ecs/world';
-import { createCharacter } from '@/entities/character-factory';
+import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
 import {
   AssignedJob,
   AttractorBehavior,
@@ -17,19 +16,20 @@ import {
   ResourceTrait,
   Unit,
 } from '@/ecs/components';
-import { animationSystem } from '@/ecs/systems/animation';
 import { aiSystem } from '@/ecs/systems/ai';
+import { animationSystem } from '@/ecs/systems/animation';
 import { buildSystem } from '@/ecs/systems/build';
-import { type DamageEvent, combatSystem } from '@/ecs/systems/combat';
-import { deathSystem } from '@/ecs/systems/death';
 import { buildingDeathSystem } from '@/ecs/systems/building-death';
-import { type ResourceDepositEvent, depositSystem } from '@/ecs/systems/deposit';
-import { harvestSystem } from '@/ecs/systems/harvest';
-import { AiPlayer } from '@/ai/ai-player';
+import { combatSystem, type DamageEvent } from '@/ecs/systems/combat';
+import { deathSystem } from '@/ecs/systems/death';
+import { depositSystem, type ResourceDepositEvent } from '@/ecs/systems/deposit';
 import { encroachmentSystem } from '@/ecs/systems/encroachment';
+import { harvestSystem } from '@/ecs/systems/harvest';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
 import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
-import { type Projectile, advanceProjectiles } from './projectiles';
+import { createEcsWorld } from '@/ecs/world';
+import { createCharacter } from '@/entities/character-factory';
+import { advanceProjectiles, type Projectile } from './projectiles';
 
 /** Monotonic counter for projectile React keys — shared across all games. */
 const projectileIdRef = { current: 0 };
@@ -46,25 +46,25 @@ const AI_VISION_RADIUS: Record<Difficulty, number> = {
   normal: 5,
   hard: 8,
 };
+
+import { spawnIntervalFor } from '@/config/combat';
+import { MAP_RADIUS } from '@/config/world';
+import { createEventPrng, createMapPrng } from '@/core/rng';
+import type { Faction } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { spawnSystem } from '@/ecs/systems/spawn';
-import { type GameOutcome, evaluateWinLoss } from '@/ecs/systems/win-loss';
-import { type GameEconomy, createEconomy } from './economy';
-import { behaviorsFor, recomputeMaxSupply } from '@/rules';
+import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
+import { behaviorsFor, ensureAttractorResources, recomputeMaxSupply } from '@/rules';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
-import { ensureAttractorResources } from '@/rules';
-import { createEventPrng, createMapPrng } from '@/core/rng';
-import { MAP_RADIUS } from '@/config/world';
-import { type GameClock, advanceClock, createClock } from './clock';
-import { type Weather, WEATHER_SPEED_MULTIPLIER, advanceWeather, createWeather } from './weather';
-import { type ResearchState, createResearch } from './research';
-import { type RallyState, createRally } from './rally';
 import type { AutoSave } from './auto-save';
 import { tickAutoSave } from './auto-save';
-import { type ZoneState, createZoneState, updateObserved } from './zone';
-import { spawnIntervalFor } from '@/config/combat';
+import { advanceClock, createClock, type GameClock } from './clock';
 import type { Difficulty } from './difficulty';
-import type { Faction } from '@/ecs/components';
+import { createEconomy, type GameEconomy } from './economy';
+import { createRally, type RallyState } from './rally';
+import { createResearch, type ResearchState } from './research';
+import { advanceWeather, createWeather, WEATHER_SPEED_MULTIPLIER, type Weather } from './weather';
+import { createZoneState, updateObserved, type ZoneState } from './zone';
 
 export type { Difficulty } from './difficulty';
 

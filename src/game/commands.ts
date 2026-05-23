@@ -1,7 +1,7 @@
+import type { Entity } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { getHexKey, hexNeighbors } from '@/core/hex';
 import { findPath } from '@/core/pathfinding';
-import { createCharacter } from '@/entities/character-factory';
 import {
   AssignedJob,
   AttractorBehavior,
@@ -16,19 +16,19 @@ import {
   Selectable,
   Unit,
 } from '@/ecs/components';
-import type { Entity } from 'koota';
+import { createCharacter } from '@/entities/character-factory';
 import {
   BUILDING_COSTS,
-  SUPPLY_COST,
-  UNIT_COSTS,
   behaviorsFor,
   canBuild,
   canTrainComplete,
+  SUPPLY_COST,
+  UNIT_COSTS,
 } from '@/rules';
 import { spend } from './economy';
 import type { GameState } from './game-state';
-import { type ResearchId, applyResearch } from './research';
 import { setRallyPoint } from './rally';
+import { applyResearch, type ResearchId } from './research';
 
 /**
  * The command API is the **single action channel** — every change a faction

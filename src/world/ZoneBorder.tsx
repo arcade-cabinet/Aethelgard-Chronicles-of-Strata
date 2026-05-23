@@ -1,8 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
-import { BufferAttribute, BufferGeometry, type LineSegments } from 'three';
-import { TILE_HEIGHT } from '@/config/world';
-import { HEX_DIRECTIONS } from '@/config/world';
+import { BufferAttribute, type BufferGeometry, type LineSegments } from 'three';
+import { HEX_DIRECTIONS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
 import type { Faction } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';

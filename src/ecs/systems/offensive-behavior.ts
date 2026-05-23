@@ -1,5 +1,6 @@
 import type { Entity, World } from 'koota';
 import { axialToWorld, hexDistance } from '@/core/hex';
+import type { Rng } from '@/core/rng';
 import {
   Building,
   type Faction,
@@ -11,7 +12,6 @@ import {
   Unit,
   type UnitType,
 } from '@/ecs/components';
-import type { Rng } from '@/core/rng';
 import { type Projectile, spawnProjectile } from '@/game/projectiles';
 
 /** Military roles an offensive zone targets (peons are nonviolent — not targeted). */

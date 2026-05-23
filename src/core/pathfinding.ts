@@ -1,5 +1,5 @@
-import type { BoardData } from './board';
 import { HEX_DIRECTIONS } from '@/config/world';
+import type { BoardData } from './board';
 import { crossingKey } from './crossings';
 import { getHexKey, hexDistance } from './hex';
 
@@ -21,7 +21,7 @@ export function buildNavGraph(board: BoardData): NavGraph {
     for (const dir of HEX_DIRECTIONS) {
       const nKey = getHexKey(tile.q + dir.q, tile.r + dir.r);
       const neighbor = board.tiles.get(nKey);
-      if (!neighbor || !neighbor.walkable) continue;
+      if (!neighbor?.walkable) continue;
       const delta = Math.abs(neighbor.level - tile.level);
       if (delta === 0) {
         neighbors.add(nKey);

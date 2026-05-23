@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { AssetManifest } from '../manifest-types';
 import { createAssetAccessor } from '../manifest';
+import type { AssetManifest } from '../manifest-types';
 
 const fixture: AssetManifest = {
   generatedAt: '2026-05-22T00:00:00.000Z',

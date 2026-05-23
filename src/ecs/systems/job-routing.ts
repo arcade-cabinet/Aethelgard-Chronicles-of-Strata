@@ -1,7 +1,7 @@
 import type { World } from 'koota';
 import type { BoardData } from '@/core/board';
 import { getHexKey, hexNeighbors } from '@/core/hex';
-import { type NavGraph, findPath } from '@/core/pathfinding';
+import { findPath, type NavGraph } from '@/core/pathfinding';
 import {
   AssignedJob,
   Carrier,
@@ -12,8 +12,8 @@ import {
   ResourceTrait,
   Unit,
 } from '@/ecs/components';
-import { type PeonView, type ResourceSite, nextPeonAction } from '@/rules';
-import { type ZoneState, claimTile } from '@/game/zone';
+import { claimTile, type ZoneState } from '@/game/zone';
+import { nextPeonAction, type PeonView, type ResourceSite } from '@/rules';
 
 /** Encode a path of tile keys into "q,r,level" steps using board elevation. */
 function leveledSteps(board: BoardData, path: string[]): string[] {

@@ -14,16 +14,17 @@
  *
  * Source: docs/specs/95-persistence.md
  */
+
+import { Capacitor } from '@capacitor/core';
+import { Preferences } from '@capacitor/preferences';
 import {
   CapacitorSQLite,
   SQLiteConnection,
   type SQLiteDBConnection,
 } from '@capacitor-community/sqlite';
-import { Capacitor } from '@capacitor/core';
-import { Preferences } from '@capacitor/preferences';
-import { type Rng, advanceEventSeed } from '@/core/rng';
+import { advanceEventSeed, type Rng } from '@/core/rng';
 import type { GameState } from '@/game/game-state';
-import { type WorldSnapshot, serializeWorld } from './serialize';
+import { serializeWorld, type WorldSnapshot } from './serialize';
 
 // ---------------------------------------------------------------------------
 // Types

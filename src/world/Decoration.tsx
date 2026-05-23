@@ -6,6 +6,7 @@ import type { BiomeType } from '@/core/biome';
 import type { BoardData } from '@/core/board';
 import { axialToWorld } from '@/core/hex';
 import { createMapPrng } from '@/core/rng';
+
 // ---------------------------------------------------------------------------
 // Per-biome decoration palette
 // Each entry names a curated set of asset logical-ids and their spawn weight.

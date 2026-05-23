@@ -8,7 +8,7 @@ import {
   HexPosition,
   type ResourceType,
 } from '@/ecs/components';
-import { type GameEconomy, addResource } from '@/game/economy';
+import { addResource, type GameEconomy } from '@/game/economy';
 
 /** A resource-popup event captured per deposit — fuels floating "+N Wood" text. */
 export interface ResourceDepositEvent {

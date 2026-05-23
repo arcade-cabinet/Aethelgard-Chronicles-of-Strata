@@ -1,4 +1,5 @@
 import type { Entity, World } from 'koota';
+import { difficultyMultiplierFor, unitStatFor } from '@/config/combat';
 import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
 import {
@@ -19,7 +20,6 @@ import {
   Unit,
   type UnitType,
 } from '@/ecs/components';
-import { difficultyMultiplierFor, unitStatFor } from '@/config/combat';
 import type { Difficulty } from '@/game/difficulty';
 
 /** Parameters for spawning a character entity. */

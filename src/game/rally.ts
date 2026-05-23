@@ -1,7 +1,7 @@
 import type { Entity } from 'koota';
 import type { BoardData } from '@/core/board';
 import { getHexKey } from '@/core/hex';
-import { type NavGraph, findPath } from '@/core/pathfinding';
+import { findPath, type NavGraph } from '@/core/pathfinding';
 import { HexPosition, PathQueue } from '@/ecs/components';
 
 /** The barracks rally point — where newly trained footmen go. */

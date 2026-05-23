@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import type { BoardData } from '@/core/board';
 import { TILE_HEIGHT } from '@/config/world';
+import type { BoardData } from '@/core/board';
 import { axialToWorld } from '@/core/hex';
 
 /** A placed mountain peak. */

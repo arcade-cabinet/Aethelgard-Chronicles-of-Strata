@@ -1,5 +1,5 @@
-import { RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import { ECONOMY } from '@/config/economy';
+import { RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 
 /**
  * Global resource totals + supply + kills for one play session.

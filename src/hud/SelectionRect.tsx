@@ -1,7 +1,7 @@
+import type { Entity } from 'koota';
 import { useEffect, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { Vector3 } from 'three';
-import type { Entity } from 'koota';
 import { FactionTrait, Transform, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { clearSelection, selectEntities } from '@/game/selection';

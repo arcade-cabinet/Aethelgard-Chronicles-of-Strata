@@ -1,15 +1,15 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
-import { Building, type BuildingType, Health, Unit } from '@/ecs/components';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
+import { Building, type BuildingType, Health, Unit } from '@/ecs/components';
 import { doResearch, trainUnit } from '@/game/commands';
+import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
 import { selectedEntity } from '@/game/selection';
-import { canAfford, type ResourceCost } from '@/game/economy';
-import { BUILDING_COSTS, UNIT_COSTS, discoveryById, displayFor } from '@/rules';
-import { costLabel } from './format';
+import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
 import type { BuildContext } from '@/world/TileInteraction';
+import { costLabel } from './format';
 import { HUD_THEME } from './hud-theme';
 
 /** Buildable types derived from the BUILDING_COSTS table — NOT hardcoded. */
