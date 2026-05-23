@@ -1409,3 +1409,238 @@ percentages, verify perf headroom holds at the new Huge.
 - [x] M_POLISH.4 — victory confetti: VictoryConfetti.tsx — 60 gold/amber/
   bronze BoxGeometry pieces, ballistic with gravity, 3s lifetime, fades to
   zero. Fires on the moment game.outcome flips to 'win'.
+
+### M_AUDIT2 — 163 forward-applied audit findings (2026-05-23)
+
+Three audit agents emitted 163 fresh findings beyond the M_REGISTRY/M_SEC/
+M_MICRO rollout. Each is one ticket. Categories: ARCH (architecture
+audit, 71 items), SEC2 (security audit, 50 items), UX (visual + a11y,
+42 items). Doctrine: drain in priority order (CRITICAL → HIGH → MED → LOW),
+local-review-trio after each ~5-item batch.
+
+#### M_AUDIT2.ARCH — architecture, registry, perf, coupling (71)
+
+**Cross-cutting still scattered (1-7)**
+- [ ] M_AUDIT2.ARCH.1 — Decoration.tsx PALETTES → BIOME_FLAGS.decoration slot
+- [ ] M_AUDIT2.ARCH.2 — ResourceText.tsx COLOR + HUD_THEME + SLOT_DISPLAY collapse → RESOURCE_DISPLAY in rules/display.ts
+- [ ] M_AUDIT2.ARCH.3 — ZoneBorder.tsx ZONE_COLOR → SKINS[faction].zoneBorderColor or reuse minimap.unitColor
+- [ ] M_AUDIT2.ARCH.4 — ResourceNodes.tsx NODE_MESH+NODE_TINT → src/rules/resource-profiles.ts (collapse with ECONOMY.harvestYield)
+- [ ] M_AUDIT2.ARCH.5 — weather.ts WEATHER_LABEL+WEATHER_SPEED_MULTIPLIER → WEATHER_PROFILES record
+- [ ] M_AUDIT2.ARCH.6 — extract WorldBadge.tsx; CombatText/ResourceText/BuilderBadge/HealthBillboard become 5-line wrappers
+- [ ] M_AUDIT2.ARCH.7 — implement SKINS[faction].audio Skin slot (already in JSDoc)
+
+**Magic numbers in hot paths (8-18)**
+- [ ] M_AUDIT2.ARCH.8 — AI_VISION_RADIUS → config/combat.ts difficulty.aiVisionRadius
+- [ ] M_AUDIT2.ARCH.9 — PULSE_SECONDS → config/combat.ts difficulty.encroachmentGraceSeconds
+- [ ] M_AUDIT2.ARCH.10 — FIRE_CADENCE (1.2) → OffensiveBehavior trait OR BUILDING_PROFILES.behaviors.offensive.cadence
+- [ ] M_AUDIT2.ARCH.11 — PROJECTILE_LIFETIME per-kind table in projectiles.ts
+- [ ] M_AUDIT2.ARCH.12 — particle-archetypes tuning constants → ParticleEmitterSpec.tuning field
+- [ ] M_AUDIT2.ARCH.13 — AUTO_SAVE_INTERVAL → config/persistence.ts
+- [ ] M_AUDIT2.ARCH.14 — FIXED_DT + MAX_STEPS_PER_FRAME → config/world.ts sim:{}
+- [ ] M_AUDIT2.ARCH.15 — BASE_UNIT_VISION_RADIUS + UNIT_CONE_HALF_ANGLE → config/world.ts vision:{}
+- [ ] M_AUDIT2.ARCH.16 — HealthBillboard tier thresholds → HEALTH_BAR_STOPS in rules/display.ts
+- [ ] M_AUDIT2.ARCH.17 — Crossings.tsx HALF_WIDTH/LIFT/STAIR_STEPS → config/world.ts crossings:{}
+- [ ] M_AUDIT2.ARCH.18 — FLOATING_TEXT (POPUP_LIFETIME/DRIFT) shared config used by ResourceText+CombatText
+
+**Dead/shimmed code (19-23)**
+- [ ] M_AUDIT2.ARCH.19 — DiscoveriesPanel.tsx:128 `void canResearch` — delete or wire per-row gating
+- [ ] M_AUDIT2.ARCH.20 — board.ts:214 `void rng` — drop unused param
+- [ ] M_AUDIT2.ARCH.21 — discovery-cost.ts:39 `void seen` — same
+- [ ] M_AUDIT2.ARCH.22 — FactionBase.tsx placed-useMemo dep is Map ref (never invalidates) — key on buildSitesGeneration
+- [ ] M_AUDIT2.ARCH.23 — Mountains.tsx hardcoded fallback level=5 even with peakLevel slot — drop fallback
+
+**Code-shape duplication (24-29)**
+- [ ] M_AUDIT2.ARCH.24 — useFloatingPopups<T> hook (CombatText+ResourceText share lifecycle)
+- [ ] M_AUDIT2.ARCH.25 — usePolledSnapshot<T> hook (ResourceBar+SelectionPanel rAF poll)
+- [ ] M_AUDIT2.ARCH.26 — useAsset(logicalId) helper wrapping useGLTF(assets.url(id))
+- [ ] M_AUDIT2.ARCH.27 — codegen Decoration's 18 useGLTF + DECO_IDS from PALETTES single source
+- [ ] M_AUDIT2.ARCH.28 — once-per-tick buildFactionPositionsIndex used by encroachment/job-routing/ai
+- [ ] M_AUDIT2.ARCH.29 — useGameStateSubscription<T> hook (RallyMarker, GameCanvas wrappers)
+
+**Coupling/boundary (30-33)**
+- [ ] M_AUDIT2.ARCH.30 — balance-audit.ts imports from rules/ (core→rules upward dep) — fix or document
+- [ ] M_AUDIT2.ARCH.31 — encroachment.ts emits to audio directly — replace with lastEncroachmentEvents[]
+- [ ] M_AUDIT2.ARCH.32 — ui-sound-emitter singleton → AudioContext.Provider
+- [ ] M_AUDIT2.ARCH.33 — FactionBase reads koota traits directly — document or extract projection
+
+**Spec drift (34-40)**
+- [ ] M_AUDIT2.ARCH.34 — spec 95 says Preferences; code uses SQLite — pick truth, fix loser
+- [ ] M_AUDIT2.ARCH.35 — spec 95 §SQLite Save Schema doesn't match actual GameSnapshot — rewrite
+- [ ] M_AUDIT2.ARCH.36 — SNAPSHOT_VERSION migration path — add migrations table + spec section
+- [ ] M_AUDIT2.ARCH.37 — spec 70 §Supply System incomplete vs unit roster — regenerate from UNIT_PROFILES
+- [ ] M_AUDIT2.ARCH.38 — spec 90 §Resource Panel predates 4-resource economy — add science
+- [ ] M_AUDIT2.ARCH.39 — spec 104 §Migration status body empty — backfill rollout actuals
+- [ ] M_AUDIT2.ARCH.40 — spec 103 ParticleEmitterSpec contract — verify matches actual interface
+
+**Test coverage gaps (41-50)**
+- [ ] M_AUDIT2.ARCH.41 — encroachment.ts: no test (tile flip, defended cancels, peon never encroach)
+- [ ] M_AUDIT2.ARCH.42 — offensive-behavior.ts: no test (one-source-per-target, cadence)
+- [ ] M_AUDIT2.ARCH.43 — job-routing.ts: no test (5-case switch on action.kind)
+- [ ] M_AUDIT2.ARCH.44 — zone.ts: no test (generation bump, vision cones)
+- [ ] M_AUDIT2.ARCH.45 — projectiles.ts: no test (advanceProjectiles mutates+returns changed)
+- [ ] M_AUDIT2.ARCH.46 — auto-save.ts: no test (interval+accumulator)
+- [ ] M_AUDIT2.ARCH.47 — rally.ts: no test
+- [ ] M_AUDIT2.ARCH.48 — research.ts: no test
+- [ ] M_AUDIT2.ARCH.49 — ai-player.ts + ai-director.ts: no test (MAX_RETARGETS_PER_TICK regression)
+- [ ] M_AUDIT2.ARCH.50 — ErrorBoundary.tsx: no test
+
+**Per-tick perf (51-56)**
+- [ ] M_AUDIT2.ARCH.51 — encroachment per-tick `new Set()` ×2 — hoist to module + .clear()
+- [ ] M_AUDIT2.ARCH.52 — job-routing inner-loop per-peon `new Set` — hoist outside loop
+- [ ] M_AUDIT2.ARCH.53 — ai-director/ai-player multiple world.query — pass factionIndex from runEconomyTick
+- [ ] M_AUDIT2.ARCH.54 — FactionBase placed useMemo broken dep (Map ref) — generation key (dup of .22)
+- [ ] M_AUDIT2.ARCH.55 — combat.ts builds byId Map every tick — keep between ticks
+- [ ] M_AUDIT2.ARCH.56 — Decoration buildSitesKey joined-string per render — generation counter
+
+**Architectural debt (57-62)**
+- [ ] M_AUDIT2.ARCH.57 — Combat resolve scattered (combat-math/damage/combat/offensive-behavior) — rules/combat-resolve.ts as single source
+- [ ] M_AUDIT2.ARCH.58 — Audio 5-file fan-out + singleton — write audio/spec.md + refactor to one service via context
+- [ ] M_AUDIT2.ARCH.59 — Persistence 5-file overlap — split storage/snapshot/session
+- [ ] M_AUDIT2.ARCH.60 — commands.ts 453 LOC owns 7 verbs — split commands/build|train|move|research|turn.ts
+- [ ] M_AUDIT2.ARCH.61 — game-state.ts 770 LOC — split state-shape/state-init/tick
+- [ ] M_AUDIT2.ARCH.62 — addFaction(id, skin, baseAttrs) builder for per-faction record init
+
+**Production-readiness (63-71)**
+- [ ] M_AUDIT2.ARCH.63 — wider ErrorBoundary scope (per-panel wrap)
+- [ ] M_AUDIT2.ARCH.64 — reportError(err, context) facade in src/lib/telemetry.ts (no-op default)
+- [ ] M_AUDIT2.ARCH.65 — extract HUD strings to src/hud/strings.ts (i18n surface)
+- [ ] M_AUDIT2.ARCH.66 — snapshot migration map (dup of .36 — track here for prod-readiness lens)
+- [ ] M_AUDIT2.ARCH.67 — <LoadingScreen progress={loaded/total}> Suspense fallback
+- [ ] M_AUDIT2.ARCH.68 — src/native/capacitor-lifecycle.ts (appStateChange + backButton)
+- [ ] M_AUDIT2.ARCH.69 — AudioContext resume on visibilitychange (Howler unhide silence)
+- [ ] M_AUDIT2.ARCH.70 — @capacitor-community/sqlite still imported — pick truth (Preferences vs SQLite)
+- [ ] M_AUDIT2.ARCH.71 — <SaveCorruptedModal> before silent reseed
+
+#### M_AUDIT2.SEC2 — security + production hardening (50)
+
+**Capacitor/WebView (1-5)**
+- [ ] [HIGH] M_AUDIT2.SEC2.1 — MainActivity exported=true with no permission guard — drop singleTask or guard intent extras
+- [ ] [HIGH] M_AUDIT2.SEC2.2 — add taskAffinity="" + allowTaskReparenting=false on activity (task-hijack defence)
+- [ ] [MED] M_AUDIT2.SEC2.3 — capacitor.config.ts: explicit android.webContentsDebuggingEnabled=false + allowMixedContent=false + captureInput=true
+- [ ] [MED] M_AUDIT2.SEC2.4 — server.hostname: 'aethelgard.local' (unique WebView storage partition)
+- [ ] [LOW] M_AUDIT2.SEC2.5 — delete legacy Cordova config.xml shell
+
+**Storage (6-9)**
+- [ ] [HIGH] M_AUDIT2.SEC2.6 — Persistence.reset() to delete DB + jeep-sqlite element
+- [ ] [MED] M_AUDIT2.SEC2.7 — saves row count cap (>N delete oldest) + QuotaExceededError UI surface
+- [ ] [MED] M_AUDIT2.SEC2.8 — DB_NAME prefix with appId slug + version suffix
+- [ ] [MED] M_AUDIT2.SEC2.9 — cap row.snapshot.length pre-JSON.parse (2MB)
+
+**Supply chain (10-15)**
+- [ ] [HIGH] M_AUDIT2.SEC2.10 — exact-pin all ^/~ in package.json (M_SEC.28 deferred — close it)
+- [ ] [HIGH] M_AUDIT2.SEC2.11 — exact-pin three+r3f+drei triplet
+- [ ] [MED] M_AUDIT2.SEC2.12 — @types/node pinned to 22.x (matches runtime)
+- [ ] [HIGH] M_AUDIT2.SEC2.13 — `pnpm audit --audit-level=high --prod` CI step
+- [ ] [MED] M_AUDIT2.SEC2.14 — .npmrc enable-pre-post-scripts=false + onlyBuiltDependencies allowlist
+- [ ] [MED] M_AUDIT2.SEC2.15 — SHA-pin dependency-review-action@v4 + codeql-action/init+analyze@v3
+
+**Build/CI (16-22)**
+- [ ] [HIGH] M_AUDIT2.SEC2.16 — Gradle cache restore-keys cross-PR poisoning — scope by branch or drop restore-keys
+- [ ] [MED] M_AUDIT2.SEC2.17 — explicit permissions: block on android-apk job
+- [ ] [MED] M_AUDIT2.SEC2.18 — debug APK upload retention-days: 7 cap
+- [ ] [HIGH] M_AUDIT2.SEC2.19 — add .github/workflows/release.yml + release-please.yml (signed APK + SBOM)
+- [ ] [HIGH] M_AUDIT2.SEC2.20 — Android release signingConfig + keystore from CI secret
+- [ ] [MED] M_AUDIT2.SEC2.21 — fork-PR gate on expensive CI steps (Playwright)
+- [ ] [MED] M_AUDIT2.SEC2.22 — CI guard `git diff --exit-code src/static-assets.ts` after build
+
+**Determinism (23-24)**
+- [ ] [LOW] M_AUDIT2.SEC2.23 — Device.getInfo Huge-gating: add wall-clock+frame-budget probe
+- [ ] [MED] M_AUDIT2.SEC2.24 — session-scoped event seed (not just Preferences-persisted) + embed seed in snapshot
+
+**DoS / resource exhaustion (25-28)**
+- [ ] [MED] M_AUDIT2.SEC2.25 — SelectionRect pointermove throttle to rAF/60Hz
+- [ ] [MED] M_AUDIT2.SEC2.26 — TileInteraction.onPointerDown click cooldown 100ms; rate-limit placements
+- [ ] [MED] M_AUDIT2.SEC2.27 — auto-save concurrency guard (saving:bool) + skipped-saves counter
+- [ ] [LOW] M_AUDIT2.SEC2.28 — r3f frameloop=demand|never when document.visibilityState!=='visible'
+
+**PII / fingerprint (29-31)**
+- [ ] [MED] M_AUDIT2.SEC2.29 — Device.getInfo confined to src/core/device-tier.ts; expose only tier
+- [ ] [LOW] M_AUDIT2.SEC2.30 — wrap gl.getExtension to mask WEBGL_debug_renderer_info
+- [ ] [LOW] M_AUDIT2.SEC2.31 — gate Howler init on first user interaction (audio fingerprint surface)
+
+**Process/release (32-37)**
+- [ ] [HIGH] M_AUDIT2.SEC2.32 — add .github/SECURITY.md (vuln disclosure policy + SLA)
+- [ ] [HIGH] M_AUDIT2.SEC2.33 — add PRIVACY.md (no-network claim; Play store needs URL)
+- [ ] [HIGH] M_AUDIT2.SEC2.34 — CreditsModal.tsx with KayKit/Kenney CC-BY attribution + audio pack authors
+- [ ] [MED] M_AUDIT2.SEC2.35 — SBOM generation in release.yml + Sigstore attestation
+- [ ] [MED] M_AUDIT2.SEC2.36 — release-please-config: bump-minor-pre-major + android/app/build.gradle extra-files
+- [ ] [LOW] M_AUDIT2.SEC2.37 — docs/specs/99-build-deploy.md GitHub repo-settings section
+
+**Native Android (38-41)**
+- [ ] [HIGH] M_AUDIT2.SEC2.38 — proguard-rules.pro: -keep for Capacitor plugins + sql.js
+- [ ] [MED] M_AUDIT2.SEC2.39 — network_security_config.xml (system trust only, no user CAs)
+- [ ] [MED] M_AUDIT2.SEC2.40 — lint{abortOnError true; checkReleaseBuilds true} in build.gradle
+- [ ] [LOW] M_AUDIT2.SEC2.41 — MainActivity StrictMode in debug builds
+
+**Frontend post-CSP (42-45)**
+- [ ] [MED] M_AUDIT2.SEC2.42 — Trusted Types opt-in via CSP (require-trusted-types-for 'script')
+- [ ] [MED] M_AUDIT2.SEC2.43 — COOP/COEP/Referrer-Policy headers via WebView interceptor (Android)
+- [ ] [LOW] M_AUDIT2.SEC2.44 — CI grep blocking cdn./https:// in index.html (post-CSP defence)
+- [ ] [LOW] M_AUDIT2.SEC2.45 — Permissions-Policy meta (camera=() etc deny-list)
+
+**Misc (46-50)**
+- [ ] [MED] M_AUDIT2.SEC2.46 — ErrorBoundary prod-mode log strips stack/componentStack
+- [ ] [LOW] M_AUDIT2.SEC2.47 — window.onerror + unhandledrejection global handlers
+- [ ] [LOW] M_AUDIT2.SEC2.48 — vite.config explicit build.sourcemap=false for github-pages
+- [ ] [LOW] M_AUDIT2.SEC2.49 — CI verify-lockfile step (`pnpm install --lockfile-only && git diff --exit-code`)
+- [ ] [LOW] M_AUDIT2.SEC2.50 — narrow biome.json a11y-off override; allow a11y on TileInteraction
+
+#### M_AUDIT2.UX — visual, a11y, polish (42)
+
+**CRITICAL (1-3)**
+- [ ] [CRIT] M_AUDIT2.UX.1 — useReducedMotion wired through title bob, CriticalWarning pulse, panel slides, particles
+- [ ] [CRIT] M_AUDIT2.UX.2 — aria-label on SoundToggle, SettingsModal mute, ZoneLegend close button
+- [ ] [CRIT] M_AUDIT2.UX.3 — global *:focus-visible outline (Tab keyboard nav blocker)
+
+**MAJOR — touch / mobile (4-7)**
+- [ ] [MAJ] M_AUDIT2.UX.4 — 44px hit-target floor: HudPill, SoundToggle, EndTurnButton, ZoneLegend on portrait
+- [ ] [MAJ] M_AUDIT2.UX.5 — env(safe-area-inset-*) padding on #app-shell (gesture-bar occlusion)
+- [ ] [MAJ] M_AUDIT2.UX.6 — NewGameModal keyboard overflow: sticky-bottom Begin CTA + keyboard-inset-aware maxHeight
+- [ ] [MAJ] M_AUDIT2.UX.7 — touch-action: none on #app-shell + MIN_DRAG_PX=12 for touch pointerType
+
+**MAJOR — feedback / info (8-15)**
+- [ ] [MAJ] M_AUDIT2.UX.8 — proper HealthBillboard bar (red bg + green fraction fill, fade at full)
+- [ ] [MAJ] M_AUDIT2.UX.9 — disabledReason tooltip on HudButton (cost/prereq/cap) via Radix Tooltip
+- [ ] [MAJ] M_AUDIT2.UX.10 — formatInt(n) thousands separator; apply ResourceBar + GameOverModal
+- [ ] [MAJ] M_AUDIT2.UX.11 — formatTime(sec)→MM:SS in EndTurnButton + GameOverModal + PauseControl
+- [ ] [MAJ] M_AUDIT2.UX.12 — AriaLiveRegion + emitGameEvent bus; CriticalWarning role="alert"
+- [ ] [MAJ] M_AUDIT2.UX.13 — idle-peon "?" billboard + HUD log strip
+- [ ] [MAJ] M_AUDIT2.UX.14 — supply-cap nag (danger color on val-supply + (cap) badge + supply-cap-hit event)
+- [ ] [MAJ] M_AUDIT2.UX.15 — WeatherIndicator.tsx pill + weather-change event in sound-map
+
+**MAJOR — interaction / nav (16-21)**
+- [ ] [MAJ] M_AUDIT2.UX.16 — Segmented → role=radiogroup arrow-key nav + autoFocus seed field
+- [ ] [MAJ] M_AUDIT2.UX.17 — DiscoveriesPanel prereq tree visualization (purchased/available/gated)
+- [ ] [MAJ] M_AUDIT2.UX.18 — HUD pill collision audit (portrait vs landscape slot overlap)
+- [ ] [MAJ] M_AUDIT2.UX.19 — SelectionPanel width clamp(220px,22vw,280px) + ellipsis overflow
+- [ ] [MAJ] M_AUDIT2.UX.20 — Continue button disabledReason tooltip when !hasSave
+- [ ] [MAJ] M_AUDIT2.UX.21 — OnboardingOverlay: extend to ~9 STEPS (right-click, drag-select, pause shortcuts, resource legend, per-mode win conditions)
+
+**MAJOR — brand / consistency (22-25)**
+- [ ] [MAJ] M_AUDIT2.UX.22 — verify @fontsource/metamorphous + inter actually imported (post-CSP regression check)
+- [ ] [MAJ] M_AUDIT2.UX.23 — SelectionRect: skip onDown when [role=dialog][data-state=open] (or tag ModalShell with data-hud-panel)
+- [ ] [MAJ] M_AUDIT2.UX.24 — global contextmenu prevent inside #app-shell (right-click HUD)
+- [ ] [MAJ] M_AUDIT2.UX.25 — costLabel: replace single-letter abbreviations with color chips + unicode glyphs
+
+**MAJOR — accessibility (26-28)**
+- [ ] [MAJ] M_AUDIT2.UX.26 — CriticalWarning: remove aria-hidden, add role=alert + reduced-motion static variant
+- [ ] [MAJ] M_AUDIT2.UX.27 — SoundToggle uses HudPill slot=sound (kill duplicate position)
+- [ ] [MAJ] M_AUDIT2.UX.28 — color contrast fix: muted #94a3b8 fails 4.5:1 — shift to #a8b3c5 or drop panel alpha to 0.94
+
+**MAJOR — render polish (29-32)**
+- [ ] [MAJ] M_AUDIT2.UX.29 — day/night sky banding: noise dither overlay or fragment-shader gradient
+- [ ] [MAJ] M_AUDIT2.UX.30 — Roads z-fighting: lift to 0.15 or polygonOffset on material
+- [ ] [MAJ] M_AUDIT2.UX.31 — KeyboardShortcuts arrow-keys: implement pan or drop misleading comment
+- [ ] [MAJ] M_AUDIT2.UX.32 — Loading state TitleScreen→GameSession ("Forging the realm…" + Radix Progress)
+
+**MINOR (33-42)**
+- [ ] [MIN] M_AUDIT2.UX.33 — CriticalWarning keyframe to CSS file (no per-mount style alloc)
+- [ ] [MIN] M_AUDIT2.UX.34 — Minimap base markers scale with displaySize (max(3, displaySize/24))
+- [ ] [MIN] M_AUDIT2.UX.35 — Roads snapshot throttle to 5Hz
+- [ ] [MIN] M_AUDIT2.UX.36 — SelectionRect cleanup: clear startRef on unmount
+- [ ] [MIN] M_AUDIT2.UX.37 — PauseControl pointer-events visual test
+- [ ] [MIN] M_AUDIT2.UX.38 — ZoneLegend top viewport-aware (60/80)
+- [ ] [MIN] M_AUDIT2.UX.39 — TitleBackground: verify low-poly biome teaser (or add rotating tiles)
+- [ ] [MIN] M_AUDIT2.UX.40 — EndTurnButton: setTick only when displayed integer changes (not every 100ms)
+- [ ] [MIN] M_AUDIT2.UX.41 — Settings modal "Replay tutorial" link (reopen OnboardingOverlay)
+- [ ] [MIN] M_AUDIT2.UX.42 — hint font size floor 0.78rem (mobile readability)
