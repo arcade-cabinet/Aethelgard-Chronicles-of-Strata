@@ -1,0 +1,51 @@
+{
+  "hex": {
+    "hexRadius": 1,
+    "tileHeight": 0.85,
+    "waterLevelFactor": 0.32,
+    "waterDiscHeight": 0.18,
+    "directions": [
+      { "q": 1, "r": 0 },
+      { "q": 0, "r": 1 },
+      { "q": -1, "r": 1 },
+      { "q": -1, "r": 0 },
+      { "q": 0, "r": -1 },
+      { "q": 1, "r": -1 }
+    ]
+  },
+  "board": {
+    "mapRadius": 20
+  },
+  "mapSizes": {
+    "small": 12,
+    "medium": 20,
+    "large": 28,
+    "huge": 36
+  },
+  "dayLength": 240,
+  "weather": {
+    "minInterval": 90,
+    "maxInterval": 180
+  },
+  "biome": {
+    "heightThresholds": [0.1, 0.25, 0.45, 0.6, 0.75, 0.88],
+    "moistureCutoffDesert": 0.45,
+    "moistureCutoffLake": 0.85,
+    "noiseScale": 0.06,
+    "islandAttenuationFactor": 1.5,
+    "lakeModulo": 0.1,
+    "lakeModuloThreshold": 0.02
+  },
+  "noise": {
+    "octaves": 5,
+    "persistence": 0.5,
+    "lacunarity": 2
+  },
+  "camera": {
+    "minZoom": 18,
+    "maxZoom": 95,
+    "desktop": { "distance": 62, "fov": 42, "pitch": 0.85 },
+    "phoneLandscape": { "distance": 46, "fov": 48, "pitch": 0.82 },
+    "phonePortrait": { "distance": 34, "fov": 55, "pitch": 0.78 }
+  }
+}

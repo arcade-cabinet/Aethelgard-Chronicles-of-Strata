@@ -1,0 +1,99 @@
+import { useFrame } from '@react-three/fiber';
+import type { Entity } from 'koota';
+import { Suspense, useRef, useState } from 'react';
+import type { Group } from 'three';
+import {
+  AnimationState,
+  AssignedJob,
+  Health,
+  Transform,
+  Unit,
+  type UnitType,
+} from '@/ecs/components';
+import { type ClipName, clipForState } from '@/ecs/systems/animation';
+import { AnimatedCharacter } from '@/entities/AnimatedCharacter';
+import type { GameState } from '@/game/game-state';
+import { BuilderBadge } from './BuilderBadge';
+import { HealthBillboard } from './HealthBillboard';
+
+/** A live unit snapshot taken when the roster changes. */
+interface UnitView {
+  /** Entity numeric id — stable React key. */
+  id: number;
+  /** The ECS entity reference. */
+  entity: Entity;
+  /** Unit role. */
+  role: UnitType;
+}
+
+/** One rendered unit — an animated character that follows its ECS entity. */
+function UnitMesh({ entity, role }: { entity: Entity; role: UnitType }) {
+  const ref = useRef<Group>(null);
+  const [clip, setClip] = useState<ClipName>('Idle_A');
+  const [health, setHealth] = useState({ current: 1, max: 1 });
+  const [building, setBuilding] = useState(false);
+
+  useFrame(() => {
+    const t = entity.get(Transform);
+    if (t && ref.current) {
+      ref.current.position.set(t.x, t.y, t.z);
+      ref.current.rotation.y = t.rotationY;
+    }
+    const anim = entity.get(AnimationState);
+    if (anim) {
+      const next = clipForState(anim.state);
+      if (next !== clip) setClip(next);
+    }
+    const h = entity.get(Health);
+    if (h && (h.current !== health.current || h.max !== health.max)) {
+      setHealth({ current: h.current, max: h.max });
+    }
+    // M_CONSTRUCTION.2 — track BUILDING state so the BuilderBadge can show
+    const isBuilding = entity.get(AssignedJob)?.state === 'BUILDING';
+    if (isBuilding !== building) setBuilding(isBuilding);
+  });
+
+  return (
+    <group ref={ref}>
+      <Suspense fallback={null}>
+        <AnimatedCharacter role={role} clip={clip} />
+      </Suspense>
+      <HealthBillboard current={health.current} max={health.max} />
+      {building && <BuilderBadge />}
+    </group>
+  );
+}
+
+/**
+ * Renders every unit in the ECS — player peons and footmen, enemy goblins and
+ * orcs — as an animated KayKit character with a health billboard. The roster is
+ * re-snapshotted each frame; the entity reference is passed straight to each
+ * UnitMesh so per-unit rendering needs no per-frame id lookup.
+ */
+export function Units({ game }: { game: GameState }) {
+  const [units, setUnits] = useState<UnitView[]>([]);
+
+  useFrame(() => {
+    const current: UnitView[] = [];
+    // Under the zone-of-control model (spec 102) the whole board is visible —
+    // every unit, both factions, always renders. Territory is shown by the
+    // drawn zone border, not by concealing units.
+    for (const e of game.world.query(Unit)) {
+      const role = e.get(Unit)?.unitType;
+      if (!role) continue;
+      current.push({ id: Number(e), entity: e, role });
+    }
+    // re-render the unit list only when the membership actually changes
+    if (current.length !== units.length || current.some((u, i) => u.id !== units[i]?.id)) {
+      setUnits(current);
+    }
+  });
+
+  return (
+    <group name="units">
+      {units.map((u) => (
+        <UnitMesh key={u.id} entity={u.entity} role={u.role} />
+      ))}
+    </group>
+  );
+}

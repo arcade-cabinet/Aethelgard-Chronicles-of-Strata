@@ -1,0 +1,114 @@
+import type { Entity, World } from 'koota';
+import { axialToWorld, hexDistance } from '@/core/hex';
+import type { Rng } from '@/core/rng';
+import {
+  Building,
+  type Faction,
+  FactionTrait,
+  Health,
+  HexPosition,
+  OffensiveBehavior,
+  Transform,
+  Unit,
+  type UnitType,
+} from '@/ecs/components';
+import { type Projectile, spawnProjectile } from '@/game/projectiles';
+
+/** Military roles an offensive zone targets (peons are nonviolent — not targeted). */
+const MILITARY: ReadonlySet<UnitType> = new Set([
+  'Footman',
+  'Goblin',
+  'Orc',
+  'Vampire',
+  'Witch',
+  'BlackKnight',
+]);
+
+/** Seconds between projectile shots per offensive source (cadence). */
+const FIRE_CADENCE = 1.2;
+
+/** Project a hex-position to a world point at the entity's transform height. */
+function worldAt(e: Entity): { x: number; y: number; z: number } | null {
+  const h = e.get(HexPosition);
+  if (!h) return null;
+  const w = axialToWorld(h.q, h.r);
+  const tf = e.get(Transform);
+  return { x: w.x, y: tf?.y ?? h.level, z: w.z };
+}
+
+/**
+ * Offensive-behavior system (spec 102). Iterates EVERY entity with an
+ * `OffensiveBehavior` trait — building-type-decoupled. Damage applied
+ * continuously per `dps * delta`; in addition, a visible projectile is
+ * spawned every `FIRE_CADENCE` seconds per source toward its nearest valid
+ * target (M_COMBAT_POLISH.1 — visible feedback). Damage is independent of
+ * the projectile FX; the projectile is the *visual* of an already-applied
+ * damage stream.
+ */
+export function offensiveBehaviorSystem(
+  world: World,
+  delta: number,
+  _eventRng: Rng,
+  projectiles?: Projectile[],
+  cooldowns?: Map<number, number>,
+  projectileIdRef?: { current: number },
+): void {
+  const sources: Array<{
+    e: Entity;
+    q: number;
+    r: number;
+    faction: Faction;
+    radius: number;
+    dps: number;
+  }> = [];
+  for (const e of world.query(OffensiveBehavior, FactionTrait, HexPosition)) {
+    const b = e.get(Building);
+    if (b && !b.isComplete) continue;
+    const ob = e.get(OffensiveBehavior);
+    const f = e.get(FactionTrait)?.faction;
+    const h = e.get(HexPosition);
+    if (!ob || !f || !h) continue;
+    sources.push({ e, q: h.q, r: h.r, faction: f, radius: ob.radius, dps: ob.dps });
+  }
+  if (sources.length === 0) return;
+
+  // For each enemy military unit: apply damage from at most ONE source per
+  // tick (avoid stacking). Track WHICH source picked it so projectile FX
+  // emits source→that-target.
+  const picks = new Map<number, { src: (typeof sources)[number]; target: Entity }>();
+  for (const target of world.query(Unit, FactionTrait, HexPosition, Health)) {
+    const role = target.get(Unit)?.unitType;
+    if (!role || !MILITARY.has(role)) continue;
+    const unitFaction = target.get(FactionTrait)?.faction;
+    const hex = target.get(HexPosition);
+    const hp = target.get(Health);
+    if (!unitFaction || !hex || !hp) continue;
+    for (const s of sources) {
+      if (s.faction === unitFaction) continue;
+      if (hexDistance(s.q, s.r, hex.q, hex.r) <= s.radius) {
+        hp.current = Math.max(0, hp.current - s.dps * delta);
+        // record the first picked source for projectile FX
+        const sid = Number(s.e);
+        if (!picks.has(sid)) picks.set(sid, { src: s, target });
+        break;
+      }
+    }
+  }
+
+  // Cadence-gated projectile emission (presentation only — damage already
+  // applied above). Requires the optional projectile/cooldown bags.
+  if (!projectiles || !cooldowns || !projectileIdRef) return;
+  for (const [sid, { src, target }] of picks) {
+    const prev = cooldowns.get(sid) ?? FIRE_CADENCE;
+    const next = prev + delta;
+    if (next < FIRE_CADENCE) {
+      cooldowns.set(sid, next);
+      continue;
+    }
+    cooldowns.set(sid, 0);
+    const start = worldAt(src.e);
+    const end = worldAt(target);
+    if (!start || !end) continue;
+    spawnProjectile(projectiles, projectileIdRef, start, end, 'arrow');
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "coverage_rules": [
+    {
+      "when_changed": ["src/render/**", "src/hud/**", "src/world/**", "src/entities/**"],
+      "require_changed": ["tests/visual/**", "tests/browser/**", "tests/e2e/**"],
+      "or_explicit_skip": "// no-visual-impact: <≥10 word reason>",
+      "block_message": "Render/UI/world change without visual or browser test update."
+    },
+    {
+      "when_changed": ["src/audio/**"],
+      "require_changed": ["tests/browser/**", "src/audio/**/__tests__/**"],
+      "block_message": "Audio change without an audio test."
+    },
+    {
+      "when_changed": ["src/core/**", "src/ecs/**", "src/game/**", "src/world/**"],
+      "require_changed": ["src/**/__tests__/**", "tests/unit/**", "tests/browser/**"],
+      "or_explicit_skip": "// no-sim-test-impact: <≥10 word reason>",
+      "block_message": "Core/ECS/game change without a unit or browser test."
+    },
+    {
+      "when_changed": ["capacitor.config.ts"],
+      "require_run": "pnpm cap:sync",
+      "evidence_pattern": "Sync finished",
+      "block_message": "Capacitor change requires `pnpm cap:sync`."
+    }
+  ],
+  "ban_patterns": [
+    {
+      "pattern": "Math\\.random\\(\\)",
+      "globs": ["src/core/**", "src/ecs/**", "src/world/**", "src/game/**"],
+      "message": "Use the seedrandom RNG facade in src/core/rng — determinism."
+    },
+    {
+      "pattern": "as any",
+      "globs": ["src/**"],
+      "message": "No `as any` — type it properly."
+    }
+  ],
+  "forbidden_bash": [
+    "--no-verify",
+    "git push --force(?!-with-lease)",
+    "--admin",
+    "npm install",
+    "yarn ",
+    "package-lock\\.json"
+  ],
+  "max_lines_warn": 600
+}
