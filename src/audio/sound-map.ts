@@ -58,7 +58,10 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   'unit-select': { bus: 'ui', soundId: 'audio.sfx.select' },
   'unit-trained': { bus: 'sfx', soundId: 'audio.sfx.ui-confirm' },
   'building-placed': { bus: 'sfx', soundId: 'audio.sfx.build' },
-  'building-completed': { bus: 'sfx', soundId: 'audio.sfx.ui-achievement' },
+  // M_EXPANSION.AU.32 — completed-build now uses the PixelLoops
+  // 'Notification_03' chime so an off-screen completion gets a
+  // satisfying audible signal (was a generic ui-achievement).
+  'building-completed': { bus: 'sfx', soundId: 'audio.ui.research-complete' },
   'building-destroyed': { bus: 'sfx', soundId: 'audio.stinger.defeat' },
   'gate-open': { bus: 'sfx', soundId: 'audio.sfx.ui-panel-open' },
   'gate-close': { bus: 'sfx', soundId: 'audio.sfx.ui-confirm' },
@@ -66,7 +69,9 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   // UI
   'ui-button-click': { bus: 'ui', soundId: 'audio.sfx.ui-click' },
   'ui-panel-open': { bus: 'ui', soundId: 'audio.sfx.ui-panel-open' },
-  'research-purchased': { bus: 'ui', soundId: 'audio.sfx.ui-unlock' },
+  // M_EXPANSION.AU.34 — purchased-discovery now uses the dedicated
+  // PixelLoops 'Unlock_04' chime (was a generic ui-unlock placeholder).
+  'research-purchased': { bus: 'ui', soundId: 'audio.ui.discovery-unlock' },
 
   // Critical-state alarms + outcome stingers
   'critical-alarm': { bus: 'ui', soundId: 'audio.sfx.ui-confirm' },

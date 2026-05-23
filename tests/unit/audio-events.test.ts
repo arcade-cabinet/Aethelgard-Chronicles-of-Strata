@@ -39,13 +39,13 @@ describe('event-sound map', () => {
     }
   });
 
-  it('routes research-purchased to ui bus', () => {
+  it('routes research-purchased to ui bus (M_EXPANSION.AU.34)', () => {
     expect(SOUND_FOR_EVENT['research-purchased'].bus).toBe('ui');
-    expect(SOUND_FOR_EVENT['research-purchased'].soundId).toBe('audio.sfx.ui-unlock');
+    expect(SOUND_FOR_EVENT['research-purchased'].soundId).toBe('audio.ui.discovery-unlock');
   });
 
-  it('routes building-completed to sfx bus', () => {
+  it('routes building-completed to sfx bus (M_EXPANSION.AU.32)', () => {
     expect(SOUND_FOR_EVENT['building-completed'].bus).toBe('sfx');
-    expect(SOUND_FOR_EVENT['building-completed'].soundId).toBe('audio.sfx.ui-achievement');
+    expect(SOUND_FOR_EVENT['building-completed'].soundId).toBe('audio.ui.research-complete');
   });
 });

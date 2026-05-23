@@ -49,12 +49,12 @@ describe('ui-sound-emitter', () => {
     expect(playSound).not.toHaveBeenCalled();
   });
 
-  it('routes research-purchased to ui bus ui-unlock sound', () => {
+  it('routes research-purchased to ui bus discovery-unlock sound (M_EXPANSION.AU.34)', () => {
     const buses = createAudioBuses();
     const unregister = registerUiSoundPlayer(buses);
 
     emitUiSound('research-purchased');
-    expect(playSound).toHaveBeenCalledWith(buses, 'ui', 'audio.sfx.ui-unlock');
+    expect(playSound).toHaveBeenCalledWith(buses, 'ui', 'audio.ui.discovery-unlock');
 
     unregister();
   });

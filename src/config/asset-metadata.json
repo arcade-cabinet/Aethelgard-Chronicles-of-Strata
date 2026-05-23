@@ -459,6 +459,123 @@
     "license": "CC0",
     "triangles": 534
   },
+  "structures.granary": {
+    "id": "structures.granary",
+    "path": "assets/structures/granary.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Fantasy Town Kit",
+    "license": "CC0",
+    "triangles": 600
+  },
+  "structures.library": {
+    "id": "structures.library",
+    "path": "assets/structures/library.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Fantasy Town Kit",
+    "license": "CC0",
+    "triangles": 600
+  },
+  "structures.wall-stone": {
+    "id": "structures.wall-stone",
+    "path": "assets/structures/wall-stone.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Castle Kit",
+    "license": "CC0",
+    "triangles": 200
+  },
+  "structures.watchtower-stone": {
+    "id": "structures.watchtower-stone",
+    "path": "assets/structures/watchtower-stone.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Castle Kit",
+    "license": "CC0",
+    "triangles": 400
+  },
+  "structures.wonder-keep": {
+    "id": "structures.wonder-keep",
+    "path": "assets/structures/wonder-keep.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Castle Kit",
+    "license": "CC0",
+    "triangles": 800
+  },
+  "structures.wonder-cannon": {
+    "id": "structures.wonder-cannon",
+    "path": "assets/structures/wonder-cannon.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Tower Defense Kit",
+    "license": "CC0",
+    "triangles": 600
+  },
+  "structures.crypt": {
+    "id": "structures.crypt",
+    "path": "assets/structures/crypt.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Graveyard Kit",
+    "license": "CC0",
+    "triangles": 700
+  },
+  "structures.banner-faction": {
+    "id": "structures.banner-faction",
+    "path": "assets/structures/banner-faction.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Castle Kit",
+    "license": "CC0",
+    "triangles": 200
+  },
+  "audio.ui.discovery-unlock": {
+    "id": "audio.ui.discovery-unlock",
+    "path": "assets/audio/ui/discovery-unlock.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops UI SFX",
+    "license": "PixelLoops Royalty-Free"
+  },
+  "audio.ui.research-complete": {
+    "id": "audio.ui.research-complete",
+    "path": "assets/audio/ui/research-complete.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops UI SFX",
+    "license": "PixelLoops Royalty-Free"
+  },
+  "audio.ui.achievement": {
+    "id": "audio.ui.achievement",
+    "path": "assets/audio/ui/achievement.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops UI SFX",
+    "license": "PixelLoops Royalty-Free"
+  },
+  "nature.crystal-large": {
+    "id": "nature.crystal-large",
+    "path": "assets/nature/crystal-large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Tower Defense Kit",
+    "license": "CC0",
+    "triangles": 200
+  },
   "characters.heroes.knight": {
     "id": "characters.heroes.knight",
     "path": "assets/characters/heroes/knight.glb",

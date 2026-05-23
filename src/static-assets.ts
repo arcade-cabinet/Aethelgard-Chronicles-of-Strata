@@ -21,6 +21,9 @@ export type StaticAssetPath =
   'assets/audio/sfx/ui-unlock.wav' |
   'assets/audio/stinger/defeat.wav' |
   'assets/audio/stinger/victory.wav' |
+  'assets/audio/ui/achievement.wav' |
+  'assets/audio/ui/discovery-unlock.wav' |
+  'assets/audio/ui/research-complete.wav' |
   'assets/board/tile/dirt.glb' |
   'assets/board/tile/grass-forest.glb' |
   'assets/board/tile/grass-hill.glb' |
@@ -52,6 +55,7 @@ export type StaticAssetPath =
   'assets/nature/bush-c.glb' |
   'assets/nature/cactus/short.glb' |
   'assets/nature/cactus/tall.glb' |
+  'assets/nature/crystal-large.glb' |
   'assets/nature/flower-a.glb' |
   'assets/nature/flower-b.glb' |
   'assets/nature/flower-c.glb' |
@@ -109,6 +113,7 @@ export type StaticAssetDirectory =
   'assets/audio/music/' |
   'assets/audio/sfx/' |
   'assets/audio/stinger/' |
+  'assets/audio/ui/' |
   'assets/board/' |
   'assets/board/tile/' |
   'assets/characters/' |
@@ -160,6 +165,9 @@ const assets = new Set<string>([
   'assets/audio/sfx/ui-unlock.wav',
   'assets/audio/stinger/defeat.wav',
   'assets/audio/stinger/victory.wav',
+  'assets/audio/ui/achievement.wav',
+  'assets/audio/ui/discovery-unlock.wav',
+  'assets/audio/ui/research-complete.wav',
   'assets/board/tile/dirt.glb',
   'assets/board/tile/grass-forest.glb',
   'assets/board/tile/grass-hill.glb',
@@ -191,6 +199,7 @@ const assets = new Set<string>([
   'assets/nature/bush-c.glb',
   'assets/nature/cactus/short.glb',
   'assets/nature/cactus/tall.glb',
+  'assets/nature/crystal-large.glb',
   'assets/nature/flower-a.glb',
   'assets/nature/flower-b.glb',
   'assets/nature/flower-c.glb',
