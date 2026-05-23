@@ -44,6 +44,11 @@ export {
   type ResourceDisplay,
   resourceDisplayFor,
 } from './display';
+export {
+  RESOURCE_PROFILES,
+  type ResourceProfile,
+  resourceProfileFor,
+} from './resource-profiles';
 // trainableUnits / trainerFor now live on the unified registry (M_REGISTRY.5).
 export { trainableUnits, trainerFor } from './building-profiles';
 export {
