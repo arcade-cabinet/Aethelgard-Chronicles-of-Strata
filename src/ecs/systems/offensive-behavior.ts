@@ -12,6 +12,7 @@ import {
   Unit,
 } from '@/ecs/components';
 import { type Projectile, spawnProjectile } from '@/game/projectiles';
+import type { DamageEvent } from '@/ecs/systems/combat';
 // M_REGISTRY.17 — MILITARY set unified into UNIT_PROFILES.combatRole.
 // Was a 6-role hand-built set duplicated across 3 modules; corrected
 // by-derivation to include Trebuchet (was missing in the legacy set).
@@ -45,6 +46,9 @@ export function offensiveBehaviorSystem(
   projectiles?: Projectile[],
   cooldowns?: Map<number, number>,
   projectileIdRef?: { current: number },
+  /** M_EXPANSION.U.101 — optional sink for damage events so CombatText
+   *  can render floating numbers for offensive-behavior hits too. */
+  damageSink?: DamageEvent[],
 ): void {
   const sources: Array<{
     e: Entity;
@@ -93,10 +97,22 @@ export function offensiveBehaviorSystem(
         // in place was a no-op since the system shipped. Use `.set`
         // like combat.ts does so the canonical store receives the
         // damage. Surfaced by the new test (offensive-behavior.test.ts).
+        const applied = s.dps * delta;
         target.set(Health, {
           ...hp,
-          current: Math.max(0, hp.current - s.dps * delta),
+          current: Math.max(0, hp.current - applied),
         });
+        // M_EXPANSION.U.101 — push a DamageEvent so CombatText shows
+        // a floating number above the target. Round to int — fractional
+        // dps* delta reads as noisy. Skip 0-ish.
+        if (damageSink && applied >= 0.5) {
+          damageSink.push({
+            target,
+            damage: Math.round(applied),
+            isCrit: false,
+            damageType: (s.damageType as DamageEvent['damageType']) ?? 'normal',
+          });
+        }
         // record the first picked source for projectile FX
         const sid = Number(s.e);
         if (!picks.has(sid)) picks.set(sid, { src: s, target });

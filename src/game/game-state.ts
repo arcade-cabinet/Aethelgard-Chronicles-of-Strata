@@ -724,6 +724,12 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // Every offensive-behaviour entity (Watchtower today; future Wonder etc.)
   // damages enemy military in its radius — decoupled from building type.
   // Also emits visible projectile FX (cadence-gated; presentation only).
+  // M_EXPANSION.U.101 — sink offensive-behavior damage events into
+  // game.lastDamageEvents so CombatText renders floating numbers for
+  // Watchtower / Wizard / future ranged hits too. The sink is a
+  // private array (concat at end) so we don't mutate the immutable
+  // combat result.
+  const obDamage: DamageEvent[] = [];
   offensiveBehaviorSystem(
     game.world,
     delta,
@@ -731,7 +737,11 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     game.projectiles,
     game.projectileCooldowns,
     projectileIdRef,
+    obDamage,
   );
+  if (obDamage.length > 0) {
+    game.lastDamageEvents = [...game.lastDamageEvents, ...obDamage];
+  }
   // advance + cull projectile FX
   advanceProjectiles(game.projectiles, delta);
 

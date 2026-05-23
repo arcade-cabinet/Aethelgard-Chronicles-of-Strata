@@ -1870,7 +1870,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 
 ### M_EXPANSION.UX — UX/HUD polish backlog (101-125)
 
-- [ ] [MED]  M_EXPANSION.U.101 — Combat damage numbers: floating "−12" text on every hit (CombatText already exists, expand the surfaces)
+- [x] [MED]  M_EXPANSION.U.101 — Combat damage numbers: floating "−12" text on every hit (CombatText already exists, expand the surfaces)
 - [ ] [MED]  M_EXPANSION.U.102 — Building health-radial: a circular ring around in-progress buildings showing construction %
 - [ ] [MED]  M_EXPANSION.U.103 — Selection-marquee colour per faction (player blue, enemy red highlight when hover)
 - [ ] [MED]  M_EXPANSION.U.104 — HUD pill long-press on mobile = hold-to-confirm for destructive (Resign, Reset)
