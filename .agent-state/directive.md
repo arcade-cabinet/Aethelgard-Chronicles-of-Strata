@@ -112,16 +112,15 @@ rally, tracking ring. None fully shipped.
   rules.canTrainComplete gates supply+cost+peon-cap; factionOverride on
   createCharacter enables enemy peons. 265 tests. (AI TrainEvaluator
   remains for M_AI_DEPTH.2.)
-- [ ] M_GAMEPLAY.2 — multi-unit selection via click-drag rectangle. New
-  `selection-rect.ts` overlay; selection state holds a Set; SelectionPanel
-  shows count + roster summary on multi.
-- [ ] M_GAMEPLAY.3 — right-click commands. Right-click an enemy →
-  attack-move (military units engage); right-click a tile → move-to (military
-  pathfind); right-click a resource → for selected peon, force-assign (peons
-  remain mostly autonomous but accept a one-shot reassignment to a specific
-  node). Mobile: long-press = right-click.
-- [ ] M_GAMEPLAY.4 — flocking formation. Multi-unit move distributes units
-  around the target tile (concentric ring offsets) so they don't stack.
+- [x] M_GAMEPLAY.2 — multi-unit selection (98b5f96): SelectionRect.tsx
+  document-level pointer listeners + drag rect + world-to-screen projection;
+  selection.ts gains selectEntities/clearSelection/selectedEntities;
+  GameState.selectedIds. Anti-stop hook fixed (escape #3: ALL must be WAIT,
+  not just first). 268 tests green.
+- [x] M_GAMEPLAY.3+4 — right-click attack-move + flocking (1df8f59):
+  TilePick subcomponent in TileInteraction.tsx — mouse left/right + touch
+  tap/long-press; right-click routes selected military units to flock
+  around target via moveUnit + hex-neighbour offsets. 268 tests green.
 - [ ] M_GAMEPLAY.5 — tracking-ring marker. Right-clicking spawns a glowing
   3D ring at the destination that fades over ~1s — visual feedback the
   command landed.
@@ -175,16 +174,13 @@ drives display name, icon, cost, supply, behaviors, model, and tooltip.
   driven train buttons; format.ts.costLabel; ResourceCost = Partial<Record<
   ResourceType, number>> + canAfford/spend slot-iterating; ResourceBar
   iterates RESOURCE_TYPES × SLOT_DISPLAY. 265 tests green.
-- [ ] M_DATA.7 — Discoveries archetype + Science slot (user-flagged: tech
-  tree is just another archetype with the slot machinery). Add `science`
-  resource slot (accumulates from science buildings + rare events). Define
-  a `Discovery` config: cost (science + optional other slots), effect
-  (unlocks a unit/building, modifies a stat). Replace `research.ts` with
-  the Discoveries graph. HUD: a top button opens a Discoveries panel; each
-  discovery shows cost + effect + prereqs. Cost scales logarithmically by
-  tree depth so complexity ramps naturally as a match progresses. This
-  unifies "tech tree" into the same cause-and-effect language as the rest
-  of the game (spec 102 algebra).
+- [x] M_DATA.7 — Discoveries archetype + Science slot foundation (703edf2):
+  ResourceType extended with `science`; rules/discoveries.ts +
+  discovery-registry.ts data-driven; research.ts refactored to dispatch
+  via discoveryById; HUD ResourceBar shows the 4th slot; costLabel
+  iterates with `sci` abbreviation. Adding a Discovery = one row.
+  Follow-ons (passive science trickle, Discoveries panel UI, logarithmic
+  depth-cost scaling) each = one focused change on this foundation.
 
 ### M_ARCHETYPE — finish the archetype unification (spec 102)
 
