@@ -824,7 +824,7 @@ bug).
   set unchanged. Hash `[...zone.controlled].sort().join(',')` (or
   generation counter bumped by claimTile/releaseTile); skip rebuild
   on match.
-- [ ] M_MICRO.5.3 — `SelectionPanel.tsx:114,121-128`
+- [x] M_MICRO.5.3 — `SelectionPanel.tsx:114,121-128`
   setView every RAF returns fresh object; add diff-equality
   short-circuit same as ResourceBar.
 - [ ] M_MICRO.5.4 — `GameCanvas.tsx:67-75` DecorationLive

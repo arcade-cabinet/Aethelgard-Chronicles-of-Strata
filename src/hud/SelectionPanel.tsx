@@ -118,7 +118,24 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
   useEffect(() => {
     let raf = 0;
     const tick = () => {
-      setView(viewOf(game));
+      // M_MICRO.5.3 — diff before setView so React skips reconcile
+      // when the SelectionView is identical to last frame (the common
+      // case: idle peon selected, nothing changing). viewOf returns a
+      // fresh object every call; compare fields, not refs.
+      setView((prev) => {
+        const next = viewOf(game);
+        if (next === null && prev === null) return prev;
+        if (
+          next !== null &&
+          prev !== null &&
+          next.name === prev.name &&
+          next.task === prev.task &&
+          next.buildingType === prev.buildingType
+        ) {
+          return prev;
+        }
+        return next;
+      });
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
