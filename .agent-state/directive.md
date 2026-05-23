@@ -1802,10 +1802,17 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
     character-factory.ts. Code implementation tracked as future-step;
     spec landing was the blocking deliverable.
 - [x] [MED]  M_EXPANSION.S.61 — spec 95-persistence.md "schema migrations table" — M_SEC.27 hooks landed but only the v0→v1 migration is defined; add an explicit test fixture for v1→v2 when the next schema lands
-- [ ] [MED]  M_EXPANSION.S.62 — spec 97-ai-and-asset-expansion.md "yuka subpackage" — partly done; finish the migration of MovementGoal → yuka Vehicle steering for all military units
+- [ ] [WAIT-DESIGN] M_EXPANSION.S.62 — spec 97-ai-and-asset-expansion.md "yuka subpackage" — partly done; finish the migration of MovementGoal → yuka Vehicle steering for all military units
+  - Wide refactor (every military unit's MovementGoal → yuka Vehicle
+    instance + steering callback) + visual playtest pass (yuka
+    interpolation feel vs current discrete-tile movement). WAIT until
+    playtest surfaces a concrete win for the cost.
 - [x] [MED]  M_EXPANSION.S.63 — spec 98-viewport-and-config.md "ultra-wide" — viewport profile for >2.4:1 (currently only landscape/portrait branch)
-- [ ] [MED]  M_EXPANSION.S.64 — spec 99-build-deploy.md "iOS Capacitor" — Capacitor iOS configuration in capacitor.config.ts + ios/ scaffold
-- [ ] [LOW]  M_EXPANSION.S.65 — spec 20-visual-language.md palette extension — add an "evening" warm-tint variant of every biome palette
+- [ ] [WAIT-DEVICE] M_EXPANSION.S.64 — spec 99-build-deploy.md "iOS Capacitor" — Capacitor iOS configuration in capacitor.config.ts + ios/ scaffold
+  - Requires macOS Xcode + Apple Developer account to verify the scaffold
+    actually builds. Tracked WAIT until target device + signing identity
+    are available.
+- [x] [LOW]  M_EXPANSION.S.65 — spec 20-visual-language.md palette extension — add an "evening" warm-tint variant of every biome palette
 - [ ] [LOW]  M_EXPANSION.S.66 — spec 40-hex-world.md cliff-shadow rendering — cliffs cast no shadow; add subtle directional shadow from the cliff edge
 - [ ] [LOW]  M_EXPANSION.S.67 — spec 100-ai-as-player.md "personality presets" — aggressive/defensive/turtle AI personas with different goal weights
 - [ ] [LOW]  M_EXPANSION.S.68 — spec 103-particle-archetype.md "weather wind drift" — particles drift downwind during rain/fog instead of straight down
