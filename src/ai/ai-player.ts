@@ -10,6 +10,7 @@ import {
 } from '@/ecs/components';
 import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
+import { SKINS } from '@/rules/skins';
 import { baseKeyFor, type GameState } from '@/game/game-state';
 import { canBuild, peonCap, UNIT_COSTS } from '@/rules';
 
@@ -154,7 +155,10 @@ function freeBuildTile(game: GameState, faction: Faction): string | null {
 class BuildEvaluator extends GoalEvaluator<AiPlayer> {
   calculateDesirability(owner: AiPlayer): number {
     const choice = this.pickBuildable(owner);
-    return choice ? 0.7 : 0;
+    if (!choice) return 0;
+    // M_EXPANSION.S.53 — apply per-faction economyFocus bias from SKINS.
+    const bias = SKINS[owner.faction].brain?.economyFocus ?? 1.0;
+    return 0.7 * bias;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -239,9 +243,11 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
   calculateDesirability(owner: AiPlayer): number {
     if (!owner.game) return 0;
     if (!firstMilitary(owner.game, owner.faction)) return 0;
+    // M_EXPANSION.S.53 — apply per-faction aggressiveness bias.
+    const bias = SKINS[owner.faction].brain?.aggressiveness ?? 1.0;
     // higher score when a tile we own is pulsing — defence is urgent
-    if (firstPulsingTile(owner.game, owner.faction)) return 0.85;
-    return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 : 0;
+    if (firstPulsingTile(owner.game, owner.faction)) return 0.85 * bias;
+    return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 * bias : 0;
   }
 
   setGoal(owner: AiPlayer): void {

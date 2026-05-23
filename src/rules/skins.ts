@@ -159,6 +159,20 @@ export interface Skin {
    * through to the global mapping today.
    */
   audio?: Partial<Record<string, string>>;
+  /**
+   * M_EXPANSION.S.53 (closes M_REGISTRY.18 future-steps) — per-faction
+   * brain bias overrides. Today's Evaluators (Build/Military/Train/
+   * Resign) read these multipliers when scoring desirability; future
+   * brains add their own slots.
+   * - aggressiveness: scales MilitaryEvaluator desirability
+   *   (1.0 default; 1.5 = berserker, 0.7 = turtle)
+   * - economyFocus: scales BuildEvaluator desirability
+   *   (1.0 default; 1.4 = builder-focus, 0.8 = stripped-down)
+   */
+  brain?: {
+    aggressiveness?: number;
+    economyFocus?: number;
+  };
 }
 
 /**
@@ -244,6 +258,10 @@ export const SKINS: Record<Faction, Skin> = {
     // to SOUND_FOR_EVENT. A future audio pass can crisp-up player
     // footsteps/death here without touching the global sound-map.
     audio: {},
+    // M_EXPANSION.S.53 — neutral brain bias for the player faction
+    // (only meaningful if a 'player' AI brain is ever instantiated for
+    // a tutorial drone; today the player is human-driven).
+    brain: { aggressiveness: 1.0, economyFocus: 1.0 },
     baseAccretion: {
       propPool: ['nature.tree.pine-a', 'nature.rock.large-a'],
       radius: 2,
@@ -319,6 +337,9 @@ export const SKINS: Record<Faction, Skin> = {
     // to SOUND_FOR_EVENT. Future hook: bone-howl death sample for
     // necropolis faction.
     audio: {},
+    // M_EXPANSION.S.53 — necropolis enemy biases toward raids over
+    // economy: military 1.2× more attractive, building 0.85× less.
+    brain: { aggressiveness: 1.2, economyFocus: 0.85 },
     baseAccretion: {
       // M_EXPANSION.A.23 — mossy rocks added to the necropolis biome
       // accretion pool for visual variety beyond the all-gravestone

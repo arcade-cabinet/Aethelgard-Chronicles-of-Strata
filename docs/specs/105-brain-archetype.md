@@ -74,12 +74,14 @@ one big-bang rewrite.
 
 ## Future steps (out of scope for M_REGISTRY.18 now)
 
-- Per-Skin brain overrides — a Necromancer might have a different
-  tactical bias (prefer-ranged over prefer-melee). Drops onto
-  `SKINS[faction].brain` overrides as the slot data realises.
+- ✅ Per-Skin brain overrides (M_EXPANSION.S.53) — `SKINS[faction].brain`
+  now holds aggressiveness + economyFocus multipliers consumed by
+  MilitaryEvaluator + BuildEvaluator. Necropolis enemy biases toward
+  raids (aggressiveness 1.2, economyFocus 0.85); player default is
+  neutral. Adding a new faction is one row's data.
 - BrainArchetype.composeTraits — once the 4 slots exist, the
   Vehicle/Goal/Evaluator instantiation collapses into one factory
-  driven by the slot tuple.
+  driven by the slot tuple. Still pending the 4-slot lift.
 
 ## Operational note
 
