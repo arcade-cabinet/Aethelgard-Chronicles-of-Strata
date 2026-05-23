@@ -23,6 +23,31 @@ import {
 import type { Difficulty } from '@/game/difficulty';
 import { unitProfileFor } from '@/rules/unit-profiles';
 
+/**
+ * M_EXPANSION.D.180 — read this BEFORE editing the factory.
+ *
+ * The character factory has THREE distinct uses (per spec
+ * docs/specs/60-characters.md §M_CHARACTERS.14). All three call
+ * the same factory function; they differ in spawn trigger and
+ * storage policy:
+ *
+ * 1. Fixed NPCs — TownHall, named heroes (Knight). Same skinned-
+ *    mesh GLB across every seed, identity stable across seeds.
+ *    Spawned at startGame() time from the player base config.
+ *
+ * 2. Generic-fixed NPCs (M_EXPANSION.S.60 — spec'd, not yet
+ *    implemented) — named characters with seed-randomised stats.
+ *    Spawned via statsOverride param (not yet wired) that lifts
+ *    the per-role band into the spawn site.
+ *
+ * 3. Random NPCs — enemy raid waves. Both mesh + stats are rolled
+ *    at spawn time from the event PRNG (not the map PRNG, so the
+ *    same seed produces the same raid sequence).
+ *
+ * Adding a new use case is almost certainly a fourth statsOverride
+ * code path here — don't fork the factory.
+ */
+
 /** Parameters for spawning a character entity. */
 export interface CreateCharacterParams {
   /** The koota world to spawn into. */

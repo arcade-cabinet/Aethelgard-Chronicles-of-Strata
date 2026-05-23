@@ -5,6 +5,13 @@ import { useEffect } from 'react';
  * `deps` changes. The loop is self-scheduling — the callback does NOT need to
  * call requestAnimationFrame itself.
  *
+ * M_EXPANSION.D.174 — deps is intentionally `readonly unknown[]` (not
+ * `[GameState]`) because callers pass varying shapes: `[game]` is the
+ * common case but a future watcher might key on `[game, persistence]`
+ * or `[]` (mount-once). Narrowing here would force every caller to
+ * cast back to unknown — the loose contract gives the flexibility
+ * for one extra `unknown` per call site.
+ *
  * Usage:
  *   useRafLoop(() => { setState(compute()); }, [dep]);
  */

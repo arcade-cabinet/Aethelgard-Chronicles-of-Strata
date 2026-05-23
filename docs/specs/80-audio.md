@@ -142,3 +142,28 @@ changes to "🔇 Audio OFF". State is persisted to preferences so it survives re
 Audio requires a user gesture to start on mobile and modern browsers. The game begins
 audio on the "Enter Realm" button click. All Howler instances are created at this point.
 The launcher itself is silent.
+
+---
+
+## Audio-on-first-interaction gate (M_EXPANSION.D.168 + M_AUDIT2.SEC2.31)
+
+**Contract.** Howler's AudioContext is gated behind the first user
+interaction (pointerdown / keydown / touchstart). Before unlock:
+
+- `playSound()` drops the call silently.
+- `playMusic()` queues via `onAudioUnlock()` so the first menu-button
+  press drains the pending music.
+
+This is a HARD contract — every Howl instance is constructed lazily
+inside `getHowl()`, never at module load. Browser autoplay rules
+(Chrome, Safari, Firefox) require this; without the gate the title
+music would either fail silently or print "AudioContext was not
+allowed to start" warnings.
+
+**Why it matters.** A future refactor that constructs a `new Howl(...)`
+at module scope (e.g. preloading the title track in a top-level
+import) re-introduces the autoplay warning AND breaks the
+fingerprint-resistance the gate also provides (audio capability
+strings only readable after user gesture). The contract is the
+gate, not the implementation — alternative gate implementations
+that delay equally are acceptable.

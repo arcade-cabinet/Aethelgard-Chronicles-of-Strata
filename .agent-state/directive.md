@@ -1937,7 +1937,10 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [LOW]  M_EXPANSION.O.151 — Renovate or Dependabot grouped major bumps (split from the existing weekly minor/patch)
 - [ ] [WAIT-INFRA] M_EXPANSION.O.152 — SonarCloud integration (or local Sonar runner) for code quality history
 - [ ] [WAIT-INFRA] M_EXPANSION.O.153 — Lighthouse CI on the deployed pages build (perf + a11y score history)
-- [ ] [LOW]  M_EXPANSION.O.154 — Bundle size dashboard: track gzipped JS + asset bytes per release tag
+- [ ] [WAIT-INFRA] M_EXPANSION.O.154 — Bundle size dashboard: track gzipped JS + asset bytes per release tag
+  - Needs an external dashboard service or a Pages-deployed page that
+    ingests release.yml bundle-size artifacts. WAIT for O.142
+    (Cloudflare Pages) to land a place to host it.
 - [x] [LOW]  M_EXPANSION.O.155 — CHANGELOG.md generation from release-please tags (we have config, no published changelog yet)
 - [ ] [WAIT-INFRA] M_EXPANSION.O.156 — Demo gif/mp4 baked into README on every release tag (a 10-second loop of the cove + combat)
 - [x] [LOW]  M_EXPANSION.O.157 — README badges block: CI / coverage / release / license / app-store
@@ -1954,7 +1957,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [MED]  M_EXPANSION.D.165 — docs/specs/109-multifaction.md — design considerations for ≥3 factions (M_EXPANSION.F.94/.95)
 - [ ] [MED]  M_EXPANSION.D.166 — docs/contributors.md — a contributor onboarding doc (cloning, env setup, the dev loop)
 - [ ] [LOW]  M_EXPANSION.D.167 — docs/specs/20-visual-language.md — append a "post-launch palette" section consistent with M_EXPANSION.U.113 colorblind mode
-- [ ] [LOW]  M_EXPANSION.D.168 — docs/specs/80-audio.md — formalise the "audio-on-first-interaction" gate as a contract (we ship it; the spec still says planned)
+- [x] [LOW]  M_EXPANSION.D.168 — docs/specs/80-audio.md — formalise the "audio-on-first-interaction" gate as a contract (we ship it; the spec still says planned)
 - [ ] [LOW]  M_EXPANSION.D.169 — docs/STATE.md — single page summarising the LAST verified game-state at commit time (auto-generated)
 - [ ] [LOW]  M_EXPANSION.D.170 — docs/migration-log.md — append-only log of every breaking change since v0.1 (informs save-format migrations)
 
@@ -1963,11 +1966,11 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [MED]  M_EXPANSION.D.171 — `src/game/game-state.ts` is ~770 lines (CR finding); split mapgen helpers (findBalancedBoard, matchLengthScale) into a sibling module
 - [ ] [MED]  M_EXPANSION.D.172 — `SelectionPanel.tsx` has grown past 400 lines with the disabled-reason helpers; extract reason-helpers to a sibling
 - [ ] [MED]  M_EXPANSION.D.173 — `DayNightCycle.tsx` makeDitherTexture lives at module scope and would benefit from a `src/render/textures/` namespace as the family grows
-- [ ] [MED]  M_EXPANSION.D.174 — `useRafLoop` accepts a deps array but the underlying useEffect only re-runs on game change; type the deps as `[GameState]` to match
+- [x] [MED]  M_EXPANSION.D.174 — `useRafLoop` accepts a deps array but the underlying useEffect only re-runs on game change; type the deps as `[GameState]` to match
 - [ ] [MED]  M_EXPANSION.D.175 — `aria-live-bus.ts` — politeness=assertive coalescing window of 250ms is hard-coded; expose as a config var matching the rest of the engine
 - [ ] [LOW]  M_EXPANSION.D.176 — `CreditsModal.tsx` data table belongs in a `.json` so a localisation pass can ship without code review
 - [ ] [LOW]  M_EXPANSION.D.177 — `IdlePeonsIndicator` polls every frame for an event that only fires every few seconds; throttle to 4Hz
 - [ ] [LOW]  M_EXPANSION.D.178 — `WeatherIndicator` likewise; both could share a 4Hz tick driven by the engine clock
 - [ ] [LOW]  M_EXPANSION.D.179 — `Decoration.tsx` is past 600 lines (lint warning threshold); split base-accretion vs scatter into siblings
-- [ ] [LOW]  M_EXPANSION.D.180 — `entities/character-factory.ts` is the canonical spawn site; document the 3-use enumeration (fixed/generic-fixed/random) inline so a new contributor reads it BEFORE editing
+- [x] [LOW]  M_EXPANSION.D.180 — `entities/character-factory.ts` is the canonical spawn site; document the 3-use enumeration (fixed/generic-fixed/random) inline so a new contributor reads it BEFORE editing
 
