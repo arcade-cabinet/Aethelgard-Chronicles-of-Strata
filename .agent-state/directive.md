@@ -445,4 +445,6 @@ re-listing. Both unblock as the relevant dependency lands.)
 - [ ] M_POLISH.2 — sawdust particles on actively-building peons.
 - [ ] M_POLISH.3 — sword-clash / shield-deflect SFX variants on
   combat-hit by attacker class (not the generic hit cue).
-- [ ] M_POLISH.4 — victory confetti r3f burst before the GameOverModal.
+- [x] M_POLISH.4 — victory confetti: VictoryConfetti.tsx — 60 gold/amber/
+  bronze BoxGeometry pieces, ballistic with gravity, 3s lifetime, fades to
+  zero. Fires on the moment game.outcome flips to 'win'.
