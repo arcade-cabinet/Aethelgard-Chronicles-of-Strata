@@ -21,6 +21,21 @@ let coalesceTimer: number | null = null;
 let pendingPolite: string[] = [];
 let pendingAssertive: string[] = [];
 
+/**
+ * M_EXPANSION.D.175 — coalesce window in ms. Bus exports a setter
+ * so a future a11y test or a slow-SR profile can tune the latency
+ * without recompiling the bus. Default 250ms is the announce-spec
+ * sweet spot (long enough to dedupe combat flurries; short enough
+ * for an alarm to read as immediate).
+ */
+let coalesceMs = 250;
+export function setAriaLiveCoalesceMs(ms: number): void {
+  coalesceMs = Math.max(0, Math.min(2000, Math.floor(ms)));
+}
+export function getAriaLiveCoalesceMs(): number {
+  return coalesceMs;
+}
+
 function flush() {
   coalesceTimer = null;
   if (pendingAssertive.length > 0) {
@@ -44,7 +59,7 @@ export function announce(text: string, politeness: Politeness = 'polite'): void 
     flush();
     return;
   }
-  coalesceTimer = window.setTimeout(flush, 250);
+  coalesceTimer = window.setTimeout(flush, coalesceMs);
 }
 
 export function subscribeAnnouncements(cb: Subscriber): () => void {

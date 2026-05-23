@@ -1964,10 +1964,10 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 ### M_EXPANSION.TECH-DEBT — known shapes worth fixing (171-180)
 
 - [ ] [MED]  M_EXPANSION.D.171 — `src/game/game-state.ts` is ~770 lines (CR finding); split mapgen helpers (findBalancedBoard, matchLengthScale) into a sibling module
-- [ ] [MED]  M_EXPANSION.D.172 — `SelectionPanel.tsx` has grown past 400 lines with the disabled-reason helpers; extract reason-helpers to a sibling
+- [x] [MED]  M_EXPANSION.D.172 — `SelectionPanel.tsx` has grown past 400 lines with the disabled-reason helpers; extract reason-helpers to a sibling
 - [ ] [MED]  M_EXPANSION.D.173 — `DayNightCycle.tsx` makeDitherTexture lives at module scope and would benefit from a `src/render/textures/` namespace as the family grows
 - [x] [MED]  M_EXPANSION.D.174 — `useRafLoop` accepts a deps array but the underlying useEffect only re-runs on game change; type the deps as `[GameState]` to match
-- [ ] [MED]  M_EXPANSION.D.175 — `aria-live-bus.ts` — politeness=assertive coalescing window of 250ms is hard-coded; expose as a config var matching the rest of the engine
+- [x] [MED]  M_EXPANSION.D.175 — `aria-live-bus.ts` — politeness=assertive coalescing window of 250ms is hard-coded; expose as a config var matching the rest of the engine
 - [ ] [LOW]  M_EXPANSION.D.176 — `CreditsModal.tsx` data table belongs in a `.json` so a localisation pass can ship without code review
 - [ ] [LOW]  M_EXPANSION.D.177 — `IdlePeonsIndicator` polls every frame for an event that only fires every few seconds; throttle to 4Hz
 - [ ] [LOW]  M_EXPANSION.D.178 — `WeatherIndicator` likewise; both could share a 4Hz tick driven by the engine clock
