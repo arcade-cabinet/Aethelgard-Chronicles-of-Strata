@@ -1743,7 +1743,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [LOW]  M_EXPANSION.AU.36 — wire `pl_Error_*` as the building-placement-failed error chime
 
 **GameLoops Vol5 Fantasy RPG (37-42)** — never ingested
-- [ ] [MED]  M_EXPANSION.AU.37 — ingest GameLoops Vol5 music pack into public/assets/audio/music/biome/
+- [x] [MED]  M_EXPANSION.AU.37 — ingest GameLoops Vol5 music pack into public/assets/audio/music/biome/
 - [ ] [MED]  M_EXPANSION.AU.38 — wire `GLV5_TownOfEldor.wav` as the dominant-player victory state music
 - [ ] [MED]  M_EXPANSION.AU.39 — wire `GLV5_CraftingHall.wav` as construction-in-progress ambient layer
 - [ ] [LOW]  M_EXPANSION.AU.40 — wire `GLV5_MapOfRealms.wav` as overlay music when DiscoveriesPanel is open

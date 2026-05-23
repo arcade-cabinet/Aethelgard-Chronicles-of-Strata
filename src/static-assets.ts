@@ -3,6 +3,9 @@
 
 export type StaticAssetPath =
   'assets/audio/music/ambient.wav' |
+  'assets/audio/music/biome/crafting-hall.wav' |
+  'assets/audio/music/biome/map-of-realms.wav' |
+  'assets/audio/music/biome/town-of-eldor.wav' |
   'assets/audio/music/gameplay.wav' |
   'assets/audio/music/menu.wav' |
   'assets/audio/sfx/build.ogg' |
@@ -128,6 +131,7 @@ export type StaticAssetDirectory =
   'assets/' |
   'assets/audio/' |
   'assets/audio/music/' |
+  'assets/audio/music/biome/' |
   'assets/audio/sfx/' |
   'assets/audio/stinger/' |
   'assets/audio/ui/' |
@@ -164,6 +168,9 @@ export type FilesInFolder<Dir extends '.' | StaticAssetDirectory> =
 
 const assets = new Set<string>([
   'assets/audio/music/ambient.wav',
+  'assets/audio/music/biome/crafting-hall.wav',
+  'assets/audio/music/biome/map-of-realms.wav',
+  'assets/audio/music/biome/town-of-eldor.wav',
   'assets/audio/music/gameplay.wav',
   'assets/audio/music/menu.wav',
   'assets/audio/sfx/build.ogg',

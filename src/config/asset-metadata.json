@@ -602,6 +602,33 @@
     "pack": "PixelLoops UI SFX",
     "license": "PixelLoops Royalty-Free"
   },
+  "audio.music.biome.town-of-eldor": {
+    "id": "audio.music.biome.town-of-eldor",
+    "path": "assets/audio/music/biome/town-of-eldor.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol5 Fantasy RPG",
+    "license": "GameLoops Royalty-Free"
+  },
+  "audio.music.biome.crafting-hall": {
+    "id": "audio.music.biome.crafting-hall",
+    "path": "assets/audio/music/biome/crafting-hall.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol5 Fantasy RPG",
+    "license": "GameLoops Royalty-Free"
+  },
+  "audio.music.biome.map-of-realms": {
+    "id": "audio.music.biome.map-of-realms",
+    "path": "assets/audio/music/biome/map-of-realms.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol5 Fantasy RPG",
+    "license": "GameLoops Royalty-Free"
+  },
   "nature.crystal-large": {
     "id": "nature.crystal-large",
     "path": "assets/nature/crystal-large.glb",
