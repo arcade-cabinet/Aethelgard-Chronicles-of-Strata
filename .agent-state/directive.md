@@ -1940,7 +1940,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [LOW]  M_EXPANSION.O.154 — Bundle size dashboard: track gzipped JS + asset bytes per release tag
 - [x] [LOW]  M_EXPANSION.O.155 — CHANGELOG.md generation from release-please tags (we have config, no published changelog yet)
 - [ ] [WAIT-INFRA] M_EXPANSION.O.156 — Demo gif/mp4 baked into README on every release tag (a 10-second loop of the cove + combat)
-- [ ] [LOW]  M_EXPANSION.O.157 — README badges block: CI / coverage / release / license / app-store
+- [x] [LOW]  M_EXPANSION.O.157 — README badges block: CI / coverage / release / license / app-store
 - [ ] [WAIT-INFRA] M_EXPANSION.O.158 — `pnpm assets:lint` — surface any references/ kit not yet ingested into public/assets
 - [ ] [WAIT-INFRA] M_EXPANSION.O.159 — `pnpm specs:lint` — surface any spec doc that hasn't been touched in 90 days
 - [ ] [WAIT-INFRA] M_EXPANSION.O.160 — `pnpm gates:report` — print every coverage rule + commit-gate finding from the last N commits
