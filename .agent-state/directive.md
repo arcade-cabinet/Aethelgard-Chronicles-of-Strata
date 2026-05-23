@@ -69,6 +69,12 @@ batch green one task at a time.
 - Refactors, not shims. Rename a system → every caller moves with it in the same commit.
 - Visual ownership: any `src/world|render|hud|entities` change → screenshot the result,
   read it, compare to a named reference, commit only if it looks right.
+- **User feedback → directive entry.** When the user gives a new constraint,
+  preference, or tuning ask: ADD it to the directive (as its own queue item
+  or as an extension of the most-relevant existing item) BEFORE pivoting.
+  Don't drop the in-flight commit to chase the new ask; capture it as work
+  so it actually happens in sequence. The directive is the running plan;
+  feedback IS plan input.
 
 ## Delivery
 
@@ -453,7 +459,25 @@ re-listing. Both unblock as the relevant dependency lands.)
   Building entities; first time it sees isComplete, spawns a transient
   expanding-+-fading sphere puff at the tile (lifetime 1s, scale 0.3→1.0,
   rises 0.8 units). Pairs with the existing 'building-completed' audio cue.
-- [ ] M_POLISH.2 — sawdust particles on actively-building peons.
+- [x] M_POLISH.2 — sawdust FX: SawdustFX.tsx per BUILDING peon throttled
+  puff spawn (350ms interval, per-frame cap 4); each cone drifts + arcs +
+  fades over 600ms. GC accumulators for vanished entities.
+
+### M_BALANCE_2 — map-size scaling (user feedback, 2026-05-22)
+
+User: "map size has to be significantly bigger. small, medium, large, huge,
+all scale by lets say.... 50% then 40% then 30% then 20% respectively and
+see where we land". Current radii (12/20/28/36) — scale UP by the requested
+percentages, verify perf headroom holds at the new Huge.
+
+- [ ] M_BALANCE_2.1 — bump mapSizes in config/world.json: small 12→18 (+50%),
+  medium 20→28 (+40%), large 28→36 (+30%), huge 36→43 (+20%). Update
+  world.ts schema if needed. Verify generateBoard radius cap (32) is bumped
+  to ≥43 to accept Huge.
+- [ ] M_BALANCE_2.2 — playtest pass at each new size: AI-vs-AI determinism
+  smoke still passes at radius 28+; spawn/economy/encroachment timings still
+  produce a finishable match. Tune `combat.json` thresholds if Huge feels
+  endless.
 - [ ] M_POLISH.3 — sword-clash / shield-deflect SFX variants on
   combat-hit by attacker class (not the generic hit cue).
 - [x] M_POLISH.4 — victory confetti: VictoryConfetti.tsx — 60 gold/amber/

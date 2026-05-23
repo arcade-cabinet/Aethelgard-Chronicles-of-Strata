@@ -16,6 +16,7 @@ import { ResourceNodes } from '@/world/ResourceNodes';
 import { ResourceText } from '@/world/ResourceText';
 import { Roads } from '@/world/Roads';
 import { BuildCompleteFX } from '@/world/BuildCompleteFX';
+import { SawdustFX } from '@/world/SawdustFX';
 import { VictoryConfetti } from '@/world/VictoryConfetti';
 import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
@@ -79,6 +80,7 @@ function Scene({
         <ResourceNodes game={game} />
         <Roads game={game} />
         <BuildCompleteFX game={game} />
+        <SawdustFX game={game} />
         <VictoryConfetti game={game} />
         <HomeBase game={game} />
         <EnemyBase game={game} />
