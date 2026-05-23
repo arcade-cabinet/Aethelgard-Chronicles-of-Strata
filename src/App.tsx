@@ -6,6 +6,7 @@ import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
+import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
 import { LoadingScreen } from '@/hud/LoadingScreen';
@@ -132,6 +133,7 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />
       <IdlePeonsIndicator game={game} />
+      <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
