@@ -38,6 +38,8 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
   return (
     <motion.div
       id="resource-bar"
+      role="region"
+      aria-label="Resource totals"
       initial={{ x: -40, opacity: 0 }}
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}

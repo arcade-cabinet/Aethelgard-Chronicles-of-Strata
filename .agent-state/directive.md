@@ -306,9 +306,10 @@ audio packs via Howler. No procedural synthesis. Packs available:
 - [x] M_ACCESS.1 — keyboard shortcuts: Esc clears selection, +/- zoom
   (synthesized wheel on canvas), arrows reserved for camera pan, P pause
   (already in PauseControl). Tab cycles HUD buttons natively.
-- [ ] M_ACCESS.2 — screen-reader landmarks — main game canvas labeled,
-  HUD regions named, dialog focus-trapped (Radix already partly handles
-  this; audit + fix gaps).
+- [x] M_ACCESS.2 — SR landmarks: ResourceBar, Minimap, SelectionPanel
+  all carry role=region + aria-label (SelectionPanel's label is
+  dynamic on selected entity name). Radix dialogs (DiscoveriesPanel,
+  GameOverModal, NewGameModal, Settings) trap focus natively.
 - [ ] M_ACCESS.3 — color contrast pass — every HUD element ≥ WCAG AA
   vs its background; the territory border + pulse colors readable to
   colorblind users (provide a high-contrast toggle in Settings).

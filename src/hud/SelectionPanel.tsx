@@ -154,6 +154,9 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
       {view && (
         <motion.div
           id="selection-panel"
+          role="region"
+          aria-label={`Selected: ${view.name}`}
+          data-hud-panel
           initial={{ x: -40, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -40, opacity: 0 }}

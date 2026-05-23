@@ -77,6 +77,8 @@ export function Minimap({ game, compact = false }: { game: GameState; compact?: 
 
   return (
     <div
+      role="region"
+      aria-label="Minimap"
       style={{
         position: 'absolute',
         bottom: compact ? 8 : 16,
