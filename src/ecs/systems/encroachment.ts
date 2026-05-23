@@ -1,5 +1,6 @@
 import type { World } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
+import { encroachmentGraceSecondsFor } from '@/config/combat';
 import { HEX_DIRECTIONS } from '@/config/world';
 import { getHexKey, parseHexKey } from '@/core/hex';
 import { FACTIONS, type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
@@ -14,12 +15,11 @@ import { MILITARY_ROLES as MILITARY } from '@/rules/unit-profiles';
  * military unit stands on your controlled tile, the tile pulses for this many
  * seconds — if you do not respond by bringing a military unit to defend it, it
  * flips to the encroaching faction.
+ *
+ * M_AUDIT2.ARCH.9 — PULSE_SECONDS table moved into config/combat.json
+ * (COMBAT.encroachment.graceSecondsByDifficulty); accessor
+ * `encroachmentGraceSecondsFor`.
  */
-const PULSE_SECONDS: Record<Difficulty, number> = {
-  easy: 12, // long grace — the player has time to react
-  normal: 7,
-  hard: 4,
-};
 
 /** The other faction. */
 function opposite(faction: Faction): Faction {
@@ -46,7 +46,7 @@ export function encroachmentSystem(
   delta: number,
   difficulty: Difficulty,
 ): void {
-  const grace = PULSE_SECONDS[difficulty];
+  const grace = encroachmentGraceSecondsFor(difficulty);
 
   // index every faction's military positions for quick membership tests
   const militaryByFaction: Record<Faction, Set<string>> = {

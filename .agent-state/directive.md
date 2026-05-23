@@ -1430,8 +1430,8 @@ local-review-trio after each ~5-item batch.
 - [ ] M_AUDIT2.ARCH.7 — implement SKINS[faction].audio Skin slot (already in JSDoc)
 
 **Magic numbers in hot paths (8-18)**
-- [ ] M_AUDIT2.ARCH.8 — AI_VISION_RADIUS → config/combat.ts difficulty.aiVisionRadius
-- [ ] M_AUDIT2.ARCH.9 — PULSE_SECONDS → config/combat.ts difficulty.encroachmentGraceSeconds
+- [x] M_AUDIT2.ARCH.8 — AI_VISION_RADIUS → config/combat.ts difficulty.aiVisionRadius
+- [x] M_AUDIT2.ARCH.9 — PULSE_SECONDS → config/combat.ts difficulty.encroachmentGraceSeconds
 - [ ] M_AUDIT2.ARCH.10 — FIRE_CADENCE (1.2) → OffensiveBehavior trait OR BUILDING_PROFILES.behaviors.offensive.cadence
 - [ ] M_AUDIT2.ARCH.11 — PROJECTILE_LIFETIME per-kind table in projectiles.ts
 - [ ] M_AUDIT2.ARCH.12 — particle-archetypes tuning constants → ParticleEmitterSpec.tuning field
@@ -1478,7 +1478,7 @@ local-review-trio after each ~5-item batch.
 - [ ] M_AUDIT2.ARCH.43 — job-routing.ts: no test (5-case switch on action.kind)
 - [ ] M_AUDIT2.ARCH.44 — zone.ts: no test (generation bump, vision cones)
 - [ ] M_AUDIT2.ARCH.45 — projectiles.ts: no test (advanceProjectiles mutates+returns changed)
-- [ ] M_AUDIT2.ARCH.46 — auto-save.ts: no test (interval+accumulator)
+- [x] M_AUDIT2.ARCH.46 — auto-save.ts: no test (interval+accumulator)
 - [ ] M_AUDIT2.ARCH.47 — rally.ts: no test
 - [ ] M_AUDIT2.ARCH.48 — research.ts: no test
 - [ ] M_AUDIT2.ARCH.49 — ai-player.ts + ai-director.ts: no test (MAX_RETARGETS_PER_TICK regression)
@@ -1550,7 +1550,7 @@ local-review-trio after each ~5-item batch.
 **DoS / resource exhaustion (25-28)**
 - [ ] [MED] M_AUDIT2.SEC2.25 — SelectionRect pointermove throttle to rAF/60Hz
 - [ ] [MED] M_AUDIT2.SEC2.26 — TileInteraction.onPointerDown click cooldown 100ms; rate-limit placements
-- [ ] [MED] M_AUDIT2.SEC2.27 — auto-save concurrency guard (saving:bool) + skipped-saves counter
+- [x] [MED] M_AUDIT2.SEC2.27 — auto-save concurrency guard (saving:bool) + skipped-saves counter
 - [ ] [LOW] M_AUDIT2.SEC2.28 — r3f frameloop=demand|never when document.visibilityState!=='visible'
 
 **PII / fingerprint (29-31)**

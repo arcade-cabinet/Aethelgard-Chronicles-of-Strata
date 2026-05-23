@@ -96,20 +96,12 @@ function findBalancedBoard(
   return last ?? generateBoard(seedPhrase, mapSize, true, mapType);
 }
 
-/**
- * AI vision-cone radius per difficulty (M_AI_DEPTH.1). The AI faction sees
- * less on Easy (narrower cones — slower to react to incursions) and more on
- * Hard (wider cones — spots the player's army from farther away). Player
- * vision is always the base radius (5). The AI never cheats — it just
- * literally observes less or more of the board.
- */
-const AI_VISION_RADIUS: Record<Difficulty, number> = {
-  easy: 3,
-  normal: 5,
-  hard: 8,
-};
+// M_AUDIT2.ARCH.8 — AI_VISION_RADIUS moved into config/combat.json
+// (COMBAT.ai.visionRadiusByDifficulty); accessor `aiVisionRadiusFor`.
+// The const lived here for one consumer; moving it to config keeps
+// every difficulty-tuning knob in one tunable file.
 
-import { spawnIntervalFor } from '@/config/combat';
+import { aiVisionRadiusFor, spawnIntervalFor } from '@/config/combat';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import { type Faction, FACTIONS } from '@/ecs/components';
@@ -710,7 +702,7 @@ export function runEconomyTick(game: GameState, delta: number): void {
   // Easy = narrow short cones (AI sees less); Hard = wide cones. The player
   // always uses the base radius. The AI never "cheats" — it just literally
   // sees more or less of the board based on difficulty.
-  const aiVision = AI_VISION_RADIUS[game.difficulty];
+  const aiVision = aiVisionRadiusFor(game.difficulty);
   updateObserved(game.zones.player, game.world, 'player', game.board.tiles.values());
   updateObserved(game.zones.enemy, game.world, 'enemy', game.board.tiles.values(), aiVision);
 

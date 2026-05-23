@@ -55,6 +55,17 @@ export interface CombatConfig {
   ai: {
     /** Search radius (tiles) within which an enemy picks a target. */
     aggroRadius: number;
+    /**
+     * AI vision-cone radius per difficulty (M_AUDIT2.ARCH.8 — was a
+     * hand-rolled const in game-state.ts). Easy = narrower cones; Hard
+     * = wider — the AI never cheats, it just sees more / less.
+     */
+    visionRadiusByDifficulty: Record<Difficulty, number>;
+  };
+  /** Encroachment tuning (M_AUDIT2.ARCH.9 — was a const in encroachment.ts). */
+  encroachment: {
+    /** Seconds an enemy may stand on a defender's tile before flip. */
+    graceSecondsByDifficulty: Record<Difficulty, number>;
   };
 }
 
@@ -80,4 +91,14 @@ export function difficultyMultiplierFor(difficulty: Difficulty): number {
 /** Base stats for a unit role. */
 export function unitStatFor(role: UnitType): UnitStat {
   return COMBAT.unitStats[role] as UnitStat;
+}
+
+/** AI vision-cone radius for a difficulty (M_AUDIT2.ARCH.8). */
+export function aiVisionRadiusFor(difficulty: Difficulty): number {
+  return COMBAT.ai.visionRadiusByDifficulty[difficulty] as number;
+}
+
+/** Encroachment grace seconds for a difficulty (M_AUDIT2.ARCH.9). */
+export function encroachmentGraceSecondsFor(difficulty: Difficulty): number {
+  return COMBAT.encroachment.graceSecondsByDifficulty[difficulty] as number;
 }

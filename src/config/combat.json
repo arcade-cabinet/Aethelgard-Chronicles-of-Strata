@@ -81,6 +81,18 @@
     }
   },
   "ai": {
-    "aggroRadius": 10
+    "aggroRadius": 10,
+    "visionRadiusByDifficulty": {
+      "easy": 3,
+      "normal": 5,
+      "hard": 8
+    }
+  },
+  "encroachment": {
+    "graceSecondsByDifficulty": {
+      "easy": 12,
+      "normal": 7,
+      "hard": 4
+    }
   }
 }
