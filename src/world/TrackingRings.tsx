@@ -1,11 +1,19 @@
 import { useFrame } from '@react-three/fiber';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { type Mesh, RingGeometry } from 'three';
+import { RingGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import type { BoardData } from '@/core/board';
 import { axialToWorld } from '@/core/hex';
 
-/** One animated tracking ring — a glowing hex marker that fades over ~1s. */
+/**
+ * One animated tracking ring — a glowing hex marker that fades over ~1s.
+ *
+ * M_MICRO.3.2 — opacity + scale now live ON the ring object (state),
+ * not on a ref Map keyed by id. The previous shape rendered the first
+ * frame at opacity={1} before useFrame fired the per-ref mutation,
+ * producing a 1-frame opacity pop. With state-owned animation values
+ * the first paint reads the correct fade.
+ */
 interface Ring {
   id: number;
   x: number;
@@ -13,6 +21,10 @@ interface Ring {
   z: number;
   /** Seconds elapsed since spawn. */
   age: number;
+  /** Current opacity (1 → 0 over RING_LIFETIME). */
+  opacity: number;
+  /** Current scale (1 → RING_MAX_SCALE over RING_LIFETIME). */
+  scale: number;
 }
 
 /** Public API exposed via ref so any HUD/system can drop a ring. */
@@ -35,7 +47,6 @@ export const TrackingRings = forwardRef<TrackingRingsHandle, { board: BoardData 
   function TrackingRings({ board }, ref) {
     const [rings, setRings] = useState<Ring[]>([]);
     const nextIdRef = useRef(0);
-    const meshRefs = useRef<Map<number, Mesh>>(new Map());
 
     useImperativeHandle(
       ref,
@@ -45,33 +56,47 @@ export const TrackingRings = forwardRef<TrackingRingsHandle, { board: BoardData 
           if (!tile) return;
           const { x, z } = axialToWorld(q, r);
           const id = nextIdRef.current++;
-          setRings((prev) => [...prev, { id, x, y: tile.level * TILE_HEIGHT + 0.12, z, age: 0 }]);
+          setRings((prev) => [
+            ...prev,
+            {
+              id,
+              x,
+              y: tile.level * TILE_HEIGHT + 0.12,
+              z,
+              age: 0,
+              opacity: 1,
+              scale: 1,
+            },
+          ]);
         },
       }),
       [board],
     );
 
     useFrame((_, delta) => {
-      let removedAny = false;
-      const next: Ring[] = [];
-      for (const r of rings) {
-        const newAge = r.age + delta;
-        if (newAge >= RING_LIFETIME) {
-          meshRefs.current.delete(r.id);
-          removedAny = true;
-          continue;
+      setRings((prev) => {
+        if (prev.length === 0) return prev;
+        const next: Ring[] = [];
+        let removedAny = false;
+        for (const r of prev) {
+          const newAge = r.age + delta;
+          if (newAge >= RING_LIFETIME) {
+            removedAny = true;
+            continue;
+          }
+          const t = newAge / RING_LIFETIME;
+          next.push({
+            ...r,
+            age: newAge,
+            opacity: 1 - t,
+            scale: 1 + (RING_MAX_SCALE - 1) * t,
+          });
         }
-        const t = newAge / RING_LIFETIME;
-        const mesh = meshRefs.current.get(r.id);
-        if (mesh) {
-          const scale = 1 + (RING_MAX_SCALE - 1) * t;
-          mesh.scale.setScalar(scale);
-          const mat = mesh.material as { opacity: number };
-          mat.opacity = 1 - t;
+        if (!removedAny && next.length === prev.length) {
+          // Always need to update opacity/scale even when no rings removed.
         }
-        next.push({ ...r, age: newAge });
-      }
-      if (next.length !== rings.length || removedAny) setRings(next);
+        return next;
+      });
     });
 
     return (
@@ -79,15 +104,12 @@ export const TrackingRings = forwardRef<TrackingRingsHandle, { board: BoardData 
         {rings.map((r) => (
           <mesh
             key={r.id}
-            ref={(m) => {
-              if (m) meshRefs.current.set(r.id, m);
-              else meshRefs.current.delete(r.id);
-            }}
             position={[r.x, r.y, r.z]}
             rotation={[-Math.PI / 2, 0, 0]}
+            scale={r.scale}
             geometry={ringGeo}
           >
-            <meshBasicMaterial color="#38bdf8" transparent opacity={1} />
+            <meshBasicMaterial color="#38bdf8" transparent opacity={r.opacity} />
           </mesh>
         ))}
       </group>

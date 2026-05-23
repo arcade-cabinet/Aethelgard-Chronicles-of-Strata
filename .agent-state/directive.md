@@ -800,7 +800,7 @@ bug).
 - [x] M_MICRO.3.1 — `Roads.tsx` snapshot sort by entity
   id OR diff via `Map<id,RoadView>` so koota query-order changes
   don't trigger full reconcile.
-- [ ] M_MICRO.3.2 — `TrackingRings.tsx` lift opacity/
+- [x] M_MICRO.3.2 — `TrackingRings.tsx` lift opacity/
   scale into Ring state; drop the meshRefs Map (1-frame opacity pop
   on new rings).
 - [x] M_MICRO.3.3 — `RallyMarker.tsx:24-28` use
@@ -833,7 +833,7 @@ bug).
 - [x] M_MICRO.5.5 — `Minimap.tsx:62-72` redraw full
   overlay every RAF — cap to ~10 Hz via accumulator OR hash unit-
   count + camera-frustum.
-- [ ] M_MICRO.5.6 — `RallyMarker.tsx:14-18` switch to
+- [x] M_MICRO.5.6 — `RallyMarker.tsx:14-18` switch to
   `useSyncExternalStore` over `game.rally.subscribe(...)` OR
   collapse to a pure read driven by parent re-renders.
 - [x] M_MICRO.5.7 — `CombatText.tsx:56-66` short-circuit
