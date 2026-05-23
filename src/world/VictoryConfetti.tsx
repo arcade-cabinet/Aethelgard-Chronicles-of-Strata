@@ -1,7 +1,8 @@
 import { useFrame } from '@react-three/fiber';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { BoxGeometry } from 'three';
 import { HEX_RADIUS } from '@/config/world';
+import { createMapPrng } from '@/core/rng';
 import type { GameState } from '@/game/game-state';
 
 /** Number of confetti pieces in the burst. */
@@ -36,6 +37,8 @@ export function VictoryConfetti({ game }: { game: GameState }) {
   const [pieces, setPieces] = useState<Piece[]>([]);
   const elapsedRef = useRef(0);
   const lastOutcomeRef = useRef<string>(game.outcome);
+  // Seeded rng — no Math.random per CLAUDE.md determinism contract.
+  const rng = useMemo(() => createMapPrng(`${game.seedPhrase}:confetti`), [game.seedPhrase]);
 
   useFrame((_, delta) => {
     // Detect the win transition once.
@@ -46,13 +49,13 @@ export function VictoryConfetti({ game }: { game: GameState }) {
         const burst: Piece[] = [];
         for (let i = 0; i < COUNT; i++) {
           const angle = (i / COUNT) * Math.PI * 2;
-          const speed = 4 + Math.random() * 3;
+          const speed = 4 + rng() * 3;
           burst.push({
             id: i,
             vx: Math.cos(angle) * speed,
-            vy: 6 + Math.random() * 4, // upward burst
+            vy: 6 + rng() * 4, // upward burst
             vz: Math.sin(angle) * speed,
-            spin: Math.random() < 0.5 ? -1 : 1,
+            spin: rng() < 0.5 ? -1 : 1,
             ci: i % COLORS.length,
           });
         }

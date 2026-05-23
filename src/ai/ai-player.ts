@@ -356,6 +356,10 @@ class ResignEvaluator extends GoalEvaluator<AiPlayer> {
   calculateDesirability(owner: AiPlayer): number {
     if (!owner.game) return 0;
     if (owner.game.outcome !== 'playing') return 0;
+    // CodeRabbit MAJOR: starve-resign is the endless-mode win condition
+    // ONLY. Other modes have base-destruction as the proper outcome; an
+    // AI resigning early would short-circuit those matches.
+    if (owner.game.mode !== 'endless') return 0;
     const zone = owner.game.zones[owner.faction];
     const eco = owner.game.economy[owner.faction];
     const starved = zone.controlled.size === 0 && eco.wood < 10 && eco.gold < 10 && eco.stone < 10;

@@ -121,7 +121,10 @@ export function createCharacter(params: CreateCharacterParams): Entity {
       // walls); Witch→magic (cuts magic-armor); everything else→normal.
       OffensiveBehavior({
         radius: attackRange,
-        dps: attackDamage / attackCooldown,
+        // Use SCALED damage so difficulty multiplier feeds into the unified-
+        // emitter damage stream too (CodeRabbit MAJOR — was base attackDamage,
+        // letting Combatant scale but OffensiveBehavior bypass the scale).
+        dps: scaledDamage / attackCooldown,
         damageType: role === 'Trebuchet' ? 'siege' : role === 'Witch' ? 'magic' : 'normal',
       }),
     ] as const;

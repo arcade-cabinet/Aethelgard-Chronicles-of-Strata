@@ -1,9 +1,10 @@
 import { useFrame } from '@react-three/fiber';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { ConeGeometry } from 'three';
 import { unpackEntity } from 'koota';
 import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
+import { createMapPrng } from '@/core/rng';
 import { AssignedJob, HexPosition, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 
@@ -36,6 +37,9 @@ export function SawdustFX({ game }: { game: GameState }) {
   const accRef = useRef<Map<number, number>>(new Map());
   const nextIdRef = useRef(0);
   const [puffs, setPuffs] = useState<Puff[]>([]);
+  // Dedicated PRNG stream seeded off the map phrase — no Math.random.
+  // Determinism: same seed + same BUILDING peon sequence → same puffs.
+  const rng = useMemo(() => createMapPrng(`${game.seedPhrase}:sawdust`), [game.seedPhrase]);
 
   useFrame((_, delta) => {
     const acc = accRef.current;
@@ -56,7 +60,7 @@ export function SawdustFX({ game }: { game: GameState }) {
       const h = e.get(HexPosition);
       if (!h) continue;
       const w = axialToWorld(h.q, h.r);
-      const angle = Math.random() * Math.PI * 2;
+      const angle = rng() * Math.PI * 2;
       fresh.push({
         id: nextIdRef.current++,
         x: w.x,

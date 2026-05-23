@@ -218,6 +218,15 @@ export function placeRoad(
   const isWallTile = existingBuilding?.has(DefensiveBehavior) === true;
   // Any other building blocks road placement (Farm/House/Barracks/etc).
   if (existingBuilding && !isWallTile) return false;
+  // Reject if a Mover is already on this tile — would stack two roads
+  // (CodeRabbit MAJOR). Doesn't apply to wall tiles (composing a Gate is
+  // explicit; the wall's existing entity gets a Mover trait added).
+  if (!isWallTile) {
+    for (const e of game.world.query(MoverBehavior, HexPosition)) {
+      const h = e.get(HexPosition);
+      if (h && getHexKey(h.q, h.r) === tileKey) return false;
+    }
+  }
   // Without a wall there, the tile MUST be currently walkable (no impassable terrain).
   if (!isWallTile && !tile.walkable) return false;
 

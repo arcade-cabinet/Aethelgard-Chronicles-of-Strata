@@ -75,6 +75,22 @@ batch green one task at a time.
   Don't drop the in-flight commit to chase the new ask; capture it as work
   so it actually happens in sequence. The directive is the running plan;
   feedback IS plan input.
+- **LOCAL REVIEWERS DRIVE THE LOOP — NOT REMOTE CI.** Stop pushing after
+  every item and stop arbitrarily cutting PRs. The user does NOT care about
+  session length or PR size; they care that I PERIODICALLY run local code-
+  quality, code-complexity, and security agents and FORWARD-APPLY their
+  findings to the directive. Pattern:
+    1. Work directive items back-to-back locally; commit each as a unit.
+    2. Periodically (every ~5-10 commits, or at any quiet moment) dispatch
+       LOCAL reviewer agents — `code-refactoring:code-reviewer`,
+       `code-simplifier:code-simplifier`, `security-scanning:security-
+       sast`. Their findings flow into the directive as new items.
+    3. Work the new items same as the original queue.
+    4. Push only when there's a TRUE remote dependency: workflow change
+       that needs CI to verify, or the queue is drained AND a merge is
+       the next action. Never push just to "see what CI says" — run the
+       local reviewers first and act on them.
+  CodeRabbit on the remote is a backup signal, not the primary loop.
 
 ## Delivery
 
@@ -378,6 +394,152 @@ flagged. No "POST_REL" parking lot — work them now.
   decorative banner with explicit `pointerEvents: 'none'` (CriticalWarning
   vignette + PauseControl "PAUSED" banner). No raycast-blocking overlay
   remains.
+### M_ARCH_UNIFY — the architectural keystone (user, 2026-05-23)
+
+User's correction: I keep building parallel hierarchies (units / buildings
+/ particles / roads / accretions / modes / character-factory / structure-
+models / MODE_PRESETS / BUILDING_BEHAVIORS / DISCOVERIES / BASE_ACCRETION
+/ BUILDING_ACCRETION / PARTICLE_ARCHETYPE) when **everything is the same
+thing**: a tuple of archetype assignments + slot values on a single
+registry. The result: I keep flailing — every "subsystem" I add bolts
+new code instead of slotting into a unified table.
+
+The real architecture:
+
+  **Layer 1: Archetypes.** Capability declarations — what slots an entity
+  exposes. Includes the spec-102 ZoC traits (Offensive / Defensive /
+  Attractor / Mover / Consumer) AND the cross-cutting capability slots:
+  Movable, Animated, Costable, HasHP, AccretesProps, GenTimePlaced,
+  RuntimePlaced, ParticleArchetype. An archetype is a *capability* —
+  not a noun ("unit" or "building").
+
+  **Layer 2: Things.** Every "thing" is a tuple of archetype assignments
+  + slot values. A Footman is Movable(speed=2.5) + Offensive(dps=15) +
+  HasHP(100) + Animated(rig=knight) + Costable(15g) + RuntimePlaced.
+  A Farm is Attractor(0) + HasHP(80) + Costable(100w+50g) +
+  RuntimePlaced + AccretesProps(grass+flowers). A Mountain spine is
+  GenTimePlaced(mountain-paint) + Defensive(impassable). The TownHall
+  and a Footman and a tree differ only in slot tuples — not in code
+  paths. Particles are tuples (lifetime + geometry + Movable(ballistic)
+  + AccretesProps?). Roads are tuples (Mover + RuntimePlaced).
+
+  **Layer 3: Two passes that traverse every registered slot
+  assignment.**
+   - Gen-time pass walks every registered Thing with GenTimePlaced +
+     runs its painter (beach ring, mountain spine, mode/mapType
+     overrides, base accretion, building accretion). One outer loop.
+   - Runtime pass walks every registered Thing with RuntimePlaced per
+     tick + runs its Movable / Offensive / Defensive / Consumer
+     behaviors. The current per-system per-tick loops (combat,
+     harvest, encroachment, offensive-behavior, projectile,
+     scienceSystem, buildSystem) collapse to one outer loop iterating
+     slot membership.
+
+  **Layer 4: Skins (user follow-up, 2026-05-23).** A skin is a top-
+  level visual-overlay layer that sits ABOVE archetypes. A `Skin` has
+  per-slot visual overrides (mesh per Animated rig, palette per
+  AccretesProps prop pool, color per faction tint, audio sample per
+  per-attacker sword sound). Adding a 3rd tribe = ONE new skin entry
+  (the underlying archetypes + things are unchanged). Faction visual
+  identity = a skin assignment. The current 'player' / 'enemy'
+  hard-coding becomes the FIRST TWO entries of a `Skin` registry.
+
+- [ ] M_ARCH_UNIFY.1 — write the spec doc (`docs/specs/103-archetype-
+  unification.md`) that names every current hierarchy + maps it to its
+  unified equivalent (units → Thing tuples; buildings → Thing tuples;
+  particles → Thing tuples with ParticleArchetype slot; modes →
+  GenTime pass overlay; accretion → AccretesProps slot; character-
+  factory → composeTraits over a Thing profile; structure-models →
+  per-Skin mesh slot). The doc is the keystone — every subsequent
+  refactor cites it.
+- [ ] M_ARCH_UNIFY.2 — Slot taxonomy: enumerate every capability slot
+  (Movable, Animated, Costable, HasHP, AccretesProps, GenTimePlaced,
+  RuntimePlaced, ParticleArchetype, plus the spec-102 ZoC: Offensive,
+  Defensive, Attractor, Mover, Consumer). Each becomes a typed
+  capability + a registry entry.
+- [ ] M_ARCH_UNIFY.3 — `src/registry/things.ts`: the unified Thing
+  registry. JSON-driven config (data) + typed loader (code) + per-Thing
+  trait-composition function (one helper per slot kind, dispatched by
+  slot membership not by Thing identity).
+- [ ] M_ARCH_UNIFY.4 — gen-time pass refactor: `paintBeachRing /
+  paintMountainSpine / paintInlandLake / paintChannelCuts /
+  paintDesertBlanket / appendBaseAccretion / appendBuildingAccretion /
+  appendGraveyardCluster` all become registered GenTime handlers
+  iterated by ONE outer loop. Mode/mapType variants become weight
+  overlays per handler, not hand-written paint functions.
+- [ ] M_ARCH_UNIFY.5 — runtime pass refactor: combat / harvest /
+  encroachment / offensive-behavior / projectile / science / build
+  systems collapse to ONE outer loop iterating slot membership; each
+  system becomes a slot handler.
+- [ ] M_ARCH_UNIFY.6 — collapse character-factory + placeBuilding +
+  placeRoad + foundBase + future place-* commands into ONE
+  `placeThing(game, profileId, hexKey, faction)` verb that
+  composeTraits + spawns. The current verbs become thin one-line
+  wrappers (or get deleted) for backward compat with the HUD.
+- [ ] M_ARCH_UNIFY.7 — `Skin` registry (user 2026-05-23): top-level
+  visual-overlay table per faction. Skin {meshes: Record<rig, asset>,
+  palette: Record<biome, color>, audio: Record<event, asset>,
+  accretionPool: Record<archetype, propPool>}. Hard-coded
+  'player'/'enemy' branches in structure-models / Decoration /
+  zone-border / sound-map are replaced with skin lookup.
+  Adding a 3rd tribe = ONE new skin entry. NO code changes anywhere.
+- [ ] M_ARCH_UNIFY.8 — supersede M_REFACTOR.1 (particles) as a
+  CONSUMER of the unified registry: a particle effect is a Thing
+  whose ParticleArchetype slot is set; the per-frame ParticleSystem
+  runs as one runtime-pass handler. The Things doing the emitting
+  (combat-hit, building-complete, weather, rain) declare which
+  ParticleArchetype they emit per event.
+- [ ] M_ARCH_UNIFY.9 — supersede M_MAPGEN.13 (per-building accretion)
+  + M_MAPGEN.11 (per-faction base accretion) as CONSUMERS: the
+  accretion config tables collapse into AccretesProps slot values on
+  Thing profiles. The accretion-paint loop iterates `registry.filter(
+  has AccretesProps)` instead of two hand-rolled append* functions.
+- [ ] M_ARCH_UNIFY.10 — supersede character-factory (user 2026-05-23
+  "what is the purpose of a factory") as a CONSUMER: replace with
+  `placeThing` dispatcher reading per-role composeTraits from the
+  unified registry. Adding a Trebuchet or Settler becomes ONE config
+  row, ZERO branches.
+
+**THE ABOVE BLOCKS ALL FURTHER FEATURE WORK** — every new unit /
+building / particle / mode / mapType / accretion item that lands
+before M_ARCH_UNIFY ships is fighting the eventual collapse. Park
+new feature asks under M_FEATURE_QUEUED below; work them only AFTER
+M_ARCH_UNIFY drains.
+
+### M_FEATURE_QUEUED — paused until M_ARCH_UNIFY ships
+
+- [ ] M_REFACTOR.1 — generic particle ARCHETYPE system (user, 2026-05-22):
+  "snow, sawdust, rain, all that shit are all particles" + "even blood
+  effects, splashes, its the whole thing of we apply archetypes to units
+  and buildings and use what they attract repel etc to dictate type and
+  behavior. we can have biome localized unit localized etc particle
+  archetype effects with an assigned scatter".
+  Unify ALL particle-shaped FX under a generic system that follows the
+  SAME archetype-slot pattern as M_ARCHETYPE / M_MAPGEN.11/.13:
+    a) `ParticleArchetype` config (lifetime, geometry, color, opacity
+       curve, gravity, drift, spawn-cadence, seed-tag). One row per
+       kind (rain, snow, sawdust, dust-puff, blood-splash, confetti,
+       projectile-arrow, etc).
+    b) PER-BIOME particle archetypes (weather + ambient — snow on
+       MOUNTAIN, mist on LAKE, sand-puff on DESERT).
+    c) PER-UNIT-TYPE particle archetypes (blood-splash on combat hit
+       to Footman; magic-glow on Witch idle; sawdust on BUILDING peon).
+    d) PER-BUILDING-TYPE particle archetypes (smoke from Farm chimney,
+       embers from Barracks, runes from Library, gold-glints from
+       Wonder).
+    e) `ParticleSystem` advances + culls in ONE per-frame place;
+       `<ParticlesLayer>` renders.
+    f) The current hand-rolled FX (RainParticles, SawdustFX,
+       VictoryConfetti, BuildCompleteFX, ProjectileLayer,
+       TrackingRings) all become `emit(...)` calls + config rows.
+    g) Composes with the attractor/repulsor force field
+       (M_ARCHETYPE.6) — a particle archetype can declare its
+       attract/repel slot per faction, so blood pools "stick" to
+       enemy zones, etc.
+  Adds the 5th archetype-as-slot table to the codebase (after
+  buildings, units, discoveries, accretion). Each particle effect =
+  ONE config row.
+
 - [ ] [WAIT-MCP] M_HARDENING.5 — KayKit Ultimate Fantasy RTS pack ingest
   via assets-library MCP; replace placeholder structures.
 - [ ] [WAIT-DEVICE] M_HARDENING.6 — Pixel-5a perf profile + APK install
