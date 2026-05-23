@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react';
 import { type CameraProfileConfig, WORLD } from '@/config/world';
 
-/** The three viewport classes the game adapts its presentation to. */
-export type ViewportClass = 'desktop' | 'phoneLandscape' | 'phonePortrait';
+/**
+ * Viewport classes the game adapts its presentation to.
+ * M_EXPANSION.S.63 — added 'ultraWide' for aspect ratios > 2.4:1
+ * (e.g. 32:9, 21:9 super-ultrawide monitors). Camera profile picks
+ * a wider FOV; HUD panels stay anchored to the centre 16:9 column so
+ * peripheral edges aren't dead chrome.
+ */
+export type ViewportClass = 'desktop' | 'ultraWide' | 'phoneLandscape' | 'phonePortrait';
+
+/** Aspect-ratio threshold above which the viewport classifies as ultraWide. */
+const ULTRAWIDE_ASPECT = 2.4;
 
 /** The resolved presentation profile for the current viewport. */
 export interface ViewportProfile {
@@ -22,6 +31,8 @@ function classify(width: number, height: number): ViewportClass {
   const portrait = height > width;
   if (portrait) return 'phonePortrait';
   if (width < PHONE_MAX_WIDTH) return 'phoneLandscape';
+  // M_EXPANSION.S.63 — wider than 2.4:1 → ultrawide camera profile.
+  if (width / height > ULTRAWIDE_ASPECT) return 'ultraWide';
   return 'desktop';
 }
 

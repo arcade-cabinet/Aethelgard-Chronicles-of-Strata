@@ -123,6 +123,8 @@ export interface WorldConfig {
     maxZoom: number;
     /** Desktop / landscape-tablet camera defaults. */
     desktop: CameraProfileConfig;
+    /** M_EXPANSION.S.63 — ultra-wide (>2.4:1) camera defaults. */
+    ultraWide: CameraProfileConfig;
     /** Phone-landscape camera defaults. */
     phoneLandscape: CameraProfileConfig;
     /** Phone-portrait camera defaults. */

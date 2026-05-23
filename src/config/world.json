@@ -62,6 +62,7 @@
     "minZoom": 18,
     "maxZoom": 95,
     "desktop": { "distance": 62, "fov": 42, "pitch": 0.85 },
+    "ultraWide": { "distance": 70, "fov": 36, "pitch": 0.88 },
     "phoneLandscape": { "distance": 46, "fov": 48, "pitch": 0.82 },
     "phonePortrait": { "distance": 34, "fov": 55, "pitch": 0.78 }
   }
