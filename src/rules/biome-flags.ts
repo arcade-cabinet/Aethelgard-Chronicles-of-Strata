@@ -25,17 +25,24 @@ export interface BiomeFlags {
   habitable: boolean;
   /** Should terrain-mesh lush-blend the surface? (grass + forest only) */
   lushBlend: boolean;
+  /**
+   * Cliff (vertical-face) color hint per biome — fixed earth/rock tone
+   * (M_REGISTRY.21). `null` means defer to elevation-based fallback
+   * (rock at level≥4, dirt otherwise). LAKE picks 'water'; DESERT picks
+   * 'desert'.
+   */
+  cliffColor: 'water' | 'desert' | null;
 }
 
 export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
-  OCEAN: { walkable: false, buildable: false, habitable: false, lushBlend: false },
-  LAKE: { walkable: false, buildable: false, habitable: false, lushBlend: false },
-  BEACH: { walkable: true, buildable: true, habitable: false, lushBlend: false },
-  DESERT: { walkable: true, buildable: false, habitable: false, lushBlend: false },
-  GRASS: { walkable: true, buildable: true, habitable: true, lushBlend: true },
-  FOREST: { walkable: true, buildable: false, habitable: true, lushBlend: true },
-  HIGHLAND: { walkable: true, buildable: true, habitable: true, lushBlend: false },
-  MOUNTAIN: { walkable: false, buildable: false, habitable: false, lushBlend: false },
+  OCEAN: { walkable: false, buildable: false, habitable: false, lushBlend: false, cliffColor: 'water' },
+  LAKE: { walkable: false, buildable: false, habitable: false, lushBlend: false, cliffColor: 'water' },
+  BEACH: { walkable: true, buildable: true, habitable: false, lushBlend: false, cliffColor: null },
+  DESERT: { walkable: true, buildable: false, habitable: false, lushBlend: false, cliffColor: 'desert' },
+  GRASS: { walkable: true, buildable: true, habitable: true, lushBlend: true, cliffColor: null },
+  FOREST: { walkable: true, buildable: false, habitable: true, lushBlend: true, cliffColor: null },
+  HIGHLAND: { walkable: true, buildable: true, habitable: true, lushBlend: false, cliffColor: null },
+  MOUNTAIN: { walkable: false, buildable: false, habitable: false, lushBlend: false, cliffColor: null },
 };
 
 /** Resolve the flag tuple for a biome type. */

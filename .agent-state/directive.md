@@ -599,7 +599,7 @@ the smallest end-to-end proof, then drain in dependency order.
   map becomes audio half of Skin slot — `Skin[faction].audio[event]`.
   Fixes the encroachment.ts:99 `faction === 'player'` critical-alarm
   hard-branch.
-- [ ] M_REGISTRY.21 — `terrain-mesh.ts` cliff-color +
+- [x] M_REGISTRY.21 — `terrain-mesh.ts` cliff-color +
   lush-blend type-switches become per-biome SurfaceProfile slot
   reads (cliffColor / lushBlendBiomes / dither bias as data).
 - [x] M_REGISTRY.22 — Decoration / board / resource-spawn

@@ -61,9 +61,13 @@ function surfaceColor(tile: Tile): Color {
  * patchwork. Mirrors poc1's `getCliffColor`.
  */
 function cliffColor(top: Tile): Color {
-  if (top.type === 'LAKE') return CLIFF_WATER;
+  // M_REGISTRY.21 — biome cliffColor slot replaces the 2-biome type
+  // branch ('LAKE' / 'DESERT'); elevation fallback (rock-vs-dirt by
+  // tier) lives here since it's not biome-keyed.
+  const tag = biomeFlagsFor(top.type).cliffColor;
+  if (tag === 'water') return CLIFF_WATER;
   if (top.level >= 4) return CLIFF_ROCK;
-  if (top.type === 'DESERT') return CLIFF_DESERT;
+  if (tag === 'desert') return CLIFF_DESERT;
   return CLIFF_DIRT;
 }
 

@@ -87,9 +87,13 @@ export function encroachmentSystem(
         releaseTile(myZone, tileKey);
         claimTile(otherZone, tileKey);
         myZone.pulsing.delete(tileKey);
-        // M_AUDIO.6 — only chime when the PLAYER loses a tile (an enemy
-        // claim of player territory is the meaningful audio event; the
-        // mirror case would just be the enemy AI's progress chatter).
+        // M_AUDIO.6 — only chime when the LOCAL OBSERVER's faction loses
+        // a tile (today that's hard-coded to 'player' because the local
+        // observer IS the player; in an AI-vs-AI replay this should
+        // become `faction === game.localObserverFaction`). Tracked as
+        // M_REGISTRY.28 — `selectedEntities(game)` + observer-faction
+        // session context. The check stays here as documentation-by-code
+        // until that session context lands.
         if (faction === 'player') emitUiSound('critical-alarm');
       } else {
         myZone.pulsing.set(tileKey, elapsed);
