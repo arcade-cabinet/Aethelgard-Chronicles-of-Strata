@@ -1527,8 +1527,8 @@ local-review-trio after each ~5-item batch.
 - [x] [MED] M_AUDIT2.SEC2.9 — cap row.snapshot.length pre-JSON.parse (2MB)
 
 **Supply chain (10-15)**
-- [ ] [HIGH] M_AUDIT2.SEC2.10 — exact-pin all ^/~ in package.json (M_SEC.28 deferred — close it)
-- [ ] [HIGH] M_AUDIT2.SEC2.11 — exact-pin three+r3f+drei triplet
+- [x] [HIGH] M_AUDIT2.SEC2.10 — exact-pin all ^/~ in package.json (M_SEC.28 deferred — close it)
+- [x] [HIGH] M_AUDIT2.SEC2.11 — exact-pin three+r3f+drei triplet
 - [x] [MED] M_AUDIT2.SEC2.12 — @types/node pinned to 22.x (matches runtime)
 - [x] [HIGH] M_AUDIT2.SEC2.13 — `pnpm audit --audit-level=high --prod` CI step
 - [x] [MED] M_AUDIT2.SEC2.14 — .npmrc enable-pre-post-scripts=false + onlyBuiltDependencies allowlist
