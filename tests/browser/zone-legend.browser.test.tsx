@@ -13,8 +13,12 @@ describe('zone legend (M9.1b)', () => {
   it('renders the legend pill in-game; expands to reveal the glossary', async () => {
     await render(<App />);
     await enterGame();
-    // pill is present and shows the "?" label by default
-    const pill = document.querySelector('[aria-label="Toggle territory legend"]');
+    // pill is present and shows the "?" label by default.
+    // The aria-label flips between 'Open …' / 'Close …' based on open state
+    // (a11y fix landed after this test was written); match either.
+    const pill = document.querySelector(
+      '[aria-label="Open territory legend"], [aria-label="Close territory legend"]',
+    );
     expect(pill).not.toBeNull();
     expect(pill?.textContent ?? '').toContain('Legend');
     // expanded panel is hidden by default

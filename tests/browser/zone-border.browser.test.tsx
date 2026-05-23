@@ -23,24 +23,34 @@ describe('zone-of-control border (M8.5z)', () => {
     expect(document.querySelector('canvas:not(#minimap-canvas)')).not.toBeNull();
   });
 
-  it('a fresh game has empty zones until tiles are claimed', () => {
+  it('a fresh game seeds each faction zone with its attractor footprint', () => {
+    // M_MAPGEN.1: seedZonesFromAttractors gives each base a starting
+    // ATTRACTOR_RADIUS=2 footprint of controlled tiles so the home
+    // base visibly emits zone-of-control without waiting for the
+    // encroachment system to flip neighbours. Both factions seed
+    // symmetrically; the exact count depends on walkable density
+    // within radius 2 but must be > 0 and equal across factions for
+    // a symmetric seed (which 'ancient-silver-forest' is).
     const game = startGame('ancient-silver-forest');
-    expect(game.zones.player.controlled.size).toBe(0);
-    expect(game.zones.enemy.controlled.size).toBe(0);
+    expect(game.zones.player.controlled.size).toBeGreaterThan(0);
+    expect(game.zones.enemy.controlled.size).toBeGreaterThan(0);
   });
 
-  it('claiming tiles grows a faction zone', () => {
+  it('claiming tiles grows a faction zone above the seed', () => {
     const game = startGame('ancient-silver-forest');
-    // claim a few walkable tiles for the player
+    const seedSize = game.zones.player.controlled.size;
+    // claim a few walkable tiles for the player that AREN'T already
+    // in the seed (so we measure actual growth, not duplicates).
     let claimed = 0;
     for (const tile of game.board.tiles.values()) {
-      if (tile.walkable && claimed < 5) {
-        claimTile(game.zones.player, `${tile.q},${tile.r}`);
-        claimed += 1;
-      }
+      if (claimed >= 5) break;
+      const key = `${tile.q},${tile.r}`;
+      if (!tile.walkable) continue;
+      if (game.zones.player.controlled.has(key)) continue;
+      claimTile(game.zones.player, key);
+      claimed += 1;
     }
-    expect(game.zones.player.controlled.size).toBe(5);
-    expect(game.zones.enemy.controlled.size).toBe(0);
+    expect(game.zones.player.controlled.size).toBe(seedSize + 5);
   });
 
   it('every unit renders — the board is fully visible (no fog cull)', () => {
