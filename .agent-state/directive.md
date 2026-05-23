@@ -750,22 +750,22 @@ overlap exists.
 - [ ] M_SEC.25 — `AndroidManifest.xml:14-22` either
   wire up the `custom_url_scheme` intent-filter explicitly or
   remove the dangling `custom_url_scheme` from strings.xml:5.
-- [ ] M_SEC.26 — `App.tsx` Continue effect — guard
+- [x] M_SEC.26 — `App.tsx` Continue effect — guard
   StrictMode double-fire via idempotent UPSERT-by-name in
   persistence or de-dupe in createAutoSave.
 - [x] M_SEC.27 — `audio/useTitleMusic.ts:14-23` add
   `bus.cache.forEach(h => h.unload())` to cleanup.
-- [ ] M_SEC.28 — `package.json` exact-pin all `^x.y.z`
+- [x] M_SEC.28 — `package.json` exact-pin all `^x.y.z`
   versions OR document `--frozen-lockfile` only.
-- [ ] M_SEC.29 — `vite.config.ts:9` base URL: read
+- [x] M_SEC.29 — `vite.config.ts:9` base URL: read
   from `process.env.VITE_BASE` with fallback.
-- [ ] M_SEC.30 — `vite.config.ts:25-31` staticAssetsPlugin
+- [x] M_SEC.30 — `vite.config.ts:25-31` staticAssetsPlugin
   trusts every file in public/. Add CI lint failing if anything
   under `public/assets/` isn't referenced from
   `src/config/asset-metadata.json`.
-- [ ] M_SEC.31 — `package.json:8` copywasm — move body
+- [x] M_SEC.31 — `package.json:8` copywasm — move body
   to `scripts/copy-wasm.mjs`; call via `node scripts/copy-wasm.mjs`.
-- [ ] M_SEC.32 — `vite.config.ts` vitest project
+- [x] M_SEC.32 — `vite.config.ts` vitest project
   staticAssetsPlugin — set `watch: false`.
 - [x] M_SEC.33 — namespace all Capacitor Preferences
   keys with `aethelgard.` prefix; wrap in single typed enum.

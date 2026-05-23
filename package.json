@@ -5,7 +5,7 @@
   "type": "module",
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "copywasm": "node -e \"const fs=require('fs'),p=require('path');for(const dir of [p.join('public'),p.join('public','assets')]){fs.mkdirSync(dir,{recursive:true});fs.copyFileSync(require.resolve('sql.js/dist/sql-wasm.wasm'),p.join(dir,'sql-wasm.wasm'));}\"",
+    "copywasm": "node scripts/copy-wasm.mjs",
     "predev": "pnpm copywasm",
     "prebuild": "pnpm copywasm",
     "pretest:browser": "pnpm copywasm",

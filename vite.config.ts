@@ -4,7 +4,12 @@ import { defineConfig } from 'vite';
 import staticAssetsPlugin from 'vite-static-assets-plugin';
 
 export default defineConfig(({ mode }) => ({
-  base: mode === 'github-pages' ? '/Aethelgard-Chronicles-of-Strata/' : '/',
+  // M_SEC.29 — base URL precedence: env override > mode-detection >
+  // root. Lets CI deploy to a custom path without touching this file
+  // (set VITE_BASE in the deploy job's env).
+  base:
+    process.env.VITE_BASE ??
+    (mode === 'github-pages' ? '/Aethelgard-Chronicles-of-Strata/' : '/'),
   cacheDir: '.vite',
   build: {
     chunkSizeWarningLimit: 2000,

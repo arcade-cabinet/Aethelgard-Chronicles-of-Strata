@@ -282,6 +282,13 @@ export function createPersistence(): Persistence {
       const seed = game.seedPhrase;
       const savedAt = new Date().toISOString();
       const snapshot = JSON.stringify(serializeGame(game));
+      // M_SEC.26 — UPSERT by name: a save with the same name replaces
+      // the prior row, idempotently. Specifically defends against
+      // React StrictMode double-firing effects in dev that would
+      // otherwise insert duplicate AutoSave rows on every effect
+      // remount. The DELETE+INSERT pattern stays atomic-enough within
+      // sql.js's single-threaded execution.
+      await db.run(`DELETE FROM saves WHERE name = ?;`, [safeName]);
       await db.run(`INSERT INTO saves (name, seed, saved_at, snapshot) VALUES (?, ?, ?, ?);`, [
         safeName,
         seed,
