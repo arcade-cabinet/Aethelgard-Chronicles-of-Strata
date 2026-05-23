@@ -797,7 +797,7 @@ bug).
 
 #### Category 3 — Index-based React keys / id collisions
 
-- [ ] M_MICRO.3.1 — `Roads.tsx` snapshot sort by entity
+- [x] M_MICRO.3.1 — `Roads.tsx` snapshot sort by entity
   id OR diff via `Map<id,RoadView>` so koota query-order changes
   don't trigger full reconcile.
 - [ ] M_MICRO.3.2 — `TrackingRings.tsx` lift opacity/

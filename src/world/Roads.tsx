@@ -1,5 +1,6 @@
 import { useFrame } from '@react-three/fiber';
-import { useMemo, useState } from 'react';
+import { unpackEntity } from 'koota';
+import { useState } from 'react';
 import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
@@ -67,21 +68,25 @@ export function Roads({ game }: { game: GameState }) {
 /** Snapshot the road roster from the live world. */
 function snapshot(game: GameState): RoadView[] {
   const out: RoadView[] = [];
-  let i = 0;
   for (const e of game.world.query(MoverBehavior, HexPosition)) {
     const m = e.get(MoverBehavior);
     const h = e.get(HexPosition);
     if (!m || !h) continue;
     const w = axialToWorld(h.q, h.r);
     out.push({
-      id: i++,
+      // M_MICRO.3.1 — id is the koota entityId, stable across query
+      // order changes. Was `i++` which would silently rotate IDs as
+      // koota reordered entities → React reconciled every road on
+      // every frame.
+      id: unpackEntity(e).entityId,
       x: w.x,
       y: h.level * TILE_HEIGHT + 0.06,
       z: w.z,
       material: m.material,
     });
   }
+  // Sort by id so the array order is deterministic across frames; the
+  // diff check in useFrame then catches identity, not order.
+  out.sort((a, b) => a.id - b.id);
   return out;
 }
-// keep useMemo import for future per-material InstancedMesh optimization
-void useMemo;
