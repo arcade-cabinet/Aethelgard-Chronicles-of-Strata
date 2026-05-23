@@ -45,11 +45,20 @@ function buildBorder(game: GameState, faction: Faction): Float32Array {
   return new Float32Array(pos);
 }
 
-/** One faction's border, rendered as glowing line segments, refreshed each frame. */
+/** One faction's border, rendered as glowing line segments. */
 function FactionBorder({ game, faction }: { game: GameState; faction: Faction }) {
   const ref = useRef<LineSegments>(null);
+  // M_MICRO.5.2 — cache the Float32Array by zone generation. The
+  // border only changes when a tile is claimed or released; rebuilding
+  // every frame was the HOTTEST PERF BUG in the codebase (60Hz, ~30
+  // tiles → ~60 ms/min wasted on hex math). When the generation
+  // counter is unchanged, skip the rebuild entirely.
+  const lastGenRef = useRef<number>(-1);
   useFrame(() => {
     if (!ref.current) return;
+    const gen = game.zones[faction].generation;
+    if (gen === lastGenRef.current) return;
+    lastGenRef.current = gen;
     const geo = ref.current.geometry as BufferGeometry;
     geo.setAttribute('position', new BufferAttribute(buildBorder(game, faction), 3));
   });

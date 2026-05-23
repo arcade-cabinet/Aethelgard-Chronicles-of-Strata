@@ -35,21 +35,34 @@ export interface ZoneState {
    * encroachment grace window, the tile flips to the encroaching faction.
    */
   pulsing: Map<string, number>;
+  /**
+   * Generation counter — bumped on every claim/release of a `controlled`
+   * tile (M_MICRO.5.2). ZoneBorder.tsx caches the rendered Float32Array
+   * by this counter; rebuild only when controlled changed. Was rebuilding
+   * every frame at 60Hz — the HOTTEST PERF BUG in the codebase per the
+   * micro audit.
+   */
+  generation: number;
 }
 
 /** Create an empty zone state — no territory, nothing observed. */
 export function createZoneState(): ZoneState {
-  return { controlled: new Set(), observed: new Set(), pulsing: new Map() };
+  return { controlled: new Set(), observed: new Set(), pulsing: new Map(), generation: 0 };
 }
 
 /** Claim a tile for a faction — called when a peon begins exploiting it. */
 export function claimTile(zone: ZoneState, key: string): void {
-  zone.controlled.add(key);
+  if (!zone.controlled.has(key)) {
+    zone.controlled.add(key);
+    zone.generation += 1;
+  }
 }
 
 /** Release a controlled tile — resource cleared, or lost to encroachment. */
 export function releaseTile(zone: ZoneState, key: string): void {
-  zone.controlled.delete(key);
+  if (zone.controlled.delete(key)) {
+    zone.generation += 1;
+  }
 }
 
 /** Default vision-cone radius (hex tiles) of a unit. */

@@ -819,7 +819,7 @@ bug).
 - [ ] M_MICRO.5.1 — `ProjectileLayer.tsx:46-49` 60Hz
   setTick regardless of projectile count. Diff
   `game.projectiles.length` + first/last id; bail when unchanged.
-- [ ] M_MICRO.5.2 — **HOTTEST PERF BUG** — `ZoneBorder.
+- [x] M_MICRO.5.2 — **HOTTEST PERF BUG** — `ZoneBorder.
   tsx:51-55` rebuilds Float32Array every frame even when controlled
   set unchanged. Hash `[...zone.controlled].sort().join(',')` (or
   generation counter bumped by claimTile/releaseTile); skip rebuild

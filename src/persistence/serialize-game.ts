@@ -22,6 +22,8 @@ interface ZoneSnapshot {
   controlled: string[];
   observed: string[];
   pulsing: Array<[string, number]>;
+  /** Generation counter (M_MICRO.5.2) — defaults to 0 on resume. */
+  generation?: number;
 }
 
 /** Full game snapshot — everything needed to resume. */
@@ -52,6 +54,7 @@ function zoneToSnapshot(zone: ZoneState): ZoneSnapshot {
     controlled: Array.from(zone.controlled),
     observed: Array.from(zone.observed),
     pulsing: Array.from(zone.pulsing.entries()),
+    generation: zone.generation,
   };
 }
 
@@ -61,6 +64,7 @@ function zoneFromSnapshot(snap: ZoneSnapshot): ZoneState {
     controlled: new Set(snap.controlled),
     observed: new Set(snap.observed),
     pulsing: new Map(snap.pulsing),
+    generation: snap.generation ?? 0,
   };
 }
 
