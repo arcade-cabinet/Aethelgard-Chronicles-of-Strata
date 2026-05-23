@@ -146,3 +146,55 @@ Each milestone begins with a TDD batch before any implementation:
 5. When all milestone tests are GREEN: the milestone is done by construction.
 
 The CI gate list runs on every commit, so RED tests block merges automatically.
+
+## GitHub repository settings (M_AUDIT2.SEC2.37)
+
+Settings the audit assumes are configured at the repo level (these
+cannot live in a YAML file — they are GitHub UI/API state):
+
+**General → Pull Requests**
+- Allow squash merging: ON (the only enabled merge type)
+- Allow merge commits: OFF
+- Allow rebase merging: OFF
+- Automatically delete head branches: ON
+
+**Branches → main**
+- Branch protection rule enabled
+- Require a pull request before merging: ON
+- Require approvals: 1
+- Dismiss stale pull-request approvals when new commits are pushed: ON
+- Require status checks to pass before merging: ON
+  - Required: `lint`, `typecheck`, `test`, `build`, `android-apk`, `codeql`, `dep-review`
+- Require branches to be up to date before merging: ON
+- Require conversation resolution before merging: ON
+- Require signed commits: ON (paired with `gh auth setup-git` + GPG key)
+- Include administrators: ON (no `--admin` merge escape hatch)
+- Allow force pushes: OFF
+- Allow deletions: OFF
+
+**Code security and analysis**
+- Dependabot alerts: ON
+- Dependabot security updates: ON
+- Code scanning (CodeQL): ON (workflow already in `.github/workflows/ci.yml`)
+- Secret scanning: ON
+- Secret scanning push protection: ON
+
+**Actions → General**
+- Actions permissions: "Allow enterprise, and select non-enterprise, actions and reusable workflows"
+  - Allow actions created by GitHub: ON
+  - Allow specified actions (SHA-pinned in our workflows already)
+- Workflow permissions: "Read repository contents and packages permissions" (least-privilege; per-job permissions blocks grant more where needed)
+- Fork PRs: "Require approval for all outside collaborators"
+
+**Pages**
+- Source: GitHub Actions (deploy-pages.yml owns the publish)
+- Custom domain: (none — repo-scoped subpath is fine)
+
+**Secrets and variables → Actions** (required by release.yml)
+- `ANDROID_SIGNING_KEYSTORE_B64` — base64 of release.keystore
+- `ANDROID_SIGNING_KEY_ALIAS` — key alias inside the keystore
+- `ANDROID_SIGNING_KEY_PASSWORD` — password for that key
+- `ANDROID_SIGNING_STORE_PASSWORD` — keystore password
+
+Any change to this list needs a corresponding update in the workflows
+that consume the secret. The keystore itself is held offline.

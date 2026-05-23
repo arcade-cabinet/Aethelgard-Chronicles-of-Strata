@@ -1538,8 +1538,8 @@ local-review-trio after each ~5-item batch.
 - [x] [HIGH] M_AUDIT2.SEC2.16 — Gradle cache restore-keys cross-PR poisoning — scope by branch or drop restore-keys
 - [x] [MED] M_AUDIT2.SEC2.17 — explicit permissions: block on android-apk job
 - [x] [MED] M_AUDIT2.SEC2.18 — debug APK upload retention-days: 7 cap
-- [ ] [HIGH] M_AUDIT2.SEC2.19 — add .github/workflows/release.yml + release-please.yml (signed APK + SBOM)
-- [ ] [HIGH] M_AUDIT2.SEC2.20 — Android release signingConfig + keystore from CI secret
+- [x] [HIGH] M_AUDIT2.SEC2.19 — add .github/workflows/release.yml + release-please.yml (signed APK + SBOM)
+- [x] [HIGH] M_AUDIT2.SEC2.20 — Android release signingConfig + keystore from CI secret
 - [x] [MED] M_AUDIT2.SEC2.21 — fork-PR gate on expensive CI steps (Playwright)
 - [x] [MED] M_AUDIT2.SEC2.22 — CI guard `git diff --exit-code src/static-assets.ts` after build
 
@@ -1562,12 +1562,12 @@ local-review-trio after each ~5-item batch.
 - [x] [HIGH] M_AUDIT2.SEC2.32 — add .github/SECURITY.md (vuln disclosure policy + SLA)
 - [x] [HIGH] M_AUDIT2.SEC2.33 — add PRIVACY.md (no-network claim; Play store needs URL)
 - [x] [HIGH] M_AUDIT2.SEC2.34 — CreditsModal.tsx with KayKit/Kenney CC-BY attribution + audio pack authors
-- [ ] [MED] M_AUDIT2.SEC2.35 — SBOM generation in release.yml + Sigstore attestation
+- [x] [MED] M_AUDIT2.SEC2.35 — SBOM generation in release.yml + Sigstore attestation
 - [x] [MED] M_AUDIT2.SEC2.36 — release-please-config: bump-minor-pre-major + android/app/build.gradle extra-files
   - bump-minor-pre-major + bump-patch-for-minor-pre-major added; changelog-sections
     explicit. Gradle extra-files left to a release-workflow sed step (release-please
     `generic` updater can't parse Groovy syntax safely).
-- [ ] [LOW] M_AUDIT2.SEC2.37 — docs/specs/99-build-deploy.md GitHub repo-settings section
+- [x] [LOW] M_AUDIT2.SEC2.37 — docs/specs/99-build-deploy.md GitHub repo-settings section
 
 **Native Android (38-41)**
 - [x] [HIGH] M_AUDIT2.SEC2.38 — proguard-rules.pro: -keep for Capacitor plugins + sql.js
