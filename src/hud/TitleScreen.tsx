@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useTitleMusic } from '@/audio/useTitleMusic';
 import { HUD_THEME } from './hud-theme';
 import { TitleBackground } from './TitleBackground';
 
@@ -61,6 +62,7 @@ function MenuButton({
  * `#launcher` branding.
  */
 export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenProps) {
+  useTitleMusic();
   return (
     <div
       id="title-screen"

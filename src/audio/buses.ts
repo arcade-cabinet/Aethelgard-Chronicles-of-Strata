@@ -76,6 +76,14 @@ export function playMusic(buses: AudioBuses, id: string): void {
   currentMusicHowl = howl;
 }
 
+/** Stop whatever music is currently playing (no-op when nothing is). */
+export function stopMusic(): void {
+  if (currentMusicHowl) {
+    currentMusicHowl.stop();
+    currentMusicHowl = null;
+  }
+}
+
 /** Mute or unmute all Howler audio globally. */
 export function setMuted(muted: boolean): void {
   Howler.mute(muted);

@@ -247,8 +247,10 @@ audio packs via Howler. No procedural synthesis. Packs available:
   research-purchased, victory/defeat. Emitted: trainUnit (player),
   buildingDeathSystem (both factions), CriticalWarning enter-transition.
   Existing UI events already wired in SelectionPanel/SoundToggle.
-- [ ] M_AUDIO.3 — title-screen music loop on launch + gameplay loop swap
-  (music bus already exists with menu/gameplay/ambient samples).
+- [x] M_AUDIO.3 — title music: useTitleMusic hook plays audio.music.menu
+  on title-screen mount; stopMusic() exported from buses; cleanup stops
+  the loop when the title unmounts, so useAudio (Canvas) takes over with
+  audio.music.gameplay. SoundToggle's global Howler.mute respects both.
 - [x] M_AUDIO.5 — footsteps: FootstepEmitter r3f component — per-unit
   STEP_PERIOD accumulator, per-frame cap of 3, surface from tile.type
   (MOUNTAIN/HIGHLAND = stone, else grass). GCs dead-entity accumulators.
