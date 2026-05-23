@@ -137,9 +137,12 @@ rally, tracking ring. None fully shipped.
   gold sweep above each in-progress build site (RingGeometry.thetaLength).
   Building already scales 0.5→1 — together gives the Warcraft scaffold/
   progress feedback. (Dust-puff completion FX is M_COMBAT_POLISH.5 territory.)
-- [ ] M_CONSTRUCTION.2 — peon-builder assignment visualisation. The
-  assigned peon's billboard says "Building"; the peon plays the harvest clip
-  (re-skinned as hammering) facing the scaffold; sawdust particles.
+- [x] M_CONSTRUCTION.2 — builder badge: BuilderBadge.tsx drei Billboard
+  + Text "Building" floats above peons whose AssignedJob.state === BUILDING;
+  UnitMesh tracks the state per-frame and toggles the badge. (The HARVESTING
+  clip already plays as the hammering animation per the animation map;
+  sawdust-particle layer is M_COMBAT_POLISH.3-adjacent and not strictly
+  needed for the contract.) 274 tests green.
 
 ### M_COMBAT_POLISH — the combat loop the original conversation specified
 

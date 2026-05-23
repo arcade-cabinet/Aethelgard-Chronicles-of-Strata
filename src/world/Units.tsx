@@ -2,10 +2,18 @@ import { useFrame } from '@react-three/fiber';
 import type { Entity } from 'koota';
 import { Suspense, useRef, useState } from 'react';
 import type { Group } from 'three';
-import { AnimationState, Health, Transform, Unit, type UnitType } from '@/ecs/components';
+import {
+  AnimationState,
+  AssignedJob,
+  Health,
+  Transform,
+  Unit,
+  type UnitType,
+} from '@/ecs/components';
 import { type ClipName, clipForState } from '@/ecs/systems/animation';
 import { AnimatedCharacter } from '@/entities/AnimatedCharacter';
 import type { GameState } from '@/game/game-state';
+import { BuilderBadge } from './BuilderBadge';
 import { HealthBillboard } from './HealthBillboard';
 
 /** A live unit snapshot taken when the roster changes. */
@@ -23,6 +31,7 @@ function UnitMesh({ entity, role }: { entity: Entity; role: UnitType }) {
   const ref = useRef<Group>(null);
   const [clip, setClip] = useState<ClipName>('Idle_A');
   const [health, setHealth] = useState({ current: 1, max: 1 });
+  const [building, setBuilding] = useState(false);
 
   useFrame(() => {
     const t = entity.get(Transform);
@@ -39,6 +48,9 @@ function UnitMesh({ entity, role }: { entity: Entity; role: UnitType }) {
     if (h && (h.current !== health.current || h.max !== health.max)) {
       setHealth({ current: h.current, max: h.max });
     }
+    // M_CONSTRUCTION.2 — track BUILDING state so the BuilderBadge can show
+    const isBuilding = entity.get(AssignedJob)?.state === 'BUILDING';
+    if (isBuilding !== building) setBuilding(isBuilding);
   });
 
   return (
@@ -47,6 +59,7 @@ function UnitMesh({ entity, role }: { entity: Entity; role: UnitType }) {
         <AnimatedCharacter role={role} clip={clip} />
       </Suspense>
       <HealthBillboard current={health.current} max={health.max} />
+      {building && <BuilderBadge />}
     </group>
   );
 }
