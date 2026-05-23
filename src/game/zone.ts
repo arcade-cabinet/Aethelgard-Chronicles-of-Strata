@@ -2,6 +2,7 @@ import type { World } from 'koota';
 import { axialToWorld, getHexKey, hexDistance } from '@/core/hex';
 import {
   type Faction,
+  FACTIONS,
   FactionBase,
   FactionTrait,
   HexPosition,
@@ -157,7 +158,8 @@ export function seedZonesFromAttractors(
   centers: Record<Faction, { q: number; r: number }>,
 ): Record<Faction, ZoneState> {
   const RADIUS = 2;
-  for (const f of ['player', 'enemy'] as const) {
+  // M_REGISTRY.29 — iterate FACTIONS const, not literal pair.
+  for (const f of FACTIONS) {
     const center = centers[f];
     for (const tile of board.tiles.values()) {
       if (!tile.walkable) continue;

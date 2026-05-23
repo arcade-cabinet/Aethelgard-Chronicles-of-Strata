@@ -1,7 +1,7 @@
 import { MAP_RADIUS } from '@/config/world';
 import { assignBiome, type Biome } from './biome';
 import { type Crossing, placeCrossings } from './crossings';
-import { getHexKey } from './hex';
+import { getHexKey, hexDistance } from './hex';
 import { createNoise2D } from './noise';
 import { createMapPrng, type Rng } from './rng';
 
@@ -112,9 +112,13 @@ export function generateBoard(
   return { seedPhrase, radius, tiles, crossings };
 }
 
-/** Cube distance from (0,0,0) to (q, r, -q-r). */
+/**
+ * Cube distance from (0,0,0) to (q, r, -q-r). M_REGISTRY.23 — collapses
+ * to `hexDistance(q, r, 0, 0)` from @/core/hex; the local hand-roll
+ * was one of 2 duplicates of the same formula.
+ */
 function hexDistFromCenter(q: number, r: number): number {
-  return (Math.abs(q) + Math.abs(r) + Math.abs(q + r)) / 2;
+  return hexDistance(q, r, 0, 0);
 }
 
 /**

@@ -1,7 +1,7 @@
 import type { World } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { getHexKey, parseHexKey } from '@/core/hex';
-import { type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
+import { FACTIONS, type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { Difficulty } from '@/game/difficulty';
 import { claimTile, releaseTile, type ZoneState } from '@/game/zone';
 
@@ -61,7 +61,8 @@ export function encroachmentSystem(
     militaryByFaction[faction].add(getHexKey(hex.q, hex.r));
   }
 
-  for (const faction of ['player', 'enemy'] as const) {
+  // M_REGISTRY.29 — iterate FACTIONS, not literal pair.
+  for (const faction of FACTIONS) {
     const myZone = zones[faction];
     const otherZone = zones[opposite(faction)];
     const myMilitary = militaryByFaction[faction];

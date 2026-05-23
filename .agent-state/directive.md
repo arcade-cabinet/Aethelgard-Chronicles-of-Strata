@@ -606,7 +606,7 @@ the smallest end-to-end proof, then drain in dependency order.
   / balance-audit duplicate "is tile habitable / buildable" predicate
   via type-switches. Promote to `BIOME_FLAGS: Record<BiomeType,
   {walkable, decoratable, buildable, footstepKind}>` table.
-- [ ] M_REGISTRY.23 — eliminate hex-distance + neighbor-
+- [x] M_REGISTRY.23 — eliminate hex-distance + neighbor-
   table duplication (4 copies of `(|dq|+|dr|+|dq+dr|)/2`, 3
   NEIGHBORS literals). Replace with `core/hex.hexDistance` + new
   `AXIAL_NEIGHBORS` export.
@@ -630,7 +630,7 @@ the smallest end-to-end proof, then drain in dependency order.
   `selectedEntities(game)` filters by `local-player-faction` from
   a session context — lets AI-vs-AI replays drive the same
   interaction layer.
-- [ ] M_REGISTRY.29 — `encroachment.ts` `for faction of
+- [x] M_REGISTRY.29 — `encroachment.ts` `for faction of
   ['player','enemy']` literal loop becomes `for faction of
   FACTIONS`. Same fix wherever two-faction literal escapes.
 - [ ] M_REGISTRY.30 — `offensive-behavior.ts:87`

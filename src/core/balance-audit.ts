@@ -11,6 +11,7 @@
  * the surrounding map is asymmetric.
  */
 import type { BoardData } from './board';
+import { hexDistance } from './hex';
 
 /** Hexes within this radius of a base count toward its reachable buildable area. */
 export const REACH_RADIUS = 6;
@@ -22,9 +23,9 @@ export const BALANCE_TOLERANCE = 0.1;
 export function reachableBuildableCount(board: BoardData, cq: number, cr: number): number {
   let n = 0;
   for (const tile of board.tiles.values()) {
-    const d =
-      (Math.abs(tile.q - cq) + Math.abs(tile.r - cr) + Math.abs(tile.q + tile.r - cq - cr)) / 2;
-    if (d > REACH_RADIUS) continue;
+    // M_REGISTRY.23 — was a hand-rolled cube-distance formula;
+    // replaced by the shared hexDistance helper.
+    if (hexDistance(tile.q, tile.r, cq, cr) > REACH_RADIUS) continue;
     if (tile.type === 'GRASS' || tile.type === 'FOREST' || tile.type === 'HIGHLAND') {
       n += 1;
     }
