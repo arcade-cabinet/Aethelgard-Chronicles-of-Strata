@@ -57,10 +57,15 @@ export function CombatText({ game }: { game: GameState }) {
     }
     lastBatch.current = events;
 
-    // age and cull popups
-    setPopups((prev) =>
-      prev.map((p) => ({ ...p, age: p.age + delta })).filter((p) => p.age < POPUP_LIFETIME),
-    );
+    // age and cull popups — M_MICRO.5.7: short-circuit the common
+    // empty case so the per-frame setPopups doesn't churn a new
+    // empty array reference 60 times a second.
+    setPopups((prev) => {
+      if (prev.length === 0) return prev;
+      return prev
+        .map((p) => ({ ...p, age: p.age + delta }))
+        .filter((p) => p.age < POPUP_LIFETIME);
+    });
   });
 
   return (

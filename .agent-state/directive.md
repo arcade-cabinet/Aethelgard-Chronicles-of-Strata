@@ -836,9 +836,9 @@ bug).
 - [ ] M_MICRO.5.6 — `RallyMarker.tsx:14-18` switch to
   `useSyncExternalStore` over `game.rally.subscribe(...)` OR
   collapse to a pure read driven by parent re-renders.
-- [ ] M_MICRO.5.7 — `CombatText.tsx:56-66` short-circuit
+- [x] M_MICRO.5.7 — `CombatText.tsx:56-66` short-circuit
   empty pre-allocation: `if (prev.length === 0) return prev;`.
-- [ ] M_MICRO.5.8 — `BuildCompleteFX.tsx:34-56` same
+- [x] M_MICRO.5.8 — `BuildCompleteFX.tsx:34-56` same
   short-circuit.
 
 #### Category 6 — Vacuous test assertions

@@ -54,6 +54,9 @@ export function BuildCompleteFX({ game }: { game: GameState }) {
       });
     }
     setPuffs((prev) => {
+      // M_MICRO.5.8 — fast-path the common empty case before
+      // allocating the map/filter chain.
+      if (prev.length === 0 && !added) return prev;
       const aged = prev
         .map((p) => ({ ...p, age: p.age + delta }))
         .filter((p) => p.age < PUFF_LIFETIME);
