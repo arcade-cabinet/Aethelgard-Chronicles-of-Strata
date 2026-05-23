@@ -9,6 +9,7 @@ import { HomeBase } from '@/world/HomeBase';
 import { CombatText } from '@/world/CombatText';
 import { Decoration } from '@/world/Decoration';
 import { EnemyBase } from '@/world/EnemyBase';
+import { FootstepEmitter } from '@/world/FootstepEmitter';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
 import { ResourceText } from '@/world/ResourceText';
 import { RainParticles } from '@/world/RainParticles';
@@ -80,6 +81,7 @@ function Scene({
       <CombatText game={game} />
       <ResourceText game={game} />
       <ProjectileLayer game={game} />
+      <FootstepEmitter game={game} />
       <RainParticles game={game} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />

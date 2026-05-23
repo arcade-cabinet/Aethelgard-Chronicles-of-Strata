@@ -249,8 +249,9 @@ audio packs via Howler. No procedural synthesis. Packs available:
   Existing UI events already wired in SelectionPanel/SoundToggle.
 - [ ] M_AUDIO.3 — title-screen music loop from `PixelLoops_Main_Menu`
   plays on launch; switches to a Fantasy_Tavern loop in-game.
-- [ ] M_AUDIO.5 — footsteps: emit footstep-grass / footstep-stone per
-  tile surface as units move (throttle to ~3 hz).
+- [x] M_AUDIO.5 — footsteps: FootstepEmitter r3f component — per-unit
+  STEP_PERIOD accumulator, per-frame cap of 3, surface from tile.type
+  (MOUNTAIN/HIGHLAND = stone, else grass). GCs dead-entity accumulators.
 - [ ] M_AUDIO.6 — encroachment-pulse cue while a tile pulses; tile-flip
   cue when ownership changes.
 
