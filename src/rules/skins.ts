@@ -23,7 +23,7 @@
  * `audio` (faction-specific SFX overrides), and `accretionPool`
  * (per-faction decoration choices). Each slot lands on its own commit.
  */
-import type { BuildingType, Faction } from '@/ecs/components';
+import type { BuildingType, Faction, UnitType } from '@/ecs/components';
 
 /** How one structure model renders — its GLB logical id, scale, and Y offset. */
 export interface StructureModel {
@@ -57,6 +57,25 @@ export interface BaseProp {
   rotationY: number;
 }
 
+/** The two KayKit skeleton tiers. Characters share a rig within a tier. */
+export type RigTier = 'medium' | 'large';
+
+/**
+ * Per-unit-role rig + mesh — the third Skin slot (M_REGISTRY.2). Drives
+ * which KayKit character GLB AnimatedCharacter loads for the role on
+ * THIS faction, and which animation library (Rig_Medium / Rig_Large)
+ * the retarget loader pairs it with. A future tribe with different
+ * meshes (e.g. Necromancer's "Peon equivalent" = a skeletal serf) just
+ * sets `SKINS.necromancer.rig.Peon = { tier: 'medium', meshLogicalId:
+ * 'characters.necromancer.serf' }` without any code edit.
+ */
+export interface UnitRig {
+  /** Which skeleton tier this role uses — selects the animation library. */
+  tier: RigTier;
+  /** Logical id of the role's character mesh GLB. */
+  meshLogicalId: string;
+}
+
 /**
  * Visual identity for one faction. New slots get added here as each
  * M_REGISTRY.* ticket lands.
@@ -70,7 +89,41 @@ export interface Skin {
    * gravestones + fences around the central crypt.
    */
   baseProps: BaseProp[];
+  /**
+   * Per-unit-role rig + mesh (M_REGISTRY.2). Today both factions hold
+   * identical rows because the existing roster is faction-agnostic
+   * (Peon goes to player, Goblin goes to enemy — the role implies the
+   * faction). The duplication is deliberate: a third tribe will need
+   * its OWN UnitType-keyed rig map, and the per-faction shape is
+   * already correct for that future.
+   */
+  rig: Record<UnitType, UnitRig>;
 }
+
+/**
+ * The current 2-tribe roster shares one rig map (Peon → engineer hero
+ * mesh, Goblin → rogue hero mesh tinted, etc.). Both factions get this
+ * literal today; a future Necromancer or Wood-Elf tribe defines its own
+ * rig map and slots it under `SKINS.necromancer.rig`. The per-faction
+ * shape is the right shape; the duplication is acknowledged.
+ */
+const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
+  Peon: { tier: 'medium', meshLogicalId: 'characters.heroes.engineer' },
+  Footman: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
+  // Trebuchet: placeholder — reuse knight scaled to feel siege-y. The
+  // siege identity comes from damageType + range; mesh is a stand-in
+  // until a dedicated KayKit siege model lands.
+  Trebuchet: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
+  // Settler (M_MODES.6) — civilian appearance; reuse the engineer mesh.
+  Settler: { tier: 'medium', meshLogicalId: 'characters.heroes.engineer' },
+  // Goblin: no dedicated KayKit goblin; the hooded Rogue is the closest
+  // small humanoid. Tinted/scaled distinctly at render time.
+  Goblin: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },
+  Orc: { tier: 'large', meshLogicalId: 'characters.enemies.orc' },
+  Vampire: { tier: 'medium', meshLogicalId: 'characters.enemies.vampire' },
+  BlackKnight: { tier: 'large', meshLogicalId: 'characters.enemies.black-knight' },
+  Witch: { tier: 'medium', meshLogicalId: 'characters.enemies.witch' },
+};
 
 /**
  * SKINS — the master Skin registry, keyed by faction. A future Necromancer
@@ -101,6 +154,7 @@ export const SKINS: Record<Faction, Skin> = {
     // would clash with player-built structures landing on adjacent
     // tiles.
     baseProps: [],
+    rig: SHARED_RIG_TODAY,
   },
   enemy: {
     structure: {
@@ -118,6 +172,7 @@ export const SKINS: Record<Faction, Skin> = {
       // Library (M_FEATURE.3) — enemy variant; gravestone footprint.
       Library: { logicalId: 'nature.gravestone.cross', scale: 0.9, yOffset: 0 },
     },
+    rig: SHARED_RIG_TODAY,
     // Necropolis silhouette — gravestones cluster in front of the
     // crypt, iron fences frame the sides + rear. Positions are
     // local-space offsets from the base tile centre (the central

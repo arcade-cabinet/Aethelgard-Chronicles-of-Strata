@@ -523,7 +523,7 @@ the smallest end-to-end proof, then drain in dependency order.
   faction)` consuming `UNIT_PROFILES` (peon/settler/combat trait
   bundles as composeTraits per role). Eliminates: 3 role branches,
   1 difficulty ternary, 1 damageType ternary.
-- [ ] M_REGISTRY.2 — collapse `src/entities/rig.ts` two
+- [x] M_REGISTRY.2 — collapse `src/entities/rig.ts` two
   role switches into Skin slot reads: `Skin[faction].rig[role] =
   {tier, mesh}`. Delete `rigForRole` + `characterMeshId`;
   AnimatedCharacter reads the Skin slot directly.
