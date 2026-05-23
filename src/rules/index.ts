@@ -40,6 +40,9 @@ export {
 export {
   type BuildingDisplay,
   displayFor,
+  HEALTH_BAR_STOPS,
+  type HealthBarStop,
+  healthBarColor,
   RESOURCE_DISPLAY,
   type ResourceDisplay,
   resourceDisplayFor,

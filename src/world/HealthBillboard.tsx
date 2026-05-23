@@ -1,4 +1,5 @@
 import { Billboard } from '@react-three/drei';
+import { healthBarColor } from '@/rules';
 
 /** Props for a unit health billboard. */
 export interface HealthBillboardProps {
@@ -10,12 +11,8 @@ export interface HealthBillboardProps {
   y?: number;
 }
 
-/** Bar color by health fraction: green > 50%, yellow 25–50%, red below. */
-function barColor(fraction: number): string {
-  if (fraction > 0.5) return '#10b981';
-  if (fraction > 0.25) return '#eab308';
-  return '#ef4444';
-}
+// M_AUDIT2.ARCH.16 — bar color stops moved to rules/display.ts
+// (HEALTH_BAR_STOPS). Call healthBarColor(fraction) to resolve.
 
 /**
  * A camera-facing health bar floating above a unit. Hidden at full health (a
@@ -36,7 +33,7 @@ export function HealthBillboard({ current, max, y = 2.1 }: HealthBillboardProps)
       {/* colored fill, anchored to the left edge */}
       <mesh position={[-(width * (1 - fraction)) / 2, 0, 0.01]}>
         <planeGeometry args={[width * fraction, 0.14]} />
-        <meshBasicMaterial color={barColor(fraction)} />
+        <meshBasicMaterial color={healthBarColor(fraction)} />
       </mesh>
     </Billboard>
   );

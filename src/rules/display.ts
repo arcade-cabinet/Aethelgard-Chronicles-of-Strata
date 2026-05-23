@@ -49,3 +49,31 @@ export const RESOURCE_DISPLAY: Record<ResourceType, ResourceDisplay> = {
 export function resourceDisplayFor(type: ResourceType): ResourceDisplay {
   return RESOURCE_DISPLAY[type];
 }
+
+/**
+ * Health-bar color stops (M_AUDIT2.ARCH.16). Was a per-call
+ * `barColor()` switch in HealthBillboard.tsx with literal thresholds
+ * + colors. Lifted to a data table so a future "wound state" pass
+ * (post-AOE flash, low-HP critical alarm) reads the same stops.
+ *
+ * Stops are ORDERED descending by `minFraction`; the first stop
+ * whose `minFraction <= fraction` wins.
+ */
+export interface HealthBarStop {
+  minFraction: number;
+  color: string;
+}
+
+export const HEALTH_BAR_STOPS: ReadonlyArray<HealthBarStop> = [
+  { minFraction: 0.5, color: '#10b981' }, // healthy green
+  { minFraction: 0.25, color: '#eab308' }, // wounded yellow
+  { minFraction: 0, color: '#ef4444' }, // critical red
+];
+
+/** Resolve the bar color for a health fraction. */
+export function healthBarColor(fraction: number): string {
+  for (const stop of HEALTH_BAR_STOPS) {
+    if (fraction >= stop.minFraction) return stop.color;
+  }
+  return HEALTH_BAR_STOPS[HEALTH_BAR_STOPS.length - 1]?.color ?? '#ef4444';
+}
