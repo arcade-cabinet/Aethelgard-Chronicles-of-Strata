@@ -82,23 +82,11 @@ export function generateBoard(
   }
 
   if (guidedMapGen) {
-    // M_MAPGEN.4 — beach ring + ocean perimeter (deterministic post-pass).
-    // M_MODES.9 — mapType selects which paint passes fire:
-    //   balanced (default) — beach ring + central mountain spine + inland lake
-    //   continent — same as balanced but mountain spine is thicker (3-tile spine)
-    //   archipelago — multiple small islands separated by channels (skip the
-    //     mountain spine; punch extra LAKE channels through the interior)
-    //   dry-land — no inland water + extensive desert + ridge-line mountains
-    paintBeachRing(tiles, radius);
-    if (mapType !== 'archipelago') paintMountainSpine(tiles, radius, map);
-    if (mapType === 'archipelago') paintChannelCuts(tiles, radius, map);
-    if (mapType !== 'dry-land') paintInlandLake(tiles, radius, map);
-    if (mapType === 'dry-land') paintDesertBlanket(tiles, radius);
-    // Recompute `walkable` after the guided-paint pass — every tile now
-    // reflects its FINAL biome + level.
-    for (const tile of tiles.values()) {
-      tile.walkable = tile.type !== 'OCEAN' && tile.type !== 'LAKE' && tile.level < 5;
-    }
+    // M_REGISTRY.9 — gen-time paint passes driven by a per-mapType
+    // pipeline table instead of 4 hand-written if-branches. Adding a
+    // new mapType is ONE row in GEN_TIME_PIPELINES; adding a new
+    // paint pass is ONE entry per pipeline that uses it.
+    runGenTimePass(tiles, radius, map, mapType);
   }
 
   const crossings = placeCrossings(tiles, map);
@@ -122,12 +110,64 @@ function hexDistFromCenter(q: number, r: number): number {
   return hexDistance(q, r, 0, 0);
 }
 
+// ---------------------------------------------------------------------------
+// M_REGISTRY.9 — gen-time paint pipeline.
+// ---------------------------------------------------------------------------
+
+/**
+ * One paint pass — operates on the tile map in place. Some passes need
+ * the rng (mountain/lake/channel scatter); some don't (beach ring,
+ * desert blanket). Uniform signature so the pipeline iterator can
+ * dispatch them generically.
+ */
+type PaintPass = (tiles: Map<string, Tile>, radius: number, rng: Rng) => void;
+
+/**
+ * Per-mapType pipeline: which paint passes fire, in which order, for
+ * each generated map type. Replaces 4 hand-written if-branches in
+ * generateBoard (was: `if (mapType !== 'archipelago') paint...`,
+ * `if (mapType === 'archipelago') paint...`, etc.).
+ *
+ * Adding a new mapType = ONE pipeline entry. Adding a new paint pass
+ * = ONE function + the right entries in pipelines that use it.
+ */
+const GEN_TIME_PIPELINES: Record<GeneratedMapType, PaintPass[]> = {
+  // balanced — beach ring + central mountain spine + inland lake.
+  balanced: [paintBeachRing, paintMountainSpine, paintInlandLake],
+  // continent — same as balanced but mountain spine is thicker (handled
+  // inside paintMountainSpine via a future mapType-aware tuning).
+  continent: [paintBeachRing, paintMountainSpine, paintInlandLake],
+  // archipelago — small islands separated by channels; skip mountain spine.
+  archipelago: [paintBeachRing, paintChannelCuts, paintInlandLake],
+  // dry-land — no inland water + extensive desert + ridge-line mountains.
+  'dry-land': [paintBeachRing, paintMountainSpine, paintDesertBlanket],
+};
+
+/**
+ * Run the gen-time paint pipeline for `mapType` over `tiles`, then
+ * recompute every tile's `walkable` flag from its final biome + level.
+ */
+function runGenTimePass(
+  tiles: Map<string, Tile>,
+  radius: number,
+  rng: Rng,
+  mapType: GeneratedMapType,
+): void {
+  const pipeline = GEN_TIME_PIPELINES[mapType];
+  for (const pass of pipeline) pass(tiles, radius, rng);
+  // Recompute `walkable` after the guided-paint pass — every tile
+  // now reflects its FINAL biome + level.
+  for (const tile of tiles.values()) {
+    tile.walkable = biomeFlagsFor(tile.type).walkable && tile.level < 5;
+  }
+}
+
 /**
  * M_MAPGEN.4 — paint a deterministic ocean perimeter + beach ring.
  * Tiles at distance > radius-2 → OCEAN (level 0, type OCEAN, moisture 1);
  * tiles at distance == radius-2 OR radius-1 → BEACH (level 1).
  */
-function paintBeachRing(tiles: Map<string, Tile>, radius: number): void {
+function paintBeachRing(tiles: Map<string, Tile>, radius: number, _rng: Rng): void {
   for (const tile of tiles.values()) {
     const d = hexDistFromCenter(tile.q, tile.r);
     if (d > radius - 2) {
@@ -188,7 +228,7 @@ function paintChannelCuts(tiles: Map<string, Tile>, radius: number, rng: Rng): v
  * GRASS rings only around each potential base. Mountain spine stays for
  * funneling. Skips the inland-lake feature.
  */
-function paintDesertBlanket(tiles: Map<string, Tile>, radius: number): void {
+function paintDesertBlanket(tiles: Map<string, Tile>, radius: number, _rng: Rng): void {
   for (const tile of tiles.values()) {
     const d = hexDistFromCenter(tile.q, tile.r);
     if (d > radius - 4) continue; // inside the beach ring

@@ -8,15 +8,18 @@ import { Decoration } from '@/world/Decoration';
 import { FactionBase } from '@/world/FactionBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
 import { Mountains } from '@/world/Mountains';
+import { ParticleEmitter } from '@/world/ParticleEmitter';
+import {
+  buildCompleteArchetype,
+  rainArchetype,
+  sawdustArchetype,
+  victoryConfettiArchetype,
+} from '@/world/particle-archetypes';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
-import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { ResourceNodes } from '@/world/ResourceNodes';
 import { ResourceText } from '@/world/ResourceText';
 import { Roads } from '@/world/Roads';
-import { BuildCompleteFX } from '@/world/BuildCompleteFX';
-import { SawdustFX } from '@/world/SawdustFX';
-import { VictoryConfetti } from '@/world/VictoryConfetti';
 import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
@@ -144,9 +147,12 @@ function Scene({
         <DecorationLive game={game} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
         <Roads game={game} />
-        <BuildCompleteFX game={game} />
-        <SawdustFX game={game} />
-        <VictoryConfetti game={game} />
+        {/* M_REGISTRY.6 — 4 sibling particle FX → ParticleEmitter +
+            archetype specs. Same per-particle shape; spawn/age/cull
+            shared. */}
+        <ParticleEmitter game={game} spec={buildCompleteArchetype} />
+        <ParticleEmitter game={game} spec={sawdustArchetype} />
+        <ParticleEmitter game={game} spec={victoryConfettiArchetype} />
         {/* M_REGISTRY.4 — ONE faction-symmetric base renderer mounted */}
         {/* twice with different `faction` props. Visual divergence is */}
         {/* 100% data (SKINS[faction] in src/rules/skins.ts), 0% code.  */}
@@ -158,7 +164,7 @@ function Scene({
       <ResourceText game={game} />
       <ProjectileLayer game={game} />
       <FootstepEmitter game={game} />
-      <RainParticles game={game} />
+      <ParticleEmitter game={game} spec={rainArchetype} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
       <ZoneBorder game={game} />

@@ -541,13 +541,13 @@ the smallest end-to-end proof, then drain in dependency order.
   into ONE `BUILDING_PROFILES` registry with composable slot fields
   {behaviors, display, cost, supply, producers}. Library's
   ScienceProducer becomes `producer: {kind: 'science', rate: 1}` slot.
-- [ ] [WAIT-SCOPE] M_REGISTRY.6 — collapse the 7 sibling particle FX
+- [ ] M_REGISTRY.6 — collapse the 7 sibling particle FX
   (RainParticles, SawdustFX, BuildCompleteFX, VictoryConfetti,
   CombatText, ResourceText, TrackingRings, FootstepEmitter) into ONE
   ParticleSystem driven by `ParticleArchetype` slot configs (geometry,
   lifetime, emit trigger, drift fn, batch source). Supersedes the
   earlier M_REFACTOR.1 — this IS its realization.
-- [ ] [WAIT-SCOPE] M_REGISTRY.7 — `src/world/Decoration.tsx` (599 LOC,
+- [ ] M_REGISTRY.7 — `src/world/Decoration.tsx` (599 LOC,
   biggest world file) splits along 3 painter passes; all 3 collapse
   into AccretesProps slot values on gen-time pass. Replace trio with
   one `paintAccretion(target, AccretesProps)` invoked per Accreting
@@ -556,17 +556,17 @@ the smallest end-to-end proof, then drain in dependency order.
   32-key Record of preloads collapses into derived list from unified
   asset registry — every asset referenced by any Skin or
   AccretesProps auto-preloaded.
-- [ ] [WAIT-SCOPE] M_REGISTRY.9 — collapse 5 board paint passes
+- [x] M_REGISTRY.9 — collapse 5 board paint passes
   (paintBeachRing / Mountain / Channel / Lake / Desert) + assignBiome
   into ONE `runGenTimePass(board, slots)` iterating slot membership
   + dispatching per slot kind.
-- [ ] [WAIT-SCOPE] M_REGISTRY.10 — `Mountains.tsx` (peak placement)
+- [ ] M_REGISTRY.10 — `Mountains.tsx` (peak placement)
   + `Crossings.tsx` (ramp placement) join the gen-time pass — both
   are AccretesProps consumers, not bespoke renderers.
 - [x] M_REGISTRY.11 — `Roads.tsx` MATERIAL_COLOR table +
   Roads layer become a Skin-driven generic MoverRenderer. Same
   shape as StructureRenderer.
-- [ ] [WAIT-SCOPE] M_REGISTRY.12 — `Crossings.tsx` 6-variant (style ×
+- [ ] M_REGISTRY.12 — `Crossings.tsx` 6-variant (style ×
   form) rendering collapses into CrossingProfile slot table; remove
   the bespoke crossingColor switch.
 - [x] M_REGISTRY.13 — collapse 4 `place*` verbs in
@@ -588,7 +588,7 @@ the smallest end-to-end proof, then drain in dependency order.
   into ONE `rules/unit-roles.MILITARY_ROLES` export OR push down
   to a `combatRole: 'military' | 'peon' | 'civilian'` slot per
   unit profile.
-- [ ] [WAIT-SCOPE] M_REGISTRY.18 — collapse 6 AI files (ai-director,
+- [ ] M_REGISTRY.18 — collapse 6 AI files (ai-director,
   ai-player, perception, steering, vehicle-factory, ecs/systems/ai)
   into ONE `BrainArchetype` slot consumed by ONE per-tick AI system.
   yuka Vehicle becomes implementation detail of the brain slot.
@@ -1050,7 +1050,7 @@ The real architecture:
   registry. JSON-driven config (data) + typed loader (code) + per-Thing
   trait-composition function (one helper per slot kind, dispatched by
   slot membership not by Thing identity).
-- [ ] [WAIT-SCOPE] M_ARCH_UNIFY.4 — gen-time pass refactor: `paintBeachRing /
+- [x] M_ARCH_UNIFY.4 — gen-time pass refactor: `paintBeachRing /
   paintMountainSpine / paintInlandLake / paintChannelCuts /
   paintDesertBlanket / appendBaseAccretion / appendBuildingAccretion /
   appendGraveyardCluster` all become registered GenTime handlers
@@ -1072,13 +1072,13 @@ The real architecture:
   'player'/'enemy' branches in structure-models / Decoration /
   zone-border / sound-map are replaced with skin lookup.
   Adding a 3rd tribe = ONE new skin entry. NO code changes anywhere.
-- [ ] [WAIT-SCOPE] M_ARCH_UNIFY.8 — supersede M_REFACTOR.1 (particles) as a
+- [ ] M_ARCH_UNIFY.8 — supersede M_REFACTOR.1 (particles) as a
   CONSUMER of the unified registry: a particle effect is a Thing
   whose ParticleArchetype slot is set; the per-frame ParticleSystem
   runs as one runtime-pass handler. The Things doing the emitting
   (combat-hit, building-complete, weather, rain) declare which
   ParticleArchetype they emit per event.
-- [ ] [WAIT-SCOPE] M_ARCH_UNIFY.9 — supersede M_MAPGEN.13 (per-building accretion)
+- [ ] M_ARCH_UNIFY.9 — supersede M_MAPGEN.13 (per-building accretion)
   + M_MAPGEN.11 (per-faction base accretion) as CONSUMERS: the
   accretion config tables collapse into AccretesProps slot values on
   Thing profiles. The accretion-paint loop iterates `registry.filter(
