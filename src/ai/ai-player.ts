@@ -10,8 +10,9 @@ import {
 } from '@/ecs/components';
 import { hexNeighbors } from '@/core/hex';
 import type { GameState } from '@/game/game-state';
-import { moveUnit, placeBuilding } from '@/game/commands';
-import { canBuild, peonCap } from '@/rules';
+import { moveUnit, placeBuilding, trainUnit } from '@/game/commands';
+import { canAfford } from '@/game/economy';
+import { UNIT_COSTS, canBuild, peonCap } from '@/rules';
 
 /**
  * Goal-driven AI player for one faction (spec 100/101/102).
@@ -47,9 +48,8 @@ export class AiPlayer extends GameEntity {
     this.faction = faction;
     this.brain = new AiBrain(this);
     this.brain.addEvaluator(new BuildEvaluator());
+    this.brain.addEvaluator(new TrainEvaluator());
     this.brain.addEvaluator(new MilitaryEvaluator());
-    // TrainEvaluator omitted from this slice — training command surface lands
-    // when the player-UI train button does (M9.1a); the AI evaluator joins it.
   }
 
   /**
@@ -237,5 +237,64 @@ class MoveMilitaryGoal extends Goal<AiPlayer> {
   }
 }
 
-// Silence "unused" — AssignedJob is reserved for the future train-evaluator path.
+// ---------------------------------------------------------------------------
+// Train evaluator + goal — verb 2 of 3 (M_AI_DEPTH.2)
+// ---------------------------------------------------------------------------
+
+/**
+ * Decide what (if anything) to train this tick. Priority:
+ *   1. Peon if peon-cap allows + at least one is missing (always grow the
+ *      economy).
+ *   2. Footman if a Barracks exists and the AI can afford one.
+ */
+class TrainEvaluator extends GoalEvaluator<AiPlayer> {
+  calculateDesirability(owner: AiPlayer): number {
+    const choice = this.pickTrainable(owner);
+    return choice ? 0.75 : 0; // slightly higher than build — training is the
+    // closest-loop way to convert resources into capability
+  }
+
+  setGoal(owner: AiPlayer): void {
+    const choice = this.pickTrainable(owner);
+    if (!choice) return;
+    owner.brain.clearSubgoals();
+    owner.brain.addSubgoal(new TrainGoal(owner, choice));
+  }
+
+  pickTrainable(owner: AiPlayer): 'Peon' | 'Footman' | null {
+    const { game, faction } = owner;
+    if (!game) return null;
+    const eco = game.economy[faction];
+    // peons first — more workers → more economy
+    const peons = ownedPeonCount(game, faction);
+    const houses = ownedBuildingCount(game, faction, 'House');
+    const granaries = ownedBuildingCount(game, faction, 'Granary');
+    if (peons < peonCap(houses, granaries) && canAfford(eco, UNIT_COSTS.Peon)) return 'Peon';
+    // footman if Barracks exists + affordable
+    if (ownedBuildingCount(game, faction, 'Barracks') > 0 && canAfford(eco, UNIT_COSTS.Footman))
+      return 'Footman';
+    return null;
+  }
+}
+
+/** Issue the chosen train via the shared `commands.trainUnit`. */
+class TrainGoal extends Goal<AiPlayer> {
+  constructor(
+    owner: AiPlayer,
+    private readonly role: 'Peon' | 'Footman',
+  ) {
+    super(owner);
+  }
+
+  activate(): void {
+    const owner = this.owner as AiPlayer;
+    const ok = trainUnit(owner.game, this.role, owner.faction);
+    this.status = ok ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
+    if (ok) owner.lastGoal = `train:${this.role}`;
+  }
+}
+
+// AssignedJob import is reserved for future fine-grained goals (e.g. assign
+// idle peon to a specific consumer); kept in the import set so adding a goal
+// later is a one-line trait change.
 void AssignedJob;
