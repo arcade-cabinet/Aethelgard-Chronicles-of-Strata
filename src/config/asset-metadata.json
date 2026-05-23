@@ -864,6 +864,16 @@
     "license": "CC-BY",
     "triangles": 6210
   },
+  "characters.enemies.monster": {
+    "id": "characters.enemies.monster",
+    "path": "assets/characters/enemies/monster.glb",
+    "category": "characters",
+    "kind": "glb",
+    "animations": [],
+    "pack": "KayKit Mystery Series 4",
+    "license": "CC0",
+    "triangles": 6000
+  },
   "structures.portal-crypt": {
     "id": "structures.portal-crypt",
     "path": "assets/structures/portal-crypt.glb",

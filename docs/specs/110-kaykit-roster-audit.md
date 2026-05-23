@@ -36,9 +36,12 @@ defines 4 unit types; 5–7 KayKit characters are **not yet ingested**.
   Rig_Large_MovementBasic animation libraries — already verified in
   `src/entities/rig.ts` rig-tier resolution.
 
-## Open follow-ups (covered by M_EXPANSION.A.26–.A.29)
+## Open follow-ups (covered by M_EXPANSION.A.26–.A.30)
 
-- A.26 Wizard (Mage)
-- A.27 Scout (Rogue)
-- A.28 Engineer + Barbarian as attachment-point variants
-- A.29 Faction-palette tinting (cosmetic)
+- A.26 Wizard (Mage)         ✅ landed
+- A.27 Scout (Rogue)         ✅ landed
+- A.28 Engineer + Barbarian as attachment-point variants — WAIT-DESIGN
+- A.29 Faction-palette tinting (cosmetic) ✅ landed
+- A.30 Monster (KayKit Mystery Series 4) as wandering neutral hostile —
+  mesh ingested (characters.enemies.monster); the wandering-hostile AI
+  spawner system is the next vertical (would feed M_EXPANSION.F.95 too).

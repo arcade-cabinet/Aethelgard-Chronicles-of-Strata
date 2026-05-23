@@ -37,6 +37,7 @@ export type StaticAssetPath =
   'assets/board/tile/stone.glb' |
   'assets/board/tile/water.glb' |
   'assets/characters/enemies/black-knight.glb' |
+  'assets/characters/enemies/monster.glb' |
   'assets/characters/enemies/orc.glb' |
   'assets/characters/enemies/vampire.glb' |
   'assets/characters/enemies/witch.glb' |
@@ -193,6 +194,7 @@ const assets = new Set<string>([
   'assets/board/tile/stone.glb',
   'assets/board/tile/water.glb',
   'assets/characters/enemies/black-knight.glb',
+  'assets/characters/enemies/monster.glb',
   'assets/characters/enemies/orc.glb',
   'assets/characters/enemies/vampire.glb',
   'assets/characters/enemies/witch.glb',
