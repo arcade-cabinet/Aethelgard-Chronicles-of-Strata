@@ -35,7 +35,7 @@ export function scienceSystem(
     // non-Building entity carrying ScienceProducer would pass the guard
     // and drift the economy. ScienceProducer is only meaningful on
     // buildings (Library today) by design.
-    if (!b || !b.isComplete) continue;
+    if (!b?.isComplete) continue;
     const rate = e.get(ScienceProducer)?.rate ?? 0;
     const faction = e.get(FactionTrait)?.faction;
     if (!faction || rate <= 0) continue;

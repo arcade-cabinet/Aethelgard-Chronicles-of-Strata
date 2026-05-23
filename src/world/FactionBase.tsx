@@ -30,6 +30,7 @@ import {
   type BuildingType,
   type Faction,
   FactionTrait,
+  Gate,
   HexPosition,
 } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
@@ -52,6 +53,7 @@ function StructureMesh({
   y,
   z,
   progress,
+  hasGate = false,
 }: {
   faction: Faction;
   type: BuildingType;
@@ -59,9 +61,12 @@ function StructureMesh({
   y: number;
   z: number;
   progress: number;
+  /** M_EXPANSION.A.3 — render the gate variant when a Wall has the Gate trait. */
+  hasGate?: boolean;
 }) {
   const model = structureModel(faction, type);
-  const glb = useGLTF(assets.url(model.logicalId));
+  const logicalId = hasGate ? 'structures.gate-stone' : model.logicalId;
+  const glb = useGLTF(assets.url(logicalId));
   const effectiveScale = model.scale * (0.5 + 0.5 * Math.min(progress, 1));
   return (
     <group position={[x, y + model.yOffset, z]} scale={effectiveScale}>
@@ -133,6 +138,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
       y: number;
       z: number;
       progress: number;
+      hasGate: boolean;
     }> = [];
     for (const [tileKey, entity] of game.buildSites) {
       const b = entity.get(Building);
@@ -143,6 +149,10 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
       const ft = entity.get(FactionTrait);
       if (ft?.faction !== faction) continue;
       const { x, z } = axialToWorld(pos.q, pos.r);
+      // M_EXPANSION.A.3 — a Wall that also carries the Gate trait
+      // renders with the Castle Kit gate mesh (open-passage silhouette)
+      // instead of the plain wall slab.
+      const hasGate = b.buildingType === 'Wall' && entity.has(Gate);
       result.push({
         key: tileKey,
         type: b.buildingType,
@@ -150,12 +160,15 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
         y: pos.level * TILE_HEIGHT,
         z,
         progress: b.progress,
+        hasGate,
       });
     }
     return result;
     // M_AUDIT2.ARCH.22 — depend on buildSitesGeneration (bumped per-
     // mutation), NOT the Map ref (which never changes identity).
-  }, [game.buildSites, faction]);
+    // M_EXPANSION.A.3 — generation also bumps when Gate trait is
+    // attached, so the Wall→Gate visual swap is picked up.
+  }, [game.buildSites, faction, game.buildSitesGeneration]);
 
   if (!basePos) return null;
   const skin = SKINS[faction];
@@ -196,6 +209,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
             y={b.y}
             z={b.z}
             progress={b.progress}
+            hasGate={b.hasGate}
           />
           <ConstructionRing x={b.x} y={b.y} z={b.z} progress={b.progress} />
         </group>

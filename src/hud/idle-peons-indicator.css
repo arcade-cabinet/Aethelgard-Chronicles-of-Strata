@@ -15,8 +15,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* biome-ignore lint/complexity/noImportantStyles: inline-style animation property requires !important to override; intentional vestibular-safe escape. */
   #idle-peons {
+    /* biome-ignore lint/complexity/noImportantStyles: inline-style animation requires !important to override; intentional vestibular-safe escape. */
     animation: none !important;
     opacity: 0.9;
   }

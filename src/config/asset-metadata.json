@@ -606,6 +606,16 @@
     "license": "CC0",
     "triangles": 600
   },
+  "structures.gate-stone": {
+    "id": "structures.gate-stone",
+    "path": "assets/structures/gate-stone.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Castle Kit",
+    "license": "CC0",
+    "triangles": 300
+  },
   "characters.heroes.knight": {
     "id": "characters.heroes.knight",
     "path": "assets/characters/heroes/knight.glb",
