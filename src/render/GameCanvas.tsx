@@ -14,6 +14,7 @@ import { RainParticles } from '@/world/RainParticles';
 import { RallyMarker } from '@/world/RallyMarker';
 import { ResourceNodes } from '@/world/ResourceNodes';
 import { ResourceText } from '@/world/ResourceText';
+import { Roads } from '@/world/Roads';
 import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
@@ -74,6 +75,7 @@ function Scene({
       <Suspense fallback={null}>
         <Decoration board={game.board} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
+        <Roads game={game} />
         <HomeBase game={game} />
         <EnemyBase game={game} />
         <Units game={game} />

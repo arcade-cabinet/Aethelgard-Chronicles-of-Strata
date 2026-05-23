@@ -403,9 +403,11 @@ Pixel-5a perf profile M_HARDENING.6 — already live in the v0.3 block above
 with WAIT-MCP / WAIT-DEVICE prefixes; they carry forward into v0.4 without
 re-listing. Both unblock as the relevant dependency lands.)
 
-- [ ] M_FEATURE.1 — road / Mover placement command. Trait + Gate
-  composition rules-layer landed in M_ARCHETYPE.1/.2; add the actual
-  place-road verb + snap-render in `src/world/Roads.tsx`.
+- [x] M_FEATURE.1 — road placement: placeRoad command (config/economy.json
+  roadCosts per material, roadCostFor helper); Wall-tile composition
+  materialises Gate via materialiseGate; Roads.tsx r3f layer renders each
+  Mover as a flat hex disc coloured per material. 4 unit tests pin
+  spawn/cost/composition/faction symmetry. 302 tests green.
 - [ ] M_FEATURE.2 — Discovery panel science-cost scaling. Logarithmic
   cost-by-depth as Discoveries graph deepens (Discoveries archetype +
   science slot landed M_DATA.7; the cost scaling is the second-iteration

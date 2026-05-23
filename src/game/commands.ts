@@ -11,11 +11,15 @@ import {
   type Faction,
   FactionTrait,
   HexPosition,
+  MoverBehavior,
+  type MoverMaterial,
   OffensiveBehavior,
   PathQueue,
   Selectable,
   Unit,
 } from '@/ecs/components';
+import { roadCostFor } from '@/config/economy';
+import { materialiseGate } from '@/rules';
 import { createCharacter } from '@/entities/character-factory';
 import {
   BUILDING_COSTS,
@@ -177,6 +181,62 @@ export function placeBuilding(
     nearestPeon.set(AssignedJob, { state: 'BUILDING', targetKey: tileKey });
   }
 
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Road placement (M_FEATURE.1) — Mover trait + Gate composition at runtime.
+// ---------------------------------------------------------------------------
+
+/**
+ * Place a road tile of `material` at `tileKey` for `faction`. Roads are
+ * Movers (spec 102): ZoC-neutral, walkable (do NOT block paths), magnetic
+ * neighbours of other Movers. When placed on a tile that already holds a
+ * DefensiveBehavior (a Wall), the existing entity composes a Gate — that
+ * tile becomes directionally passable for `faction` only.
+ *
+ * Returns true on placement (cost spent + entity spawned / gate composed),
+ * false on illegal placement (tile occupied by a Building, not walkable,
+ * unaffordable). Roads must sit on `walkable` tiles; if a Wall already owns
+ * the tile, the road COMPOSES rather than rejecting.
+ */
+export function placeRoad(
+  game: GameState,
+  tileKey: string,
+  material: MoverMaterial,
+  faction: Faction = 'player',
+): boolean {
+  const tile = game.board.tiles.get(tileKey);
+  if (!tile) return false;
+  // Base tiles + completed building tiles are off-limits.
+  if (tileKey === game.townHallKey || tileKey === game.enemyBaseKey) return false;
+  const existingBuilding = game.buildSites.get(tileKey);
+  // A Wall (DefensiveBehavior + Building) at this tile composes a Gate.
+  const isWallTile = existingBuilding?.has(DefensiveBehavior) === true;
+  // Any other building blocks road placement (Farm/House/Barracks/etc).
+  if (existingBuilding && !isWallTile) return false;
+  // Without a wall there, the tile MUST be currently walkable (no impassable terrain).
+  if (!isWallTile && !tile.walkable) return false;
+
+  const eco = game.economy[faction];
+  const cost = roadCostFor(material);
+  if (!spend(eco, cost)) return false;
+
+  if (isWallTile && existingBuilding) {
+    // Compose Gate on the existing Wall entity — Mover trait + Gate trait
+    // added without disturbing the underlying Defender (M_ARCHETYPE.2).
+    existingBuilding.add(MoverBehavior({ material }));
+    materialiseGate(existingBuilding, faction);
+    return true;
+  }
+  // Fresh road tile — spawn a Mover-only entity. Roads are NOT Buildings,
+  // so no Building trait + no buildSites registration; they're free-standing
+  // tile decorations that the renderer + force-field treat uniformly.
+  game.world.spawn(
+    HexPosition({ q: tile.q, r: tile.r, level: tile.level }),
+    FactionTrait({ faction }),
+    MoverBehavior({ material }),
+  );
   return true;
 }
 
