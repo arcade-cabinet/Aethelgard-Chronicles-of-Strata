@@ -503,11 +503,12 @@ red vs blue layout".
   both base centers. ensureAttractorResources still places the GUARANTEED
   nearby resources outside the safety ring (within ATTRACTOR_RADIUS=2),
   so peons still have work in-zone at start.
-- [ ] M_MAPGEN.8 — graveyard biome cluster placed equidistant from the
-  player's TownHall along the line that mirrors the enemy base.
-  Currently the enemy base IS that role; make sure the graveyard reads
-  visually (cluster of `nature.gravestone.*` decorations around the
-  enemy base + the existing `portal-crypt` mesh).
+- [x] M_MAPGEN.8 — graveyard cluster: Decoration.tsx appendGraveyardCluster
+  paints `nature.gravestone.round` + `nature.gravestone.cross` props in
+  the 2-hex rosette around the enemy base, ~55% density per tile,
+  seeded from `${board.seedPhrase}:graveyard`. Visually reinforces the
+  enemy base IS the graveyard (the existing portal-crypt sits at the
+  center). 321 tests still green.
 - [x] M_MAPGEN.9 — red-vs-blue identity verified: ZoneBorder already
   uses #38bdf8 (azure) for player + #f43f5e (crimson) for enemy. Base
   meshes are faction-tinted via the existing structure-models split.
@@ -549,6 +550,18 @@ qualify for AI GOAP".
   red-vs-blue. Clarify the exact loop rules in the spec doc before
   implementing; differentiate from red-vs-blue's competitive tempo via
   longer escalation thresholds + larger map default.
+- [ ] M_MODES.9 — map-type axis (user, 2026-05-22): "plus this would
+  allow offering several different kinds of map types. balanced,
+  continent, archipelago, dry land, etc". The 4th customization axis
+  alongside size/length/turns. `mapType` ∈ {balanced, continent,
+  archipelago, dry-land, ...}. Each map type swaps in a different
+  guided-generation rule set: balanced = M_MAPGEN.3-.9 today; continent
+  = one large landmass + thin beach + interior mountain range;
+  archipelago = multiple small islands separated by passable channels;
+  dry-land = no inland water + extensive desert + ridge-line mountains.
+  Modes-as-presets (M_MODES.7) pick the default mapType; Advanced lets
+  the player override.
+
 - [ ] M_MODES.7 — modes-as-presets (user, 2026-05-22): "we have a lot of
   levers. maybe we inform the game type based on map size and game length?
   because we could also easily add an end turn mechanic and then between

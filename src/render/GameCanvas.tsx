@@ -76,7 +76,11 @@ function Scene({
       />
       <TrackingRings ref={ringsRef} board={game.board} />
       <Suspense fallback={null}>
-        <Decoration board={game.board} occupiedKeys={occupiedKeys} />
+        <Decoration
+          board={game.board}
+          occupiedKeys={occupiedKeys}
+          enemyBaseKey={game.enemyBaseKey}
+        />
         <ResourceNodes game={game} />
         <Roads game={game} />
         <BuildCompleteFX game={game} />
