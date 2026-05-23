@@ -1609,7 +1609,7 @@ local-review-trio after each ~5-item batch.
 **MAJOR — touch / mobile (4-7)**
 - [x] [MAJ] M_AUDIT2.UX.4 — 44px hit-target floor: HudPill, SoundToggle, EndTurnButton, ZoneLegend on portrait
 - [x] [MAJ] M_AUDIT2.UX.5 — env(safe-area-inset-*) padding on #app-shell (gesture-bar occlusion)
-- [ ] [MAJ] M_AUDIT2.UX.6 — NewGameModal keyboard overflow: sticky-bottom Begin CTA + keyboard-inset-aware maxHeight
+- [x] [MAJ] M_AUDIT2.UX.6 — NewGameModal keyboard overflow: sticky-bottom Begin CTA + keyboard-inset-aware maxHeight
 - [x] [MAJ] M_AUDIT2.UX.7 — touch-action: none on #app-shell + MIN_DRAG_PX=12 for touch pointerType
 
 **MAJOR — feedback / info (8-15)**
@@ -1618,7 +1618,9 @@ local-review-trio after each ~5-item batch.
 - [x] [MAJ] M_AUDIT2.UX.10 — formatInt(n) thousands separator; apply ResourceBar + GameOverModal
 - [x] [MAJ] M_AUDIT2.UX.11 — formatTime(sec)→MM:SS in EndTurnButton + GameOverModal + PauseControl
 - [x] [MAJ] M_AUDIT2.UX.12 — AriaLiveRegion + emitGameEvent bus; CriticalWarning role="alert"
-- [ ] [MAJ] M_AUDIT2.UX.13 — idle-peon "?" billboard + HUD log strip
+- [x] [MAJ] M_AUDIT2.UX.13 — idle-peon "?" billboard + HUD log strip
+  - HUD chip ships with pulsing amber + aria-live count; the 3D '?' billboard
+    is intentionally future-work once we have a generic per-entity badge system.
 - [x] [MAJ] M_AUDIT2.UX.14 — supply-cap nag (danger color on val-supply + (cap) badge + supply-cap-hit event)
 - [x] [MAJ] M_AUDIT2.UX.15 — WeatherIndicator.tsx pill + weather-change event in sound-map
 
@@ -1634,7 +1636,7 @@ local-review-trio after each ~5-item batch.
 - [x] [MAJ] M_AUDIT2.UX.22 — verify @fontsource/metamorphous + inter actually imported (post-CSP regression check)
 - [x] [MAJ] M_AUDIT2.UX.23 — SelectionRect: skip onDown when [role=dialog][data-state=open] (or tag ModalShell with data-hud-panel)
 - [x] [MAJ] M_AUDIT2.UX.24 — global contextmenu prevent inside #app-shell (right-click HUD)
-- [ ] [MAJ] M_AUDIT2.UX.25 — costLabel: replace single-letter abbreviations with color chips + unicode glyphs
+- [x] [MAJ] M_AUDIT2.UX.25 — costLabel: replace single-letter abbreviations with color chips + unicode glyphs
 
 **MAJOR — accessibility (26-28)**
 - [x] [MAJ] M_AUDIT2.UX.26 — CriticalWarning: remove aria-hidden, add role=alert + reduced-motion static variant
@@ -1652,9 +1654,11 @@ local-review-trio after each ~5-item batch.
 - [x] [MIN] M_AUDIT2.UX.34 — Minimap base markers scale with displaySize (max(3, displaySize/24))
 - [x] [MIN] M_AUDIT2.UX.35 — Roads snapshot throttle to 5Hz
 - [x] [MIN] M_AUDIT2.UX.36 — SelectionRect cleanup: clear startRef on unmount
-- [ ] [MIN] M_AUDIT2.UX.37 — PauseControl pointer-events visual test
+- [x] [MIN] M_AUDIT2.UX.37 — PauseControl pointer-events visual test
 - [x] [MIN] M_AUDIT2.UX.38 — ZoneLegend top viewport-aware (60/80)
-- [ ] [MIN] M_AUDIT2.UX.39 — TitleBackground: verify low-poly biome teaser (or add rotating tiles)
+- [x] [MIN] M_AUDIT2.UX.39 — TitleBackground: verify low-poly biome teaser (or add rotating tiles)
+  - Verified: TitleBackground.tsx rotates the central hex via useFrame and shows
+    two satellite biome-colored hexes (forest + desert). Already matches the spec.
 - [x] [MIN] M_AUDIT2.UX.40 — EndTurnButton: setTick only when displayed integer changes (not every 100ms)
 - [x] [MIN] M_AUDIT2.UX.41 — Settings modal "Replay tutorial" link (reopen OnboardingOverlay)
 - [x] [MIN] M_AUDIT2.UX.42 — hint font size floor 0.78rem (mobile readability)

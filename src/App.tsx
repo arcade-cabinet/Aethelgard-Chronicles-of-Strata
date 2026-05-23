@@ -6,6 +6,7 @@ import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
 import { CriticalWarning } from '@/hud/CriticalWarning';
+import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
 import { LoadingScreen } from '@/hud/LoadingScreen';
 import { WeatherIndicator } from '@/hud/WeatherIndicator';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
@@ -129,6 +130,7 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />
+      <IdlePeonsIndicator game={game} />
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
       <GameOverModal game={game} />

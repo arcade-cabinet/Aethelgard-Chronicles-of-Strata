@@ -149,12 +149,21 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       <ModalShell
         zIndex={200}
         width="min(420px, 92vw)"
-        maxHeight="none"
+        // M_AUDIT2.UX.6 — keyboard-overflow-safe height. On phone
+        // portrait with the virtual keyboard open, the seed text
+        // field forces the modal taller than the visible viewport
+        // and the Begin button slides off-screen. Cap at the
+        // safe-area-aware visual viewport min (svh respects the
+        // keyboard inset on modern browsers; the dvh fallback covers
+        // older WebViews) and let the inner scroller take over.
+        maxHeight="min(85svh, 85dvh, 700px)"
         contentStyle={{
           border: `1px solid ${HUD_THEME.color.border}`,
           borderRadius: 16,
           padding: 28,
           fontFamily: HUD_THEME.font.body,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <Dialog.Title
@@ -265,26 +274,44 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           />
         </div>
 
-        <button
-          type="button"
-          id="begin-game"
-          onClick={() =>
-            onBegin({ seedPhrase: seedPhrase.trim(), mapSize, difficulty, eventSeed, mode })
-          }
+        {/* M_AUDIT2.UX.6 — sticky bottom Begin CTA. The above form
+            sections scroll inside the flex column when the modal hits
+            its maxHeight; the button stays pinned so a thumb on
+            phone-portrait can always reach it without scroll-hunting. */}
+        <div
           style={{
-            width: '100%',
-            padding: '14px',
-            borderRadius: 12,
-            border: 'none',
-            background: HUD_THEME.blueGradient,
-            color: '#fff',
-            fontFamily: HUD_THEME.font.display,
-            fontSize: '1.1rem',
-            cursor: 'pointer',
+            position: 'sticky',
+            bottom: -28, // bleed into modal padding so there's no double border
+            marginInline: -28,
+            paddingInline: 28,
+            paddingTop: 14,
+            paddingBottom: 14,
+            background: HUD_THEME.color.panel,
+            borderTop: `1px solid ${HUD_THEME.color.border}`,
+            marginTop: 'auto',
           }}
         >
-          Begin
-        </button>
+          <button
+            type="button"
+            id="begin-game"
+            onClick={() =>
+              onBegin({ seedPhrase: seedPhrase.trim(), mapSize, difficulty, eventSeed, mode })
+            }
+            style={{
+              width: '100%',
+              padding: '14px',
+              borderRadius: 12,
+              border: 'none',
+              background: HUD_THEME.blueGradient,
+              color: '#fff',
+              fontFamily: HUD_THEME.font.display,
+              fontSize: '1.1rem',
+              cursor: 'pointer',
+            }}
+          >
+            Begin
+          </button>
+        </div>
       </ModalShell>
     </Dialog.Root>
   );

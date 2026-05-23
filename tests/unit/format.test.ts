@@ -6,14 +6,17 @@ import { describe, expect, it } from 'vitest';
 import { costLabel, formatInt, formatTime } from '@/hud/format';
 
 describe('costLabel', () => {
+  // M_AUDIT2.UX.25 — costLabel migrated from single-letter abbrevs
+  // (w/s/g/sci) to unicode glyphs (🌲/🪨/🪙/🧪) so a first-time
+  // player can read a label without learning the abbreviation key.
   it('omits zero/absent slots', () => {
-    expect(costLabel({ wood: 60, stone: 0, gold: 0 })).toBe('60w');
+    expect(costLabel({ wood: 60, stone: 0, gold: 0 })).toBe('60🌲');
   });
   it('joins multi-slot costs with a space', () => {
-    expect(costLabel({ wood: 60, stone: 40, gold: 0 })).toBe('60w 40s');
+    expect(costLabel({ wood: 60, stone: 40, gold: 0 })).toBe('60🌲 40🪨');
   });
   it('handles science correctly', () => {
-    expect(costLabel({ wood: 0, stone: 0, gold: 0, science: 100 })).toBe('100sci');
+    expect(costLabel({ wood: 0, stone: 0, gold: 0, science: 100 })).toBe('100🧪');
   });
   it('renders empty cost as "free"', () => {
     expect(costLabel({ wood: 0, stone: 0, gold: 0 })).toBe('free');
