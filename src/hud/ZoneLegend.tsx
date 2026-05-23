@@ -90,9 +90,20 @@ export function ZoneLegend() {
           pointerEvents: 'auto',
         }}
         aria-expanded={open}
-        aria-label="Toggle territory legend"
+        // M_AUDIT2.UX.2 — describe the action verb based on state.
+        aria-label={open ? 'Close territory legend' : 'Open territory legend'}
       >
-        {open ? '× Legend' : '? Legend'}
+        {open ? (
+          <>
+            <span aria-hidden="true">×</span>{' '}
+            <span>Legend</span>
+          </>
+        ) : (
+          <>
+            <span aria-hidden="true">?</span>{' '}
+            <span>Legend</span>
+          </>
+        )}
       </button>
       {open && (
         <div

@@ -1502,7 +1502,7 @@ local-review-trio after each ~5-item batch.
 
 **Production-readiness (63-71)**
 - [ ] M_AUDIT2.ARCH.63 — wider ErrorBoundary scope (per-panel wrap)
-- [ ] M_AUDIT2.ARCH.64 — reportError(err, context) facade in src/lib/telemetry.ts (no-op default)
+- [x] M_AUDIT2.ARCH.64 — reportError(err, context) facade in src/lib/telemetry.ts (no-op default)
 - [ ] M_AUDIT2.ARCH.65 — extract HUD strings to src/hud/strings.ts (i18n surface)
 - [ ] M_AUDIT2.ARCH.66 — snapshot migration map (dup of .36 — track here for prod-readiness lens)
 - [ ] M_AUDIT2.ARCH.67 — <LoadingScreen progress={loaded/total}> Suspense fallback
@@ -1559,8 +1559,8 @@ local-review-trio after each ~5-item batch.
 - [ ] [LOW] M_AUDIT2.SEC2.31 — gate Howler init on first user interaction (audio fingerprint surface)
 
 **Process/release (32-37)**
-- [ ] [HIGH] M_AUDIT2.SEC2.32 — add .github/SECURITY.md (vuln disclosure policy + SLA)
-- [ ] [HIGH] M_AUDIT2.SEC2.33 — add PRIVACY.md (no-network claim; Play store needs URL)
+- [x] [HIGH] M_AUDIT2.SEC2.32 — add .github/SECURITY.md (vuln disclosure policy + SLA)
+- [x] [HIGH] M_AUDIT2.SEC2.33 — add PRIVACY.md (no-network claim; Play store needs URL)
 - [ ] [HIGH] M_AUDIT2.SEC2.34 — CreditsModal.tsx with KayKit/Kenney CC-BY attribution + audio pack authors
 - [ ] [MED] M_AUDIT2.SEC2.35 — SBOM generation in release.yml + Sigstore attestation
 - [ ] [MED] M_AUDIT2.SEC2.36 — release-please-config: bump-minor-pre-major + android/app/build.gradle extra-files
@@ -1576,11 +1576,11 @@ local-review-trio after each ~5-item batch.
 - [ ] [MED] M_AUDIT2.SEC2.42 — Trusted Types opt-in via CSP (require-trusted-types-for 'script')
 - [ ] [MED] M_AUDIT2.SEC2.43 — COOP/COEP/Referrer-Policy headers via WebView interceptor (Android)
 - [ ] [LOW] M_AUDIT2.SEC2.44 — CI grep blocking cdn./https:// in index.html (post-CSP defence)
-- [ ] [LOW] M_AUDIT2.SEC2.45 — Permissions-Policy meta (camera=() etc deny-list)
+- [x] [LOW] M_AUDIT2.SEC2.45 — Permissions-Policy meta (camera=() etc deny-list)
 
 **Misc (46-50)**
-- [ ] [MED] M_AUDIT2.SEC2.46 — ErrorBoundary prod-mode log strips stack/componentStack
-- [ ] [LOW] M_AUDIT2.SEC2.47 — window.onerror + unhandledrejection global handlers
+- [x] [MED] M_AUDIT2.SEC2.46 — ErrorBoundary prod-mode log strips stack/componentStack
+- [x] [LOW] M_AUDIT2.SEC2.47 — window.onerror + unhandledrejection global handlers
 - [ ] [LOW] M_AUDIT2.SEC2.48 — vite.config explicit build.sourcemap=false for github-pages
 - [ ] [LOW] M_AUDIT2.SEC2.49 — CI verify-lockfile step (`pnpm install --lockfile-only && git diff --exit-code`)
 - [ ] [LOW] M_AUDIT2.SEC2.50 — narrow biome.json a11y-off override; allow a11y on TileInteraction
@@ -1589,14 +1589,14 @@ local-review-trio after each ~5-item batch.
 
 **CRITICAL (1-3)**
 - [ ] [CRIT] M_AUDIT2.UX.1 — useReducedMotion wired through title bob, CriticalWarning pulse, panel slides, particles
-- [ ] [CRIT] M_AUDIT2.UX.2 — aria-label on SoundToggle, SettingsModal mute, ZoneLegend close button
-- [ ] [CRIT] M_AUDIT2.UX.3 — global *:focus-visible outline (Tab keyboard nav blocker)
+- [x] [CRIT] M_AUDIT2.UX.2 — aria-label on SoundToggle, SettingsModal mute, ZoneLegend close button
+- [x] [CRIT] M_AUDIT2.UX.3 — global *:focus-visible outline (Tab keyboard nav blocker)
 
 **MAJOR — touch / mobile (4-7)**
-- [ ] [MAJ] M_AUDIT2.UX.4 — 44px hit-target floor: HudPill, SoundToggle, EndTurnButton, ZoneLegend on portrait
-- [ ] [MAJ] M_AUDIT2.UX.5 — env(safe-area-inset-*) padding on #app-shell (gesture-bar occlusion)
+- [x] [MAJ] M_AUDIT2.UX.4 — 44px hit-target floor: HudPill, SoundToggle, EndTurnButton, ZoneLegend on portrait
+- [x] [MAJ] M_AUDIT2.UX.5 — env(safe-area-inset-*) padding on #app-shell (gesture-bar occlusion)
 - [ ] [MAJ] M_AUDIT2.UX.6 — NewGameModal keyboard overflow: sticky-bottom Begin CTA + keyboard-inset-aware maxHeight
-- [ ] [MAJ] M_AUDIT2.UX.7 — touch-action: none on #app-shell + MIN_DRAG_PX=12 for touch pointerType
+- [x] [MAJ] M_AUDIT2.UX.7 — touch-action: none on #app-shell + MIN_DRAG_PX=12 for touch pointerType
 
 **MAJOR — feedback / info (8-15)**
 - [ ] [MAJ] M_AUDIT2.UX.8 — proper HealthBillboard bar (red bg + green fraction fill, fade at full)
@@ -1619,7 +1619,7 @@ local-review-trio after each ~5-item batch.
 **MAJOR — brand / consistency (22-25)**
 - [ ] [MAJ] M_AUDIT2.UX.22 — verify @fontsource/metamorphous + inter actually imported (post-CSP regression check)
 - [ ] [MAJ] M_AUDIT2.UX.23 — SelectionRect: skip onDown when [role=dialog][data-state=open] (or tag ModalShell with data-hud-panel)
-- [ ] [MAJ] M_AUDIT2.UX.24 — global contextmenu prevent inside #app-shell (right-click HUD)
+- [x] [MAJ] M_AUDIT2.UX.24 — global contextmenu prevent inside #app-shell (right-click HUD)
 - [ ] [MAJ] M_AUDIT2.UX.25 — costLabel: replace single-letter abbreviations with color chips + unicode glyphs
 
 **MAJOR — accessibility (26-28)**

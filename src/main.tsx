@@ -11,7 +11,26 @@ import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 import '@fontsource/inter/800.css';
 import '@fontsource/inter/900.css';
+import { reportError } from '@/lib/telemetry';
 import { App } from './App';
+
+// M_AUDIT2.SEC2.47 — global error capture wired into the telemetry
+// facade so prod builds strip stack/componentStack per M_AUDIT2.SEC2.46.
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (e) => {
+    reportError(e.reason, { source: 'unhandledrejection' });
+  });
+  window.addEventListener('error', (e) => {
+    reportError(e.error ?? e.message, { source: 'window.error' });
+  });
+  // M_AUDIT2.UX.24 — block the browser context menu inside the game
+  // shell so right-clicking the HUD doesn't break immersion. The mesh-
+  // level onContextMenu already prevents canvas right-clicks; this
+  // catches the panels.
+  document.addEventListener('contextmenu', (e) => {
+    if ((e.target as HTMLElement | null)?.closest('#root')) e.preventDefault();
+  });
+}
 
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element #root not found');

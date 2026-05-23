@@ -48,6 +48,10 @@ export function SoundToggle({ persistence }: { persistence: Persistence }) {
     <button
       type="button"
       id="sound-toggle"
+      // M_AUDIT2.UX.2 — explicit aria-label so screen readers announce
+      // the action; the visible "🔇/🔊" emoji alone reads inconsistently.
+      aria-label={muted ? 'Unmute audio' : 'Mute audio'}
+      aria-pressed={muted}
       onClick={toggle}
       style={{
         position: 'absolute',

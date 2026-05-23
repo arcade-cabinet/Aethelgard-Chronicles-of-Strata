@@ -86,6 +86,10 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
             <button
               type="button"
               id="settings-mute"
+              // M_AUDIT2.UX.2 — explicit aria-label; the emoji prefix
+              // ("🔇 Audio OFF") is not a reliable SR announcement.
+              aria-label={muted ? 'Unmute audio' : 'Mute audio'}
+              aria-pressed={muted}
               onClick={toggleMute}
               style={{
                 padding: '8px 14px',
