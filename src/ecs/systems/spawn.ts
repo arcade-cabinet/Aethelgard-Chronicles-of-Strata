@@ -18,37 +18,44 @@ const BLACK_KNIGHT_THRESHOLD: number = COMBAT.spawn.blackKnightThreshold;
  *
  * Escalation schedule (game-seconds elapsed):
  *  0–299   → Goblin only
- *  300–599 → Goblin × 2, Vampire × 1  (3-cycle)
- *  600–899 → Goblin × 2, Vampire, Orc  (4-cycle)
- *  900–1199→ Goblin × 2, Vampire, Orc, Witch  (5-cycle)
- *  1200+   → Goblin × 2, Vampire, Orc, Witch, BlackKnight  (6-cycle)
+ *  300–599 → Goblin, Vampire, Vampire  (3-cycle, 1/3 Goblin)
+ *  600–899 → Goblin, Vampire, Orc, Orc  (4-cycle, 1/4 Goblin)
+ *  900–1199→ Goblin, Vampire, Orc, Witch, Witch  (5-cycle, 1/5 Goblin)
+ *  1200+   → Goblin, Vampire, Orc, Witch, BlackKnight, BlackKnight (6-cycle, 1/6 Goblin)
+ *
+ * M_QUALITY.2 — late-game share rebalanced (CR MED-10): the previous
+ * cycles kept Goblin at 33-40% throughout escalation, plateauing difficulty.
+ * Now Goblin's share strictly DECREASES as tougher enemies unlock; the most
+ * recently unlocked enemy gets a 2x weight so the *new* threat dominates
+ * the wave each tier.
  */
 export function pickEnemyRole(spawnCount: number, gameElapsed: number): UnitType {
   if (gameElapsed >= BLACK_KNIGHT_THRESHOLD) {
     const cycle = spawnCount % 6;
-    if (cycle === 5) return 'BlackKnight';
-    if (cycle === 4) return 'Witch';
-    if (cycle === 3) return 'Orc';
-    if (cycle === 2) return 'Vampire';
-    return 'Goblin';
+    // [Goblin, Vampire, Orc, Witch, BlackKnight, BlackKnight] — newly unlocked enemy 2x weighted
+    if (cycle === 0) return 'Goblin';
+    if (cycle === 1) return 'Vampire';
+    if (cycle === 2) return 'Orc';
+    if (cycle === 3) return 'Witch';
+    return 'BlackKnight';
   }
   if (gameElapsed >= WITCH_THRESHOLD) {
     const cycle = spawnCount % 5;
-    if (cycle === 4) return 'Witch';
-    if (cycle === 3) return 'Orc';
-    if (cycle === 2) return 'Vampire';
-    return 'Goblin';
+    if (cycle === 0) return 'Goblin';
+    if (cycle === 1) return 'Vampire';
+    if (cycle === 2) return 'Orc';
+    return 'Witch'; // 2/5 weight on the new enemy
   }
   if (gameElapsed >= ORC_THRESHOLD) {
     const cycle = spawnCount % 4;
-    if (cycle === 3) return 'Orc';
-    if (cycle === 2) return 'Vampire';
-    return 'Goblin';
+    if (cycle === 0) return 'Goblin';
+    if (cycle === 1) return 'Vampire';
+    return 'Orc'; // 2/4 weight on the new enemy
   }
   if (gameElapsed >= VAMPIRE_THRESHOLD) {
     const cycle = spawnCount % 3;
-    if (cycle === 2) return 'Vampire';
-    return 'Goblin';
+    if (cycle === 0) return 'Goblin';
+    return 'Vampire'; // 2/3 weight on the new enemy
   }
   return 'Goblin';
 }

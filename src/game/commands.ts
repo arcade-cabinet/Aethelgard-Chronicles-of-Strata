@@ -140,17 +140,20 @@ export function placeBuilding(
   // Mark the tile unwalkable so units path around the building site.
   if (tile) tile.walkable = false;
 
-  const buildingEntity = game.world.spawn(
+  // Compose the building's local-zone-of-control behaviours from the rules
+  // engine (spec 102) — orthogonal traits, not type-coupled logic. Build the
+  // full trait list FIRST so the spawn is atomic (M_QUALITY.1, CodeRabbit
+  // MED-8): a single world.spawn(...) leaves no half-state on failure.
+  const profile = behaviorsFor(type);
+  const traits = [
     HexPosition({ q: tile?.q ?? 0, r: tile?.r ?? 0, level }),
     Building({ buildingType: type, isComplete: false, progress: 0 }),
     FactionTrait({ faction }),
-  );
-  // compose the building's local-zone-of-control behaviours from the rules
-  // engine (spec 102) — orthogonal traits, not type-coupled logic.
-  const profile = behaviorsFor(type);
-  if (profile.offensive) buildingEntity.add(OffensiveBehavior(profile.offensive));
-  if (profile.defensive) buildingEntity.add(DefensiveBehavior(profile.defensive));
-  if (profile.attractor) buildingEntity.add(AttractorBehavior(profile.attractor));
+    ...(profile.offensive ? [OffensiveBehavior(profile.offensive)] : []),
+    ...(profile.defensive ? [DefensiveBehavior(profile.defensive)] : []),
+    ...(profile.attractor ? [AttractorBehavior(profile.attractor)] : []),
+  ];
+  const buildingEntity = game.world.spawn(...traits);
   game.buildSites.set(tileKey, buildingEntity);
 
   // Assign the nearest idle peon OF THE ISSUING FACTION to build.

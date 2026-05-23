@@ -415,12 +415,13 @@ surfaced by review feedback / playtesting / conversation spec gaps.
 
 ### M_QUALITY — review feedback fully discharged
 
-- [ ] M_QUALITY.1 — placeBuilding atomicity (comprehensive-review MED-8):
-  wrap spawn block in try/catch or single `world.spawn(...args)` call so a
-  trait-attach failure doesn't leave half-state behind.
-- [ ] M_QUALITY.2 — goblin-heavy late-game roster (CR MED-10): re-tune
-  spawn.ts cycle so 33-40% Goblin isn't the late-game default; rotate
-  toward Orc/Vampire/BlackKnight after the relevant threshold.
+- [x] M_QUALITY.1 — placeBuilding atomic spawn: traits collected into a
+  single `world.spawn(...traits)` call; behavior-trait composition still
+  reads from BUILDING_BEHAVIORS but the half-state failure mode is gone.
+- [x] M_QUALITY.2 — Goblin-share rebalance: 6-cycle now puts 2x weight on
+  the most-recently-unlocked enemy at each tier; Goblin share monotonically
+  decreases 100% → 33% → 25% → 20% → 17% as escalation unlocks. New test
+  `Goblin share strictly decreases` pins the invariant.
 - [ ] M_QUALITY.3 — runtime smoke test for the AI-vs-AI loop running a
   full simulated match end-to-end with a fixed seed; pin the resulting
   outcome so determinism regressions show as a test diff.
