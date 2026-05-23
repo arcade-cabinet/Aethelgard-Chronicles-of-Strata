@@ -1825,7 +1825,12 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 ### M_EXPANSION.FEATURE — gameplay scope expansions (71-100)
 
 - [x] [HIGH] M_EXPANSION.F.71 — Wonder building: a victory-condition structure (build → 5-min countdown → wonder-win)
-- [ ] [HIGH] M_EXPANSION.F.72 — Mana resource (4th slot): drives Wizard training + Magic-spell SFX
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.72 — Mana resource (4th slot): drives Wizard training + Magic-spell SFX
+  - Design spec landed in docs/specs/107-mana-resource.md. Implementation
+    is an 8-step ripple (ResourceType → Profiles → Economy → ResourceBar
+    → spawn → migration v1→v2 → Wizard cost rebalance → tests). WAIT until
+    a dedicated milestone slot — the schema bump is the first real use
+    of the migration framework + warrants its own review cycle.
 - [x] [HIGH] M_EXPANSION.F.73 — Multiplayer-seed sharing: a "share seed" button in the New Game modal copies the current seed to clipboard
 - [ ] [HIGH] M_EXPANSION.F.74 — Replay export: save the EventLog ndjson to a downloadable file
 - [ ] [MED]  M_EXPANSION.F.75 — Replay import: load a EventLog ndjson and watch the deterministic playback
@@ -1928,7 +1933,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 
 - [ ] [MED]  M_EXPANSION.D.161 — docs/specs/M_EXPANSION-roadmap.md — a single doc rolling up M_EXPANSION.F.* into a release-train (v0.3 → v0.4 → v1.0)
 - [ ] [MED]  M_EXPANSION.D.162 — docs/specs/106-replay-format.md — formal spec of the EventLog serialization (M_EXPANSION.F.74/.75)
-- [ ] [MED]  M_EXPANSION.D.163 — docs/specs/107-mana-resource.md — design for the 4th resource slot (M_EXPANSION.F.72)
+- [x] [MED]  M_EXPANSION.D.163 — docs/specs/107-mana-resource.md — design for the 4th resource slot (M_EXPANSION.F.72)
 - [ ] [MED]  M_EXPANSION.D.164 — docs/specs/108-wonder-victory.md — Wonder building rules (M_EXPANSION.F.71)
 - [ ] [MED]  M_EXPANSION.D.165 — docs/specs/109-multifaction.md — design considerations for ≥3 factions (M_EXPANSION.F.94/.95)
 - [ ] [MED]  M_EXPANSION.D.166 — docs/contributors.md — a contributor onboarding doc (cloning, env setup, the dev loop)
