@@ -118,6 +118,20 @@ export const DefensiveBehavior = trait({ radius: 0 });
  */
 export const AttractorBehavior = trait({ radius: 2 });
 
+/** Material a Mover (road) is made of — drives visuals + Gate-material when crossing a Defender. */
+export type MoverMaterial = 'stone' | 'wood' | 'dirt';
+
+/**
+ * Mover zone — roads. Per spec 102: ZoC-NEUTRAL (emit zero zone of control —
+ * walking on a road never claims a tile). Movers snap to other Movers
+ * (network), and when crossing a DefensiveBehavior transform that tile into
+ * a Gate (directional passability: friendly open, enemy closed).
+ *
+ * `material` is the visual + composition kind: a stone Mover crossing a
+ * wood Wall produces a wood Gate (the gate inherits the wall's material).
+ */
+export const MoverBehavior = trait({ material: 'stone' as MoverMaterial });
+
 /** Hit points. */
 export const Health = trait({ current: 50, max: 50 });
 
