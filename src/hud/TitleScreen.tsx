@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { HUD_THEME } from './hud-theme';
+import { TitleBackground } from './TitleBackground';
 
 /** Props for the title screen. */
 export interface TitleScreenProps {
@@ -77,6 +78,7 @@ export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenPr
         padding: 20,
       }}
     >
+      <TitleBackground />
       <motion.div
         style={{ textAlign: 'center', marginBottom: 50 }}
         animate={{ y: [0, -12, 0] }}
