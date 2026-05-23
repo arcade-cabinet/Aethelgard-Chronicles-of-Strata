@@ -247,13 +247,15 @@ audio packs via Howler. No procedural synthesis. Packs available:
   research-purchased, victory/defeat. Emitted: trainUnit (player),
   buildingDeathSystem (both factions), CriticalWarning enter-transition.
   Existing UI events already wired in SelectionPanel/SoundToggle.
-- [ ] M_AUDIO.3 — title-screen music loop from `PixelLoops_Main_Menu`
-  plays on launch; switches to a Fantasy_Tavern loop in-game.
+- [ ] M_AUDIO.3 — title-screen music loop on launch + gameplay loop swap
+  (music bus already exists with menu/gameplay/ambient samples).
 - [x] M_AUDIO.5 — footsteps: FootstepEmitter r3f component — per-unit
   STEP_PERIOD accumulator, per-frame cap of 3, surface from tile.type
   (MOUNTAIN/HIGHLAND = stone, else grass). GCs dead-entity accumulators.
-- [ ] M_AUDIO.6 — encroachment-pulse cue while a tile pulses; tile-flip
-  cue when ownership changes.
+- [x] M_AUDIO.6 — tile-flip cue: encroachmentSystem emits 'critical-alarm'
+  on the moment a player-controlled tile flips to the enemy (the single
+  most meaningful flip event). Pulse-during-grace would be additive but
+  noisy; the flip is the discrete signal.
 
 ### M_AI_DEPTH — make the AI player actually play to win
 

@@ -1,4 +1,5 @@
 import type { World } from 'koota';
+import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { getHexKey } from '@/core/hex';
 import { type Faction, FactionTrait, HexPosition, Unit, type UnitType } from '@/ecs/components';
 import type { Difficulty } from '@/game/difficulty';
@@ -92,6 +93,10 @@ export function encroachmentSystem(
         releaseTile(myZone, tileKey);
         claimTile(otherZone, tileKey);
         myZone.pulsing.delete(tileKey);
+        // M_AUDIO.6 — only chime when the PLAYER loses a tile (an enemy
+        // claim of player territory is the meaningful audio event; the
+        // mirror case would just be the enemy AI's progress chatter).
+        if (faction === 'player') emitUiSound('critical-alarm');
       } else {
         myZone.pulsing.set(tileKey, elapsed);
       }
