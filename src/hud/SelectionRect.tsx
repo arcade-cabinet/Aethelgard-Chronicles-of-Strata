@@ -45,17 +45,31 @@ export function SelectionRect({
       if (target?.closest('[data-hud-panel]')) return;
       startRef.current = { x: e.clientX, y: e.clientY };
     };
+    // M_AUDIT2.SEC2.25 — throttle pointermove to rAF. On a 1000Hz
+    // gaming mouse this fires 1000× per second; without coalescing
+    // we'd recompute the rect + call setRect on every event, churning
+    // React reconcile. rAF gives natural 60Hz coalescing.
+    let pendingEvent: PointerEvent | null = null;
+    let rafId = 0;
     const onMove = (e: PointerEvent) => {
-      const start = startRef.current;
-      if (!start) return;
-      const dx = e.clientX - start.x;
-      const dy = e.clientY - start.y;
-      if (Math.abs(dx) < MIN_DRAG_PX && Math.abs(dy) < MIN_DRAG_PX) return;
-      setRect({
-        x: Math.min(start.x, e.clientX),
-        y: Math.min(start.y, e.clientY),
-        w: Math.abs(dx),
-        h: Math.abs(dy),
+      pendingEvent = e;
+      if (rafId !== 0) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = 0;
+        const ev = pendingEvent;
+        pendingEvent = null;
+        if (!ev) return;
+        const start = startRef.current;
+        if (!start) return;
+        const dx = ev.clientX - start.x;
+        const dy = ev.clientY - start.y;
+        if (Math.abs(dx) < MIN_DRAG_PX && Math.abs(dy) < MIN_DRAG_PX) return;
+        setRect({
+          x: Math.min(start.x, ev.clientX),
+          y: Math.min(start.y, ev.clientY),
+          w: Math.abs(dx),
+          h: Math.abs(dy),
+        });
       });
     };
     const onUp = () => {
@@ -91,6 +105,9 @@ export function SelectionRect({
       document.removeEventListener('pointerdown', onDown);
       document.removeEventListener('pointermove', onMove);
       document.removeEventListener('pointerup', onUp);
+      // M_AUDIT2.SEC2.25 — cancel any pending rAF so the throttled
+      // setRect doesn't fire post-unmount.
+      if (rafId !== 0) cancelAnimationFrame(rafId);
       // M_AUDIT2.UX.36 — clear in-flight drag state so a remount
       // (HMR, route change) doesn't inherit a half-finished drag.
       startRef.current = null;

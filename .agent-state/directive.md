@@ -1548,8 +1548,8 @@ local-review-trio after each ~5-item batch.
 - [ ] [MED] M_AUDIT2.SEC2.24 — session-scoped event seed (not just Preferences-persisted) + embed seed in snapshot
 
 **DoS / resource exhaustion (25-28)**
-- [ ] [MED] M_AUDIT2.SEC2.25 — SelectionRect pointermove throttle to rAF/60Hz
-- [ ] [MED] M_AUDIT2.SEC2.26 — TileInteraction.onPointerDown click cooldown 100ms; rate-limit placements
+- [x] [MED] M_AUDIT2.SEC2.25 — SelectionRect pointermove throttle to rAF/60Hz
+- [x] [MED] M_AUDIT2.SEC2.26 — TileInteraction.onPointerDown click cooldown 100ms; rate-limit placements
 - [x] [MED] M_AUDIT2.SEC2.27 — auto-save concurrency guard (saving:bool) + skipped-saves counter
 - [ ] [LOW] M_AUDIT2.SEC2.28 — r3f frameloop=demand|never when document.visibilityState!=='visible'
 
