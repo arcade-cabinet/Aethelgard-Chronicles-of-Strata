@@ -130,6 +130,12 @@ export interface GameState {
    */
   selectedIds: number[];
   /**
+   * When true, `runEconomyTick` returns early — the simulation freezes
+   * (M_GAMEPLAY.7). The HUD's Pause button + the P key toggle this. Used
+   * also by the app-suspend handler on mobile.
+   */
+  paused: boolean;
+  /**
    * Auto-save timer. Attached by the App layer (which owns the persistence
    * facade); when present, `runEconomyTick` advances it. Absent in tests and
    * headless sims that do not persist.
@@ -364,6 +370,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     outcome: 'playing',
     lastDamageEvents: [],
     selectedIds: [],
+    paused: false,
     eventRng,
     clock: createClock(),
     weather: createWeather(),
@@ -422,6 +429,8 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
 export function runEconomyTick(game: GameState, delta: number): void {
   // Skip all ticks once the game has ended.
   if (game.outcome !== 'playing') return;
+  // M_GAMEPLAY.7 — pause flag freezes the simulation; rendering continues.
+  if (game.paused) return;
 
   // advance time-based systems
   advanceClock(game.clock, delta);

@@ -121,13 +121,12 @@ rally, tracking ring. None fully shipped.
   TilePick subcomponent in TileInteraction.tsx — mouse left/right + touch
   tap/long-press; right-click routes selected military units to flock
   around target via moveUnit + hex-neighbour offsets. 268 tests green.
-- [ ] M_GAMEPLAY.5 — tracking-ring marker. Right-clicking spawns a glowing
-  3D ring at the destination that fades over ~1s — visual feedback the
-  command landed.
-- [ ] M_GAMEPLAY.6 — building destruction system. A Building entity at 0 HP
-  decays (particle + sound), is removed from `buildSites`, restores tile
-  walkability, and rebuilds the nav graph. Win/loss already handles base
-  destruction symmetrically — this generalizes.
+- [x] M_GAMEPLAY.5 — tracking-ring marker (e8164e1): TrackingRings.tsx
+  forwardRef'd r3f layer; right-click spawns a ring at destination, scales
+  1→1.6, fades 1→0 over ~1s. 268 tests.
+- [x] M_GAMEPLAY.6 — building destruction (fbf1047): buildingDeathSystem
+  removes 0-HP non-base buildings, restores walkability, rebuilds navGraph.
+  FactionBase exempt (win/loss anchor). 271 tests.
 - [ ] M_GAMEPLAY.7 — pause / resume. Top-right Pause button (or P key, or
   app-suspend on mobile) freezes `runEconomyTick`; resume continues.
 
