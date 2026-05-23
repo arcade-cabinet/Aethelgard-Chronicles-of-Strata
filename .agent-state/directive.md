@@ -1871,28 +1871,28 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 ### M_EXPANSION.UX — UX/HUD polish backlog (101-125)
 
 - [x] [MED]  M_EXPANSION.U.101 — Combat damage numbers: floating "−12" text on every hit (CombatText already exists, expand the surfaces)
-- [ ] [MED]  M_EXPANSION.U.102 — Building health-radial: a circular ring around in-progress buildings showing construction %
-- [ ] [MED]  M_EXPANSION.U.103 — Selection-marquee colour per faction (player blue, enemy red highlight when hover)
-- [ ] [MED]  M_EXPANSION.U.104 — HUD pill long-press on mobile = hold-to-confirm for destructive (Resign, Reset)
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.102 — Building health-radial: a circular ring around in-progress buildings showing construction %
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.103 — Selection-marquee colour per faction (player blue, enemy red highlight when hover)
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.104 — HUD pill long-press on mobile = hold-to-confirm for destructive (Resign, Reset)
 - [x] [MED]  M_EXPANSION.U.105 — Score bar at the top showing player vs enemy score integral (already tracked; not yet displayed)
-- [ ] [MED]  M_EXPANSION.U.106 — Minimap territory overlay: faction-colored fog of war
-- [ ] [MED]  M_EXPANSION.U.107 — Selection bracket: yellow corner-brackets around the selected unit (replace the green ring)
-- [ ] [MED]  M_EXPANSION.U.108 — Build-mode ghost: translucent ghost of the building snaps to the hover tile before placement
-- [ ] [MED]  M_EXPANSION.U.109 — Cursor hint: a sword icon when hovering an enemy with a selected military unit
-- [ ] [MED]  M_EXPANSION.U.110 — Right-side panel: enemy detail card (HP/type) on enemy hover, mirroring SelectionPanel
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.106 — Minimap territory overlay: faction-colored fog of war
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.107 — Selection bracket: yellow corner-brackets around the selected unit (replace the green ring)
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.108 — Build-mode ghost: translucent ghost of the building snaps to the hover tile before placement
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.109 — Cursor hint: a sword icon when hovering an enemy with a selected military unit
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.110 — Right-side panel: enemy detail card (HP/type) on enemy hover, mirroring SelectionPanel
 - [x] [LOW]  M_EXPANSION.U.111 — In-game speed control: 1x/2x/4x (existing pause + new fast-forward)
-- [ ] [LOW]  M_EXPANSION.U.112 — Volume slider per bus (sfx/music/ambient/ui) in Settings, replacing the master mute toggle
-- [ ] [LOW]  M_EXPANSION.U.113 — Colorblind mode: alternate palette (player→orange, enemy→cyan)
-- [ ] [LOW]  M_EXPANSION.U.114 — Subtitle/captions for every UI sound + critical event (deaf accessibility)
-- [ ] [LOW]  M_EXPANSION.U.115 — Hotkey customization (user remappable bindings; persist to Preferences)
-- [ ] [LOW]  M_EXPANSION.U.116 — Mini-map zoom (pinch / wheel within minimap region)
-- [ ] [LOW]  M_EXPANSION.U.117 — Touch-target hint: long-press shows the hex grid overlay
-- [ ] [LOW]  M_EXPANSION.U.118 — Build-button keyboard shortcut: B opens build menu, F=Farm, H=House, etc
-- [ ] [LOW]  M_EXPANSION.U.119 — Tap-and-hold-to-drag scroll on mobile (an alternative to two-finger pan)
-- [ ] [LOW]  M_EXPANSION.U.120 — Click-and-hold a Barracks shows the rally-point ghost continuously
-- [ ] [LOW]  M_EXPANSION.U.121 — Per-unit tooltip on hover (name + HP + behaviour)
-- [ ] [LOW]  M_EXPANSION.U.122 — End-of-game stats screen: kills, buildings, peak supply, time elapsed
-- [ ] [LOW]  M_EXPANSION.U.123 — Replay-of-the-match scrubber after victory
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.112 — Volume slider per bus (sfx/music/ambient/ui) in Settings, replacing the master mute toggle
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.113 — Colorblind mode: alternate palette (player→orange, enemy→cyan)
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.114 — Subtitle/captions for every UI sound + critical event (deaf accessibility)
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.115 — Hotkey customization (user remappable bindings; persist to Preferences)
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.116 — Mini-map zoom (pinch / wheel within minimap region)
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.117 — Touch-target hint: long-press shows the hex grid overlay
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.118 — Build-button keyboard shortcut: B opens build menu, F=Farm, H=House, etc
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.119 — Tap-and-hold-to-drag scroll on mobile (an alternative to two-finger pan)
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.120 — Click-and-hold a Barracks shows the rally-point ghost continuously
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.121 — Per-unit tooltip on hover (name + HP + behaviour)
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.122 — End-of-game stats screen: kills, buildings, peak supply, time elapsed
+- [ ] [WAIT-DESIGN] M_EXPANSION.U.123 — Replay-of-the-match scrubber after victory
 - [x] [LOW]  M_EXPANSION.U.124 — Discoveries panel: search-filter input (with > 8 discoveries the scroll-list grows)
 - [x] [LOW]  M_EXPANSION.U.125 — Onboarding overlay: skip-button always visible (currently only on step 1)
   - Verified: Skip button has no step-conditional gate (renders on every
@@ -1905,7 +1905,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [HIGH] M_EXPANSION.T.127 — visual snapshot of every unit + every animation state (IDLE, WALK, ATTACK, DEATH)
 - [ ] [HIGH] M_EXPANSION.T.128 — visual snapshot of every building completed + in-progress at level 1/2/3
 - [ ] [MED]  M_EXPANSION.T.129 — Playwright e2e of the full player journey: title → new game → first build → first kill → victory
-- [ ] [MED]  M_EXPANSION.T.130 — property test (fast-check): seedPhrase determinism — 1000 seeds, each must produce identical snapshot byte-for-byte at t=0
+- [x] [MED]  M_EXPANSION.T.130 — property test (fast-check): seedPhrase determinism — 1000 seeds, each must produce identical snapshot byte-for-byte at t=0
 - [ ] [MED]  M_EXPANSION.T.131 — audio graph snapshot: every event in the SOUND_MAP fires exactly one AudioNode connection
 - [ ] [MED]  M_EXPANSION.T.132 — save-load round-trip property test: any in-game state → serialize → deserialize → in-game state is byte-equal
 - [ ] [MED]  M_EXPANSION.T.133 — encroachment system: tile-flip integration test with deterministic seed + 60-tick simulation
