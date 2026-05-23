@@ -490,22 +490,13 @@ red vs blue layout".
   1.0→1.5 with yOffset 0.15 lift; enemy crypt scale 1.4→1.8 with same
   lift. Both factions' bases visually anchor the map vs the smaller
   utility buildings (Farm 0.65, House 0.5, Barracks 0.9).
-- [ ] M_MAPGEN.3 — guaranteed mountain range with peaks running through
-  the map center, creating funneling. New deterministic pass over the
-  noise output that ALWAYS forces a 3-tile-wide MOUNTAIN band somewhere
-  in the central third of the radius; peaks (level≥4) form along the
-  spine.
-- [ ] M_MAPGEN.4 — beach ring around the island: every tile at distance
-  > radius - 3 from center is forced BEACH (then OCEAN beyond the
-  radius). Shallow → deep water rendered with a transitional gradient
-  (today Water already has gradient via DayNightCycle; verify the
-  transition reads).
-- [ ] M_MAPGEN.5 — guaranteed inland water feature (a LAKE biome cluster
-  of at least 4 connected tiles somewhere not adjacent to the beach
-  ring).
-- [ ] M_MAPGEN.6 — at least 4 elevation tiers spread across the map
-  (level 1 → 4 minimum; verify current generator hits this — if not,
-  re-quantize the height noise).
+- [x] M_MAPGEN.3+.4+.5+.6 — guided generation post-pass: board.ts
+  paintBeachRing (outer 2 hexes BEACH, beyond OCEAN), paintMountainSpine
+  (seed-derived axis 0/1/2 → 3-tile-wide MOUNTAIN band through center;
+  funneling guaranteed), paintInlandLake (random walkable candidate +
+  4-tile LAKE rosette), and the heightToLevel mapping already produces
+  ≥4 elevation tiers. 5 mapgen-guarantees tests pin: beach ring, mountain
+  spine, lake cluster, ≥4 tiers, seed determinism.
 - [x] M_MAPGEN.7 — safety ring: spawnResourceNodes now takes a
   protectedCenters parameter; tiles within SAFETY_RADIUS (3) of either
   FactionBase are excluded from random node placement. startGame passes
@@ -558,6 +549,28 @@ qualify for AI GOAP".
   red-vs-blue. Clarify the exact loop rules in the spec doc before
   implementing; differentiate from red-vs-blue's competitive tempo via
   longer escalation thresholds + larger map default.
+- [ ] M_MODES.7 — modes-as-presets (user, 2026-05-22): "we have a lot of
+  levers. maybe we inform the game type based on map size and game length?
+  because we could also easily add an end turn mechanic and then between
+  map size game length and whether to enable turns, you have an amazing
+  degree of customization. and then those game modes could be more like
+  defaults. e.g. select red vs blue and it sets a map type length etc to
+  best accommodate". Refactor: GameMode becomes a *preset* selector that
+  expands into the underlying axes (`mapSize`, `matchLength`, `turnsMode`,
+  `mapGenRules`). The New Game modal shows the preset cards first; an
+  "Advanced" toggle reveals the three axes for full custom. `red-vs-blue`
+  preset → medium map + short length + real-time + guided mapgen;
+  `skirmish` → small map + short + real-time + noise mapgen; `endless` →
+  large map + endless length + real-time + guided + invuln bases;
+  `classic-rts` → large + medium length + real-time + guided + scaled
+  Discoveries; `4x` → huge + long + turns-optional + guided + Settler unit.
+- [ ] M_MODES.8 — end-turn mechanic (user, 2026-05-22): optional
+  `turnsMode` axis. When enabled, the sim pauses on each player's "end
+  turn" tap; the OTHER player (or AI) plays their turn until they end it.
+  Pure superimposition over real-time: each turn runs runEconomyTick for
+  a fixed turn-length budget, then halts. Compatible with all 5 game-mode
+  presets — turns-mode is an axis, not a separate mode.
+
 - [ ] M_MODES.6 — `4x` mode (user follow-up, 2026-05-22): "hell we have
   all the makings of a fifth mode thats more like a 4x". eXplore +
   eXpand + eXploit + eXterminate — Civilization/Endless-Legend feel:

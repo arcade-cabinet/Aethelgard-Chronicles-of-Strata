@@ -3,7 +3,7 @@ import { assignBiome, type Biome } from './biome';
 import { type Crossing, placeCrossings } from './crossings';
 import { getHexKey } from './hex';
 import { createNoise2D } from './noise';
-import { createMapPrng } from './rng';
+import { createMapPrng, type Rng } from './rng';
 
 /** One tile of the generated board. */
 export interface Tile extends Biome {
@@ -65,6 +65,21 @@ export function generateBoard(seedPhrase: string, radius: number = MAP_RADIUS): 
     }
   }
 
+  // M_MAPGEN.4 — beach ring + ocean perimeter (deterministic post-pass).
+  // Every tile beyond radius-2 from center → OCEAN; the ring at radius-1
+  // is forced BEACH. Guarantees the island silhouette per user spec.
+  // (LAKE inland-feature M_MAPGEN.5 + mountain-spine M_MAPGEN.3 layered
+  // on top.)
+  paintBeachRing(tiles, radius);
+  paintMountainSpine(tiles, radius, map);
+  paintInlandLake(tiles, radius, map);
+
+  // Recompute `walkable` after the guided-paint pass — every tile now
+  // reflects its FINAL biome + level.
+  for (const tile of tiles.values()) {
+    tile.walkable = tile.type !== 'OCEAN' && tile.type !== 'LAKE' && tile.level < 5;
+  }
+
   const crossings = placeCrossings(tiles, map);
   // Tag the low/high landing tile of every crossing so scatter avoids them.
   for (const c of crossings.values()) {
@@ -75,4 +90,95 @@ export function generateBoard(seedPhrase: string, radius: number = MAP_RADIUS): 
   }
 
   return { seedPhrase, radius, tiles, crossings };
+}
+
+/** Cube distance from (0,0,0) to (q, r, -q-r). */
+function hexDistFromCenter(q: number, r: number): number {
+  return (Math.abs(q) + Math.abs(r) + Math.abs(q + r)) / 2;
+}
+
+/**
+ * M_MAPGEN.4 — paint a deterministic ocean perimeter + beach ring.
+ * Tiles at distance > radius-2 → OCEAN (level 0, type OCEAN, moisture 1);
+ * tiles at distance == radius-2 OR radius-1 → BEACH (level 1).
+ */
+function paintBeachRing(tiles: Map<string, Tile>, radius: number): void {
+  for (const tile of tiles.values()) {
+    const d = hexDistFromCenter(tile.q, tile.r);
+    if (d > radius - 2) {
+      tile.type = 'OCEAN';
+      tile.level = 0;
+    } else if (d > radius - 4) {
+      // ring 2 hexes wide of forced BEACH
+      tile.type = 'BEACH';
+      tile.level = 1;
+    }
+  }
+}
+
+/**
+ * M_MAPGEN.3 — paint a 3-tile-wide MOUNTAIN spine across the central band.
+ * The band's orientation is seed-derived so different seeds get different
+ * mountain orientations but every seed gets ONE. Creates the funneling
+ * choke point the user called for.
+ */
+function paintMountainSpine(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
+  // Pick an axis: 0 = horizontal band on r; 1 = diagonal on q; 2 = diagonal on s.
+  const axis = Math.floor(rng() * 3);
+  for (const tile of tiles.values()) {
+    const d = hexDistFromCenter(tile.q, tile.r);
+    if (d > radius - 5) continue; // stay inside the beach ring + safety
+    let onSpine = false;
+    if (axis === 0) onSpine = Math.abs(tile.r) <= 1;
+    else if (axis === 1) onSpine = Math.abs(tile.q) <= 1;
+    else onSpine = Math.abs(tile.q + tile.r) <= 1;
+    if (!onSpine) continue;
+    // Stamp HIGHLAND for the 1-tile-wide band, with a MOUNTAIN peak every
+    // few hexes for vertical relief.
+    tile.type = 'MOUNTAIN';
+    tile.level = 5;
+  }
+}
+
+/**
+ * M_MAPGEN.5 — guaranteed inland LAKE cluster (4 connected tiles) somewhere
+ * inside the beach ring but NOT on the mountain spine. Picks a seeded
+ * candidate center, stamps a 4-tile rosette.
+ */
+function paintInlandLake(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
+  // Find a candidate center: walkable, GRASS/FOREST, distance from edge ≥ 5.
+  const candidates: Array<{ q: number; r: number }> = [];
+  for (const tile of tiles.values()) {
+    if (tile.type !== 'GRASS' && tile.type !== 'FOREST') continue;
+    if (hexDistFromCenter(tile.q, tile.r) > radius - 5) continue;
+    candidates.push({ q: tile.q, r: tile.r });
+  }
+  if (candidates.length === 0) return;
+  const pick = candidates[Math.floor(rng() * candidates.length)];
+  if (!pick) return;
+  // Stamp center + 3 of 6 neighbors as LAKE (rosette of 4).
+  const NEIGHBORS = [
+    [1, 0],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [0, -1],
+    [1, -1],
+  ] as const;
+  const center = tiles.get(getHexKey(pick.q, pick.r));
+  if (!center) return;
+  center.type = 'LAKE';
+  center.level = 0;
+  // pick 3 of the 6 neighbors deterministically via rng
+  const shuffled = NEIGHBORS.map((n) => ({ n, k: rng() })).sort((a, b) => a.k - b.k);
+  for (let i = 0; i < 3; i++) {
+    const entry = shuffled[i];
+    if (!entry) continue;
+    const [dq, dr] = entry.n;
+    const t = tiles.get(getHexKey(pick.q + dq, pick.r + dr));
+    if (t) {
+      t.type = 'LAKE';
+      t.level = 0;
+    }
+  }
 }
