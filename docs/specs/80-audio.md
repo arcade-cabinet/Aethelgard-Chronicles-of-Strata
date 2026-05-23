@@ -48,7 +48,7 @@ new Howl({
 
 ## Event → Sound Map
 
-> **M_REGISTRY.20 (planned)** — this event→asset table will move onto
+> **M_REGISTRY.20 (landed via M_EXPANSION.S.51)** — this event→asset table will move onto
 > the Skin slot as `SKINS[faction].audio[event]`. A third tribe defines
 > its own `audio` map (e.g. necromancer footsteps = bone-clack); the
 > encroachment `faction === 'player'` critical-alarm hard-branch
@@ -57,7 +57,7 @@ new Howl({
 
 ```mermaid
 flowchart LR
-  subgraph Slot["SKINS[faction].audio (future, M_REGISTRY.20)"]
+  subgraph Slot["SKINS[faction].audio (landed M_EXPANSION.S.51)"]
     EV1[footstep-grass]
     EV2[footstep-sand]
     EV3[combat-hit]

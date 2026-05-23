@@ -150,6 +150,15 @@ export interface Skin {
    * the GLB's native palette unchanged.
    */
   characterTint?: string | null;
+  /**
+   * M_EXPANSION.S.51 (closes M_REGISTRY.20) — per-faction audio
+   * overrides. When set, an event listed here plays this asset id
+   * instead of the global SOUND_FOR_EVENT entry. Lets player vs
+   * enemy footsteps / death-thuds sound distinct without forking
+   * the entire sound-map. Empty by default — both factions fall
+   * through to the global mapping today.
+   */
+  audio?: Partial<Record<string, string>>;
 }
 
 /**
@@ -231,6 +240,10 @@ export const SKINS: Record<Faction, Skin> = {
     // faction reads cleanly without tinting (the warm-armor heroes
     // already pop against grass/desert biomes).
     characterTint: null,
+    // M_EXPANSION.S.51 — empty audio overrides; player falls through
+    // to SOUND_FOR_EVENT. A future audio pass can crisp-up player
+    // footsteps/death here without touching the global sound-map.
+    audio: {},
     baseAccretion: {
       propPool: ['nature.tree.pine-a', 'nature.rock.large-a'],
       radius: 2,
@@ -302,6 +315,10 @@ export const SKINS: Record<Faction, Skin> = {
     // not 'just another rogue'. Multiplies into the base color so
     // the silhouette still varies via the texture.
     characterTint: '#7da3c8',
+    // M_EXPANSION.S.51 — empty audio overrides; enemy falls through
+    // to SOUND_FOR_EVENT. Future hook: bone-howl death sample for
+    // necropolis faction.
+    audio: {},
     baseAccretion: {
       // M_EXPANSION.A.23 — mossy rocks added to the necropolis biome
       // accretion pool for visual variety beyond the all-gravestone

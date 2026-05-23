@@ -68,6 +68,21 @@ export function resolveSoundId(mapping: SoundMapping): string {
   return mapping.soundId ?? '';
 }
 
+/**
+ * M_EXPANSION.S.51 — resolve a game audio event for a specific
+ * faction, respecting per-faction audio overrides in SKINS. Falls
+ * through to the global SOUND_FOR_EVENT when the faction has no
+ * override for the event. Pure lookup — no side effects.
+ */
+export function resolveSoundIdForFaction(
+  event: GameAudioEvent,
+  factionOverride: string | undefined,
+): { bus: keyof AudioBuses; soundId: string } {
+  const mapping = SOUND_FOR_EVENT[event];
+  if (factionOverride) return { bus: mapping.bus, soundId: factionOverride };
+  return { bus: mapping.bus, soundId: resolveSoundId(mapping) };
+}
+
 /** Maps every `GameAudioEvent` to the bus and asset id that plays it. */
 export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   // Combat (M_EXPANSION.AU.45 — split per damageType so a sword
