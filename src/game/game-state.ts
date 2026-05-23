@@ -22,6 +22,7 @@ import { aiSystem } from '@/ecs/systems/ai';
 import { buildSystem } from '@/ecs/systems/build';
 import { type DamageEvent, combatSystem } from '@/ecs/systems/combat';
 import { deathSystem } from '@/ecs/systems/death';
+import { buildingDeathSystem } from '@/ecs/systems/building-death';
 import { depositSystem } from '@/ecs/systems/deposit';
 import { harvestSystem } from '@/ecs/systems/harvest';
 import { AiPlayer } from '@/ai/ai-player';
@@ -477,6 +478,11 @@ export function runEconomyTick(game: GameState, delta: number): void {
   // death resolution — deathSystem returns the enemies removed this tick;
   // a removed enemy is a player kill.
   game.economy.player.kills += deathSystem(game.world, delta);
+
+  // building destruction — 0-HP buildings (excluding FactionBase, which is
+  // the win/loss anchor) are removed; tile walkability + nav graph rebuild.
+  const newNavGraph = buildingDeathSystem(game.world, game.buildSites, game.board);
+  if (newNavGraph) game.navGraph = newNavGraph;
 
   // animation state + end-condition check
   animationSystem(game.world);
