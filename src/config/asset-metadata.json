@@ -576,6 +576,36 @@
     "license": "CC0",
     "triangles": 200
   },
+  "nature.pine-crooked": {
+    "id": "nature.pine-crooked",
+    "path": "assets/nature/pine-crooked.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Graveyard Kit",
+    "license": "CC0",
+    "triangles": 400
+  },
+  "nature.gravestone-cross-large": {
+    "id": "nature.gravestone-cross-large",
+    "path": "assets/nature/gravestone-cross-large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Graveyard Kit",
+    "license": "CC0",
+    "triangles": 300
+  },
+  "structures.fountain": {
+    "id": "structures.fountain",
+    "path": "assets/structures/fountain.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Fantasy Town Kit",
+    "license": "CC0",
+    "triangles": 600
+  },
   "characters.heroes.knight": {
     "id": "characters.heroes.knight",
     "path": "assets/characters/heroes/knight.glb",

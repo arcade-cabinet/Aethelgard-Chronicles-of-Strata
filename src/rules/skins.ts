@@ -202,12 +202,14 @@ export const SKINS: Record<Faction, Skin> = {
       // buildings from food buildings at a glance.
       Library: { logicalId: 'structures.library', scale: 0.7, yOffset: 0 },
     },
-    // M_EXPANSION.A.4 — single faction banner immediately behind the
-    // Town Hall (visible from default camera framing). Other decorative
-    // props stay off the player base so player-built structures landing
-    // on adjacent tiles don't visually clash.
+    // M_EXPANSION.A.4 + A.10 — faction banner behind Town Hall + a
+    // small fountain to the side. The fountain anchors the base as a
+    // CIVIC space; the banner gives it identity. Both stay close enough
+    // to the central tile that player-built structures landing on
+    // adjacent tiles won't clip.
     baseProps: [
       { logicalId: 'structures.banner-faction', x: 0, y: 0, z: -1.2, scale: 0.8, rotationY: 0 },
+      { logicalId: 'structures.fountain', x: 1.3, y: 0, z: -0.5, scale: 0.45, rotationY: 0.3 },
     ],
     rig: SHARED_RIG_TODAY,
     minimap: { unitColor: '#22c55e', baseColor: '#38bdf8' },
@@ -248,6 +250,12 @@ export const SKINS: Record<Faction, Skin> = {
     // drawn at scale 1.4 directly by FactionBase).
     baseProps: [
       // Gravestones — clustered in front of the crypt.
+      // M_EXPANSION.A.16 + .A.15 — added a tall cross-large at the
+      // back-centre + a crooked pine behind the crypt so the
+      // necropolis silhouette reads tall+ominous from the default
+      // camera framing.
+      { logicalId: 'nature.gravestone-cross-large', x: 0, y: 0, z: -1.4, scale: 0.8, rotationY: 0 },
+      { logicalId: 'nature.pine-crooked', x: -1.5, y: 0, z: -1.0, scale: 0.7, rotationY: 0.6 },
       { logicalId: 'nature.gravestone.cross', x: 0.6, y: 0, z: 0.4, scale: 0.9, rotationY: 0.4 },
       { logicalId: 'nature.gravestone.round', x: -0.55, y: 0, z: 0.5, scale: 0.8, rotationY: -0.5 },
       { logicalId: 'nature.gravestone.round', x: 0.25, y: 0, z: 0.7, scale: 0.75, rotationY: 0.1 },

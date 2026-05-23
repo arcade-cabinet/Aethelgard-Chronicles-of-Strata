@@ -61,12 +61,14 @@ export type StaticAssetPath =
   'assets/nature/flower-b.glb' |
   'assets/nature/flower-c.glb' |
   'assets/nature/grass-tuft.glb' |
+  'assets/nature/gravestone-cross-large.glb' |
   'assets/nature/gravestone/cross.glb' |
   'assets/nature/gravestone/round.glb' |
   'assets/nature/mound-a.glb' |
   'assets/nature/mound-b.glb' |
   'assets/nature/mushroom-a.glb' |
   'assets/nature/mushroom-b.glb' |
+  'assets/nature/pine-crooked.glb' |
   'assets/nature/rock/crystal-a.glb' |
   'assets/nature/rock/crystal-large.glb' |
   'assets/nature/rock/large-a.glb' |
@@ -92,6 +94,7 @@ export type StaticAssetPath =
   'assets/structures/barracks.glb' |
   'assets/structures/crypt.glb' |
   'assets/structures/farm.glb' |
+  'assets/structures/fountain.glb' |
   'assets/structures/granary.glb' |
   'assets/structures/library.glb' |
   'assets/structures/portal-crypt.glb' |
@@ -206,12 +209,14 @@ const assets = new Set<string>([
   'assets/nature/flower-b.glb',
   'assets/nature/flower-c.glb',
   'assets/nature/grass-tuft.glb',
+  'assets/nature/gravestone-cross-large.glb',
   'assets/nature/gravestone/cross.glb',
   'assets/nature/gravestone/round.glb',
   'assets/nature/mound-a.glb',
   'assets/nature/mound-b.glb',
   'assets/nature/mushroom-a.glb',
   'assets/nature/mushroom-b.glb',
+  'assets/nature/pine-crooked.glb',
   'assets/nature/rock/crystal-a.glb',
   'assets/nature/rock/crystal-large.glb',
   'assets/nature/rock/large-a.glb',
@@ -237,6 +242,7 @@ const assets = new Set<string>([
   'assets/structures/barracks.glb',
   'assets/structures/crypt.glb',
   'assets/structures/farm.glb',
+  'assets/structures/fountain.glb',
   'assets/structures/granary.glb',
   'assets/structures/library.glb',
   'assets/structures/portal-crypt.glb',
