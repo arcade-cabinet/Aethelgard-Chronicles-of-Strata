@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { setMuted } from '@/audio/buses';
-import { type Persistence, safePersistenceRead } from '@/persistence/persistence';
+import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
 import { HUD_THEME } from './hud-theme';
 
 /** The Preferences key the mute state is persisted under. */
-export const MUTE_PREF_KEY = 'muted';
+// M_SEC.33 — Preferences keys are namespaced via the PREF_KEYS enum.
+export const MUTE_PREF_KEY = PREF_KEYS.muted;
 
 /**
  * The audio mute toggle (top-right). Calls `setMuted` and persists the choice

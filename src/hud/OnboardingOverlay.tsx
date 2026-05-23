@@ -1,11 +1,12 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
-import { type Persistence, safePersistenceRead } from '@/persistence/persistence';
+import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
 /** Preferences key that marks the tutorial as seen. */
-const ONBOARDING_KEY = 'onboardingSeen';
+// M_SEC.33 — Preferences keys are namespaced via the PREF_KEYS enum.
+const ONBOARDING_KEY = PREF_KEYS.onboarding;
 
 /** One step of the tutorial — a heading + a one-paragraph teaching. */
 interface Step {

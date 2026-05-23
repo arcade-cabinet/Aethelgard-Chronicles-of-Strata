@@ -738,7 +738,7 @@ overlap exists.
 - [x] M_SEC.22 — `persistence.ts:240` load() catch
   returns null masks corruption from "no row found". Differentiate
   via `CorruptSaveError`; UI shows "save corrupted" path.
-- [ ] M_SEC.23 — `audio/buses.ts` Howler cache
+- [x] M_SEC.23 — `audio/buses.ts` Howler cache
   unbounded — add LRU cap of ~64 entries.
 - [ ] M_SEC.24 — KeyboardShortcuts/PauseControl/
   SelectionRect global listeners capture closure refs to `game`.
@@ -753,7 +753,7 @@ overlap exists.
 - [ ] M_SEC.26 — `App.tsx` Continue effect — guard
   StrictMode double-fire via idempotent UPSERT-by-name in
   persistence or de-dupe in createAutoSave.
-- [ ] M_SEC.27 — `audio/useTitleMusic.ts:14-23` add
+- [x] M_SEC.27 — `audio/useTitleMusic.ts:14-23` add
   `bus.cache.forEach(h => h.unload())` to cleanup.
 - [ ] M_SEC.28 — `package.json` exact-pin all `^x.y.z`
   versions OR document `--frozen-lockfile` only.
@@ -767,7 +767,7 @@ overlap exists.
   to `scripts/copy-wasm.mjs`; call via `node scripts/copy-wasm.mjs`.
 - [ ] M_SEC.32 — `vite.config.ts` vitest project
   staticAssetsPlugin — set `watch: false`.
-- [ ] M_SEC.33 — namespace all Capacitor Preferences
+- [x] M_SEC.33 — namespace all Capacitor Preferences
   keys with `aethelgard.` prefix; wrap in single typed enum.
 
 ### M_MICRO — forward-applied MICRO/SIMPLIFICATION tickets (audit 2026-05-23)

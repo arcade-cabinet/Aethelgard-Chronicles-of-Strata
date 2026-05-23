@@ -42,14 +42,39 @@ export function createAudioBuses(): AudioBuses {
   };
 }
 
-/** Get or lazily create the Howl for `id` on a bus. */
+/**
+ * Per-bus Howl cache cap (M_SEC.23). The game's sound-map has ~25
+ * distinct events today; 64 leaves significant headroom for any
+ * future expansion BUT prevents an unbounded grow scenario (e.g. a
+ * skin-keyed audio slot in M_REGISTRY.20 where each tribe adds a
+ * fresh set of Howls).
+ */
+const BUS_CACHE_CAP = 64;
+
+/** Get or lazily create the Howl for `id` on a bus (LRU-capped). */
 function getHowl(bus: AudioBus, id: string): Howl {
+  // Map iteration order is insertion order — deletes from the front
+  // when over cap give LRU eviction. Refresh existing entries by
+  // delete+reinsert so the most-recently-played stays at the back.
   let howl = bus.cache.get(id);
-  if (!howl) {
-    const url = assets.url(id);
-    howl = new Howl({ src: [url], volume: bus.volume });
+  if (howl) {
+    bus.cache.delete(id);
     bus.cache.set(id, howl);
+    return howl;
   }
+  const url = assets.url(id);
+  howl = new Howl({ src: [url], volume: bus.volume });
+  if (bus.cache.size >= BUS_CACHE_CAP) {
+    // evict the oldest entry; unload its WebAudio buffers so the
+    // browser actually reclaims the memory.
+    const firstKey = bus.cache.keys().next().value;
+    if (firstKey !== undefined) {
+      const old = bus.cache.get(firstKey);
+      old?.unload();
+      bus.cache.delete(firstKey);
+    }
+  }
+  bus.cache.set(id, howl);
   return howl;
 }
 

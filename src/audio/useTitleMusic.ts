@@ -14,10 +14,17 @@ export function useTitleMusic(): void {
   useEffect(() => {
     const buses = createAudioBuses();
     playMusic(buses, 'audio.music.menu');
-    void buses; // referenced for lifetime; stopMusic targets the module-level current
     return () => {
       // stop the menu loop when the title unmounts (entering gameplay)
       stopMusic();
+      // M_SEC.27 — unload every Howl in the title-bus cache so the
+      // WebAudio buffers don't linger across the title → gameplay
+      // transition (the gameplay buses are a separate instance, so
+      // the title cache would otherwise stay alive forever).
+      for (const bus of Object.values(buses)) {
+        for (const howl of bus.cache.values()) howl.unload();
+        bus.cache.clear();
+      }
     };
   }, []);
 }

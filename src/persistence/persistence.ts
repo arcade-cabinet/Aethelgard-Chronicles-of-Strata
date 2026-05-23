@@ -116,8 +116,26 @@ export async function safePersistenceRead<T>(
 // Preferences keys (settings + event seed — NOT saves)
 // ---------------------------------------------------------------------------
 
+/**
+ * Namespaced Preferences keys (M_SEC.33). Every Capacitor Preferences
+ * read/write goes through this enum so keys can never collide with
+ * other apps' Preferences storage (Android shares the Preferences API
+ * across the entire process; an embedded WebView in a different host
+ * would leak into the same namespace without an app-specific prefix).
+ *
+ * The single typed enum is also the catalogue: a new pref means
+ * adding ONE row here + getting compile-time enforcement at every
+ * read/write site.
+ */
+export const PREF_KEYS = {
+  eventSeed: 'aethelgard.eventPrngSeed',
+  muted: 'aethelgard.muted',
+  onboarding: 'aethelgard.onboardingSeen',
+} as const;
+export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
+
 /** The Preferences key under which the device-level event PRNG seed is stored. */
-const EVENT_SEED_KEY = 'eventPrngSeed';
+const EVENT_SEED_KEY: PrefKey = PREF_KEYS.eventSeed;
 
 // ---------------------------------------------------------------------------
 // SQLite helpers
