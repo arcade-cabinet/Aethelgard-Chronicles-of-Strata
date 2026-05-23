@@ -563,7 +563,7 @@ the smallest end-to-end proof, then drain in dependency order.
 - [ ] M_REGISTRY.10 — `Mountains.tsx` (peak placement)
   + `Crossings.tsx` (ramp placement) join the gen-time pass — both
   are AccretesProps consumers, not bespoke renderers.
-- [ ] M_REGISTRY.11 — `Roads.tsx` MATERIAL_COLOR table +
+- [x] M_REGISTRY.11 — `Roads.tsx` MATERIAL_COLOR table +
   Roads layer become a Skin-driven generic MoverRenderer. Same
   shape as StructureRenderer.
 - [ ] M_REGISTRY.12 — `Crossings.tsx` 6-variant (style ×

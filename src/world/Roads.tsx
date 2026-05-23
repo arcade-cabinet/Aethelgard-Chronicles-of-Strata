@@ -5,16 +5,10 @@ import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
 import { HexPosition, MoverBehavior, type MoverMaterial } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { moverProfileFor } from '@/rules/mover-profiles';
 
 /** Flat hex disc, slightly smaller than the tile so neighbours don't z-fight. */
 const roadGeo = new CylinderGeometry(HEX_RADIUS * 0.92, HEX_RADIUS * 0.92, 0.08, 6);
-
-/** Per-material road colour — keeps the visual identity per spec 102. */
-const MATERIAL_COLOR: Record<MoverMaterial, string> = {
-  stone: '#94a3b8',
-  wood: '#92400e',
-  dirt: '#a16207',
-};
 
 /** A single road tile snapshot — taken when the roster changes. */
 interface RoadView {
@@ -63,7 +57,7 @@ export function Roads({ game }: { game: GameState }) {
           rotation={[0, Math.PI / 6, 0]}
           geometry={roadGeo}
         >
-          <meshStandardMaterial color={MATERIAL_COLOR[v.material]} flatShading />
+          <meshStandardMaterial color={moverProfileFor(v.material).color} flatShading />
         </mesh>
       ))}
     </group>
