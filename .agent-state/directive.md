@@ -423,10 +423,15 @@ re-listing. Both unblock as the relevant dependency lands.)
   (late-game capstone); supply contribution 5. Rows in BuildingType,
   BUILDING_BEHAVIORS, BUILDING_DISPLAY, BUILDING_COSTS, buildingSupply,
   structure-models (both factions). Test pins the 3-archetype composition.
-- [ ] M_FEATURE.5 — siege-unit class: declares `damageType: 'siege'` on
-  OffensiveBehavior; melts walls per the damage-type table.
-- [ ] M_FEATURE.6 — magic-unit class: `damageType: 'magic'`; pairs with
-  a Witch role (already in UnitType union, needs spawn rule + asset).
+- [x] M_FEATURE.5 — Trebuchet siege unit: UnitType extended; combat
+  stats (speed 1.0, hp 80, dmg 22, range 4, cooldown 3s); supply cost 3;
+  rig.ts placeholder mesh; character-factory sets OffensiveBehavior.
+  damageType='siege' per spec-102 damage-type table — multiplies Wall
+  damage 1.5x via the armorVsSiege multiplier.
+- [x] M_FEATURE.6 — Witch magic unit (UnitType already existed; this
+  closes the damageType): character-factory sets damageType='magic' for
+  Witch — cuts magic-armor multiplier (1.0x today; tunable per Defender).
+  3-case test pins per-role damageType.
 
 ### M_QUALITY — review feedback fully discharged
 

@@ -110,12 +110,12 @@ export function createCharacter(params: CreateCharacterParams): Entity {
       // adopt the same trait Watchtowers have (spec 102). dps approximates
       // attackDamage/attackCooldown so the offensive-behavior system applies
       // continuous damage in range at the same rate combat.ts would. The
-      // damageType is 'normal' today; siege units (Trebuchet) will declare
-      // 'siege' as a single-row change.
+      // damageType is per-role (M_FEATURE.5+.6): Trebuchet→siege (melts
+      // walls); Witch→magic (cuts magic-armor); everything else→normal.
       OffensiveBehavior({
         radius: attackRange,
         dps: attackDamage / attackCooldown,
-        damageType: 'normal',
+        damageType: role === 'Trebuchet' ? 'siege' : role === 'Witch' ? 'magic' : 'normal',
       }),
     ] as const;
     return world.spawn(...base, ...combatTraits);

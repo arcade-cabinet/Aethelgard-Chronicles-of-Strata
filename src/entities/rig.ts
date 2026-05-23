@@ -26,6 +26,11 @@ export function characterMeshId(role: UnitType): string {
       return 'characters.heroes.engineer';
     case 'Footman':
       return 'characters.heroes.knight';
+    case 'Trebuchet':
+      // No dedicated trebuchet mesh — reuse the knight scaled to feel siege-y.
+      // The siege identity comes from damageType + range; the mesh is a
+      // placeholder until a dedicated KayKit siege model lands.
+      return 'characters.heroes.knight';
     case 'Goblin':
       // The KayKit bundle has no dedicated goblin mesh; the hooded Rogue is the
       // closest small humanoid. Goblins are tinted/scaled distinctly at render

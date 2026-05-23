@@ -9,6 +9,14 @@
       "attackRange": 1,
       "attackCooldown": 1
     },
+    "Trebuchet": {
+      "speed": 1.0,
+      "faction": "player",
+      "hp": 80,
+      "attackDamage": 22,
+      "attackRange": 4,
+      "attackCooldown": 3.0
+    },
     "Goblin": {
       "speed": 2,
       "faction": "enemy",

@@ -1,7 +1,15 @@
 import { trait } from 'koota';
 
 /** A unit class. Source: docs/specs/50-ecs-model.md. */
-export type UnitType = 'Peon' | 'Footman' | 'Goblin' | 'Orc' | 'Vampire' | 'BlackKnight' | 'Witch';
+export type UnitType =
+  | 'Peon'
+  | 'Footman'
+  | 'Trebuchet'
+  | 'Goblin'
+  | 'Orc'
+  | 'Vampire'
+  | 'BlackKnight'
+  | 'Witch';
 
 /** Faction ownership for targeting and AI. */
 export type Faction = 'player' | 'enemy';
