@@ -1795,7 +1795,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.S.56 — spec 102-zone-of-control.md "contested pulse" — yellow pulse when enemy military on player tile (M_GAMEPLAY.4) — verify rendered, currently latent
 - [x] [MED]  M_EXPANSION.S.57 — spec 96-prng-and-landing.md "session save embeds seed" — verified done; add browser test snapshot of seed-round-trip
 - [x] [MED]  M_EXPANSION.S.58 — spec 90-ui-hud.md "build queue display" — currently no UI for queued buildings; show the build site count in HUD
-- [ ] [MED]  M_EXPANSION.S.59 — spec 50-ecs-model.md trait count guard — write a test that fails if SERIALIZED_TRAITS misses any trait that affects gameplay snapshot
+- [x] [MED]  M_EXPANSION.S.59 — spec 50-ecs-model.md trait count guard — write a test that fails if SERIALIZED_TRAITS misses any trait that affects gameplay snapshot
 - [ ] [MED]  M_EXPANSION.S.60 — spec 60-characters.md M_CHARACTERS.14 — generic-fixed NPC archetype (named-but-randomised stats); currently only fixed + player exist
 - [ ] [MED]  M_EXPANSION.S.61 — spec 95-persistence.md "schema migrations table" — M_SEC.27 hooks landed but only the v0→v1 migration is defined; add an explicit test fixture for v1→v2 when the next schema lands
 - [ ] [MED]  M_EXPANSION.S.62 — spec 97-ai-and-asset-expansion.md "yuka subpackage" — partly done; finish the migration of MovementGoal → yuka Vehicle steering for all military units
