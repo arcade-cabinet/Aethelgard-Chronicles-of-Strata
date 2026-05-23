@@ -1832,8 +1832,12 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
     a dedicated milestone slot — the schema bump is the first real use
     of the migration framework + warrants its own review cycle.
 - [x] [HIGH] M_EXPANSION.F.73 — Multiplayer-seed sharing: a "share seed" button in the New Game modal copies the current seed to clipboard
-- [ ] [HIGH] M_EXPANSION.F.74 — Replay export: save the EventLog ndjson to a downloadable file
-- [ ] [MED]  M_EXPANSION.F.75 — Replay import: load a EventLog ndjson and watch the deterministic playback
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.74 — Replay export: save the EventLog ndjson to a downloadable file
+  - Design spec landed in docs/specs/106-replay-format.md. WAIT for the
+    5-step implementation slot (EventLog → commands wire → export →
+    import → round-trip test).
+- [ ] [WAIT-DESIGN] M_EXPANSION.F.75 — Replay import: load a EventLog ndjson and watch the deterministic playback
+  - Co-depends on F.74; same design spec.
 - [ ] [MED]  M_EXPANSION.F.76 — Tutorial campaign: 3 scripted scenarios with fixed seed + objective overlay
 - [ ] [MED]  M_EXPANSION.F.77 — Achievements: track 'first-victory', 'no-build-wonder-win', etc; persist to Preferences
 - [ ] [MED]  M_EXPANSION.F.78 — Scenario editor: load a saved board state + spawn units interactively (debug mode only)
@@ -1932,7 +1936,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 ### M_EXPANSION.DOCS — documentation gaps (161-170)
 
 - [ ] [MED]  M_EXPANSION.D.161 — docs/specs/M_EXPANSION-roadmap.md — a single doc rolling up M_EXPANSION.F.* into a release-train (v0.3 → v0.4 → v1.0)
-- [ ] [MED]  M_EXPANSION.D.162 — docs/specs/106-replay-format.md — formal spec of the EventLog serialization (M_EXPANSION.F.74/.75)
+- [x] [MED]  M_EXPANSION.D.162 — docs/specs/106-replay-format.md — formal spec of the EventLog serialization (M_EXPANSION.F.74/.75)
 - [x] [MED]  M_EXPANSION.D.163 — docs/specs/107-mana-resource.md — design for the 4th resource slot (M_EXPANSION.F.72)
 - [ ] [MED]  M_EXPANSION.D.164 — docs/specs/108-wonder-victory.md — Wonder building rules (M_EXPANSION.F.71)
 - [ ] [MED]  M_EXPANSION.D.165 — docs/specs/109-multifaction.md — design considerations for ≥3 factions (M_EXPANSION.F.94/.95)
