@@ -77,6 +77,18 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: false,
   },
+  // M_EXPANSION.F.100 — Coexist: no win condition. invulnerableBases
+  // prevents either base from dying; endless match-length disables the
+  // resign-by-starvation flip. Game runs until the player closes the
+  // window — useful for builder-mode play.
+  coexist: {
+    mapSize: 'large',
+    matchLength: 'endless',
+    turnsMode: 'real-time',
+    mapType: 'balanced',
+    guidedMapGen: true,
+    invulnerableBases: true,
+  },
 };
 
 /** Resolve the preset for a mode; defaults to red-vs-blue for unknown input. */

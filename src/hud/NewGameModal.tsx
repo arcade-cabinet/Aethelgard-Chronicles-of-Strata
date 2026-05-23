@@ -22,13 +22,14 @@ export interface NewGameChoices {
   mode: GameMode;
 }
 
-/** The 5 selectable game modes (M_MODES.7 — presets card row). */
+/** The 6 selectable game modes (M_MODES.7 + M_EXPANSION.F.100). */
 const MODES: ReadonlyArray<{ key: GameMode; label: string; hint: string }> = [
   { key: 'red-vs-blue', label: 'Red vs Blue', hint: 'Balanced 1v1' },
   { key: 'skirmish', label: 'Skirmish', hint: 'Pure noise — asymmetric maps' },
   { key: 'endless', label: 'Endless', hint: 'Invuln bases · resign/starve' },
   { key: 'classic-rts', label: 'Classic RTS', hint: 'Longer · tech-tree heavy' },
   { key: '4x', label: '4X', hint: 'eXplore eXpand eXploit eXterminate' },
+  { key: 'coexist', label: 'Coexist', hint: 'No win — builder sandbox' },
 ];
 
 /** Props for the New Game modal. */

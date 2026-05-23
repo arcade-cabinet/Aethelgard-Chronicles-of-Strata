@@ -153,8 +153,8 @@ export interface NewGameConfig {
   mode?: GameMode;
 }
 
-/** The 5 selectable game-mode presets (M_MODES). */
-export type GameMode = 'red-vs-blue' | 'skirmish' | 'endless' | 'classic-rts' | '4x';
+/** The 6 selectable game-mode presets (M_MODES + M_EXPANSION.F.100). */
+export type GameMode = 'red-vs-blue' | 'skirmish' | 'endless' | 'classic-rts' | '4x' | 'coexist';
 
 /** The live state of one play session. */
 export interface GameState {

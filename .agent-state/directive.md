@@ -1866,7 +1866,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [LOW]  M_EXPANSION.F.97 — Discoverable map tiles: 5% of tiles hide a one-shot resource bonus when a peon first walks on
 - [ ] [LOW]  M_EXPANSION.F.98 — Boat/water-crossing — ferries between islands; new building Dock
 - [ ] [LOW]  M_EXPANSION.F.99 — Trade caravans between cities (auto-route peons between two Granaries)
-- [ ] [LOW]  M_EXPANSION.F.100 — Endgame slot: a 4th game-mode "Coexist" (no win condition, infinite play)
+- [x] [LOW]  M_EXPANSION.F.100 — Endgame slot: a 4th game-mode "Coexist" (no win condition, infinite play)
 
 ### M_EXPANSION.UX — UX/HUD polish backlog (101-125)
 
