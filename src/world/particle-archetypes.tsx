@@ -345,7 +345,7 @@ export const chimneySmokeArchetype: ParticleEmitterSpec<SmokePuff> = {
     const fresh: SmokePuff[] = [];
     for (const e of game.world.query(Building, HexPosition)) {
       const b = e.get(Building);
-      if (!b || !b.isComplete || b.buildingType !== 'House') continue;
+      if (!b?.isComplete || b.buildingType !== 'House') continue;
       const id = unpackEntity(e).entityId;
       live.add(id);
       const next = (smokeState.acc.get(id) ?? SMOKE_INTERVAL) + delta;

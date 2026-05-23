@@ -23,9 +23,8 @@ export function ScoreBar({ game }: { game: GameState }) {
   }, [game]);
 
   return (
-    <div
+    <section
       id="score-bar"
-      role="region"
       aria-label="Match score"
       style={{
         position: 'absolute',
@@ -45,13 +44,13 @@ export function ScoreBar({ game }: { game: GameState }) {
         pointerEvents: 'none',
       }}
     >
-      <span style={{ color: '#38bdf8' }} aria-label={`Player score ${scores.player}`}>
+      <span style={{ color: '#38bdf8' }} title={`Player score ${scores.player}`}>
         {formatInt(scores.player)}
       </span>
       <span style={{ color: HUD_THEME.color.muted }}>vs</span>
-      <span style={{ color: '#f43f5e' }} aria-label={`Enemy score ${scores.enemy}`}>
+      <span style={{ color: '#f43f5e' }} title={`Enemy score ${scores.enemy}`}>
         {formatInt(scores.enemy)}
       </span>
-    </div>
+    </section>
   );
 }

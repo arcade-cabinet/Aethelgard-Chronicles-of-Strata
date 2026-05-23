@@ -27,7 +27,6 @@ import type { PointLight } from 'three';
 import { assets } from '@/assets/assets';
 import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, parseHexKey } from '@/core/hex';
-import { cyclePhase, lightIntensityAt } from '@/game/clock';
 import {
   Building,
   type BuildingType,
@@ -36,6 +35,7 @@ import {
   Gate,
   HexPosition,
 } from '@/ecs/components';
+import { cyclePhase, lightIntensityAt } from '@/game/clock';
 import type { GameState } from '@/game/game-state';
 import { SKINS } from '@/rules/skins';
 import { ConstructionRing } from './ConstructionRing';
@@ -171,6 +171,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
   // so filter by the entity's FactionTrait via Building component (the
   // ECS entity already carries faction; we read from the Building
   // entity's traits).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: buildSitesGeneration is the tick counter that bumps when ECS trait sets mutate (Gate attach, hasGate flip) without the buildSites Map identity changing — required for correct re-memo, do NOT remove
   const placed = useMemo(() => {
     const result: Array<{
       key: string;
