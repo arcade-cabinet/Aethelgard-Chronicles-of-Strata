@@ -3,10 +3,16 @@ import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld } from '@/core/hex';
 import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 
-/** Parse a `"q,r,level"` path step. Falls back to level 0 for legacy `"q,r"`. */
+/**
+ * Parse a `"q,r,level"` path step. Falls back to level 0 for legacy `"q,r"`.
+ * NaN-hardens each component (CodeRabbit: `?? 0` only catches `undefined`,
+ * not the `NaN` that `Number('foo')` produces from malformed input).
+ */
 function parseStep(step: string): { q: number; r: number; level: number } {
-  const [q, r, level] = step.split(',').map(Number);
-  return { q: q ?? 0, r: r ?? 0, level: level ?? 0 };
+  const [rawQ, rawR, rawLevel] = step.split(',').map(Number);
+  const safe = (n: number | undefined): number =>
+    typeof n === 'number' && !Number.isNaN(n) ? n : 0;
+  return { q: safe(rawQ), r: safe(rawR), level: safe(rawLevel) };
 }
 
 /**

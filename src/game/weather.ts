@@ -44,14 +44,20 @@ export function createWeather(rng?: Rng): Weather {
  * Advance the weather. When the timer elapses it transitions: Sunny goes to Fog
  * or Rain (50/50, event PRNG); Fog and Rain always return to Sunny — never
  * directly to each other.
+ *
+ * Frame-step independence: drains ALL elapsed intervals in a `while` loop
+ * (CodeRabbit), so a long delta (browser tab unblocked, slow frame) still
+ * resolves every weather window it crossed instead of merging them into one.
  */
 export function advanceWeather(weather: Weather, rng: Rng, delta: number): void {
   weather.timer -= delta;
-  if (weather.timer > 0) return;
-  if (weather.state === 'sunny') {
-    weather.state = rng() < 0.5 ? 'fog' : 'rain';
-  } else {
-    weather.state = 'sunny';
+  let safety = 8; // cap iterations so a giant delta can't loop unboundedly
+  while (weather.timer <= 0 && safety-- > 0) {
+    if (weather.state === 'sunny') {
+      weather.state = rng() < 0.5 ? 'fog' : 'rain';
+    } else {
+      weather.state = 'sunny';
+    }
+    weather.timer += MIN_INTERVAL + rng() * (MAX_INTERVAL - MIN_INTERVAL);
   }
-  weather.timer = MIN_INTERVAL + rng() * (MAX_INTERVAL - MIN_INTERVAL);
 }

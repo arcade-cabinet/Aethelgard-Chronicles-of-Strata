@@ -62,9 +62,12 @@ export function createEventPrng(eventSeed: string): Rng {
 export function createFreshEventSeed(): string {
   const buf = new Uint32Array(4);
   crypto.getRandomValues(buf);
+  // Separator-join to avoid ambiguous concatenation — base-36 chunks have
+  // variable length, so 'ff'+'f' and 'f'+'ff' would both produce 'fff'.
+  // A '-' delimiter makes each chunk unambiguous (CodeRabbit MINOR).
   return Array.from(buf)
     .map((n) => n.toString(36))
-    .join('');
+    .join('-');
 }
 
 /**

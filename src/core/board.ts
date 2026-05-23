@@ -41,6 +41,13 @@ export interface BoardData {
  * board.
  */
 export function generateBoard(seedPhrase: string, radius: number = MAP_RADIUS): BoardData {
+  // Validate at the API boundary (CodeRabbit): negative / NaN / Infinity /
+  // non-integer radius would produce a malformed grid downstream. Round +
+  // clamp to a sane range — MAP_SIZES tops out at 16, so 32 is a hard ceiling.
+  if (!Number.isFinite(radius) || radius < 1 || radius > 32) {
+    throw new Error(`generateBoard: radius must be a finite integer in [1, 32], got ${radius}`);
+  }
+  radius = Math.round(radius);
   const map = createMapPrng(seedPhrase);
   // Two independent noise fields, both fed from the map stream in a fixed order.
   const heightNoise = createNoise2D(map);
