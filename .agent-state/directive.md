@@ -1699,13 +1699,20 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.A.15 — Graveyard `pine-crooked.glb` as decorative density entry in necropolis biome
 - [x] [MED]  M_EXPANSION.A.16 — Graveyard `gravestone-*.glb` as base-accretion props around enemy spawn
 - [x] [LOW]  M_EXPANSION.A.17 — Graveyard `coffin.glb` as Goblin death-drop visual (3s decay)
-- [ ] [LOW]  M_EXPANSION.A.18 — Graveyard `mushrooms.glb` as patchy decoration around necropolis
+- [x] [LOW]  M_EXPANSION.A.18 — Graveyard `mushrooms.glb` as patchy decoration around necropolis
+  - No mushroom asset in the bundled Graveyard Kit (verified). Closed
+    without ingest. If a mushroom pack is added later, the propPool
+    in SKINS.enemy.baseAccretion is the one-line extension point.
 
 **Tower Defense Kit (19-24)** — military variety
 - [x] [HIGH] M_EXPANSION.A.19 — Tower Defense `tower-square-bottom-color.glb` as upgraded Watchtower variant (cost: stone + science)
 - [x] [MED]  M_EXPANSION.A.20 — Tower Defense `weapon-cannon.glb` as Wonder secondary mesh + projectile source
 - [x] [MED]  M_EXPANSION.A.21 — Tower Defense `crystal-large.glb` as Mana resource node (introduces 4th resource — already slot-extensible per RESOURCE_DISPLAY)
-- [ ] [LOW]  M_EXPANSION.A.22 — Tower Defense `enemy-rat.glb` as low-tier raid unit (faster than Goblin, lower hp)
+- [x] [LOW]  M_EXPANSION.A.22 — Tower Defense `enemy-rat.glb` as low-tier raid unit (faster than Goblin, lower hp)
+  - No rat asset in Tower Defense Kit (only sci-fi UFO enemies, wrong
+    palette for a fantasy RTS). Closed without ingest. Low-tier raid
+    variety can land later via KayKit Mystery Monthly slime/bat
+    references when they ship.
 - [x] [LOW]  M_EXPANSION.A.23 — Tower Defense `detail-rocks.glb` as alt biome rock variant
 - [x] [LOW]  M_EXPANSION.A.24 — Tower Defense `tile-end-round.glb` as cul-de-sac road piece
   - Decided NOT to ingest: Roads in Aethelgard are procedural strip-mesh
