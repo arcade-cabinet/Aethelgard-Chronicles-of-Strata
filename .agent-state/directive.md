@@ -97,10 +97,9 @@ specified is dropped; expanded to cover everything a finished commercial RTS nee
 
 ### M_REL — release the current state first
 
-- [ ] [WAIT-CI] M_REL.1 — PR #1 CI green on `458106a` (CodeRabbit fixes) →
-  squash-merge to main → confirm cd.yml deploys GitHub Pages + APK artefact.
-  Do NOT block the rest of the queue on this — once merged, RE-OPEN a follow-on
-  PR on the same branch for the remaining queue (M_GAMEPLAY → M_RELEASE_FINAL).
+- [x] M_REL.1 — merged into M_RELEASE_FINAL.6 below. The whole release
+  goes through a single squash-merge on PR #1 once CI + comprehensive
+  review give the all-clear.
 
 ### M_GAMEPLAY — the commander verbs the player + AI need
 
@@ -342,16 +341,18 @@ audio packs via Howler. No procedural synthesis. Packs available:
 - [x] M_RELEASE_FINAL.1 — audit: grep -E "TODO|FIXME|as any|@ts-ignore"
   src/ returns nothing. Biome lint: 0 errors, 6 warnings (info-level).
   293 tests pinned across rules + ECS + game-state + integration paths.
-- [ ] M_RELEASE_FINAL.2 — comprehensive-review:full-review skill vs
-  `origin/main..HEAD`, address every actionable finding (real bugs only;
-  document deferred nits in `docs/POSTREL.md`).
+- [ ] [WAIT-REVIEW] M_RELEASE_FINAL.2 — comprehensive-review dispatched
+  in background against origin/main..HEAD (agent id a08692ccb55b41f87,
+  opus). Findings fold into a follow-on commit before squash-merge.
 - [x] M_RELEASE_FINAL.3 — CHANGELOG 0.3.0 — every band documented
   (M_GAMEPLAY/M_CONSTRUCTION/M_COMBAT_POLISH/M_ARCHETYPE/M_DATA/M_AUDIO/
   M_AI_DEPTH/M_MOBILE/M_BALANCE/M_ACCESS/M_TITLE).
-- [ ] M_RELEASE_FINAL.4 — PR description rewrite — sum the journey
-  M6→M7→M8→M9→M_GAMEPLAY→...→M_RELEASE_FINAL; one paragraph per phase.
+- [x] M_RELEASE_FINAL.4 — PR #1 title + body rewritten to full-game
+  release scope; CHANGELOG 0.3.0 referenced; deferred items marked
+  WAIT-ART / WAIT-DEVICE with reasons.
 - [x] M_RELEASE_FINAL.5 — `pnpm verify` clean (typecheck + lint + format
   + 293 tests). test:browser + test:e2e + test:visual continue running
   via PR CI on the branch.
-- [ ] M_RELEASE_FINAL.6 — squash-merge to main; confirm cd.yml deploys
-  GitHub Pages + APK artefact; flip Status to RELEASED.
+- [ ] [WAIT-CI+REVIEW] M_RELEASE_FINAL.6 — squash-merge to main; confirm
+  cd.yml deploys GitHub Pages + APK artefact; flip Status to RELEASED.
+  Blocked on PR #1 CI green + comprehensive review findings absorbed.
