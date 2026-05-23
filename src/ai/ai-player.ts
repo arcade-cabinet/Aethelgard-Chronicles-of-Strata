@@ -1,7 +1,6 @@
 import { GameEntity, Goal, GoalEvaluator, Think } from 'yuka';
 import { hexNeighbors, parseHexKey } from '@/core/hex';
 import {
-  AssignedJob,
   Building,
   type BuildingType,
   type Faction,
@@ -334,11 +333,6 @@ class TrainGoal extends Goal<AiPlayer> {
     if (ok) owner.lastGoal = `train:${this.role}`;
   }
 }
-
-// AssignedJob import is reserved for future fine-grained goals (e.g. assign
-// idle peon to a specific consumer); kept in the import set so adding a goal
-// later is a one-line trait change.
-void AssignedJob;
 
 // ---------------------------------------------------------------------------
 // Resign evaluator + goal (M_MODES.10) — AI surrender when starved out.

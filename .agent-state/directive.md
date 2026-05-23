@@ -907,15 +907,15 @@ bug).
 
 #### Category 9 — Dead code / unused exports
 
-- [ ] M_MICRO.9.1 — `ai-player.ts:340` remove
+- [x] M_MICRO.9.1 — `ai-player.ts:340` remove
   `void AssignedJob;` + the dead import.
-- [ ] M_MICRO.9.2 — `rules/gates.ts:54` remove
+- [x] M_MICRO.9.2 — `rules/gates.ts:54` remove
   `void MoverBehavior;` + import.
-- [ ] M_MICRO.9.3 — `NewGameModal.tsx:115` remove
+- [x] M_MICRO.9.3 — `NewGameModal.tsx:115` remove
   `void DEFAULT_MAP_SIZE;` + import.
-- [ ] M_MICRO.9.4 — `RainParticles.tsx:52-53` drop dead
+- [x] M_MICRO.9.4 — `RainParticles.tsx:52-53` drop dead
   `?? 0` on Float32Array index.
-- [ ] M_MICRO.9.5 — strip obvious doc-comments in
+- [x] M_MICRO.9.5 — strip obvious doc-comments in
   RainParticles + RallyMarker (keep load-bearing determinism note).
 
 #### Category 10 — Inline-styled JSX > 50 LOC

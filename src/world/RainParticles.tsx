@@ -47,6 +47,11 @@ export function RainParticles({ game }: { game: GameState }) {
     if (!points.visible) return;
     const attr = geometry.getAttribute('position') as BufferAttribute;
     const arr = attr.array as Float32Array;
+    // M_MICRO.9.4 — `?? 0` is load-bearing under tsconfig's
+    // `noUncheckedIndexedAccess`: every Float32Array element type is
+    // `number | undefined` at the type system layer, even though the
+    // runtime never produces undefined here (index is bounded by
+    // DROP_COUNT * 3 = array length). Leave the fallback in.
     for (let i = 0; i < DROP_COUNT; i++) {
       const yi = i * 3 + 1;
       arr[yi] = (arr[yi] ?? 0) - FALL_SPEED * delta;

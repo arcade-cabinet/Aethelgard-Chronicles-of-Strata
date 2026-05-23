@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useRef, useState } from 'react';
-import { availableMapSizes, DEFAULT_MAP_SIZE, MAP_SIZES, type MapSizeKey } from '@/core/map-size';
+import { availableMapSizes, MAP_SIZES, type MapSizeKey } from '@/core/map-size';
 import { createEventPrng, createFreshEventSeed } from '@/core/rng';
 import { randomSeedPhrase } from '@/core/seed-phrase';
 import type { Difficulty, GameMode } from '@/game/game-state';
@@ -111,8 +111,6 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   useEffect(() => {
     setMapSize(presetFor(mode).mapSize);
   }, [mode]);
-  // Keep DEFAULT_MAP_SIZE import live (it's referenced as a fallback elsewhere).
-  void DEFAULT_MAP_SIZE;
 
   useEffect(() => {
     void availableMapSizes().then(setSizeKeys);
