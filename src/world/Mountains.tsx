@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { TILE_HEIGHT } from '@/config/world';
 import type { BoardData } from '@/core/board';
 import { axialToWorld } from '@/core/hex';
+import { biomeFlagsFor } from '@/rules/biome-flags';
 
 /** A placed mountain peak. */
 interface Peak {
@@ -29,7 +30,12 @@ export function Mountains({ board }: { board: BoardData }) {
   const peaks = useMemo<Peak[]>(() => {
     const out: Peak[] = [];
     for (const tile of board.tiles.values()) {
-      if (tile.level < 5) continue;
+      // M_REGISTRY.10 — peak placement driven by per-biome `peakLevel`
+      // slot. HIGHLAND + MOUNTAIN both place peaks at level >= 5;
+      // other biomes never (peakLevel = null). Future tribes / map
+      // types can opt biomes in/out without code edits.
+      const peakLevel = biomeFlagsFor(tile.type).peakLevel;
+      if (peakLevel === null || tile.level < peakLevel) continue;
       const { x, z } = axialToWorld(tile.q, tile.r);
       out.push({
         key: `${tile.q},${tile.r}`,

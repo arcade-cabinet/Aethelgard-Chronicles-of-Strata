@@ -560,7 +560,7 @@ the smallest end-to-end proof, then drain in dependency order.
   (paintBeachRing / Mountain / Channel / Lake / Desert) + assignBiome
   into ONE `runGenTimePass(board, slots)` iterating slot membership
   + dispatching per slot kind.
-- [ ] M_REGISTRY.10 — `Mountains.tsx` (peak placement)
+- [x] M_REGISTRY.10 — `Mountains.tsx` (peak placement)
   + `Crossings.tsx` (ramp placement) join the gen-time pass — both
   are AccretesProps consumers, not bespoke renderers.
 - [x] M_REGISTRY.11 — `Roads.tsx` MATERIAL_COLOR table +
