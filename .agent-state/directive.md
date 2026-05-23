@@ -1522,9 +1522,9 @@ local-review-trio after each ~5-item batch.
 
 **Storage (6-9)**
 - [ ] [HIGH] M_AUDIT2.SEC2.6 — Persistence.reset() to delete DB + jeep-sqlite element
-- [ ] [MED] M_AUDIT2.SEC2.7 — saves row count cap (>N delete oldest) + QuotaExceededError UI surface
+- [x] [MED] M_AUDIT2.SEC2.7 — saves row count cap (>N delete oldest) + QuotaExceededError UI surface
 - [ ] [MED] M_AUDIT2.SEC2.8 — DB_NAME prefix with appId slug + version suffix
-- [ ] [MED] M_AUDIT2.SEC2.9 — cap row.snapshot.length pre-JSON.parse (2MB)
+- [x] [MED] M_AUDIT2.SEC2.9 — cap row.snapshot.length pre-JSON.parse (2MB)
 
 **Supply chain (10-15)**
 - [ ] [HIGH] M_AUDIT2.SEC2.10 — exact-pin all ^/~ in package.json (M_SEC.28 deferred — close it)
@@ -1536,11 +1536,11 @@ local-review-trio after each ~5-item batch.
 
 **Build/CI (16-22)**
 - [ ] [HIGH] M_AUDIT2.SEC2.16 — Gradle cache restore-keys cross-PR poisoning — scope by branch or drop restore-keys
-- [ ] [MED] M_AUDIT2.SEC2.17 — explicit permissions: block on android-apk job
+- [x] [MED] M_AUDIT2.SEC2.17 — explicit permissions: block on android-apk job
 - [x] [MED] M_AUDIT2.SEC2.18 — debug APK upload retention-days: 7 cap
 - [ ] [HIGH] M_AUDIT2.SEC2.19 — add .github/workflows/release.yml + release-please.yml (signed APK + SBOM)
 - [ ] [HIGH] M_AUDIT2.SEC2.20 — Android release signingConfig + keystore from CI secret
-- [ ] [MED] M_AUDIT2.SEC2.21 — fork-PR gate on expensive CI steps (Playwright)
+- [x] [MED] M_AUDIT2.SEC2.21 — fork-PR gate on expensive CI steps (Playwright)
 - [x] [MED] M_AUDIT2.SEC2.22 — CI guard `git diff --exit-code src/static-assets.ts` after build
 
 **Determinism (23-24)**
@@ -1575,7 +1575,7 @@ local-review-trio after each ~5-item batch.
 **Frontend post-CSP (42-45)**
 - [ ] [MED] M_AUDIT2.SEC2.42 — Trusted Types opt-in via CSP (require-trusted-types-for 'script')
 - [ ] [MED] M_AUDIT2.SEC2.43 — COOP/COEP/Referrer-Policy headers via WebView interceptor (Android)
-- [ ] [LOW] M_AUDIT2.SEC2.44 — CI grep blocking cdn./https:// in index.html (post-CSP defence)
+- [x] [LOW] M_AUDIT2.SEC2.44 — CI grep blocking cdn./https:// in index.html (post-CSP defence)
 - [x] [LOW] M_AUDIT2.SEC2.45 — Permissions-Policy meta (camera=() etc deny-list)
 
 **Misc (46-50)**

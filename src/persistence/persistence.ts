@@ -179,15 +179,34 @@ async function ensureJeepSqliteElement(): Promise<void> {
   await customElements.whenDefined('jeep-sqlite');
 }
 
+/**
+ * Hard cap on snapshot JSON length (M_AUDIT2.SEC2.9). A tampered
+ * SQLite row (rooted device, sibling-app sideload, future cloud-save
+ * receiving attacker-controlled payload) with a multi-MB JSON blob
+ * would pin a worker thread on JSON.parse BEFORE the entity-count
+ * cap (M_SEC.11) runs. 2 MB leaves significant headroom for a Huge-
+ * map snapshot (typical is ~50-200 KB) while bounding the parse cost.
+ */
+const MAX_SNAPSHOT_BYTES = 2 * 1024 * 1024;
+
 /** Map a raw sqlite row (typed `any` by the driver) to a SaveRecord. */
 // biome-ignore lint/suspicious/noExplicitAny: capacitor-sqlite values are untyped
 function rowToSaveRecord(row: any): SaveRecord {
+  const snapshotStr = row.snapshot as string;
+  if (typeof snapshotStr !== 'string') {
+    throw new Error('persistence: snapshot column missing or non-string');
+  }
+  if (snapshotStr.length > MAX_SNAPSHOT_BYTES) {
+    throw new Error(
+      `persistence: snapshot too large (${snapshotStr.length} > ${MAX_SNAPSHOT_BYTES} bytes)`,
+    );
+  }
   return {
     id: row.id as number,
     name: row.name as string,
     seedPhrase: row.seed as string,
     savedAt: row.saved_at as string,
-    snapshot: JSON.parse(row.snapshot as string) as GameSnapshot,
+    snapshot: JSON.parse(snapshotStr) as GameSnapshot,
   };
 }
 
@@ -295,6 +314,19 @@ export function createPersistence(): Persistence {
         savedAt,
         snapshot,
       ]);
+      // M_AUDIT2.SEC2.7 — saves table row cap. A long-running auto-
+      // save loop could otherwise grow unbounded; once we exceed
+      // MAX_SAVES, delete the oldest rows by saved_at. AutoSave
+      // already UPSERTs by name so it doesn't contribute multiple
+      // rows, but a user spamming "save with new name" or a future
+      // bug could.
+      const MAX_SAVES = 100;
+      await db.run(
+        `DELETE FROM saves WHERE id IN (
+           SELECT id FROM saves ORDER BY saved_at DESC LIMIT -1 OFFSET ?
+         );`,
+        [MAX_SAVES],
+      );
     },
 
     async load(id: number): Promise<SaveRecord | null> {

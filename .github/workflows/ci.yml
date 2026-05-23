@@ -48,9 +48,16 @@ jobs:
       # (tests/unit/asset-manifest.test.ts).
       - name: Unit tests
         run: pnpm test
-      - name: Install Playwright
+      # M_AUDIT2.SEC2.21 — skip Playwright deps install on fork PRs.
+      # Browser tests run an attacker-controlled bundle inside a real
+      # Chromium; the install step is expensive (CI minutes) and the
+      # browser test surface itself could be weaponised. Maintainer
+      # PRs (same repo) still run the full browser suite.
+      - name: Install Playwright (maintainer PRs + push only)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: pnpm exec playwright install --with-deps chromium
-      - name: Browser tests
+      - name: Browser tests (maintainer PRs + push only)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: pnpm test:browser
       - name: Build web
         run: pnpm build
@@ -69,6 +76,17 @@ jobs:
       # produce a spurious CI failure (reviewer finding).
       - name: Static assets file is deterministic
         run: git diff --exit-code src/static-assets.ts
+      # M_AUDIT2.SEC2.44 — defense-in-depth post-CSP: no contributor
+      # may add cross-origin script/style/font/image references to
+      # index.html. The CSP `default-src 'self'` would block them at
+      # runtime; this fails the PR at CI so the policy intent is
+      # version-controlled.
+      - name: No third-party origins in index.html
+        run: |
+          if grep -nE 'https?://' index.html; then
+            echo "::error::index.html contains a cross-origin URL — CSP forbids this. Self-host the asset."
+            exit 1
+          fi
       - name: E2E tests
         run: pnpm test:e2e
       # M_SEC.16 — skip artifact upload on fork PRs. Fork PRs run
@@ -116,6 +134,11 @@ jobs:
   android-apk:
     name: Build debug APK
     runs-on: ubuntu-latest
+    # M_AUDIT2.SEC2.17 — explicit job-level permissions block (defense
+    # in depth; workflow-level read can be overridden by a future
+    # contributor without anyone noticing).
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
