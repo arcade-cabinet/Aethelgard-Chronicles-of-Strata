@@ -1427,14 +1427,14 @@ local-review-trio after each ~5-item batch.
 - [x] M_AUDIT2.ARCH.4 — ResourceNodes.tsx NODE_MESH+NODE_TINT → src/rules/resource-profiles.ts (collapse with ECONOMY.harvestYield)
 - [x] M_AUDIT2.ARCH.5 — weather.ts WEATHER_LABEL+WEATHER_SPEED_MULTIPLIER → WEATHER_PROFILES record
 - [x] M_AUDIT2.ARCH.6 — extract WorldBadge.tsx; CombatText/ResourceText/BuilderBadge/HealthBillboard become 5-line wrappers
-- [ ] M_AUDIT2.ARCH.7 — implement SKINS[faction].audio Skin slot (already in JSDoc)
+- [x] M_AUDIT2.ARCH.7 — implement SKINS[faction].audio Skin slot (already in JSDoc)
 
 **Magic numbers in hot paths (8-18)**
 - [x] M_AUDIT2.ARCH.8 — AI_VISION_RADIUS → config/combat.ts difficulty.aiVisionRadius
 - [x] M_AUDIT2.ARCH.9 — PULSE_SECONDS → config/combat.ts difficulty.encroachmentGraceSeconds
-- [ ] M_AUDIT2.ARCH.10 — FIRE_CADENCE (1.2) → OffensiveBehavior trait OR BUILDING_PROFILES.behaviors.offensive.cadence
+- [x] M_AUDIT2.ARCH.10 — FIRE_CADENCE (1.2) → OffensiveBehavior trait OR BUILDING_PROFILES.behaviors.offensive.cadence
 - [x] M_AUDIT2.ARCH.11 — PROJECTILE_LIFETIME per-kind table in projectiles.ts
-- [ ] M_AUDIT2.ARCH.12 — particle-archetypes tuning constants → ParticleEmitterSpec.tuning field
+- [x] M_AUDIT2.ARCH.12 — particle-archetypes tuning constants → ParticleEmitterSpec.tuning field
 - [x] M_AUDIT2.ARCH.13 — AUTO_SAVE_INTERVAL → config/persistence.ts
 - [x] M_AUDIT2.ARCH.14 — FIXED_DT + MAX_STEPS_PER_FRAME → config/world.ts sim:{}
 - [x] M_AUDIT2.ARCH.15 — BASE_UNIT_VISION_RADIUS + UNIT_CONE_HALF_ANGLE → config/world.ts vision:{}
@@ -1450,18 +1450,18 @@ local-review-trio after each ~5-item batch.
 - [x] M_AUDIT2.ARCH.23 — Mountains.tsx hardcoded fallback level=5 even with peakLevel slot — drop fallback
 
 **Code-shape duplication (24-29)**
-- [ ] M_AUDIT2.ARCH.24 — useFloatingPopups<T> hook (CombatText+ResourceText share lifecycle)
-- [ ] M_AUDIT2.ARCH.25 — usePolledSnapshot<T> hook (ResourceBar+SelectionPanel rAF poll)
+- [x] M_AUDIT2.ARCH.24 — useFloatingPopups<T> hook (CombatText+ResourceText share lifecycle)
+- [x] M_AUDIT2.ARCH.25 — usePolledSnapshot<T> hook (ResourceBar+SelectionPanel rAF poll)
 - [x] M_AUDIT2.ARCH.26 — useAsset(logicalId) helper wrapping useGLTF(assets.url(id))
-- [ ] M_AUDIT2.ARCH.27 — codegen Decoration's 18 useGLTF + DECO_IDS from PALETTES single source
-- [ ] M_AUDIT2.ARCH.28 — once-per-tick buildFactionPositionsIndex used by encroachment/job-routing/ai
-- [ ] M_AUDIT2.ARCH.29 — useGameStateSubscription<T> hook (RallyMarker, GameCanvas wrappers)
+- [x] M_AUDIT2.ARCH.27 — codegen Decoration's 18 useGLTF + DECO_IDS from PALETTES single source
+- [x] M_AUDIT2.ARCH.28 — once-per-tick buildFactionPositionsIndex used by encroachment/job-routing/ai
+- [x] M_AUDIT2.ARCH.29 — useGameStateSubscription<T> hook (RallyMarker, GameCanvas wrappers)
 
 **Coupling/boundary (30-33)**
 - [x] M_AUDIT2.ARCH.30 — balance-audit.ts imports from rules/ (core→rules upward dep) — fix or document
-- [ ] M_AUDIT2.ARCH.31 — encroachment.ts emits to audio directly — replace with lastEncroachmentEvents[]
-- [ ] M_AUDIT2.ARCH.32 — ui-sound-emitter singleton → AudioContext.Provider
-- [ ] M_AUDIT2.ARCH.33 — FactionBase reads koota traits directly — document or extract projection
+- [x] M_AUDIT2.ARCH.31 — encroachment.ts emits to audio directly — replace with lastEncroachmentEvents[]
+- [x] M_AUDIT2.ARCH.32 — ui-sound-emitter singleton → AudioContext.Provider
+- [x] M_AUDIT2.ARCH.33 — FactionBase reads koota traits directly — document or extract projection
 
 **Spec drift (34-40)**
 - [x] M_AUDIT2.ARCH.34 — spec 95 says Preferences; code uses SQLite — pick truth, fix loser
@@ -1487,28 +1487,28 @@ local-review-trio after each ~5-item batch.
 **Per-tick perf (51-56)**
 - [x] M_AUDIT2.ARCH.51 — encroachment per-tick `new Set()` ×2 — hoist to module + .clear()
 - [x] M_AUDIT2.ARCH.52 — job-routing inner-loop per-peon `new Set` — hoist outside loop
-- [ ] M_AUDIT2.ARCH.53 — ai-director/ai-player multiple world.query — pass factionIndex from runEconomyTick
+- [x] M_AUDIT2.ARCH.53 — ai-director/ai-player multiple world.query — pass factionIndex from runEconomyTick
 - [x] M_AUDIT2.ARCH.54 — FactionBase placed useMemo broken dep (Map ref) — generation key (dup of .22)
 - [x] M_AUDIT2.ARCH.55 — combat.ts builds byId Map every tick — keep between ticks
 - [x] M_AUDIT2.ARCH.56 — Decoration buildSitesKey joined-string per render — generation counter
 
 **Architectural debt (57-62)**
-- [ ] M_AUDIT2.ARCH.57 — Combat resolve scattered (combat-math/damage/combat/offensive-behavior) — rules/combat-resolve.ts as single source
-- [ ] M_AUDIT2.ARCH.58 — Audio 5-file fan-out + singleton — write audio/spec.md + refactor to one service via context
-- [ ] M_AUDIT2.ARCH.59 — Persistence 5-file overlap — split storage/snapshot/session
-- [ ] M_AUDIT2.ARCH.60 — commands.ts 453 LOC owns 7 verbs — split commands/build|train|move|research|turn.ts
-- [ ] M_AUDIT2.ARCH.61 — game-state.ts 770 LOC — split state-shape/state-init/tick
-- [ ] M_AUDIT2.ARCH.62 — addFaction(id, skin, baseAttrs) builder for per-faction record init
+- [x] M_AUDIT2.ARCH.57 — Combat resolve scattered (combat-math/damage/combat/offensive-behavior) — rules/combat-resolve.ts as single source
+- [x] M_AUDIT2.ARCH.58 — Audio 5-file fan-out + singleton — write audio/spec.md + refactor to one service via context
+- [x] M_AUDIT2.ARCH.59 — Persistence 5-file overlap — split storage/snapshot/session
+- [x] M_AUDIT2.ARCH.60 — commands.ts 453 LOC owns 7 verbs — split commands/build|train|move|research|turn.ts
+- [x] M_AUDIT2.ARCH.61 — game-state.ts 770 LOC — split state-shape/state-init/tick
+- [x] M_AUDIT2.ARCH.62 — addFaction(id, skin, baseAttrs) builder for per-faction record init
 
 **Production-readiness (63-71)**
-- [ ] M_AUDIT2.ARCH.63 — wider ErrorBoundary scope (per-panel wrap)
+- [x] M_AUDIT2.ARCH.63 — wider ErrorBoundary scope (per-panel wrap)
 - [x] M_AUDIT2.ARCH.64 — reportError(err, context) facade in src/lib/telemetry.ts (no-op default)
-- [ ] M_AUDIT2.ARCH.65 — extract HUD strings to src/hud/strings.ts (i18n surface)
+- [x] M_AUDIT2.ARCH.65 — extract HUD strings to src/hud/strings.ts (i18n surface)
 - [x] M_AUDIT2.ARCH.66 — snapshot migration map (dup of .36 — track here for prod-readiness lens)
-- [ ] M_AUDIT2.ARCH.67 — <LoadingScreen progress={loaded/total}> Suspense fallback
-- [ ] M_AUDIT2.ARCH.68 — src/native/capacitor-lifecycle.ts (appStateChange + backButton)
+- [x] M_AUDIT2.ARCH.67 — <LoadingScreen progress={loaded/total}> Suspense fallback
+- [x] M_AUDIT2.ARCH.68 — src/native/capacitor-lifecycle.ts (appStateChange + backButton)
 - [x] M_AUDIT2.ARCH.69 — AudioContext resume on visibilitychange (Howler unhide silence)
-- [ ] M_AUDIT2.ARCH.70 — @capacitor-community/sqlite still imported — pick truth (Preferences vs SQLite)
+- [x] M_AUDIT2.ARCH.70 — @capacitor-community/sqlite still imported — pick truth (Preferences vs SQLite)
 - [x] M_AUDIT2.ARCH.71 — <SaveCorruptedModal> before silent reseed
 
 #### M_AUDIT2.SEC2 — security + production hardening (50)
