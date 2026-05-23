@@ -32,12 +32,12 @@ describe('UNIT_PROFILES + MILITARY_ROLES derivation', () => {
     }
   });
 
-  it('the only civilians are Peon and Settler', () => {
+  it('civilians cover Peon + Settler + Scout (M_EXPANSION.A.27)', () => {
     const civilians = Object.entries(UNIT_PROFILES)
       .filter(([, p]) => p.combatRole === 'civilian')
       .map(([role]) => role)
       .sort();
-    expect(civilians).toEqual(['Peon', 'Settler']);
+    expect(civilians).toEqual(['Peon', 'Scout', 'Settler']);
   });
 
   it('every profile carries the required slot tuple', () => {
@@ -53,12 +53,14 @@ describe('UNIT_PROFILES + MILITARY_ROLES derivation', () => {
     }
   });
 
-  it('every non-Peon civilian has founder=true XOR harvester=true (one civilian shape per role)', () => {
-    for (const [, p] of Object.entries(UNIT_PROFILES)) {
+  it('civilian shape: Peon harvests, Settler founds, Scout neither (recon)', () => {
+    // M_EXPANSION.A.27 — Scout breaks the original 'every civilian is
+    // harvester XOR founder' invariant by being neither (pure recon).
+    // The relaxed invariant: civilians are at most ONE of harvester /
+    // founder (i.e. never both true; either zero or one is allowed).
+    for (const [role, p] of Object.entries(UNIT_PROFILES)) {
       if (p.combatRole !== 'civilian') continue;
-      // Peon is harvester+!founder; Settler is founder+!harvester.
-      // A civilian with neither is just a target dummy — flag if added.
-      expect(p.harvester || p.founder).toBe(true);
+      expect(`${role}:${p.harvester && p.founder}`).toBe(`${role}:false`);
     }
   });
 
