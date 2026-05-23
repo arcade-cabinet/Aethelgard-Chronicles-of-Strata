@@ -184,21 +184,31 @@ export const SKINS: Record<Faction, Skin> = {
       TownHall: { logicalId: 'structures.town-hall', scale: 1.5, yOffset: 0.15 },
       Farm: { logicalId: 'structures.farm', scale: 0.65, yOffset: 0 },
       House: { logicalId: 'structures.farm', scale: 0.5, yOffset: 0 },
-      Granary: { logicalId: 'structures.barracks', scale: 0.55, yOffset: 0 },
+      // M_EXPANSION.A.8 — Granary uses Fantasy Town Kit `windmill.glb`.
+      // Real mill silhouette beats the down-scaled barracks placeholder.
+      Granary: { logicalId: 'structures.granary', scale: 0.7, yOffset: 0 },
       Barracks: { logicalId: 'structures.barracks', scale: 0.9, yOffset: 0 },
-      Watchtower: { logicalId: 'structures.town-hall', scale: 0.7, yOffset: 0 },
-      Wall: { logicalId: 'structures.portal-fence', scale: 1.1, yOffset: 0 },
-      // Wonder (M_FEATURE.4) — visually a scaled Town Hall pending dedicated asset.
-      Wonder: { logicalId: 'structures.town-hall', scale: 1.3, yOffset: 0 },
-      // Library (M_FEATURE.3) — placeholder uses Granary footprint, scaled smaller.
-      Library: { logicalId: 'structures.barracks', scale: 0.6, yOffset: 0 },
+      // M_EXPANSION.A.1 — dedicated Castle Kit watchtower mesh; was a
+      // downscaled town-hall placeholder. Real tower silhouette.
+      Watchtower: { logicalId: 'structures.watchtower-stone', scale: 0.7, yOffset: 0 },
+      // M_EXPANSION.A.2 — Wall now uses Castle Kit `wall-narrow.glb`
+      // (stone slab) instead of the portal-fence picket placeholder.
+      Wall: { logicalId: 'structures.wall-stone', scale: 1.1, yOffset: 0 },
+      // M_EXPANSION.A.5 — Wonder mounts a Castle Kit keep silhouette
+      // (was the literal town-hall scaled up). Distinct + imposing.
+      Wonder: { logicalId: 'structures.wonder-keep', scale: 1.2, yOffset: 0 },
+      // M_EXPANSION.A.7 — Library uses Fantasy Town Kit `watermill.glb`.
+      // Distinct silhouette from Granary so the player can tell research
+      // buildings from food buildings at a glance.
+      Library: { logicalId: 'structures.library', scale: 0.7, yOffset: 0 },
     },
-    // Player base intentionally has NO decorative props — its identity
-    // emerges from the placed-structures loop (Farm, Barracks, House,
-    // etc.) the player builds during play. Adding decorative props
-    // would clash with player-built structures landing on adjacent
-    // tiles.
-    baseProps: [],
+    // M_EXPANSION.A.4 — single faction banner immediately behind the
+    // Town Hall (visible from default camera framing). Other decorative
+    // props stay off the player base so player-built structures landing
+    // on adjacent tiles don't visually clash.
+    baseProps: [
+      { logicalId: 'structures.banner-faction', x: 0, y: 0, z: -1.2, scale: 0.8, rotationY: 0 },
+    ],
     rig: SHARED_RIG_TODAY,
     minimap: { unitColor: '#22c55e', baseColor: '#38bdf8' },
     zoneBorderColor: '#38bdf8',
@@ -214,15 +224,19 @@ export const SKINS: Record<Faction, Skin> = {
     structure: {
       // the enemy hub is the graveyard crypt; support structures reuse the
       // graveyard kit so the enemy base reads as a coherent necropolis.
-      TownHall: { logicalId: 'structures.portal-crypt', scale: 1.8, yOffset: 0.15 },
+      // M_EXPANSION.A.13 — enemy TownHall now uses the Graveyard Kit
+      // `crypt.glb` (more imposing than the small portal-crypt).
+      TownHall: { logicalId: 'structures.crypt', scale: 1.5, yOffset: 0.15 },
       Farm: { logicalId: 'nature.gravestone.round', scale: 1.0, yOffset: 0 },
       House: { logicalId: 'nature.gravestone.round', scale: 0.8, yOffset: 0 },
       Granary: { logicalId: 'structures.portal-crypt', scale: 0.7, yOffset: 0 },
       Barracks: { logicalId: 'structures.portal-fence', scale: 1.0, yOffset: 0 },
       Watchtower: { logicalId: 'nature.gravestone.cross', scale: 1.2, yOffset: 0 },
       Wall: { logicalId: 'structures.portal-fence', scale: 1.1, yOffset: 0 },
-      // Wonder (M_FEATURE.4) — enemy variant; scaled portal-crypt.
-      Wonder: { logicalId: 'structures.portal-crypt', scale: 1.6, yOffset: 0 },
+      // M_EXPANSION.A.20 — Wonder now mounts the Tower Defense cannon
+      // (literal siege-piece silhouette signals 'final game-changer
+      // building' way better than another reskinned crypt).
+      Wonder: { logicalId: 'structures.wonder-cannon', scale: 1.1, yOffset: 0 },
       // Library (M_FEATURE.3) — enemy variant; gravestone footprint.
       Library: { logicalId: 'nature.gravestone.cross', scale: 0.9, yOffset: 0 },
     },

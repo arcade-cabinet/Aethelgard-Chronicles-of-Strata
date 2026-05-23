@@ -83,11 +83,19 @@ export type StaticAssetPath =
   'assets/nature/tree/pine-tall-a.glb' |
   'assets/nature/tree/small-a.glb' |
   'assets/sql-wasm.wasm' |
+  'assets/structures/banner-faction.glb' |
   'assets/structures/barracks.glb' |
+  'assets/structures/crypt.glb' |
   'assets/structures/farm.glb' |
+  'assets/structures/granary.glb' |
+  'assets/structures/library.glb' |
   'assets/structures/portal-crypt.glb' |
   'assets/structures/portal-fence.glb' |
   'assets/structures/town-hall.glb' |
+  'assets/structures/wall-stone.glb' |
+  'assets/structures/watchtower-stone.glb' |
+  'assets/structures/wonder-cannon.glb' |
+  'assets/structures/wonder-keep.glb' |
   'sql-wasm.wasm';
 
 /**
@@ -214,11 +222,19 @@ const assets = new Set<string>([
   'assets/nature/tree/pine-tall-a.glb',
   'assets/nature/tree/small-a.glb',
   'assets/sql-wasm.wasm',
+  'assets/structures/banner-faction.glb',
   'assets/structures/barracks.glb',
+  'assets/structures/crypt.glb',
   'assets/structures/farm.glb',
+  'assets/structures/granary.glb',
+  'assets/structures/library.glb',
   'assets/structures/portal-crypt.glb',
   'assets/structures/portal-fence.glb',
   'assets/structures/town-hall.glb',
+  'assets/structures/wall-stone.glb',
+  'assets/structures/watchtower-stone.glb',
+  'assets/structures/wonder-cannon.glb',
+  'assets/structures/wonder-keep.glb',
   'sql-wasm.wasm'
 ]);
 

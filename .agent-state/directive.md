@@ -1678,23 +1678,23 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 ### M_EXPANSION.ASSETS — untapped references/ kits (1-30)
 
 **Castle Kit (1-6)** — currently zero usage; available for Wonder + Walls + advanced Watchtower variants
-- [ ] [HIGH] M_EXPANSION.A.1 — ingest Castle Kit `tower-square-top-color.glb` as `structures.watchtower-castle`; expose as Watchtower skin upgrade
-- [ ] [HIGH] M_EXPANSION.A.2 — ingest Castle Kit `wall-narrow*.glb` set as `structures.wall-stone`; replace generic Wall block
+- [x] [HIGH] M_EXPANSION.A.1 — ingest Castle Kit `tower-square-top-color.glb` as `structures.watchtower-castle`; expose as Watchtower skin upgrade
+- [x] [HIGH] M_EXPANSION.A.2 — ingest Castle Kit `wall-narrow*.glb` set as `structures.wall-stone`; replace generic Wall block
 - [ ] [MED]  M_EXPANSION.A.3 — Castle Kit `gate-doors.glb` as Wall->Gate composition completion mesh
 - [ ] [MED]  M_EXPANSION.A.4 — Castle Kit `flag-narrow.glb` as faction-colored base banner (SKINS[faction].baseProps.banner)
 - [ ] [LOW]  M_EXPANSION.A.5 — Castle Kit `keep.glb` as Wonder asset (no Wonder model exists today)
 - [ ] [LOW]  M_EXPANSION.A.6 — Castle Kit corner walls vs straight walls picked by neighbour count in WallSegment renderer
 
 **Fantasy Town Kit (7-12)** — Town Hall + Granary + Library candidates
-- [ ] [HIGH] M_EXPANSION.A.7 — Fantasy Town `house-block-big.glb` as Library mesh (Library currently uses a placeholder)
-- [ ] [HIGH] M_EXPANSION.A.8 — Fantasy Town `mill.glb` as Granary mesh
+- [x] [HIGH] M_EXPANSION.A.7 — Fantasy Town `house-block-big.glb` as Library mesh (Library currently uses a placeholder)
+- [x] [HIGH] M_EXPANSION.A.8 — Fantasy Town `mill.glb` as Granary mesh
 - [ ] [MED]  M_EXPANSION.A.9 — Fantasy Town `house-bricks.glb` as House mesh
 - [ ] [MED]  M_EXPANSION.A.10 — Fantasy Town `well.glb` as decoration in player base footprint
 - [ ] [LOW]  M_EXPANSION.A.11 — Fantasy Town `lamp-post.glb` as night-time light source (auto-on after sunset)
 - [ ] [LOW]  M_EXPANSION.A.12 — Fantasy Town `chimney-smoke` particle: hook ParticleEmitter to House meshes (smoke = inhabited signal)
 
 **Graveyard Kit (13-18)** — enemy base skin upgrade + necropolis biome
-- [ ] [HIGH] M_EXPANSION.A.13 — Graveyard `crypt-small-roof.glb` as enemy TownHall skin (SKINS.enemy.structure.TownHall)
+- [x] [HIGH] M_EXPANSION.A.13 — Graveyard `crypt-small-roof.glb` as enemy TownHall skin (SKINS.enemy.structure.TownHall)
 - [ ] [MED]  M_EXPANSION.A.14 — Graveyard `iron-fence-bar.glb` as enemy ZoneBorder fence variant
 - [ ] [MED]  M_EXPANSION.A.15 — Graveyard `pine-crooked.glb` as decorative density entry in necropolis biome
 - [ ] [MED]  M_EXPANSION.A.16 — Graveyard `gravestone-*.glb` as base-accretion props around enemy spawn
@@ -1702,7 +1702,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [LOW]  M_EXPANSION.A.18 — Graveyard `mushrooms.glb` as patchy decoration around necropolis
 
 **Tower Defense Kit (19-24)** — military variety
-- [ ] [HIGH] M_EXPANSION.A.19 — Tower Defense `tower-square-bottom-color.glb` as upgraded Watchtower variant (cost: stone + science)
+- [x] [HIGH] M_EXPANSION.A.19 — Tower Defense `tower-square-bottom-color.glb` as upgraded Watchtower variant (cost: stone + science)
 - [ ] [MED]  M_EXPANSION.A.20 — Tower Defense `weapon-cannon.glb` as Wonder secondary mesh + projectile source
 - [ ] [MED]  M_EXPANSION.A.21 — Tower Defense `crystal-large.glb` as Mana resource node (introduces 4th resource — already slot-extensible per RESOURCE_DISPLAY)
 - [ ] [LOW]  M_EXPANSION.A.22 — Tower Defense `enemy-rat.glb` as low-tier raid unit (faster than Goblin, lower hp)
@@ -1710,8 +1710,8 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [LOW]  M_EXPANSION.A.24 — Tower Defense `tile-end-round.glb` as cul-de-sac road piece
 
 **KayKit Adventurers 2.0 EXTRA (25-30)** — heroes haven't all been wired
-- [ ] [HIGH] M_EXPANSION.A.25 — audit KayKit_Adventurers_2.0_EXTRA roster vs UNIT_PROFILES; list every character with no UNIT_PROFILES row
-- [ ] [HIGH] M_EXPANSION.A.26 — wire Mage (already in CC0 pack) as a Wizard unit type (Barracks tech tree extension)
+- [x] [HIGH] M_EXPANSION.A.25 — audit KayKit_Adventurers_2.0_EXTRA roster vs UNIT_PROFILES; list every character with no UNIT_PROFILES row
+- [x] [HIGH] M_EXPANSION.A.26 — wire Mage (already in CC0 pack) as a Wizard unit type (Barracks tech tree extension)
 - [ ] [MED]  M_EXPANSION.A.27 — wire Rogue as a scout unit (high vision, low hp, no attack)
 - [ ] [MED]  M_EXPANSION.A.28 — Adventurers EXTRA shields/weapons subset for attachment points on Knight/Footman
 - [ ] [LOW]  M_EXPANSION.A.29 — character variant tinting via the shared Rig_Medium retargeting pipeline (cosmetic 5-color palette per faction)
