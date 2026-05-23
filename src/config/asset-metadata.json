@@ -931,6 +931,15 @@
     "pack": "PixelLoops Audio — Footsteps Pack",
     "license": "Royalty-Free"
   },
+  "audio.sfx.magic-cast": {
+    "id": "audio.sfx.magic-cast",
+    "path": "assets/audio/sfx/magic-cast.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops Fantasy Magic Spell SFX",
+    "license": "Royalty-Free"
+  },
   "audio.sfx.chop": {
     "id": "audio.sfx.chop",
     "path": "assets/audio/sfx/chop.ogg",

@@ -71,6 +71,12 @@ if (typeof window !== 'undefined') {
   document.addEventListener('pointerdown', unlock, { once: true, passive: true });
   document.addEventListener('keydown', unlock, { once: true });
   document.addEventListener('touchstart', unlock, { once: true, passive: true });
+  // M_EXPANSION.AU.44 — sim → audio bridge for the magic-cast SFX
+  // (offensive-behavior fires the event when a magic projectile
+  // spawns; ui-sound-emitter takes it from here).
+  window.addEventListener('aethelgard:magic-cast', () => {
+    void import('@/audio/ui-sound-emitter').then((m) => m.emitUiSound('magic-cast'));
+  });
 }
 
 const rootEl = document.getElementById('root');

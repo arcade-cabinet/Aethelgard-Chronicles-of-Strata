@@ -53,6 +53,7 @@ export function offensiveBehaviorSystem(
     faction: Faction;
     radius: number;
     dps: number;
+    damageType: string;
   }> = [];
   for (const e of world.query(OffensiveBehavior, FactionTrait, HexPosition)) {
     const b = e.get(Building);
@@ -61,7 +62,15 @@ export function offensiveBehaviorSystem(
     const f = e.get(FactionTrait)?.faction;
     const h = e.get(HexPosition);
     if (!ob || !f || !h) continue;
-    sources.push({ e, q: h.q, r: h.r, faction: f, radius: ob.radius, dps: ob.dps });
+    sources.push({
+      e,
+      q: h.q,
+      r: h.r,
+      faction: f,
+      radius: ob.radius,
+      dps: ob.dps,
+      damageType: ob.damageType,
+    });
   }
   if (sources.length === 0) return;
 
@@ -110,6 +119,15 @@ export function offensiveBehaviorSystem(
     const start = worldAt(src.e);
     const end = worldAt(target);
     if (!start || !end) continue;
-    spawnProjectile(projectiles, projectileIdRef, start, end, 'arrow');
+    // M_EXPANSION.AU.44 — pick projectile kind from damageType so the
+    // visual matches the sim. Wizards (damageType='magic') get the
+    // 'magic' projectile + a magic-cast SFX emitted through a window
+    // event (sim is DOM-free; the HUD listener routes to emitUiSound).
+    const kind =
+      src.damageType === 'magic' ? 'magic' : src.damageType === 'siege' ? 'bolt' : 'arrow';
+    spawnProjectile(projectiles, projectileIdRef, start, end, kind);
+    if (kind === 'magic' && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('aethelgard:magic-cast'));
+    }
   }
 }

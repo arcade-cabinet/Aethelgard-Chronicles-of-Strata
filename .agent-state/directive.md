@@ -1740,7 +1740,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 
 **Footsteps + Impact + Magic SFX (43-50)** — partial usage
 - [x] [HIGH] M_EXPANSION.AU.43 — footsteps per terrain biome (grass/sand/stone) — currently single sound
-- [ ] [HIGH] M_EXPANSION.AU.44 — magic SFX pack wired to Wizard (M_EXPANSION.A.26) attack
+- [x] [HIGH] M_EXPANSION.AU.44 — magic SFX pack wired to Wizard (M_EXPANSION.A.26) attack
 - [ ] [MED]  M_EXPANSION.AU.45 — impact SFX per damageType (arrow vs sword vs magic) — currently one sound
 - [ ] [MED]  M_EXPANSION.AU.46 — shield-deflect on Footman parry chance (~10% damage→0 with deflect SFX)
 - [ ] [MED]  M_EXPANSION.AU.47 — death sound per unit type from existing footstep + impact mash-ups

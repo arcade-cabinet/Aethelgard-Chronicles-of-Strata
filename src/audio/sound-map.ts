@@ -19,6 +19,7 @@ export type GameAudioEvent =
   | 'footstep-sand'
   | 'projectile-fire'
   | 'projectile-impact'
+  | 'magic-cast'
   | 'resource-deposit'
   | 'unit-select'
   | 'unit-trained'
@@ -47,6 +48,10 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   'combat-crit': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
   'projectile-fire': { bus: 'sfx', soundId: 'audio.sfx.hit' },
   'projectile-impact': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
+  // M_EXPANSION.AU.44 — wizard spell-cast SFX (PixelLoops Fantasy
+  // Magic). Wired in projectile-spawn when the projectile's
+  // damageType is 'magic' (see ProjectileLayer / combat path).
+  'magic-cast': { bus: 'sfx', soundId: 'audio.sfx.magic-cast' },
 
   // World interaction
   'harvest-chop': { bus: 'sfx', soundId: 'audio.sfx.chop' },
