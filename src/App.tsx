@@ -4,6 +4,7 @@ import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
+import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { EndTurnButton } from '@/hud/EndTurnButton';
@@ -104,6 +105,10 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
       <GameOverModal game={game} />
+      {/* M_AUDIT2.UX.12 — single hidden aria-live region; the bus
+          (src/hud/aria-live-bus.ts) lets any sim event announce
+          accessibly without lifting state. */}
+      <AriaLiveRegion />
     </div>
   );
 }

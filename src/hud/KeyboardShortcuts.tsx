@@ -8,8 +8,8 @@ import { clearSelection } from '@/game/selection';
  * Esc-block:
  *
  * - Esc: clear selection.
- * - Arrow keys: pan camera (forwarded as wheel events on the canvas — the
- *   CameraRig already responds to wheel-zoom; the pan is a stretch goal).
+ * - Arrow keys: pan camera (dispatches 'aethelgard:pan-camera'; CameraRig
+ *   translates the controls target + camera by the {dx,dz} step. Shift = 4× speed.)
  * - + / -: zoom (wheel events on the canvas).
  *
  * The pause toggle (P) is owned by PauseControl. Tab cycling between HUD
@@ -37,11 +37,23 @@ export function KeyboardShortcuts({ game }: { game: GameState }) {
         case 'ArrowUp':
         case 'ArrowDown':
         case 'ArrowLeft':
-        case 'ArrowRight':
-          // CameraRig's drag-pan is already wired; arrow keys translate to
-          // a small synthesised pointer-drag the rig honours.
+        case 'ArrowRight': {
+          // M_AUDIT2.UX.31 — emit a pan-camera CustomEvent the
+          // CameraRig listens for. Step size is ~1 hex per press
+          // (HEX_RADIUS ≈ 1.0); shift-arrow steps 4× faster. Note:
+          // CameraRig clamps to board extents so off-edge presses
+          // become no-ops without us having to know the radius here.
           e.preventDefault();
+          const step = e.shiftKey ? 4 : 1;
+          const dx =
+            e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
+          const dz =
+            e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }),
+          );
           break;
+        }
       }
     };
     document.addEventListener('keydown', onKey);

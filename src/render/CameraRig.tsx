@@ -65,6 +65,28 @@ export function CameraRig({ viewport, boardRadius }: CameraRigProps) {
     return () => controls.removeEventListener('change', onChange);
   }, [panLimit, camera]);
 
+  // M_AUDIT2.UX.31 — wire arrow-key camera pan. KeyboardShortcuts
+  // dispatches a CustomEvent 'aethelgard:pan-camera' { dx, dz } per
+  // arrow keypress; we translate the target + camera by that vector
+  // (with clamp) and force a controls update so the change event
+  // fires and the minimap follows.
+  useEffect(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ dx: number; dz: number }>).detail;
+      if (!detail) return;
+      const t = controls.target;
+      t.x = Math.max(-panLimit, Math.min(panLimit, t.x + detail.dx));
+      t.z = Math.max(-panLimit, Math.min(panLimit, t.z + detail.dz));
+      camera.position.x += detail.dx;
+      camera.position.z += detail.dz;
+      controls.update();
+    };
+    window.addEventListener('aethelgard:pan-camera', handler);
+    return () => window.removeEventListener('aethelgard:pan-camera', handler);
+  }, [panLimit, camera]);
+
   return (
     <MapControls
       ref={controlsRef}

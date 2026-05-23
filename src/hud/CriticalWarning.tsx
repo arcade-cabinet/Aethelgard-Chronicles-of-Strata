@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { FactionBase, Health } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { announce } from './aria-live-bus';
+// M_AUDIT2.UX.33 — keyframes loaded once via CSS import; previously
+// re-mounted as inline <style> on every render of this component.
+import './critical-warning.css';
 
 /** Threshold below which the screen edges pulse red — base in critical danger. */
 const CRITICAL_FRACTION = 0.3;
@@ -31,7 +35,13 @@ export function CriticalWarning({ game }: { game: GameState }) {
       setCritical((prev) => {
         // fire the alarm chime only on the transition false → true so it
         // doesn't spam every frame while the base is below threshold
-        if (!prev && isCritical) emitUiSound('critical-alarm');
+        if (!prev && isCritical) {
+          emitUiSound('critical-alarm');
+          // M_AUDIT2.UX.12 — announce assertively on the false→true
+          // edge so SR users hear it once (the visual pulse fires
+          // continuously; the announcement does not).
+          announce('Your base is under attack — critical health', 'assertive');
+        }
         return prev === isCritical ? prev : isCritical;
       });
       raf = requestAnimationFrame(tick);
@@ -73,18 +83,6 @@ export function CriticalWarning({ game }: { game: GameState }) {
       >
         Your base is under attack — critical health
       </span>
-      <style>{`
-        @keyframes critical-pulse {
-          0% { opacity: 0.4; }
-          50% { opacity: 1; }
-          100% { opacity: 0.4; }
-        }
-        /* M_AUDIT2.UX.1 — vestibular-safe: kill the infinite pulse for
-           users who prefer reduced motion; static vignette remains. */
-        @media (prefers-reduced-motion: reduce) {
-          #critical-warning { animation: none !important; opacity: 0.85; }
-        }
-      `}</style>
     </div>
   );
 }
