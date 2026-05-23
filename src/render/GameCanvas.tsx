@@ -5,9 +5,8 @@ import type { GameState } from '@/game/game-state';
 import { CombatText } from '@/world/CombatText';
 import { Crossings } from '@/world/Crossings';
 import { Decoration } from '@/world/Decoration';
-import { EnemyBase } from '@/world/EnemyBase';
+import { FactionBase } from '@/world/FactionBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
-import { HomeBase } from '@/world/HomeBase';
 import { Mountains } from '@/world/Mountains';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
 import { RainParticles } from '@/world/RainParticles';
@@ -137,8 +136,11 @@ function Scene({
         <BuildCompleteFX game={game} />
         <SawdustFX game={game} />
         <VictoryConfetti game={game} />
-        <HomeBase game={game} />
-        <EnemyBase game={game} />
+        {/* M_REGISTRY.4 — ONE faction-symmetric base renderer mounted */}
+        {/* twice with different `faction` props. Visual divergence is */}
+        {/* 100% data (SKINS[faction] in src/rules/skins.ts), 0% code.  */}
+        <FactionBase game={game} faction="player" />
+        <FactionBase game={game} faction="enemy" />
         <Units game={game} />
       </Suspense>
       <CombatText game={game} />

@@ -36,12 +36,40 @@ export interface StructureModel {
 }
 
 /**
+ * One decorative prop placed at a fixed local-space offset around the
+ * faction's base tile (M_REGISTRY.4). Player base today has no props
+ * (the central TownHall mesh + the placed structures around it provide
+ * the visual identity); enemy base clusters gravestones + fences
+ * around the central crypt for the necropolis silhouette.
+ */
+export interface BaseProp {
+  /** Logical asset id (resolved via the typed manifest). */
+  logicalId: string;
+  /** Local-space X offset from the base tile centre. */
+  x: number;
+  /** Local-space Y offset from the base tile centre. */
+  y: number;
+  /** Local-space Z offset from the base tile centre. */
+  z: number;
+  /** Uniform scale factor. */
+  scale: number;
+  /** Y-axis rotation in radians. */
+  rotationY: number;
+}
+
+/**
  * Visual identity for one faction. New slots get added here as each
  * M_REGISTRY.* ticket lands.
  */
 export interface Skin {
   /** Per-building-type GLB + scale + yOffset (M_REGISTRY.3). */
   structure: Record<BuildingType, StructureModel>;
+  /**
+   * Decorative props placed around the faction's base tile
+   * (M_REGISTRY.4). Empty for player today; enemy clusters
+   * gravestones + fences around the central crypt.
+   */
+  baseProps: BaseProp[];
 }
 
 /**
@@ -67,6 +95,12 @@ export const SKINS: Record<Faction, Skin> = {
       // Library (M_FEATURE.3) — placeholder uses Granary footprint, scaled smaller.
       Library: { logicalId: 'structures.barracks', scale: 0.6, yOffset: 0 },
     },
+    // Player base intentionally has NO decorative props — its identity
+    // emerges from the placed-structures loop (Farm, Barracks, House,
+    // etc.) the player builds during play. Adding decorative props
+    // would clash with player-built structures landing on adjacent
+    // tiles.
+    baseProps: [],
   },
   enemy: {
     structure: {
@@ -84,6 +118,21 @@ export const SKINS: Record<Faction, Skin> = {
       // Library (M_FEATURE.3) — enemy variant; gravestone footprint.
       Library: { logicalId: 'nature.gravestone.cross', scale: 0.9, yOffset: 0 },
     },
+    // Necropolis silhouette — gravestones cluster in front of the
+    // crypt, iron fences frame the sides + rear. Positions are
+    // local-space offsets from the base tile centre (the central
+    // crypt mesh in the FactionBase central position is implicit and
+    // drawn at scale 1.4 directly by FactionBase).
+    baseProps: [
+      // Gravestones — clustered in front of the crypt.
+      { logicalId: 'nature.gravestone.cross', x: 0.6, y: 0, z: 0.4, scale: 0.9, rotationY: 0.4 },
+      { logicalId: 'nature.gravestone.round', x: -0.55, y: 0, z: 0.5, scale: 0.8, rotationY: -0.5 },
+      { logicalId: 'nature.gravestone.round', x: 0.25, y: 0, z: 0.7, scale: 0.75, rotationY: 0.1 },
+      // Iron fence sections framing the base.
+      { logicalId: 'structures.portal-fence', x: 0.9, y: 0, z: -0.1, scale: 0.8, rotationY: Math.PI / 2 },
+      { logicalId: 'structures.portal-fence', x: -0.9, y: 0, z: -0.1, scale: 0.8, rotationY: -Math.PI / 2 },
+      { logicalId: 'structures.portal-fence', x: 0, y: 0, z: -0.9, scale: 0.8, rotationY: 0 },
+    ],
   },
 };
 
