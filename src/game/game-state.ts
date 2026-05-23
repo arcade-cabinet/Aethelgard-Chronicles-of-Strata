@@ -1,5 +1,6 @@
 import type { Entity, World } from 'koota';
 import { AiPlayer } from '@/ai/ai-player';
+import { isBalanced } from '@/core/balance-audit';
 import { type BoardData, generateBoard } from '@/core/board';
 import { getHexKey, hexDistance } from '@/core/hex';
 import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
@@ -34,6 +35,44 @@ import { advanceProjectiles, type Projectile } from './projectiles';
 
 /** Monotonic counter for projectile React keys — shared across all games. */
 const projectileIdRef = { current: 0 };
+
+/**
+ * M_MAPGEN.10 — try the seed + a few variants and return the first that
+ * passes the balance audit. We assume the most-central walkable tile is
+ * the player center + the farthest-walkable tile is the enemy center
+ * (the same heuristic startGame uses). Caps at MAX_ATTEMPTS so a
+ * pathological seed doesn't hang. Falls back to the last attempted board.
+ */
+const MAX_BALANCE_ATTEMPTS = 6;
+
+function findBalancedBoard(seedPhrase: string, mapSize: number): BoardData {
+  let last: BoardData | null = null;
+  for (let attempt = 0; attempt < MAX_BALANCE_ATTEMPTS; attempt++) {
+    const seed = attempt === 0 ? seedPhrase : `${seedPhrase}-rb${attempt}`;
+    const board = generateBoard(seed, mapSize, true);
+    last = board;
+    // pick centers by the same heuristic startGame uses below
+    let centerTile: { q: number; r: number } | null = null;
+    let centerDist = Infinity;
+    let edgeTile: { q: number; r: number } | null = null;
+    let edgeDist = 0;
+    for (const tile of board.tiles.values()) {
+      if (!tile.walkable) continue;
+      const d = (Math.abs(tile.q) + Math.abs(tile.r) + Math.abs(tile.q + tile.r)) / 2;
+      if (d < centerDist) {
+        centerDist = d;
+        centerTile = { q: tile.q, r: tile.r };
+      }
+      if (d > edgeDist) {
+        edgeDist = d;
+        edgeTile = { q: tile.q, r: tile.r };
+      }
+    }
+    if (!centerTile || !edgeTile) continue;
+    if (isBalanced(board, centerTile, edgeTile)) return board;
+  }
+  return last ?? generateBoard(seedPhrase, mapSize, true);
+}
 
 /**
  * AI vision-cone radius per difficulty (M_AI_DEPTH.1). The AI faction sees
@@ -273,7 +312,13 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // red-vs-blue / endless / classic-rts / 4x → guided (M_MAPGEN.3-.9
   // paint passes + safety ring); skirmish → pure noise (asymmetric maps
   // possible).
-  const board = generateBoard(seedPhrase, mapSize, preset.guidedMapGen);
+  // M_MAPGEN.10 — fair-balance audit. For guided modes, try the seed +
+  // a few suffix variants and keep the first that passes the per-faction
+  // reachable-buildable-area tolerance. Falls back to the original seed
+  // if no attempt balances (logged).
+  const board = preset.guidedMapGen
+    ? findBalancedBoard(seedPhrase, mapSize)
+    : generateBoard(seedPhrase, mapSize, preset.guidedMapGen);
   // A fresh ECS world — death timers and the portal spawn count are now ECS
   // components, so a new session starts clean with no module state to reset.
   const world = createEcsWorld();

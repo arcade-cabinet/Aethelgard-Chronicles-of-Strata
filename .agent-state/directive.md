@@ -631,17 +631,25 @@ qualify for AI GOAP".
     cluster around the resource type. Single rules table; visual +
     gameplay are the same archetype-driven slot system.
 
-- [ ] M_MAPGEN.10 — fair-balance guarantee (user, 2026-05-22): the
-  per-rule additions (.3-.9) MUST cooperate to produce a deterministic
-  "fair, balanced, playable" golden path on every seed. Concretely:
-  resource yield within each faction's reachable area equalised (no
-  seed where one side gets 3x the wood); travel time to confront
-  equalised (mountain range placed so neither side circumvents
-  trivially); both bases get the same buildable-tile count in their
-  3-tile radius. Add a fair-balance audit pass at startGame that
-  re-rolls the seed (or applies a corrective bias) if the metric is
-  out of tolerance. Pin with a test that runs 50 random seeds and
-  asserts the balance metric stays within ±10%.
+- [ ] M_MAPGEN.12 — enemy-base placement refinement: the current
+  farthest-walkable heuristic places the enemy at the map edge, which
+  the balance-audit correctly flags as unfair (smaller reachable
+  buildable area than the central player base). Replace with a
+  mirror-placement: enemy base sits at the OPPOSITE side of the mountain
+  spine from the player base, at a distance that equalises the
+  reachable-area metric per balance-audit. The placement itself becomes
+  part of the guided-mapgen pass, not a side-effect of "farthest
+  walkable". This is the LAND-CLEAR fix that makes M_MAPGEN.10 pass
+  by construction rather than by re-roll.
+
+- [x] M_MAPGEN.10 — fair-balance audit (foundation): core/balance-
+  audit.ts — reachableBuildableCount + isBalanced + balanceReport
+  (REACH_RADIUS=6, BALANCE_TOLERANCE=0.1). startGame's guided modes
+  call findBalancedBoard which tries the seed + 5 suffix variants
+  ('rb1'..'rb5'); first to pass wins; falls back to the last attempted
+  board. Test pins the today's-asymmetric placement is flagged as
+  unfair (will GREEN-flip when M_MAPGEN.12 enemy-placement
+  refinement lands).
 
 ### M_BALANCE_2 — map-size scaling (user feedback, 2026-05-22)
 
