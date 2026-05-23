@@ -394,6 +394,104 @@ flagged. No "POST_REL" parking lot — work them now.
   decorative banner with explicit `pointerEvents: 'none'` (CriticalWarning
   vignette + PauseControl "PAUSED" banner). No raycast-blocking overlay
   remains.
+### M_AUDIT — deep multi-scale alignment audit (user, 2026-05-23)
+
+User: "i want a DEEP dive as your next directive macro, meso, micro
+combined with security, code quality, code simplification — look for
+EVERY piece of code that doesnt align to the standards for discovery
+and course correction we just established".
+
+The standards (just established in M_ARCH_UNIFY):
+  1. ONE registry — Things are tuples of archetype assignments + slot
+     values, not parallel hierarchies.
+  2. ONE gen-time pass + ONE runtime pass that iterate slot membership.
+  3. JSON config / typed TS loader / TSX rendering three-layer split.
+  4. Skin registry (Layer 4) is the only place faction visual identity
+     lives. Hard-coded 'player' / 'enemy' visual branches are bugs.
+  5. Deterministic seeded rng EVERYWHERE — no Math.random in
+     src/world / src/render / src/sim. (CLAUDE.md is stricter than I've
+     been enforcing.)
+  6. Local reviewer-trio loop, not push-and-wait-for-CI.
+  7. No "factory" files that internally branch on type — every such
+     branch is hiding an un-extracted archetype config.
+
+- [ ] [WAIT-AUDIT] M_AUDIT.0 — reviewer trio DISPATCHED (in flight):
+  a4267c0258c37dbd5 — comprehensive-review:code-reviewer (opus) for
+    MACRO+MESO parallel hierarchies + role-discriminator branches.
+  af4744c8cb3392a4e — code-simplifier (opus) for MICRO sweeps:
+    Math.random / duplicated formulas / index keys / NaN handling /
+    setState-per-frame / vacuous tests / >30LOC helpers / dead code.
+  a37a26f880ba9bfd5 — security-scanning:security-auditor (opus) for
+    persistence + PRNG boundary + workflow least-privilege + Capacitor
+    surface.
+  Each instructed to be EXHAUSTIVE + aim for 25-50+ findings + report
+  how big the unification refactor actually is. Findings forward-apply
+  to M_AUDIT.1-.7 + new sub-items as discovered.
+- [ ] M_AUDIT.1 — MACRO: every `src/<dir>/` that owns a parallel
+  hierarchy. Concrete first-pass list (will grow from reviewer
+  output): `src/entities/character-factory.ts` (role branch — should
+  be Thing dispatcher per M_ARCH_UNIFY.6/.10); `src/world/structure-
+  models.ts` (per-faction hardcoded table — should be Skin slot per
+  .7); `src/world/RainParticles.tsx` / `SawdustFX.tsx` /
+  `VictoryConfetti.tsx` / `BuildCompleteFX.tsx` / `ProjectileLayer.tsx`
+  / `TrackingRings.tsx` (6 hand-rolled FX — should be ParticleArchetype
+  consumers per .8); `src/rules/building-behaviors.ts` +
+  `src/rules/display.ts` + `src/world/structure-models.ts` (3 tables
+  keyed by BuildingType — should fold into the Thing registry per .3);
+  `src/world/Decoration.tsx`'s BASE_ACCRETION + BUILDING_ACCRETION
+  tables (per .9 consumer).
+- [ ] M_AUDIT.2 — MESO: every function/system that branches on a
+  *role / type / faction* discriminator. Discover via grep for
+  `case '<UnitType>'`, `if (type === '<BuildingType>')`, `faction ===
+  'player'`. Each such branch is either (a) legitimately dispatching
+  to a slot handler (acceptable), or (b) hiding an archetype config
+  row that should be data-driven (bug — replace with a registry lookup).
+- [ ] M_AUDIT.3 — MICRO: per-file pass for: Math.random in src/world
+  / src/render / src/sim (CodeRabbit already flagged 2 — sweep the
+  rest); duplicated formulas (CodeRabbit flagged hex-distance in
+  zone.ts — sweep); index-based identity used as React keys (CodeRabbit
+  flagged Roads.tsx — sweep); silent `default` returns / fallback
+  `?? 0` over `Number()` output (path-follow.ts fix pattern — sweep);
+  unconditional per-frame setState (ResourceBar fix pattern — sweep);
+  vacuous test assertions that pass when the inner loop is empty
+  (CodeRabbit flagged mode-presets.test.ts + place-road.test.ts +
+  science-system.test.ts — sweep test/ directory).
+- [ ] M_AUDIT.4 — SECURITY: full security-auditor sweep. Confirm no
+  user-input pathway can break out of the sandboxed PRNG /
+  Capacitor persistence; check the persistence facade for SQL
+  injection (parameterised queries verified earlier — re-verify
+  every new save path including the M_HARDENING.1 game-snapshot
+  serializer); workflow least-privilege audit (deploy-pages.yml
+  already done, sweep ci.yml + release.yml for similar gaps);
+  Howler audio + AudioContext autoplay-policy compliance.
+- [ ] M_AUDIT.5 — CODE-QUALITY: complexity + maintainability. Files
+  >400 lines reviewed against "reader-can-hold-it-in-head" test;
+  Biome lint at strictest level we run; tsc strict + noUncheckedIndexedAccess
+  consistent across the tree; cyclomatic complexity per function ≤8;
+  inheritance / class hierarchy reviewed against composition
+  preference.
+- [ ] M_AUDIT.6 — CODE-SIMPLIFICATION: every helper > 30 lines reviewed
+  for whether it could be expressed via the registry pattern (config
+  lookup + composeTraits) instead of bespoke code. Every Set/Map ops
+  reviewed for whether they should be the future bitmask (M_ARCHETYPE.7).
+- [ ] M_AUDIT.7 — DOC ALIGNMENT: every spec doc in `docs/specs/` reviewed
+  against the M_ARCH_UNIFY architecture. Specs that pre-date the
+  unification (most of them) get a "see spec 103" cross-reference; any
+  that contradict the unified layer model get explicit corrigenda.
+  CHANGELOG 0.4.0 entry drafted for M_AUDIT.0-.6 findings landed.
+
+**HARD GATE — M_AUDIT runs FIRST** (user, 2026-05-23): no normal
+directive work resumes until (a) all M_AUDIT reviewer trio sweeps
+complete, (b) every finding is THOROUGHLY forward-applied as new
+directive items (the existing M_ARCH_UNIFY + queued M_FEATURE items
+are the SEED — the audit will surface 100%+ more), (c) the expanded
+directive captures the full discovered scope. Only then do M_ARCH_UNIFY
+items begin executing.
+
+The audit is the discovery instrument, not the validation step. There
+is more hidden architectural debt than the current directive shows;
+the trio's job is to find it before we touch any more code.
+
 ### M_ARCH_UNIFY — the architectural keystone (user, 2026-05-23)
 
 User's correction: I keep building parallel hierarchies (units / buildings
