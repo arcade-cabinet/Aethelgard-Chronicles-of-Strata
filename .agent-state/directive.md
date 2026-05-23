@@ -1,6 +1,7 @@
 # Continuous Work Directive — Aethelgard: Chronicles of Strata
 
-**Status:** RELEASED
+**Status:** ACTIVE
+**Cycle:** v0.4 (v0.3.0 shipped — see `## Shipped releases` below)
 **Owner:** Claude
 **Mandate:** "Decompose the references into standard pillar docs and a test-driven
 r3f/drei/seedrandom/yuka/tonejs codebase with framer-motion and radix... capacitor-sqlite /
@@ -76,7 +77,14 @@ delivering debug Android APK + GitHub Pages web. Squash-merge on green.
 
 ---
 
-## Shipped
+## Shipped releases
+
+- **v0.3.0** (commit `6eba229`, deploy `26321944816`) — full-game initial
+  release. Web live at https://arcade-cabinet.github.io/Aethelgard-Chronicles-of-Strata/
+  + debug APK artifact via ci.yml. 12 milestone bands (M0–M_HARDENING) +
+  79 review threads addressed.
+
+## Shipped milestones (running)
 
 See **`docs/MILESTONES.md`** for the full historical record. Summary:
 
@@ -84,6 +92,7 @@ See **`docs/MILESTONES.md`** for the full historical record. Summary:
 - **M7** — yuka AI subpackage + asset expansion (Castle/Town/Graveyard kits, +3 monster types, audio + decoration).
 - **M8** mechanics arc — faction symmetry, command API, zone of control (replaces fog), rules engine, peon autonomy, yuka Think-brain AI player, behavior-archetype local ZoC, AI-vs-AI E2E.
 - **M9.1 + M9.3 + M9.4** — UX (build menu, legend, onboarding), e2e player-journey suite, visual baselines, CHANGELOG, Capacitor sync, pre-push gate.
+- **M_GAMEPLAY / M_CONSTRUCTION / M_COMBAT_POLISH / M_ARCHETYPE / M_DATA / M_AUDIO / M_AI_DEPTH / M_MOBILE / M_BALANCE / M_ACCESS / M_TITLE / M_HARDENING.1-4** — see CHANGELOG §0.3.0 for the full detail.
 
 Specs **96–102** define the architecture (peak: spec 102 — magnetic emitters, archetype composition algebra, damage-type × armor table).
 
@@ -387,14 +396,12 @@ flagged. No "POST_REL" parking lot — work them now.
 Initial release shipped; the queue continues. Each item is real work
 surfaced by review feedback / playtesting / conversation spec gaps.
 
-### M_HARDENING_2 — finish the in-flight hardening items
-
-- [ ] [WAIT-MCP] M_HARDENING.5 — KayKit Ultimate Fantasy RTS pack ingest
-  via assets-library MCP; replace placeholder structures.
-- [ ] [WAIT-DEVICE] M_HARDENING.6 — Pixel-5a perf profile + APK install
-  validation on real device/emulator.
-
 ### M_FEATURE — new gameplay from `references/conversation.md`
+
+(The two remaining hardening items — KayKit pack ingest M_HARDENING.5 and
+Pixel-5a perf profile M_HARDENING.6 — already live in the v0.3 block above
+with WAIT-MCP / WAIT-DEVICE prefixes; they carry forward into v0.4 without
+re-listing. Both unblock as the relevant dependency lands.)
 
 - [ ] M_FEATURE.1 — road / Mover placement command. Trait + Gate
   composition rules-layer landed in M_ARCHETYPE.1/.2; add the actual
