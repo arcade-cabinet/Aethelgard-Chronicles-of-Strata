@@ -2,7 +2,7 @@ import { useState } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { resign } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
-import { useViewport } from '@/render/useViewport';
+import { HudPill } from './HudPill';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -13,37 +13,21 @@ import { ModalShell } from './ModalShell';
  */
 export function ResignButton({ game }: { game: GameState }) {
   const [open, setOpen] = useState(false);
-  const viewport = useViewport();
   if (game.outcome !== 'playing') return null;
-  const rightPx = viewport.isPortrait ? 8 : 460;
-  const topPx = viewport.isPortrait ? 96 : 12;
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button
-          type="button"
+        {/* M_MICRO.10.2 — HudPill picks (top, right) from its slot table;
+            `danger` variant carries the red-on-panel pill look. */}
+        <HudPill
+          slot="resign"
           id="resign-button"
-          data-hud-panel
-          aria-label="Resign the current match"
-          style={{
-            position: 'absolute',
-            top: topPx,
-            right: rightPx,
-            zIndex: 6,
-            padding: '6px 14px',
-            borderRadius: 999,
-            background: HUD_THEME.color.panel,
-            color: '#f87171',
-            border: '1px solid rgba(248,113,113,0.35)',
-            fontFamily: HUD_THEME.font.body,
-            fontSize: '0.72rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            pointerEvents: 'auto',
-          }}
+          variant="danger"
+          ariaLabel="Resign the current match"
+          style={{ fontSize: '0.72rem' }}
         >
           ⚑ Resign
-        </button>
+        </HudPill>
       </Dialog.Trigger>
       {/* M_MICRO.10.1 — ModalShell unifies the dialog card. */}
       <ModalShell

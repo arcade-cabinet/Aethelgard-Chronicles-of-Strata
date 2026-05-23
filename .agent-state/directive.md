@@ -925,7 +925,7 @@ bug).
   `SettingsModal` + `ResignButton` confirm + `DiscoveriesPanel`
   (6 dialogs) share Dialog.Overlay + Content + Title styling. One
   `<ModalShell zIndex={...}>` wrapper kills ~200 LOC.
-- [ ] M_MICRO.10.2 — `<HudPill icon label position
+- [x] M_MICRO.10.2 — `<HudPill icon label position
   index>` extracts the repeated top-right HUD pill pattern
   (DiscoveriesPanel + ResignButton + PauseControl) + viewport-
   aware top/right calc.

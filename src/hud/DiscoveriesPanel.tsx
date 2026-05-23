@@ -4,7 +4,7 @@ import { doResearch } from '@/game/commands';
 import { canAfford } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
-import { useViewport } from '@/render/useViewport';
+import { HudPill } from './HudPill';
 import { DISCOVERIES, scaledCostFor } from '@/rules';
 import { costLabel } from './format';
 import { HUD_THEME } from './hud-theme';
@@ -23,36 +23,13 @@ import { ModalShell } from './ModalShell';
 export function DiscoveriesPanel({ game }: { game: GameState }) {
   const [open, setOpen] = useState(false);
   const eco = game.economy.player;
-  const viewport = useViewport();
-  // narrow phones stack the trigger button below the pause/sound buttons
-  const rightPx = viewport.isPortrait ? 8 : 340;
-  const topPx = viewport.isPortrait ? 52 : 12;
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button
-          id="discoveries-button"
-          data-hud-panel
-          type="button"
-          style={{
-            position: 'absolute',
-            top: topPx,
-            right: rightPx,
-            zIndex: 6,
-            padding: '6px 14px',
-            borderRadius: 999,
-            background: HUD_THEME.color.panel,
-            color: HUD_THEME.color.accent,
-            border: `1px solid ${HUD_THEME.color.border}`,
-            fontFamily: HUD_THEME.font.body,
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            pointerEvents: 'auto',
-          }}
-        >
+        {/* M_MICRO.10.2 — HudPill picks (top, right) from its slot table. */}
+        <HudPill slot="discoveries" id="discoveries-button">
           ⚗ Discoveries
-        </button>
+        </HudPill>
       </Dialog.Trigger>
       {/* M_MICRO.10.1 — ModalShell collapses the per-dialog Overlay +
           Content styling. Only DiscoveriesPanel-specific overrides

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { GameState } from '@/game/game-state';
-import { useViewport } from '@/render/useViewport';
 import { HUD_THEME } from './hud-theme';
+import { HudPill } from './HudPill';
 
 /**
  * Pause / resume control (M_GAMEPLAY.7). A top-right pill button + the P key
@@ -11,7 +11,6 @@ import { HUD_THEME } from './hud-theme';
  */
 export function PauseControl({ game }: { game: GameState }) {
   const [paused, setPaused] = useState(game.paused);
-  const viewport = useViewport();
 
   const toggle = useCallback(() => {
     game.paused = !game.paused;
@@ -40,38 +39,19 @@ export function PauseControl({ game }: { game: GameState }) {
     };
   }, [game, toggle]);
 
-  // narrower viewports stack the buttons closer to the right edge
-  const rightPx = viewport.isPortrait ? 72 : 220;
   return (
-    <div
-      data-hud-panel
-      style={{
-        position: 'absolute',
-        top: 12,
-        right: rightPx,
-        zIndex: 6,
-        pointerEvents: 'auto',
-      }}
-    >
-      <button
-        type="button"
+    <>
+      {/* M_MICRO.10.2 — HudPill picks (top, right) from its slot table;
+          `active` variant inverts on pause. */}
+      <HudPill
+        slot="pause"
         id="pause-button"
-        aria-label={paused ? 'Resume game' : 'Pause game'}
+        ariaLabel={paused ? 'Resume game' : 'Pause game'}
         onClick={toggle}
-        style={{
-          padding: '6px 14px',
-          borderRadius: 999,
-          background: paused ? HUD_THEME.color.accent : HUD_THEME.color.panel,
-          color: paused ? '#000' : HUD_THEME.color.accent,
-          border: `1px solid ${HUD_THEME.color.border}`,
-          fontFamily: HUD_THEME.font.body,
-          fontSize: '0.78rem',
-          fontWeight: 700,
-          cursor: 'pointer',
-        }}
+        variant={paused ? 'active' : 'default'}
       >
         {paused ? '▶ Resume' : '⏸ Pause'}
-      </button>
+      </HudPill>
       {paused && (
         <div
           id="pause-banner"
@@ -95,6 +75,6 @@ export function PauseControl({ game }: { game: GameState }) {
           PAUSED
         </div>
       )}
-    </div>
+    </>
   );
 }
