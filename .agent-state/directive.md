@@ -816,7 +816,7 @@ bug).
 
 #### Category 5 — Unconditional per-frame setState
 
-- [ ] M_MICRO.5.1 — `ProjectileLayer.tsx:46-49` 60Hz
+- [x] M_MICRO.5.1 — `ProjectileLayer.tsx:46-49` 60Hz
   setTick regardless of projectile count. Diff
   `game.projectiles.length` + first/last id; bail when unchanged.
 - [x] M_MICRO.5.2 — **HOTTEST PERF BUG** — `ZoneBorder.
