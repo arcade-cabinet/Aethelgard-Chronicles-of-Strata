@@ -11,9 +11,21 @@ import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 import '@fontsource/inter/800.css';
 import '@fontsource/inter/900.css';
+import { installErrorOverlayHooks } from '@/hud/ErrorOverlay';
 import { reportError } from '@/lib/telemetry';
 import { validateWorldFonts } from '@/world/world-text-font';
 import { App } from './App';
+
+// M_POLISH3.SCENE.2 — install the global error-capture hooks BEFORE
+// anything else runs. The React <ErrorOverlay> component would only
+// install on mount (via useEffect), missing any early boot errors
+// (font validation, asset preload, persistence facade, codegen).
+// Pulling install up here guarantees every console.error / fetch
+// failure / window.error / unhandledrejection from the entire app
+// lifetime is captured.
+if (typeof window !== 'undefined') {
+  installErrorOverlayHooks();
+}
 
 // M_AUDIT2.SEC2.47 — global error capture wired into the telemetry
 // facade so prod builds strip stack/componentStack per M_AUDIT2.SEC2.46.

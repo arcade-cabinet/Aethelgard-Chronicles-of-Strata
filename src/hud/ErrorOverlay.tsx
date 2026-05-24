@@ -43,6 +43,17 @@ function push(source: string, message: string): void {
 }
 
 let installed = false;
+/**
+ * Install ALL error-capture hooks. Exported so main.tsx can call it
+ * BEFORE any other module runs — anything that errors during initial
+ * boot (font validation, asset preload, codegen, persistence) gets
+ * caught and surfaced even though the ErrorOverlay React component
+ * hasn't mounted yet (its useEffect-driven install would miss those).
+ * Idempotent.
+ */
+export function installErrorOverlayHooks(): void {
+  install();
+}
 function install(): void {
   if (installed) return;
   installed = true;
