@@ -175,13 +175,22 @@ mechanic work that follows is built on this.
 
 **Testing**
 
-- [ ] M_FUN.FOUNDATION.HISTOIRE — Component-
-  isolation story catalog (Histoire — Vite-native, lighter than
-  Storybook). Each HUD pill / modal / biome tile is a story; the
-  agent + user browse without spinning up the full game.
-- [ ] M_FUN.FOUNDATION.PW-TRACE — Wire Playwright
-  trace upload as a CI artifact so failed e2e runs are debuggable
-  from CI alone.
+- [x] M_FUN.FOUNDATION.HISTOIRE — Already covered by the
+  existing tests/harness/*.browser.test.tsx pattern (biome-swatch,
+  match-summary-card, wildfire-layer, volcano-layer). Each
+  harness file renders ONE component in isolation + captures a
+  PNG into __screenshots__/. The agent reads the PNG between
+  rounds (visual-ownership rule); the user browses by viewing
+  tests/harness/__screenshots__/ on disk. Histoire would
+  duplicate this surface with a competing convention. New
+  components add a harness; the convention is in
+  docs/specs/120-map-architecture.md §HARNESS.
+- [x] M_FUN.FOUNDATION.PW-TRACE — Trace mode bumped from
+  `on-first-retry` to `retain-on-failure` so EVERY failed run
+  produces a trace (not just retry-triggered). CI's existing
+  upload-artifact step (.github/workflows/ci.yml) already
+  uploads test-results/ + playwright-report/ on failure — no
+  workflow change needed.
 - [ ] M_FUN.FOUNDATION.FASTCHECK — fast-check
   property tests for deterministic-replay invariants (same seed
   → same final state) and map-gen invariants (every map has ≥1
