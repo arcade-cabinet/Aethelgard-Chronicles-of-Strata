@@ -15,6 +15,7 @@ import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
 import { MatchAgePill } from '@/hud/MatchAgePill';
 import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { WinConditionPill } from '@/hud/WinConditionPill';
+import { ZoneControlPill } from '@/hud/ZoneControlPill';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
@@ -227,6 +228,8 @@ function GameSession({
       <RaidPressurePill game={game} />
       {/* M_POLISH2.MODES.41 — long-reign only: match-age chip. */}
       <MatchAgePill game={game} />
+      {/* M_POLISH2.MODES.42 — strata-wars only: zone-control % chip. */}
+      <ZoneControlPill game={game} />
       <IdlePeonsIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
