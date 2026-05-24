@@ -2073,9 +2073,9 @@ Doctrine for this batch: every item must survive the **mobile-first lens** — "
 - [x] [HIGH] M_POLISH2.M.1 — ScoreBar pill obscuration — DONE as collateral of B.2 (pills moved from top:12/56 to top:56/104 leaving the ScoreBar's top:8 row clear).
 - [x] [HIGH] M_POLISH2.M.2 — ResourceBar value obscuration — DONE as collateral of B.2 + MOBILE.2 (resource bar at top:8 + horizontal scroll-snap; HUD pills no longer in its row).
 - [x] [HIGH] M_POLISH2.M.3 — HUD pill cascade reorganized — DONE as collateral of B.2 (portrait pills now grouped at top:56 and top:104 with consistent right-edge alignment).
-- [ ] [HIGH] M_POLISH2.M.5 — NewGameModal extends 14px beyond right viewport edge at 375×667. Change ModalShell width from `min(420px, 92vw)` to `calc(100vw - 32px)` OR use box-sizing: border-box. Coexistence chip text is clipped consequently.
-- [ ] [HIGH] M_POLISH2.M.6 — Dialog.Overlay too transparent (rgba 0.7) — TitleScreen bleeds through every modal at both viewports. Bump to rgba(3,7,18,0.88) and add backdrop-filter: blur(4px).
-- [ ] [HIGH] M_POLISH2.m.4 — Volume sliders read 0 on first mount (likely persistence default-read returns 0 when no key exists). Initialize from BUS_VOLUMES defaults instead.
+- [x] [HIGH] M_POLISH2.M.5 — NewGameModal viewport overflow — DONE. width changed from `min(420px, 92vw)` to `min(420px, calc(100vw - 32px))` so the modal always sits inside the viewport with a 16px margin on each side regardless of the ModalShell's internal 28px padding. Coexistence chip text no longer clipped.
+- [x] [HIGH] M_POLISH2.M.6 — Dialog.Overlay opacity + backdrop blur — DONE. ModalShell.tsx overlay background bumped from rgba(3,7,18,0.7)/0.9 to 0.88/0.94; added `backdrop-filter: blur(4px)` + WebKit prefix so the TitleScreen gold heading no longer ghosts through every modal. Affects every dialog (NewGameModal, SettingsModal, OnboardingOverlay, GameOverModal, ResignButton confirm) since they all share the shell.
+- [x] [HIGH] M_POLISH2.m.4 — Volume slider zero-on-first-mount bug — DONE. Root cause: `Number('')` returns 0 (finite), and the parse function treated that as a valid persisted 0 — silently muted every slider on first mount when the Preferences keys had never been written. Fix: trim + length-check FIRST so an empty/whitespace raw falls back to the documented bus default; only Number-convert after we know the string is non-empty. New tests/unit/bus-volume-defaults.test.ts (6 tests) pins null/empty/whitespace/round-trip/clamp/non-numeric paths.
 
 #### M_POLISH2.RTS — RTS depth (16-26)
 

@@ -104,7 +104,14 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
         persistence,
         row.key,
         (raw) => {
-          const n = Number(raw);
+          // M_POLISH2.m.4 — empty string from a never-set Preference
+          // parses as Number('') === 0 which silently zeroed every
+          // slider on first mount (interpreted as "user dragged to
+          // 0"). Trim + length-check FIRST so a missing key falls
+          // back to the bus default instead of muting.
+          const trimmed = (raw ?? '').trim();
+          if (trimmed.length === 0) return getBusVolume(row.bus);
+          const n = Number(trimmed);
           if (!Number.isFinite(n)) return getBusVolume(row.bus);
           return Math.max(0, Math.min(1, n));
         },

@@ -68,7 +68,15 @@ export function ModalShell({
         style={{
           position: 'fixed',
           inset: 0,
-          background: blockClose ? 'rgba(3,7,18,0.9)' : 'rgba(3,7,18,0.7)',
+          // M_POLISH2.M.6 — bumped from 0.7 / 0.9 → 0.88 / 0.94 and
+          // added a 4px backdrop-blur so the TitleScreen's bright
+          // gold heading + accent buttons don't ghost through every
+          // modal. The blur is gated to capable browsers (chrome /
+          // safari ≥9 / firefox ≥103); older browsers fall back to
+          // the higher opacity alone.
+          background: blockClose ? 'rgba(3,7,18,0.94)' : 'rgba(3,7,18,0.88)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
           zIndex,
         }}
       />

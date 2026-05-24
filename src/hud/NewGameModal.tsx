@@ -242,7 +242,11 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       {/* M_MICRO.10.1 — ModalShell with NewGameModal's larger card. */}
       <ModalShell
         zIndex={200}
-        width="min(420px, 92vw)"
+        // M_POLISH2.M.5 — 92vw + the 28px ModalShell padding combined
+        // math'd to 14px overflow past the viewport right edge on
+        // 375px portrait. calc(100vw - 32px) gives a guaranteed
+        // 16px margin on each side regardless of padding.
+        width="min(420px, calc(100vw - 32px))"
         // M_AUDIT2.UX.6 — keyboard-overflow-safe height. On phone
         // portrait with the virtual keyboard open, the seed text
         // field forces the modal taller than the visible viewport
