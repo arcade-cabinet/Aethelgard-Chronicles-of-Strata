@@ -69,8 +69,8 @@ importers:
         specifier: 3.0.5
         version: 3.0.5
       sql.js:
-        specifier: 1.11.0
-        version: 1.11.0
+        specifier: 1.14.1
+        version: 1.14.1
       three:
         specifier: 0.184.0
         version: 0.184.0
@@ -1927,8 +1927,8 @@ packages:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
     engines: {node: '>= 10.x'}
 
-  sql.js@1.11.0:
-    resolution: {integrity: sha512-GsLUDU3vhOo14Pd5ME0y2te49JQyby6HuoCuadevEV+CGgTUjmYRrm7B7lhRyzOgrmcWmspUfyjNb6sOAEqdsA==}
+  sql.js@1.14.1:
+    resolution: {integrity: sha512-gcj8zBWU5cFsi9WUP+4bFNXAyF1iRpA3LLyS/DP5xlrNzGmPIizUeBggKa8DbDwdqaKwUcTEnChtd2grWo/x/A==}
 
   stackback@0.0.2:
     resolution: {integrity: sha512-1XMJE5fQo1jGH6Y/7ebnwPOBEkIEnT4QF32d5R1+VXdXveM0IBMJt8zfaxX1P3QhVwrYe+576+jkANtSS2mBbw==}
@@ -3545,7 +3545,7 @@ snapshots:
       browser-fs-access: 0.35.0
       jszip: 3.10.1
       localforage: 1.10.0
-      sql.js: 1.11.0
+      sql.js: 1.14.1
 
   js-tokens@10.0.0: {}
 
@@ -3898,7 +3898,7 @@ snapshots:
 
   split2@4.2.0: {}
 
-  sql.js@1.11.0: {}
+  sql.js@1.14.1: {}
 
   stackback@0.0.2: {}
 
