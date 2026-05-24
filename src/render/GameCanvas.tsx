@@ -13,6 +13,7 @@ import { Mountains } from '@/world/Mountains';
 import { ParticleEmitter } from '@/world/ParticleEmitter';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
 import { WildfireLayer } from '@/world/WildfireLayer';
+import { QuakeShake } from './QuakeShake';
 import {
   bloodSplashConsumer,
   buildCompleteConsumer,
@@ -195,6 +196,8 @@ function Scene({
       {/* M_FUN.DYN.WILDFIRE — render burn fronts above the ground
           plane (above projectiles so they read as foreground hazards). */}
       <WildfireLayer game={game} />
+      {/* M_FUN.DYN.QUAKE — camera shake while quakeShakeRemaining > 0. */}
+      <QuakeShake game={game} />
       <FootstepEmitter game={game} />
       {/* M_EXPANSION.A.17 — coffin death-drop for enemy units. */}
       <DeathDropLayer />

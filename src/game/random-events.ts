@@ -12,8 +12,10 @@
  *
  * Cadence + odds tuned so a 5-minute match averages ~2 events.
  */
-import { WILDFIRE_TUNING } from '@/config/mapgen';
+import { QUAKE_TUNING, WILDFIRE_TUNING } from '@/config/mapgen';
+import { buildNavGraph } from '@/core/pathfinding';
 import type { Rng } from '@/core/rng';
+import { triggerQuake } from '@/ecs/systems/quake';
 import { igniteWildfire } from '@/ecs/systems/wildfire';
 import { announce } from '@/hud/aria-live-bus';
 import type { GameState } from './game-state';
@@ -24,7 +26,8 @@ export type RandomEventKind =
   | 'weather-spike'
   | 'raid-warning'
   | 'refugee-arrival'
-  | 'wildfire';
+  | 'wildfire'
+  | 'quake';
 
 /** Persistent tracker on GameState. */
 export interface RandomEventsState {
@@ -99,16 +102,18 @@ export function tickRandomEvents(game: GameState, rng: Rng, delta: number): Rand
   if (state.nextRollIn > 0) return null;
   state.nextRollIn = ROLL_INTERVAL;
   if (rng() > EVENT_CHANCE) return null;
-  // Roll for which event (uniform across the 4 kinds).
+  // Roll for which event (uniform across the 5 kinds).
   const r = rng();
   const kind: RandomEventKind =
-    r < 0.25
+    r < 0.2
       ? 'weather-spike'
-      : r < 0.5
+      : r < 0.4
         ? 'raid-warning'
-        : r < 0.75
+        : r < 0.6
           ? 'refugee-arrival'
-          : 'wildfire';
+          : r < 0.8
+            ? 'wildfire'
+            : 'quake';
   applyEvent(game, rng, kind);
   state.fired += 1;
   state.lastKind = kind;
@@ -140,6 +145,26 @@ function applyEvent(game: GameState, rng: Rng, kind: RandomEventKind): void {
       const wood = count * 10;
       game.economy.player.wood += wood;
       announce(`Refugees arrive bringing +${wood} wood.`);
+      break;
+    }
+    case 'quake': {
+      // M_FUN.DYN.QUAKE — earthquake reshapes a small cluster of
+      // mountain / highland tiles into / out of MOUNTAIN_PASS.
+      // Gated by QUAKE_TUNING.ignitionChancePerEvent so not every
+      // 'quake' roll actually shakes; many will be near-misses
+      // ("you feel a tremor" with no visible effect — fine).
+      if (rng() >= QUAKE_TUNING.ignitionChancePerEvent) break;
+      const out = triggerQuake(game, game.board);
+      if (out.flipped.length === 0) break;
+      // Topology changed — rebuild the nav graph so units find the
+      // new passes (or stop walking into newly-sealed walls).
+      game.navGraph = buildNavGraph(game.board);
+      announce(`Earthquake! ${out.flipped.length} tiles reshape.`);
+      // Caller (App / GameCanvas) can subscribe to the shakeSeconds
+      // via game.randomEvents.lastKind === 'quake' + a future
+      // game.quakeShakeRemaining field. Persisting the shake on
+      // GameState lets the camera-shake hook decay it across ticks.
+      game.quakeShakeRemaining = out.shakeSeconds;
       break;
     }
     case 'wildfire': {

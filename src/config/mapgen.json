@@ -94,6 +94,14 @@
     }
   },
 
+  "quake": {
+    "$comment": "Tunables for the dynamic earthquake event (M_FUN.DYN.QUAKE). On fire, an earthquake picks a non-water tile, flips up to maxFlips tiles in a radius-clusterRadius pattern through a stochastic flip table (HIGHLAND <-> MOUNTAIN_PASS; MOUNTAIN -> MOUNTAIN_PASS to create new passes; small chance for HIGHLAND -> MOUNTAIN to seal a pass). Tile-level mutation routes via flipTileBiome which re-derives walkable + biomeFlags. shakeSeconds drives the HUD camera shake.",
+    "clusterRadius": 2,
+    "maxFlips": 4,
+    "shakeSeconds": 1.5,
+    "ignitionChancePerEvent": 0.22
+  },
+
   "wildfire": {
     "$comment": "Tunables for the dynamic wildfire system (M_FUN.DYN.WILDFIRE). Fire ignites on a FOREST tile, spreads to neighbouring FOREST tiles each tick, deals damage-over-time to units standing on burning tiles, and is extinguished after burnTicks elapse OR by adjacency to water (RIVER/LAKE/OCEAN). All probabilities are 0..1; tickSeconds gates the spread cadence so a 60Hz sim doesn't immolate the world in a frame.",
     "tickSeconds": 1.5,

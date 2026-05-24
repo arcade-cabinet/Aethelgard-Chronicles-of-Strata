@@ -326,6 +326,12 @@ export interface GameState {
    */
   wildfires: Map<string, { burnTicksRemaining: number; secondsSinceTick: number }>;
   /**
+   * M_FUN.DYN.QUAKE — seconds of camera-shake remaining after the
+   * last triggered earthquake. Decremented by runEconomyTick; the
+   * render layer reads this to apply a brief shake. 0 = no shake.
+   */
+  quakeShakeRemaining: number;
+  /**
    * The PRIMARY currently-selected entity id (the first in `selectedIds` for
    * single-selection consumers like SelectionPanel). Undefined when nothing is
    * selected. Updated by `selectEntity` / `selectEntities` / `clearSelection`.
@@ -733,6 +739,8 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     // system creates entries via igniteWildfire and prunes via the
     // tick loop; default is the empty map (no fires lit at game start).
     wildfires: new Map<string, { burnTicksRemaining: number; secondsSinceTick: number }>(),
+    // M_FUN.DYN.QUAKE — quake camera-shake countdown (0 = no shake).
+    quakeShakeRemaining: 0,
     // M_POLISH2.MODES.42a — strata-wars 80%-for-30s win timer. Starts
     // at 0; only ticks in strata-wars mode (see runEconomyTick).
     strataWarsControlTimer: 0,
@@ -922,6 +930,13 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // can ignite via random events OR (future) via volcano eruptions;
   // the system is a no-op when game.wildfires is empty.
   wildfireSystem(game, game.board.tiles, delta);
+  // M_FUN.DYN.QUAKE — decay the camera-shake countdown so the HUD
+  // can render a brief shake after each quake. No system call here:
+  // the actual reshape happens inline at event-fire time via
+  // triggerQuake; this only manages the post-event shake decay.
+  if (game.quakeShakeRemaining > 0) {
+    game.quakeShakeRemaining = Math.max(0, game.quakeShakeRemaining - delta);
+  }
   // M_EXPANSION.F.97 — discoverable hidden bonus consumer. Runs
   // every tick (not turn-gated) so a player issuing a move sees
   // the bonus credit as the unit arrives, not on the next enemy

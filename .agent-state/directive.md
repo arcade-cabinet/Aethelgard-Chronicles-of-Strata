@@ -297,8 +297,12 @@ mechanic work that follows is built on this.
   loop; WildfireLayer render; 6 unit tests + harness baseline.
   Rain-extinguish hookup deferred to v0.4.9 polish (needs
   per-tile weather-state mask).
-- [ ] [WAIT-DEPS] M_FUN.DYN.QUAKE — Earthquake event: pass
-  topology shifts mid-game.
+- [x] M_FUN.DYN.QUAKE — Earthquake event: pass topology shifts
+  mid-game. triggerQuake flips up to maxFlips tiles via
+  HIGHLAND↔MOUNTAIN_PASS / MOUNTAIN→MOUNTAIN_PASS table; rebuilds
+  navGraph; sets quakeShakeRemaining; QuakeShake render component
+  wobbles camera by decaying amplitude. Config-driven (QUAKE_TUNING).
+  4 unit tests.
 - [ ] [WAIT-DEPS] M_FUN.DYN.VOLCANO — Eruption: LAVA tiles
   30s, then fertile 60s.
 

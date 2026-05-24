@@ -54,6 +54,18 @@ const MapTypeRuleSchema = z.object({
 });
 export type MapTypeRule = z.infer<typeof MapTypeRuleSchema>;
 
+const QuakeTuningSchema = z.object({
+  /** Hex radius from the epicentre that may flip. */
+  clusterRadius: z.number().int().positive(),
+  /** Max number of tiles flipped per event. */
+  maxFlips: z.number().int().positive(),
+  /** HUD camera-shake duration in seconds. */
+  shakeSeconds: z.number().nonnegative(),
+  /** Chance an event-PRNG quake event actually shakes the ground. */
+  ignitionChancePerEvent: z.number().min(0).max(1),
+});
+export type QuakeTuning = z.infer<typeof QuakeTuningSchema>;
+
 const WildfireTuningSchema = z.object({
   /** Spread-tick cadence in seconds. */
   tickSeconds: z.number().positive(),
@@ -84,6 +96,7 @@ const MapgenConfigSchema = z
     biomes: z.record(BiomeTypeSchema, BiomeRuleSchema),
     mountain: MountainTuningSchema,
     wildfire: WildfireTuningSchema,
+    quake: QuakeTuningSchema,
     mapTypes: z.record(z.string(), MapTypeRuleSchema),
   })
   .refine((cfg) => BIOME_TYPES.every((b) => b in cfg.biomes), {
@@ -128,6 +141,9 @@ export const MOUNTAIN_TUNING: MountainTuning = validated.mountain;
 
 /** Wildfire dynamic-terrain tuning constants. */
 export const WILDFIRE_TUNING: WildfireTuning = validated.wildfire;
+
+/** Earthquake dynamic-terrain tuning constants. */
+export const QUAKE_TUNING: QuakeTuning = validated.quake;
 
 /** All biomes, for harness / test enumeration. */
 export const ALL_BIOMES: ReadonlyArray<BiomeType> = BIOME_TYPES;
