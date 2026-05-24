@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
 import { type AudioBuses, getBusVolume, setBusVolume, setMuted } from '@/audio/buses';
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
+import { isColorblindMode, setColorblindMode } from '@/rules/colorblind';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 import { MUTE_PREF_KEY } from './SoundToggle';
@@ -35,6 +36,7 @@ export interface SettingsModalProps {
  */
 export function SettingsModal({ open, onOpenChange, persistence }: SettingsModalProps) {
   const [muted, setMutedState] = useState(false);
+  const [colorblind, setColorblindState] = useState<boolean>(() => isColorblindMode());
   const [volumes, setVolumes] = useState<Record<keyof AudioBuses, number>>(() => ({
     sfx: getBusVolume('sfx'),
     music: getBusVolume('music'),
@@ -54,6 +56,18 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
       'SettingsModal',
     ).then((mutedValue) => {
       if (!cancelled) setMutedState(mutedValue);
+    });
+    // M_EXPANSION.U.113 — load colourblind mode and push into the registry.
+    void safePersistenceRead(
+      persistence,
+      PREF_KEYS.colorblind,
+      (raw) => raw === 'true',
+      false,
+      'SettingsModal',
+    ).then((cb) => {
+      if (cancelled) return;
+      setColorblindMode(cb);
+      setColorblindState(cb);
     });
     // M_EXPANSION.U.112 — load each bus volume from persistence on mount
     // and push the read value into the buses module so subsequently-
@@ -85,6 +99,13 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
     setVolumes((prev) => ({ ...prev, [bus]: clamped }));
     setBusVolume(bus, clamped);
     void persistence.setSetting(key, String(clamped));
+  };
+
+  const toggleColorblind = () => {
+    const next = !colorblind;
+    setColorblindState(next);
+    setColorblindMode(next);
+    void persistence.setSetting(PREF_KEYS.colorblind, String(next));
   };
 
   const toggleMute = () => {
@@ -200,6 +221,45 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
               </span>
             </label>
           ))}
+        </div>
+
+        {/* M_EXPANSION.U.113 — colourblind mode toggle. The
+            deuteranopia/protanopia/tritanopia-safe palette remaps
+            player → orange, enemy → cyan. The setting is read on
+            mount + flips the global isColorblindMode() flag that
+            Units.tsx (and any future faction-coloured renderer)
+            consults on snapshot. */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '10px 0',
+            borderTop: `1px solid ${HUD_THEME.color.border}`,
+            marginTop: 6,
+          }}
+        >
+          <span style={{ fontSize: '0.9rem' }}>Colourblind mode</span>
+          <button
+            type="button"
+            id="settings-colorblind"
+            aria-label={colorblind ? 'Disable colourblind palette' : 'Enable colourblind palette'}
+            aria-pressed={colorblind}
+            onClick={toggleColorblind}
+            style={{
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(56,189,248,0.12)',
+              color: colorblind ? HUD_THEME.color.accent : HUD_THEME.color.muted,
+              fontFamily: HUD_THEME.font.body,
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+            }}
+          >
+            {colorblind ? '✓ On' : 'Off'}
+          </button>
         </div>
 
         {/* M_AUDIT2.UX.41 — Replay tutorial. Clears the

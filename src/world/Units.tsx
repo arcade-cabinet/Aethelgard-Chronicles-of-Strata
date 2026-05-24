@@ -14,6 +14,7 @@ import {
 import { type ClipName, clipForState } from '@/ecs/systems/animation';
 import { AnimatedCharacter } from '@/entities/AnimatedCharacter';
 import type { GameState } from '@/game/game-state';
+import { isColorblindMode, resolveFactionTint } from '@/rules/colorblind';
 import { SKINS } from '@/rules/skins';
 import { BuilderBadge } from './BuilderBadge';
 import { HealthBillboard } from './HealthBillboard';
@@ -91,10 +92,19 @@ export function Units({ game }: { game: GameState }) {
       // M_EXPANSION.F.80 — game.playerColor overrides SKINS.player
       // characterTint when the player picked a palette swap in
       // NewGameModal. Enemy faction always uses its SKINS default.
+      // M_EXPANSION.U.113 — colourblind mode (when on) overrides
+      // BOTH the SKINS default AND the playerColor pick, returning
+      // the cyan/orange dichromacy-safe pair. resolveFactionTint
+      // encapsulates that precedence; we still fall back to the
+      // SKINS native tint when colourblind is off + no playerColor
+      // pick (a one-faction SKIN with characterTint: null reads as
+      // 'use the model's native diffuse', which the resolver doesn't
+      // express, so we keep the existing null-pass-through path).
       const faction = e.get(FactionTrait)?.faction;
       let tint: string | null = null;
       if (faction === 'player' && game.playerColor) tint = game.playerColor;
       else if (faction) tint = SKINS[faction].characterTint ?? null;
+      if (faction && isColorblindMode()) tint = resolveFactionTint(faction, game.playerColor);
       current.push({ id: Number(e), entity: e, role, tint });
     }
     // re-render the unit list only when the membership actually changes
