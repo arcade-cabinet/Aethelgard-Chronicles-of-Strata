@@ -435,6 +435,8 @@ export function App() {
       startingBonus: choices.startingBonus,
       // M_POLISH3.AIVAI.1 — both factions auto-play when set.
       aiVsAi: choices.aiVsAi,
+      // M_FUN.AI.PICKER — named opponent.
+      enemyPersonality: choices.enemyPersonality,
     });
   };
 

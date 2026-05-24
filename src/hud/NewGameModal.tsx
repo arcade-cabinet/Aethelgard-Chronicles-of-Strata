@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { availableMapSizes, MAP_SIZES, type MapSizeKey } from '@/core/map-size';
 import { createEventPrng, createFreshEventSeed } from '@/core/rng';
 import { randomSeedPhrase } from '@/core/seed-phrase';
+import { ALL_PERSONALITIES, DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
 import type { Difficulty, GameMode } from '@/game/game-state';
 import { presetFor } from '@/rules';
 import type { TurnsMode } from '@/rules/mode-presets';
@@ -51,6 +52,8 @@ export interface NewGameChoices {
    * Used by the e2e playthrough harness and by spectator/demo mode.
    */
   aiVsAi: boolean;
+  /** M_FUN.AI.PICKER — named opponent personality key. */
+  enemyPersonality: string;
 }
 
 // M_SIMPLIFY.7 — STARTING_BONUSES / PLAYER_COLORS / MODES /
@@ -163,6 +166,8 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   const [startingBonus, setStartingBonus] = useState<NewGameChoices['startingBonus']>('none');
   // M_POLISH3.AIVAI.1 — AI-vs-AI mode toggle. Both factions auto-play.
   const [aiVsAi, setAiVsAi] = useState(false);
+  // M_FUN.AI.PICKER — named opponent. Defaults to the registry default.
+  const [enemyPersonality, setEnemyPersonality] = useState<string>(DEFAULT_PERSONALITY);
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
 
   // M_BRAND.3 — when the player overrides any cascaded control after
@@ -541,6 +546,51 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           />
         </div>
 
+        {/*
+          M_FUN.AI.PICKER — named opponent picker. 5 personalities
+          from src/config/ai-personalities.json. Hovering a card
+          reveals the documented flaw (the player learns the
+          matchup over time).
+        */}
+        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Opponent</p>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+            gap: 8,
+            margin: '6px 0 18px',
+          }}
+        >
+          {ALL_PERSONALITIES.map((key) => {
+            const p = personalityFor(key);
+            const selected = enemyPersonality === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setEnemyPersonality(key)}
+                title={`${p.description}\n\nFlaw: ${p.flaw}`}
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  border: `1px solid ${selected ? HUD_THEME.color.accent : HUD_THEME.color.border}`,
+                  background: selected ? HUD_THEME.color.panel : 'transparent',
+                  color: selected ? HUD_THEME.color.text : HUD_THEME.color.muted,
+                  fontSize: '0.78rem',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  font: 'inherit',
+                }}
+              >
+                <div style={{ fontWeight: 700 }}>{p.displayName}</div>
+                <div style={{ fontSize: '0.66rem', opacity: 0.8, marginTop: 4 }}>
+                  {p.description.split('.')[0]}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
         {/* M_AUDIT2.UX.6 — sticky bottom Begin CTA. The above form
             sections scroll inside the flex column when the modal hits
             its maxHeight; the button stays pinned so a thumb on
@@ -579,6 +629,8 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 startingBonus,
                 // M_POLISH3.AIVAI.1 — both factions auto-play when set.
                 aiVsAi,
+                // M_FUN.AI.PICKER — named opponent personality.
+                enemyPersonality,
               })
             }
             style={{

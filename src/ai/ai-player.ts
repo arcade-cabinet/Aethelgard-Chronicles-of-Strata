@@ -13,6 +13,7 @@ import { canAfford } from '@/game/economy';
 import { SKINS } from '@/rules/skins';
 import { aiProfileFor, endgameUrgencyFor } from './ai-profiles';
 import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
+import { announceAiTaunt } from './taunt';
 import { baseKeyFor, type GameState } from '@/game/game-state';
 import { canBuild, peonCap, UNIT_COSTS } from '@/rules';
 
@@ -88,8 +89,17 @@ export class AiPlayer extends GameEntity {
     this.elapsed += delta;
     if (this.elapsed < this.decisionInterval) return;
     this.elapsed -= this.decisionInterval;
+    const prevGoal = this.lastGoal;
     this.brain.arbitrate();
     this.brain.execute();
+    // M_FUN.AI.TAUNT — announce the AI's new goal via aria-live when
+    // it changes (enemy faction only; ally announcements would clutter
+    // the screen-reader stream). Player-faction AI in AI-vs-AI mode
+    // doesn't taunt — only the OPPONENT does.
+    if (this.faction === 'enemy' && this.lastGoal && this.lastGoal !== prevGoal) {
+      const p = personalityFor(this.personalityKey);
+      announceAiTaunt(p.displayName, this.lastGoal);
+    }
   }
 }
 

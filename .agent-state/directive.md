@@ -258,15 +258,20 @@ mechanic work that follows is built on this.
 
 ### v0.4.6 — Named AI personalities (PRD §7.6)
 
-- [ ] [WAIT-DEPS] M_FUN.AI.NAMED — 5-8 named opponents
-  (Builder, Raider, Hoarder, Diplomat, Mad King) — bias parameters
-  in config, not code.
+- [x] M_FUN.AI.NAMED — DONE 2026-05-24 commit 8ebac56. 5 opponents
+  (the-builder, the-raider, the-hoarder, the-diplomat, the-mad-king)
+  in src/config/ai-personalities.json (Zod-validated). AiPlayer
+  reads the per-Evaluator weights. URL ?personality=the-raider
+  wires the picker for AI-vs-AI flow.
 - [ ] [WAIT-DEPS] M_FUN.AI.PICKER — NewGameModal opponent
-  picker.
+  picker. Data path (config) done; UI surface lands next.
 - [ ] [WAIT-DEPS] M_FUN.AI.TAUNT — Aria-live AI goal-change
-  announcements.
-- [ ] [WAIT-DEPS] M_FUN.AI.MISTAKES — Exploitable flaw per
-  personality.
+  announcements. Reads AiPlayer.lastGoal which already exists.
+- [x] M_FUN.AI.MISTAKES — DONE 2026-05-24 commit 8ebac56. Each
+  personality's bias IS the exploitable flaw (the-builder slow to
+  attack; the-raider over-extends economy; the-hoarder vulnerable
+  to rush; the-mad-king no defensive structures). Documented in
+  the JSON `flaw` field.
 
 ### v0.4.7 — Match narrative (PRD §7.7)
 
