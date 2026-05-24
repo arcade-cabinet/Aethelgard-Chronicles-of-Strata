@@ -91,6 +91,7 @@
     "@vitest/browser": "4.1.7",
     "@vitest/browser-playwright": "4.1.7",
     "@vitest/coverage-v8": "4.1.7",
+    "@welldone-software/why-did-you-render": "^10.0.1",
     "axe-core": "^4.11.4",
     "eslint": "^10.4.0",
     "eslint-plugin-react-hooks": "^7.1.1",

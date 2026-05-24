@@ -215,8 +215,11 @@ mechanic work that follows is built on this.
   runs lhci autorun against ./dist. CI integration as a tier-2
   job (nightly or on-demand) is the follow-up — needs network +
   ~2 min runtime so it shouldn't gate per-commit CI.
-- [ ] M_FUN.FOUNDATION.WHY-RENDER — why-did-you-render
-  dev-only — catch React re-render storms before user-visible jank.
+- [x] M_FUN.FOUNDATION.WHY-RENDER — @welldone-software/why-did-
+  you-render installed + wired via src/wdyr.ts (side-effect
+  module imported at the top of src/main.tsx). Production builds
+  no-op via import.meta.env.DEV gate; component-level opt-in
+  via `MyComp.whyDidYouRender = true`.
 
 **Docs + tooling**
 
