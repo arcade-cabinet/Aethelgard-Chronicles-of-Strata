@@ -6,6 +6,26 @@
 
 set -e
 
+# M_NEXT.PROC.1 — skip when the push contains only deletions.
+# git pre-push receives ref lines on stdin in the form:
+#   <local-ref> <local-sha> <remote-ref> <remote-sha>
+# A deletion is local-sha = 40 zeros. If EVERY input line is a
+# deletion, there's nothing to gate against — running verify on
+# the deletion-only push burns 3-5 minutes for no benefit.
+deletion_only=true
+while read -r _local_ref local_sha _remote_ref _remote_sha; do
+  if [ -z "$local_sha" ]; then continue; fi
+  case "$local_sha" in
+    0000000000000000000000000000000000000000) : ;;
+    *) deletion_only=false ;;
+  esac
+done
+
+if [ "$deletion_only" = "true" ]; then
+  echo "[pre-push] deletion-only push detected — skipping verify gate."
+  exit 0
+fi
+
 echo "[pre-push] running pnpm verify..."
 pnpm verify
 

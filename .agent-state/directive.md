@@ -2234,16 +2234,14 @@ scope of that milestone but need attention in the next cycle.
   trait-setter generation (the library's core SoA perf path). Fix:
   added 'unsafe-eval' to CSP (commit 056048b, PR #8). Verified locally:
   served dist mounts the TitleScreen.
-- [ ] [HIGH] M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer (Pages
-  CDN config or a Cloudflare worker). The `<meta>` CSP ignores
-  `frame-ancestors` per HTML spec; an HTTP header would enforce it
-  AND let us set Trusted-Types + Permissions-Policy properly. Tracked
-  as a deployment-config concern, not source code.
-- [ ] [MED] M_NEXT.DEPLOY.3 — Narrow `'unsafe-eval'` via SRI/nonce
-  hashing of the specific koota + sql.js chunks. Investigate whether
-  Vite's bundle splitter can isolate the eval-using modules into a
-  separate chunk that gets a script-src hash exception, leaving the
-  rest of the bundle hash-only.
+- [ ] [WAIT-DEPS] M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer.
+  GitHub Pages doesn't allow custom response headers; needs fronting
+  Pages with a Cloudflare worker OR moving to Cloudflare Pages.
+  Tracked as deployment-infra, not source code.
+- [ ] [WAIT-LOW] M_NEXT.DEPLOY.3 — Narrow 'unsafe-eval' via SRI/nonce.
+  Needs research on whether Vite's bundle splitter can isolate koota
+  + sql.js into a chunk that gets a hash exception. Lower priority
+  than DEPLOY.2 which obviates it.
 
 #### Workflow standardization
 
@@ -2251,10 +2249,10 @@ scope of that milestone but need attention in the next cycle.
   standard trio (ci.yml → release.yml → cd.yml). release-please.yml
   merged into release.yml as the first job; deploy-pages.yml renamed
   to cd.yml. Commit 056048b, PR #8.
-- [ ] [MED] M_NEXT.CI.2 — Add an `analysis-nightly.yml` (mean-streets
-  ships one) for slower scans (dependency-review with full graph,
-  lighthouse on the deployed Pages URL, etc.) that don't belong on
-  the PR hot path.
+- [ ] [WAIT-LOW] M_NEXT.CI.2 — Add an `analysis-nightly.yml`
+  (mean-streets ships one) for slower scans (dependency-review with
+  full graph, lighthouse on the deployed Pages URL, etc.) that don't
+  belong on the PR hot path.
 
 #### Dependencies
 
@@ -2277,36 +2275,33 @@ scope of that milestone but need attention in the next cycle.
 #### Visual coverage gaps (the agent should screenshot before user
 notices)
 
-- [ ] [MED] M_NEXT.HUD.1 — tablet viewport HUD pill stride was NOT
-  bumped alongside landscape (M_POLISH3.B.2 only fixed landscape).
-  Re-screenshot the tablet viewport-matrix capture and apply the
-  same 80→110 stride bump to tablet SLOT_POSITIONS if pills collide.
-- [ ] [MED] M_NEXT.HUD.2 — Mobile-portrait journey captures + per-mode
-  captures: tests/e2e/per-mode-journey runs at desktop only. Add the
-  6-mode × 4-timepoint sweep at mobile + tablet to surface viewport-
-  specific HUD/scene problems (a peon-tile-pick UI bug on mobile would
-  be invisible in the current desktop-only ledger).
-- [ ] [MED] M_NEXT.HUD.3 — Day-night phase captures show subtle
-  difference because hemisphere light is constant 0.6 by design (game
-  stays playable at night). Either reduce hemisphere to ~0.3 so night
-  is actually visibly darker, OR add a "DEEP NIGHT" weather state
-  with stronger fog + lower ambient.
+- [ ] [WAIT-MED] M_NEXT.HUD.1 — tablet viewport HUD pill stride was
+  NOT bumped alongside landscape (M_POLISH3.B.2 only fixed landscape).
+  Needs a tablet-viewport screenshot pass to confirm collision before
+  bump.
+- [ ] [WAIT-MED] M_NEXT.HUD.2 — Mobile-portrait journey captures +
+  per-mode captures: tests/e2e/per-mode-journey runs at desktop only.
+  Add the 6-mode × 4-timepoint sweep at mobile + tablet.
+- [ ] [WAIT-LOW] M_NEXT.HUD.3 — Day-night phase captures show subtle
+  difference because hemisphere light is constant 0.6 by design. Tune
+  hemisphere down OR add "DEEP NIGHT" weather state.
 
 #### Real-game playability bugs surfaced by deploy test
 
-- [ ] [HIGH] M_NEXT.PLAY.1 — TitleScreen footer reads "v0.2.0" on the
-  deployed Pages build (verified in headed Chrome 2026-05-24). Real
-  version is 0.1.0 (package.json) or 0.1.1 (release-please pending).
-  Either drop the hardcoded version label or wire it to the package
-  version at build time.
-- [ ] [MED] M_NEXT.PLAY.2 — favicon.ico 404 on every page load. Cosmetic
-  but every error counts (it shows up in the ErrorOverlay-equivalent
-  network filters). Add a public/favicon.ico (16x16/32x32) using the
-  TitleScreen "A" logomark.
+- [x] [HIGH] M_NEXT.PLAY.1 — DONE this session. vite.config.ts now
+  reads package.json#version + injects via `define` as `__APP_VERSION__`;
+  TitleScreen footer reads `v{__APP_VERSION__}` so the label always
+  matches the shipped semver. globals.d.ts declares the type.
+- [x] [MED] M_NEXT.PLAY.2 — DONE this session. public/favicon.svg
+  added (SVG favicon — no per-size .ico needed) + `<link rel="icon"
+  type="image/svg+xml" href="favicon.svg">` in index.html. Modern
+  browsers prefer SVG; older Safari falls back to the empty 404
+  which is now silent.
 
 #### Process patches
 
-- [ ] [HIGH] M_NEXT.PROC.1 — Pre-push hook ALSO runs for branch
-  deletion (`git push --delete`). Today it runs verify+browser+e2e
-  on a branch-deletion push, which is 3-5 min of wasted wallclock.
-  Add a hook guard: skip when the push only includes deletions.
+- [x] [HIGH] M_NEXT.PROC.1 — DONE this session. .husky/pre-push now
+  reads ref lines on stdin (git pre-push protocol), checks if every
+  local-sha is the 40-zero deletion sentinel, and exits 0 with
+  "deletion-only push detected — skipping verify gate" if so.
+  Normal pushes still run the full gate.
