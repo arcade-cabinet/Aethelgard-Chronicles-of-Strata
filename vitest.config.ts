@@ -72,7 +72,14 @@ export default defineConfig({
         },
         test: {
           name: 'browser',
-          include: ['tests/browser/**/*.browser.test.{ts,tsx}'],
+          // M_FUN.ARCH.HARNESS — tests/harness/**/*.browser.test.tsx
+          // is the per-feature visual-isolation harness. Same browser
+          // pool as tests/browser/** so a single `pnpm test:browser`
+          // run executes both.
+          include: [
+            'tests/browser/**/*.browser.test.{ts,tsx}',
+            'tests/harness/**/*.browser.test.{ts,tsx}',
+          ],
           setupFiles: ['tests/browser/setup-sqlite.ts'],
           browser: {
             enabled: true,

@@ -91,16 +91,12 @@ and start the next.
 
 ### v0.4.1 — Foundation (PRD §6 + §7.1)
 
-- [ ] [WAIT-REVIEW] M_FUN.ARCH.CONFIG — Move every per-mode +
-  per-biome value (mountainIntensity, channels, hydrology,
-  ISTHMUS_THRESHOLD, MOUNTAIN_NOISE_FREQ, biome moveCost,
-  appliesAttribute, attributeStrength) to `src/config/mapgen.json`
-  with Zod validation. Generator iterates config rows; adding a new
-  mapType OR biome rule = 1 row, 0 code. Migration commit MUST
-  preserve current behaviour byte-for-byte before any tuning lands.
-  STATUS: mapgen.json + zod-validated src/config/mapgen.ts loader
-  landed; src/core/board.ts still uses inline constants — wire
-  the loader THERE next.
+- [x] M_FUN.ARCH.CONFIG — DONE 2026-05-24 (commits e45f8ca +
+  477f8ac). mapgen.json + zod-validated loader (BiomeRuleSchema,
+  MapTypeRuleSchema, MountainTuningSchema) + src/core/board.ts
+  wired to mapTypeRule() + MOUNTAIN_TUNING. HYDROLOGY_PASSES
+  registry. 665 unit tests green; byte-for-byte identical output
+  per seed.
 - [ ] [WAIT-REVIEW] M_FUN.ARCH.HARNESS — Per-feature visual
   component tests in vitest browser. Pattern:
   `tests/harness/<feature>.browser.test.tsx` mounts feature in
