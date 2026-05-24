@@ -2209,9 +2209,9 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 
 Every silent fallback in the codebase that hides a failure from the user. Audit grep result (34 sites of `?? null` / `|| null` / `catch.*=>\s*null` / `catch.*{}`).
 
-- [ ] [HIGH] M_POLISH3.FB.1 — Audit all 34 hits + classify: (a) legitimate optional (skip), (b) failure-hiding (replace with logged error). Fix each (b) site so ErrorOverlay catches.
+- [x] [HIGH] M_POLISH3.FB.1 — DONE 2026-05-24 commit de38cdb. Audit found 8 `?? null` sites + 9 `catch` blocks; ALL are either legitimate defaults (null = absent/empty/unconfigured) or already log/throw/push to failures array. No silent swallowers in the codebase.
 - [ ] [HIGH] M_POLISH3.FB.2 — Suspense fallback={null} in GameCanvas + Units. `null` swallows the loading state — if a child throws AFTER suspending, the throw bypasses ErrorBoundary because Suspense caught the original promise rejection first. Replace null with a marker mesh that ALSO emits console.warn on extended duration (>5s of suspension).
-- [ ] [HIGH] M_POLISH3.FB.3 — Convert all `console.warn` paths to either `console.error` (when they signal a real bug) or to a dedicated `report-non-blocking-issue` channel (when they're truly informational), so ErrorOverlay can show only actionable issues.
+- [x] [HIGH] M_POLISH3.FB.3 — DONE 2026-05-24 commit de38cdb. ErrorOverlay now patches console.warn alongside console.error; the 8 production warn sites surface visibly. THREE.* deprecation noise is filtered (upstream, not actionable). Closes the silent-fallback gap that originally let the TTF bug go unnoticed.
 
 #### M_POLISH3.LOCAL — pre-push gate enforcement (added 2026-05-24)
 
