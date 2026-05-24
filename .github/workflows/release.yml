@@ -106,7 +106,7 @@ jobs:
       # Reviewer-fix: subject-path now uses the exact APK filename
       # verified above instead of a glob. Removes the silent-attest-zero
       # failure mode if Gradle renames its output.
-      - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v3.0.0
+      - uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v3.0.0
         with:
           subject-path: |
             android/app/build/outputs/apk/release/app-release.apk
