@@ -2,16 +2,96 @@
   "$comment": "Per-biome and per-mapType generation + behaviour rules. Loaded by src/config/mapgen.ts at module init; runtime validation enforces the schema. Adding a new biome or mapType = add a row here + harness test (M_FUN.ARCH.HARNESS).",
 
   "biomes": {
-    "OCEAN":         { "elevation": 0, "walkable": false, "buildable": false, "habitable": false, "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 },
-    "LAKE":          { "elevation": 2, "walkable": false, "buildable": false, "habitable": false, "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 },
-    "SWAMP":         { "elevation": 1, "walkable": true,  "buildable": false, "habitable": false, "moveCost": 1.8, "appliesAttribute": "disease",      "attributeStrength": 1.0 },
-    "BEACH":         { "elevation": 1, "walkable": true,  "buildable": true,  "habitable": false, "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 },
-    "DESERT":        { "elevation": 2, "walkable": true,  "buildable": false, "habitable": false, "moveCost": 1.0, "appliesAttribute": "dehydration",  "attributeStrength": 1.0 },
-    "GRASS":         { "elevation": 2, "walkable": true,  "buildable": true,  "habitable": true,  "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 },
-    "FOREST":        { "elevation": 3, "walkable": true,  "buildable": false, "habitable": true,  "moveCost": 1.25, "appliesAttribute": null,          "attributeStrength": 0 },
-    "HIGHLAND":      { "elevation": 4, "walkable": true,  "buildable": true,  "habitable": true,  "moveCost": 1.5, "appliesAttribute": null,           "attributeStrength": 0 },
-    "MOUNTAIN_PASS": { "elevation": 3, "walkable": true,  "buildable": true,  "habitable": false, "moveCost": 1.7, "appliesAttribute": "fatigue",      "attributeStrength": 0.5 },
-    "MOUNTAIN":      { "elevation": 5, "walkable": false, "buildable": false, "habitable": false, "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 }
+    "OCEAN": {
+      "elevation": 0,
+      "walkable": false,
+      "buildable": false,
+      "habitable": false,
+      "moveCost": 1.0,
+      "appliesAttribute": null,
+      "attributeStrength": 0
+    },
+    "LAKE": {
+      "elevation": 2,
+      "walkable": false,
+      "buildable": false,
+      "habitable": false,
+      "moveCost": 1.0,
+      "appliesAttribute": null,
+      "attributeStrength": 0
+    },
+    "SWAMP": {
+      "elevation": 1,
+      "walkable": true,
+      "buildable": false,
+      "habitable": false,
+      "moveCost": 1.8,
+      "appliesAttribute": "disease",
+      "attributeStrength": 1.0
+    },
+    "BEACH": {
+      "elevation": 1,
+      "walkable": true,
+      "buildable": true,
+      "habitable": false,
+      "moveCost": 1.0,
+      "appliesAttribute": null,
+      "attributeStrength": 0
+    },
+    "DESERT": {
+      "elevation": 2,
+      "walkable": true,
+      "buildable": false,
+      "habitable": false,
+      "moveCost": 1.0,
+      "appliesAttribute": "dehydration",
+      "attributeStrength": 1.0
+    },
+    "GRASS": {
+      "elevation": 2,
+      "walkable": true,
+      "buildable": true,
+      "habitable": true,
+      "moveCost": 1.0,
+      "appliesAttribute": null,
+      "attributeStrength": 0
+    },
+    "FOREST": {
+      "elevation": 3,
+      "walkable": true,
+      "buildable": false,
+      "habitable": true,
+      "moveCost": 1.25,
+      "appliesAttribute": null,
+      "attributeStrength": 0
+    },
+    "HIGHLAND": {
+      "elevation": 4,
+      "walkable": true,
+      "buildable": true,
+      "habitable": true,
+      "moveCost": 1.5,
+      "appliesAttribute": null,
+      "attributeStrength": 0
+    },
+    "MOUNTAIN_PASS": {
+      "elevation": 3,
+      "walkable": true,
+      "buildable": true,
+      "habitable": false,
+      "moveCost": 1.7,
+      "appliesAttribute": "fatigue",
+      "attributeStrength": 0.5
+    },
+    "MOUNTAIN": {
+      "elevation": 5,
+      "walkable": false,
+      "buildable": false,
+      "habitable": false,
+      "moveCost": 1.0,
+      "appliesAttribute": null,
+      "attributeStrength": 0
+    }
   },
 
   "mountain": {
@@ -33,7 +113,7 @@
     },
     "continent": {
       "$comment": "Larger landmass; denser ridge system.",
-      "mountainIntensity": 0.70,
+      "mountainIntensity": 0.7,
       "channels": false,
       "hydrology": "inlandLake"
     },

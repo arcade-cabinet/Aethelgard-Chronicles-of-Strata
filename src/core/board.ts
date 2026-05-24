@@ -1,4 +1,5 @@
 import { MAP_RADIUS } from '@/config/world';
+import { MOUNTAIN_TUNING, mapTypeRule } from '@/config/mapgen';
 import { biomeFlagsFor } from '@/rules/biome-flags';
 import { assignBiome, type Biome } from './biome';
 import { type Crossing, placeCrossings } from './crossings';
@@ -142,29 +143,13 @@ type PaintPass = (tiles: Map<string, Tile>, radius: number, rng: Rng) => void;
  * = ONE function + the right entries in pipelines that use it.
  */
 /**
- * Per-mapType configuration. Differences between modes read as a
- * table (3 columns × 4 rows) instead of 4 inline array literals
- * where you have to eyeball-diff what's missing.
- *
- * - mountainIntensity: 0..1 dial into paintMountainMassif (balanced
- *   0.55 = centre-biased funnel; archipelago 0.25 = sparse so the
- *   channels do the funnel work; dry-land 0.75 = badlands ridge).
- * - channels: whether to run paintChannelCuts (archipelago only —
- *   carves the islands).
- * - hydrology: the third paint pass — inland-lake everywhere except
- *   dry-land which gets a desert blanket instead.
+ * Hydrology pass names map to functions. Adding a new hydrology mode
+ * (e.g. 'tundraSnow' or 'volcanicFissures') = one entry here + one
+ * new paint function + one updated MapTypeRuleSchema enum value.
  */
-interface MapTypeConfig {
-  mountainIntensity: number;
-  channels: boolean;
-  hydrology: PaintPass;
-}
-
-const MAP_TYPE_CONFIG: Record<GeneratedMapType, MapTypeConfig> = {
-  balanced: { mountainIntensity: 0.55, channels: false, hydrology: paintInlandLake },
-  continent: { mountainIntensity: 0.7, channels: false, hydrology: paintInlandLake },
-  archipelago: { mountainIntensity: 0.25, channels: true, hydrology: paintInlandLake },
-  'dry-land': { mountainIntensity: 0.75, channels: false, hydrology: paintDesertBlanket },
+const HYDROLOGY_PASSES: Record<string, PaintPass> = {
+  inlandLake: paintInlandLake,
+  desertBlanket: paintDesertBlanket,
 };
 
 /**
@@ -172,8 +157,9 @@ const MAP_TYPE_CONFIG: Record<GeneratedMapType, MapTypeConfig> = {
  * recompute every tile's `walkable` flag from its final biome + level.
  *
  * Pipeline order: beach ring → optional channels → mountains →
- * hydrology. Reusing one assembly removes 4 array literals and the
- * mountainPass thunk; per-mode differences live in MAP_TYPE_CONFIG.
+ * hydrology. Per-mapType rules load from src/config/mapgen.json via
+ * the Zod-validated loader (M_FUN.ARCH.CONFIG); adding a mapType or
+ * tuning an intensity is a config-file change, NOT a code change.
  */
 function runGenTimePass(
   tiles: Map<string, Tile>,
@@ -181,11 +167,20 @@ function runGenTimePass(
   rng: Rng,
   mapType: GeneratedMapType,
 ): void {
-  const cfg = MAP_TYPE_CONFIG[mapType];
+  const cfg = mapTypeRule(mapType);
+  if (!cfg) {
+    throw new Error(`runGenTimePass: mapType '${mapType}' has no row in mapgen.json#/mapTypes`);
+  }
+  const hydrology = HYDROLOGY_PASSES[cfg.hydrology];
+  if (!hydrology) {
+    throw new Error(
+      `runGenTimePass: unknown hydrology '${cfg.hydrology}' for mapType '${mapType}'`,
+    );
+  }
   paintBeachRing(tiles, radius, rng);
   if (cfg.channels) paintChannelCuts(tiles, radius, rng);
   paintMountainMassif(tiles, radius, rng, cfg.mountainIntensity);
-  cfg.hydrology(tiles, radius, rng);
+  hydrology(tiles, radius, rng);
   // Recompute `walkable` after the guided-paint pass — every tile
   // now reflects its FINAL biome + level.
   for (const tile of tiles.values()) {
@@ -235,29 +230,13 @@ function paintBeachRing(tiles: Map<string, Tile>, radius: number, _rng: Rng): vo
  *     to create the original funnel intent — but as a CLUMP, not
  *     a line, and ONLY on land
  */
-// Noise tuning constants for paintMountainMassif. Named so future
-// tuners don't have to reverse-engineer the formula.
-//
-// - NOISE_FREQ: spatial frequency of the noise sample. Tuned for
-//   3-5 clumps per map at radius 18. Higher = more, smaller clumps.
-// - NOISE_WEIGHT / CENTER_BIAS_WEIGHT: how much each component
-//   contributes to the final mask. Together they sum to 1.0; the
-//   centre bias nudges clumps inward to form choke points without
-//   degenerating into a strip.
-// - INTENSITY_SCALE: maps the [0..1] intensity dial into a threshold
-//   shift. With intensity=0.55 + centerBias=1, mask~=0.85 → threshold
-//   0.67 → ~52% of CENTRAL land becomes mountain; perimeter tiles
-//   (centerBias~=0) need n>0.96 to paint, so almost never. The
-//   asymmetry IS the funnel — documented here so the next tuner
-//   doesn't trust the prior (wrong) "~30% of land" comment.
-const MOUNTAIN_NOISE_FREQ = 0.18;
-const MOUNTAIN_NOISE_WEIGHT = 0.7;
-const MOUNTAIN_CENTER_BIAS_WEIGHT = 0.3;
-const MOUNTAIN_INTENSITY_SCALE = 0.6;
-// Minimum tiles between the perimeter and where mountains may paint.
-// Keeps coastal travel open AND avoids divide-by-zero in centerBias
-// for small maps (radius<=5 would yield centerBias = d / 0 = NaN).
-const MOUNTAIN_SAFETY_RING = 5;
+// Mountain noise tuning lives in src/config/mapgen.json under
+// `mountain.*` — load via MOUNTAIN_TUNING. Centre-bias asymmetry
+// IS the funnel: at intensity=0.55, centerBias=1 → threshold 0.67 →
+// ~52% of CENTRAL land becomes mountain; perimeter tiles
+// (centerBias~=0) need n>0.96, so almost never. Documented in
+// PRD-v0.4 §6.3 so a future tuner doesn't trust a wrong "% of
+// land" eyeballing.
 
 function paintMountainMassif(
   tiles: Map<string, Tile>,
@@ -269,21 +248,22 @@ function paintMountainMassif(
   // owns this rng, so different seeds give different mountain layouts;
   // same seed reproduces.
   const noise = createNoise2D(rng);
-  // Guard the centre-bias denominator: a radius <= MOUNTAIN_SAFETY_RING
-  // would yield negative/zero span and NaN/Infinity bias. Clamp to 1
-  // so tiny radii degrade gracefully (mountains still place; just no
-  // centre-bias). board.ts's generateBoard validates radius in [1, 48].
-  const span = Math.max(1, radius - MOUNTAIN_SAFETY_RING);
+  // Guard the centre-bias denominator: a radius <= safetyRing would
+  // yield negative/zero span and NaN/Infinity bias. Clamp to 1 so
+  // tiny radii degrade gracefully (mountains still place; just no
+  // centre-bias). generateBoard validates radius in [1, 48].
+  const t = MOUNTAIN_TUNING;
+  const span = Math.max(1, radius - t.safetyRing);
   for (const tile of tiles.values()) {
     // Skip water + beach — mountains in water are nonsensical.
     if (tile.type === 'OCEAN' || tile.type === 'BEACH' || tile.type === 'LAKE') continue;
     const d = hexDistFromCenter(tile.q, tile.r);
-    if (d > radius - MOUNTAIN_SAFETY_RING) continue;
+    if (d > radius - t.safetyRing) continue;
     // Centre-bias coefficient: 1.0 at centre, 0.0 at d=span.
     const centerBias = Math.max(0, 1 - d / span);
-    const n = noise(tile.q * MOUNTAIN_NOISE_FREQ, tile.r * MOUNTAIN_NOISE_FREQ);
-    const mask = n * MOUNTAIN_NOISE_WEIGHT + centerBias * MOUNTAIN_CENTER_BIAS_WEIGHT;
-    if (mask > 1 - intensity * MOUNTAIN_INTENSITY_SCALE) {
+    const n = noise(tile.q * t.noiseFreq, tile.r * t.noiseFreq);
+    const mask = n * t.noiseWeight + centerBias * t.centerBiasWeight;
+    if (mask > 1 - intensity * t.intensityScale) {
       tile.type = 'MOUNTAIN';
       tile.level = 5;
       // Set walkable inline so this function is safe to call OUTSIDE
@@ -308,7 +288,7 @@ function paintMountainMassif(
   // Wall/Watchtower can fortify the choke (biome-flags buildable=true).
   // Doesn't carve a hole in the massif's core (interior mountains
   // have 6 neighbours) — only the natural narrow points.
-  const ISTHMUS_THRESHOLD = 3;
+  const isthmusThreshold = t.isthmusThreshold;
   // Snapshot the keys to avoid iteration mutation; pass-tile creation
   // could otherwise feed back into the same loop's neighbour count.
   const mountainKeys: string[] = [];
@@ -323,7 +303,7 @@ function paintMountainMassif(
       const n = tiles.get(nKey);
       if (n?.type === 'MOUNTAIN') mountainNeighbours += 1;
     }
-    if (mountainNeighbours <= ISTHMUS_THRESHOLD) {
+    if (mountainNeighbours <= isthmusThreshold) {
       tile.type = 'MOUNTAIN_PASS';
       tile.level = 3;
       tile.walkable = true;
