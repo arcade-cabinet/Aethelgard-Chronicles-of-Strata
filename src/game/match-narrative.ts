@@ -46,6 +46,18 @@ const ADJECTIVES_DEFEAT = [
   'Cursed',
   'Quiet',
 ];
+// Reviewer-fix (CRITICAL #1 / draw fell to defeat pool): explicit
+// pool for draws so the nickname matches the modal's "Draw!" title.
+const ADJECTIVES_DRAW = [
+  'Balanced',
+  'Even-Handed',
+  'Twin',
+  'Mirrored',
+  'Stalemate',
+  'Steady',
+  'Equal',
+  'Echoed',
+];
 const SUBJECTS = [
   'Realm',
   'Hill',
@@ -71,10 +83,22 @@ function hash32(input: string): number {
 }
 
 export function matchNickname(game: Pick<GameState, 'seedPhrase' | 'outcome'>): string {
-  const h = hash32(`${game.seedPhrase}:${game.outcome}`);
-  const adjPool = game.outcome === 'win' ? ADJECTIVES_VICTORY : ADJECTIVES_DEFEAT;
-  const adj = adjPool[h % adjPool.length];
-  const subject = SUBJECTS[Math.floor(h / 17) % SUBJECTS.length];
+  // Reviewer-fix (HIGH #4 — subject correlated with adjective):
+  // derive two INDEPENDENT hashes so adjective and subject can be
+  // chosen without aliasing. Salting the seed with ':adj' / ':sub'
+  // is enough — FNV-1a fans out single-bit input changes.
+  const hAdj = hash32(`${game.seedPhrase}:${game.outcome}:adj`);
+  const hSub = hash32(`${game.seedPhrase}:${game.outcome}:sub`);
+  // Reviewer-fix (CRITICAL #1 — 'draw' fell to defeat pool): explicit
+  // three-way pool selection so a draw renders matching language.
+  const adjPool =
+    game.outcome === 'win'
+      ? ADJECTIVES_VICTORY
+      : game.outcome === 'draw'
+        ? ADJECTIVES_DRAW
+        : ADJECTIVES_DEFEAT;
+  const adj = adjPool[hAdj % adjPool.length];
+  const subject = SUBJECTS[hSub % SUBJECTS.length];
   return `The ${adj} ${subject}`;
 }
 
@@ -96,11 +120,14 @@ export function matchHighlights(game: GameState): string[] {
   } else if (elapsedMin <= 2) {
     lines.push('A swift and decisive engagement.');
   }
+  // Reviewer-fix (MED #7): pluralise 'kill' / 'loss' grammatically.
+  const p = (n: number, singular: string, plural: string) =>
+    n === 1 ? `${n} ${singular}` : `${n} ${plural}`;
   if (kills > 0 && kills > enemyKills * 1.5) {
-    lines.push(`Your forces overwhelmed the enemy with ${kills} kills.`);
+    lines.push(`Your forces overwhelmed the enemy with ${p(kills, 'kill', 'kills')}.`);
   } else if (enemyKills > 0 && enemyKills > kills * 1.5) {
     lines.push(
-      `The enemy bled your forces dry — ${enemyKills} losses to their ${kills}.`,
+      `The enemy bled your forces dry — ${p(enemyKills, 'loss', 'losses')} to their ${p(kills, 'kill', 'kills')}.`,
     );
   }
   if (buildings >= 8) {

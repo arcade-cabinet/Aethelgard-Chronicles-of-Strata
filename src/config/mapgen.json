@@ -94,6 +94,15 @@
     }
   },
 
+  "wildfire": {
+    "$comment": "Tunables for the dynamic wildfire system (M_FUN.DYN.WILDFIRE). Fire ignites on a FOREST tile, spreads to neighbouring FOREST tiles each tick, deals damage-over-time to units standing on burning tiles, and is extinguished after burnTicks elapse OR by adjacency to water (RIVER/LAKE/OCEAN). All probabilities are 0..1; tickSeconds gates the spread cadence so a 60Hz sim doesn't immolate the world in a frame.",
+    "tickSeconds": 1.5,
+    "spreadChance": 0.32,
+    "burnTicks": 8,
+    "damagePerTick": 4,
+    "ignitionChancePerEvent": 0.18
+  },
+
   "mountain": {
     "$comment": "Tunables for paintMountainMassif. See src/core/board.ts.",
     "noiseFreq": 0.18,

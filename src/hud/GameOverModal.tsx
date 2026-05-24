@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import type { GameState } from '@/game/game-state';
@@ -38,6 +38,12 @@ export function GameOverModal({
   persistence?: Persistence;
 }) {
   const [outcome, setOutcome] = useState<GameOutcome>(game.outcome);
+  // Reviewer-fix (HIGH #3 + sec #2/#5): real cross-mount guard. A
+  // local `let cancelled` in the effect closure cannot prevent the
+  // second StrictMode mount from firing its own insert. A ref
+  // persists across mounts of the same component instance, so once
+  // we've written for this match nothing else can write again.
+  const lorebookWrittenRef = useRef(false);
 
   useEffect(() => {
     // poll game.outcome until it goes terminal, then stop — once the game has
@@ -76,12 +82,16 @@ export function GameOverModal({
   }, [game]);
 
   // M_FUN.NAR.LOREBOOK — record one entry per terminal outcome.
-  // Guarded with a local ref so React StrictMode double-mount in
-  // dev doesn't double-write. `persistence` is optional so tests
-  // and headless harnesses can omit it.
+  // `persistence` is optional so tests + headless harnesses can omit
+  // it. `game` is intentionally NOT in the deps array (sec #5): the
+  // closure captures the current value once at firing time; making
+  // it reactive would re-fire on every parent render and spam DB
+  // inserts. The useRef guard ensures at-most-one write per mount.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `game` deliberately omitted — see comment block above
   useEffect(() => {
     if (outcome === 'playing' || !persistence) return;
-    let cancelled = false;
+    if (lorebookWrittenRef.current) return;
+    lorebookWrittenRef.current = true;
     void (async () => {
       try {
         await persistence.recordLorebookEntry({
@@ -95,13 +105,10 @@ export function GameOverModal({
           highlights: matchHighlights(game),
         });
       } catch (err) {
-        if (!cancelled) console.warn('[lorebook] record failed:', err);
+        console.warn('[lorebook] record failed:', err);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [outcome, persistence, game]);
+  }, [outcome, persistence]);
 
   const isWin = outcome === 'win';
   // M_PROCESS.REVIEW must-fix #2 — 'draw' outcome was rendering

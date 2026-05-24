@@ -54,6 +54,20 @@ const MapTypeRuleSchema = z.object({
 });
 export type MapTypeRule = z.infer<typeof MapTypeRuleSchema>;
 
+const WildfireTuningSchema = z.object({
+  /** Spread-tick cadence in seconds. */
+  tickSeconds: z.number().positive(),
+  /** Per-tick chance each burning tile ignites each FOREST neighbour. */
+  spreadChance: z.number().min(0).max(1),
+  /** How many ticks a single ignited tile burns before extinguishing. */
+  burnTicks: z.number().int().positive(),
+  /** HP damage per tick to a unit standing on a burning tile. */
+  damagePerTick: z.number().nonnegative(),
+  /** Chance an event-PRNG wildfire event picks a FOREST tile to ignite. */
+  ignitionChancePerEvent: z.number().min(0).max(1),
+});
+export type WildfireTuning = z.infer<typeof WildfireTuningSchema>;
+
 const MountainTuningSchema = z.object({
   noiseFreq: z.number().positive(),
   noiseWeight: z.number().min(0).max(1),
@@ -69,6 +83,7 @@ const MapgenConfigSchema = z
     /** Every BiomeType MUST have a row (full registry, not partial). */
     biomes: z.record(BiomeTypeSchema, BiomeRuleSchema),
     mountain: MountainTuningSchema,
+    wildfire: WildfireTuningSchema,
     mapTypes: z.record(z.string(), MapTypeRuleSchema),
   })
   .refine((cfg) => BIOME_TYPES.every((b) => b in cfg.biomes), {
@@ -110,6 +125,9 @@ export function mapTypeRule(type: string): MapTypeRule | null {
 
 /** Mountain noise tuning constants. */
 export const MOUNTAIN_TUNING: MountainTuning = validated.mountain;
+
+/** Wildfire dynamic-terrain tuning constants. */
+export const WILDFIRE_TUNING: WildfireTuning = validated.wildfire;
 
 /** All biomes, for harness / test enumeration. */
 export const ALL_BIOMES: ReadonlyArray<BiomeType> = BIOME_TYPES;

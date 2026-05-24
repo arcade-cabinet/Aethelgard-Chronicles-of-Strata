@@ -36,4 +36,34 @@ describe('matchNickname', () => {
       /^The (Bitter|Doomed|Final|Lonely|Tragic|Stubborn|Cursed|Quiet) /,
     );
   });
+
+  it('uses the draw pool for draws (reviewer-fix CRITICAL #1)', () => {
+    const name = matchNickname({ seedPhrase: 'brave wild fox', outcome: 'draw' });
+    expect(name).toMatch(
+      /^The (Balanced|Even-Handed|Twin|Mirrored|Stalemate|Steady|Equal|Echoed) /,
+    );
+  });
+
+  it('decorrelates adjective and subject choice across seeds', () => {
+    // Reviewer-fix HIGH #4: scan many seeds and confirm both axes
+    // hit broad coverage of their pools. Old hash produced a fixed
+    // subject ordering keyed off the adjective; new salted hashes
+    // break that aliasing.
+    const adjs = new Set<string>();
+    const subjects = new Set<string>();
+    for (let i = 0; i < 200; i++) {
+      const name = matchNickname({ seedPhrase: `seed-${i}`, outcome: 'win' });
+      const m = name.match(/^The (\S+) (\S+)$/);
+      expect(m).not.toBeNull();
+      if (!m) continue;
+      const adj = m[1];
+      const subject = m[2];
+      if (adj) adjs.add(adj);
+      if (subject) subjects.add(subject);
+    }
+    // Expect coverage of at least half of each pool — proxies for
+    // 'we're not stuck in one corner of the (adj, sub) grid'.
+    expect(adjs.size).toBeGreaterThanOrEqual(4);
+    expect(subjects.size).toBeGreaterThanOrEqual(6);
+  });
 });

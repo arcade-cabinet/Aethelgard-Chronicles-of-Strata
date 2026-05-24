@@ -307,6 +307,17 @@ function rowToLorebookEntry(row: any): LorebookEntry {
   if (!Array.isArray(parsed) || !parsed.every((s): s is string => typeof s === 'string')) {
     throw new Error('persistence: lorebook.highlights_json is not string[]');
   }
+  // Reviewer-fix (sec #3): bound each individual highlight string.
+  // The outer 4096 byte cap allows a single 4000-char element to
+  // slip through; a 512 cap matches the longest sensible English
+  // highlight + leaves no room for crafted payload injection if a
+  // future UI renders these as innerHTML by mistake.
+  const PER_STRING_CAP = 512;
+  if (parsed.some((s) => s.length > PER_STRING_CAP)) {
+    throw new Error(
+      `persistence: lorebook.highlights_json element exceeds ${PER_STRING_CAP} chars`,
+    );
+  }
   return {
     id: row.id as number,
     endedAt: row.ended_at as string,
@@ -587,9 +598,15 @@ export function createPersistence(): Persistence {
     async listLorebook(limit = 50): Promise<LorebookEntry[]> {
       const db = await openDb();
       if (!db) return [];
-      const cap = Math.max(1, Math.min(500, Math.floor(limit)));
+      // Reviewer-fix (CRITICAL #2): use bind params for LIMIT to
+      // match the rest of the file's policy. NaN/Infinity collapses
+      // to a safe integer in [1, 500] before binding so the cap
+      // contract is preserved.
+      const safe = Math.floor(limit);
+      const cap = Number.isFinite(safe) ? Math.max(1, Math.min(500, safe)) : 50;
       const result = await db.query(
-        `SELECT * FROM lorebook ORDER BY ended_at DESC LIMIT ${cap};`,
+        `SELECT * FROM lorebook ORDER BY ended_at DESC LIMIT ?;`,
+        [cap],
       );
       const rows = result.values ?? [];
       const out: LorebookEntry[] = [];
