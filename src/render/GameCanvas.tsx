@@ -13,12 +13,12 @@ import { Mountains } from '@/world/Mountains';
 import { ParticleEmitter } from '@/world/ParticleEmitter';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
 import {
-  buildCompleteArchetype,
-  chimneySmokeArchetype,
-  rainArchetype,
-  sawdustArchetype,
-  victoryConfettiArchetype,
-} from '@/world/particle-archetypes';
+  buildCompleteConsumer,
+  chimneySmokeConsumer,
+  rainConsumer,
+  sawdustConsumer,
+  victoryConfettiConsumer,
+} from '@/world/particle-consumers';
 import { RallyMarker } from '@/world/RallyMarker';
 import { ResourceNodes } from '@/world/ResourceNodes';
 import { ResourceText } from '@/world/ResourceText';
@@ -158,11 +158,11 @@ function Scene({
         {/* M_REGISTRY.6 — 4 sibling particle FX → ParticleEmitter +
             archetype specs. Same per-particle shape; spawn/age/cull
             shared. */}
-        <ParticleEmitter game={game} spec={buildCompleteArchetype} />
-        <ParticleEmitter game={game} spec={sawdustArchetype} />
+        <ParticleEmitter game={game} spec={buildCompleteConsumer} />
+        <ParticleEmitter game={game} spec={sawdustConsumer} />
         {/* M_EXPANSION.A.12 — chimney smoke for every complete House. */}
-        <ParticleEmitter game={game} spec={chimneySmokeArchetype} />
-        <ParticleEmitter game={game} spec={victoryConfettiArchetype} />
+        <ParticleEmitter game={game} spec={chimneySmokeConsumer} />
+        <ParticleEmitter game={game} spec={victoryConfettiConsumer} />
         {/* M_REGISTRY.4 — ONE faction-symmetric base renderer mounted */}
         {/* twice with different `faction` props. Visual divergence is */}
         {/* 100% data (SKINS[faction] in src/rules/skins.ts), 0% code.  */}
@@ -176,7 +176,7 @@ function Scene({
       <FootstepEmitter game={game} />
       {/* M_EXPANSION.A.17 — coffin death-drop for enemy units. */}
       <DeathDropLayer />
-      <ParticleEmitter game={game} spec={rainArchetype} />
+      <ParticleEmitter game={game} spec={rainConsumer} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
       <ZoneBorder game={game} />

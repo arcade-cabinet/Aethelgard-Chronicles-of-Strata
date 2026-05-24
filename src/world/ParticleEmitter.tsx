@@ -1,12 +1,28 @@
 /**
- * M_REGISTRY.6 — generic particle-emitter component.
+ * M_REGISTRY.6 + M_HIERARCHY.1 — the PARTICLE ARCHETYPE.
+ *
+ * Hierarchy contract (user, 2026-05-23):
+ *   ARCHETYPE = THIS file. The abstract particle primitive: the
+ *               spawn → age → cull state machine + the per-frame
+ *               render contract. One archetype, codified in:
+ *                 - `BaseParticle` (the runtime particle shape)
+ *                 - `ParticleEmitterSpec<P>` (the consumer contract)
+ *                 - `ParticleEmitter<P>` (the lifecycle owner React
+ *                   component that runs the spawn/age/cull loop)
+ *   CONSUMER  = a tuned configuration of that archetype, bound to a
+ *               domain trigger. Consumers live in particle-consumers.tsx
+ *               (rainConsumer, sawdustConsumer, etc).
+ *   SKIN      = the per-consumer visual overlay parameters (color,
+ *               opacity curve, scale). Today consumers carry these
+ *               inline; a future pass can lift them onto SKINS for
+ *               per-faction overrides.
  *
  * Per spec 103 the unifying concept across Rain, Sawdust, BuildComplete,
  * VictoryConfetti, FootstepEmitter is the **state machine**, not the
  * geometry: spawn → age forward → cull. Geometry, material, dynamics
- * are per-emitter; the loop shape is shared.
+ * are per-consumer; the loop shape is the archetype.
  *
- * Each emitter passes a `ParticleEmitterSpec<P>` describing:
+ * Each consumer passes a `ParticleEmitterSpec<P>` describing:
  *
  *   - `seedTag`     — determinism key (PRNG = createMapPrng(`${seed}:${tag}`))
  *   - `tick`        — per-frame callback returning particles to ADD this tick;
@@ -32,9 +48,9 @@ export interface BaseParticle {
 }
 
 /**
- * Spec for one particle archetype. Generic in P (the per-particle
- * payload — emitter-specific extra fields like velocity, color index,
- * etc).
+ * Spec for one particle CONSUMER (a tuned configuration of the
+ * particle archetype). Generic in P (the per-particle payload —
+ * consumer-specific extra fields like velocity, color index, etc).
  */
 export interface ParticleEmitterSpec<P extends BaseParticle> {
   /** Component name — appears as the <group name="..."> for debugging. */
@@ -50,7 +66,7 @@ export interface ParticleEmitterSpec<P extends BaseParticle> {
    * provided allocator.
    *
    * Get a fresh id via `nextId()`. The rng is the seeded stream for
-   * this archetype.
+   * this consumer.
    */
   tick(args: {
     game: GameState;
@@ -75,9 +91,10 @@ interface EmitterState<P extends BaseParticle> {
 }
 
 /**
- * Generic particle emitter. ONE instance owns the spawn → age → cull
- * loop for one archetype. Renders the JSX returned by spec.renderParticle
- * for each live particle inside a named group.
+ * Generic particle emitter — the runtime owner of the particle
+ * ARCHETYPE. ONE instance hosts the spawn → age → cull loop for one
+ * CONSUMER (a ParticleEmitterSpec). Renders the JSX returned by
+ * spec.renderParticle for each live particle inside a named group.
  */
 export function ParticleEmitter<P extends BaseParticle>({
   game,
@@ -88,7 +105,7 @@ export function ParticleEmitter<P extends BaseParticle>({
 }) {
   const [state, setState] = useState<EmitterState<P>>(() => ({ particles: [] }));
   const nextIdRef = useRef(0);
-  // Per-archetype seeded PRNG — determinism contract per CLAUDE.md.
+  // Per-consumer seeded PRNG — determinism contract per CLAUDE.md.
   const rng = useMemo(
     () => createMapPrng(`${game.seedPhrase}:${spec.seedTag}`),
     [game.seedPhrase, spec.seedTag],

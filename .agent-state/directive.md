@@ -1097,17 +1097,13 @@ M_ARCH_UNIFY drains.
 
 ### M_FEATURE_QUEUED — paused until M_ARCH_UNIFY ships
 
-- [ ] [HIGH] M_HIERARCHY.1 — Archetype vs Consumer vs Skin contract audit (user, 2026-05-23: "make SURE consumers vs archetypes is solid EVERYWHERE because what we went over last night from archetypes to skins is a CRITICAL hierarchy"). The vocab is:
-  - **Archetype** = the abstract primitive / artifact / family-of-shape (e.g. "the particle" itself: billboard sprite + spawn/age/cull lifecycle; "the building" base trait set; "the character mesh rig"). One archetype per category.
-  - **Consumer** = a tuned configuration of an archetype, bound to a domain trigger (e.g. "rain consumer" = particle archetype tuned for falling drops; "barracks consumer" = building archetype tuned for the Barracks Thing).
-  - **Skin** = the *visual overlay* on a consumer (e.g. SKINS[faction].structure[type] = the GLB + scale + yOffset for one consumer-on-a-faction). Skins parameterize the visual; consumers parameterize the behavior.
-  The codebase TODAY conflates archetype with consumer in several places:
-    - `src/world/particle-archetypes.tsx` exports `rainArchetype`, `sawdustArchetype`, `victoryConfettiArchetype`, `chimneySmokeArchetype`, `buildCompleteArchetype` — ALL FIVE are consumers, not archetypes.
-    - `src/rules/building-behaviors.ts` mixes archetype + consumer concerns.
-    - Any other `*Archetype` export.
-  Audit + rename pass: one `ParticleArchetype` abstraction (the artifact) + 5 renamed `ParticleConsumer`s (currently 5 misnamed `*Archetype`s); validate the rest of the codebase against the same contract.
+- [x] [HIGH] M_HIERARCHY.1 — Archetype vs Consumer vs Skin vocab audit — DONE for particles. Renamed src/world/particle-archetypes.tsx → src/world/particle-consumers.tsx and the 5 exports (rainArchetype → rainConsumer, sawdust/buildComplete/victoryConfetti/chimneySmoke similarly). Hierarchy contract codified in two docstrings:
+  - **Archetype** = the abstract primitive (the spawn/age/cull state machine + render contract). The particle ARCHETYPE lives in ParticleEmitter.tsx (the ParticleEmitter component + ParticleEmitterSpec interface + BaseParticle type). ONE archetype.
+  - **Consumer** = a tuned configuration bound to a domain trigger. The 5 particle CONSUMERS live in particle-consumers.tsx.
+  - **Skin** = per-consumer visual overlay parameters (color, opacity curve, scale). Today consumers carry these inline; future M_REGISTRY.7 lifts them onto SKINS[faction].particles.
+  Audit confirmed no other `*Archetype` exports remain in src/ or tests/ — vocab is now consistent everywhere. tests/browser/particle-emitter.browser.test.tsx + tests/unit/particle-consumers.test.ts updated. 444/444 tests green.
 
-- [ ] [HIGH] M_TURNS.4 — placeholder removed (subsumed by M_HIERARCHY.1).
+- [x] [HIGH] M_TURNS.4 — removed as duplicate of M_HIERARCHY.1.
 - [ ] [HIGH] M_AI_AWARE.1 — AI must be fully cognizant of every customization knob and adapt (user, 2026-05-23). Audit AiPlayer/AiDirector against the full customization surface and ensure each is consumed:
   - game.mode (border-clash / frontier-raid / long-reign / strata-wars / age-of-strata / coexistence) — already partly: starve-resign gates on 'long-reign'. NEEDS: AI build priorities scale per mode (coexistence → no military build at all; frontier-raid → fast cheap rushers; strata-wars → tech-up first then military).
   - game.difficulty (easy / normal / hard) — already wired via aiVisionRadiusFor and brain bias; verify no NEW knob ignores it.

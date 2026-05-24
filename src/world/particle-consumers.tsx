@@ -1,16 +1,29 @@
 /**
- * M_REGISTRY.6 — particle archetype registry.
+ * M_REGISTRY.6 + M_HIERARCHY.1 — particle CONSUMERS.
  *
- * 4 sibling FX collapsed into 4 thin ParticleEmitterSpec objects that
- * share the ParticleEmitter state-machine. Per spec 103: each emitter
- * declares spawn-trigger + per-particle payload + render; the loop is
- * shared.
+ * Hierarchy contract (user, 2026-05-23: "consumers vs archetypes is
+ * a CRITICAL hierarchy"):
+ *   ARCHETYPE = the abstract particle primitive — spawn → age → cull
+ *               state-machine + per-frame render contract. Lives in
+ *               ParticleEmitter.tsx (the ParticleEmitter component
+ *               + ParticleEmitterSpec interface + BaseParticle type).
+ *               There is ONE particle archetype in the codebase.
+ *   CONSUMER  = a tuned configuration of that archetype, bound to a
+ *               domain trigger (this file). Each consumer declares
+ *               its spawn cadence, per-particle payload, render
+ *               geometry, lifetime. THIS file holds the consumers.
+ *   SKIN      = the visual overlay parameters per consumer (color,
+ *               opacity curve, scale) — for now consumers carry
+ *               their own visual config inline; a future M_REGISTRY.7
+ *               pass can lift these onto SKINS[faction].particles
+ *               so a third tribe ships its own consumer overrides.
  *
- * Registered here:
- *   - rain          (biome-weather=rain, world-wide point cloud)
- *   - sawdust       (per build-site entity, ballistic cone puffs)
- *   - buildComplete (per-Building completion event, expanding sphere)
- *   - victoryConfetti (game-state=win, gravity-driven box pieces)
+ * Consumers registered here:
+ *   - rainConsumer            (biome-weather=rain, world-wide point cloud)
+ *   - sawdustConsumer         (per build-site entity, ballistic cone puffs)
+ *   - buildCompleteConsumer   (per-Building completion event, expanding sphere)
+ *   - victoryConfettiConsumer (game-state=win, gravity-driven box pieces)
+ *   - chimneySmokeConsumer    (per complete House, periodic grey puff)
  */
 import { unpackEntity } from 'koota';
 import { BoxGeometry, ConeGeometry, SphereGeometry } from 'three';
@@ -45,7 +58,7 @@ const RAIN_FIELD_HEIGHT = 30;
 /** Rain emits a flat density of drops per tile within the board span. */
 const RAIN_TARGET_COUNT = 1200;
 
-export const rainArchetype: ParticleEmitterSpec<RainDrop> = {
+export const rainConsumer: ParticleEmitterSpec<RainDrop> = {
   name: 'rain',
   seedTag: 'rain',
   // Drops loop quickly; lifetime is "time to fall through the field".
@@ -113,7 +126,7 @@ interface SawdustState {
 // because the ParticleEmitter is mounted once per session.
 const sawdustState: SawdustState = { acc: new Map() };
 
-export const sawdustArchetype: ParticleEmitterSpec<SawdustPuff> = {
+export const sawdustConsumer: ParticleEmitterSpec<SawdustPuff> = {
   name: 'sawdust',
   seedTag: 'sawdust',
   lifetime: SAWDUST_LIFETIME,
@@ -189,7 +202,7 @@ interface BuildCompleteState {
 }
 const buildCompleteState: BuildCompleteState = { seen: new Set() };
 
-export const buildCompleteArchetype: ParticleEmitterSpec<CompletePuff> = {
+export const buildCompleteConsumer: ParticleEmitterSpec<CompletePuff> = {
   name: 'build-complete-fx',
   seedTag: 'build-complete',
   lifetime: COMPLETE_LIFETIME,
@@ -257,7 +270,7 @@ interface ConfettiState {
 }
 const confettiState: ConfettiState = { emitted: false, lastOutcome: 'playing' };
 
-export const victoryConfettiArchetype: ParticleEmitterSpec<ConfettiPiece> = {
+export const victoryConfettiConsumer: ParticleEmitterSpec<ConfettiPiece> = {
   name: 'victory-confetti',
   seedTag: 'confetti',
   lifetime: CONFETTI_LIFETIME,
@@ -335,7 +348,7 @@ interface SmokeState {
 }
 const smokeState: SmokeState = { acc: new Map() };
 
-export const chimneySmokeArchetype: ParticleEmitterSpec<SmokePuff> = {
+export const chimneySmokeConsumer: ParticleEmitterSpec<SmokePuff> = {
   name: 'chimney-smoke',
   seedTag: 'chimney-smoke',
   lifetime: SMOKE_LIFETIME,

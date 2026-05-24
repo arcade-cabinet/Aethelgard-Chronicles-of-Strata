@@ -14,7 +14,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
 import { ParticleEmitter } from '@/world/ParticleEmitter';
-import { rainArchetype } from '@/world/particle-archetypes';
+import { rainConsumer } from '@/world/particle-consumers';
 
 describe('ParticleEmitter (M_REGISTRY.6) browser rendering', () => {
   it('renders rain drops into the scene when weather=rain', async () => {
@@ -29,7 +29,7 @@ describe('ParticleEmitter (M_REGISTRY.6) browser rendering', () => {
         }}
       >
         <Suspense fallback={null}>
-          <ParticleEmitter game={game} spec={rainArchetype} />
+          <ParticleEmitter game={game} spec={rainConsumer} />
         </Suspense>
       </Canvas>,
     );
@@ -66,7 +66,7 @@ describe('ParticleEmitter (M_REGISTRY.6) browser rendering', () => {
         }}
       >
         <Suspense fallback={null}>
-          <ParticleEmitter game={game} spec={rainArchetype} />
+          <ParticleEmitter game={game} spec={rainConsumer} />
         </Suspense>
       </Canvas>,
     );

@@ -1,7 +1,7 @@
 /**
- * M_REGISTRY.6 — particle-archetype spec regression coverage.
+ * M_REGISTRY.6 — particle-consumer spec regression coverage.
  *
- * Pin the tick contracts of each archetype: that each spawns under
+ * Pin the tick contracts of each consumer: that each spawns under
  * the right trigger, returns null otherwise, and that determinism
  * holds (the same seed produces the same particle stream).
  *
@@ -13,24 +13,24 @@ import { describe, expect, it } from 'vitest';
 import { createMapPrng } from '@/core/rng';
 import { startGame } from '@/game/game-state';
 import {
-  buildCompleteArchetype,
-  rainArchetype,
-  sawdustArchetype,
-  victoryConfettiArchetype,
-} from '@/world/particle-archetypes';
+  buildCompleteConsumer,
+  rainConsumer,
+  sawdustConsumer,
+  victoryConfettiConsumer,
+} from '@/world/particle-consumers';
 
 let particleId = 0;
 function nextId(): number {
   return particleId++;
 }
 
-describe('M_REGISTRY.6 — particle archetype specs', () => {
-  describe('rainArchetype', () => {
+describe('M_REGISTRY.6 — particle consumer specs', () => {
+  describe('rainConsumer', () => {
     it('returns null when weather is not rain', () => {
       const game = startGame('rain-no-emit');
       // game starts with 'sunny' weather — no rain drops should spawn.
       game.weather.state = 'sunny';
-      const fresh = rainArchetype.tick({
+      const fresh = rainConsumer.tick({
         game,
         delta: 1 / 60,
         rng: createMapPrng('test-rain'),
@@ -43,7 +43,7 @@ describe('M_REGISTRY.6 — particle archetype specs', () => {
     it('spawns drops up to RAIN_TARGET_COUNT when raining', () => {
       const game = startGame('rain-emit');
       game.weather.state = 'rain';
-      const fresh = rainArchetype.tick({
+      const fresh = rainConsumer.tick({
         game,
         delta: 1 / 60,
         rng: createMapPrng('test-rain'),
@@ -58,14 +58,14 @@ describe('M_REGISTRY.6 — particle archetype specs', () => {
     it('is deterministic — same seed produces same drop positions', () => {
       const game = startGame('rain-determinism');
       game.weather.state = 'rain';
-      const a = rainArchetype.tick({
+      const a = rainConsumer.tick({
         game,
         delta: 1 / 60,
         rng: createMapPrng('det-seed'),
         live: [],
         nextId: () => 0,
       });
-      const b = rainArchetype.tick({
+      const b = rainConsumer.tick({
         game,
         delta: 1 / 60,
         rng: createMapPrng('det-seed'),
@@ -77,15 +77,15 @@ describe('M_REGISTRY.6 — particle archetype specs', () => {
     });
   });
 
-  describe('buildCompleteArchetype', () => {
+  describe('buildCompleteConsumer', () => {
     it('returns null when no buildings exist', () => {
       const game = startGame('no-buildings');
       // startGame places a TownHall + EnemyBase, both isComplete=true at
-      // tick 0. The archetype's seen-set is module-level — but on the
+      // tick 0. The consumer's seen-set is module-level — but on the
       // FIRST call after a fresh seenRef sees both as new. We can't
       // easily reset module state from a test; instead verify the
       // shape (returns either null or a non-empty array of CompletePuff).
-      const fresh = buildCompleteArchetype.tick({
+      const fresh = buildCompleteConsumer.tick({
         game,
         delta: 1 / 60,
         rng: createMapPrng('test'),
@@ -97,11 +97,11 @@ describe('M_REGISTRY.6 — particle archetype specs', () => {
     });
   });
 
-  describe('sawdustArchetype', () => {
+  describe('sawdustConsumer', () => {
     it('returns null when no peons are BUILDING', () => {
       const game = startGame('no-builders');
       // fresh game: peons exist but are IDLE, not BUILDING.
-      const fresh = sawdustArchetype.tick({
+      const fresh = sawdustConsumer.tick({
         game,
         delta: 1 / 60,
         rng: createMapPrng('test'),
@@ -112,10 +112,10 @@ describe('M_REGISTRY.6 — particle archetype specs', () => {
     });
   });
 
-  describe('victoryConfettiArchetype', () => {
+  describe('victoryConfettiConsumer', () => {
     it('returns null when game.outcome is playing', () => {
       const game = startGame('still-playing');
-      const fresh = victoryConfettiArchetype.tick({
+      const fresh = victoryConfettiConsumer.tick({
         game,
         delta: 1 / 60,
         rng: createMapPrng('test'),
@@ -125,13 +125,13 @@ describe('M_REGISTRY.6 — particle archetype specs', () => {
       expect(fresh).toBeNull();
     });
 
-    it('archetype declares the right lifetime + name', () => {
-      // Module-level state on victoryConfettiArchetype prevents a
+    it('consumer declares the right lifetime + name', () => {
+      // Module-level state on victoryConfettiConsumer prevents a
       // re-test of the win-emit branch without state reset. Pin the
       // contract surface instead.
-      expect(victoryConfettiArchetype.lifetime).toBe(3.0);
-      expect(victoryConfettiArchetype.seedTag).toBe('confetti');
-      expect(victoryConfettiArchetype.name).toBe('victory-confetti');
+      expect(victoryConfettiConsumer.lifetime).toBe(3.0);
+      expect(victoryConfettiConsumer.seedTag).toBe('confetti');
+      expect(victoryConfettiConsumer.name).toBe('victory-confetti');
     });
   });
 });
