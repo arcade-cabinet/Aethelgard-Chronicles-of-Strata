@@ -38,6 +38,7 @@
   "unitCosts": {
     "Peon": { "wood": 5, "stone": 0, "gold": 0 },
     "Footman": { "wood": 0, "stone": 0, "gold": 15 },
+    "Scout": { "wood": 30, "stone": 0, "gold": 0 },
     "Wizard": { "wood": 0, "stone": 0, "gold": 20, "science": 25, "mana": 15 },
     "Hero": { "wood": 0, "stone": 0, "gold": 100, "science": 50 }
   },

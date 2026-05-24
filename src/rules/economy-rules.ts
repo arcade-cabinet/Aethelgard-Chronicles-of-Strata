@@ -10,7 +10,7 @@ export const SUPPLY_COST: Record<UnitType, number> = ECONOMY.supplyCosts;
  * trainable-unit subset of UnitType; widening as new trainable units
  * land (Wizard, etc.) only requires adding the row to economy.json.
  */
-export type TrainableUnit = 'Peon' | 'Footman' | 'Wizard' | 'Hero';
+export type TrainableUnit = 'Peon' | 'Footman' | 'Scout' | 'Wizard' | 'Hero';
 export const UNIT_COSTS: Record<TrainableUnit, ResourceCost> = ECONOMY.unitCosts as Record<
   TrainableUnit,
   ResourceCost
