@@ -246,10 +246,15 @@ mechanic work that follows is built on this.
 
 **Observability**
 
-- [ ] M_FUN.FOUNDATION.SENTRY — Sentry for production
-  errors (gated behind Settings opt-in per no-network posture).
-- [ ] M_FUN.FOUNDATION.ANALYTICS — Plausible or
-  self-hosted; opt-in funnel metrics.
+- [x] M_FUN.FOUNDATION.SENTRY — observability scaffold landed
+  via src/lib/observability.ts (reportError) + setObservabilityOptIn
+  toggle. No-op by default (no-network posture). Dynamic-import of
+  @sentry/browser when opted-in is M_FUN.FOUNDATION.SENTRY.WIRE
+  (follow-up, needs the SettingsModal toggle UI).
+- [x] M_FUN.FOUNDATION.ANALYTICS — Same scaffold serves analytics
+  via trackEvent. Dynamic-import of plausible / posthog when
+  opted-in is .ANALYTICS.WIRE. 5 unit tests pin the opt-in
+  contract (no-op out, fires in).
 
 **CI improvements**
 
