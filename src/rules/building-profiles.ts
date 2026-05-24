@@ -59,7 +59,7 @@ export interface DisplaySlot {
   /** One-line description. */
   description: string;
   /** Which trainable unit (if any) this building produces. */
-  trains?: 'Peon' | 'Footman';
+  trains?: 'Peon' | 'Footman' | 'Scout';
   /** Which research IDs may be purchased here. */
   research?: ReadonlyArray<'forgedBlades' | 'steelPlows'>;
   /** Whether the building offers a "set rally point" interaction. */

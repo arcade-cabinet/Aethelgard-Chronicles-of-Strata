@@ -94,6 +94,15 @@ export interface UnitProfile {
    * the spec (Footman), so others have 0.
    */
   parryChance: number;
+  /**
+   * M_POLISH2.RTS.22 — per-unit vision radius override (hex tiles).
+   * When set, `updateObserved` uses this value for units of this role
+   * instead of the global `unitVisionRadius` multiplied by the
+   * difficulty/weather factor. Scout doubles the baseline (×2).
+   * Undefined means "use the global scaled value" — no change for
+   * existing roles.
+   */
+  visionRadiusMultiplier?: number;
 }
 
 /**
@@ -156,9 +165,11 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     parryChance: 0,
   },
   Scout: {
-    // M_EXPANSION.A.27 — player non-combat reconnaissance unit. High
-    // movement speed, low HP, no attack — reveals enemy positions but
-    // can't fight. Counted as civilian for combat role gates.
+    // M_POLISH2.RTS.22 — player non-combat reconnaissance unit. High
+    // movement speed, low HP (40), no attack — reveals enemy positions but
+    // can't fight. Counted as civilian for combat role gates. Double
+    // vision radius (visionRadiusMultiplier: 2) surfaces fog-of-war
+    // earlier; trained from TownHall for 30 wood.
     harvester: false,
     nonCombat: true,
     founder: false,
@@ -167,6 +178,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     selectionRadius: 0.85,
     meleeWeapon: 'none',
     parryChance: 0,
+    visionRadiusMultiplier: 2,
   },
   Hero: {
     // M_EXPANSION.F.96 — Hero. Premium melee unit, sword wielder

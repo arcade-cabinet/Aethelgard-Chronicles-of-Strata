@@ -9,6 +9,7 @@ import {
   Transform,
   Unit,
 } from '@/ecs/components';
+import { UNIT_PROFILES } from '@/rules/unit-profiles';
 
 /**
  * Per-faction territory + perception. Two independent sets (spec 102):
@@ -122,12 +123,18 @@ export function updateObserved(
     if (e.get(FactionTrait)?.faction !== faction) continue;
     const hex = e.get(HexPosition);
     const tf = e.get(Transform);
-    if (!hex || !tf) continue;
+    const unitComp = e.get(Unit);
+    if (!hex || !tf || !unitComp) continue;
+    // M_POLISH2.RTS.22 — per-unit vision radius: Scout (and any future unit
+    // with visionRadiusMultiplier) gets a scaled radius. All other units use
+    // the global scaled radius unchanged.
+    const profile = UNIT_PROFILES[unitComp.unitType];
+    const radius = unitVisionRadius * (profile.visionRadiusMultiplier ?? 1);
     sources.push({
       q: hex.q,
       r: hex.r,
       facing: tf.rotationY,
-      radius: unitVisionRadius,
+      radius,
       circle: false,
     });
   }

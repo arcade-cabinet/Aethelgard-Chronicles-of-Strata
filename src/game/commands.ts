@@ -311,7 +311,7 @@ export function placeRoad(
  */
 export function trainUnit(
   game: GameState,
-  role: 'Peon' | 'Footman' | 'Hero',
+  role: 'Peon' | 'Footman' | 'Scout' | 'Hero',
   faction: Faction = 'player',
 ): boolean {
   const eco = game.economy[faction];
