@@ -291,8 +291,12 @@ mechanic work that follows is built on this.
 
 ### v0.4.8 — Dynamic terrain (PRD §7.8)
 
-- [ ] [WAIT-DEPS] M_FUN.DYN.WILDFIRE — Fire propagation
-  through FOREST; rain/water extinguishes.
+- [x] M_FUN.DYN.WILDFIRE — Fire propagation through FOREST;
+  water-adjacent extinguishes. Config-driven (WILDFIRE_TUNING
+  in mapgen.json). Random-event firer; wildfireSystem in tick
+  loop; WildfireLayer render; 6 unit tests + harness baseline.
+  Rain-extinguish hookup deferred to v0.4.9 polish (needs
+  per-tile weather-state mask).
 - [ ] [WAIT-DEPS] M_FUN.DYN.QUAKE — Earthquake event: pass
   topology shifts mid-game.
 - [ ] [WAIT-DEPS] M_FUN.DYN.VOLCANO — Eruption: LAVA tiles

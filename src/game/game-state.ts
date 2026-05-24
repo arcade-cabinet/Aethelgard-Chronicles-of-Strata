@@ -62,6 +62,7 @@ import { createEventPrng, createMapPrng } from '@/core/rng';
 import { FACTIONS, type Faction } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
+import { wildfireSystem } from '@/ecs/systems/wildfire';
 import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
@@ -315,6 +316,15 @@ export interface GameState {
    * the player faction gets one only in AI-vs-AI mode (M8.7 E2E harness).
    */
   aiPlayers: Partial<Record<Faction, AiPlayer>>;
+  /**
+   * M_FUN.DYN.WILDFIRE — burning-tile registry. Keyed by
+   * getHexKey(q, r). Each entry tracks remaining burn ticks +
+   * a spread-tick accumulator. Present-but-empty is the default
+   * (no fires lit). The wildfireSystem advances this; igniteWildfire
+   * adds entries; tiles extinguish either by burning out OR by
+   * water-adjacency (RIVER/LAKE/OCEAN neighbour).
+   */
+  wildfires: Map<string, { burnTicksRemaining: number; secondsSinceTick: number }>;
   /**
    * The PRIMARY currently-selected entity id (the first in `selectedIds` for
    * single-selection consumers like SelectionPanel). Undefined when nothing is
@@ -719,6 +729,10 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     score: { player: 0, enemy: 0 },
     // M_EXPANSION.F.71 — Infinity = no Wonder built yet for that faction.
     wonderTimers: { player: Infinity, enemy: Infinity },
+    // M_FUN.DYN.WILDFIRE — empty burning-tile registry. The wildfire
+    // system creates entries via igniteWildfire and prunes via the
+    // tick loop; default is the empty map (no fires lit at game start).
+    wildfires: new Map<string, { burnTicksRemaining: number; secondsSinceTick: number }>(),
     // M_POLISH2.MODES.42a — strata-wars 80%-for-30s win timer. Starts
     // at 0; only ticks in strata-wars mode (see runEconomyTick).
     strataWarsControlTimer: 0,
@@ -904,6 +918,10 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // Healer-clear logic, and recovery timers. Runs every tick (not
   // turn-gated) so disease ticks during free movement.
   statusAttributesSystem(game.world, game.board.tiles, delta);
+  // M_FUN.DYN.WILDFIRE — advance any active burn fronts. Fires
+  // can ignite via random events OR (future) via volcano eruptions;
+  // the system is a no-op when game.wildfires is empty.
+  wildfireSystem(game, game.board.tiles, delta);
   // M_EXPANSION.F.97 — discoverable hidden bonus consumer. Runs
   // every tick (not turn-gated) so a player issuing a move sees
   // the bonus credit as the unit arrives, not on the next enemy

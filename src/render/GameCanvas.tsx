@@ -12,6 +12,7 @@ import { FootstepEmitter } from '@/world/FootstepEmitter';
 import { Mountains } from '@/world/Mountains';
 import { ParticleEmitter } from '@/world/ParticleEmitter';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
+import { WildfireLayer } from '@/world/WildfireLayer';
 import {
   bloodSplashConsumer,
   buildCompleteConsumer,
@@ -191,6 +192,9 @@ function Scene({
       <CombatText game={game} />
       <ResourceText game={game} />
       <ProjectileLayer game={game} />
+      {/* M_FUN.DYN.WILDFIRE — render burn fronts above the ground
+          plane (above projectiles so they read as foreground hazards). */}
+      <WildfireLayer game={game} />
       <FootstepEmitter game={game} />
       {/* M_EXPANSION.A.17 — coffin death-drop for enemy units. */}
       <DeathDropLayer />

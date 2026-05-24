@@ -34,8 +34,9 @@ describe('M_EXPANSION.F.81 — random events', () => {
       tickRandomEvents(game, rng, 100);
     }
     expect(game.randomEvents.fired).toBeGreaterThan(20);
-    // last fired kind should be one of the 3 valid events
-    expect(['weather-spike', 'raid-warning', 'refugee-arrival']).toContain(
+    // last fired kind should be one of the 4 valid events
+    // (added 'wildfire' in M_FUN.DYN.WILDFIRE).
+    expect(['weather-spike', 'raid-warning', 'refugee-arrival', 'wildfire']).toContain(
       game.randomEvents.lastKind,
     );
   });

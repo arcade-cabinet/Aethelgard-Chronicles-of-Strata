@@ -12,13 +12,19 @@
  *
  * Cadence + odds tuned so a 5-minute match averages ~2 events.
  */
+import { WILDFIRE_TUNING } from '@/config/mapgen';
 import type { Rng } from '@/core/rng';
+import { igniteWildfire } from '@/ecs/systems/wildfire';
 import { announce } from '@/hud/aria-live-bus';
 import type { GameState } from './game-state';
 import { type WeatherState, WEATHER_PROFILES } from './weather';
 
 /** One concrete event kind. */
-export type RandomEventKind = 'weather-spike' | 'raid-warning' | 'refugee-arrival';
+export type RandomEventKind =
+  | 'weather-spike'
+  | 'raid-warning'
+  | 'refugee-arrival'
+  | 'wildfire';
 
 /** Persistent tracker on GameState. */
 export interface RandomEventsState {
@@ -93,10 +99,16 @@ export function tickRandomEvents(game: GameState, rng: Rng, delta: number): Rand
   if (state.nextRollIn > 0) return null;
   state.nextRollIn = ROLL_INTERVAL;
   if (rng() > EVENT_CHANCE) return null;
-  // Roll for which event (uniform across the 3 kinds).
+  // Roll for which event (uniform across the 4 kinds).
   const r = rng();
   const kind: RandomEventKind =
-    r < 1 / 3 ? 'weather-spike' : r < 2 / 3 ? 'raid-warning' : 'refugee-arrival';
+    r < 0.25
+      ? 'weather-spike'
+      : r < 0.5
+        ? 'raid-warning'
+        : r < 0.75
+          ? 'refugee-arrival'
+          : 'wildfire';
   applyEvent(game, rng, kind);
   state.fired += 1;
   state.lastKind = kind;
@@ -128,6 +140,26 @@ function applyEvent(game: GameState, rng: Rng, kind: RandomEventKind): void {
       const wood = count * 10;
       game.economy.player.wood += wood;
       announce(`Refugees arrive bringing +${wood} wood.`);
+      break;
+    }
+    case 'wildfire': {
+      // M_FUN.DYN.WILDFIRE — pick a FOREST tile by random walk over
+      // the board, gated by WILDFIRE_TUNING.ignitionChancePerEvent.
+      // If no FOREST tile is found within `maxAttempts`, the event
+      // silently no-ops (player gets no message; not every roll
+      // ignites). On success, the wildfireSystem (driven by
+      // runEconomyTick) handles spread + damage + extinguish.
+      if (rng() >= WILDFIRE_TUNING.ignitionChancePerEvent) break;
+      const forestTiles: { q: number; r: number }[] = [];
+      for (const tile of game.board.tiles.values()) {
+        if (tile.type === 'FOREST') forestTiles.push({ q: tile.q, r: tile.r });
+      }
+      if (forestTiles.length === 0) break;
+      const pick = forestTiles[Math.floor(rng() * forestTiles.length)];
+      if (!pick) break;
+      if (igniteWildfire(game, game.board.tiles, pick.q, pick.r)) {
+        announce('Wildfire breaks out in the forest!');
+      }
       break;
     }
   }
