@@ -1076,6 +1076,29 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
       game.strataWarsControlTimer = 0;
     }
   }
+  // M_POLISH2.MODES.43a — age-of-strata Renaissance+Wonder win.
+  // Triggers immediately when (player reaches Renaissance era)
+  // AND (any player faction has a COMPLETE Wonder building).
+  // Bypasses the 300s WONDER_COUNTDOWN — Renaissance era IS the
+  // long buildup; the Wonder is the punctuation.
+  if (game.mode === 'age-of-strata' && game.outcome === 'playing') {
+    const science = game.economy.player.science;
+    if (science >= 500) {
+      // ERA_SCIENCE_THRESHOLD.Renaissance = 500 (inlined here to
+      // avoid a circular import; the constant lives in
+      // src/rules/eras.ts).
+      let hasCompleteWonder = false;
+      for (const e of game.world.query(Building, FactionTrait)) {
+        const b = e.get(Building);
+        const f = e.get(FactionTrait);
+        if (f?.faction === 'player' && b?.buildingType === 'Wonder' && b.isComplete) {
+          hasCompleteWonder = true;
+          break;
+        }
+      }
+      if (hasCompleteWonder) game.outcome = 'win';
+    }
+  }
   game.outcome = evaluateWinLoss(game.world, game.outcome);
 
   // M_MODES.10 — controlled-tile-time score integral. Track area under the
