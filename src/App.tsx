@@ -7,6 +7,7 @@ import { type GameState, type NewGameConfig, startGame } from '@/game/game-state
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
 import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
+import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
@@ -143,14 +144,27 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
       />
       <SelectionRect game={game} getCamera={getCamera} />
       <SoundToggle persistence={persistence} />
-      <PauseControl game={game} />
+      {/* M_POLISH2.MOBILE.14 — portrait/phone viewports get the unified
+            Speed+Pause pill; everywhere else keeps the two original
+            independent controls. PauseControl still mounts on mobile so
+            its keyboard P shortcut + the visibilitychange auto-pause
+            wiring stay live — but its HudPill is suppressed via the
+            viewport check inside HudPill (slot collision avoided by
+            simply NOT mounting PauseControl on portrait). */}
+      {viewport.class === 'phonePortrait' ? (
+        <MobileSpeedPausePill game={game} />
+      ) : (
+        <>
+          <PauseControl game={game} />
+          <SpeedControl game={game} />
+        </>
+      )}
       <ResignButton game={game} />
       <EndTurnButton game={game} />
       <DiscoveriesPanel game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />
-      <SpeedControl game={game} />
       <ScoreBar game={game} />
       <IdlePeonsIndicator game={game} />
       <BuildQueueStrip game={game} />
