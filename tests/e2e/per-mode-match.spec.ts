@@ -15,13 +15,20 @@ const MODES = [
 
 for (const { mode, copy } of MODES) {
   test(`per-mode smoke: ${mode}`, async ({ page }) => {
+    // advanceFrames(3600) on a freshly-loaded WebGL scene under
+    // headless Chromium can spike past the default 60s; bump to
+    // 90s for the per-mode SMOKE specs.
+    test.setTimeout(90_000);
     await page.goto(`/?seed=e2e-${mode}&mode=${mode}`);
     await enterGame(page, `e2e-${mode}`);
     const skip = page.locator('button', { hasText: 'Skip' });
     if (await skip.count()) await skip.first().click();
+    // 600 frames = 10s game-time. Enough for peons to spawn + the
+    // mode-specific HUD pills to surface, without a 60s sim run
+    // that could blow the CI test budget under load.
     await page.evaluate(() => {
       const w = window as unknown as { __game?: { advanceFrames?: (n: number) => void } };
-      w.__game?.advanceFrames?.(3600);
+      w.__game?.advanceFrames?.(600);
     });
     await page.waitForTimeout(400);
 

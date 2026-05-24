@@ -8,9 +8,11 @@ test('save / load preserves wood total + supply + mode', async ({ page }) => {
   await enterGame(page, 'ancient-silver-forest');
   const skip = page.locator('button', { hasText: 'Skip' });
   if (await skip.count()) await skip.first().click();
+  // 600 frames = 10s game-time. Enough for peons to harvest some
+  // wood (the snapshot assertion checks wood > 0); keeps CI fast.
   await page.evaluate(() => {
     const w = window as unknown as { __game?: { advanceFrames?: (n: number) => void } };
-    w.__game?.advanceFrames?.(3600);
+    w.__game?.advanceFrames?.(600);
   });
   await page.waitForTimeout(300);
   type Snap = { wood: number; used: number; mode: string };
