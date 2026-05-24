@@ -12,14 +12,17 @@
 
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
-import { Building, FactionBase, Health } from '@/ecs/components';
+import { axialToWorld } from '@/core/hex';
+import { Building, FactionBase, Health, HexPosition } from '@/ecs/components';
 import type { DamageEvent } from '@/ecs/systems/combat';
 import type { GameState } from '@/game/game-state';
+import { cameraView } from '@/render/camera-view';
 import {
   createAudioBuses,
   duckMusic,
   playMusic,
   playSound,
+  playSoundAt,
   restoreMusic,
   startAmbient,
   stopAmbient,
@@ -78,15 +81,33 @@ export function useAudio(game: GameState): void {
       // sounds, just the deflect.
       const meleeMap = SOUND_FOR_EVENT['combat-hit-melee'];
       const parryMap = SOUND_FOR_EVENT['combat-parry'];
+      // M_EXPANSION.AU.48 — 3D-positional combat audio. Pull the
+      // target's world position from its HexPosition trait + the
+      // current camera view (cameraView is mutated by CameraRig).
+      // Falls back to plain playSound if the target has no position
+      // (shouldn't happen but defensive).
+      const camPos = { x: cameraView.targetX, z: cameraView.targetZ };
+      const camAz = cameraView.azimuth;
+      const positionalPlay = (
+        bus: 'sfx',
+        soundId: string,
+        ev: (typeof events)[number],
+      ): void => {
+        const hex = ev.target.get(HexPosition);
+        if (!hex) {
+          playSound(buses, bus, soundId);
+          return;
+        }
+        const w = axialToWorld(hex.q, hex.r);
+        playSoundAt(buses, bus, soundId, w, camPos, camAz);
+      };
       for (const ev of events) {
         if (ev.parried) {
-          playSound(buses, parryMap.bus, resolveSoundId(parryMap));
+          positionalPlay('sfx', resolveSoundId(parryMap), ev);
           continue;
         }
         if (ev.isCrit) {
-          // Crit: play the magic-impact stab instead of (not in addition to) the
-          // regular hit — one sound per crit event keeps it punchy.
-          playSound(buses, critMap.bus, resolveSoundId(critMap));
+          positionalPlay('sfx', resolveSoundId(critMap), ev);
           continue;
         }
         const map =
@@ -97,7 +118,7 @@ export function useAudio(game: GameState): void {
               : ev.isMeleeSword
                 ? meleeMap
                 : hitMap;
-        playSound(buses, map.bus, resolveSoundId(map));
+        positionalPlay('sfx', resolveSoundId(map), ev);
       }
     }
 

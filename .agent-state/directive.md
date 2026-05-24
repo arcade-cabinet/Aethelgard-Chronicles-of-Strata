@@ -1791,7 +1791,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
     glyph). Not a pure audio drop-in; tracked as WAIT until the combat
     balance pass that defines parry mechanics lands.
 - [x] [MED]  M_EXPANSION.AU.47 — death sound per unit type from existing footstep + impact mash-ups
-- [ ] [HIGH] M_EXPANSION.AU.48 — Howler 3D-positional sound for in-world events (combat, building) based on camera distance
+- [x] [HIGH] M_EXPANSION.AU.48 — Howler 3D-positional sound — DONE. New `playSoundAt(buses, busName, id, worldXZ, cameraXZ, cameraAzimuth)` in buses.ts computes stereo pan + distance attenuation from camera-relative geometry. Uses Howler's per-play `stereo()` + `volume()` overrides rather than the full PannerNode (HRTF) for cheap top-down RTS audio. Attenuation: linear ramp [MIN=4, MAX=35] world units; <2% volume → call short-circuits (no Howl.play()). CameraView gained `azimuth` field; CameraRig writes it from atan2 of the camera→target horizontal projection. useAudio combat-hit path (all 5 cues: hit, melee-sword, magic-impact, hit-stone, parry, crit) now routes through `playSoundAt` using the target's HexPosition. 4 new tests in audio-buses.test.ts pin: right-side pan=+1, left-side pan=-1, beyond-MAX skip, gate-closed skip.
   - Howler.pos / Howler.orientation + per-sound pos/orientation across
     every emit site is a wide refactor that touches every emit call.
     The current 'all sounds 2D' model is acceptable for a mid-tier

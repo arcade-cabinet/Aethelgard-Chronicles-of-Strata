@@ -75,6 +75,11 @@ export function onAudioUnlock(cb: () => void): void {
   else pendingInteractionListeners.push(cb);
 }
 
+/** Test hook — bypass the AudioContext gate for unit tests. */
+export function _setInteractionGateForTests(value: boolean): void {
+  interactionGate = value;
+}
+
 /** Get or lazily create the Howl for `id` on a bus (LRU-capped). */
 function getHowl(bus: AudioBus, id: string): Howl {
   // Map iteration order is insertion order — deletes from the front
@@ -110,6 +115,62 @@ export function playSound(buses: AudioBuses, busName: keyof AudioBuses, id: stri
   if (!interactionGate) return;
   const bus = buses[busName];
   getHowl(bus, id).play();
+}
+
+/**
+ * M_EXPANSION.AU.48 — 3D-positional one-shot. Plays `id` on `bus`
+ * with stereo pan + distance attenuation computed from the
+ * camera-relative azimuth of `worldXZ`. Used for combat hits and
+ * building-completed cues so an off-screen left-side fight sounds
+ * left, a distant fight sounds quiet.
+ *
+ * Uses the cheap stereo+volume model rather than Howler's full
+ * PannerNode (HRTF) — sufficient for top-down RTS audio and avoids
+ * Howler's deeper Web Audio panner overhead per sound. Falls back
+ * to plain playSound when the audio context isn't unlocked.
+ *
+ * Distance attenuation:
+ *   <= MIN_DIST     → full volume
+ *   >= MAX_DIST     → silenced
+ *   in between      → linear ramp
+ * Stereo pan ranges -1..+1; left units = -1, right = +1.
+ */
+const SPATIAL_MIN_DIST = 4;
+const SPATIAL_MAX_DIST = 35;
+export function playSoundAt(
+  buses: AudioBuses,
+  busName: keyof AudioBuses,
+  id: string,
+  worldXZ: { x: number; z: number },
+  cameraXZ: { x: number; z: number },
+  cameraAzimuth: number,
+): void {
+  if (!interactionGate) return;
+  const dx = worldXZ.x - cameraXZ.x;
+  const dz = worldXZ.z - cameraXZ.z;
+  const dist = Math.hypot(dx, dz);
+  // distance attenuation factor [0, 1]
+  let attenuation = 1;
+  if (dist >= SPATIAL_MAX_DIST) attenuation = 0;
+  else if (dist > SPATIAL_MIN_DIST) {
+    attenuation = 1 - (dist - SPATIAL_MIN_DIST) / (SPATIAL_MAX_DIST - SPATIAL_MIN_DIST);
+  }
+  // Skip outright if effectively silent.
+  if (attenuation < 0.02) return;
+  // Stereo pan: project the world delta onto the camera's right vector.
+  // Camera azimuth = yaw around world up. Right vector = (cos(az), -sin(az))
+  // in x/z plane (right-handed coord system: +x right, -z forward).
+  const rightX = Math.cos(cameraAzimuth);
+  const rightZ = -Math.sin(cameraAzimuth);
+  // Normalize the delta so very-close sounds aren't extreme-panned.
+  const normLen = Math.max(0.001, dist);
+  const pan = Math.max(-1, Math.min(1, (dx * rightX + dz * rightZ) / normLen));
+  const bus = buses[busName];
+  const howl = getHowl(bus, id);
+  const playId = howl.play();
+  // Howler accepts per-play stereo + volume overrides via the second arg.
+  howl.stereo(pan, playId);
+  howl.volume(bus.volume * attenuation, playId);
 }
 
 /** Currently-playing music Howl (module-level for stop-on-switch). */

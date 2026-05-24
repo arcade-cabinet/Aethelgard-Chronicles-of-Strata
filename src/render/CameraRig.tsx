@@ -60,6 +60,13 @@ export function CameraRig({ viewport, boardRadius }: CameraRigProps) {
       cameraView.targetX = t.x;
       cameraView.targetZ = t.z;
       cameraView.distance = camera.position.distanceTo(t);
+      // M_EXPANSION.AU.48 — record camera yaw so playSoundAt can
+      // compute stereo pan for in-world events. Yaw is the angle
+      // of the camera→target vector in the x/z plane (atan2 of the
+      // horizontal projection).
+      const dx = t.x - camera.position.x;
+      const dz = t.z - camera.position.z;
+      cameraView.azimuth = Math.atan2(dx, -dz);
     };
     controls.addEventListener('change', onChange);
     return () => controls.removeEventListener('change', onChange);

@@ -14,6 +14,12 @@ export interface CameraView {
   targetZ: number;
   /** Current camera distance (zoom) — small = close, large = far. */
   distance: number;
+  /**
+   * M_EXPANSION.AU.48 — camera yaw around world-up (radians).
+   * 0 = looking along -Z (north). Used by playSoundAt to compute
+   * stereo pan for in-world events.
+   */
+  azimuth: number;
 }
 
 /** The live camera view. Mutated in place by `CameraRig`. */
@@ -21,4 +27,5 @@ export const cameraView: CameraView = {
   targetX: 0,
   targetZ: 0,
   distance: 60,
+  azimuth: 0,
 };
