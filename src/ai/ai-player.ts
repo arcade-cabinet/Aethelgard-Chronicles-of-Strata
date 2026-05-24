@@ -3,6 +3,7 @@ import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import {
   Building,
   type BuildingType,
+  EnemyTarget,
   type Faction,
   FactionTrait,
   HexPosition,
@@ -438,6 +439,16 @@ class MoveMilitaryGoal extends Goal<AiPlayer> {
     // engage radius. In AI-vs-AI matchups where bases are
     // ~10 hexes apart, that's the difference between 0 kills and
     // a finished match.
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-G follow-on — also set EnemyTarget
+    // on each military unit pointing at the OPPOSING FactionBase
+    // entity. Combat system already targets ANY Health-bearing entity
+    // referenced by EnemyTarget.targetId (it uses world.query(Health)
+    // for the byId map). Without this, Footmen arriving near the
+    // base would target nearby enemy UNITS but never the base
+    // building itself — which is the actual win condition.
+    const opposingBase =
+      owner.faction === 'player' ? owner.game.enemyBaseEntity : owner.game.townHallEntity;
+    const opposingBaseId = Number(opposingBase);
     let any = false;
     for (const e of owner.game.world.query(Unit, FactionTrait)) {
       if (e.get(FactionTrait)?.faction !== owner.faction) continue;
@@ -447,6 +458,11 @@ class MoveMilitaryGoal extends Goal<AiPlayer> {
       // sees mid-route, not just sits idle at the destination.
       if (e.has(Stance)) e.set(Stance, { mode: 'aggressive' });
       const path = moveUnit(owner.game, e, target, owner.faction);
+      // Target the opposing base directly so combat damages it on
+      // arrival. Defensive units already in combat keep their
+      // current target via the combat tick's currentTargetAlive
+      // check; this only overrides while we're moving to attack.
+      if (e.has(EnemyTarget)) e.set(EnemyTarget, { targetId: opposingBaseId });
       if (path) any = true;
     }
     this.status = any ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;

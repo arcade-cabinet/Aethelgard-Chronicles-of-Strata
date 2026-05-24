@@ -593,7 +593,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   const townHallEntity = world.spawn(
     HexPosition({ q: center.q, r: center.r, level: center.level }),
     Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
-    Health({ current: 3000 + bonusHp, max: 3000 + bonusHp }),
+    Health({ current: 1800 + bonusHp, max: 1800 + bonusHp }),
     FactionTrait({ faction: 'player' }),
     FactionBase({ faction: 'player' }),
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
@@ -669,7 +669,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     }),
     // M_FUN.QA.AIVAI.TUNE.PATTERN-C — equalised AND raised to
     // 1500 HP. Symmetric with the player TownHall above.
-    Health({ current: 3000, max: 3000 }),
+    Health({ current: 1800, max: 1800 }),
     FactionTrait({ faction: 'enemy' }),
     FactionBase({ faction: 'enemy' }),
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
