@@ -27,12 +27,15 @@ function TilePick({
   z,
   onLeft,
   onRight,
+  onHover,
 }: {
   x: number;
   y: number;
   z: number;
   onLeft: () => void;
   onRight: () => void;
+  /** M_EXPANSION.U.108 — fires on pointer-over; null on leave. */
+  onHover?: () => void;
 }) {
   const longPressRef = useRef<{ timer: number; fired: boolean } | null>(null);
   return (
@@ -44,6 +47,10 @@ function TilePick({
       position={[x, y, z]}
       rotation={[0, Math.PI / 6, 0]}
       geometry={pickGeometry}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        onHover?.();
+      }}
       onPointerDown={(e) => {
         e.stopPropagation();
         const ne = e.nativeEvent as PointerEvent;
@@ -126,6 +133,10 @@ export function TileInteraction({
   spawnTrackingRing?: (q: number, r: number) => void;
 }) {
   const [pathKeys, setPathKeys] = useState<string[]>([]);
+  // M_EXPANSION.U.108 — hovered tile (q,r) for the build-mode ghost.
+  const [hoveredTile, setHoveredTile] = useState<{ q: number; r: number; level: number } | null>(
+    null,
+  );
   // M_AUDIT2.SEC2.26 — 100ms click cooldown. Auto-clickers can chain
   // build placements faster than the economy tick can validate (multiple
   // resource-spends before any tick runs). 100ms is invisible to humans.
@@ -212,9 +223,38 @@ export function TileInteraction({
             z={z}
             onLeft={() => onPick(t.q, t.r)}
             onRight={() => onRightPick(t.q, t.r)}
+            onHover={() => setHoveredTile({ q: t.q, r: t.r, level: t.level })}
           />
         );
       })}
+      {/*
+        M_EXPANSION.U.108 — build-mode ghost. Translucent disc at the
+        hovered tile while a build context is active; lets the player
+        see "would this fit here" before clicking.
+      */}
+      {buildContext && hoveredTile && <BuildGhost tile={hoveredTile} />}
     </>
+  );
+}
+
+/**
+ * M_EXPANSION.U.108 — translucent build-mode ghost. A cyan disc the
+ * size of one hex, hovering 0.05 above tile level, with 40% opacity
+ * so the underlying terrain colour still reads. Lets the player see
+ * "would the next click place a building HERE?" without any mesh
+ * load for the building type itself (a full-fidelity ghost would
+ * need a useGLTF per building type — overkill for first pass).
+ */
+const ghostGeo = new CylinderGeometry(HEX_RADIUS * 0.9, HEX_RADIUS * 0.9, 0.08, 6, 1, false);
+function BuildGhost({ tile }: { tile: { q: number; r: number; level: number } }) {
+  const { x, z } = axialToWorld(tile.q, tile.r);
+  return (
+    <mesh
+      position={[x, tile.level * TILE_HEIGHT + 0.15, z]}
+      rotation={[0, Math.PI / 6, 0]}
+      geometry={ghostGeo}
+    >
+      <meshBasicMaterial color="#38bdf8" transparent opacity={0.4} />
+    </mesh>
   );
 }

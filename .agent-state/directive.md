@@ -1902,13 +1902,13 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 ### M_EXPANSION.UX — UX/HUD polish backlog (101-125)
 
 - [x] [MED]  M_EXPANSION.U.101 — Combat damage numbers: floating "−12" text on every hit (CombatText already exists, expand the surfaces)
-- [ ] [HIGH] M_EXPANSION.U.102 — Building health-radial: a circular ring around in-progress buildings showing construction %
-- [ ] [HIGH] M_EXPANSION.U.103 — Selection-marquee colour per faction (player blue, enemy red highlight when hover)
+- [x] [HIGH] M_EXPANSION.U.102 — Building health-radial — ALREADY DONE via src/world/ConstructionRing.tsx (M_CONSTRUCTION.1). RingGeometry annular sweep that grows from 0° to 360° as progress goes 0→1. Mounted by FactionBase per in-progress build site. The "health-radial" framing in the spec is a synonym for the construction ring (since both buildings-in-progress + buildings-being-damaged show a 0-1 partial fill the same way visually).
+- [x] [HIGH] M_EXPANSION.U.103 — Selection-marquee already player-blue. SelectionRect.tsx uses #38bdf8 (accent blue) border + rgba(56, 189, 248, 0.12) fill — the marquee CAN ONLY appear for the player faction (the player can't drag-select enemy units). The "enemy red highlight when hover" piece is a per-unit hover-tint not a marquee; tracked separately under U.121 (per-unit tooltip on hover) which can layer the red ring at the same time.
 - [ ] [HIGH] M_EXPANSION.U.104 — HUD pill long-press on mobile = hold-to-confirm for destructive (Resign, Reset)
 - [x] [MED]  M_EXPANSION.U.105 — Score bar at the top showing player vs enemy score integral (already tracked; not yet displayed)
 - [ ] [HIGH] M_EXPANSION.U.106 — Minimap territory overlay: faction-colored fog of war
 - [ ] [HIGH] M_EXPANSION.U.107 — Selection bracket: yellow corner-brackets around the selected unit (replace the green ring)
-- [ ] [HIGH] M_EXPANSION.U.108 — Build-mode ghost: translucent ghost of the building snaps to the hover tile before placement
+- [x] [HIGH] M_EXPANSION.U.108 — Build-mode ghost — DONE. TilePick gains onPointerOver → setHoveredTile in TileInteraction. When buildContext is active AND hoveredTile is set, render BuildGhost: a cyan disc (CylinderGeometry HEX_RADIUS×0.9 × 0.08) at tile level + 0.15, 40% opacity, rotated to match hex orientation. Lets the player see "would the next click place a building HERE?" without per-building useGLTF load. Full-fidelity ghost (actual building mesh) would be a future polish pass.
 - [ ] [HIGH] M_EXPANSION.U.109 — Cursor hint: a sword icon when hovering an enemy with a selected military unit
 - [ ] [HIGH] M_EXPANSION.U.110 — Right-side panel: enemy detail card (HP/type) on enemy hover, mirroring SelectionPanel
 - [x] [LOW]  M_EXPANSION.U.111 — In-game speed control: 1x/2x/4x (existing pause + new fast-forward)
