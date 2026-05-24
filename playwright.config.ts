@@ -33,18 +33,10 @@ const PORT = Number.isInteger(configuredPort) && configuredPort > 0 ? configured
 const BASE_URL = `http://127.0.0.1:${PORT}/`;
 const REUSE_SERVER = !IS_CI && process.env.PW_REUSE_SERVER === '1';
 
-// WebGL launch args. M_POLISH3.SCENE.1 — dropped --use-angle=gl +
-// --no-sandbox (both implicated in WebGL Context Lost on macOS
-// Chromium under headless). Keep minimal: WebGL on, blocklist
-// bypass, mute audio, prevent background throttling.
-const GAME_ARGS = [
-  '--enable-webgl',
-  '--ignore-gpu-blocklist',
-  '--mute-audio',
-  '--disable-background-timer-throttling',
-  '--disable-backgrounding-occluded-windows',
-  '--disable-renderer-backgrounding',
-];
+// M_POLISH3.SCENE.1 — root cause of canvas-blank was 3 of 5
+// public/assets/fonts/*.ttf files being HTML 404 pages, not TTFs;
+// troika-three-text threw on first <Text> render and tore down the
+// whole r3f Scene. Default Chromium args work; no GPU flags needed.
 
 const includeVisual = process.env.VISUAL === '1';
 const includeMultiview = process.env.MULTIVIEW === '1' || includeVisual;

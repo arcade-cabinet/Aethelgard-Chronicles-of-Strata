@@ -31,3 +31,56 @@ export const FONT_METAMORPHOUS = `${BASE}/assets/fonts/Metamorphous-Regular.ttf`
 
 /** Default font for in-world <Text /> labels — body weight. */
 export const WORLD_TEXT_FONT = FONT_INTER_BOLD;
+
+/**
+ * The five TTFs that MUST exist + be valid TrueType. The asset-ingest
+ * pipeline (and any future asset migration) must never let an HTML
+ * 404 page sneak in as `*.ttf` — when troika-three-text parses such
+ * a file, it throws synchronously on first <Text> render and tears
+ * down the entire r3f Scene with it. The validator below runs once
+ * at app boot, fetches each URL, checks the magic bytes, and pushes
+ * a console.error (caught by ErrorOverlay) if any file is broken.
+ */
+const ALL_FONTS: ReadonlyArray<{ name: string; url: string }> = [
+  { name: 'Inter-Regular', url: FONT_INTER_REGULAR },
+  { name: 'Inter-Bold', url: FONT_INTER_BOLD },
+  { name: 'Cinzel-Regular', url: FONT_CINZEL_REGULAR },
+  { name: 'Cinzel-Bold', url: FONT_CINZEL_BOLD },
+  { name: 'Metamorphous', url: FONT_METAMORPHOUS },
+];
+
+/** TrueType (0x00010000), OpenType ('OTTO'), and TTC ('ttcf') magics. */
+const TTF_MAGICS = new Set(['00010000', '4f54544f', '74746366']);
+
+let validationStarted = false;
+/**
+ * Fetch each TTF, read first 4 bytes, validate against the known
+ * TrueType / OpenType magics. Any broken file → console.error → the
+ * ErrorOverlay surfaces the failure to the player. Idempotent — safe
+ * to call multiple times.
+ */
+export function validateWorldFonts(): void {
+  if (validationStarted) return;
+  validationStarted = true;
+  for (const { name, url } of ALL_FONTS) {
+    fetch(url)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`${name} HTTP ${res.status}`);
+        const buf = await res.arrayBuffer();
+        if (buf.byteLength < 4) throw new Error(`${name} truncated (${buf.byteLength}B)`);
+        const head = Array.from(new Uint8Array(buf, 0, 4))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+        if (!TTF_MAGICS.has(head)) {
+          throw new Error(
+            `${name} is NOT a TrueType/OpenType font (magic=0x${head}, ` +
+              `expected 00010000 / 4f54544f / 74746366). Re-download from ` +
+              `https://cdn.jsdelivr.net/fontsource/fonts/<family>@latest/latin-<weight>-normal.ttf`,
+          );
+        }
+      })
+      .catch((err) => {
+        console.error('[world-text-font] validation failed:', err);
+      });
+  }
+}

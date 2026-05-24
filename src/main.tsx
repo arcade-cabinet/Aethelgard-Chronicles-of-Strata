@@ -12,6 +12,7 @@ import '@fontsource/inter/700.css';
 import '@fontsource/inter/800.css';
 import '@fontsource/inter/900.css';
 import { reportError } from '@/lib/telemetry';
+import { validateWorldFonts } from '@/world/world-text-font';
 import { App } from './App';
 
 // M_AUDIT2.SEC2.47 — global error capture wired into the telemetry
@@ -113,6 +114,15 @@ if (typeof window !== 'undefined') {
       },
     );
   });
+}
+
+// M_POLISH3.SCENE.1 — validate the world-text TTFs at app boot.
+// If any TTF is missing / corrupted / an HTML 404 page (the failure
+// mode that just took down the whole r3f Scene because troika-three-
+// text throws synchronously on bad TTF), the validator pushes a
+// console.error which the ErrorOverlay surfaces to the player.
+if (typeof window !== 'undefined') {
+  validateWorldFonts();
 }
 
 const rootEl = document.getElementById('root');
