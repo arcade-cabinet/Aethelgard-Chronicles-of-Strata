@@ -6,6 +6,7 @@ import {
   type Faction,
   FactionTrait,
   HexPosition,
+  Stance,
   Unit,
 } from '@/ecs/components';
 import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
@@ -423,18 +424,37 @@ function firstPulsingTile(game: GameState, faction: Faction): string | null {
 class MoveMilitaryGoal extends Goal<AiPlayer> {
   activate(): void {
     const owner = this.owner as AiPlayer;
-    const unit = firstMilitary(owner.game, owner.faction);
     const defendKey = firstPulsingTile(owner.game, owner.faction);
     const target = defendKey ?? discoveredEnemyTile(owner.game, owner.faction);
-    if (!unit || !target) {
+    if (!target) {
       this.status = Goal.STATUS.FAILED;
       return;
     }
-    const path = moveUnit(owner.game, unit, target, owner.faction);
-    this.status = path ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
-    if (path) owner.lastGoal = defendKey ? 'defend' : 'move-military';
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-B — send EVERY ready military unit
+    // (not just the first one) AND flip its stance to 'aggressive'
+    // so it pursues opportunistically en route. Previously only the
+    // first Footman moved; the rest sat at base in 'defensive'
+    // stance and never engaged anyone outside their commanded-tile
+    // engage radius. In AI-vs-AI matchups where bases are
+    // ~10 hexes apart, that's the difference between 0 kills and
+    // a finished match.
+    let any = false;
+    for (const e of owner.game.world.query(Unit, FactionTrait)) {
+      if (e.get(FactionTrait)?.faction !== owner.faction) continue;
+      const utype = e.get(Unit)?.unitType;
+      if (!utype || !MILITARY_TYPES.has(utype)) continue;
+      // Flip stance to aggressive so the unit chases targets it
+      // sees mid-route, not just sits idle at the destination.
+      if (e.has(Stance)) e.set(Stance, { mode: 'aggressive' });
+      const path = moveUnit(owner.game, e, target, owner.faction);
+      if (path) any = true;
+    }
+    this.status = any ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
+    if (any) owner.lastGoal = defendKey ? 'defend' : 'move-military';
   }
 }
+
+const MILITARY_TYPES = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
 
 // ---------------------------------------------------------------------------
 // Train evaluator + goal — verb 2 of 3 (M_AI_DEPTH.2)

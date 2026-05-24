@@ -3,6 +3,20 @@
   "recordedAt": "2026-05-24",
   "runs": [
     {
+      "player": "the-builder",
+      "enemy": "the-builder",
+      "seed": "balance-the-builder-vs-the-builder",
+      "outcome": "loss",
+      "elapsedTurns": 0,
+      "totalKills": 0,
+      "buildingsPlayer": 3,
+      "buildingsEnemy": 0,
+      "peakSupplyPlayer": 6,
+      "peakSupplyEnemy": 5,
+      "resolvedWithinBudget": true,
+      "chunksRan": 3
+    },
+    {
       "player": "the-raider",
       "enemy": "the-raider",
       "seed": "balance-the-raider-vs-the-raider",
@@ -11,20 +25,6 @@
       "totalKills": 0,
       "buildingsPlayer": 1,
       "buildingsEnemy": 0,
-      "peakSupplyPlayer": 6,
-      "peakSupplyEnemy": 5,
-      "resolvedWithinBudget": false,
-      "chunksRan": 60
-    },
-    {
-      "player": "the-builder",
-      "enemy": "the-builder",
-      "seed": "balance-the-builder-vs-the-builder",
-      "outcome": "playing",
-      "elapsedTurns": 10,
-      "totalKills": 0,
-      "buildingsPlayer": 3,
-      "buildingsEnemy": 2,
       "peakSupplyPlayer": 6,
       "peakSupplyEnemy": 5,
       "resolvedWithinBudget": false,
@@ -45,6 +45,20 @@
       "chunksRan": 60
     },
     {
+      "player": "the-mad-king",
+      "enemy": "the-mad-king",
+      "seed": "balance-the-mad-king-vs-the-mad-king",
+      "outcome": "loss",
+      "elapsedTurns": 1,
+      "totalKills": 1,
+      "buildingsPlayer": 2,
+      "buildingsEnemy": 1,
+      "peakSupplyPlayer": 7,
+      "peakSupplyEnemy": 7,
+      "resolvedWithinBudget": true,
+      "chunksRan": 4
+    },
+    {
       "player": "the-builder",
       "enemy": "the-raider",
       "seed": "balance-the-builder-vs-the-raider",
@@ -57,20 +71,6 @@
       "peakSupplyEnemy": 10,
       "resolvedWithinBudget": true,
       "chunksRan": 15
-    },
-    {
-      "player": "the-mad-king",
-      "enemy": "the-mad-king",
-      "seed": "balance-the-mad-king-vs-the-mad-king",
-      "outcome": "playing",
-      "elapsedTurns": 10,
-      "totalKills": 0,
-      "buildingsPlayer": 1,
-      "buildingsEnemy": 0,
-      "peakSupplyPlayer": 6,
-      "peakSupplyEnemy": 5,
-      "resolvedWithinBudget": false,
-      "chunksRan": 60
     },
     {
       "player": "the-diplomat",
@@ -115,6 +115,20 @@
       "chunksRan": 4
     },
     {
+      "player": "the-mad-king",
+      "enemy": "the-builder",
+      "seed": "balance-the-mad-king-vs-the-builder",
+      "outcome": "win",
+      "elapsedTurns": 0,
+      "totalKills": 1,
+      "buildingsPlayer": 1,
+      "buildingsEnemy": 2,
+      "peakSupplyPlayer": 6,
+      "peakSupplyEnemy": 5,
+      "resolvedWithinBudget": true,
+      "chunksRan": 3
+    },
+    {
       "player": "the-hoarder",
       "enemy": "the-mad-king",
       "seed": "balance-the-hoarder-vs-the-mad-king",
@@ -125,20 +139,6 @@
       "buildingsEnemy": 0,
       "peakSupplyPlayer": 9,
       "peakSupplyEnemy": 5,
-      "resolvedWithinBudget": false,
-      "chunksRan": 60
-    },
-    {
-      "player": "the-mad-king",
-      "enemy": "the-builder",
-      "seed": "balance-the-mad-king-vs-the-builder",
-      "outcome": "playing",
-      "elapsedTurns": 10,
-      "totalKills": 0,
-      "buildingsPlayer": 1,
-      "buildingsEnemy": 6,
-      "peakSupplyPlayer": 6,
-      "peakSupplyEnemy": 14,
       "resolvedWithinBudget": false,
       "chunksRan": 60
     }
