@@ -238,11 +238,15 @@ mechanic work that follows is built on this.
 
 ### v0.4.4 — Forest ambush + elevation (PRD §7.4)
 
-- [ ] [WAIT-DEPS] M_FUN.MAP.FOREST — FOREST blocks ranged LoS.
-- [ ] [WAIT-DEPS] M_FUN.MAP.HIGHLAND — HIGHLAND grants +1 range
-  to ranged units standing on it.
-- [ ] [WAIT-DEPS] M_FUN.MAP.AMBUSH — defender +20% dmg when
-  initiating from FOREST.
+- [x] M_FUN.MAP.FOREST — DONE 2026-05-24 commit 7d55542.
+  hexLine() + combat.ts scans intervening tiles for FOREST on
+  ranged attacks; shot aborts if blocked. Melee unaffected.
+- [x] M_FUN.MAP.HIGHLAND — DONE 2026-05-24 commit 7d55542.
+  HIGHLAND attacker (attackRange > 1) gets +1 effective range
+  in combatSystem.
+- [x] M_FUN.MAP.AMBUSH — DONE 2026-05-24 commit 7d55542.
+  FOREST attacker = +20% damage via terrainMultiplier; 4-test
+  pin in biome-tactics.test.ts.
 
 ### v0.4.5 — Per-mode generator strategies (PRD §7.5)
 

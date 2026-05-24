@@ -20,11 +20,14 @@ describe('M_TURNS.2 — turn cap victory', () => {
     });
     expect(game.turn).toBeDefined();
     if (!game.turn) throw new Error('turn missing — age-of-strata should instantiate it');
-    // Seed both sides with zones — player has more.
-    game.zones.player.controlled.add('0,0');
-    game.zones.player.controlled.add('1,0');
-    game.zones.player.controlled.add('2,0');
-    game.zones.enemy.controlled.add('5,0');
+    // M_FUN.MAP — seedZonesFromAttractors gives the enemy ~7 tiles
+    // (radius-2 hex) at start; for the win-branch assertion we need
+    // player.controlled.size > enemy.controlled.size. Clear both,
+    // then stack the deck for player explicitly.
+    game.zones.player.controlled.clear();
+    game.zones.enemy.controlled.clear();
+    for (let q = 0; q <= 5; q++) game.zones.player.controlled.add(`${q},0`);
+    game.zones.enemy.controlled.add('8,0');
     // Drive the turn timer to 0 twice to trigger the cap.
     game.turn.secondsRemaining = 0.01;
     runEconomyTick(game, 1);

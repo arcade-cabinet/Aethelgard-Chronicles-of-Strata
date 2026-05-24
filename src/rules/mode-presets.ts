@@ -46,6 +46,13 @@ export interface ModePreset {
  * Advanced reveals the individual axes for override.
  */
 export const MODE_PRESETS: Record<GameMode, ModePreset> = {
+  // M_FUN.MAP.PER_MODE — each mode gets a mapType matching its
+  // mechanical identity from PRD-v0.4 §3 / spec 120 § per-mode
+  // design. The mapType drives generator behaviour per the
+  // src/config/mapgen.json#mapTypes registry.
+  //
+  // border-clash → balanced: 1v1 RTS, central funnel choke,
+  //   mountain massif divides bases ~equally.
   'border-clash': {
     mapSize: 'medium',
     matchLength: 'short',
@@ -55,24 +62,30 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     invulnerableBases: false,
     maxTurns: null,
   },
+  // frontier-raid → dry-land: badlands feel, dense mountain
+  //   ridge-lines force multiple short chokes; rush military meta.
   'frontier-raid': {
     mapSize: 'small',
     matchLength: 'short',
     turnsMode: 'real-time',
-    mapType: 'balanced',
-    guidedMapGen: false,
+    mapType: 'dry-land',
+    guidedMapGen: true,
     invulnerableBases: false,
     maxTurns: null,
   },
+  // long-reign → continent: larger landmass, denser mountains,
+  //   multiple redundant chokes — attrition match.
   'long-reign': {
     mapSize: 'large',
     matchLength: 'endless',
     turnsMode: 'real-time',
-    mapType: 'balanced',
+    mapType: 'continent',
     guidedMapGen: true,
     invulnerableBases: true,
     maxTurns: null,
   },
+  // strata-wars → continent: layered chokes around central
+  //   contested zone; longer match.
   'strata-wars': {
     mapSize: 'large',
     matchLength: 'medium',
@@ -82,11 +95,13 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     invulnerableBases: false,
     maxTurns: null,
   },
+  // age-of-strata → archipelago: 4X exploration; many islands +
+  //   channels-as-funnels reward scouting + naval/settler play.
   'age-of-strata': {
     mapSize: 'huge',
     matchLength: 'long',
     turnsMode: 'turn-based',
-    mapType: 'continent',
+    mapType: 'archipelago',
     guidedMapGen: true,
     invulnerableBases: false,
     // M_TURNS.2 — 60 turns is the 4X-genre canonical match length
@@ -94,15 +109,17 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     // enough that a session fits in one sitting.
     maxTurns: 60,
   },
-  // M_EXPANSION.F.100 — Coexistence: no win condition.
-  // invulnerableBases prevents either base from dying; endless
-  // match-length disables the resign-by-starvation flip. Game runs
-  // until the player closes the window — useful for builder-mode play.
+  // M_EXPANSION.F.100 — Coexistence: no win condition. Sparse
+  //   mountains (archipelago) keep the sandbox permissive;
+  //   invulnerableBases prevents either base from dying;
+  //   endless match-length disables the resign-by-starvation flip.
+  //   Game runs until the player closes the window — useful for
+  //   builder-mode play.
   coexistence: {
     mapSize: 'large',
     matchLength: 'endless',
     turnsMode: 'real-time',
-    mapType: 'balanced',
+    mapType: 'archipelago',
     guidedMapGen: true,
     invulnerableBases: true,
     maxTurns: null,
