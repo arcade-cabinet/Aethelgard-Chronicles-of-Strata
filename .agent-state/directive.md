@@ -2170,10 +2170,10 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 
 - [x] [BLOCKER] M_POLISH3.B.1 — DUPLICATE OF M_POLISH3.SCENE.1. RESOLVED 2026-05-24 commit ce0d739. Was NOT WebGL/ANGLE — root cause was 3 of 5 public/assets/fonts/*.ttf files being HTML 404 pages, not real TTFs. troika-three-text threw on first <Text> render and tore down the entire r3f Scene; identical failure in headed Chrome. Fix: re-downloaded all 5 fonts from fontsource jsDelivr; added validateWorldFonts() boot guardrail. journey-capture artifacts now show the full island scene.
 - [ ] [BLOCKER] M_POLISH3.B.2 — HUD chrome collision on desktop landscape: WinConditionPill ("Destroy enemy base") is half-clipped + the right pill cluster (Audio/Pause) overlaps neighbouring pills. The MOBILE.B.2 fix only addressed portrait; desktop landscape still crowds. Repro: artifacts/journey/03-game-fresh-start.png. Fix in HudPill SLOT_POSITIONS.landscape with explicit gap budget.
-- [ ] [HIGH] M_POLISH3.S.1 — `window.__game_advanceFrames` hook wired this commit; test specs migrated from `__game?.advanceFrames`. Audit every old spec to use the new hook (some may still reference the old path).
-- [ ] [HIGH] M_POLISH3.S.2 — `?mode=` URL param: NewGameModal randomises mode internally. Wire URL → initial mode so per-mode-match.spec.ts can drive specific modes (currently skipped).
+- [x] [HIGH] M_POLISH3.S.1 — DONE — audit complete. `grep advanceFrames tests/` shows only `__game_advanceFrames` (the new hook); no spec still uses the old `__game?.advanceFrames` path.
+- [x] [HIGH] M_POLISH3.S.2 — DONE — `?mode=X` URL param already wired in App.tsx URL-driven auto-start (commit 19f6c22). per-mode-journey + per-mode-match specs can drive specific modes via this.
 - [ ] [HIGH] M_POLISH3.S.3 — Save/load Continue button enabled-after-save: persistence.list() refresh is async + the title screen caches. Add a save-notification stream the title screen subscribes to OR expose a force-refresh dev hook. Unblocks save-load e2e.
-- [ ] [HIGH] M_POLISH3.S.4 — Onboarding overlay blocks force-outcome screenshots. journey-capture's 06-game-over-win shows onboarding instead of GameOverModal because `Skip` button finds-but-doesn't-click in time. Either expose a `__game_skipOnboarding()` hook OR change the test to await onboarding dismissal more aggressively.
+- [x] [HIGH] M_POLISH3.S.4 — DONE 2026-05-24 commit b5ff0f5. window.__skipOnboarding hook + dismissOnboardingAndWaitForScene helper wired across all journey specs. Also commit 21c96aa: URL-mode pre-sets the persistence flag so AI-vs-AI specs never even see the onboarding.
 
 #### M_POLISH3.JOURNEY — playthrough expansion (each capture = a moment the agent now reviews)
 
@@ -2195,9 +2195,9 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 
 #### M_POLISH3.CI — local-first CI discipline
 
-- [ ] [HIGH] M_POLISH3.CI.1 — Pre-push hook: `pnpm verify && pnpm test:browser && pnpm test:e2e` runs before any push. Catches the lint/format/test gate BEFORE it hits CI. Wire via .husky or simple .git/hooks/pre-push.
-- [ ] [HIGH] M_POLISH3.CI.2 — Vitest browser plugin parity: today browser tests run via `@vitest/browser` with playwright provider. Confirm the WebGL flags + chrome channel matches the e2e config so behavior is consistent across both test runners.
-- [ ] [HIGH] M_POLISH3.CI.3 — Sibling-project test parity audit: compare ../mean-streets, ../stellar-descent, ../martian-trail playwright + vitest configs; lift any improvements (xvfb for Linux CI, video recording, governor-test pattern, etc.).
+- [x] [HIGH] M_POLISH3.CI.1 — DONE — duplicate of M_POLISH3.LOCAL.1 (commit 1117a81). .husky/pre-push runs verify + test:browser + test:e2e.
+- [x] [HIGH] M_POLISH3.CI.2 — DONE — @vitest/browser uses playwright provider (chromium); same browser pool as e2e specs. After ce0d739 dropped the WebGL launch-arg workarounds in playwright.config.ts, default Chromium config is now shared across both.
+- [ ] [WAIT-LOW] M_POLISH3.CI.3 — Sibling-project test parity audit: compare ../mean-streets, ../stellar-descent, ../martian-trail playwright + vitest configs; lift any improvements (xvfb for Linux CI, video recording, governor-test pattern, etc.). Lower priority now that LOCAL gate is in place; revisit when CI flakiness motivates it.
 
 #### M_POLISH3.SCENE — root-cause WebGL Context Lost (added 2026-05-24)
 
