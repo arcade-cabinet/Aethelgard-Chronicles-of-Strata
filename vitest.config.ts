@@ -1,10 +1,21 @@
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import { playwright } from '@vitest/browser-playwright';
 import staticAssetsPlugin from 'vite-static-assets-plugin';
 import { defineConfig } from 'vitest/config';
 
+// M_NEXT.PLAY.1 — mirror the vite.config define so tests that mount
+// the TitleScreen (browser project) resolve __APP_VERSION__ instead
+// of throwing ReferenceError. Reads package.json#version the same way.
+const pkgVersion = (
+  JSON.parse(readFileSync(path.resolve('package.json'), 'utf8')) as { version: string }
+).version;
+
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkgVersion),
+  },
   plugins: [
     react(),
     staticAssetsPlugin({

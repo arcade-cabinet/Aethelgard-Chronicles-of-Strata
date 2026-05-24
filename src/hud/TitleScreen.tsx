@@ -163,7 +163,8 @@ export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenPr
           letterSpacing: 0.6,
         }}
       >
-        v{__APP_VERSION__} · built with r3f · koota · yuka ·{' '}
+        v{typeof __APP_VERSION__ === 'undefined' ? 'dev' : __APP_VERSION__} · built with r3f · koota
+        · yuka ·{' '}
         <button
           type="button"
           id="title-credits"
