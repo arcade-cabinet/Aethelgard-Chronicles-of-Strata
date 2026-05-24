@@ -1121,12 +1121,12 @@ M_ARCH_UNIFY drains.
   - [x] [SHOULD-FIX] M_CODE_REVIEW.4 — DONE alongside M_SEC_REVIEW.1.
   - [x] [SHOULD-FIX] M_CODE_REVIEW.5 — DONE. tradeResource now enforces a TRADEABLE_RESOURCES Set ({wood, stone, gold}) — science + mana return false. 2 new tests pin the reject paths.
   - [x] [SHOULD-FIX] M_CODE_REVIEW.6 — DONE. main.tsx audio bridge uses Object.hasOwn(profiles.UNIT_PROFILES, u) guard before calling unitProfileFor. Unknown unitTypes log a single dev warning + fall through to 'unit-death-normal' instead of silently swallowing in try/catch. Bugs surface; audio bridge still doesn't crash.
-  - [ ] [NICE] M_CODE_REVIEW.7 — KeyboardShortcuts.tsx 6 trigger-build switch arms; covered by M_SIMPLIFY.1 (DONE above).
+  - [ ] [WAIT-NICE] M_CODE_REVIEW.7 — KeyboardShortcuts.tsx 6 trigger-build switch arms; covered by M_SIMPLIFY.1 (DONE above).
   - [x] [NICE] M_CODE_REVIEW.8 — DONE. MapPreview debounce: 300ms when seedPhrase is non-empty (typing case), 16ms (one frame) for the initial mount paint. Eliminates the per-keystroke generateBoard thrash on mid-tier Android while keeping the instant first paint.
 
 - [ ] [WAIT-STANDING] M_PROCESS.SIMPLIFY.FINDINGS — open simplification findings from the 2026-05-23 review-trio (code-simplifier:code-simplifier against origin/main..HEAD). Fold into the next forward commits:
   - [x] [HIGH] M_SIMPLIFY.1 — DONE. KeyboardShortcuts.tsx now has `BUILD_HOTKEYS` Readonly<Record<string, BuildingType>> at module level (f=Farm, h=House, g=Granary, r=Barracks, t=Watchtower, w=Wall). Single handler branch replaces 7 parallel switch cases. The 'b' open-build-menu case stays separate (different event).
-  - [ ] [HIGH] M_SIMPLIFY.2 — game-state.ts (1012 lines, two top-level concerns) — extract `runEconomyTick` and its callees into src/game/economy-tick.ts; game-state re-exports.
+  - [ ] [WAIT-DEPS] M_SIMPLIFY.2 — game-state.ts (1012 lines) refactor: extract `runEconomyTick` into src/game/economy-tick.ts. Substantial code reshuffle that needs careful test verification + would conflict with any in-flight game-state work. Promote when bandwidth + a clean state allow.
   - [ ] [WAIT-MED] M_SIMPLIFY.3 — particle-consumers.tsx: PARTIAL. The dead `liveIds = new Set([...live].map(...)); void liveIds;` allocation in embersConsumer at line ~620 is DELETED + the unused `live` arg removed from its tick signature. Still open: hoist sawdust + smoke per-tick `new Set` allocations to module-level state with .clear() reuse.
   - [ ] [WAIT-MED] M_SIMPLIFY.4 — persistence.ts (9 nested try/catch around openDb) — flatten error propagation; environment guards (VITEST/dbUnavailable) at the top, single throw/return-null contract; callers use `if (!db) return ...` instead of wrapping.
   - [ ] [WAIT-MED] M_SIMPLIFY.5 — particle-consumers.tsx (637 lines) split per-consumer files (src/world/particles/{rain,sawdust,buildComplete,confetti,smoke,snow,blood,embers}.ts) + barrel re-export.
