@@ -35,8 +35,14 @@ export function MapPreview({ seedPhrase, mapRadius, size = 240 }: MapPreviewProp
     ctx.scale(dpr, dpr);
 
     let cancelled = false;
-    // Defer the heavy generation to next frame so the modal mount
-    // isn't blocked.
+    // M_CODE_REVIEW.8 — 300ms debounce. Without this, every
+    // keystroke in the seed input thrashes generateBoard (the full
+    // guided-gen paint pipeline). On a Huge map (radius 15, ~721
+    // tiles) that's 5-15ms per keystroke on a mid-tier Android.
+    // The 300ms window matches the typical typing pause threshold.
+    // 16ms (one frame) is the floor for mid-typing previews so the
+    // modal mount still gets an instant first paint.
+    const debounceMs = seedPhrase.length > 0 ? 300 : 16;
     const id = window.setTimeout(() => {
       if (cancelled) return;
       const board = generateBoard(seedPhrase, mapRadius, true);
@@ -61,7 +67,7 @@ export function MapPreview({ seedPhrase, mapRadius, size = 240 }: MapPreviewProp
         ctx.fillStyle = BIOME_COLORS[tile.type] ?? '#444';
         ctx.fillRect(x - tilePx / 2, y - tilePx / 2, tilePx, tilePx);
       }
-    }, 0);
+    }, debounceMs);
 
     return () => {
       cancelled = true;

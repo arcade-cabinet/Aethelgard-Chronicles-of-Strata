@@ -1122,7 +1122,7 @@ M_ARCH_UNIFY drains.
   - [x] [SHOULD-FIX] M_CODE_REVIEW.5 — DONE. tradeResource now enforces a TRADEABLE_RESOURCES Set ({wood, stone, gold}) — science + mana return false. 2 new tests pin the reject paths.
   - [x] [SHOULD-FIX] M_CODE_REVIEW.6 — DONE. main.tsx audio bridge uses Object.hasOwn(profiles.UNIT_PROFILES, u) guard before calling unitProfileFor. Unknown unitTypes log a single dev warning + fall through to 'unit-death-normal' instead of silently swallowing in try/catch. Bugs surface; audio bridge still doesn't crash.
   - [ ] [NICE] M_CODE_REVIEW.7 — KeyboardShortcuts.tsx 6 trigger-build switch arms; covered by M_SIMPLIFY.1 (DONE above).
-  - [ ] [NICE] M_CODE_REVIEW.8 — MapPreview.tsx generateBoard fires per keystroke; add 300ms debounce on seedPhrase for mid-tier Android.
+  - [x] [NICE] M_CODE_REVIEW.8 — DONE. MapPreview debounce: 300ms when seedPhrase is non-empty (typing case), 16ms (one frame) for the initial mount paint. Eliminates the per-keystroke generateBoard thrash on mid-tier Android while keeping the instant first paint.
 
 - [ ] [STANDING] M_PROCESS.SIMPLIFY.FINDINGS — open simplification findings from the 2026-05-23 review-trio (code-simplifier:code-simplifier against origin/main..HEAD). Fold into the next forward commits:
   - [x] [HIGH] M_SIMPLIFY.1 — DONE. KeyboardShortcuts.tsx now has `BUILD_HOTKEYS` Readonly<Record<string, BuildingType>> at module level (f=Farm, h=House, g=Granary, r=Barracks, t=Watchtower, w=Wall). Single handler branch replaces 7 parallel switch cases. The 'b' open-build-menu case stays separate (different event).
