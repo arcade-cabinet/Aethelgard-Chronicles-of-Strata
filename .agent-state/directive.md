@@ -1874,7 +1874,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
     interpolation feel vs current discrete-tile movement). WAIT until
     playtest surfaces a concrete win for the cost.
 - [x] [MED]  M_EXPANSION.S.63 — spec 98-viewport-and-config.md "ultra-wide" — viewport profile for >2.4:1 (currently only landscape/portrait branch)
-- [ ] [HIGH] M_EXPANSION.S.64 — spec 99-build-deploy.md "iOS Capacitor" — Capacitor iOS configuration in capacitor.config.ts + ios/ scaffold
+- [x] [HIGH] M_EXPANSION.S.64 — iOS Capacitor configuration — DONE. capacitor.config.ts gains an `ios:` block (webContentsDebuggingEnabled false, contentInset 'automatic' for WKWebView safe-area handling). package.json adds @capacitor/ios@8.3.4 (pinned to the same Capacitor major as core/cli/android). spec doc 99-build-deploy.md grows a "2.5 Native (Capacitor iOS)" section with the developer-onboarding commands (`pnpm exec cap add ios` is the one-shot scaffold generator since the ios/ dir is gitignored and needs Xcode locally). SQLCipher path (M_SEC.4) reuses the same Capacitor Preferences backend on iOS (Keychain-backed). Open follow-up: GitHub Actions workflow on a macOS runner to build the .ipa for App Store deploy.
   - Requires macOS Xcode + Apple Developer account to verify the scaffold
     actually builds. Tracked WAIT until target device + signing identity
     are available.
