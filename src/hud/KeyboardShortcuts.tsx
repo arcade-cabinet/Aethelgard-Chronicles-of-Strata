@@ -1,9 +1,33 @@
 import { type Entity, unpackEntity } from 'koota';
 import { useEffect } from 'react';
-import { Selectable } from '@/ecs/components';
+import { type BuildingType, Selectable } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { clearSelection, selectEntities } from '@/game/selection';
 import { cameraView } from '@/render/camera-view';
+
+/**
+ * M_EXPANSION.U.118 + M_SIMPLIFY.1 — build hotkey data table.
+ * Adding a new building hotkey is one row here, not two new switch
+ * cases in the keydown handler.
+ *
+ *   f = Farm
+ *   h = House
+ *   g = Granary
+ *   r = Barracks (R for Recruit)
+ *   t = Watchtower
+ *   w = Wall
+ *
+ * The 'b' key dispatches a different event ('open-build-menu') and
+ * is handled separately in the keydown switch.
+ */
+const BUILD_HOTKEYS: Readonly<Record<string, Exclude<BuildingType, 'TownHall'>>> = {
+  f: 'Farm',
+  h: 'House',
+  g: 'Granary',
+  r: 'Barracks',
+  t: 'Watchtower',
+  w: 'Wall',
+};
 
 /** M_EXPANSION.F.89 — module-local camera bookmark slots (1..5). */
 const cameraBookmarks = new Map<number, { x: number; z: number }>();
@@ -93,54 +117,23 @@ export function KeyboardShortcuts({ game }: { game: GameState }) {
           window.dispatchEvent(new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }));
           break;
         }
-        case 'b':
-        case 'B':
-          // M_EXPANSION.U.118 — open the build menu. SelectionPanel
-          // listens for this event when a builder unit is selected.
-          window.dispatchEvent(new CustomEvent('aethelgard:open-build-menu'));
-          break;
-        case 'f':
-        case 'F':
-          // M_EXPANSION.U.118 — direct-pick Farm.
-          window.dispatchEvent(
-            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Farm' } }),
-          );
-          break;
-        case 'h':
-        case 'H':
-          // M_EXPANSION.U.118 — direct-pick House.
-          window.dispatchEvent(
-            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'House' } }),
-          );
-          break;
-        case 'g':
-        case 'G':
-          // M_EXPANSION.U.118 — direct-pick Granary.
-          window.dispatchEvent(
-            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Granary' } }),
-          );
-          break;
-        case 'r':
-        case 'R':
-          // M_EXPANSION.U.118 — direct-pick Barracks (R for Recruit).
-          window.dispatchEvent(
-            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Barracks' } }),
-          );
-          break;
-        case 't':
-        case 'T':
-          // M_EXPANSION.U.118 — direct-pick Watchtower.
-          window.dispatchEvent(
-            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Watchtower' } }),
-          );
-          break;
-        case 'w':
-        case 'W':
-          // M_EXPANSION.U.118 — direct-pick Wall.
-          window.dispatchEvent(
-            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Wall' } }),
-          );
-          break;
+        // M_SIMPLIFY.1 — replaced 7 parallel switch cases with one
+        // data-table lookup. The map below is the contract for which
+        // letter picks which building; adding a new building type =
+        // one new map entry, not two new case lines.
+      }
+      // M_EXPANSION.U.118 + M_SIMPLIFY.1 — data-table build hotkeys.
+      const lower = e.key.toLowerCase();
+      if (lower === 'b') {
+        // open-menu dispatches a different event than the direct picks
+        window.dispatchEvent(new CustomEvent('aethelgard:open-build-menu'));
+        return;
+      }
+      const buildType = BUILD_HOTKEYS[lower];
+      if (buildType) {
+        window.dispatchEvent(
+          new CustomEvent('aethelgard:trigger-build', { detail: { type: buildType } }),
+        );
       }
     };
     document.addEventListener('keydown', onKey);

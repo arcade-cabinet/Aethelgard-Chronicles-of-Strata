@@ -146,6 +146,18 @@ export function useAudio(game: GameState): void {
           restoreMusic();
           crescendoActiveRef.current = false;
         }
+      } else if (currentOutcome === 'draw') {
+        // M_PROCESS.REVIEW must-fix #1 — draw outcome was missing
+        // from the crescendo-restore branch. Without this the music
+        // stayed ducked at 40% forever after a turn-cap tie. Use
+        // the defeat stinger as the placeholder draw cue (a future
+        // polish pass can swap in a dedicated draw stinger).
+        const map = SOUND_FOR_EVENT.defeat;
+        playSound(buses, map.bus, resolveSoundId(map));
+        if (crescendoActiveRef.current) {
+          restoreMusic();
+          crescendoActiveRef.current = false;
+        }
       }
     }
 

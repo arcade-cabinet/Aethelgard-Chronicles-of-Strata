@@ -583,7 +583,7 @@ export const embersConsumer: ParticleEmitterSpec<Ember> = {
   name: 'embers',
   seedTag: 'embers',
   lifetime: EMBER_LIFETIME,
-  tick({ game, delta, rng, live, nextId }) {
+  tick({ game, delta, rng, nextId }) {
     const fresh: Ember[] = [];
     embersState.lastTick = delta;
     for (const e of game.world.query(Building, HexPosition)) {
@@ -616,9 +616,10 @@ export const embersConsumer: ParticleEmitterSpec<Ember> = {
         });
       }
     }
-    // GC: drop ids whose entity is no longer alive
-    const liveIds = new Set([...live].map((_p) => _p.id));
-    void liveIds; // (the live arg is per-particle; entity-id GC happens via the loop above)
+    // M_SIMPLIFY.3 — removed dead `liveIds = new Set([...live].map(...)); void liveIds;`
+    // allocation. The entity-id GC happens via the loop above; the
+    // per-particle `live` arg isn't needed for ember accumulator
+    // cleanup (acc keys are entity ids, not particle ids).
     return fresh.length > 0 ? fresh : null;
   },
   renderParticle(p) {

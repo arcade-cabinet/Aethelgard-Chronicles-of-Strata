@@ -38,6 +38,24 @@ export function GameOverModal({ game }: { game: GameState }) {
   }, [game]);
 
   const isWin = outcome === 'win';
+  // M_PROCESS.REVIEW must-fix #2 — 'draw' outcome was rendering
+  // as "Defeat!" (loss styling + loss copy) because the original
+  // ternary only branched isWin true/false. M_TURNS.2 added 'draw'
+  // for turn-cap ties; surface it with neutral copy + accent
+  // styling that reads as "the match ended even".
+  const isDraw = outcome === 'draw';
+  const titleText = isWin ? 'Victory!' : isDraw ? 'Draw!' : 'Defeat!';
+  const titleColor = isWin
+    ? HUD_THEME.color.gold
+    : isDraw
+      ? HUD_THEME.color.accent
+      : HUD_THEME.color.danger;
+  const titleClass = isWin ? 'modal-title-win' : isDraw ? 'modal-title-draw' : 'modal-title-loss';
+  const flavorText = isWin
+    ? 'You have razed the enemy base and defended Aethelgard.'
+    : isDraw
+      ? 'The realms reach equilibrium. The clock runs out with neither side prevailing.'
+      : 'The enemy razed your home base. Aethelgard has fallen.';
   // M_MODES.10 — controlled-tile-time score integral; rounded to whole units.
   const playerScore = Math.round(game.score.player);
   const enemyScore = Math.round(game.score.enemy);
@@ -85,22 +103,18 @@ export function GameOverModal({ game }: { game: GameState }) {
         }}
       >
         <Dialog.Title
-          className={isWin ? 'modal-title-win' : 'modal-title-loss'}
+          className={titleClass}
           style={{
             fontFamily: HUD_THEME.font.display,
             fontSize: '2.6rem',
             fontWeight: 800,
             margin: '0 0 10px',
-            color: isWin ? HUD_THEME.color.gold : HUD_THEME.color.danger,
+            color: titleColor,
           }}
         >
-          {isWin ? 'Victory!' : 'Defeat!'}
+          {titleText}
         </Dialog.Title>
-        <p style={{ color: HUD_THEME.color.muted, marginBottom: 24 }}>
-          {isWin
-            ? 'You have razed the enemy base and defended Aethelgard.'
-            : 'The enemy razed your home base. Aethelgard has fallen.'}
-        </p>
+        <p style={{ color: HUD_THEME.color.muted, marginBottom: 24 }}>{flavorText}</p>
         {stats.map((s) => (
           <div
             key={s.label}

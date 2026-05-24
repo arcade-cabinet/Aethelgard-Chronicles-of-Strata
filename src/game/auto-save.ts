@@ -55,9 +55,19 @@ export function tickAutoSave(auto: AutoSave, delta: number): void {
   }
   auto.saving = true;
   const result = auto.onSave();
-  // onSave is sync in the legacy contract, async in the new one;
-  // handle both. Promise.resolve normalises.
-  Promise.resolve(result).finally(() => {
-    auto.saving = false;
-  });
+  // M_PROCESS.REVIEW must-fix #3 — onSave is sync in the legacy
+  // contract, async in the new one. Promise.resolve normalises
+  // both. The .catch() before .finally() swallows transient SQLite
+  // write failures (e.g. EncryptedSharedPrefs corruption on
+  // Android) so they don't bubble as unhandledRejection in the
+  // game loop — every AUTO_SAVE_INTERVAL otherwise. The catch
+  // logs the error once at warn level (production-strippable via
+  // future __DEV__ guard) so a developer still sees it.
+  Promise.resolve(result)
+    .catch((err) => {
+      console.warn('[auto-save] save failed:', err);
+    })
+    .finally(() => {
+      auto.saving = false;
+    });
 }

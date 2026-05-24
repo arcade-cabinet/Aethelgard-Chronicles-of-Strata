@@ -1114,10 +1114,20 @@ M_ARCH_UNIFY drains.
   - [ ] [LOW] M_SEC_REVIEW.6 — `playSoundAt` no NaN guard on worldXZ/cameraXZ inputs: NaN propagates through Math.hypot → attenuation → Howler stereo/volume setters silently. Add `if (!Number.isFinite(worldXZ.x) || !Number.isFinite(worldXZ.z)) return;` at top.
   - [ ] [LOW] M_SEC_REVIEW.7 — NewGameModal `maxTurns = Number.parseInt(...)` lacks downstream validation; future programmatic/URL callers could inject NaN which silently disables the cap. Add `Number.isFinite(val) && val >= 1` guard.
 
+- [ ] [STANDING] M_PROCESS.REVIEW.CODE.FINDINGS — open code-review findings from the 2026-05-23 review-trio (comprehensive-review:code-reviewer against origin/main..HEAD):
+  - [x] [MUST-FIX] M_CODE_REVIEW.1 — useAudio.ts crescendoActive never restored on 'draw' outcome; DONE — added 'draw' branch in the outcome-transition block that fires defeat stinger + restoreMusic().
+  - [x] [MUST-FIX] M_CODE_REVIEW.2 — GameOverModal.tsx rendered 'draw' as "Defeat!" with loss styling; DONE — extracted isDraw + titleText/titleColor/titleClass/flavorText with 'Draw!' / accent color / 'The realms reach equilibrium' copy.
+  - [x] [MUST-FIX] M_CODE_REVIEW.3 — auto-save.ts unhandledRejection on transient save failure; DONE — added .catch() before .finally() that logs the error at warn level without re-propagating.
+  - [ ] [SHOULD-FIX] M_CODE_REVIEW.4 — persistence.ts crypto fallback uses Math.random()/Date.now() for key material; covered by M_SEC_REVIEW.1 above (same root issue).
+  - [ ] [SHOULD-FIX] M_CODE_REVIEW.5 — tradeResource permits science/mana as trade types with no runtime guard; spec says material-only.
+  - [ ] [SHOULD-FIX] M_CODE_REVIEW.6 — main.tsx `as any` cast in audio bridge for unknown unitType; replace with `is UnitType` type guard.
+  - [ ] [NICE] M_CODE_REVIEW.7 — KeyboardShortcuts.tsx 6 trigger-build switch arms; covered by M_SIMPLIFY.1 (DONE above).
+  - [ ] [NICE] M_CODE_REVIEW.8 — MapPreview.tsx generateBoard fires per keystroke; add 300ms debounce on seedPhrase for mid-tier Android.
+
 - [ ] [STANDING] M_PROCESS.SIMPLIFY.FINDINGS — open simplification findings from the 2026-05-23 review-trio (code-simplifier:code-simplifier against origin/main..HEAD). Fold into the next forward commits:
-  - [ ] [HIGH] M_SIMPLIFY.1 — KeyboardShortcuts.tsx build hotkey switch (7 parallel case-pairs) → data table `Record<string, BuildingType>` + single handler branch.
+  - [x] [HIGH] M_SIMPLIFY.1 — DONE. KeyboardShortcuts.tsx now has `BUILD_HOTKEYS` Readonly<Record<string, BuildingType>> at module level (f=Farm, h=House, g=Granary, r=Barracks, t=Watchtower, w=Wall). Single handler branch replaces 7 parallel switch cases. The 'b' open-build-menu case stays separate (different event).
   - [ ] [HIGH] M_SIMPLIFY.2 — game-state.ts (1012 lines, two top-level concerns) — extract `runEconomyTick` and its callees into src/game/economy-tick.ts; game-state re-exports.
-  - [ ] [MED] M_SIMPLIFY.3 — particle-consumers.tsx: hoist per-tick `new Set` allocations to module-level mutable state with .clear() instead of re-construction (sawdust + smoke); DELETE the confirmed dead `liveIds` allocation at line ~620 in embersConsumer.
+  - [ ] [MED] M_SIMPLIFY.3 — particle-consumers.tsx: PARTIAL. The dead `liveIds = new Set([...live].map(...)); void liveIds;` allocation in embersConsumer at line ~620 is DELETED + the unused `live` arg removed from its tick signature. Still open: hoist sawdust + smoke per-tick `new Set` allocations to module-level state with .clear() reuse.
   - [ ] [MED] M_SIMPLIFY.4 — persistence.ts (9 nested try/catch around openDb) — flatten error propagation; environment guards (VITEST/dbUnavailable) at the top, single throw/return-null contract; callers use `if (!db) return ...` instead of wrapping.
   - [ ] [MED] M_SIMPLIFY.5 — particle-consumers.tsx (637 lines) split per-consumer files (src/world/particles/{rain,sawdust,buildComplete,confetti,smoke,snow,blood,embers}.ts) + barrel re-export.
   - [ ] [LOW] M_SIMPLIFY.6 — KeyboardShortcuts.tsx arrow-key nested ternary `dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0` → if/else or switch.
