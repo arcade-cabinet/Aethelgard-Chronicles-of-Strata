@@ -11,6 +11,7 @@ import {
   Unit,
 } from '@/ecs/components';
 import { rollDamage } from '@/game/combat-math';
+import { computeTerrainBonus } from '@/rules/terrain-bonus';
 import { unitProfileFor } from '@/rules/unit-profiles';
 
 /** A damage event produced by the combat system this tick (for FX/text). */
@@ -68,6 +69,7 @@ function resolveAttacks(
   defenderParryChance: number,
   isRanged: boolean,
   rangedAccuracy: number,
+  terrainMultiplier: number,
 ): number {
   combatant.attackTimer += delta;
   let fired = 0;
@@ -86,7 +88,11 @@ function resolveAttacks(
     // when the attacker is ranged + accuracy < 1; melee strikes
     // ignore the multiplier (rain doesn't make a sword swing miss).
     const missed = !parried && isRanged && rangedAccuracy < 1 && rng() > rangedAccuracy;
-    const dealt = parried || missed ? 0 : roll.damage;
+    // M_POLISH2.RTS.20 — terrain bonus is the LAST multiplier; high
+    // ground amplifies all non-zero damage, low ground dampens it.
+    // A parried/missed hit stays at 0 regardless of terrain.
+    const baseDealt = parried || missed ? 0 : roll.damage;
+    const dealt = baseDealt > 0 ? Math.round(baseDealt * terrainMultiplier) : 0;
     const id = target.targetId;
     damageByTarget.set(id, (damageByTarget.get(id) ?? 0) + dealt);
     events.push({
@@ -173,6 +179,9 @@ export function combatSystem(
     // Watchtower buildings (no Unit trait) inherit isRanged via range.
     const isRanged =
       (attackerProfile?.meleeWeapon === 'none' || !attackerProfile) && combatant.attackRange > 1;
+    // M_POLISH2.RTS.20 — terrain bonus from attacker's tile level vs
+    // target's tile level. Pure function in src/rules/terrain-bonus.ts.
+    const terrainMultiplier = computeTerrainBonus(hex.level, targetHex.level);
     const fired = resolveAttacks(
       combatant,
       target,
@@ -186,6 +195,7 @@ export function combatSystem(
       defenderParryChance,
       isRanged,
       rangedAccuracy,
+      terrainMultiplier,
     );
     if (fired > 0 && e.has(AnimationState)) {
       // M_COMBAT_POLISH.2 — flash the attacker into ATTACKING; animationSystem
