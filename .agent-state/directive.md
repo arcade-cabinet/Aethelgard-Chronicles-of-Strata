@@ -302,9 +302,13 @@ mechanic work that follows is built on this.
 - [x] M_FUN.MAP.ELEV — DONE 2026-05-24 commit 2431502.
   Combatant.fatigue field + biome-rule attribute application on
   arrival + decay loop. 3 unit tests pin behaviour.
-- [ ] M_FUN.MAP.FORTIFY — Wall/Watchtower built
-  on MOUNTAIN_PASS reduces fatigue for owning faction's units —
-  realises the "fortifiable choke" contract.
+- [x] M_FUN.MAP.FORTIFY — Wall/Watchtower of the unit's OWN
+  faction within radius 1 of a MOUNTAIN_PASS tile suppresses
+  fatigue accrual on cross. Realises the "fortifiable choke"
+  contract from PRD §7.2: garrison a pass, walk through without
+  the -50% damage debuff. 3 unit tests pin: bare cross accrues
+  fatigue; same-faction Watchtower suppresses; enemy-faction
+  Wall does NOT suppress.
 
 ### v0.4.3 — Swamps + Healer (PRD §7.3)
 

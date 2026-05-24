@@ -26,8 +26,33 @@ const parseStep = parseHexLevelKey;
  *   attribute is applied.
  */
 import type { BoardData } from '@/core/board';
-import { Combatant, Health } from '@/ecs/components';
+import { Building, Combatant, FactionTrait, Health } from '@/ecs/components';
 import { biomeRule } from '@/config/mapgen';
+import { hexDistance } from '@/core/hex';
+
+const FORTIFY_BUILDINGS = new Set(['Wall', 'Watchtower']);
+
+/**
+ * M_FUN.MAP.FORTIFY — true if a same-faction Wall or Watchtower
+ * sits within radius 1 of (q, r). Used by pathFollowSystem to
+ * suppress fatigue accrual on a garrisoned MOUNTAIN_PASS tile.
+ */
+function hasFortifyAdjacent(
+  world: World,
+  faction: string,
+  q: number,
+  r: number,
+): boolean {
+  for (const e of world.query(Building, HexPosition, FactionTrait)) {
+    if (e.get(FactionTrait)?.faction !== faction) continue;
+    const b = e.get(Building);
+    if (!b?.isComplete || !FORTIFY_BUILDINGS.has(b.buildingType)) continue;
+    const p = e.get(HexPosition);
+    if (!p) continue;
+    if (hexDistance(p.q, p.r, q, r) <= 1) return true;
+  }
+  return false;
+}
 
 export function pathFollowSystem(
   world: World,
@@ -82,11 +107,23 @@ export function pathFollowSystem(
             if (rule.appliesAttribute === 'fatigue') {
               const c = entity.get(Combatant);
               if (c) {
-                entity.set(Combatant, {
-                  ...c,
-                  fatigue: Math.min(1, c.fatigue + rule.attributeStrength),
-                  fatigueDecayTimer: 0,
-                });
+                // M_FUN.MAP.FORTIFY — Wall or Watchtower of the
+                // unit's own faction within radius 1 of the tile
+                // suppresses fatigue accrual. Realises the
+                // "fortifiable choke" contract: a faction that
+                // garrisons a MOUNTAIN_PASS gets to cross it
+                // without the -50% damage debuff.
+                const ownFaction = entity.get(FactionTrait)?.faction;
+                const protected_ = ownFaction
+                  ? hasFortifyAdjacent(world, ownFaction, step.q, step.r)
+                  : false;
+                if (!protected_) {
+                  entity.set(Combatant, {
+                    ...c,
+                    fatigue: Math.min(1, c.fatigue + rule.attributeStrength),
+                    fatigueDecayTimer: 0,
+                  });
+                }
               }
             } else if (
               rule.appliesAttribute === 'disease' ||
