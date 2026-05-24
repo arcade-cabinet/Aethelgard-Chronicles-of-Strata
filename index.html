@@ -6,6 +6,8 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
+    <!-- M_NEXT.PLAY.2 — SVG favicon (no per-size .ico needed). -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <!--
       M_SEC.10 — Content-Security-Policy. Tight policy: same-origin only
       for scripts/styles/fonts/connections; data: + blob: allowed for
@@ -15,6 +17,20 @@
       'unsafe-inline' on style-src is needed for r3f/emotion runtime
       styles + drei effects; tightening this requires nonces or hashes
       which Vite doesn't emit by default — tracked separately.
+
+      'unsafe-eval' is required by **koota** (the ECS library at the
+      heart of every sim system). Koota generates per-trait SoA
+      (Structure-of-Arrays) setters at boot via `new Function(...)` —
+      that's its central performance optimization, not an opt-in. The
+      'wasm-unsafe-eval' narrower grant DOES NOT cover Function()
+      construction; it's WebAssembly-compile only. We pay the broader
+      'unsafe-eval' cost because the alternative is ejecting koota,
+      which would require rewriting every ECS system. The same cost
+      covers sql.js's Emscripten loader (which also uses Function
+      construction). Mitigation: every other source URL is locked to
+      'self', the deployed site has no inbound user content, and the
+      no-network posture means there's no XSS surface to leverage
+      eval through.
     -->
     <!--
       CodeRabbit follow-up: `frame-ancestors` is silently ignored by
@@ -27,7 +43,7 @@
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none';"
+      content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none';"
     />
     <!--
       M_AUDIT2.SEC2.42 — Trusted Types report-only. Promoting this to

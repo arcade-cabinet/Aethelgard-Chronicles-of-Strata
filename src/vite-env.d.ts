@@ -5,3 +5,9 @@
 // augmentation global so any .tsx file can use three elements without importing
 // from @react-three/fiber directly.
 import type {} from '@react-three/fiber';
+
+// M_NEXT.PLAY.1 — vite.config.ts injects this via `define` from
+// package.json#version so the TitleScreen footer matches the
+// actually-shipped semver. Stringly typed because Vite emits it
+// as a string literal at build time.
+declare const __APP_VERSION__: string;

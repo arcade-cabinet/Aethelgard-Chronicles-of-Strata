@@ -1,22 +1,60 @@
-name: release
+name: Release
 
-# M_AUDIT2.SEC2.19 — fires when release-please cuts a tag. Builds a
-# SIGNED release APK, generates an SBOM (CycloneDX) for the JS deps,
-# attaches both as release assets, and produces a Sigstore attestation
-# (M_AUDIT2.SEC2.35) over the APK + SBOM.
+# Standard arcade-cabinet trio: ci.yml (PR gates) → release.yml (cuts
+# a tag via release-please then builds signed APK + SBOM + Sigstore
+# attestation on tag publish) → cd.yml (deploys what release.yml
+# produced + Pages on push to main).
+#
+# release-please opens / maintains a "release PR" on every push to
+# main; when that PR merges, the release-please action cuts the tag
+# AND triggers the build-and-sign job in the same workflow run via
+# the release_created output. The legacy release-please.yml is gone.
 
 on:
+  push:
+    branches: [main]
   release:
     types: [published]
 
+# Workflow-level grants are minimal; each job overrides with the
+# subset it actually needs (zizmor / CodeRabbit least-privilege fix).
 permissions:
-  contents: write       # upload release assets
-  id-token: write       # Sigstore keyless signing
-  attestations: write   # actions/attest-build-provenance
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
-  build-and-sign:
+  release-please:
+    name: release-please
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write       # release-please updates CHANGELOG + cuts tags
+      pull-requests: write  # release-please opens / updates the release PR
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v4.1.3
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  build-and-sign:
+    name: Build + sign release APK
+    # Run on tag publish (release event) — release-please cuts the
+    # release as a side-effect of merging the release PR; the published
+    # tag fires the release event which fans out to this job.
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # upload release assets
+      id-token: write       # Sigstore keyless signing
+      attestations: write   # actions/attest-build-provenance
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -60,22 +98,16 @@ jobs:
           ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
         run: cd android && ./gradlew assembleRelease
 
-      # Reviewer-fix: shred keystore + drop env-var path AS SOON AS
-      # signing is done. The previous `if: always()` rm was a backstop;
-      # an explicit early shred prevents any later step (or any debug-
-      # logging accident) from seeing the path or content.
+      # Shred keystore + drop env-var path AS SOON AS signing is done.
       - name: Shred signing keystore (early)
         run: |
           if command -v shred >/dev/null 2>&1; then
             shred -uz "$RUNNER_TEMP/sign/release.keystore" 2>/dev/null || true
           fi
           rm -f "$RUNNER_TEMP/sign/release.keystore"
-          # Wipe the path env var so subsequent step env dumps don't echo it.
           echo "ANDROID_SIGNING_KEYSTORE_PATH=" >> "$GITHUB_ENV"
 
-      # Reviewer-fix: guard the exact APK filename before attestation
-      # so a Gradle config drift that emits an unsigned variant can't
-      # smuggle an extra subject into the attestation.
+      # Guard exact APK filename before attestation.
       - name: Verify exactly one signed APK exists
         run: |
           APK=android/app/build/outputs/apk/release/app-release.apk
@@ -90,12 +122,6 @@ jobs:
           fi
 
       # --- SBOM (M_AUDIT2.SEC2.35) -----------------------------------------
-      # cyclonedx-npm runs via pnpm dlx so its libxmljs2 transitive
-      # CVE never lands in our lockfile (it's a build-tool, never
-      # bundled into the APK). Exact-version + dlx-cache pinning is
-      # the defense: GitHub-hosted runners get a fresh dlx cache each
-      # job, the version is pinned, and the SBOM output content is
-      # what enters the attestation — the tool itself never ships.
       - name: Generate CycloneDX SBOM
         run: |
           pnpm dlx @cyclonedx/cyclonedx-npm@4.2.1 \

@@ -1,9 +1,20 @@
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import staticAssetsPlugin from 'vite-static-assets-plugin';
 
+// M_NEXT.PLAY.1 — derive app version from package.json so the
+// TitleScreen footer always matches the shipped release (was
+// hardcoded 'v0.2.0' while package was 0.1.0).
+const pkgVersion = (
+  JSON.parse(readFileSync(path.resolve('package.json'), 'utf8')) as { version: string }
+).version;
+
 export default defineConfig(({ mode }) => ({
+  define: {
+    __APP_VERSION__: JSON.stringify(pkgVersion),
+  },
   // M_SEC.29 — base URL precedence: env override > mode-detection >
   // root. Lets CI deploy to a custom path without touching this file
   // (set VITE_BASE in the deploy job's env).

@@ -2219,3 +2219,89 @@ Every silent fallback in the codebase that hides a failure from the user. Audit 
 - [x] [HIGH] M_POLISH3.LOCAL.1 — DONE 2026-05-24 commit 1117a81. .husky/pre-push runs pnpm verify + test:browser + PW_REUSE_SERVER=1 test:e2e. husky 9.1.7 added; prepare script wires hooks on install.
 - [x] [HIGH] M_POLISH3.LOCAL.2 — DONE 2026-05-24 commit 1117a81. Added verify:all script (verify + test:browser). pre-push hook runs both already.
 - [x] [HIGH] M_POLISH3.LOCAL.3 — DONE (was already done — playwright.config.ts:34 reads PW_REUSE_SERVER env; pre-push uses it). Confirmed via 1117a81 + the existing webServer.reuseExistingServer config.
+
+---
+
+### M_NEXT_CYCLE — work surfaced 2026-05-24 (post-M_POLISH3 sweep)
+
+The M_POLISH3 push exposed several real items that didn't fit the
+scope of that milestone but need attention in the next cycle.
+
+#### Deployed Pages + CSP
+
+- [x] [BLOCKER] M_NEXT.DEPLOY.1 — Deployed Pages was BLANK; CSP
+  `script-src 'self'` blocked koota's runtime `new Function(...)`
+  trait-setter generation (the library's core SoA perf path). Fix:
+  added 'unsafe-eval' to CSP (commit 056048b, PR #8). Verified locally:
+  served dist mounts the TitleScreen.
+- [ ] [WAIT-DEPS] M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer.
+  GitHub Pages doesn't allow custom response headers; needs fronting
+  Pages with a Cloudflare worker OR moving to Cloudflare Pages.
+  Tracked as deployment-infra, not source code.
+- [ ] [WAIT-LOW] M_NEXT.DEPLOY.3 — Narrow 'unsafe-eval' via SRI/nonce.
+  Needs research on whether Vite's bundle splitter can isolate koota
+  + sql.js into a chunk that gets a hash exception. Lower priority
+  than DEPLOY.2 which obviates it.
+
+#### Workflow standardization
+
+- [x] [HIGH] M_NEXT.CI.1 — Workflows now match the arcade-cabinet
+  standard trio (ci.yml → release.yml → cd.yml). release-please.yml
+  merged into release.yml as the first job; deploy-pages.yml renamed
+  to cd.yml. Commit 056048b, PR #8.
+- [ ] [WAIT-LOW] M_NEXT.CI.2 — Add an `analysis-nightly.yml`
+  (mean-streets ships one) for slower scans (dependency-review with
+  full graph, lighthouse on the deployed Pages URL, etc.) that don't
+  belong on the PR hot path.
+
+#### Dependencies
+
+- [x] [HIGH] M_NEXT.DEPS.1 — sql.js pinned + dependabot ignore (commit
+  056048b). PR #6 (sql.js 1.14.x bump) closed with a pointer to the
+  jeep-sqlite ABI lock-in.
+
+#### Carry-overs from M_POLISH3
+
+- [ ] [WAIT-LOW] M_NEXT.AIVAI.6 — Player-faction AI inert because
+  seedZonesFromAttractors gives asymmetric start (player ends with
+  fewer walkable tiles in the seed radius). Real fix is map-gen
+  symmetry, not AI work. Carried from M_POLISH3.AIVAI.6.
+- [ ] [WAIT-LOW] M_NEXT.SCENE.4 — GameOverModal Dialog doesn't render
+  reliably in headless Playwright despite outcome flipping + setInterval
+  + CustomEvent all firing. Suspected React+Radix+StrictMode +
+  headless Chromium interaction. Production flow works; only e2e
+  force-outcome path is affected. Carried from M_POLISH3.SCENE.4.
+
+#### Visual coverage gaps (the agent should screenshot before user
+notices)
+
+- [ ] [WAIT-MED] M_NEXT.HUD.1 — tablet viewport HUD pill stride was
+  NOT bumped alongside landscape (M_POLISH3.B.2 only fixed landscape).
+  Needs a tablet-viewport screenshot pass to confirm collision before
+  bump.
+- [ ] [WAIT-MED] M_NEXT.HUD.2 — Mobile-portrait journey captures +
+  per-mode captures: tests/e2e/per-mode-journey runs at desktop only.
+  Add the 6-mode × 4-timepoint sweep at mobile + tablet.
+- [ ] [WAIT-LOW] M_NEXT.HUD.3 — Day-night phase captures show subtle
+  difference because hemisphere light is constant 0.6 by design. Tune
+  hemisphere down OR add "DEEP NIGHT" weather state.
+
+#### Real-game playability bugs surfaced by deploy test
+
+- [x] [HIGH] M_NEXT.PLAY.1 — DONE this session. vite.config.ts now
+  reads package.json#version + injects via `define` as `__APP_VERSION__`;
+  TitleScreen footer reads `v{__APP_VERSION__}` so the label always
+  matches the shipped semver. globals.d.ts declares the type.
+- [x] [MED] M_NEXT.PLAY.2 — DONE this session. public/favicon.svg
+  added (SVG favicon — no per-size .ico needed) + `<link rel="icon"
+  type="image/svg+xml" href="favicon.svg">` in index.html. Modern
+  browsers prefer SVG; older Safari falls back to the empty 404
+  which is now silent.
+
+#### Process patches
+
+- [x] [HIGH] M_NEXT.PROC.1 — DONE this session. .husky/pre-push now
+  reads ref lines on stdin (git pre-push protocol), checks if every
+  local-sha is the 40-zero deletion sentinel, and exits 0 with
+  "deletion-only push detected — skipping verify gate" if so.
+  Normal pushes still run the full gate.
