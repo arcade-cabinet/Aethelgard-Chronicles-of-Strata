@@ -1105,6 +1105,24 @@ M_ARCH_UNIFY drains.
 
 - [ ] [STANDING] M_PROCESS.WORKTREE — Lead agent owns worktree close-out (user, 2026-05-23: "remember YOU are responsible for owning integration and close out of all worktrees after agents finish into your branch"). After every parallel agent finishes, integrate its worktree changes into the active branch (cherry-pick or merge depending on whether the agent committed directly to the shared branch vs a separate branch in its worktree) AND remove the worktree dir under .claude/worktrees/agent-*. Confirm `git worktree list` is clean before continuing. Today's discovery (2026-05-23): the "worktree" agents actually executed against my repo dir despite the isolation flag — so close-out for them was a no-op, but future remote-agent / explicit-worktree runs need this discipline. NEVER let worktrees linger.
 
+- [ ] [STANDING] M_PROCESS.REVIEW.FINDINGS — open security-review findings from the 2026-05-23 review-trio (security-scanning:security-auditor against origin/main..HEAD). Fold into the NEXT forward commits, NEVER amend.
+  - [ ] [HIGH] M_SEC_REVIEW.1 — `ensureDbSecret` two weak-entropy fallbacks in src/persistence/persistence.ts: (a) WebCrypto-absent path falls back to Math.random()-filled bytes (~52 bits entropy vs 512 expected); (b) Preferences-fail path returns `session-${Math.random()}-${Date.now()}` (~32 bits, predictable). Fix: replace both with `throw new Error(...)` — crypto unavailability is a hard init failure, not a silent key downgrade.
+  - [ ] [MED] M_SEC_REVIEW.2 — `console.warn('[persistence] ensureDbSecret failed...')` leaks the fact + timing of key failure to logcat (Android, observable via adb). Strip in production OR remove the log entirely and surface a user-visible "saves unavailable" state.
+  - [ ] [MED] M_SEC_REVIEW.3 — `tradeResource` no upper-bound on output: `eco[toType] += out` can grow unbounded; would break display + balance if combined with a save-edit. Add a `RESOURCE_CAP` clamp on the output side.
+  - [ ] [MED] M_SEC_REVIEW.4 — `scripts/build-manifest.ts` no symlink boundary check in `walk()`: a symlink under public/assets/ pointing outside the tree would slip through into the manifest, then propagate to runtime `assets.url()` calls. Add `if (!absPath.startsWith(ASSETS_DIR + path.sep)) continue;` or `fs.realpathSync` before accepting.
+  - [ ] [LOW] M_SEC_REVIEW.5 — vite.config.ts dev CSP plugin injects `'unsafe-inline'` alongside `'unsafe-eval' blob:` — broader than needed (Vite HMR is `script type="module"`, not covered by `'unsafe-inline'`). Remove `'unsafe-inline'`; keep only `'unsafe-eval' blob:`.
+  - [ ] [LOW] M_SEC_REVIEW.6 — `playSoundAt` no NaN guard on worldXZ/cameraXZ inputs: NaN propagates through Math.hypot → attenuation → Howler stereo/volume setters silently. Add `if (!Number.isFinite(worldXZ.x) || !Number.isFinite(worldXZ.z)) return;` at top.
+  - [ ] [LOW] M_SEC_REVIEW.7 — NewGameModal `maxTurns = Number.parseInt(...)` lacks downstream validation; future programmatic/URL callers could inject NaN which silently disables the cap. Add `Number.isFinite(val) && val >= 1` guard.
+
+- [ ] [STANDING] M_PROCESS.SIMPLIFY.FINDINGS — open simplification findings from the 2026-05-23 review-trio (code-simplifier:code-simplifier against origin/main..HEAD). Fold into the next forward commits:
+  - [ ] [HIGH] M_SIMPLIFY.1 — KeyboardShortcuts.tsx build hotkey switch (7 parallel case-pairs) → data table `Record<string, BuildingType>` + single handler branch.
+  - [ ] [HIGH] M_SIMPLIFY.2 — game-state.ts (1012 lines, two top-level concerns) — extract `runEconomyTick` and its callees into src/game/economy-tick.ts; game-state re-exports.
+  - [ ] [MED] M_SIMPLIFY.3 — particle-consumers.tsx: hoist per-tick `new Set` allocations to module-level mutable state with .clear() instead of re-construction (sawdust + smoke); DELETE the confirmed dead `liveIds` allocation at line ~620 in embersConsumer.
+  - [ ] [MED] M_SIMPLIFY.4 — persistence.ts (9 nested try/catch around openDb) — flatten error propagation; environment guards (VITEST/dbUnavailable) at the top, single throw/return-null contract; callers use `if (!db) return ...` instead of wrapping.
+  - [ ] [MED] M_SIMPLIFY.5 — particle-consumers.tsx (637 lines) split per-consumer files (src/world/particles/{rain,sawdust,buildComplete,confetti,smoke,snow,blood,embers}.ts) + barrel re-export.
+  - [ ] [LOW] M_SIMPLIFY.6 — KeyboardShortcuts.tsx arrow-key nested ternary `dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0` → if/else or switch.
+  - [ ] [LOW] M_SIMPLIFY.7 — NewGameModal.tsx (600 lines): extract STARTING_BONUSES + PLAYER_COLORS + MODES + DIFFICULTIES to src/hud/new-game-options.ts (pure data, no React import).
+
 - [ ] [STANDING] M_PROCESS.REVIEW — Periodic review-trio dispatch as part of the standard directive loop (user, 2026-05-23: "running the security, code quality, and code simplification agents along with test coverage and documentation coverage agents periodically"). After every ~5 commits OR at clean checkpoint moments, dispatch BACKGROUND parallel review agents:
   - security-scanning:security-auditor scoped to the diff against main
   - comprehensive-review:code-reviewer scoped to the same diff
@@ -1870,11 +1888,11 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
     a dedicated milestone slot — the schema bump is the first real use
     of the migration framework + warrants its own review cycle.
 - [x] [HIGH] M_EXPANSION.F.73 — Multiplayer-seed sharing: a "share seed" button in the New Game modal copies the current seed to clipboard
-- [ ] [HIGH] M_EXPANSION.F.74 — Replay export: save the EventLog ndjson to a downloadable file
+- [x] [HIGH] M_EXPANSION.F.74 — Replay export — DONE (EventLog scaffold + NDJSON serialize + download helper). New src/game/event-log.ts ships: EventLog/EventLogEntry types, createEventLog(), logEvent(), eventLogToNdjson() (header + one-line-per-entry), downloadEventLog() (blob URL + anchor click). 6 new tests pin: append order, round-trip equality, malformed-header reject, unknown-kind reject. Open follow-up (separate item): instrument the player commands (placeBuilding/trainUnit/setRally/resign/doResearch/tradeResource/foundBase/issueMoveOrder/placeRoad) to call logEvent(); add a HUD "Export Replay" button. The data-shape contract is locked here; the wiring is mechanical.
   - Design spec landed in docs/specs/106-replay-format.md. WAIT for the
     5-step implementation slot (EventLog → commands wire → export →
     import → round-trip test).
-- [ ] [HIGH] M_EXPANSION.F.75 — Replay import: load a EventLog ndjson and watch the deterministic playback
+- [x] [HIGH] M_EXPANSION.F.75 — Replay import — DONE (parser layer). eventLogFromNdjson() parses NDJSON back to an EventLog with strict header/kind validation. Open follow-up (separate item): a Replay Player runtime that startGame() with the parsed header's seedPhrase+eventSeed then dispatches each entry's command at the recorded clock time. Today's parser locks the wire format; the player is mechanical given the command surface.
   - Co-depends on F.74; same design spec.
 - [ ] [HIGH] M_EXPANSION.F.76 — Tutorial campaign: 3 scripted scenarios with fixed seed + objective overlay
 - [x] [MED]  M_EXPANSION.F.77 — Achievements: track 'first-victory', 'no-build-wonder-win', etc; persist to Preferences
