@@ -173,6 +173,13 @@ export interface NewGameConfig {
    * default ('the-diplomat').
    */
   enemyPersonality?: string;
+  /**
+   * M_FUN.QA.AIVAI — opponent personality key for the PLAYER faction
+   * in AI-vs-AI mode (no effect when aiVsAi=false; in interactive
+   * play the player's the human). Lets the AI-vs-AI balance suite
+   * run cross-personality matchups deterministically.
+   */
+  playerPersonality?: string;
 }
 
 /**
@@ -792,10 +799,10 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
       typeof config === 'object' && config.aiVsAi
         ? {
             enemy: new AiPlayer('enemy', config.enemyPersonality),
-            // Player faction in AI-vs-AI uses the default personality
-            // (the-diplomat) — playable mode is human-controlled so
-            // the player-side personality field would never matter.
-            player: new AiPlayer('player'),
+            // M_FUN.QA.AIVAI — playerPersonality lets the balance
+            // suite drive cross-personality matchups deterministically.
+            // Omitted = registry default (the-diplomat).
+            player: new AiPlayer('player', config.playerPersonality),
           }
         : {
             enemy: new AiPlayer(

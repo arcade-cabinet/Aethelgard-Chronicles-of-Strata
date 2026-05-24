@@ -174,6 +174,15 @@ function GameSession({
         }
         return out;
       };
+      // M_FUN.QA.AIVAI — expose trait references so the AI-vs-AI
+      // balance e2e can query Building+FactionTrait directly from
+      // page.evaluate. Without this, a test would need to import
+      // src/ which Playwright doesn't bundle.
+      (
+        window as unknown as DevWindow & {
+          __game_traits?: { Building: unknown; FactionTrait: unknown };
+        }
+      ).__game_traits = { Building, FactionTrait };
     }
     return g;
   }, [config, initialGame]);
@@ -380,6 +389,11 @@ export function App() {
     // named opponent picker (URL-driven flow). Falls back to the
     // registry default when omitted.
     const personality = sp.get('personality') ?? undefined;
+    // M_FUN.QA.AIVAI — separate ?playerPersonality= for the AI-vs-AI
+    // balance harness; falls back to ?personality= or the registry
+    // default. Allows cross-matchup runs like
+    // ?ai-vs-ai=1&playerPersonality=the-builder&personality=the-raider.
+    const playerPersonality = sp.get('playerPersonality') ?? undefined;
     setConfig({
       seedPhrase: seed,
       mapSize: MAP_SIZES.medium.radius,
@@ -392,6 +406,7 @@ export function App() {
       startingBonus: 'none',
       aiVsAi: true,
       ...(personality ? { enemyPersonality: personality } : {}),
+      ...(playerPersonality ? { playerPersonality } : {}),
     });
   }, []);
 

@@ -50,6 +50,7 @@ const includeJourney = process.env.JOURNEY === '1' || includeVisual;
 const JOURNEY_SPECS = [
   'e2e/journey-capture.spec.ts',
   'e2e/ai-vs-ai-playthrough.spec.ts',
+  'e2e/ai-vs-ai-balance.spec.ts',
   'e2e/per-mode-journey.spec.ts',
   'e2e/per-mode-match.spec.ts',
   'e2e/weather-journey.spec.ts',

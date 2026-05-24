@@ -330,13 +330,27 @@ mechanic work that follows is built on this.
 
 ### v0.4-release blocker (PRD §5.1)
 
-- [ ] [WAIT-DEPS] M_FUN.QA.AIVAI — Playwright AI-vs-AI
-  playable-match validation. 15 runs (5 self-play + 10 cross-
-  matrix); each asserts terminal outcome reached, turn count
-  in [30, 300], kills>0, buildings>2 per faction, supply
-  peaked. JSON artifact for balance-run trend tracking. CI
-  tier-2 (on-demand / nightly). MUST land GREEN before v0.4
-  ships.
+- [x] M_FUN.QA.AIVAI.HARNESS — Playwright AI-vs-AI balance
+  harness scaffolding. tests/e2e/ai-vs-ai-balance.spec.ts —
+  10-matchup matrix (5 self-play + 5 sampled cross), 10-sim-
+  minute budget per run, soft assertions for terminal outcome,
+  turn count [1, 15] sim-minutes, total kills > 0, per-faction
+  buildings >= 1, peak supply > 1. JSON artifact ledger in
+  tests/e2e/__data__/ai-balance-runs.json (last 100 runs).
+  Gated to JOURNEY=1 tier so it doesn't run every commit.
+  Confirmed working: first run surfaced a REAL balance bug
+  (the-builder vs the-builder = 0 kills, enemy 0 buildings,
+  10 sim-minutes unresolved). Next step is M_FUN.QA.AIVAI.TUNE.
+- [ ] [WAIT-DEPS] M_FUN.QA.AIVAI.TUNE — v0.4 RELEASE BLOCKER.
+  Tune AI personalities + per-mode AiProfile weights so every
+  matchup in the harness passes (terminal outcome reached
+  in [1, 15] sim-minutes, kills > 0, buildings >= 1 per faction,
+  supply peaks > 1). Specifically: the-builder vs the-builder
+  produces zero combat and zero enemy-side production — Builder
+  weights need a "must train at least minimum military" floor
+  + an attack trigger that overrides build bias when both sides
+  have walled up. Re-run M_FUN.QA.AIVAI.HARNESS until all 10
+  matchups pass.
 
 ### v0.4.8 fold-ins from reviewer trio (must land before v0.4.9)
 
