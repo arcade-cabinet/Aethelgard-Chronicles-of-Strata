@@ -38,11 +38,24 @@ export function buildNavGraph(board: BoardData): NavGraph {
 // shared `parseHexKey` from @/core/hex.
 
 /**
- * A* shortest path from `startKey` to `goalKey` over the nav graph. Uniform step
- * cost; the heuristic is hex distance. Returns the path as an inclusive list of
- * tile keys, or null when no path exists.
+ * A* shortest path from `startKey` to `goalKey` over the nav graph.
+ *
+ * M_POLISH2.RTS.24 — Per-tile cost via the optional `costOf` callback:
+ * when supplied, the tentative g-score adds `costOf(neighborKey)`
+ * instead of the uniform 1. Caller wires this from the board's
+ * biome map + moveCostFor() so FOREST/HIGHLAND cost more to traverse.
+ * Omitting the callback preserves the legacy uniform-cost behaviour
+ * — existing tests + AI paths keep their old semantics.
+ *
+ * Returns the path as an inclusive list of tile keys, or null when
+ * no path exists.
  */
-export function findPath(graph: NavGraph, startKey: string, goalKey: string): string[] | null {
+export function findPath(
+  graph: NavGraph,
+  startKey: string,
+  goalKey: string,
+  costOf?: (key: string) => number,
+): string[] | null {
   if (!graph.has(startKey) || !graph.has(goalKey)) return null;
   if (startKey === goalKey) return [startKey];
 
@@ -81,7 +94,8 @@ export function findPath(graph: NavGraph, startKey: string, goalKey: string): st
     open.delete(current);
     const currentG = gScore.get(current) ?? Number.POSITIVE_INFINITY;
     for (const neighbor of graph.get(current) ?? []) {
-      const tentative = currentG + 1;
+      const step = costOf ? costOf(neighbor) : 1;
+      const tentative = currentG + step;
       if (tentative < (gScore.get(neighbor) ?? Number.POSITIVE_INFINITY)) {
         cameFrom.set(neighbor, current);
         gScore.set(neighbor, tentative);
