@@ -253,10 +253,12 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
       />
       {/* Decorative props (Skin slot — empty for player, necropolis for enemy). */}
       <group position={[basePos.x, basePos.y, basePos.z]}>
-        {skin.baseProps.map((p, idx) => (
+        {skin.baseProps.map((p) => (
           <BasePropMesh
-            // biome-ignore lint/suspicious/noArrayIndexKey: idx is one component of a composite key alongside logicalId+x+z which together stay stable for the skin lifetime.
-            key={`prop-${idx}-${p.logicalId}-${p.x}-${p.z}`}
+            // CodeRabbit MAJOR — composite key from stable data fields
+            // only (logicalId + x + y + z + scale + rotationY uniquely
+            // identifies a prop within a skin); idx removed.
+            key={`prop-${p.logicalId}-${p.x}-${p.y}-${p.z}-${p.scale}-${p.rotationY}`}
             logicalId={p.logicalId}
             x={p.x}
             y={p.y}

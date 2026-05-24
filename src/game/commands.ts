@@ -2,7 +2,7 @@ import type { Entity } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { roadCostFor } from '@/config/economy';
 import { getHexKey, hexNeighbors, parseHexKey } from '@/core/hex';
-import { findPath } from '@/core/pathfinding';
+import { buildNavGraph, findPath } from '@/core/pathfinding';
 import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
   AssignedJob,
@@ -440,7 +440,15 @@ export function foundBase(game: GameState, settler: Entity): Entity | null {
   const baseEntity = game.world.spawn(...traits);
   game.buildSites.set(tileKey, baseEntity);
   game.buildSitesGeneration += 1;
-  if (tile) tile.walkable = false;
+  if (tile) {
+    tile.walkable = false;
+    // CodeRabbit MAJOR — pathfinding cached the old walkable=true for
+    // this tile; rebuild the navGraph so subsequent finds route around
+    // the new base. Without this, units mid-path would walk through it
+    // until the next graph rebuild (which only fires on building-
+    // complete in buildSystem).
+    game.navGraph = buildNavGraph(game.board);
+  }
   return baseEntity;
 }
 
