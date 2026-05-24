@@ -141,16 +141,32 @@ type PaintPass = (tiles: Map<string, Tile>, radius: number, rng: Rng) => void;
  * Adding a new mapType = ONE pipeline entry. Adding a new paint pass
  * = ONE function + the right entries in pipelines that use it.
  */
+/**
+ * Helper: thunk a mountain-pass with a specific intensity. Lets the
+ * pipeline registry name the per-mode mountain density without
+ * forking the underlying function.
+ */
+const mountainPass =
+  (intensity: number): PaintPass =>
+  (tiles, radius, rng) =>
+    paintMountainMassif(tiles, radius, rng, intensity);
+
 const GEN_TIME_PIPELINES: Record<GeneratedMapType, PaintPass[]> = {
-  // balanced — beach ring + central mountain spine + inland lake.
-  balanced: [paintBeachRing, paintMountainSpine, paintInlandLake],
-  // continent — same as balanced but mountain spine is thicker (handled
-  // inside paintMountainSpine via a future mapType-aware tuning).
-  continent: [paintBeachRing, paintMountainSpine, paintInlandLake],
-  // archipelago — small islands separated by channels; skip mountain spine.
-  archipelago: [paintBeachRing, paintChannelCuts, paintInlandLake],
-  // dry-land — no inland water + extensive desert + ridge-line mountains.
-  'dry-land': [paintBeachRing, paintMountainSpine, paintDesertBlanket],
+  // balanced — beach ring + medium mountain clumps (centre-biased so
+  // they form choke points between bases) + inland lake. This is the
+  // 1v1 RTS shape; the centre-bias inside paintMountainMassif keeps
+  // the funnel intent without stamping a literal strip.
+  balanced: [paintBeachRing, mountainPass(0.55), paintInlandLake],
+  // continent — larger landmass, denser mountain massifs that read
+  // as a true ridge system (not a strip).
+  continent: [paintBeachRing, mountainPass(0.7), paintInlandLake],
+  // archipelago — small islands separated by channels. SPARSE
+  // mountains (each island gets at most one small peak) — channels
+  // are the funnels, not mountain walls.
+  archipelago: [paintBeachRing, paintChannelCuts, mountainPass(0.25), paintInlandLake],
+  // dry-land — no inland water + extensive desert + dense mountain
+  // ridge-lines (highest intensity for the badlands feel).
+  'dry-land': [paintBeachRing, mountainPass(0.75), paintDesertBlanket],
 };
 
 /**
@@ -192,26 +208,63 @@ function paintBeachRing(tiles: Map<string, Tile>, radius: number, _rng: Rng): vo
 }
 
 /**
- * M_MAPGEN.3 — paint a 3-tile-wide MOUNTAIN spine across the central band.
- * The band's orientation is seed-derived so different seeds get different
- * mountain orientations but every seed gets ONE. Creates the funneling
- * choke point the user called for.
+ * M_MAPGEN.3 — paint MOUNTAIN clumps that act as natural funnels +
+ * choke points. The prior implementation stamped a straight 3-axis
+ * STRIP through the entire map — including ocean — which was both
+ * ugly and useless (impassible walls in water?). User feedback
+ * 2026-05-24:
+ *   "why the fuck would you design an impassible strip on ANY [...]
+ *    mountains create natural FUNNELS and choke points if they are
+ *    an impassible strip extending through everything including
+ *    water that is just ugly and also useless"
+ *
+ * New behaviour:
+ *   - NEVER paint over OCEAN, BEACH, or LAKE (water stays water)
+ *   - Use 2D noise to generate organic massifs — a few clumps, not
+ *     a strip
+ *   - Threshold is mode-aware via `intensity` param: balanced/
+ *     continent get more mountain (chokepoint creation); archipelago
+ *     gets less; dry-land gets ridge-line density
+ *   - On RTS-style symmetric modes (balanced), bias the noise
+ *     centre-ward so SOME mountains end up between the two bases
+ *     to create the original funnel intent — but as a CLUMP, not
+ *     a line, and ONLY on land
  */
-function paintMountainSpine(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
-  // Pick an axis: 0 = horizontal band on r; 1 = diagonal on q; 2 = diagonal on s.
-  const axis = Math.floor(rng() * 3);
+function paintMountainMassif(
+  tiles: Map<string, Tile>,
+  radius: number,
+  rng: Rng,
+  intensity = 0.5,
+): void {
+  // Generate a fresh noise field for the mountain mask. The map PRNG
+  // owns this rng, so different seeds give different mountain layouts;
+  // same seed reproduces.
+  const noise = createNoise2D(rng);
+  // Centre-bias: mountains are more likely to appear in the central
+  // band so they form the funnel that gives RTS modes their choke
+  // point. Falls off smoothly to zero at the perimeter.
   for (const tile of tiles.values()) {
+    // Skip water + beach — mountains in water are nonsensical.
+    if (tile.type === 'OCEAN' || tile.type === 'BEACH' || tile.type === 'LAKE') continue;
     const d = hexDistFromCenter(tile.q, tile.r);
-    if (d > radius - 5) continue; // stay inside the beach ring + safety
-    let onSpine = false;
-    if (axis === 0) onSpine = Math.abs(tile.r) <= 1;
-    else if (axis === 1) onSpine = Math.abs(tile.q) <= 1;
-    else onSpine = Math.abs(tile.q + tile.r) <= 1;
-    if (!onSpine) continue;
-    // Stamp HIGHLAND for the 1-tile-wide band, with a MOUNTAIN peak every
-    // few hexes for vertical relief.
-    tile.type = 'MOUNTAIN';
-    tile.level = 5;
+    // No mountains in the safety ring around the perimeter (already
+    // beach/ocean) and no mountains right against the perimeter where
+    // they'd block coastal travel.
+    if (d > radius - 5) continue;
+    // Centre-bias coefficient: 1.0 at centre, 0.0 at d=radius-5.
+    const centerBias = Math.max(0, 1 - d / (radius - 5));
+    // Sample noise at a frequency that gives ~3-5 distinct clumps
+    // per map. Higher freq = more, smaller clumps.
+    const n = noise(tile.q * 0.18, tile.r * 0.18);
+    // Final mask = noise + centre-bias contribution. Threshold
+    // cuts the top `intensity` fraction.
+    const mask = n * 0.7 + centerBias * 0.3;
+    // Threshold: intensity=0.5 → top ~30% of land tiles become
+    // mountain; 0.7 → top ~45%; 0.3 → top ~15%.
+    if (mask > 1 - intensity * 0.6) {
+      tile.type = 'MOUNTAIN';
+      tile.level = 5;
+    }
   }
 }
 
