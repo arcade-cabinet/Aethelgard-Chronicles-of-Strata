@@ -2,8 +2,9 @@ import type { Entity, World } from 'koota';
 import { AiPlayer } from '@/ai/ai-player';
 import { BALANCE_TOLERANCE, reachableBuildableCount } from '@/core/balance-audit';
 import { type BoardData, generateBoard } from '@/core/board';
-import { getHexKey, hexDistance } from '@/core/hex';
+import { getHexKey, hexDistance, hexNeighbors } from '@/core/hex';
 import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
+import { chokePointMultiplier } from '@/rules/choke-points';
 import {
   AssignedJob,
   AttractorBehavior,
@@ -959,7 +960,18 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     // multiplier (rain 0.7, fog 0.65, sunny 1.0). Combat applies
     // only to ranged attackers; melee swings ignore weather.
     const rangedAccuracy = WEATHER_PROFILES[game.weather.state].rangedAccuracyMultiplier;
-    game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta, rangedAccuracy);
+    // M_POLISH2.RTS.21 — choke-point defender bonus. Lambda counts
+    // walkable passable neighbours from game.board.tiles; if ≤2,
+    // the defender's tile is a choke and damage is reduced by 10%.
+    const chokeFn = (q: number, r: number): number => {
+      let passable = 0;
+      for (const key of hexNeighbors(q, r)) {
+        const t = game.board.tiles.get(key);
+        if (t?.walkable) passable++;
+      }
+      return chokePointMultiplier(passable);
+    };
+    game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta, rangedAccuracy, chokeFn);
   }
 
   // M_MODES.4 — endless mode: FactionBases are invulnerable. Clamp each
