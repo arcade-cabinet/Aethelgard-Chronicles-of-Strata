@@ -202,8 +202,11 @@ export function App() {
       difficulty: choices.difficulty,
       // the fresh event seed minted by the modal — committed with this session
       eventSeed: choices.eventSeed,
-      // M_MODES.7 — game mode preset (red-vs-blue default).
+      // M_BRAND.1 — game mode preset (border-clash default).
       mode: choices.mode,
+      // M_TURNS.3 — the player's Turn-style override (may differ
+      // from the preset's default after the cascade overrides).
+      turnsMode: choices.turnsMode,
     });
   };
 

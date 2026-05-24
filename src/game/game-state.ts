@@ -99,6 +99,13 @@ export interface NewGameConfig {
    *   coexistence:    no-win builder sandbox.
    */
   mode?: GameMode;
+  /**
+   * M_TURNS.3 — explicit Turn-style override. When omitted, falls
+   * back to the preset's `turnsMode`. The player can override via
+   * NewGameModal — e.g. picking border-clash but flipping to
+   * turn-based for an explore-at-leisure session.
+   */
+  turnsMode?: 'real-time' | 'turn-based';
 }
 
 /**
@@ -580,9 +587,10 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     wonderTimers: { player: Infinity, enemy: Infinity },
     // M_EXPANSION.U.111 — speed multiplier; defaults to 1.0.
     gameSpeed: 1,
-    // M_MODES.8 — turn-based superposition (4x default; others opt-in via
-    // the Advanced toggle). 60s turns; player starts.
-    ...(preset.turnsMode === 'turn-based'
+    // M_MODES.8 + M_TURNS.3 — turn-based superposition. The effective
+    // turn style is the player's override (when set by NewGameModal)
+    // OR the preset default. 60s turns; player starts.
+    ...((config.turnsMode ?? preset.turnsMode) === 'turn-based'
       ? { turn: { active: 'player' as Faction, secondsRemaining: 60, turnLength: 60 } }
       : {}),
     // the enemy faction always runs a yuka AI player; AI-vs-AI mode swaps in

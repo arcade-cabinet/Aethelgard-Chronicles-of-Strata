@@ -5,6 +5,7 @@ import { createEventPrng, createFreshEventSeed } from '@/core/rng';
 import { randomSeedPhrase } from '@/core/seed-phrase';
 import type { Difficulty, GameMode } from '@/game/game-state';
 import { presetFor } from '@/rules';
+import type { TurnsMode } from '@/rules/mode-presets';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -20,6 +21,13 @@ export interface NewGameChoices {
   eventSeed: string;
   /** Game mode preset (M_MODES). */
   mode: GameMode;
+  /**
+   * M_TURNS.3 — Turn style override. Defaults to the preset's
+   * turnsMode; the player can flip independently. real-time = tick
+   * the sim every frame; turn-based = freeze sim between End Turn
+   * presses (M_TURNS.1 actually enforces).
+   */
+  turnsMode: TurnsMode;
 }
 
 // M_BRAND.1 — brand-aligned mode labels. The labels are the
@@ -128,6 +136,11 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   // The preset.mapSize is the default; the user can still override below.
   const [mapSize, setMapSize] = useState<MapSizeKey>(presetFor('border-clash').mapSize);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
+  // M_TURNS.3 — Turn style is the 3rd cascaded control. Defaults to
+  // the preset's turnsMode; overriding flips the Custom Realm flag.
+  const [turnsMode, setTurnsModeState] = useState<TurnsMode>(
+    presetFor('border-clash').turnsMode,
+  );
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
 
   // M_BRAND.3 — when the player overrides any cascaded control after
@@ -157,6 +170,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       coexistence: 'easy',
     };
     setDifficulty(aiByMode[mode]);
+    setTurnsModeState(preset.turnsMode);
     setPresetModified(false);
   }, [mode]);
 
@@ -168,6 +182,10 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   const setDifficultyOverride = (next: Difficulty) => {
     setDifficulty(next);
     setPresetModified(true);
+  };
+  const setTurnsModeOverride = (next: TurnsMode) => {
+    setTurnsModeState(next);
+    if (next !== presetFor(mode).turnsMode) setPresetModified(true);
   };
 
   useEffect(() => {
@@ -359,12 +377,28 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
         <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>
           AI difficulty
         </p>
-        <div style={{ margin: '6px 0 24px' }}>
+        <div style={{ margin: '6px 0 18px' }}>
           <Segmented
             value={difficulty}
             options={DIFFICULTIES}
             labels={{ easy: 'Easy', normal: 'Normal', hard: 'Hard' }}
             onChange={setDifficultyOverride}
+          />
+        </div>
+
+        {/*
+          M_TURNS.3 — Turn style is the 3rd cascaded control. Picking
+          a preset that's turn-based (today only age-of-strata) flips
+          this to "Turn-based" automatically. Overriding sets the
+          Custom Realm flag.
+        */}
+        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Turn style</p>
+        <div style={{ margin: '6px 0 24px' }}>
+          <Segmented
+            value={turnsMode}
+            options={['real-time', 'turn-based'] as const}
+            labels={{ 'real-time': 'Real-time', 'turn-based': 'Turn-based' }}
+            onChange={setTurnsModeOverride}
           />
         </div>
 
@@ -389,7 +423,14 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             type="button"
             id="begin-game"
             onClick={() =>
-              onBegin({ seedPhrase: seedPhrase.trim(), mapSize, difficulty, eventSeed, mode })
+              onBegin({
+                seedPhrase: seedPhrase.trim(),
+                mapSize,
+                difficulty,
+                eventSeed,
+                mode,
+                turnsMode,
+              })
             }
             style={{
               width: '100%',

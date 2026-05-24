@@ -1097,6 +1097,27 @@ M_ARCH_UNIFY drains.
 
 ### M_FEATURE_QUEUED — paused until M_ARCH_UNIFY ships
 
+- [ ] [HIGH] M_HIERARCHY.1 — Archetype vs Consumer vs Skin contract audit (user, 2026-05-23: "make SURE consumers vs archetypes is solid EVERYWHERE because what we went over last night from archetypes to skins is a CRITICAL hierarchy"). The vocab is:
+  - **Archetype** = the abstract primitive / artifact / family-of-shape (e.g. "the particle" itself: billboard sprite + spawn/age/cull lifecycle; "the building" base trait set; "the character mesh rig"). One archetype per category.
+  - **Consumer** = a tuned configuration of an archetype, bound to a domain trigger (e.g. "rain consumer" = particle archetype tuned for falling drops; "barracks consumer" = building archetype tuned for the Barracks Thing).
+  - **Skin** = the *visual overlay* on a consumer (e.g. SKINS[faction].structure[type] = the GLB + scale + yOffset for one consumer-on-a-faction). Skins parameterize the visual; consumers parameterize the behavior.
+  The codebase TODAY conflates archetype with consumer in several places:
+    - `src/world/particle-archetypes.tsx` exports `rainArchetype`, `sawdustArchetype`, `victoryConfettiArchetype`, `chimneySmokeArchetype`, `buildCompleteArchetype` — ALL FIVE are consumers, not archetypes.
+    - `src/rules/building-behaviors.ts` mixes archetype + consumer concerns.
+    - Any other `*Archetype` export.
+  Audit + rename pass: one `ParticleArchetype` abstraction (the artifact) + 5 renamed `ParticleConsumer`s (currently 5 misnamed `*Archetype`s); validate the rest of the codebase against the same contract.
+
+- [ ] [HIGH] M_TURNS.4 — placeholder removed (subsumed by M_HIERARCHY.1).
+- [ ] [HIGH] M_AI_AWARE.1 — AI must be fully cognizant of every customization knob and adapt (user, 2026-05-23). Audit AiPlayer/AiDirector against the full customization surface and ensure each is consumed:
+  - game.mode (border-clash / frontier-raid / long-reign / strata-wars / age-of-strata / coexistence) — already partly: starve-resign gates on 'long-reign'. NEEDS: AI build priorities scale per mode (coexistence → no military build at all; frontier-raid → fast cheap rushers; strata-wars → tech-up first then military).
+  - game.difficulty (easy / normal / hard) — already wired via aiVisionRadiusFor and brain bias; verify no NEW knob ignores it.
+  - game.mode preset.turnsMode (turn-based vs real-time, M_TURNS) — AI must take ONE coordinated decision per turn in turn-based mode, not stream per-frame ticks.
+  - game.mode preset.maxTurns (capped vs uncapped, M_TURNS.2) — AI must rush when turns left < 20; turtle when uncapped.
+  - game.mode preset.invulnerableBases — already implicit (no base-destruction win in long-reign/coexistence) but AI BuildEvaluator should de-prioritize Walls/Watchtowers when bases are invulnerable.
+  - game.mode preset.mapType ('balanced' vs 'continent' vs 'archipelago' vs 'dry-land') — AI scout/expand patterns differ per map shape (archipelago → ferry-priority once boats land; continent → land-rush; etc).
+  - game.mode preset.matchLength ('short' vs 'medium' vs 'long' vs 'endless') — same shape as maxTurns awareness.
+  Add a per-mode AiProfile registry sibling to MODE_PRESETS so each preset declares its AI defaults (build-priority weights, attack-vs-defend ratio, tech-tree pacing). One registry row per mode.
+
 - [ ] [HIGH] M_REFACTOR.1 — generic particle ARCHETYPE system (user, 2026-05-22):
   "snow, sawdust, rain, all that shit are all particles" + "even blood
   effects, splashes, its the whole thing of we apply archetypes to units
@@ -1129,8 +1150,7 @@ M_ARCH_UNIFY drains.
   buildings, units, discoveries, accretion). Each particle effect =
   ONE config row.
 
-- [ ] [HIGH] M_HARDENING.5 — KayKit Ultimate Fantasy RTS pack ingest
-  via assets-library MCP; replace placeholder structures.
+- [x] [HIGH] M_HARDENING.5 — Ultimate Fantasy RTS pack ingest — DONE (it's Quaternius CC0, not KayKit; the assets-library MCP confirmed). 39 GLBs ingested from /Volumes/home/assets via the reorg pass: structures.rts.{town-center,barracks,archery,farm,market,storage,temple,wall,wall-tower,wall-gate,tower-house,house}.{first-age,second-age}.{l1,l2,l3} + nature.rts.{tree,rock,gold}.* + structures.house (which had been silently 404-ing under SKINS.player.House). SKINS.player.{TownHall,Barracks,Watchtower,Wall} now point at the new Quaternius meshes at hex-scale (0.10-0.12). Visual regression at ?seed=test-seed-zero confirms the world renders with the new buildings.
 - [ ] [HIGH] M_HARDENING.6 — Pixel-5a perf profile + APK install
   validation on real device/emulator.
 - [x] M_RELEASE_FINAL.3 — CHANGELOG 0.3.0 — every band documented
@@ -1400,6 +1420,9 @@ percentages, verify perf headroom holds at the new Huge.
 - [x] [HIGH] M_BRAND.1 — game-mode names brand-aligned — DONE. GameMode keys renamed to Aethelgard-lore names: border-clash (was red-vs-blue), frontier-raid (was skirmish), long-reign (was endless), strata-wars (was classic-rts), age-of-strata (was 4x), coexistence (was coexist). MODE_PRESETS keys + NewGameModal labels updated. ai-player.ts starve-resign check updated to 'long-reign'. mode is not persisted in snapshots, so no snapshot-migration entry needed. 437/437 tests green.
 - [x] [HIGH] M_BRAND.2 — Diegetic preset cascade — DONE for the two cascaded controls today (Map Size + AI Difficulty). useEffect on mode change pushes preset.mapSize and a per-mode AI-difficulty default into the visible controls. Tagline prose under the picker REMOVED (the cascade IS the description). Future extension when MatchLength / TurnsMode / MapType become user-facing controls: add them to the cascade in the same useEffect.
 - [x] [HIGH] M_BRAND.3 — Information architecture: top heading "Realm preset" labels the 6 mode buttons; cascaded controls (Map size, AI difficulty) sit below. Picking a preset auto-fills those controls; overriding any of them sets `presetModified` which renders a gold "Custom Realm" annotation next to the heading. Selecting a preset chip re-locks it (clears the flag). DONE in NewGameModal.tsx alongside M_BRAND.2 — both live in the same useEffect + override-wrapper pair.
+- [ ] [HIGH] M_TURNS.1 — Turn-based mode is a NAME ONLY today. MODE_PRESETS.{age-of-strata}.turnsMode === 'turn-based' but the runtime ignores it: the game loop ticks every frame regardless. Implement: when game.mode is turn-based, freeze runEconomyTick (no AI movement, no combat, no harvest, no spawn) until the player presses "End Turn" — then advance N simulation ticks (representing one turn worth of in-world time), refill AP/resource regen quanta, reset the EndTurn button, give AI ONE turn worth of decisions. Wire EndTurnButton (already exists per src/hud/EndTurnButton.tsx) to dispatch the turn advance.
+- [ ] [HIGH] M_TURNS.2 — "Maximum turns" cap is a real customization pivot for turn-based games. Add `maxTurns: number | null` to ModePreset (null = uncapped). age-of-strata default: 60 turns. When game.turnsElapsed >= maxTurns, the win goes to the faction with higher zone-control + score (or shared draw). Surface a "Turn N / 60" pill in the HUD when in turn-based mode. NewGameModal: when turnsMode is 'turn-based' (today implicit via mode pick), reveal a "Max turns" Segmented (30 / 60 / 90 / Unlimited) below the AI difficulty control — its cascade trips presetModified just like Map Size + AI Difficulty (M_BRAND.3).
+- [x] [HIGH] M_TURNS.3 — Turn style visible BEFORE Begin — DONE. Added a "Turn style" Segmented (Real-time / Turn-based) to NewGameModal as the 3rd cascaded control. Mirrors the preset's turnsMode on mode-change (M_BRAND.2 cascade), flips the Custom Realm flag when overridden (M_BRAND.3). The choice flows through NewGameChoices → NewGameConfig → startGame, which now reads `config.turnsMode ?? preset.turnsMode` to decide whether to instantiate game.turn. Note: M_TURNS.1 still has to land the actual sim-freeze behavior — picking Turn-based today instantiates game.turn (so EndTurnButton renders) but the runEconomyTick path doesn't yet gate on game.turn.active.
 - [ ] [WAIT-CI] PR_3_MERGE — squash-merge PR #3 (chore/release-marker)
   once CI lands green; carries the v0.4 cycle work (M_FEATURE.1+.2+.3+.4+
   .5+.6, M_QUALITY.1+.2+.3, M_POLISH.1+.2+.4, M_BALANCE_2.1+.2,
