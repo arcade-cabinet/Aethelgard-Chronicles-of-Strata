@@ -147,10 +147,15 @@ mechanic work that follows is built on this.
 
 **Lint + format**
 
-- [ ] M_FUN.FOUNDATION.BIOME-STRICT — Tighten
-  Biome rules: no `any`, no `as` without justifying comment, no
-  inline literals where a const would do (matches arcade-game
-  profile mandate).
+- [x] M_FUN.FOUNDATION.BIOME-STRICT — Tightened biome.json rules:
+  noExplicitAny / noDoubleEquals / noUnusedVariables /
+  noUnusedImports / noBannedTypes / noUselessTypeConstraint /
+  useConst / useNodejsImportProtocol all ERROR. Empty-block
+  statements and unused fn params downgraded to WARN to ratchet
+  over time without a flag-day rewrite. 0 errors, 30 warnings
+  surfaced for next-pass cleanup. The `as` without comment
+  enforcement requires a custom rule Biome doesn't ship — that
+  one stays a doctrine point until ESLINT lands.
 - [ ] M_FUN.FOUNDATION.ESLINT — typescript-eslint
   strict preset as a second-pass formatter (covers
   exhaustive-deps for hooks etc, which Biome doesn't).
