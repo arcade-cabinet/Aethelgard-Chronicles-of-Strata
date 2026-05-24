@@ -262,8 +262,12 @@ mechanic work that follows is built on this.
   `act` local-runner section + the full test stack table +
   Conventional Commits guide. Doctrine moved out of CLAUDE.md
   into a contributor-facing file.
-- [ ] M_FUN.FOUNDATION.RENOVATE — Renovate alongside
-  or replacing Dependabot for finer per-package rules.
+- [x] M_FUN.FOUNDATION.RENOVATE — renovate.json added with:
+  weekly schedule, semantic commits, sql.js < 1.12.0 pin
+  (matches the existing dependabot guard), minor-patch grouped
+  vs majors-separate per-ecosystem, lockfile maintenance Monday
+  4am, vulnerability alerts auto-labelled `security`. Dependabot
+  stays for now (parallel; remove on confirmed Renovate working).
 - [ ] M_FUN.FOUNDATION.COMMITLINT — Enforce
   conventional-commits format (today honoured by convention only).
 

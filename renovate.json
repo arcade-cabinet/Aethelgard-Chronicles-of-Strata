@@ -1,0 +1,37 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "schedule:weekly", ":semanticCommits"],
+  "labels": ["deps"],
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "description": "sql.js + @types/sql.js pinned — jeep-sqlite ABI-locked. Same pin as .github/dependabot.yml.",
+      "matchPackageNames": ["sql.js", "@types/sql.js"],
+      "allowedVersions": "< 1.12.0"
+    },
+    {
+      "description": "Group minor+patch into one PR per ecosystem; majors get their own PR.",
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "minor-patch"
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "groupName": "majors",
+      "prPriority": -5
+    },
+    {
+      "description": "GitHub Actions weekly.",
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions"
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 4am on monday"]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"]
+  }
+}
