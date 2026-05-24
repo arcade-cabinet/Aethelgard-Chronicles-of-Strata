@@ -46,13 +46,26 @@ const SLOT_POSITIONS: Record<'landscape' | 'portrait', Record<HudPillSlot, SlotP
     discoveries: { top: 12, right: 300 },
     resign: { top: 12, right: 220 },
   },
+  // M_POLISH2.B.2 — portrait layout overhaul. The previous layout
+  // packed every pill into top:12 + top:56 + top:100 rows on the
+  // right edge, where they overlapped the ResourceBar (now scroll-
+  // snapped via MOBILE.2) AND the MobileSpeedPausePill (MOBILE.14,
+  // top:8 right:8 spanning ~200px wide). Resolution:
+  //   - resource bar sits at top:8 (compact) spanning ~250px width
+  //   - MobileSpeedPausePill sits at top:8 right:8 spanning ~200px
+  //   - HUD pills move BELOW that — top:56 row at minimum
+  //   - sound/pause/speed are owned by MobileSpeedPausePill on
+  //     portrait, so the HudPill table values for those slots are
+  //     unused in practice; keep stable positions so a non-portrait
+  //     viewport-class transition during a session doesn't pop
+  //     pills to wrong places.
   portrait: {
-    weather: { top: 56, right: 144 },
-    speed: { top: 56, right: 72 },
-    pause: { top: 12, right: 72 },
-    sound: { top: 12, right: 144 },
-    discoveries: { top: 100, right: 144 },
-    resign: { top: 100, right: 8 },
+    weather: { top: 56, right: 8 },
+    speed: { top: 56, right: 72 }, // unused on portrait (MobileSpeedPausePill)
+    pause: { top: 56, right: 136 }, // unused on portrait (MobileSpeedPausePill)
+    sound: { top: 56, right: 80 }, // mounted by SoundToggle even on portrait
+    discoveries: { top: 104, right: 8 },
+    resign: { top: 104, right: 80 }, // unused on portrait (MobileSystemMenu)
   },
 };
 

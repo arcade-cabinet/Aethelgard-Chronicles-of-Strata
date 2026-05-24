@@ -176,7 +176,11 @@ function GameSession({
         }
       />
       <SelectionRect game={game} getCamera={getCamera} />
-      <SoundToggle persistence={persistence} />
+      {/* M_POLISH2.B.2 — portrait suppresses the SoundToggle pill; the
+            master mute is reachable via Settings (in the system menu)
+            and the new MobileSpeedPausePill already owns the top-
+            right slot the SoundToggle used to live in. */}
+      {viewport.class !== 'phonePortrait' && <SoundToggle persistence={persistence} />}
       {/* M_POLISH2.B.1 — visible touch-reachable build button.
             Dispatches the open-build-menu event the App listener now
             handles. Mobile-first but useful on desktop too. */}
