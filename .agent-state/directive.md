@@ -2305,3 +2305,161 @@ notices)
   local-sha is the 40-zero deletion sentinel, and exits 0 with
   "deletion-only push detected — skipping verify gate" if so.
   Normal pushes still run the full gate.
+
+---
+
+### M_FUN — make the game ACTUALLY FUN (user mandate 2026-05-24)
+
+User: "we have the GAME. now we need to make it FUN [...] really
+explore the space [...] every game every map type size etc 4x RTS
+all of it [...] don't just use my examples — YOU brainstorm and
+come up with significant expansion".
+
+Design discipline + brainstorm captured in
+**docs/specs/120-map-architecture.md** — the "paper playtest" doc
+the user explicitly asked for; covers per-mode choke/pressure/
+relief plus 11 sections of agent-originated mechanic expansion.
+Below is the ORDERING — each cycle ships ONE headline mechanic
+plus follow-on items from the spec.
+
+#### M_FUN.MAP — mountain massif, passes, biome chokes (v0.4)
+
+- [x] [HIGH] M_FUN.MAP.MASSIF — DONE 2026-05-24 commit 13a1f46.
+  Mountain "spine" replaced with noise-derived massif; never
+  paints on OCEAN/BEACH/LAKE; per-mode intensity (balanced 0.55
+  centre-biased for funnel intent, continent 0.7, archipelago
+  0.25, dry-land 0.75). 665 unit tests green.
+- [ ] [WAIT-SPEC-REVIEW] M_FUN.MAP.PASS — MOUNTAIN_PASS biome
+  (level 3 walkable ~0.6× speed) inside massifs as fortifiable
+  choke. Pending user review of spec 120.
+- [ ] [WAIT-SPEC-REVIEW] M_FUN.MAP.SWAMP — SWAMP biome with
+  disease DoT; Healer unit as counter.
+- [ ] [WAIT-SPEC-REVIEW] M_FUN.MAP.ELEV — fatigue attribute on
+  MOUNTAIN_PASS traversal + audit existing level-based slowdown.
+- [ ] [WAIT-SPEC-REVIEW] M_FUN.MAP.PER_MODE — named per-mode
+  generator strategies (border-clash-rts, frontier-raid-rts, etc).
+
+#### M_FUN.UNIT — new unit types (v0.4 follow-on)
+
+- [ ] [WAIT-SPEC-REVIEW] M_FUN.UNIT.HEAL — Healer/Cleric: aura
+  heal-on-tick; required to push through swamp/disease; ~50%
+  Wizard cost; no offensive.
+- [ ] [WAIT-SPEC-REVIEW] M_FUN.UNIT.SCOUT — Scout: fast, +2
+  vision, no combat, excavates Ruins. 4X exploration enabler.
+
+#### M_FUN.ATTR — status attributes (v0.4 follow-on)
+
+- [ ] [WAIT-SPEC-REVIEW] M_FUN.ATTR.DISEASE — Health.disease;
+  -1 HP/sec; clears via Healer 2-hex range OR GRASS 5+ sec.
+- [ ] [WAIT-SPEC-REVIEW] M_FUN.ATTR.FATIGUE — Combatant.fatigue;
+  -50% dmg; decays 5 sec out of combat.
+- [ ] [WAIT-SPEC-REVIEW] M_FUN.ATTR.DEHYDRATION — Health.dehydration;
+  suppresses HP regen; clears by leaving DESERT 3+ sec.
+
+#### M_FUN.DYN — dynamic terrain (v0.5)
+
+- [ ] [WAIT-DEPS] M_FUN.DYN.WILDFIRE — Fire propagation through
+  FOREST; rain/water extinguishes; defensive burn lines.
+- [ ] [WAIT-DEPS] M_FUN.DYN.QUAKE — Earthquake event: pass
+  topology shifts mid-game.
+- [ ] [WAIT-DEPS] M_FUN.DYN.VOLCANO — Eruption: LAVA tiles 30s
+  then fertile 60s; risk/reward zone.
+- [ ] [WAIT-DEPS] M_FUN.DYN.EROSION — Crossings erode under
+  traffic; eventually break; forces upkeep.
+
+#### M_FUN.CIV — civilian layer (v0.6)
+
+- [ ] [WAIT-DEPS] M_FUN.CIV.CITIZENS — Passive entities wandering
+  between buildings; visible population.
+- [ ] [WAIT-DEPS] M_FUN.CIV.REFUGEES — Refugee waves; host=+econ-
+  food; refuse=-morale; real policy choice.
+- [ ] [WAIT-DEPS] M_FUN.CIV.TRADE — Caravans between bases;
+  disrupt for econ damage without base-take.
+
+#### M_FUN.AI — AI personality (v0.7)
+
+- [ ] [WAIT-DEPS] M_FUN.AI.NAMED — 5-8 named opponents (Builder/
+  Raider/Hoarder/Diplomat/Mad King); each exploitable.
+- [ ] [WAIT-DEPS] M_FUN.AI.TAUNT — Aria-live AI goal announcements.
+- [ ] [WAIT-DEPS] M_FUN.AI.MISTAKES — Personality-driven flaws.
+
+#### M_FUN.MYTH — mythology mechanics (v0.8)
+
+- [ ] [WAIT-DEPS] M_FUN.MYTH.AETHER — Ley-line tiles channel
+  mana; Wizards channel 5×; era-3 unlock.
+- [ ] [WAIT-DEPS] M_FUN.MYTH.RUINS — Scout-excavated one-shot
+  random ancient-tech perks.
+- [ ] [WAIT-DEPS] M_FUN.MYTH.DIVINE — Rare divine intervention
+  (20-sim-min cooldown); one-shot heal/summon/freeze.
+- [ ] [WAIT-DEPS] M_FUN.MYTH.GROVE — Sacred Grove biome (1/map);
+  3× HP regen pressure point.
+- [ ] [WAIT-DEPS] M_FUN.MYTH.MONUMENT — Wonder on Grove =
+  passive global friendly bonus.
+
+#### M_FUN.NAR — narrative + replay (v0.9)
+
+- [ ] [WAIT-DEPS] M_FUN.NAR.HIGHLIGHTS — Transcript highlight
+  detection; post-match summary card.
+- [ ] [WAIT-DEPS] M_FUN.NAR.NICKNAMES — Auto-generated match
+  names from defining moments.
+- [ ] [WAIT-DEPS] M_FUN.NAR.VICTORY — 50 templated victory
+  stanzas; unique per-match outro.
+- [ ] [WAIT-DEPS] M_FUN.NAR.HISTORY — Persistent faction
+  lorebook across saves.
+- [ ] [WAIT-DEPS] M_FUN.NAR.REPLAY — Load saved transcript +
+  play back with original camera.
+- [ ] [WAIT-DEPS] M_FUN.NAR.SKIP — Replay fast-forward-to-next-
+  interesting-moment button.
+
+#### M_FUN.PHONE — phone affordances (v1.0)
+
+- [ ] [WAIT-DEPS] M_FUN.PHONE.PINCH — Pinch-zoom INTO unit
+  centres + opens panel.
+- [ ] [WAIT-DEPS] M_FUN.PHONE.LONGPRESS — Long-press = named
+  camera bookmark.
+- [ ] [WAIT-DEPS] M_FUN.PHONE.EDGEDRAG — Drag-from-edge per-edge
+  context menus (right = quick-build).
+- [ ] [WAIT-DEPS] M_FUN.PHONE.HAPTIC — Vibration on combat +
+  build-complete + era unlock; Settings-tunable.
+
+#### M_FUN.AUDIO — audio reactivity (v1.0)
+
+- [ ] [WAIT-DEPS] M_FUN.AUDIO.COMBAT — Percussion layer when
+  combat within 8 hexes of camera.
+- [ ] [WAIT-DEPS] M_FUN.AUDIO.ALARM — Audible warning on enemy
+  pass entry.
+- [ ] [WAIT-DEPS] M_FUN.AUDIO.BIOME — Distinct ambient per
+  biome.
+
+#### M_FUN.DIPLO — diplomacy (v1.1+, post 3-faction)
+
+- [ ] [WAIT-DEPS] M_FUN.DIPLO.REP — Per-pair reputation; combat
+  lowers / trade raises; affects diplomatic actions.
+- [ ] [WAIT-DEPS] M_FUN.DIPLO.TRIB — Tributary states; soft-
+  conquest path (10% income forever).
+- [ ] [WAIT-DEPS] M_FUN.DIPLO.MARRY — Marriage alliances combine
+  factions.
+
+#### M_FUN.PROC — procedural names + flavour (low-overhead polish)
+
+- [ ] [WAIT-LOW] M_FUN.PROC.UNITS — Procedural unit names;
+  tombstone on death.
+- [ ] [WAIT-LOW] M_FUN.PROC.INSCRIP — Building hover shows
+  built-at + by-which-peon.
+- [ ] [WAIT-LOW] M_FUN.PROC.MAPNAME — Procedural map name from
+  seed phrase.
+
+#### M_FUN.MOD — modifier dial (v0.9+, low priority)
+
+- [ ] [WAIT-LOW] M_FUN.MOD.DAILY — Daily challenge: shared seed.
+- [ ] [WAIT-LOW] M_FUN.MOD.PUZZLE — Puzzle scenarios with
+  specific win conditions.
+- [ ] [WAIT-LOW] M_FUN.MOD.DIAL — Pre-game knobs ("2x cost",
+  "no walls", "one-hit") for variety.
+
+#### M_FUN: implementation rule
+
+Every milestone PR in v0.4+ must ship at LEAST one item from
+the M_FUN.* sections above (not just polish-delta). The game
+accretes texture by adding genuinely new toys, not by fine-
+tuning the existing ones (user mandate).
