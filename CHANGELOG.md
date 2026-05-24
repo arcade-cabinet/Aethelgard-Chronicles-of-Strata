@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.0...v0.1.1) (2026-05-24)
+
+
+### Features
+
+* Aethelgard Chronicles of Strata — full-game initial release (M0–M_HARDENING) ([6eba229](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/6eba22914c9e3c19d232484c1a30eb7d22104a54))
+
 ## [Unreleased] — M_ARCH_UNIFY + M_AUDIT + M_SEC hardening (0.4.0 in-flight)
 
 Two interleaved tracks: (1) the unified Thing/Skin registry layer
