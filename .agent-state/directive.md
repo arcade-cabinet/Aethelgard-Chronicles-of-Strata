@@ -2219,3 +2219,94 @@ Every silent fallback in the codebase that hides a failure from the user. Audit 
 - [x] [HIGH] M_POLISH3.LOCAL.1 — DONE 2026-05-24 commit 1117a81. .husky/pre-push runs pnpm verify + test:browser + PW_REUSE_SERVER=1 test:e2e. husky 9.1.7 added; prepare script wires hooks on install.
 - [x] [HIGH] M_POLISH3.LOCAL.2 — DONE 2026-05-24 commit 1117a81. Added verify:all script (verify + test:browser). pre-push hook runs both already.
 - [x] [HIGH] M_POLISH3.LOCAL.3 — DONE (was already done — playwright.config.ts:34 reads PW_REUSE_SERVER env; pre-push uses it). Confirmed via 1117a81 + the existing webServer.reuseExistingServer config.
+
+---
+
+### M_NEXT_CYCLE — work surfaced 2026-05-24 (post-M_POLISH3 sweep)
+
+The M_POLISH3 push exposed several real items that didn't fit the
+scope of that milestone but need attention in the next cycle.
+
+#### Deployed Pages + CSP
+
+- [x] [BLOCKER] M_NEXT.DEPLOY.1 — Deployed Pages was BLANK; CSP
+  `script-src 'self'` blocked koota's runtime `new Function(...)`
+  trait-setter generation (the library's core SoA perf path). Fix:
+  added 'unsafe-eval' to CSP (commit 056048b, PR #8). Verified locally:
+  served dist mounts the TitleScreen.
+- [ ] [HIGH] M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer (Pages
+  CDN config or a Cloudflare worker). The `<meta>` CSP ignores
+  `frame-ancestors` per HTML spec; an HTTP header would enforce it
+  AND let us set Trusted-Types + Permissions-Policy properly. Tracked
+  as a deployment-config concern, not source code.
+- [ ] [MED] M_NEXT.DEPLOY.3 — Narrow `'unsafe-eval'` via SRI/nonce
+  hashing of the specific koota + sql.js chunks. Investigate whether
+  Vite's bundle splitter can isolate the eval-using modules into a
+  separate chunk that gets a script-src hash exception, leaving the
+  rest of the bundle hash-only.
+
+#### Workflow standardization
+
+- [x] [HIGH] M_NEXT.CI.1 — Workflows now match the arcade-cabinet
+  standard trio (ci.yml → release.yml → cd.yml). release-please.yml
+  merged into release.yml as the first job; deploy-pages.yml renamed
+  to cd.yml. Commit 056048b, PR #8.
+- [ ] [MED] M_NEXT.CI.2 — Add an `analysis-nightly.yml` (mean-streets
+  ships one) for slower scans (dependency-review with full graph,
+  lighthouse on the deployed Pages URL, etc.) that don't belong on
+  the PR hot path.
+
+#### Dependencies
+
+- [x] [HIGH] M_NEXT.DEPS.1 — sql.js pinned + dependabot ignore (commit
+  056048b). PR #6 (sql.js 1.14.x bump) closed with a pointer to the
+  jeep-sqlite ABI lock-in.
+
+#### Carry-overs from M_POLISH3
+
+- [ ] [WAIT-LOW] M_NEXT.AIVAI.6 — Player-faction AI inert because
+  seedZonesFromAttractors gives asymmetric start (player ends with
+  fewer walkable tiles in the seed radius). Real fix is map-gen
+  symmetry, not AI work. Carried from M_POLISH3.AIVAI.6.
+- [ ] [WAIT-LOW] M_NEXT.SCENE.4 — GameOverModal Dialog doesn't render
+  reliably in headless Playwright despite outcome flipping + setInterval
+  + CustomEvent all firing. Suspected React+Radix+StrictMode +
+  headless Chromium interaction. Production flow works; only e2e
+  force-outcome path is affected. Carried from M_POLISH3.SCENE.4.
+
+#### Visual coverage gaps (the agent should screenshot before user
+notices)
+
+- [ ] [MED] M_NEXT.HUD.1 — tablet viewport HUD pill stride was NOT
+  bumped alongside landscape (M_POLISH3.B.2 only fixed landscape).
+  Re-screenshot the tablet viewport-matrix capture and apply the
+  same 80→110 stride bump to tablet SLOT_POSITIONS if pills collide.
+- [ ] [MED] M_NEXT.HUD.2 — Mobile-portrait journey captures + per-mode
+  captures: tests/e2e/per-mode-journey runs at desktop only. Add the
+  6-mode × 4-timepoint sweep at mobile + tablet to surface viewport-
+  specific HUD/scene problems (a peon-tile-pick UI bug on mobile would
+  be invisible in the current desktop-only ledger).
+- [ ] [MED] M_NEXT.HUD.3 — Day-night phase captures show subtle
+  difference because hemisphere light is constant 0.6 by design (game
+  stays playable at night). Either reduce hemisphere to ~0.3 so night
+  is actually visibly darker, OR add a "DEEP NIGHT" weather state
+  with stronger fog + lower ambient.
+
+#### Real-game playability bugs surfaced by deploy test
+
+- [ ] [HIGH] M_NEXT.PLAY.1 — TitleScreen footer reads "v0.2.0" on the
+  deployed Pages build (verified in headed Chrome 2026-05-24). Real
+  version is 0.1.0 (package.json) or 0.1.1 (release-please pending).
+  Either drop the hardcoded version label or wire it to the package
+  version at build time.
+- [ ] [MED] M_NEXT.PLAY.2 — favicon.ico 404 on every page load. Cosmetic
+  but every error counts (it shows up in the ErrorOverlay-equivalent
+  network filters). Add a public/favicon.ico (16x16/32x32) using the
+  TitleScreen "A" logomark.
+
+#### Process patches
+
+- [ ] [HIGH] M_NEXT.PROC.1 — Pre-push hook ALSO runs for branch
+  deletion (`git push --delete`). Today it runs verify+browser+e2e
+  on a branch-deletion push, which is 3-5 min of wasted wallclock.
+  Add a hook guard: skip when the push only includes deletions.
