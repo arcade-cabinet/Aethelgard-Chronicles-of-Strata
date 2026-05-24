@@ -4,6 +4,7 @@ import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import type { GameState } from '@/game/game-state';
 import { matchHighlights, matchNickname } from '@/game/match-narrative';
+import type { Persistence } from '@/persistence/persistence';
 import { formatInt, formatTime } from './format';
 import { HUD_THEME } from './hud-theme';
 import { MatchSummaryCard } from './MatchSummaryCard';
@@ -24,7 +25,18 @@ interface StatLine {
  * title element keeps the `modal-title-win` / `modal-title-loss` classes the
  * e2e tests assert against.
  */
-export function GameOverModal({ game }: { game: GameState }) {
+export function GameOverModal({
+  game,
+  persistence,
+}: {
+  game: GameState;
+  /**
+   * Optional — when supplied, the modal records a lorebook entry
+   * the first time outcome flips to a terminal value. Tests that
+   * don't care about the lorebook can omit it (no-op).
+   */
+  persistence?: Persistence;
+}) {
   const [outcome, setOutcome] = useState<GameOutcome>(game.outcome);
 
   useEffect(() => {
@@ -62,6 +74,34 @@ export function GameOverModal({ game }: { game: GameState }) {
       window.removeEventListener('aethelgard:outcome-changed', onOutcomeChanged);
     };
   }, [game]);
+
+  // M_FUN.NAR.LOREBOOK — record one entry per terminal outcome.
+  // Guarded with a local ref so React StrictMode double-mount in
+  // dev doesn't double-write. `persistence` is optional so tests
+  // and headless harnesses can omit it.
+  useEffect(() => {
+    if (outcome === 'playing' || !persistence) return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        await persistence.recordLorebookEntry({
+          id: 0,
+          endedAt: new Date().toISOString(),
+          seedPhrase: game.seedPhrase,
+          nickname: matchNickname({ seedPhrase: game.seedPhrase, outcome }),
+          outcome,
+          mode: game.mode,
+          enemyPersonality: game.aiPlayers.enemy?.personalityKey ?? null,
+          highlights: matchHighlights(game),
+        });
+      } catch (err) {
+        if (!cancelled) console.warn('[lorebook] record failed:', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [outcome, persistence, game]);
 
   const isWin = outcome === 'win';
   // M_PROCESS.REVIEW must-fix #2 — 'draw' outcome was rendering

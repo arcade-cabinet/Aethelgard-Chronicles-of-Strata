@@ -30,6 +30,32 @@ import { type GameSnapshot, serializeGame } from './serialize-game';
 // Types
 // ---------------------------------------------------------------------------
 
+/**
+ * M_FUN.NAR.LOREBOOK — one match's worth of lore. Independent of
+ * save-game rows so deleting a save does NOT erase the memory that
+ * the match happened. Each entry is the post-match summary card
+ * captured at outcome-flip time, plus the metadata needed to render
+ * a list view (faction, mode, when).
+ */
+export interface LorebookEntry {
+  /** Row id (set by DB on insert; 0 when uncommitted in tests). */
+  id: number;
+  /** ISO timestamp the match ended. */
+  endedAt: string;
+  /** Map seed phrase the match was played on. */
+  seedPhrase: string;
+  /** Player-facing match nickname (matchNickname output). */
+  nickname: string;
+  /** Outcome string ('win' | 'loss' | 'draw'). */
+  outcome: string;
+  /** Game mode (frontier-raid, age-of-strata, etc). */
+  mode: string;
+  /** Enemy AI personality key. */
+  enemyPersonality: string | null;
+  /** Highlight bullets the modal showed (1-3 items). */
+  highlights: string[];
+}
+
 /** A persisted save-game record. */
 export interface SaveRecord {
   /** Row id from the saves table. */
@@ -52,6 +78,20 @@ export interface Persistence {
   load(id: number): Promise<SaveRecord | null>;
   /** List all saved games, newest first. */
   list(): Promise<SaveRecord[]>;
+  /**
+   * M_FUN.NAR.LOREBOOK — append one match-completion entry to the
+   * persistent lorebook. Lorebook is install-wide (not per-save)
+   * and accumulates across every finished match — wins, losses,
+   * draws. The save-list UI reads this to surface match history
+   * even after a save is deleted.
+   */
+  recordLorebookEntry(entry: LorebookEntry): Promise<void>;
+  /**
+   * List lorebook entries newest-first, capped at `limit` rows
+   * (default 50). Cheap full-text scan — the table only ever
+   * holds a few hundred rows even for power-users.
+   */
+  listLorebook(limit?: number): Promise<LorebookEntry[]>;
   /** Read a string setting. Returns `null` if not set. */
   getSetting(key: string): Promise<string | null>;
   /** Write a string setting. */
@@ -254,6 +294,31 @@ function rowToSaveRecord(row: any): SaveRecord {
   };
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: sql.js returns untyped rows; the validator below narrows.
+function rowToLorebookEntry(row: any): LorebookEntry {
+  const hl = row.highlights_json as string;
+  if (typeof hl !== 'string') {
+    throw new Error('persistence: lorebook.highlights_json missing or non-string');
+  }
+  if (hl.length > 4096) {
+    throw new Error(`persistence: lorebook.highlights_json too large (${hl.length} > 4096)`);
+  }
+  const parsed: unknown = JSON.parse(hl);
+  if (!Array.isArray(parsed) || !parsed.every((s): s is string => typeof s === 'string')) {
+    throw new Error('persistence: lorebook.highlights_json is not string[]');
+  }
+  return {
+    id: row.id as number,
+    endedAt: row.ended_at as string,
+    seedPhrase: row.seed_phrase as string,
+    nickname: row.nickname as string,
+    outcome: row.outcome as string,
+    mode: row.mode as string,
+    enemyPersonality: (row.enemy_personality as string | null) ?? null,
+    highlights: parsed,
+  };
+}
+
 /**
  * M_SEC.4 — read or mint the per-install SQLCipher passphrase.
  * Stored under PREF_KEYS.dbKey via Capacitor Preferences — Keychain
@@ -367,6 +432,21 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
           snapshot TEXT    NOT NULL
         );
       `);
+      // M_FUN.NAR.LOREBOOK — match-completion history. Append-only;
+      // never UPSERT (one row per completed match). Stored as JSON
+      // (highlights is a string array) to avoid a side table.
+      await conn.execute(`
+        CREATE TABLE IF NOT EXISTS lorebook (
+          id                INTEGER PRIMARY KEY AUTOINCREMENT,
+          ended_at          TEXT NOT NULL,
+          seed_phrase       TEXT NOT NULL,
+          nickname          TEXT NOT NULL,
+          outcome           TEXT NOT NULL,
+          mode              TEXT NOT NULL,
+          enemy_personality TEXT,
+          highlights_json   TEXT NOT NULL
+        );
+      `);
 
       sqliteDb = conn;
       return conn;
@@ -476,6 +556,57 @@ export function createPersistence(): Persistence {
       return records;
     },
 
+    async recordLorebookEntry(entry: LorebookEntry): Promise<void> {
+      const db = await openDb();
+      if (!db) return;
+      await db.run(
+        `INSERT INTO lorebook (ended_at, seed_phrase, nickname, outcome, mode, enemy_personality, highlights_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?);`,
+        [
+          entry.endedAt,
+          entry.seedPhrase,
+          entry.nickname,
+          entry.outcome,
+          entry.mode,
+          entry.enemyPersonality,
+          JSON.stringify(entry.highlights),
+        ],
+      );
+      // Cap at LOREBOOK_MAX rows — newest-first; pruning by ended_at
+      // matches the read order so the user only ever loses old
+      // matches, never their most recent ones.
+      const LOREBOOK_MAX = 500;
+      await db.run(
+        `DELETE FROM lorebook WHERE id IN (
+           SELECT id FROM lorebook ORDER BY ended_at DESC LIMIT -1 OFFSET ?
+         );`,
+        [LOREBOOK_MAX],
+      );
+    },
+
+    async listLorebook(limit = 50): Promise<LorebookEntry[]> {
+      const db = await openDb();
+      if (!db) return [];
+      const cap = Math.max(1, Math.min(500, Math.floor(limit)));
+      const result = await db.query(
+        `SELECT * FROM lorebook ORDER BY ended_at DESC LIMIT ${cap};`,
+      );
+      const rows = result.values ?? [];
+      const out: LorebookEntry[] = [];
+      for (const row of rows) {
+        try {
+          out.push(rowToLorebookEntry(row));
+        } catch (err) {
+          const id = (row as { id?: unknown }).id;
+          console.warn(
+            `[persistence] skipping corrupt lorebook row${typeof id === 'number' ? ` id=${id}` : ''}:`,
+            err,
+          );
+        }
+      }
+      return out;
+    },
+
     async getSetting(key: string): Promise<string | null> {
       const { value } = await Preferences.get({ key });
       return value;
@@ -521,8 +652,14 @@ export function createPersistence(): Persistence {
       const failures: string[] = [];
       try {
         const db = await openDb();
-        if (db) await db.run(`DELETE FROM saves;`);
-        else failures.push('saves (db unavailable)');
+        if (db) {
+          await db.run(`DELETE FROM saves;`);
+          // M_FUN.NAR.LOREBOOK — reset wipes match history too. The
+          // intent of "reset all data" is a clean slate; carrying
+          // lorebook entries forward would surface ghost matches
+          // referring to deleted saves.
+          await db.run(`DELETE FROM lorebook;`);
+        } else failures.push('saves (db unavailable)');
       } catch (err) {
         failures.push(`saves: ${err instanceof Error ? err.message : String(err)}`);
       }

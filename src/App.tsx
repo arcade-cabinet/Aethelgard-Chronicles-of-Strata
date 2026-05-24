@@ -306,7 +306,7 @@ function GameSession({
       <PersistAchievements game={game} persistence={persistence} />
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
-      <GameOverModal game={game} />
+      <GameOverModal game={game} persistence={persistence} />
       {/* M_AUDIT2.UX.12 — single hidden aria-live region; the bus
           (src/hud/aria-live-bus.ts) lets any sim event announce
           accessibly without lifting state. */}

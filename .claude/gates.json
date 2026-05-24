@@ -2,7 +2,12 @@
   "coverage_rules": [
     {
       "when_changed": ["src/render/**", "src/hud/**", "src/world/**", "src/entities/**"],
-      "require_changed": ["tests/visual/**", "tests/browser/**", "tests/e2e/**"],
+      "require_changed": [
+        "tests/visual/**",
+        "tests/browser/**",
+        "tests/e2e/**",
+        "tests/harness/**"
+      ],
       "or_explicit_skip": "// no-visual-impact: <≥10 word reason>",
       "block_message": "Render/UI/world change without visual or browser test update."
     },

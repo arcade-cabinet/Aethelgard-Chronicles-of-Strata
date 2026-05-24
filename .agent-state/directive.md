@@ -278,12 +278,16 @@ mechanic work that follows is built on this.
 
 - [ ] [WAIT-DEPS] M_FUN.NAR.HIGHLIGHTS — Highlight detection
   on AI-vs-AI transcript (longest engagement, biggest comeback,
-  lopsided kill).
-- [ ] [WAIT-DEPS] M_FUN.NAR.CARD — Post-match summary card.
-- [ ] [WAIT-DEPS] M_FUN.NAR.NICKNAME — Procedural match
-  nickname (defining-moment template + seed phrase).
-- [ ] [WAIT-DEPS] M_FUN.NAR.LOREBOOK — Persistent faction
-  lorebook across saves.
+  lopsided kill). v0.4 ships state-derived highlights via
+  matchHighlights(); transcript scan is the follow-up extension.
+- [x] M_FUN.NAR.CARD — Post-match summary card extracted as
+  MatchSummaryCard + harness baseline.
+- [x] M_FUN.NAR.NICKNAME — Procedural match nickname
+  (matchNickname, deterministic on seedPhrase + outcome).
+- [x] M_FUN.NAR.LOREBOOK — Persistent match lorebook across
+  saves. SQLite `lorebook` table; persistence.recordLorebookEntry
+  fires on outcome flip from GameOverModal; listLorebook(limit)
+  reads newest-first. reset() wipes lorebook alongside saves.
 
 ### v0.4.8 — Dynamic terrain (PRD §7.8)
 
