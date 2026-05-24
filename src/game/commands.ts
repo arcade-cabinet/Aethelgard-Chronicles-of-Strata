@@ -422,6 +422,22 @@ export function endTurn(game: GameState): void {
  */
 export function resign(game: GameState, faction: Faction = 'player'): void {
   if (game.outcome !== 'playing') return;
+  // M_EXPANSION.F.85 — surrender consequences. The victor inherits
+  // every zone tile the resigner controlled at the moment of
+  // resignation. Without this, the loser's territory evaporates
+  // immediately, which reads oddly ("they didn't conquer me — I
+  // gave up") and erases the surface area of the surrender from
+  // the post-match summary. The victor's controlled set absorbs
+  // the loser's; the loser's set drains. zones.generation bumps
+  // so the ZoneBorder re-renders.
+  const victor: Faction = faction === 'player' ? 'enemy' : 'player';
+  const loserZone = game.zones[faction];
+  const victorZone = game.zones[victor];
+  for (const key of loserZone.controlled) victorZone.controlled.add(key);
+  loserZone.controlled.clear();
+  loserZone.pulsing.clear();
+  victorZone.generation += 1;
+  loserZone.generation += 1;
   game.outcome = faction === 'player' ? 'loss' : 'win';
 }
 
