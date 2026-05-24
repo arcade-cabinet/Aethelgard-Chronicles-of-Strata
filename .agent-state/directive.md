@@ -2210,7 +2210,7 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 Every silent fallback in the codebase that hides a failure from the user. Audit grep result (34 sites of `?? null` / `|| null` / `catch.*=>\s*null` / `catch.*{}`).
 
 - [x] [HIGH] M_POLISH3.FB.1 — DONE 2026-05-24 commit de38cdb. Audit found 8 `?? null` sites + 9 `catch` blocks; ALL are either legitimate defaults (null = absent/empty/unconfigured) or already log/throw/push to failures array. No silent swallowers in the codebase.
-- [ ] [HIGH] M_POLISH3.FB.2 — Suspense fallback={null} in GameCanvas + Units. `null` swallows the loading state — if a child throws AFTER suspending, the throw bypasses ErrorBoundary because Suspense caught the original promise rejection first. Replace null with a marker mesh that ALSO emits console.warn on extended duration (>5s of suspension).
+- [x] [HIGH] M_POLISH3.FB.2 — DONE 2026-05-24 commit 555808c. SuspenseProbe added (src/render/SuspenseProbe.tsx) — replaces fallback={null} in GameCanvas inner-scene Suspense + Units AnimatedCharacter Suspense. Effect-based timer fires console.warn after 5s of being mounted (= suspended); warning surfaces via ErrorOverlay (per FB.3 warn capture).
 - [x] [HIGH] M_POLISH3.FB.3 — DONE 2026-05-24 commit de38cdb. ErrorOverlay now patches console.warn alongside console.error; the 8 production warn sites surface visibly. THREE.* deprecation noise is filtered (upstream, not actionable). Closes the silent-fallback gap that originally let the TTF bug go unnoticed.
 
 #### M_POLISH3.LOCAL — pre-push gate enforcement (added 2026-05-24)
