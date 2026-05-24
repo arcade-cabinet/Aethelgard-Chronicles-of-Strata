@@ -2182,7 +2182,7 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 - [x] [HIGH] M_POLISH3.J.3 — DONE 2026-05-24 commit 00f2c46. tests/e2e/day-night-journey.spec.ts captures dawn/noon/dusk/midnight. 4 PNGs in artifacts/journey/day-night/. Hemisphere light is constant 0.6 by design (game stays playable at night) — visual swing between phases is subtle but the artefacts pin the phase positions.
 - [ ] [HIGH] M_POLISH3.J.4 — Capture each selection state (no-selection / peon-selected / military-selected / building-selected / multi-select 3+) so SelectionPanel layout is reviewable.
 - [x] [HIGH] M_POLISH3.J.5 — DONE 2026-05-24 commit d607ff2. tests/e2e/modal-journey.spec.ts captures 5 modals (new-game-default, settings-title, hotkey-editor, discoveries-mid-match, settings-in-game). 5 PNGs in artifacts/journey/modals/.
-- [ ] [HIGH] M_POLISH3.J.6 — Capture viewport matrix: every important moment × {desktop 1280×720, mobile 412×915, tablet 768×1024}. artifacts/journey/<scene>/<viewport>.png.
+- [x] [HIGH] M_POLISH3.J.6 — DONE 2026-05-24 commit cd400a1. tests/e2e/viewport-matrix-journey.spec.ts captures 4 moments × 3 viewports = 12 PNGs in artifacts/journey/viewport/<vp>/<moment>.png. Mobile playing-mid surfaces real HUD detail (weather pill, Discoveries, +Stone notice, peon+Watchtower).
 
 #### M_POLISH3.AIVAI — AI-vs-AI playthrough harness (the user explicitly asked for this)
 
