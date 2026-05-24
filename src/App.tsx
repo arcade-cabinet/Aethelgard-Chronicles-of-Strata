@@ -16,6 +16,7 @@ import { EraProgressPill } from '@/hud/EraProgressPill';
 import { MatchAgePill } from '@/hud/MatchAgePill';
 import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { WinConditionPill } from '@/hud/WinConditionPill';
+import { ZoneFlipPulse } from '@/hud/ZoneFlipPulse';
 import { ZoneControlPill } from '@/hud/ZoneControlPill';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CriticalWarning } from '@/hud/CriticalWarning';
@@ -233,6 +234,8 @@ function GameSession({
       <ZoneControlPill game={game} />
       {/* M_POLISH2.MODES.43 — age-of-strata only: era progression pill. */}
       <EraProgressPill game={game} />
+      {/* M_POLISH2.MODES.42b — strata-wars only: tile-flip red-pulse. */}
+      <ZoneFlipPulse game={game} />
       <IdlePeonsIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
