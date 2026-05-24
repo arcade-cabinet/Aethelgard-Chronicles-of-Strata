@@ -204,9 +204,10 @@ mechanic work that follows is built on this.
 
 **Bundle + perf**
 
-- [ ] M_FUN.FOUNDATION.BUNDLE-VIZ —
-  vite-plugin-bundle-visualizer in dev — agent + user can see
-  where bundle weight lives after each refactor.
+- [x] M_FUN.FOUNDATION.BUNDLE-VIZ — rollup-plugin-visualizer
+  added to vite.config.ts. Every `pnpm build` writes
+  dist/bundle-stats.html (treemap, gzip + brotli sizes). Agent
+  + user can see where bundle weight lives after each refactor.
 - [ ] M_FUN.FOUNDATION.LIGHTHOUSE — Lighthouse CI
   baseline for deployed Pages; perf budget fails build on >10%
   LCP regression.
