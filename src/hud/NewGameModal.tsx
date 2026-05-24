@@ -7,6 +7,7 @@ import type { Difficulty, GameMode } from '@/game/game-state';
 import { presetFor } from '@/rules';
 import type { TurnsMode } from '@/rules/mode-presets';
 import { HUD_THEME } from './hud-theme';
+import { MapPreview } from './MapPreview';
 import { ModalShell } from './ModalShell';
 
 /** The choices a New Game collects. */
@@ -387,6 +388,15 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           >
             📋
           </button>
+        </div>
+
+        {/*
+          M_EXPANSION.F.83 — map preview thumbnail. Regenerates each
+          time the seed phrase or mapSize changes so the player sees
+          the actual layout before committing.
+        */}
+        <div style={{ display: 'flex', justifyContent: 'center', margin: '0 0 16px' }}>
+          <MapPreview seedPhrase={seedPhrase.trim() || 'preview'} mapRadius={MAP_SIZES[mapSize].radius} size={200} />
         </div>
 
         {/*
