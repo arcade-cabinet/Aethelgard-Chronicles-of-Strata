@@ -875,7 +875,12 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // move commands resolve mid-turn; the autonomous economy systems
   // below gate on turnGateOpen.
   // movement + economy — apply rain speed penalty from weather state
-  pathFollowSystem(game.world, delta, WEATHER_SPEED_MULTIPLIER[game.weather.state]);
+  pathFollowSystem(
+    game.world,
+    delta,
+    WEATHER_SPEED_MULTIPLIER[game.weather.state],
+    game.board.tiles,
+  );
   // M_EXPANSION.F.97 — discoverable hidden bonus consumer. Runs
   // every tick (not turn-gated) so a player issuing a move sees
   // the bonus credit as the unit arrives, not on the next enemy

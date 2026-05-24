@@ -57,7 +57,13 @@ export interface DamageEvent {
  * the cognitively-dense block.
  */
 function resolveAttacks(
-  combatant: { attackTimer: number; attackCooldown: number; attackDamage: number },
+  combatant: {
+    attackTimer: number;
+    attackCooldown: number;
+    attackDamage: number;
+    fatigue: number;
+    fatigueDecayTimer: number;
+  },
   target: { targetId: number },
   targetEntity: Entity,
   rng: Rng,
@@ -78,7 +84,15 @@ function resolveAttacks(
   // pathological deltas.
   while (combatant.attackTimer >= combatant.attackCooldown && fired < 8) {
     combatant.attackTimer -= combatant.attackCooldown;
-    const roll = rollDamage(combatant.attackDamage, rng);
+    // M_FUN.MAP.ELEV — fatigue multiplier on outgoing damage.
+    // Range [0..1]; a unit just off a MOUNTAIN_PASS deals -50% dmg
+    // until its fatigueDecayTimer recovers (path-follow integrates
+    // fatigue accrual + decay; combat just consumes the field).
+    // Reset the decay timer on every dealt attack so an actively-
+    // fighting unit doesn't recover fatigue.
+    combatant.fatigueDecayTimer = 0;
+    const fatigueMul = Math.max(0, 1 - combatant.fatigue);
+    const roll = rollDamage(combatant.attackDamage * fatigueMul, rng);
     // M_EXPANSION.AU.46 — parry roll happens BEFORE damage is applied
     // (so a parried hit deals 0 + plays shield-deflect instead of
     // sword-clash + a number). Only meaningful for melee hits — a

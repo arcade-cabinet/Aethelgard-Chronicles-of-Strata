@@ -97,12 +97,10 @@ and start the next.
   wired to mapTypeRule() + MOUNTAIN_TUNING. HYDROLOGY_PASSES
   registry. 665 unit tests green; byte-for-byte identical output
   per seed.
-- [ ] [WAIT-REVIEW] M_FUN.ARCH.HARNESS — Per-feature visual
-  component tests in vitest browser. Pattern:
-  `tests/harness/<feature>.browser.test.tsx` mounts feature in
-  isolation, screenshots, locks baseline. First 9 tests: one per
-  biome (including SWAMP + MOUNTAIN_PASS). EVERY M_FUN.* milestone
-  PR adds at least one harness test for the feature it ships.
+- [x] M_FUN.ARCH.HARNESS — DONE 2026-05-24 commit 90c9875.
+  tests/harness/ pattern established + biome-swatch harness shipping
+  10 baselines (one per biome). vitest.config.ts includes
+  tests/harness/**. EVERY M_FUN.* PR adds a harness from here.
 
 #### M_FUN.ARCH.FOUNDATION — engineering foundation (PRD §6.3)
 

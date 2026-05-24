@@ -19,11 +19,38 @@ const parseStep = parseHexLevelKey;
  *
  * @param speedMultiplier — optional multiplier applied to step distance (e.g.
  *   0.8 for rain penalty). Defaults to 1 (no change).
+ * @param tiles — optional board tiles map. When provided, M_FUN.MAP.ELEV
+ *   applies the biome.appliesAttribute on tile arrival (fatigue from
+ *   MOUNTAIN_PASS today; disease from SWAMP / dehydration from DESERT
+ *   when those generators land). Without it (legacy tests), no
+ *   attribute is applied.
  */
-export function pathFollowSystem(world: World, delta: number, speedMultiplier = 1): void {
+import type { BoardData } from '@/core/board';
+import { Combatant } from '@/ecs/components';
+import { biomeRule } from '@/config/mapgen';
+
+export function pathFollowSystem(
+  world: World,
+  delta: number,
+  speedMultiplier = 1,
+  tiles?: BoardData['tiles'],
+): void {
+  // M_FUN.MAP.ELEV — fatigue decay. Combatant.fatigue → 0 after
+  // FATIGUE_DECAY seconds out of combat (combat.ts resets the
+  // fatigueDecayTimer on every dealt hit). Decay runs even without
+  // a tiles map so the test surface doesn't need a board mock.
+  const FATIGUE_DECAY = 5;
+  world.query(Combatant).updateEach((traits) => {
+    const c = traits[0];
+    if (c.fatigue <= 0) return;
+    c.fatigueDecayTimer += delta;
+    if (c.fatigueDecayTimer >= FATIGUE_DECAY) {
+      c.fatigue = Math.max(0, c.fatigue - delta / FATIGUE_DECAY);
+    }
+  });
   world
     .query(HexPosition, Transform, Movement, PathQueue)
-    .updateEach(([hex, transform, movement, path]) => {
+    .updateEach(([hex, transform, movement, path], entity) => {
       const next = path.steps[0];
       if (!next) {
         movement.isMoving = false;
@@ -47,6 +74,26 @@ export function pathFollowSystem(world: World, delta: number, speedMultiplier = 
         transform.y = step.level * TILE_HEIGHT;
         path.steps.shift();
         if (path.steps.length === 0) movement.isMoving = false;
+        // M_FUN.MAP.ELEV — apply biome-rule attribute on arrival.
+        if (tiles) {
+          const tile = tiles.get(`${step.q},${step.r}`);
+          if (tile) {
+            const rule = biomeRule(tile.type);
+            if (rule.appliesAttribute === 'fatigue') {
+              const c = entity.get(Combatant);
+              if (c) {
+                entity.set(Combatant, {
+                  ...c,
+                  fatigue: Math.min(1, c.fatigue + rule.attributeStrength),
+                  fatigueDecayTimer: 0,
+                });
+              }
+            }
+            // disease + dehydration are wired in M_FUN.ATTR.DISEASE
+            // + M_FUN.ATTR.DEHYDRATION milestones; the data path is
+            // here, the consumers land then.
+          }
+        }
       } else {
         // advance toward the tile
         transform.x += (dx / dist) * stepDist;

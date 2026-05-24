@@ -223,12 +223,26 @@ export const Gate = trait({ faction: 'player' as Faction });
 /** Hit points. */
 export const Health = trait({ current: 50, max: 50 });
 
-/** Combat stats and the attack-cooldown timer. */
+/**
+ * Combat stats and the attack-cooldown timer.
+ *
+ * M_FUN.MAP.ELEV — `fatigue` is a 0..1 multiplier on damage dealt.
+ * 0 = normal; 1.0 = -100% (no damage). Applied when a unit crosses
+ * a MOUNTAIN_PASS tile (Combatant biome-rule attributeStrength=0.5
+ * → fatigue +0.5 = -50% dmg). Decays toward 0 over `FATIGUE_DECAY`
+ * seconds out of combat (combat.ts applies fatigue to outgoing
+ * damage via `effectiveDamage = attackDamage * (1 - fatigue)`).
+ *
+ * `fatigueDecayTimer` accumulates seconds since combat last hit;
+ * fatigue decrements once the timer exceeds the decay-rate window.
+ */
 export const Combatant = trait({
   attackDamage: 10,
   attackRange: 1,
   attackCooldown: 1,
   attackTimer: 0,
+  fatigue: 0,
+  fatigueDecayTimer: 0,
 });
 
 /**
