@@ -129,9 +129,12 @@ mechanic work that follows is built on this.
   existing tests still grep correctly; everything else uses the
   declarative Zod schema. Replaces ~60 lines of hand-rolled
   typeof / length / array checks with one schema declaration.
-- [ ] M_FUN.FOUNDATION.BRANDED-IDS — Branded types
-  for tileKey / entityId / factionKey so a footgun like
-  `selectEntity(factionKey)` is a compile error.
+- [x] M_FUN.FOUNDATION.BRANDED-IDS — TileKey, EntityId, FactionKey
+  branded types in src/core/branded-ids.ts. asTileKey / asEntityId /
+  asFactionKey are no-op runtime casts; brand mismatches are
+  COMPILE errors. 5 unit tests pin both runtime no-op and the
+  ts-expect-error assertions. Migration policy: new code uses
+  the brands; existing code gradual-ratchets.
 
 **State + reactivity**
 
