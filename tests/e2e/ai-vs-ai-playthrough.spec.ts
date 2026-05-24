@@ -42,7 +42,7 @@ interface FrameSummary {
 test.describe('AI-vs-AI playthrough', () => {
   for (const mode of MODES) {
     test(`mode=${mode}`, async ({ page }) => {
-      test.setTimeout(120_000);
+      test.setTimeout(240_000);
       const outDir = join(OUT_BASE, mode);
       mkdirSync(outDir, { recursive: true });
 
@@ -76,13 +76,14 @@ test.describe('AI-vs-AI playthrough', () => {
       // initial paint warmup so the first screenshot is meaningful
       await page.waitForTimeout(2500);
 
-      // up to 18 chunks × 300 frames @ 60Hz = 90 sim-seconds total.
-      // Most modes resolve in ~60-120s of sim; if we hit the cap,
-      // the assertion below records "did not converge" but the
-      // screenshots still review.
+      // M_POLISH3.AIVAI.4 — up to 60 chunks × 600 frames @ 60Hz =
+      // 600 sim-seconds (10 sim-minutes) total. The advanceFrames
+      // hook itself is the speed-up: it runs runEconomyTick synchronously
+      // without waiting for r3f frames, so 36000 sim-frames complete
+      // in ~30s wallclock. Most modes resolve within this window.
       const transcript: FrameSummary[] = [];
       let resolved = false;
-      for (let chunk = 0; chunk < 18; chunk++) {
+      for (let chunk = 0; chunk < 60; chunk++) {
         const info = await page.evaluate(() => {
           interface G {
             outcome: string;
@@ -99,7 +100,7 @@ test.describe('AI-vs-AI playthrough', () => {
             __game?: G;
             __game_advanceFrames?: (n: number) => void;
           };
-          w.__game_advanceFrames?.(300);
+          w.__game_advanceFrames?.(600);
           const g = w.__game;
           if (!g) return null;
           return {
@@ -116,13 +117,18 @@ test.describe('AI-vs-AI playthrough', () => {
         });
         if (!info) break;
 
-        const slug = String(chunk).padStart(2, '0');
-        await page.screenshot({
-          path: join(outDir, `frame-${slug}-outcome-${info.outcome}.png`),
-          fullPage: false,
-        });
+        // Screenshot every 5th chunk + on outcome resolution; full
+        // ledger is in transcript.json. Keeps artifacts/ tractable
+        // without losing the visual storyboard.
+        if (chunk % 5 === 0 || info.outcome !== 'playing') {
+          const slug = String(chunk).padStart(2, '0');
+          await page.screenshot({
+            path: join(outDir, `frame-${slug}-outcome-${info.outcome}.png`),
+            fullPage: false,
+          });
+        }
         transcript.push({
-          frame: chunk * 300,
+          frame: chunk * 600,
           outcome: info.outcome,
           woodPlayer: info.woodPlayer,
           woodEnemy: info.woodEnemy,
@@ -139,7 +145,9 @@ test.describe('AI-vs-AI playthrough', () => {
           break;
         }
         // tiny breath between chunks so r3f's frameloop catches up
-        await page.waitForTimeout(150);
+        // + screenshot has fresh paint. Shorter than the prior 150ms
+        // since advanceFrames already drained the sim work.
+        await page.waitForTimeout(50);
       }
 
       // M_POLISH3.AIVAI.3 — write the transcript as JSON (frame → state
@@ -180,8 +188,10 @@ test.describe('AI-vs-AI playthrough', () => {
       }
       if (!resolved) {
         // record non-failure metadata for review
+        const simSeconds = (transcript.length * 600) / 60;
         console.log(
-          `[${mode}] AI-vs-AI did not resolve within 5400 frames (${transcript.length} chunks captured).`,
+          `[${mode}] AI-vs-AI did not resolve within ${transcript.length * 600} frames ` +
+            `(${simSeconds}s sim-time, ${transcript.length} chunks captured).`,
         );
       } else {
         console.log(`[${mode}] AI-vs-AI resolved with outcome=${transcript.at(-1)?.outcome}.`);
