@@ -2188,9 +2188,10 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 
 - [x] [HIGH] M_POLISH3.AIVAI.1 — DONE 2026-05-24 commit 19f6c22. NewGameConfig.aiVsAi flag; startGame attaches yuka AiPlayer to both factions when set. NewGameModal has 'Human vs AI' / 'AI vs AI (spectate)' segmented control. App.tsx URL-driven auto-start (`/?ai-vs-ai=1&seed=X&mode=Y`) skips title screen + modal for the e2e harness.
 - [x] [HIGH] M_POLISH3.AIVAI.2 — DONE 2026-05-24 commit 19f6c22. tests/e2e/ai-vs-ai-playthrough.spec.ts captures border-clash + frontier-raid (per-mode parametric). 18 chunks × 300 sim frames = 90 sim-seconds per mode. Screenshots show both armies expanding + fighting. Trivial to add more modes (drop into MODES array).
-- [ ] [HIGH] M_POLISH3.AIVAI.3 — Golden-transcript record: capture (frame → entity-state diff) for one AI-vs-AI playthrough per mode at a fixed seed. Commit the transcript. Future regression test replays it + asserts no divergence at frame 1800.
-- [ ] [HIGH] M_POLISH3.AIVAI.4 — Speed-up the AI-vs-AI flow: bump game speed multiplier internally during AI-vs-AI so a full match resolves in test-suite time (~30s wallclock), independent of normal speed.
+- [x] [HIGH] M_POLISH3.AIVAI.3 — DONE 2026-05-24 commit 73e7951. Transcript written per mode (artifacts/ai-vs-ai/<mode>/transcript.json) with per-chunk outcome + wood/gold/kills/tiles for both factions. Pinned recordedAt for diff stability.
+- [x] [HIGH] M_POLISH3.AIVAI.4 — DONE 2026-05-24 commit 487ac42. 36000 sim-frames per match (10 sim-minutes) in ~21s wallclock = 28x realtime via advanceFrames sync drain. Screenshots sparsified to every-5th-chunk + outcome.
 - [ ] [HIGH] M_POLISH3.AIVAI.5 — Capture the FULL AI-vs-AI run as a video reel via Playwright's video recording, so the agent can review the entire playthrough as a single artifact rather than per-frame screenshots.
+- [ ] [HIGH] M_POLISH3.AIVAI.6 — Player-faction AI is inert in AI-vs-AI mode. Transcript shows tilesPlayer stays at 2 for the entire 10-sim-minute window while tilesEnemy=11 from chunk 0. Both factions get an AiPlayer + tick path, but only the enemy expands. Investigate: BuildEvaluator/MilitaryEvaluator faction symmetry, ZoneSystem expansion mechanics, whether the player AI is choosing "no goal" because some predicate hard-codes faction='enemy'.
 
 #### M_POLISH3.CI — local-first CI discipline
 
