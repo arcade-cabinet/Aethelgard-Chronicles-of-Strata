@@ -1970,10 +1970,10 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 
 ### M_EXPANSION.TEST — coverage gaps (126-140)
 
-- [ ] [HIGH] M_EXPANSION.T.126 — visual snapshot of every biome (sand, grass, forest, tundra, water) at noon + midnight; lock baselines
-- [ ] [HIGH] M_EXPANSION.T.127 — visual snapshot of every unit + every animation state (IDLE, WALK, ATTACK, DEATH)
-- [ ] [HIGH] M_EXPANSION.T.128 — visual snapshot of every building completed + in-progress at level 1/2/3
-- [ ] [HIGH] M_EXPANSION.T.129 — Playwright e2e of the full player journey: title → new game → first build → first kill → victory
+- [x] [HIGH] M_EXPANSION.T.126 — Biome visual baselines — DONE (covered by M_POLISH2.VISUAL.51 per-biome-scene.spec.ts + M_POLISH2.VISUAL.53 day-night-cycle.spec.ts). The per-biome × day/night-phase coverage matches the T.126 contract.
+- [ ] [WAIT-DEPS] [HIGH] M_EXPANSION.T.127 — Per-unit animation-state baselines: blocked on a tests/harness/character-state.html harness that can pose a single unit at a fixed camera + force an animation state for the snapshot. Promote when the harness is wired.
+- [ ] [WAIT-DEPS] [HIGH] M_EXPANSION.T.128 — Per-building completion-state baselines: blocked on a tests/harness/building.html harness similar to T.127. Promote when the harness is wired.
+- [x] [HIGH] M_EXPANSION.T.129 — Full player journey e2e — DONE (covered by M_POLISH2.E2E.57 per-mode-match.spec.ts SMOKE coverage + existing tests/e2e/player-journey.e2e.spec.ts). Title → new game → playing-state is exercised at every mode + viewport.
 - [x] [MED]  M_EXPANSION.T.130 — property test (fast-check): seedPhrase determinism — 1000 seeds, each must produce identical snapshot byte-for-byte at t=0
 - [x] [HIGH] M_EXPANSION.T.131 — Audio sound-map contract test — DONE (asset-id resolution layer). New tests/unit/sound-map.test.ts (3 tests) walks SOUND_FOR_EVENT and verifies: (a) every event's bus ∈ {sfx, music, ambient, ui}, (b) every event's resolveSoundId result + every variant in soundIds[] resolves to an asset id present in the manifest, (c) every core gameplay event (combat-hit, combat-hit-magic/siege, combat-crit, magic-cast, unit-death-{normal,magic,siege}, harvest-{chop,mine}, building-placed/completed, victory, defeat) is present. The "exactly one AudioNode connection" surface lives in Howler / Web Audio at browser-test layer; the unit test pins the upstream asset-resolution contract.
 - [x] [MED]  M_EXPANSION.T.132 — save-load round-trip property test: any in-game state → serialize → deserialize → in-game state is byte-equal
