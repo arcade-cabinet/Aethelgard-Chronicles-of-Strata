@@ -1,33 +1,291 @@
 {
-  "board.tile.grass": {
-    "id": "board.tile.grass",
-    "path": "assets/board/tile/grass.glb",
-    "category": "board",
-    "kind": "glb",
+  "audio.music.ambient": {
+    "id": "audio.music.ambient",
+    "path": "assets/audio/music/ambient.wav",
+    "category": "audio",
+    "kind": "wav",
     "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
-    "triangles": 32
+    "pack": "GameLoops Vol.5 Fantasy RPG + PixelLoops Tavern/Menu"
   },
-  "board.tile.sand": {
-    "id": "board.tile.sand",
-    "path": "assets/board/tile/sand.glb",
-    "category": "board",
-    "kind": "glb",
+  "audio.music.biome.crafting-hall": {
+    "id": "audio.music.biome.crafting-hall",
+    "path": "assets/audio/music/biome/crafting-hall.wav",
+    "category": "audio",
+    "kind": "wav",
     "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
-    "triangles": 32
+    "pack": "GameLoops Vol.5 Fantasy RPG + PixelLoops Tavern/Menu"
   },
-  "board.tile.stone": {
-    "id": "board.tile.stone",
-    "path": "assets/board/tile/stone.glb",
-    "category": "board",
-    "kind": "glb",
+  "audio.music.biome.map-of-realms": {
+    "id": "audio.music.biome.map-of-realms",
+    "path": "assets/audio/music/biome/map-of-realms.wav",
+    "category": "audio",
+    "kind": "wav",
     "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
-    "triangles": 32
+    "pack": "GameLoops Vol.5 Fantasy RPG + PixelLoops Tavern/Menu"
+  },
+  "audio.music.biome.town-of-eldor": {
+    "id": "audio.music.biome.town-of-eldor",
+    "path": "assets/audio/music/biome/town-of-eldor.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 Fantasy RPG + PixelLoops Tavern/Menu"
+  },
+  "audio.music.gameplay": {
+    "id": "audio.music.gameplay",
+    "path": "assets/audio/music/gameplay.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 Fantasy RPG + PixelLoops Tavern/Menu"
+  },
+  "audio.music.menu": {
+    "id": "audio.music.menu",
+    "path": "assets/audio/music/menu.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 Fantasy RPG + PixelLoops Tavern/Menu"
+  },
+  "audio.sfx.build": {
+    "id": "audio.sfx.build",
+    "path": "assets/audio/sfx/build.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.chop": {
+    "id": "audio.sfx.chop",
+    "path": "assets/audio/sfx/chop.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.death-thud": {
+    "id": "audio.sfx.death-thud",
+    "path": "assets/audio/sfx/death-thud.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.deposit": {
+    "id": "audio.sfx.deposit",
+    "path": "assets/audio/sfx/deposit.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.footstep-grass": {
+    "id": "audio.sfx.footstep-grass",
+    "path": "assets/audio/sfx/footstep-grass.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.footstep-sand": {
+    "id": "audio.sfx.footstep-sand",
+    "path": "assets/audio/sfx/footstep-sand.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.footstep-stone": {
+    "id": "audio.sfx.footstep-stone",
+    "path": "assets/audio/sfx/footstep-stone.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.hit-metal": {
+    "id": "audio.sfx.hit-metal",
+    "path": "assets/audio/sfx/hit-metal.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.hit-stone": {
+    "id": "audio.sfx.hit-stone",
+    "path": "assets/audio/sfx/hit-stone.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.hit": {
+    "id": "audio.sfx.hit",
+    "path": "assets/audio/sfx/hit.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.magic-cast": {
+    "id": "audio.sfx.magic-cast",
+    "path": "assets/audio/sfx/magic-cast.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.magic-impact": {
+    "id": "audio.sfx.magic-impact",
+    "path": "assets/audio/sfx/magic-impact.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.mine": {
+    "id": "audio.sfx.mine",
+    "path": "assets/audio/sfx/mine.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.select": {
+    "id": "audio.sfx.select",
+    "path": "assets/audio/sfx/select.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.shield-deflect": {
+    "id": "audio.sfx.shield-deflect",
+    "path": "assets/audio/sfx/shield-deflect.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.sword-clash": {
+    "id": "audio.sfx.sword-clash",
+    "path": "assets/audio/sfx/sword-clash.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.ui-achievement": {
+    "id": "audio.sfx.ui-achievement",
+    "path": "assets/audio/sfx/ui-achievement.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.ui-click": {
+    "id": "audio.sfx.ui-click",
+    "path": "assets/audio/sfx/ui-click.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.ui-confirm": {
+    "id": "audio.sfx.ui-confirm",
+    "path": "assets/audio/sfx/ui-confirm.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.ui-panel-open": {
+    "id": "audio.sfx.ui-panel-open",
+    "path": "assets/audio/sfx/ui-panel-open.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.ui-unlock": {
+    "id": "audio.sfx.ui-unlock",
+    "path": "assets/audio/sfx/ui-unlock.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.stinger.defeat": {
+    "id": "audio.stinger.defeat",
+    "path": "assets/audio/stinger/defeat.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.stinger.victory": {
+    "id": "audio.stinger.victory",
+    "path": "assets/audio/stinger/victory.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.ui.achievement": {
+    "id": "audio.ui.achievement",
+    "path": "assets/audio/ui/achievement.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.ui.click-01": {
+    "id": "audio.ui.click-01",
+    "path": "assets/audio/ui/click-01.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.ui.click-02": {
+    "id": "audio.ui.click-02",
+    "path": "assets/audio/ui/click-02.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.ui.click-03": {
+    "id": "audio.ui.click-03",
+    "path": "assets/audio/ui/click-03.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.ui.discovery-unlock": {
+    "id": "audio.ui.discovery-unlock",
+    "path": "assets/audio/ui/discovery-unlock.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.ui.error": {
+    "id": "audio.ui.error",
+    "path": "assets/audio/ui/error.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.ui.research-complete": {
+    "id": "audio.ui.research-complete",
+    "path": "assets/audio/ui/research-complete.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
   },
   "board.tile.dirt": {
     "id": "board.tile.dirt",
@@ -35,18 +293,7 @@
     "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
-    "triangles": 20
-  },
-  "board.tile.water": {
-    "id": "board.tile.water",
-    "path": "assets/board/tile/water.glb",
-    "category": "board",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
+    "pack": "Kenney Hexagon Kit",
     "triangles": 20
   },
   "board.tile.grass-forest": {
@@ -55,8 +302,7 @@
     "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
+    "pack": "Kenney Hexagon Kit",
     "triangles": 448
   },
   "board.tile.grass-hill": {
@@ -65,29 +311,17 @@
     "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
+    "pack": "Kenney Hexagon Kit",
     "triangles": 348
   },
-  "board.tile.stone-mountain": {
-    "id": "board.tile.stone-mountain",
-    "path": "assets/board/tile/stone-mountain.glb",
+  "board.tile.grass": {
+    "id": "board.tile.grass",
+    "path": "assets/board/tile/grass.glb",
     "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
-    "triangles": 210
-  },
-  "board.tile.stone-hill": {
-    "id": "board.tile.stone-hill",
-    "path": "assets/board/tile/stone-hill.glb",
-    "category": "board",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
-    "triangles": 134
+    "pack": "Kenney Hexagon Kit",
+    "triangles": 32
   },
   "board.tile.sand-desert": {
     "id": "board.tile.sand-desert",
@@ -95,389 +329,107 @@
     "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Hexagon Kit",
-    "license": "CC0",
+    "pack": "Kenney Hexagon Kit",
     "triangles": 246
   },
-  "nature.tree.pine-a": {
-    "id": "nature.tree.pine-a",
-    "path": "assets/nature/tree/pine-a.glb",
-    "category": "nature",
+  "board.tile.sand": {
+    "id": "board.tile.sand",
+    "path": "assets/board/tile/sand.glb",
+    "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 230
-  },
-  "nature.rock.large-a": {
-    "id": "nature.rock.large-a",
-    "path": "assets/nature/rock/large-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 80
-  },
-  "nature.tree.broadleaf-a": {
-    "id": "nature.tree.broadleaf-a",
-    "path": "assets/nature/tree/broadleaf-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 114
-  },
-  "nature.tree.broadleaf-b": {
-    "id": "nature.tree.broadleaf-b",
-    "path": "assets/nature/tree/broadleaf-b.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 50
-  },
-  "nature.tree.oak-a": {
-    "id": "nature.tree.oak-a",
-    "path": "assets/nature/tree/oak-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 196
-  },
-  "nature.tree.pine-b": {
-    "id": "nature.tree.pine-b",
-    "path": "assets/nature/tree/pine-b.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 246
-  },
-  "nature.tree.pine-tall-a": {
-    "id": "nature.tree.pine-tall-a",
-    "path": "assets/nature/tree/pine-tall-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 78
-  },
-  "nature.tree.pine-round-a": {
-    "id": "nature.tree.pine-round-a",
-    "path": "assets/nature/tree/pine-round-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 204
-  },
-  "nature.tree.small-a": {
-    "id": "nature.tree.small-a",
-    "path": "assets/nature/tree/small-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 62
-  },
-  "nature.tree.palm-a": {
-    "id": "nature.tree.palm-a",
-    "path": "assets/nature/tree/palm-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 186
-  },
-  "nature.tree.palm-bend": {
-    "id": "nature.tree.palm-bend",
-    "path": "assets/nature/tree/palm-bend.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 200
-  },
-  "nature.cactus.tall": {
-    "id": "nature.cactus.tall",
-    "path": "assets/nature/cactus/tall.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 122
-  },
-  "nature.cactus.short": {
-    "id": "nature.cactus.short",
-    "path": "assets/nature/cactus/short.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 116
-  },
-  "nature.bush-a": {
-    "id": "nature.bush-a",
-    "path": "assets/nature/bush-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
+    "pack": "Kenney Hexagon Kit",
     "triangles": 32
   },
-  "nature.bush-b": {
-    "id": "nature.bush-b",
-    "path": "assets/nature/bush-b.glb",
-    "category": "nature",
+  "board.tile.stone-hill": {
+    "id": "board.tile.stone-hill",
+    "path": "assets/board/tile/stone-hill.glb",
+    "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 60
+    "pack": "Kenney Hexagon Kit",
+    "triangles": 134
   },
-  "nature.bush-c": {
-    "id": "nature.bush-c",
-    "path": "assets/nature/bush-c.glb",
-    "category": "nature",
+  "board.tile.stone-mountain": {
+    "id": "board.tile.stone-mountain",
+    "path": "assets/board/tile/stone-mountain.glb",
+    "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 16
+    "pack": "Kenney Hexagon Kit",
+    "triangles": 210
   },
-  "nature.flower-a": {
-    "id": "nature.flower-a",
-    "path": "assets/nature/flower-a.glb",
-    "category": "nature",
+  "board.tile.stone": {
+    "id": "board.tile.stone",
+    "path": "assets/board/tile/stone.glb",
+    "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 76
+    "pack": "Kenney Hexagon Kit",
+    "triangles": 32
   },
-  "nature.flower-b": {
-    "id": "nature.flower-b",
-    "path": "assets/nature/flower-b.glb",
-    "category": "nature",
+  "board.tile.water": {
+    "id": "board.tile.water",
+    "path": "assets/board/tile/water.glb",
+    "category": "board",
     "kind": "glb",
     "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 76
+    "pack": "Kenney Hexagon Kit",
+    "triangles": 20
   },
-  "nature.flower-c": {
-    "id": "nature.flower-c",
-    "path": "assets/nature/flower-c.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 76
-  },
-  "nature.mushroom-a": {
-    "id": "nature.mushroom-a",
-    "path": "assets/nature/mushroom-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 48
-  },
-  "nature.mushroom-b": {
-    "id": "nature.mushroom-b",
-    "path": "assets/nature/mushroom-b.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 48
-  },
-  "nature.grass-tuft": {
-    "id": "nature.grass-tuft",
-    "path": "assets/nature/grass-tuft.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 224
-  },
-  "nature.stump-a": {
-    "id": "nature.stump-a",
-    "path": "assets/nature/stump-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 56
-  },
-  "nature.rock.large-b": {
-    "id": "nature.rock.large-b",
-    "path": "assets/nature/rock/large-b.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 85
-  },
-  "nature.rock.large-c": {
-    "id": "nature.rock.large-c",
-    "path": "assets/nature/rock/large-c.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 72
-  },
-  "nature.rock.small-a": {
-    "id": "nature.rock.small-a",
-    "path": "assets/nature/rock/small-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 16
-  },
-  "nature.rock.tall-a": {
-    "id": "nature.rock.tall-a",
-    "path": "assets/nature/rock/tall-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Nature Kit",
-    "license": "CC0",
-    "triangles": 136
-  },
-  "nature.rock.crystal-a": {
-    "id": "nature.rock.crystal-a",
-    "path": "assets/nature/rock/crystal-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Tower Defense Kit",
-    "license": "CC0",
-    "triangles": 68
-  },
-  "nature.rock.crystal-large": {
-    "id": "nature.rock.crystal-large",
-    "path": "assets/nature/rock/crystal-large.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Tower Defense Kit",
-    "license": "CC0",
-    "triangles": 436
-  },
-  "nature.rock.td-rocks": {
-    "id": "nature.rock.td-rocks",
-    "path": "assets/nature/rock/td-rocks.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Tower Defense Kit",
-    "license": "CC0",
-    "triangles": 184
-  },
-  "nature.rock.td-rocks-large": {
-    "id": "nature.rock.td-rocks-large",
-    "path": "assets/nature/rock/td-rocks-large.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Tower Defense Kit",
-    "license": "CC0",
-    "triangles": 232
-  },
-  "nature.mound-a": {
-    "id": "nature.mound-a",
-    "path": "assets/nature/mound-a.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Tower Defense Kit",
-    "license": "CC0",
-    "triangles": 232
-  },
-  "nature.mound-b": {
-    "id": "nature.mound-b",
-    "path": "assets/nature/mound-b.glb",
-    "category": "nature",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Tower Defense Kit",
-    "license": "CC0",
-    "triangles": 232
-  },
-  "structures.town-hall": {
-    "id": "structures.town-hall",
-    "path": "assets/structures/town-hall.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Castle Kit",
-    "license": "CC0",
-    "triangles": 176
-  },
-  "structures.farm": {
-    "id": "structures.farm",
-    "path": "assets/structures/farm.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Fantasy Town Kit",
-    "license": "CC0",
-    "triangles": 732
-  },
-  "structures.barracks": {
-    "id": "structures.barracks",
-    "path": "assets/structures/barracks.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Castle Kit",
-    "license": "CC0",
-    "triangles": 534
-  },
-  "characters.heroes.knight": {
-    "id": "characters.heroes.knight",
-    "path": "assets/characters/heroes/knight.glb",
+  "characters.enemies.black-knight": {
+    "id": "characters.enemies.black-knight",
+    "path": "assets/characters/enemies/black-knight.glb",
     "category": "characters",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
-    "triangles": 5800
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 8696
   },
-  "characters.heroes.mage": {
-    "id": "characters.heroes.mage",
-    "path": "assets/characters/heroes/mage.glb",
+  "characters.enemies.monster": {
+    "id": "characters.enemies.monster",
+    "path": "assets/characters/enemies/monster.glb",
     "category": "characters",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
-    "triangles": 6668
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 3776
+  },
+  "characters.enemies.orc": {
+    "id": "characters.enemies.orc",
+    "path": "assets/characters/enemies/orc.glb",
+    "category": "characters",
+    "kind": "glb",
+    "animations": [],
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 5849
+  },
+  "characters.enemies.vampire": {
+    "id": "characters.enemies.vampire",
+    "path": "assets/characters/enemies/vampire.glb",
+    "category": "characters",
+    "kind": "glb",
+    "animations": [],
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 6004
+  },
+  "characters.enemies.witch": {
+    "id": "characters.enemies.witch",
+    "path": "assets/characters/enemies/witch.glb",
+    "category": "characters",
+    "kind": "glb",
+    "animations": [],
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 6210
+  },
+  "characters.heroes.barbarian-large": {
+    "id": "characters.heroes.barbarian-large",
+    "path": "assets/characters/heroes/barbarian-large.glb",
+    "category": "characters",
+    "kind": "glb",
+    "animations": [],
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 11677
   },
   "characters.heroes.barbarian": {
     "id": "characters.heroes.barbarian",
@@ -485,29 +437,8 @@
     "category": "characters",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
+    "pack": "KayKit Adventurers + Mystery",
     "triangles": 7123
-  },
-  "characters.heroes.rogue": {
-    "id": "characters.heroes.rogue",
-    "path": "assets/characters/heroes/rogue.glb",
-    "category": "characters",
-    "kind": "glb",
-    "animations": [],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
-    "triangles": 7562
-  },
-  "characters.heroes.ranger": {
-    "id": "characters.heroes.ranger",
-    "path": "assets/characters/heroes/ranger.glb",
-    "category": "characters",
-    "kind": "glb",
-    "animations": [],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
-    "triangles": 8900
   },
   "characters.heroes.druid": {
     "id": "characters.heroes.druid",
@@ -515,8 +446,7 @@
     "category": "characters",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
+    "pack": "KayKit Adventurers + Mystery",
     "triangles": 7784
   },
   "characters.heroes.engineer": {
@@ -525,41 +455,73 @@
     "category": "characters",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
+    "pack": "KayKit Adventurers + Mystery",
     "triangles": 7500
   },
-  "characters.heroes.barbarian-large": {
-    "id": "characters.heroes.barbarian-large",
-    "path": "assets/characters/heroes/barbarian-large.glb",
+  "characters.heroes.knight": {
+    "id": "characters.heroes.knight",
+    "path": "assets/characters/heroes/knight.glb",
     "category": "characters",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
-    "triangles": 11677
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 5800
   },
-  "characters.rigs.medium-movement": {
-    "id": "characters.rigs.medium-movement",
-    "path": "assets/characters/rigs/medium-movement.glb",
+  "characters.heroes.mage": {
+    "id": "characters.heroes.mage",
+    "path": "assets/characters/heroes/mage.glb",
+    "category": "characters",
+    "kind": "glb",
+    "animations": [],
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 6668
+  },
+  "characters.heroes.ranger": {
+    "id": "characters.heroes.ranger",
+    "path": "assets/characters/heroes/ranger.glb",
+    "category": "characters",
+    "kind": "glb",
+    "animations": [],
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 8900
+  },
+  "characters.heroes.rogue": {
+    "id": "characters.heroes.rogue",
+    "path": "assets/characters/heroes/rogue.glb",
+    "category": "characters",
+    "kind": "glb",
+    "animations": [],
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 7562
+  },
+  "characters.rigs.large-general": {
+    "id": "characters.rigs.large-general",
+    "path": "assets/characters/rigs/large-general.glb",
     "category": "characters",
     "kind": "glb",
     "animations": [
-      "Jump_Full_Long",
-      "Jump_Full_Short",
-      "Jump_Idle",
-      "Jump_Land",
-      "Jump_Start",
-      "Running_A",
-      "Running_B",
-      "T-Pose",
-      "Walking_A",
-      "Walking_B",
-      "Walking_C"
+      "Death_A",
+      "Death_A_Pose",
+      "Hit_A",
+      "Idle_A",
+      "Idle_B",
+      "T-Pose"
     ],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
-    "triangles": 6916
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 9148
+  },
+  "characters.rigs.large-movement": {
+    "id": "characters.rigs.large-movement",
+    "path": "assets/characters/rigs/large-movement.glb",
+    "category": "characters",
+    "kind": "glb",
+    "animations": [
+      "Running_A",
+      "T-Pose",
+      "Walking_A"
+    ],
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 9148
   },
   "characters.rigs.medium-general": {
     "id": "characters.rigs.medium-general",
@@ -583,90 +545,136 @@
       "Throw",
       "Use_Item"
     ],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
+    "pack": "KayKit Adventurers + Mystery",
     "triangles": 6916
   },
-  "characters.rigs.large-movement": {
-    "id": "characters.rigs.large-movement",
-    "path": "assets/characters/rigs/large-movement.glb",
+  "characters.rigs.medium-movement": {
+    "id": "characters.rigs.medium-movement",
+    "path": "assets/characters/rigs/medium-movement.glb",
     "category": "characters",
     "kind": "glb",
     "animations": [
+      "Jump_Full_Long",
+      "Jump_Full_Short",
+      "Jump_Idle",
+      "Jump_Land",
+      "Jump_Start",
       "Running_A",
+      "Running_B",
       "T-Pose",
-      "Walking_A"
+      "Walking_A",
+      "Walking_B",
+      "Walking_C"
     ],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
-    "triangles": 9148
+    "pack": "KayKit Adventurers + Mystery",
+    "triangles": 6916
   },
-  "characters.rigs.large-general": {
-    "id": "characters.rigs.large-general",
-    "path": "assets/characters/rigs/large-general.glb",
-    "category": "characters",
-    "kind": "glb",
-    "animations": [
-      "Death_A",
-      "Death_A_Pose",
-      "Hit_A",
-      "Idle_A",
-      "Idle_B",
-      "T-Pose"
-    ],
-    "pack": "KayKit Adventurers",
-    "license": "CC-BY",
-    "triangles": 9148
-  },
-  "characters.enemies.orc": {
-    "id": "characters.enemies.orc",
-    "path": "assets/characters/enemies/orc.glb",
-    "category": "characters",
+  "nature.bush-a": {
+    "id": "nature.bush-a",
+    "path": "assets/nature/bush-a.glb",
+    "category": "nature",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Mystery Series",
-    "license": "CC-BY",
-    "triangles": 5849
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 32
   },
-  "characters.enemies.vampire": {
-    "id": "characters.enemies.vampire",
-    "path": "assets/characters/enemies/vampire.glb",
-    "category": "characters",
+  "nature.bush-b": {
+    "id": "nature.bush-b",
+    "path": "assets/nature/bush-b.glb",
+    "category": "nature",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Mystery Series 5",
-    "license": "CC-BY",
-    "triangles": 6004
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 60
   },
-  "characters.enemies.black-knight": {
-    "id": "characters.enemies.black-knight",
-    "path": "assets/characters/enemies/black-knight.glb",
-    "category": "characters",
+  "nature.bush-c": {
+    "id": "nature.bush-c",
+    "path": "assets/nature/bush-c.glb",
+    "category": "nature",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Mystery Series 5",
-    "license": "CC-BY",
-    "triangles": 8696
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 16
   },
-  "characters.enemies.witch": {
-    "id": "characters.enemies.witch",
-    "path": "assets/characters/enemies/witch.glb",
-    "category": "characters",
+  "nature.cactus.short": {
+    "id": "nature.cactus.short",
+    "path": "assets/nature/cactus/short.glb",
+    "category": "nature",
     "kind": "glb",
     "animations": [],
-    "pack": "KayKit Mystery Series 5",
-    "license": "CC-BY",
-    "triangles": 6210
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 116
   },
-  "structures.portal-crypt": {
-    "id": "structures.portal-crypt",
-    "path": "assets/structures/portal-crypt.glb",
-    "category": "structures",
+  "nature.cactus.tall": {
+    "id": "nature.cactus.tall",
+    "path": "assets/nature/cactus/tall.glb",
+    "category": "nature",
     "kind": "glb",
     "animations": [],
-    "pack": "Graveyard Kit",
-    "license": "CC0",
-    "triangles": 252
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 122
+  },
+  "nature.coffin": {
+    "id": "nature.coffin",
+    "path": "assets/nature/coffin.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 256
+  },
+  "nature.crystal-large": {
+    "id": "nature.crystal-large",
+    "path": "assets/nature/crystal-large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS"
+  },
+  "nature.flower-a": {
+    "id": "nature.flower-a",
+    "path": "assets/nature/flower-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 76
+  },
+  "nature.flower-b": {
+    "id": "nature.flower-b",
+    "path": "assets/nature/flower-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 76
+  },
+  "nature.flower-c": {
+    "id": "nature.flower-c",
+    "path": "assets/nature/flower-c.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 76
+  },
+  "nature.grass-tuft": {
+    "id": "nature.grass-tuft",
+    "path": "assets/nature/grass-tuft.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 224
+  },
+  "nature.gravestone-cross-large": {
+    "id": "nature.gravestone-cross-large",
+    "path": "assets/nature/gravestone-cross-large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 192
   },
   "nature.gravestone.cross": {
     "id": "nature.gravestone.cross",
@@ -674,8 +682,7 @@
     "category": "nature",
     "kind": "glb",
     "animations": [],
-    "pack": "Graveyard Kit",
-    "license": "CC0",
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
     "triangles": 222
   },
   "nature.gravestone.round": {
@@ -684,9 +691,430 @@
     "category": "nature",
     "kind": "glb",
     "animations": [],
-    "pack": "Graveyard Kit",
-    "license": "CC0",
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
     "triangles": 178
+  },
+  "nature.mound-a": {
+    "id": "nature.mound-a",
+    "path": "assets/nature/mound-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 232
+  },
+  "nature.mound-b": {
+    "id": "nature.mound-b",
+    "path": "assets/nature/mound-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 232
+  },
+  "nature.mushroom-a": {
+    "id": "nature.mushroom-a",
+    "path": "assets/nature/mushroom-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 48
+  },
+  "nature.mushroom-b": {
+    "id": "nature.mushroom-b",
+    "path": "assets/nature/mushroom-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 48
+  },
+  "nature.pine-crooked": {
+    "id": "nature.pine-crooked",
+    "path": "assets/nature/pine-crooked.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 82
+  },
+  "nature.rock.crystal-a": {
+    "id": "nature.rock.crystal-a",
+    "path": "assets/nature/rock/crystal-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 68
+  },
+  "nature.rock.crystal-large": {
+    "id": "nature.rock.crystal-large",
+    "path": "assets/nature/rock/crystal-large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 436
+  },
+  "nature.rock.large-a": {
+    "id": "nature.rock.large-a",
+    "path": "assets/nature/rock/large-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 80
+  },
+  "nature.rock.large-b": {
+    "id": "nature.rock.large-b",
+    "path": "assets/nature/rock/large-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 85
+  },
+  "nature.rock.large-c": {
+    "id": "nature.rock.large-c",
+    "path": "assets/nature/rock/large-c.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 72
+  },
+  "nature.rock.small-a": {
+    "id": "nature.rock.small-a",
+    "path": "assets/nature/rock/small-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 16
+  },
+  "nature.rock.tall-a": {
+    "id": "nature.rock.tall-a",
+    "path": "assets/nature/rock/tall-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 136
+  },
+  "nature.rock.td-rocks-large": {
+    "id": "nature.rock.td-rocks-large",
+    "path": "assets/nature/rock/td-rocks-large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 232
+  },
+  "nature.rock.td-rocks": {
+    "id": "nature.rock.td-rocks",
+    "path": "assets/nature/rock/td-rocks.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 184
+  },
+  "nature.rocks-mossy": {
+    "id": "nature.rocks-mossy",
+    "path": "assets/nature/rocks-mossy.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 85
+  },
+  "nature.rts.gold.large": {
+    "id": "nature.rts.gold.large",
+    "path": "assets/nature/rts/gold/large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 878
+  },
+  "nature.rts.gold.medium": {
+    "id": "nature.rts.gold.medium",
+    "path": "assets/nature/rts/gold/medium.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 1016
+  },
+  "nature.rts.gold.small": {
+    "id": "nature.rts.gold.small",
+    "path": "assets/nature/rts/gold/small.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 988
+  },
+  "nature.rts.rock.large": {
+    "id": "nature.rts.rock.large",
+    "path": "assets/nature/rts/rock/large.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 426
+  },
+  "nature.rts.rock.medium": {
+    "id": "nature.rts.rock.medium",
+    "path": "assets/nature/rts/rock/medium.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 588
+  },
+  "nature.rts.rock.small": {
+    "id": "nature.rts.rock.small",
+    "path": "assets/nature/rts/rock/small.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 632
+  },
+  "nature.rts.tree.broadleaf-a": {
+    "id": "nature.rts.tree.broadleaf-a",
+    "path": "assets/nature/rts/tree/broadleaf-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 552
+  },
+  "nature.rts.tree.broadleaf-b": {
+    "id": "nature.rts.tree.broadleaf-b",
+    "path": "assets/nature/rts/tree/broadleaf-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 384
+  },
+  "nature.rts.tree.pine": {
+    "id": "nature.rts.tree.pine",
+    "path": "assets/nature/rts/tree/pine.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 345
+  },
+  "nature.stump-a": {
+    "id": "nature.stump-a",
+    "path": "assets/nature/stump-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 56
+  },
+  "nature.tree.broadleaf-a": {
+    "id": "nature.tree.broadleaf-a",
+    "path": "assets/nature/tree/broadleaf-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 114
+  },
+  "nature.tree.broadleaf-b": {
+    "id": "nature.tree.broadleaf-b",
+    "path": "assets/nature/tree/broadleaf-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 50
+  },
+  "nature.tree.oak-a": {
+    "id": "nature.tree.oak-a",
+    "path": "assets/nature/tree/oak-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 196
+  },
+  "nature.tree.palm-a": {
+    "id": "nature.tree.palm-a",
+    "path": "assets/nature/tree/palm-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 186
+  },
+  "nature.tree.palm-bend": {
+    "id": "nature.tree.palm-bend",
+    "path": "assets/nature/tree/palm-bend.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 200
+  },
+  "nature.tree.pine-a": {
+    "id": "nature.tree.pine-a",
+    "path": "assets/nature/tree/pine-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 230
+  },
+  "nature.tree.pine-b": {
+    "id": "nature.tree.pine-b",
+    "path": "assets/nature/tree/pine-b.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 246
+  },
+  "nature.tree.pine-round-a": {
+    "id": "nature.tree.pine-round-a",
+    "path": "assets/nature/tree/pine-round-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 204
+  },
+  "nature.tree.pine-tall-a": {
+    "id": "nature.tree.pine-tall-a",
+    "path": "assets/nature/tree/pine-tall-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 78
+  },
+  "nature.tree.small-a": {
+    "id": "nature.tree.small-a",
+    "path": "assets/nature/tree/small-a.glb",
+    "category": "nature",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Kenney Nature Kit + Graveyard + Quaternius RTS",
+    "triangles": 62
+  },
+  "structures.banner-faction": {
+    "id": "structures.banner-faction",
+    "path": "assets/structures/banner-faction.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 68
+  },
+  "structures.barracks": {
+    "id": "structures.barracks",
+    "path": "assets/structures/barracks.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 534
+  },
+  "structures.crypt": {
+    "id": "structures.crypt",
+    "path": "assets/structures/crypt.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 626
+  },
+  "structures.farm": {
+    "id": "structures.farm",
+    "path": "assets/structures/farm.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 732
+  },
+  "structures.fountain": {
+    "id": "structures.fountain",
+    "path": "assets/structures/fountain.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 4
+  },
+  "structures.gate-stone": {
+    "id": "structures.gate-stone",
+    "path": "assets/structures/gate-stone.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 146
+  },
+  "structures.granary": {
+    "id": "structures.granary",
+    "path": "assets/structures/granary.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 732
+  },
+  "structures.house": {
+    "id": "structures.house",
+    "path": "assets/structures/house.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 404
+  },
+  "structures.iron-fence-column": {
+    "id": "structures.iron-fence-column",
+    "path": "assets/structures/iron-fence-column.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town"
+  },
+  "structures.iron-fence": {
+    "id": "structures.iron-fence",
+    "path": "assets/structures/iron-fence.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 326
+  },
+  "structures.library": {
+    "id": "structures.library",
+    "path": "assets/structures/library.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 600
+  },
+  "structures.portal-crypt": {
+    "id": "structures.portal-crypt",
+    "path": "assets/structures/portal-crypt.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 252
   },
   "structures.portal-fence": {
     "id": "structures.portal-fence",
@@ -694,197 +1122,338 @@
     "category": "structures",
     "kind": "glb",
     "animations": [],
-    "pack": "Graveyard Kit",
-    "license": "CC0",
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
     "triangles": 432
   },
-  "audio.sfx.footstep-grass": {
-    "id": "audio.sfx.footstep-grass",
-    "path": "assets/audio/sfx/footstep-grass.ogg",
-    "category": "audio",
-    "kind": "ogg",
+  "structures.rts.archery.first-age.l1": {
+    "id": "structures.rts.archery.first-age.l1",
+    "path": "assets/structures/rts/archery/first-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Footsteps Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 3740
   },
-  "audio.sfx.footstep-stone": {
-    "id": "audio.sfx.footstep-stone",
-    "path": "assets/audio/sfx/footstep-stone.ogg",
-    "category": "audio",
-    "kind": "ogg",
+  "structures.rts.archery.second-age.l1": {
+    "id": "structures.rts.archery.second-age.l1",
+    "path": "assets/structures/rts/archery/second-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Footsteps Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 5984
   },
-  "audio.sfx.chop": {
-    "id": "audio.sfx.chop",
-    "path": "assets/audio/sfx/chop.ogg",
-    "category": "audio",
-    "kind": "ogg",
+  "structures.rts.barracks.first-age.l1": {
+    "id": "structures.rts.barracks.first-age.l1",
+    "path": "assets/structures/rts/barracks/first-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Impact Hit Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 1466
   },
-  "audio.sfx.mine": {
-    "id": "audio.sfx.mine",
-    "path": "assets/audio/sfx/mine.ogg",
-    "category": "audio",
-    "kind": "ogg",
+  "structures.rts.barracks.first-age.l2": {
+    "id": "structures.rts.barracks.first-age.l2",
+    "path": "assets/structures/rts/barracks/first-age/l2.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Impact Hit Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 2632
   },
-  "audio.sfx.hit": {
-    "id": "audio.sfx.hit",
-    "path": "assets/audio/sfx/hit.ogg",
-    "category": "audio",
-    "kind": "ogg",
+  "structures.rts.barracks.first-age.l3": {
+    "id": "structures.rts.barracks.first-age.l3",
+    "path": "assets/structures/rts/barracks/first-age/l3.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Impact Hit Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 3976
   },
-  "audio.sfx.deposit": {
-    "id": "audio.sfx.deposit",
-    "path": "assets/audio/sfx/deposit.ogg",
-    "category": "audio",
-    "kind": "ogg",
+  "structures.rts.barracks.second-age.l1": {
+    "id": "structures.rts.barracks.second-age.l1",
+    "path": "assets/structures/rts/barracks/second-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Inventory Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 3104
   },
-  "audio.sfx.select": {
-    "id": "audio.sfx.select",
-    "path": "assets/audio/sfx/select.ogg",
-    "category": "audio",
-    "kind": "ogg",
+  "structures.rts.barracks.second-age.l2": {
+    "id": "structures.rts.barracks.second-age.l2",
+    "path": "assets/structures/rts/barracks/second-age/l2.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Inventory Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 6900
   },
-  "audio.sfx.build": {
-    "id": "audio.sfx.build",
-    "path": "assets/audio/sfx/build.ogg",
-    "category": "audio",
-    "kind": "ogg",
+  "structures.rts.barracks.second-age.l3": {
+    "id": "structures.rts.barracks.second-age.l3",
+    "path": "assets/structures/rts/barracks/second-age/l3.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Impact Hit Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 8352
   },
-  "audio.sfx.ui-click": {
-    "id": "audio.sfx.ui-click",
-    "path": "assets/audio/sfx/ui-click.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.farm.first-age.l1": {
+    "id": "structures.rts.farm.first-age.l1",
+    "path": "assets/structures/rts/farm/first-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — UI Sound Effects Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 5174
   },
-  "audio.sfx.ui-panel-open": {
-    "id": "audio.sfx.ui-panel-open",
-    "path": "assets/audio/sfx/ui-panel-open.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.farm.second-age.l1": {
+    "id": "structures.rts.farm.second-age.l1",
+    "path": "assets/structures/rts/farm/second-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — UI Sound Effects Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 5044
   },
-  "audio.sfx.ui-confirm": {
-    "id": "audio.sfx.ui-confirm",
-    "path": "assets/audio/sfx/ui-confirm.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.house.second-age": {
+    "id": "structures.rts.house.second-age",
+    "path": "assets/structures/rts/house/second-age.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — UI Sound Effects Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 2336
   },
-  "audio.sfx.ui-unlock": {
-    "id": "audio.sfx.ui-unlock",
-    "path": "assets/audio/sfx/ui-unlock.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.market.first-age.l1": {
+    "id": "structures.rts.market.first-age.l1",
+    "path": "assets/structures/rts/market/first-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — UI Sound Effects Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 3896
   },
-  "audio.sfx.ui-achievement": {
-    "id": "audio.sfx.ui-achievement",
-    "path": "assets/audio/sfx/ui-achievement.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.market.second-age.l1": {
+    "id": "structures.rts.market.second-age.l1",
+    "path": "assets/structures/rts/market/second-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — UI Sound Effects Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 4864
   },
-  "audio.sfx.magic-impact": {
-    "id": "audio.sfx.magic-impact",
-    "path": "assets/audio/sfx/magic-impact.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.storage.first-age.l1": {
+    "id": "structures.rts.storage.first-age.l1",
+    "path": "assets/structures/rts/storage/first-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Fantasy Magic Spell Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 4088
   },
-  "audio.music.menu": {
-    "id": "audio.music.menu",
-    "path": "assets/audio/music/menu.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.storage.second-age.l1": {
+    "id": "structures.rts.storage.second-age.l1",
+    "path": "assets/structures/rts/storage/second-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Main Menu Music Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 8160
   },
-  "audio.music.gameplay": {
-    "id": "audio.music.gameplay",
-    "path": "assets/audio/music/gameplay.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.temple.first-age.l1": {
+    "id": "structures.rts.temple.first-age.l1",
+    "path": "assets/structures/rts/temple/first-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — GameLoops Vol5 Fantasy RPG",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 4828
   },
-  "audio.music.ambient": {
-    "id": "audio.music.ambient",
-    "path": "assets/audio/music/ambient.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.temple.second-age.l1": {
+    "id": "structures.rts.temple.second-age.l1",
+    "path": "assets/structures/rts/temple/second-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Fantasy Tavern Music Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 443
   },
-  "audio.stinger.victory": {
-    "id": "audio.stinger.victory",
-    "path": "assets/audio/stinger/victory.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.tower-house.first-age": {
+    "id": "structures.rts.tower-house.first-age",
+    "path": "assets/structures/rts/tower-house/first-age.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Victory Level Complete Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 1848
   },
-  "audio.stinger.defeat": {
-    "id": "audio.stinger.defeat",
-    "path": "assets/audio/stinger/defeat.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.tower-house.second-age": {
+    "id": "structures.rts.tower-house.second-age",
+    "path": "assets/structures/rts/tower-house/second-age.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Impact Hit Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 3824
   },
-  "audio.sfx.sword-clash": {
-    "id": "audio.sfx.sword-clash",
-    "path": "assets/audio/sfx/sword-clash.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.town-center.first-age.l1": {
+    "id": "structures.rts.town-center.first-age.l1",
+    "path": "assets/structures/rts/town-center/first-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Impact Hit Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 772
   },
-  "audio.sfx.shield-deflect": {
-    "id": "audio.sfx.shield-deflect",
-    "path": "assets/audio/sfx/shield-deflect.wav",
-    "category": "audio",
-    "kind": "wav",
+  "structures.rts.town-center.first-age.l2": {
+    "id": "structures.rts.town-center.first-age.l2",
+    "path": "assets/structures/rts/town-center/first-age/l2.glb",
+    "category": "structures",
+    "kind": "glb",
     "animations": [],
-    "pack": "PixelLoops Audio — Impact Hit Pack",
-    "license": "Royalty-Free"
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 3334
+  },
+  "structures.rts.town-center.first-age.l3": {
+    "id": "structures.rts.town-center.first-age.l3",
+    "path": "assets/structures/rts/town-center/first-age/l3.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 5408
+  },
+  "structures.rts.town-center.second-age.l1": {
+    "id": "structures.rts.town-center.second-age.l1",
+    "path": "assets/structures/rts/town-center/second-age/l1.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 4604
+  },
+  "structures.rts.town-center.second-age.l2": {
+    "id": "structures.rts.town-center.second-age.l2",
+    "path": "assets/structures/rts/town-center/second-age/l2.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 8050
+  },
+  "structures.rts.town-center.second-age.l3": {
+    "id": "structures.rts.town-center.second-age.l3",
+    "path": "assets/structures/rts/town-center/second-age/l3.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 11832
+  },
+  "structures.rts.wall-gate.first-age": {
+    "id": "structures.rts.wall-gate.first-age",
+    "path": "assets/structures/rts/wall-gate/first-age.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 1420
+  },
+  "structures.rts.wall-gate.second-age": {
+    "id": "structures.rts.wall-gate.second-age",
+    "path": "assets/structures/rts/wall-gate/second-age.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 1920
+  },
+  "structures.rts.wall-tower.first-age": {
+    "id": "structures.rts.wall-tower.first-age",
+    "path": "assets/structures/rts/wall-tower/first-age.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 1380
+  },
+  "structures.rts.wall-tower.second-age": {
+    "id": "structures.rts.wall-tower.second-age",
+    "path": "assets/structures/rts/wall-tower/second-age.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 1792
+  },
+  "structures.rts.wall.first-age": {
+    "id": "structures.rts.wall.first-age",
+    "path": "assets/structures/rts/wall/first-age.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 404
+  },
+  "structures.rts.wall.second-age": {
+    "id": "structures.rts.wall.second-age",
+    "path": "assets/structures/rts/wall/second-age.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 216
+  },
+  "structures.town-hall": {
+    "id": "structures.town-hall",
+    "path": "assets/structures/town-hall.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 176
+  },
+  "structures.wall-stone-corner": {
+    "id": "structures.wall-stone-corner",
+    "path": "assets/structures/wall-stone-corner.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 168
+  },
+  "structures.wall-stone": {
+    "id": "structures.wall-stone",
+    "path": "assets/structures/wall-stone.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town"
+  },
+  "structures.watchtower-stone": {
+    "id": "structures.watchtower-stone",
+    "path": "assets/structures/watchtower-stone.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town"
+  },
+  "structures.wonder-cannon": {
+    "id": "structures.wonder-cannon",
+    "path": "assets/structures/wonder-cannon.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 644
+  },
+  "structures.wonder-keep": {
+    "id": "structures.wonder-keep",
+    "path": "assets/structures/wonder-keep.glb",
+    "category": "structures",
+    "kind": "glb",
+    "animations": [],
+    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
+    "triangles": 148
   }
 }

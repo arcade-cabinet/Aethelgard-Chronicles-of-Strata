@@ -41,6 +41,27 @@ export default defineConfig(({ mode }) => ({
       outputFile: 'src/static-assets.ts',
       ignore: ['.DS_Store'],
     }),
+    // Dev-only CSP relaxation. The production CSP in index.html
+    // forbids 'unsafe-eval', which Vite's dev HMR + esbuild's CJS
+    // wrappers rely on (lots of `(new Function(...))()` patterns
+    // inside dependencies). Without this, `pnpm dev` shows a blank
+    // page. The transform fires only when `mode === 'development'`,
+    // so production builds keep the strict policy verbatim.
+    {
+      name: 'aethelgard-dev-csp-relax',
+      apply: 'serve',
+      transformIndexHtml(html: string) {
+        // Dev also needs blob: in script-src because workers spawned
+        // via `new Worker(URL.createObjectURL(...))` (yuka / our AI
+        // workers) call `importScripts` from inside, and that import
+        // is regulated by script-src — not worker-src. Production
+        // bundles workers as separate URLs so this isn't needed there.
+        return html.replace(
+          /script-src 'self'/,
+          "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:",
+        );
+      },
+    },
   ],
   optimizeDeps: {
     include: ['three/examples/jsm/utils/SkeletonUtils.js'],

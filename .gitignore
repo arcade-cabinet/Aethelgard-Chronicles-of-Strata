@@ -179,3 +179,4 @@ tests/browser/**/__screenshots__
 .superpowers
 .claude/worktrees/
 .clone/
+.claude/screenshots/

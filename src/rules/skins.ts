@@ -213,9 +213,14 @@ const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
 export const SKINS: Record<Faction, Skin> = {
   player: {
     structure: {
-      // M_MAPGEN.2 — TownHall stands distinctly larger than any other player
-      // building; sits slightly above tile level to "anchor" the map.
-      TownHall: { logicalId: 'structures.town-hall', scale: 1.5, yOffset: 0.15 },
+      // M_HARDENING.5 — Quaternius Ultimate Fantasy RTS TownCenter
+      // (FirstAge L1). Bigger, more characterful keep silhouette
+      // than the bare Castle Kit tower-square; reads instantly as
+      // "this is the seat of the player faction."
+      // Quaternius RTS meshes are authored at ~8-unit grid; hex tiles
+      // are ~1 unit. Even the L1 town-center reads as a quarter-screen
+      // mountain at 0.5 — clamp to 0.12 so it sits on a single hex.
+      TownHall: { logicalId: 'structures.rts.town-center.first-age.l1', scale: 0.12, yOffset: 0.05 },
       Farm: { logicalId: 'structures.farm', scale: 0.65, yOffset: 0 },
       // M_EXPANSION.A.9 — distinct House silhouette (Fantasy Town stall)
       // instead of a down-scaled farm; reads as "civic dwelling" vs barn.
@@ -223,13 +228,18 @@ export const SKINS: Record<Faction, Skin> = {
       // M_EXPANSION.A.8 — Granary uses Fantasy Town Kit `windmill.glb`.
       // Real mill silhouette beats the down-scaled barracks placeholder.
       Granary: { logicalId: 'structures.granary', scale: 0.7, yOffset: 0 },
-      Barracks: { logicalId: 'structures.barracks', scale: 0.9, yOffset: 0 },
-      // M_EXPANSION.A.1 — dedicated Castle Kit watchtower mesh; was a
-      // downscaled town-hall placeholder. Real tower silhouette.
-      Watchtower: { logicalId: 'structures.watchtower-stone', scale: 0.7, yOffset: 0 },
-      // M_EXPANSION.A.2 — Wall now uses Castle Kit `wall-narrow.glb`
-      // (stone slab) instead of the portal-fence picket placeholder.
-      Wall: { logicalId: 'structures.wall-stone', scale: 1.1, yOffset: 0 },
+      // M_HARDENING.5 — Quaternius RTS Barracks (FirstAge L1) — proper
+      // weapon-rack + roof silhouette, much clearer than the prior
+      // Tower Defense barracks placeholder.
+      Barracks: { logicalId: 'structures.rts.barracks.first-age.l1', scale: 0.10, yOffset: 0 },
+      // M_HARDENING.5 — Quaternius RTS TowerHouse (FirstAge) — a
+      // proper stone-and-wood watchtower distinct from the Castle
+      // Kit tower-square previously borrowed for Watchtower duty.
+      Watchtower: { logicalId: 'structures.rts.tower-house.first-age', scale: 0.12, yOffset: 0 },
+      // M_HARDENING.5 — Quaternius RTS Wall — palisaded fortification
+      // segment instead of the single Castle Kit slab. Reads as a
+      // real wall section, not a single brick.
+      Wall: { logicalId: 'structures.rts.wall.first-age', scale: 0.10, yOffset: 0 },
       // M_EXPANSION.A.5 — Wonder mounts a Castle Kit keep silhouette
       // (was the literal town-hall scaled up). Distinct + imposing.
       Wonder: { logicalId: 'structures.wonder-keep', scale: 1.2, yOffset: 0 },
@@ -280,9 +290,16 @@ export const SKINS: Record<Faction, Skin> = {
       Farm: { logicalId: 'nature.gravestone.round', scale: 1.0, yOffset: 0 },
       House: { logicalId: 'nature.gravestone.round', scale: 0.8, yOffset: 0 },
       Granary: { logicalId: 'structures.portal-crypt', scale: 0.7, yOffset: 0 },
-      Barracks: { logicalId: 'structures.iron-fence', scale: 1.0, yOffset: 0 },
+      // M_HARDENING.5 — enemy Barracks now uses Quaternius RTS
+      // Barracks SecondAge (darker stone variant), so the enemy
+      // military silhouette reads as "fortified" instead of just
+      // "fenced". Still distinct from the player FirstAge variant.
+      Barracks: { logicalId: 'structures.rts.barracks.second-age.l1', scale: 0.10, yOffset: 0 },
       Watchtower: { logicalId: 'nature.gravestone.cross', scale: 1.2, yOffset: 0 },
-      Wall: { logicalId: 'structures.iron-fence', scale: 1.1, yOffset: 0 },
+      // M_HARDENING.5 — enemy Wall now Quaternius RTS Wall SecondAge,
+      // matching the new Barracks; the rusted-iron fence read poorly
+      // as a wall and gave the enemy no defensive silhouette.
+      Wall: { logicalId: 'structures.rts.wall.second-age', scale: 0.10, yOffset: 0 },
       // M_EXPANSION.A.20 — Wonder now mounts the Tower Defense cannon
       // (literal siege-piece silhouette signals 'final game-changer
       // building' way better than another reskinned crypt).

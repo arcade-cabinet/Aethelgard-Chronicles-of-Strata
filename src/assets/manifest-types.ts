@@ -14,8 +14,6 @@ export interface AssetEntry {
   animations: string[];
   /** Source pack name, for the credits screen. */
   pack: string;
-  /** License id: "CC0" | "CC-BY". */
-  license: string;
 }
 
 /** The full generated asset manifest. */
