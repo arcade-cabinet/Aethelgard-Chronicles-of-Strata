@@ -90,6 +90,47 @@ export function hexNeighbors(q: number, r: number): string[] {
   return HEX_DIRECTIONS.map((d) => getHexKey(q + d.q, r + d.r));
 }
 
+/**
+ * Linear hex-line interpolation from (q1,r1) to (q2,r2). Returns
+ * the sequence of axial coordinates along the straight line, INCLUSIVE
+ * of both endpoints. Used by combatSystem for ranged line-of-sight
+ * checks: if any FOREST tile lies on the line between attacker and
+ * target, the shot is blocked.
+ *
+ * Standard cube-coord lerp + round per
+ * https://www.redblobgames.com/grids/hexagons/#line-drawing.
+ */
+export function hexLine(
+  q1: number,
+  r1: number,
+  q2: number,
+  r2: number,
+): Array<{ q: number; r: number }> {
+  const N = hexDistance(q1, r1, q2, r2);
+  if (N === 0) return [{ q: q1, r: r1 }];
+  const s1 = -q1 - r1;
+  const s2 = -q2 - r2;
+  const out: Array<{ q: number; r: number }> = [];
+  for (let i = 0; i <= N; i++) {
+    const t = i / N;
+    const fq = q1 + (q2 - q1) * t;
+    const fr = r1 + (r2 - r1) * t;
+    const fs = s1 + (s2 - s1) * t;
+    // Round to nearest hex (cube-coord rounding).
+    let rq = Math.round(fq);
+    let rr = Math.round(fr);
+    let rs = Math.round(fs);
+    const dq = Math.abs(rq - fq);
+    const dr = Math.abs(rr - fr);
+    const ds = Math.abs(rs - fs);
+    if (dq > dr && dq > ds) rq = -rr - rs;
+    else if (dr > ds) rr = -rq - rs;
+    else rs = -rq - rr;
+    out.push({ q: rq, r: rr });
+  }
+  return out;
+}
+
 /** Whether two hex keys are adjacent (exactly one tile apart). */
 export function areAdjacent(keyA: string, keyB: string): boolean {
   if (keyA === keyB) return false;

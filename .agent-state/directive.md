@@ -229,10 +229,12 @@ mechanic work that follows is built on this.
 - [x] M_FUN.UNIT.HEAL — DONE 2026-05-24 commit 96e26c1. Healer
   unit added (civilian, no offensive, ~50% Wizard cost; reuses
   Mage mesh).
-- [ ] [WAIT-DEPS] M_FUN.MAP.SWAMP.HARNESS — composition test
-  (5 Footmen vs swamp = die; 4 Footmen + 1 Healer = cross). Add
-  a browser test that runs the sim 30 seconds and asserts
-  outcome.
+- [x] M_FUN.MAP.SWAMP.HARNESS — DONE 2026-05-24 commit db34b67.
+  swamp-composition.test.ts pins the design contract: 5 Footmen
+  on SWAMP die in 60 sim-sec; 4 Footmen + 1 Healer survive at
+  full HP. Also fixed disease re-arm bug discovered by the test
+  (statusAttributesSystem refreshes disease while entity stands
+  on SWAMP, not only on arrival).
 
 ### v0.4.4 — Forest ambush + elevation (PRD §7.4)
 

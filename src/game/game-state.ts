@@ -1013,7 +1013,14 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
       }
       return chokePointMultiplier(passable);
     };
-    game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta, rangedAccuracy, chokeFn);
+    game.lastDamageEvents = combatSystem(
+      game.world,
+      game.eventRng,
+      delta,
+      rangedAccuracy,
+      chokeFn,
+      game.board.tiles,
+    );
   }
 
   // M_MODES.4 — endless mode: FactionBases are invulnerable. Clamp each

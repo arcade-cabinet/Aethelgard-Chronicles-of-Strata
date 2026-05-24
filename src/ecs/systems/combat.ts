@@ -1,5 +1,5 @@
 import type { Entity, World } from 'koota';
-import { hexDistance } from '@/core/hex';
+import { hexDistance, hexLine } from '@/core/hex';
 import type { Rng } from '@/core/rng';
 import {
   AnimationState,
@@ -149,6 +149,16 @@ export function combatSystem(
    * combat behaves as before (no choke math).
    */
   chokeMultiplier?: (q: number, r: number) => number,
+  /**
+   * M_FUN.MAP.FOREST + M_FUN.MAP.HIGHLAND + M_FUN.MAP.AMBUSH —
+   * board tiles map for per-tile biome checks:
+   *   - HIGHLAND attacker → effective attackRange + 1
+   *   - FOREST attacker initiating combat → +20% damage (ambush)
+   *   - FOREST tile between attacker + ranged target → LoS blocked
+   * Optional; when omitted, combat behaves as before (no biome
+   * tactics — legacy test surface).
+   */
+  tiles?: import('@/core/board').BoardData['tiles'],
 ): DamageEvent[] {
   const events: DamageEvent[] = [];
   // Index entities by numeric id for target lookup. `Number(entity)` returns
@@ -178,7 +188,34 @@ export function combatSystem(
       return;
     }
     const dist = hexDistance(hex.q, hex.r, targetHex.q, targetHex.r);
-    if (dist > combatant.attackRange) return; // AI moves it into range
+    // M_FUN.MAP.HIGHLAND — ranged units on HIGHLAND gain +1 range.
+    // Read attacker's tile only when tiles map provided (legacy
+    // callers pass undefined and skip biome tactics).
+    let effectiveRange = combatant.attackRange;
+    const attackerTile = tiles?.get(`${hex.q},${hex.r}`);
+    if (tiles && attackerTile?.type === 'HIGHLAND' && combatant.attackRange > 1) {
+      effectiveRange += 1;
+    }
+    if (dist > effectiveRange) return; // AI moves it into range
+    // M_FUN.MAP.FOREST — FOREST blocks ranged LoS. For ranged
+    // attackers (attackRange > 1), if any intervening tile along
+    // the hex line is FOREST, skip the attack. Melee is unaffected.
+    if (tiles && combatant.attackRange > 1 && dist > 1) {
+      const line = hexLine(hex.q, hex.r, targetHex.q, targetHex.r);
+      // Exclude endpoints — own tile + target tile don't count as
+      // intervening cover.
+      let blocked = false;
+      for (let i = 1; i < line.length - 1; i++) {
+        const step = line[i];
+        if (!step) continue;
+        const t = tiles.get(`${step.q},${step.r}`);
+        if (t?.type === 'FOREST') {
+          blocked = true;
+          break;
+        }
+      }
+      if (blocked) return;
+    }
 
     // M_EXPANSION.AU.45 — damageType comes from the attacker's unit
     // profile (Footman=normal, Trebuchet=siege, Wizard=magic).
@@ -207,7 +244,12 @@ export function combatSystem(
     // on a choke tile takes 10% less even when attacker has high
     // ground (still nets ~1.125 net damage instead of 1.25).
     const choke = chokeMultiplier ? chokeMultiplier(targetHex.q, targetHex.r) : 1;
-    const terrainMultiplier = computeTerrainBonus(hex.level, targetHex.level) * choke;
+    // M_FUN.MAP.AMBUSH — +20% dmg when attacker initiates from FOREST.
+    // FOREST blocks ranged LoS (above) so this benefits melee
+    // attackers stepping out of cover; the asymmetry IS the ambush
+    // mechanic (defender on the bare side eats the multiplier).
+    const ambush = tiles && attackerTile?.type === 'FOREST' ? 1.2 : 1;
+    const terrainMultiplier = computeTerrainBonus(hex.level, targetHex.level) * choke * ambush;
     const fired = resolveAttacks(
       combatant,
       target,
