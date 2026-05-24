@@ -460,6 +460,26 @@ export function setRally(game: GameState, tileKey: string, faction: Faction = 'p
  * starved. Future polish: variable ratio per economy state /
  * Library research (M_EXPANSION.F.86 building upgrade tree).
  */
+/**
+ * M_CODE_REVIEW.5 — material-only contract. Science and mana are
+ * accumulator slots (passive trickle / Library production / Wizard
+ * cost) and were never meant to be tradeable like wood/stone/gold.
+ * The original spec text "wood→stone, stone→gold, gold→wood, etc."
+ * implied this but the type signature admitted the full
+ * ResourceType union with no runtime guard. Lock it down.
+ *
+ * M_SEC_REVIEW.3 — output-side cap: an extreme fromAmount on a
+ * save-edited economy could grow eco[toType] without bound, which
+ * would break display formatting + balance assumptions. 10^7 is well
+ * past any legitimate match's max (a 30-minute Huge game ends with
+ * <10^4 of any resource); anything past that is a save-edit attack.
+ */
+const TRADEABLE_RESOURCES = new Set<import('@/ecs/components').ResourceType>([
+  'wood',
+  'stone',
+  'gold',
+]);
+const RESOURCE_TRADE_CAP = 10_000_000;
 export function tradeResource(
   game: GameState,
   fromType: import('@/ecs/components').ResourceType,
@@ -468,11 +488,14 @@ export function tradeResource(
   faction: Faction = 'player',
 ): boolean {
   if (fromType === toType) return false;
+  if (!TRADEABLE_RESOURCES.has(fromType) || !TRADEABLE_RESOURCES.has(toType)) return false;
   if (!Number.isFinite(fromAmount) || fromAmount <= 0) return false;
+  if (fromAmount > RESOURCE_TRADE_CAP) return false;
   const eco = game.economy[faction];
   const out = Math.floor(fromAmount / 3);
   if (out <= 0) return false;
   if (eco[fromType] < fromAmount) return false;
+  if (eco[toType] + out > RESOURCE_TRADE_CAP) return false;
   eco[fromType] -= fromAmount;
   eco[toType] += out;
   return true;

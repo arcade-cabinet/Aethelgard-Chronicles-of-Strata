@@ -62,4 +62,28 @@ describe('M_EXPANSION.F.93 — resource trade', () => {
     expect(game.economy.player.gold).toBe(0);
     expect(game.economy.player.wood).toBe(beforeWood + 10);
   });
+
+  // M_CODE_REVIEW.5 — material-only contract.
+  it('rejects science → wood (science is non-tradeable)', () => {
+    const game = startGame('trade-science-reject');
+    game.economy.player.science = 30;
+    const beforeWood = game.economy.player.wood;
+    expect(tradeResource(game, 'science', 'wood', 30)).toBe(false);
+    expect(game.economy.player.science).toBe(30);
+    expect(game.economy.player.wood).toBe(beforeWood);
+  });
+
+  it('rejects wood → mana (mana is non-tradeable)', () => {
+    const game = startGame('trade-mana-reject');
+    expect(tradeResource(game, 'wood', 'mana', 30)).toBe(false);
+  });
+
+  // M_SEC_REVIEW.3 — output-side cap.
+  it('rejects extreme fromAmount (above RESOURCE_TRADE_CAP)', () => {
+    const game = startGame('trade-cap-reject');
+    game.economy.player.wood = 1e20;
+    expect(tradeResource(game, 'wood', 'stone', 1e15)).toBe(false);
+    // Source unchanged because guard short-circuits before the spend
+    expect(game.economy.player.wood).toBe(1e20);
+  });
 });
