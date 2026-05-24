@@ -230,8 +230,12 @@ mechanic work that follows is built on this.
   src/config/*. `pnpm docs` generates to docs/api/ (gitignored).
   Agent + future contributors can browse "what does this export"
   without grep.
-- [ ] M_FUN.FOUNDATION.MDLINT — markdownlint for spec /
-  PRD / MILESTONES docs.
+- [x] M_FUN.FOUNDATION.MDLINT — markdownlint-cli installed +
+  `.markdownlint.json` (relaxed MD013/MD024-siblings/MD033/MD041/
+  MD036/MD040/MD046-fenced for the spec doc style) +
+  `.markdownlintignore`. `pnpm lint:md` script. Like PRETTIER-MD
+  this surfaces ratchet warnings against existing MD files; not
+  gated on a flag-day rewrite.
 - [ ] M_FUN.FOUNDATION.MERMAID — Mermaid for spec
   diagrams (currently ASCII tables).
 

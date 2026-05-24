@@ -1,0 +1,8 @@
+node_modules
+dist
+android
+coverage
+docs/api
+.claude
+public
+.agent-state/decisions.ndjson
