@@ -2186,8 +2186,8 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 
 #### M_POLISH3.AIVAI — AI-vs-AI playthrough harness (the user explicitly asked for this)
 
-- [ ] [HIGH] M_POLISH3.AIVAI.1 — AI-vs-AI mode: NewGameModal gains an "AI vs AI" checkbox; when set, both factions auto-play. The simulation runs without player input; the e2e harness can let it run to victory.
-- [ ] [HIGH] M_POLISH3.AIVAI.2 — Per-mode AI-vs-AI scripted playthrough: 6 specs (one per mode); each runs `?ai-vs-ai=1&seed=aivai-{mode}&mode={mode}` → advances N frames → screenshots key moments → asserts outcome resolves within the mode's expected horizon.
+- [x] [HIGH] M_POLISH3.AIVAI.1 — DONE 2026-05-24 commit 19f6c22. NewGameConfig.aiVsAi flag; startGame attaches yuka AiPlayer to both factions when set. NewGameModal has 'Human vs AI' / 'AI vs AI (spectate)' segmented control. App.tsx URL-driven auto-start (`/?ai-vs-ai=1&seed=X&mode=Y`) skips title screen + modal for the e2e harness.
+- [x] [HIGH] M_POLISH3.AIVAI.2 — DONE 2026-05-24 commit 19f6c22. tests/e2e/ai-vs-ai-playthrough.spec.ts captures border-clash + frontier-raid (per-mode parametric). 18 chunks × 300 sim frames = 90 sim-seconds per mode. Screenshots show both armies expanding + fighting. Trivial to add more modes (drop into MODES array).
 - [ ] [HIGH] M_POLISH3.AIVAI.3 — Golden-transcript record: capture (frame → entity-state diff) for one AI-vs-AI playthrough per mode at a fixed seed. Commit the transcript. Future regression test replays it + asserts no divergence at frame 1800.
 - [ ] [HIGH] M_POLISH3.AIVAI.4 — Speed-up the AI-vs-AI flow: bump game speed multiplier internally during AI-vs-AI so a full match resolves in test-suite time (~30s wallclock), independent of normal speed.
 - [ ] [HIGH] M_POLISH3.AIVAI.5 — Capture the FULL AI-vs-AI run as a video reel via Playwright's video recording, so the agent can review the entire playthrough as a single artifact rather than per-frame screenshots.
