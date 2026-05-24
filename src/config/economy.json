@@ -26,6 +26,7 @@
     "Footman": 2,
     "Trebuchet": 3,
     "Wizard": 2,
+    "Healer": 2,
     "Scout": 1,
     "Settler": 4,
     "Hero": 3,
@@ -40,6 +41,7 @@
     "Footman": { "wood": 0, "stone": 0, "gold": 15 },
     "Scout": { "wood": 30, "stone": 0, "gold": 0 },
     "Wizard": { "wood": 0, "stone": 0, "gold": 20, "science": 25, "mana": 15 },
+    "Healer": { "wood": 0, "stone": 0, "gold": 10, "science": 12, "mana": 8 },
     "Hero": { "wood": 0, "stone": 0, "gold": 100, "science": 50 }
   },
   "roadCosts": {

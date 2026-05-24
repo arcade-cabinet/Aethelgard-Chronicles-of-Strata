@@ -191,6 +191,10 @@ const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
   Trebuchet: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
   // M_EXPANSION.A.26 — Wizard uses the KayKit Mage mesh.
   Wizard: { tier: 'medium', meshLogicalId: 'characters.heroes.mage' },
+  // M_FUN.UNIT.HEAL — Healer reuses the Mage mesh until a dedicated
+  // Cleric/Priest GLB lands. Distinguished visually by faction-tint
+  // (Healer = white/gold) when the tint pass lands.
+  Healer: { tier: 'medium', meshLogicalId: 'characters.heroes.mage' },
   // M_EXPANSION.A.27 — Scout uses the KayKit Rogue mesh.
   Scout: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },
   // Settler (M_MODES.6) — civilian appearance; reuse the engineer mesh.

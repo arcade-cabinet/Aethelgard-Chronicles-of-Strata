@@ -164,6 +164,20 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     meleeWeapon: 'none',
     parryChance: 0,
   },
+  Healer: {
+    // M_FUN.UNIT.HEAL — counter-unit for SWAMP/disease pressure.
+    // No offensive (combat systems treat damageType='normal' + zero
+    // attackDamage = no contribution). Clears friendly disease in
+    // 2-hex range via statusAttributesSystem. ~50% Wizard cost.
+    harvester: false,
+    nonCombat: true,
+    founder: false,
+    damageType: 'normal',
+    combatRole: 'civilian',
+    selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
+  },
   Scout: {
     // M_POLISH2.RTS.22 — player non-combat reconnaissance unit. High
     // movement speed, low HP (40), no attack — reveals enemy positions but

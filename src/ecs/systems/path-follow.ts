@@ -26,7 +26,7 @@ const parseStep = parseHexLevelKey;
  *   attribute is applied.
  */
 import type { BoardData } from '@/core/board';
-import { Combatant } from '@/ecs/components';
+import { Combatant, Health } from '@/ecs/components';
 import { biomeRule } from '@/config/mapgen';
 
 export function pathFollowSystem(
@@ -88,10 +88,31 @@ export function pathFollowSystem(
                   fatigueDecayTimer: 0,
                 });
               }
+            } else if (
+              rule.appliesAttribute === 'disease' ||
+              rule.appliesAttribute === 'dehydration'
+            ) {
+              const h = entity.get(Health);
+              if (h) {
+                // attributeStrength = duration in seconds the attribute
+                // sets (refreshes on every arrival; cleared by recovery
+                // tick in statusAttributesSystem).
+                const dur = 5 * rule.attributeStrength;
+                if (rule.appliesAttribute === 'disease') {
+                  entity.set(Health, {
+                    ...h,
+                    disease: Math.max(h.disease, dur),
+                    diseaseRecoveryTimer: 0,
+                  });
+                } else {
+                  entity.set(Health, {
+                    ...h,
+                    dehydration: Math.max(h.dehydration, dur),
+                    dehydrationRecoveryTimer: 0,
+                  });
+                }
+              }
             }
-            // disease + dehydration are wired in M_FUN.ATTR.DISEASE
-            // + M_FUN.ATTR.DEHYDRATION milestones; the data path is
-            // here, the consumers land then.
           }
         }
       } else {

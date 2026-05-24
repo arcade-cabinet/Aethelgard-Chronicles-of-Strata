@@ -61,6 +61,7 @@ import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import { FACTIONS, type Faction } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
+import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
 import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
@@ -881,6 +882,10 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     WEATHER_SPEED_MULTIPLIER[game.weather.state],
     game.board.tiles,
   );
+  // M_FUN.ATTR.DISEASE + .DEHYDRATION — tick disease HP damage,
+  // Healer-clear logic, and recovery timers. Runs every tick (not
+  // turn-gated) so disease ticks during free movement.
+  statusAttributesSystem(game.world, game.board.tiles, delta);
   // M_EXPANSION.F.97 — discoverable hidden bonus consumer. Runs
   // every tick (not turn-gated) so a player issuing a move sees
   // the bonus credit as the unit arrives, not on the next enemy

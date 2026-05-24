@@ -6,6 +6,10 @@ export type UnitType =
   | 'Footman'
   | 'Trebuchet'
   | 'Wizard'
+  /** M_FUN.UNIT.HEAL — Healer / Cleric. No offensive; 2-hex
+   *  heal-aura that clears disease for friendly units in range
+   *  and ticks HP+regen. Counter-unit for SWAMP/disease pressure. */
+  | 'Healer'
   | 'Scout'
   | 'Settler'
   | 'Hero'
@@ -221,7 +225,26 @@ export const ConsumerBehavior = trait({
 export const Gate = trait({ faction: 'player' as Faction });
 
 /** Hit points. */
-export const Health = trait({ current: 50, max: 50 });
+/**
+ * Per-entity HP + status attributes.
+ *
+ * M_FUN.ATTR.DISEASE / .DEHYDRATION — disease and dehydration are
+ * timers in seconds. `disease > 0` ticks HP -1 per sim-second
+ * (see diseaseSystem in src/ecs/systems/status-attributes.ts);
+ * cleared by a Healer in 2-hex range OR standing on GRASS for 5+
+ * seconds (recovery via diseaseRecoveryTimer). `dehydration > 0`
+ * suppresses natural HP regen while set; cleared by leaving DESERT
+ * for 3+ seconds. Defaults 0 — no behaviour change for entities
+ * that never touch SWAMP / DESERT.
+ */
+export const Health = trait({
+  current: 50,
+  max: 50,
+  disease: 0,
+  diseaseRecoveryTimer: 0,
+  dehydration: 0,
+  dehydrationRecoveryTimer: 0,
+});
 
 /**
  * Combat stats and the attack-cooldown timer.
