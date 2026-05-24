@@ -3,7 +3,7 @@ import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
-import { Building, FactionTrait } from '@/ecs/components';
+import { Building, FactionTrait, Unit } from '@/ecs/components';
 import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
@@ -44,7 +44,7 @@ import { SettingsModal } from '@/hud/SettingsModal';
 import { SoundToggle } from '@/hud/SoundToggle';
 import { TitleScreen } from '@/hud/TitleScreen';
 import { ZoneLegend } from '@/hud/ZoneLegend';
-import { createPersistence } from '@/persistence/persistence';
+import { createPersistence, PREF_KEYS } from '@/persistence/persistence';
 import { deserializeGame } from '@/persistence/serialize-game';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
@@ -126,6 +126,7 @@ function GameSession({
       type DevWindow = Window & {
         __game?: typeof g;
         __game_advanceFrames?: (n: number) => void;
+        __game_findPlayerEntities?: (kind: 'peon' | 'military' | 'building') => number[];
       };
       (window as unknown as DevWindow).__game = g;
       // Helper: advance the sim N 60Hz frames synchronously. Used
@@ -133,6 +134,24 @@ function GameSession({
       // before screenshotting / asserting.
       (window as unknown as DevWindow).__game_advanceFrames = (n: number) => {
         for (let i = 0; i < n; i++) runEconomyTick(g, 1 / 60);
+      };
+      // M_POLISH3.J.4 — query helper for selection-state e2e tests.
+      // Returns up to 4 player-faction entity ids by category;
+      // ids match what `selectEntity` accepts.
+      (window as unknown as DevWindow).__game_findPlayerEntities = (kind) => {
+        const MILITARY_TYPES = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
+        const out: number[] = [];
+        for (const e of g.world.query(FactionTrait)) {
+          if (out.length >= 4) break;
+          if (e.get(FactionTrait)?.faction !== 'player') continue;
+          const unit = e.get(Unit);
+          const building = e.get(Building);
+          if (kind === 'peon' && unit?.unitType === 'Peon') out.push(Number(e));
+          else if (kind === 'military' && unit && MILITARY_TYPES.has(unit.unitType))
+            out.push(Number(e));
+          else if (kind === 'building' && building) out.push(Number(e));
+        }
+        return out;
       };
     }
     return g;
@@ -310,6 +329,12 @@ export function App() {
     if (typeof window === 'undefined') return;
     const sp = new URLSearchParams(window.location.search);
     if (sp.get('ai-vs-ai') !== '1') return;
+    // M_POLISH3.J.4 — pre-set the onboarding-seen flag so the
+    // OnboardingOverlay never opens in AI-vs-AI mode (it's spectator
+    // / e2e flow; the player can't interact with the tutorial steps
+    // anyway). Avoids the modal-dismiss-race that selection-journey
+    // and other downstream specs hit.
+    void persistence.setSetting(PREF_KEYS.onboarding, 'true');
     const seed = sp.get('seed') ?? 'aivai-default';
     const mode = (sp.get('mode') ?? 'border-clash') as NonNullable<NewGameConfig['mode']>;
     setConfig({
