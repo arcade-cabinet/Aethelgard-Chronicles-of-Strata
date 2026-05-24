@@ -223,9 +223,13 @@ mechanic work that follows is built on this.
 
 **Docs + tooling**
 
-- [ ] M_FUN.FOUNDATION.TYPEDOC — TypeDoc on the public
-  API surface so the agent can answer "what types does this module
-  expose" without grep.
+- [x] M_FUN.FOUNDATION.TYPEDOC — typedoc installed + configured
+  (typedoc.json) for the public API surface: src/core/board+hex+
+  branded-ids, src/ecs/components, src/game/{game-state,commands},
+  src/persistence/{persistence,serialize-game}, src/ai/ai-player,
+  src/config/*. `pnpm docs` generates to docs/api/ (gitignored).
+  Agent + future contributors can browse "what does this export"
+  without grep.
 - [ ] M_FUN.FOUNDATION.MDLINT — markdownlint for spec /
   PRD / MILESTONES docs.
 - [ ] M_FUN.FOUNDATION.MERMAID — Mermaid for spec
