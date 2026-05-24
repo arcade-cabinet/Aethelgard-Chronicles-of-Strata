@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { type AudioBuses, getBusVolume, setBusVolume, setMuted } from '@/audio/buses';
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
 import { isColorblindMode, setColorblindMode } from '@/rules/colorblind';
+import { isCaptionsEnabled, setCaptionsEnabled } from './captions';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 import { MUTE_PREF_KEY } from './SoundToggle';
@@ -37,6 +38,7 @@ export interface SettingsModalProps {
 export function SettingsModal({ open, onOpenChange, persistence }: SettingsModalProps) {
   const [muted, setMutedState] = useState(false);
   const [colorblind, setColorblindState] = useState<boolean>(() => isColorblindMode());
+  const [captions, setCaptionsState] = useState<boolean>(() => isCaptionsEnabled());
   const [volumes, setVolumes] = useState<Record<keyof AudioBuses, number>>(() => ({
     sfx: getBusVolume('sfx'),
     music: getBusVolume('music'),
@@ -68,6 +70,18 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
       if (cancelled) return;
       setColorblindMode(cb);
       setColorblindState(cb);
+    });
+    // M_EXPANSION.U.114 — load captions toggle and push into the registry.
+    void safePersistenceRead(
+      persistence,
+      PREF_KEYS.captions,
+      (raw) => raw === 'true',
+      false,
+      'SettingsModal',
+    ).then((cb) => {
+      if (cancelled) return;
+      setCaptionsEnabled(cb);
+      setCaptionsState(cb);
     });
     // M_EXPANSION.U.112 — load each bus volume from persistence on mount
     // and push the read value into the buses module so subsequently-
@@ -106,6 +120,13 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
     setColorblindState(next);
     setColorblindMode(next);
     void persistence.setSetting(PREF_KEYS.colorblind, String(next));
+  };
+
+  const toggleCaptions = () => {
+    const next = !captions;
+    setCaptionsState(next);
+    setCaptionsEnabled(next);
+    void persistence.setSetting(PREF_KEYS.captions, String(next));
   };
 
   const toggleMute = () => {
@@ -259,6 +280,42 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
             }}
           >
             {colorblind ? '✓ On' : 'Off'}
+          </button>
+        </div>
+
+        {/* M_EXPANSION.U.114 — captions toggle. When ON, a small
+            band at the bottom of the screen surfaces a short caption
+            for each critical sound event (combat hits, building
+            completed, victory/defeat, etc). Default off. */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '10px 0',
+            borderTop: `1px solid ${HUD_THEME.color.border}`,
+          }}
+        >
+          <span style={{ fontSize: '0.9rem' }}>Captions / subtitles</span>
+          <button
+            type="button"
+            id="settings-captions"
+            aria-label={captions ? 'Disable captions' : 'Enable captions'}
+            aria-pressed={captions}
+            onClick={toggleCaptions}
+            style={{
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(56,189,248,0.12)',
+              color: captions ? HUD_THEME.color.accent : HUD_THEME.color.muted,
+              fontFamily: HUD_THEME.font.body,
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+            }}
+          >
+            {captions ? '✓ On' : 'Off'}
           </button>
         </div>
 

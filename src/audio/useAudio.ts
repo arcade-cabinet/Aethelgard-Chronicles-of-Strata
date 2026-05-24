@@ -16,6 +16,7 @@ import { axialToWorld } from '@/core/hex';
 import { Building, FactionBase, Health, HexPosition } from '@/ecs/components';
 import type { DamageEvent } from '@/ecs/systems/combat';
 import type { GameState } from '@/game/game-state';
+import { pushCaptionForEvent } from '@/hud/captions';
 import { cameraView } from '@/render/camera-view';
 import {
   createAudioBuses,
@@ -100,10 +101,12 @@ export function useAudio(game: GameState): void {
       for (const ev of events) {
         if (ev.parried) {
           positionalPlay('sfx', resolveSoundId(parryMap), ev);
+          pushCaptionForEvent('combat-parry');
           continue;
         }
         if (ev.isCrit) {
           positionalPlay('sfx', resolveSoundId(critMap), ev);
+          pushCaptionForEvent('combat-crit');
           continue;
         }
         const map =
@@ -115,6 +118,18 @@ export function useAudio(game: GameState): void {
                 ? meleeMap
                 : hitMap;
         positionalPlay('sfx', resolveSoundId(map), ev);
+        // M_EXPANSION.U.114 — caption the hit. Same per-damage-type
+        // routing so the band reads "Sword clash" vs "Siege impact"
+        // vs "Spell strikes" accurately.
+        const captionEvent =
+          ev.damageType === 'siege'
+            ? 'combat-hit-siege'
+            : ev.damageType === 'magic'
+              ? 'combat-hit-magic'
+              : ev.isMeleeSword
+                ? 'combat-hit-melee'
+                : 'combat-hit';
+        pushCaptionForEvent(captionEvent);
       }
     }
 
@@ -125,6 +140,7 @@ export function useAudio(game: GameState): void {
       if (currentOutcome === 'win') {
         const map = SOUND_FOR_EVENT.victory;
         playSound(buses, map.bus, resolveSoundId(map));
+        pushCaptionForEvent('victory');
         // M_EXPANSION.AU.38 — after the stinger, swap looping music to
         // a peaceful village track for the victory state. playMusic
         // stops the current track first.
@@ -138,6 +154,7 @@ export function useAudio(game: GameState): void {
       } else if (currentOutcome === 'loss') {
         const map = SOUND_FOR_EVENT.defeat;
         playSound(buses, map.bus, resolveSoundId(map));
+        pushCaptionForEvent('defeat');
         if (crescendoActiveRef.current) {
           restoreMusic();
           crescendoActiveRef.current = false;
@@ -150,6 +167,7 @@ export function useAudio(game: GameState): void {
         // polish pass can swap in a dedicated draw stinger).
         const map = SOUND_FOR_EVENT.defeat;
         playSound(buses, map.bus, resolveSoundId(map));
+        pushCaptionForEvent('defeat');
         if (crescendoActiveRef.current) {
           restoreMusic();
           crescendoActiveRef.current = false;
@@ -207,6 +225,7 @@ export function useAudio(game: GameState): void {
       const newCompletions = completeCount - prev;
       for (let i = 0; i < newCompletions; i++) {
         playSound(buses, map.bus, resolveSoundId(map));
+        pushCaptionForEvent('building-completed');
       }
     }
     lastCompleteBuildingsRef.current = completeCount;

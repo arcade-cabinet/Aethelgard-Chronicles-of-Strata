@@ -161,6 +161,8 @@ export const PREF_KEYS = {
   // M_EXPANSION.U.113 — colourblind mode (deuteranopia/protanopia/
   // tritanopia safe palette: player → orange, enemy → cyan).
   colorblind: 'aethelgard.colorblind',
+  // M_EXPANSION.U.114 — visible captions for sound events.
+  captions: 'aethelgard.captions',
 } as const;
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
 

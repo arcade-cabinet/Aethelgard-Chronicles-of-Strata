@@ -6,6 +6,7 @@ import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
+import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
@@ -162,6 +163,10 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
           (src/hud/aria-live-bus.ts) lets any sim event announce
           accessibly without lifting state. */}
       <AriaLiveRegion />
+      {/* M_EXPANSION.U.114 — visible captions band for deaf accessibility.
+          Renders nothing when captions are off OR when no live captions
+          are queued, so the overlay is zero-cost for hearing players. */}
+      <CaptionsOverlay />
     </div>
   );
 }
