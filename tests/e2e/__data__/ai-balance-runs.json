@@ -37,7 +37,7 @@
       "outcome": "playing",
       "elapsedTurns": 10,
       "totalKills": 0,
-      "buildingsPlayer": 7,
+      "buildingsPlayer": 4,
       "buildingsEnemy": 0,
       "peakSupplyPlayer": 7,
       "peakSupplyEnemy": 5,
@@ -139,34 +139,6 @@
       "buildingsEnemy": 8,
       "peakSupplyPlayer": 6,
       "peakSupplyEnemy": 14,
-      "resolvedWithinBudget": false,
-      "chunksRan": 60
-    },
-    {
-      "player": "the-builder",
-      "enemy": "the-raider",
-      "seed": "balance-the-builder-vs-the-raider",
-      "outcome": "playing",
-      "elapsedTurns": 10,
-      "totalKills": 6,
-      "buildingsPlayer": 7,
-      "buildingsEnemy": 0,
-      "peakSupplyPlayer": 12,
-      "peakSupplyEnemy": 5,
-      "resolvedWithinBudget": false,
-      "chunksRan": 60
-    },
-    {
-      "player": "the-builder",
-      "enemy": "the-raider",
-      "seed": "balance-the-builder-vs-the-raider",
-      "outcome": "playing",
-      "elapsedTurns": 10,
-      "totalKills": 6,
-      "buildingsPlayer": 7,
-      "buildingsEnemy": 0,
-      "peakSupplyPlayer": 12,
-      "peakSupplyEnemy": 5,
       "resolvedWithinBudget": false,
       "chunksRan": 60
     }

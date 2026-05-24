@@ -17,7 +17,7 @@
     "the-hoarder": {
       "displayName": "The Hoarder",
       "description": "Maximises resources; rarely commits military. Beat by aggressive raiding.",
-      "weights": { "build": 1.2, "military": 0.5, "defensive": 1.5, "patrol": 0.5 },
+      "weights": { "build": 1.0, "military": 0.6, "defensive": 1.5, "patrol": 0.5 },
       "flaw": "vulnerable-to-rush"
     },
     "the-diplomat": {
@@ -28,8 +28,8 @@
     },
     "the-mad-king": {
       "displayName": "The Mad King",
-      "description": "Erratic; spams cheap military; never walls. Beat with composition + outlast.",
-      "weights": { "build": 0.4, "military": 2.0, "defensive": 0.1, "patrol": 1.5 },
+      "description": "Erratic; spams cheap military; rarely builds defenses. Beat with composition + outlast.",
+      "weights": { "build": 0.8, "military": 2.2, "defensive": 0.1, "patrol": 1.5 },
       "flaw": "no-defensive-structures"
     }
   },
