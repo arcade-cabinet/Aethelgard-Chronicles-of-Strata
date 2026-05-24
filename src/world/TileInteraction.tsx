@@ -3,6 +3,8 @@ import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexKey, hexNeighbors } from '@/core/hex';
 import { Building, FactionTrait, Selectable, Unit } from '@/ecs/components';
+import { cameraView } from '@/render/camera-view';
+import { startDrag, stopDrag, isDragging, computePanDelta } from './touch-drag';
 import {
   findSelectableAtTile,
   moveUnit,
@@ -80,6 +82,8 @@ function TilePick({
           state.timer = window.setTimeout(() => {
             state.fired = true;
             hexGridVisibility.show = true;
+            // M_EXPANSION.U.119 — long-press also starts drag-scroll mode.
+            startDrag(ne.clientX, ne.clientY);
             onRight();
           }, LONG_PRESS_MS);
           longPressRef.current = state;
@@ -90,6 +94,8 @@ function TilePick({
       onPointerUp={(e) => {
         const ne = e.nativeEvent as PointerEvent;
         if (ne.pointerType !== 'touch') return;
+        // M_EXPANSION.U.119 — exit drag mode whenever the touch lifts.
+        stopDrag();
         const state = longPressRef.current;
         if (!state) return;
         clearTimeout(state.timer);
@@ -177,6 +183,45 @@ export function TileInteraction({
       document.body.style.cursor = '';
     };
   }, [game, hoveredTile]);
+
+  /*
+   * M_EXPANSION.U.119 — touch drag-scroll.
+   *
+   * A global pointermove handler (installed once on mount) checks whether drag
+   * mode is active via the touch-drag module.  When active it converts the raw
+   * pointer delta into a world-space {dx, dz} pair scaled by the current camera
+   * distance, then dispatches 'aethelgard:pan-camera' so CameraRig applies it.
+   * A global pointerup handler clears drag mode; the per-tile pointerup in
+   * TilePick also calls stopDrag() for robustness.
+   *
+   * Desktop: pointerType is 'mouse'; isDragging() is always false because
+   * startDrag() is only called from the touch branch of the long-press timer,
+   * so the pointermove handler is a cheap no-op on desktop.
+   */
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') return;
+      if (!isDragging()) return;
+      const { dx, dz } = computePanDelta(e.clientX, e.clientY, cameraView.distance);
+      if (dx === 0 && dz === 0) return;
+      window.dispatchEvent(
+        new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }),
+      );
+    };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') return;
+      stopDrag();
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      stopDrag();
+    };
+  }, []);
 
   // M_AUDIT2.SEC2.26 — 100ms click cooldown. Auto-clickers can chain
   // build placements faster than the economy tick can validate (multiple
