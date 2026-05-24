@@ -11,6 +11,7 @@ import {
 import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
 import { SKINS } from '@/rules/skins';
+import { aiProfileFor, endgameUrgencyFor } from './ai-profiles';
 import { baseKeyFor, type GameState } from '@/game/game-state';
 import { canBuild, peonCap, UNIT_COSTS } from '@/rules';
 
@@ -156,9 +157,20 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
   calculateDesirability(owner: AiPlayer): number {
     const choice = this.pickBuildable(owner);
     if (!choice) return 0;
-    // M_EXPANSION.S.53 — apply per-faction economyFocus bias from SKINS.
+    // M_EXPANSION.S.53 — per-faction economyFocus bias from SKINS.
     const bias = SKINS[owner.faction].brain?.economyFocus ?? 1.0;
-    return 0.7 * bias;
+    // M_AI_AWARE.1 — per-mode AI profile. coexistence sets
+    // buildWeight to 0 so the AI never expands. strata-wars sets
+    // 1.3 so it builds more eagerly than border-clash.
+    const profile = aiProfileFor(owner.game?.mode);
+    // M_AI_AWARE.1 — Wall/Watchtower defensive priority depends on
+    // whether bases can actually be destroyed. long-reign sets
+    // defensiveBuildWeight=0 (invulnerable bases → no point).
+    const defensiveTypes: ReadonlyArray<string> = ['Wall', 'Watchtower'];
+    const defensiveMul = defensiveTypes.includes(choice as string)
+      ? profile.defensiveBuildWeight
+      : 1.0;
+    return 0.7 * bias * profile.buildWeight * defensiveMul;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -243,11 +255,23 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
   calculateDesirability(owner: AiPlayer): number {
     if (!owner.game) return 0;
     if (!firstMilitary(owner.game, owner.faction)) return 0;
-    // M_EXPANSION.S.53 — apply per-faction aggressiveness bias.
+    // M_EXPANSION.S.53 — per-faction aggressiveness bias.
     const bias = SKINS[owner.faction].brain?.aggressiveness ?? 1.0;
+    // M_AI_AWARE.1 — per-mode militaryWeight. coexistence sets 0
+    // (AI never attacks); frontier-raid sets 1.6 (rush hard).
+    const profile = aiProfileFor(owner.game.mode);
+    // M_AI_AWARE.1 — endgame urgency multiplier: when we're inside
+    // the last `urgencyThreshold` turns of a turn-capped mode, scale
+    // military by `endgameUrgencyMultiplier` to rush the final score.
+    const urgency = endgameUrgencyFor(
+      owner.game.mode,
+      owner.game.turn?.turnsElapsed,
+      owner.game.turn?.maxTurns,
+    );
+    const modeMul = profile.militaryWeight * urgency;
     // higher score when a tile we own is pulsing — defence is urgent
-    if (firstPulsingTile(owner.game, owner.faction)) return 0.85 * bias;
-    return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 * bias : 0;
+    if (firstPulsingTile(owner.game, owner.faction)) return 0.85 * bias * modeMul;
+    return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 * bias * modeMul : 0;
   }
 
   setGoal(owner: AiPlayer): void {
