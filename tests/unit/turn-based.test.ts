@@ -9,7 +9,7 @@ describe('turn-based mode (M_MODES.8)', () => {
       mapSize: 18,
       difficulty: 'normal',
       eventSeed: 'turn-events',
-      mode: '4x',
+      mode: 'age-of-strata',
     });
     expect(game.turn).toBeDefined();
     expect(game.turn?.active).toBe('player');
@@ -22,7 +22,7 @@ describe('turn-based mode (M_MODES.8)', () => {
       mapSize: 18,
       difficulty: 'normal',
       eventSeed: 'turn-events-2',
-      mode: 'red-vs-blue',
+      mode: 'border-clash',
     });
     expect(game.turn).toBeUndefined();
   });
@@ -33,7 +33,7 @@ describe('turn-based mode (M_MODES.8)', () => {
       mapSize: 18,
       difficulty: 'normal',
       eventSeed: 'turn-events-3',
-      mode: '4x',
+      mode: 'age-of-strata',
     });
     expect(game.turn?.active).toBe('player');
     // drain 61 seconds of game time — turn should have flipped at 60
@@ -48,7 +48,7 @@ describe('turn-based mode (M_MODES.8)', () => {
       mapSize: 18,
       difficulty: 'normal',
       eventSeed: 'turn-events-4',
-      mode: '4x',
+      mode: 'age-of-strata',
     });
     expect(game.turn?.active).toBe('player');
     endTurn(game);
@@ -62,7 +62,7 @@ describe('turn-based mode (M_MODES.8)', () => {
       mapSize: 18,
       difficulty: 'normal',
       eventSeed: 'turn-events-5',
-      mode: 'red-vs-blue',
+      mode: 'border-clash',
     });
     endTurn(game);
     expect(game.turn).toBeUndefined();

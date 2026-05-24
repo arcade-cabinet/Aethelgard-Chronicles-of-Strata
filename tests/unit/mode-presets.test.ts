@@ -5,7 +5,7 @@ import { MODE_PRESETS, presetFor } from '@/rules';
 
 describe('mode presets (M_MODES.2-.6)', () => {
   it('presetFor returns red-vs-blue defaults for undefined / unknown', () => {
-    expect(presetFor(undefined)).toEqual(MODE_PRESETS['red-vs-blue']);
+    expect(presetFor(undefined)).toEqual(MODE_PRESETS['border-clash']);
   });
 
   it('skirmish bypasses guided map gen — pure noise allowed (no beach ring guarantee)', () => {
@@ -14,12 +14,12 @@ describe('mode presets (M_MODES.2-.6)', () => {
       mapSize: 18,
       difficulty: 'normal',
       eventSeed: 'skirmish-events',
-      mode: 'skirmish',
+      mode: 'frontier-raid',
     });
     // skirmish mode skips paintBeachRing — outer ring may NOT be all OCEAN.
     // We don't assert "must be non-ocean" (noise might still produce it);
     // we just assert the mode flag round-trips.
-    expect(game.mode).toBe('skirmish');
+    expect(game.mode).toBe('frontier-raid');
   });
 
   it('endless mode keeps FactionBases invulnerable across damage ticks', () => {
@@ -28,7 +28,7 @@ describe('mode presets (M_MODES.2-.6)', () => {
       mapSize: 18,
       difficulty: 'normal',
       eventSeed: 'endless-events',
-      mode: 'endless',
+      mode: 'long-reign',
     });
     // wound the player base by 100hp
     for (const e of game.world.query(FactionBase, Health)) {
@@ -53,7 +53,7 @@ describe('mode presets (M_MODES.2-.6)', () => {
       mapSize: 18,
       difficulty: 'normal',
       eventSeed: 'normal-events',
-      mode: 'red-vs-blue',
+      mode: 'border-clash',
     });
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase)?.faction;

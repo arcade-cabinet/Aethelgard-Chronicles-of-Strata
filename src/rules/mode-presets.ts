@@ -37,7 +37,7 @@ export interface ModePreset {
  * Advanced reveals the individual axes for override.
  */
 export const MODE_PRESETS: Record<GameMode, ModePreset> = {
-  'red-vs-blue': {
+  'border-clash': {
     mapSize: 'medium',
     matchLength: 'short',
     turnsMode: 'real-time',
@@ -45,7 +45,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: false,
   },
-  skirmish: {
+  'frontier-raid': {
     mapSize: 'small',
     matchLength: 'short',
     turnsMode: 'real-time',
@@ -53,7 +53,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: false,
     invulnerableBases: false,
   },
-  endless: {
+  'long-reign': {
     mapSize: 'large',
     matchLength: 'endless',
     turnsMode: 'real-time',
@@ -61,7 +61,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: true,
   },
-  'classic-rts': {
+  'strata-wars': {
     mapSize: 'large',
     matchLength: 'medium',
     turnsMode: 'real-time',
@@ -69,7 +69,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: false,
   },
-  '4x': {
+  'age-of-strata': {
     mapSize: 'huge',
     matchLength: 'long',
     turnsMode: 'turn-based',
@@ -77,11 +77,11 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: false,
   },
-  // M_EXPANSION.F.100 — Coexist: no win condition. invulnerableBases
-  // prevents either base from dying; endless match-length disables the
-  // resign-by-starvation flip. Game runs until the player closes the
-  // window — useful for builder-mode play.
-  coexist: {
+  // M_EXPANSION.F.100 — Coexistence: no win condition.
+  // invulnerableBases prevents either base from dying; endless
+  // match-length disables the resign-by-starvation flip. Game runs
+  // until the player closes the window — useful for builder-mode play.
+  coexistence: {
     mapSize: 'large',
     matchLength: 'endless',
     turnsMode: 'real-time',
@@ -91,7 +91,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
   },
 };
 
-/** Resolve the preset for a mode; defaults to red-vs-blue for unknown input. */
+/** Resolve the preset for a mode; defaults to border-clash for unknown input. */
 export function presetFor(mode: GameMode | undefined): ModePreset {
-  return MODE_PRESETS[mode ?? 'red-vs-blue'];
+  return MODE_PRESETS[mode ?? 'border-clash'];
 }

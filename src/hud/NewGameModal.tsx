@@ -22,14 +22,19 @@ export interface NewGameChoices {
   mode: GameMode;
 }
 
-/** The 6 selectable game modes (M_MODES.7 + M_EXPANSION.F.100). */
-const MODES: ReadonlyArray<{ key: GameMode; label: string; hint: string }> = [
-  { key: 'red-vs-blue', label: 'Red vs Blue', hint: 'Balanced 1v1' },
-  { key: 'skirmish', label: 'Skirmish', hint: 'Pure noise — asymmetric maps' },
-  { key: 'endless', label: 'Endless', hint: 'Invuln bases · resign/starve' },
-  { key: 'classic-rts', label: 'Classic RTS', hint: 'Longer · tech-tree heavy' },
-  { key: '4x', label: '4X', hint: 'eXplore eXpand eXploit eXterminate' },
-  { key: 'coexist', label: 'Coexist', hint: 'No win — builder sandbox' },
+// M_BRAND.1 — brand-aligned mode labels. The labels are the
+// player-facing names; the keys are stable for save serialization.
+// M_BRAND.2 cascades the preset's mapSize/AI/etc into the visible
+// controls so the player sees what the preset implies without a
+// tagline; M_BRAND.3 frames the whole picker under a "Realm Presets"
+// heading and flips to "Custom Realm" once any control is altered.
+const MODES: ReadonlyArray<{ key: GameMode; label: string }> = [
+  { key: 'border-clash', label: 'Border Clash' },
+  { key: 'frontier-raid', label: 'Frontier Raid' },
+  { key: 'long-reign', label: 'Long Reign' },
+  { key: 'strata-wars', label: 'Strata Wars' },
+  { key: 'age-of-strata', label: 'Age of Strata' },
+  { key: 'coexistence', label: 'Coexistence' },
 ];
 
 /** Props for the New Game modal. */
@@ -119,17 +124,51 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   // the event PRNG stream derived from that seed; the shuffle draws from it
   const eventRng = useRef(createEventPrng(eventSeed));
   const [seedPhrase, setSeedPhrase] = useState(() => randomSeedPhrase(eventRng.current));
-  const [mode, setMode] = useState<GameMode>('red-vs-blue');
+  const [mode, setMode] = useState<GameMode>('border-clash');
   // The preset.mapSize is the default; the user can still override below.
-  const [mapSize, setMapSize] = useState<MapSizeKey>(presetFor('red-vs-blue').mapSize);
+  const [mapSize, setMapSize] = useState<MapSizeKey>(presetFor('border-clash').mapSize);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
 
-  // When mode changes, reset mapSize to the preset's recommended default
-  // (player can override afterwards).
+  // M_BRAND.3 — when the player overrides any cascaded control after
+  // picking a preset, the modal flips to "Custom Realm" state. The
+  // mutation is what *teaches* the player that customization = leaving
+  // the preset. The flag clears whenever the player explicitly clicks
+  // a mode chip (re-locking the preset).
+  const [presetModified, setPresetModified] = useState(false);
+
+  // M_BRAND.2 — diegetic preset cascade. When mode changes, push the
+  // preset's mapSize AND its AI difficulty (long-reign + frontier-raid
+  // run easier; strata-wars + age-of-strata default to normal) into
+  // the visible controls. The player sees the cascade happen.
   useEffect(() => {
-    setMapSize(presetFor(mode).mapSize);
+    const preset = presetFor(mode);
+    setMapSize(preset.mapSize);
+    // Each preset implies a default AI difficulty. Border-clash is
+    // balanced 1v1 (normal); long-reign is endless attrition (easy
+    // is the entry experience); frontier-raid is fast (normal);
+    // strata-wars / age-of-strata reward longer planning (normal).
+    const aiByMode: Record<GameMode, Difficulty> = {
+      'border-clash': 'normal',
+      'frontier-raid': 'normal',
+      'long-reign': 'easy',
+      'strata-wars': 'normal',
+      'age-of-strata': 'normal',
+      coexistence: 'easy',
+    };
+    setDifficulty(aiByMode[mode]);
+    setPresetModified(false);
   }, [mode]);
+
+  // Override wrappers that flip the "Custom Realm" marker (M_BRAND.3).
+  const setMapSizeOverride = (next: MapSizeKey) => {
+    setMapSize(next);
+    if (next !== presetFor(mode).mapSize) setPresetModified(true);
+  };
+  const setDifficultyOverride = (next: Difficulty) => {
+    setDifficulty(next);
+    setPresetModified(true);
+  };
 
   useEffect(() => {
     void availableMapSizes().then(setSizeKeys);
@@ -266,8 +305,28 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           </button>
         </div>
 
-        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Game mode</p>
-        <div style={{ margin: '6px 0 12px' }}>
+        {/*
+          M_BRAND.3 — picker sits under a "Realm Presets" heading; the
+          live "Custom Realm" annotation appears once the player
+          alters a cascaded control, communicating that customization
+          = leaving the preset.
+        */}
+        <p
+          style={{
+            fontSize: '0.78rem',
+            color: HUD_THEME.color.muted,
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>Realm preset</span>
+          {presetModified && (
+            <span style={{ color: HUD_THEME.color.gold, fontSize: '0.72rem' }}>Custom Realm</span>
+          )}
+        </p>
+        <div style={{ margin: '6px 0 18px' }}>
           <Segmented
             value={mode}
             options={MODES.map((m) => m.key)}
@@ -277,10 +336,12 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             onChange={setMode}
           />
         </div>
-        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: '0 0 16px' }}>
-          {MODES.find((m) => m.key === mode)?.hint}
-        </p>
 
+        {/*
+          M_BRAND.2 — diegetic cascade. Picking a preset above visibly
+          mutates Map size + AI difficulty below; if the player then
+          touches either, M_BRAND.3 flips the heading annotation.
+        */}
         <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Map size</p>
         <div style={{ margin: '6px 0 18px' }}>
           <Segmented
@@ -291,7 +352,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 (Object.keys(MAP_SIZES) as MapSizeKey[]).map((k) => [k, MAP_SIZES[k].label]),
               ) as Record<MapSizeKey, string>
             }
-            onChange={setMapSize}
+            onChange={setMapSizeOverride}
           />
         </div>
 
@@ -303,7 +364,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             value={difficulty}
             options={DIFFICULTIES}
             labels={{ easy: 'Easy', normal: 'Normal', hard: 'Hard' }}
-            onChange={setDifficulty}
+            onChange={setDifficultyOverride}
           />
         </div>
 

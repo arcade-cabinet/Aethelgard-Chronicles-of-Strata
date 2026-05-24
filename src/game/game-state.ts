@@ -88,20 +88,36 @@ export interface NewGameConfig {
   difficulty: Difficulty;
   eventSeed: string;
   /**
-   * Game mode preset (M_MODES.1). Drives default mapSize / matchLength /
-   * turnsMode / mapType / win-condition rules. Defaults to 'red-vs-blue'
-   * when omitted so existing call sites keep current behaviour.
-   *   red-vs-blue: balanced 2-base RTS — the M_MAPGEN guided generation.
-   *   skirmish:    pure-noise map; may be asymmetric.
-   *   endless:     TownHalls invulnerable; resign/starve outcome only.
-   *   classic-rts: longer match + scaled Discoveries progression.
-   *   4x:          eXplore/eXpand/eXploit/eXterminate — multi-base, Wonder race.
+   * Game mode preset (M_MODES.1 + M_BRAND.1). Drives default
+   * mapSize / matchLength / turnsMode / mapType / win-condition
+   * rules. Defaults to 'border-clash' when omitted.
+   *   border-clash:   balanced 2-base RTS — the M_MAPGEN guided gen.
+   *   frontier-raid:  pure-noise asymmetric map, fast.
+   *   long-reign:     TownHalls invulnerable; resign/starve only.
+   *   strata-wars:    continent map, longer match, scaled tech tree.
+   *   age-of-strata:  4X turn-based — eXplore/eXpand/eXploit/eXterminate.
+   *   coexistence:    no-win builder sandbox.
    */
   mode?: GameMode;
 }
 
-/** The 6 selectable game-mode presets (M_MODES + M_EXPANSION.F.100). */
-export type GameMode = 'red-vs-blue' | 'skirmish' | 'endless' | 'classic-rts' | '4x' | 'coexist';
+/**
+ * Game mode identifier — M_BRAND.1 renamed the v0.3 generic POC
+ * keys to Aethelgard-lore names. The keys tell the player the FEEL
+ * of the preset they're choosing; the preset itself bundles map /
+ * size / turns / AI behaviour (see MODE_PRESETS).
+ *
+ * Legacy save migration: snapshot-migration.ts maps old keys
+ * (red-vs-blue, skirmish, endless, classic-rts, 4x, coexist) to the
+ * new ones at deserialize time, so v0.3 saves still load.
+ */
+export type GameMode =
+  | 'border-clash'
+  | 'frontier-raid'
+  | 'long-reign'
+  | 'strata-wars'
+  | 'age-of-strata'
+  | 'coexistence';
 
 /** The live state of one play session. */
 export interface GameState {
@@ -530,7 +546,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     mapSize,
     difficulty,
     eventSeed,
-    mode: mode ?? 'red-vs-blue',
+    mode: mode ?? 'border-clash',
     board,
     navGraph,
     world,
