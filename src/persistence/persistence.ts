@@ -251,30 +251,27 @@ function rowToSaveRecord(row: any): SaveRecord {
  * Wiping app data wipes both the saves AND the key, so a reinstall
  * starts fresh (no orphaned encrypted blobs in user data).
  */
+/**
+ * M_SEC_REVIEW.1 — hard-fail if WebCrypto isn't available OR
+ * Preferences fails. The prior fallbacks (Math.random() for key
+ * bytes; `session-${Math.random()}-${Date.now()}` on Preferences
+ * failure) produced cryptographically-weak passphrases that an
+ * attacker could enumerate. Crypto unavailability is a hard init
+ * failure — the caller catches the throw, marks `dbUnavailable`,
+ * and saves degrade gracefully to a no-op. Better no saves than
+ * weak-encrypted saves.
+ */
 async function ensureDbSecret(): Promise<string> {
-  try {
-    const existing = await Preferences.get({ key: PREF_KEYS.dbKey });
-    if (existing.value && existing.value.length >= 32) return existing.value;
-    const bytes = new Uint8Array(64);
-    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
-      crypto.getRandomValues(bytes);
-    } else {
-      // Browsers without WebCrypto shouldn't happen in production
-      // (Capacitor WebView ships modern Chromium / WKWebView), but
-      // fallback to Math.random for the test harness so persistence
-      // doesn't throw on init.
-      for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
-    }
-    const secret = btoa(String.fromCharCode(...bytes));
-    await Preferences.set({ key: PREF_KEYS.dbKey, value: secret });
-    return secret;
-  } catch (err) {
-    // If Preferences fails (shouldn't, but defensive), fall back to
-    // a session-only random key. The DB created with it won't be
-    // reopenable next session — saves are best-effort in that case.
-    console.warn('[persistence] ensureDbSecret failed, using session-only key:', err);
-    return `session-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+  if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') {
+    throw new Error('ensureDbSecret: WebCrypto unavailable; cannot generate secure DB passphrase');
   }
+  const existing = await Preferences.get({ key: PREF_KEYS.dbKey });
+  if (existing.value && existing.value.length >= 32) return existing.value;
+  const bytes = new Uint8Array(64);
+  crypto.getRandomValues(bytes);
+  const secret = btoa(String.fromCharCode(...bytes));
+  await Preferences.set({ key: PREF_KEYS.dbKey, value: secret });
+  return secret;
 }
 
 // Module-level singletons — all null until the first openDb() call.
