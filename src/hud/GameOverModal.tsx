@@ -115,6 +115,31 @@ export function GameOverModal({ game }: { game: GameState }) {
           {titleText}
         </Dialog.Title>
         <p style={{ color: HUD_THEME.color.muted, marginBottom: 24 }}>{flavorText}</p>
+        {/* M_POLISH2.MODES.41b — long-reign narrative line. Sits ABOVE
+              the generic stat list and reads as a one-line summary
+              of the player's reign. */}
+        {game.mode === 'long-reign' && (
+          <div
+            id="long-reign-narrative"
+            style={{
+              padding: '12px 14px',
+              marginBottom: 18,
+              borderRadius: 10,
+              background: 'rgba(56, 189, 248, 0.08)',
+              border: `1px solid ${HUD_THEME.color.border}`,
+              color: HUD_THEME.color.gold,
+              fontFamily: HUD_THEME.font.display,
+              fontSize: '0.95rem',
+              textAlign: 'center',
+            }}
+          >
+            👑 Survived {formatTime(game.clock.elapsed)} — Endured{' '}
+            {formatInt(game.randomEvents.fired ?? 0)} escalation
+            {(game.randomEvents.fired ?? 0) === 1 ? '' : 's'} — Built{' '}
+            {formatInt(playerBuildings)} structure
+            {playerBuildings === 1 ? '' : 's'}
+          </div>
+        )}
         {stats.map((s) => (
           <div
             key={s.label}
