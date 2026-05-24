@@ -21,8 +21,8 @@
  * GLB metadata (triangle count, animation clips) comes from
  * @gltf-transform/core (already a dev dep).
  */
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
-import { join, relative } from 'node:path';
+import { readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { join, relative, sep } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
 
 const REPO = process.cwd();
@@ -31,10 +31,26 @@ const MANIFEST_OUT = join(REPO, 'src/config/asset-metadata.json');
 
 const io = new NodeIO();
 
-/** Recursively yield every file under `root`. */
+/**
+ * Recursively yield every file under `root`. M_SEC_REVIEW.4 — for
+ * each entry, resolve symlinks via realpathSync and confirm the
+ * resolved path stays inside `root`. A symlink under public/assets/
+ * pointing to /etc/passwd would otherwise propagate to the manifest
+ * (and then to runtime assets.url() callers).
+ */
 function* walk(root: string): Generator<string> {
+  const rootReal = realpathSync(root);
   for (const name of readdirSync(root)) {
     const full = join(root, name);
+    let real: string;
+    try {
+      real = realpathSync(full);
+    } catch {
+      // dangling symlink or perm-error — skip silently
+      continue;
+    }
+    // Reject anything that resolves outside ASSETS_DIR (path-traversal symlink).
+    if (!real.startsWith(rootReal + sep) && real !== rootReal) continue;
     if (statSync(full).isDirectory()) yield* walk(full);
     else yield full;
   }

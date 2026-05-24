@@ -210,7 +210,19 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   // Maps to the segmented control's string options; null encodes
   // Unlimited.
   const setMaxTurnsOverride = (next: string) => {
-    const val = next === 'unlimited' ? null : Number.parseInt(next, 10);
+    if (next === 'unlimited') {
+      setMaxTurnsState(null);
+      if (presetFor(mode).maxTurns !== null) setPresetModified(true);
+      return;
+    }
+    // M_SEC_REVIEW.7 — guard parseInt result. Today's only caller
+    // is the segmented control (4 fixed string values), but if a
+    // future URL parameter or programmatic call passes a non-numeric
+    // string, parseInt returns NaN. game.turn.maxTurns === NaN
+    // makes the turn-cap check `turnsElapsed >= maxTurns` always
+    // false, silently disabling the cap. Reject < 1 too.
+    const val = Number.parseInt(next, 10);
+    if (!Number.isFinite(val) || val < 1) return;
     setMaxTurnsState(val);
     if (val !== presetFor(mode).maxTurns) setPresetModified(true);
   };

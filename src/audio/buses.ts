@@ -146,6 +146,21 @@ export function playSoundAt(
   cameraAzimuth: number,
 ): void {
   if (!interactionGate) return;
+  // M_SEC_REVIEW.6 — NaN guard. An edge-case ECS state (entity with
+  // unset Transform, a freshly-spawned mover, etc.) could pass NaN
+  // world/camera coordinates. NaN propagates silently through
+  // Math.hypot → attenuation → Howler stereo/volume setters and
+  // produces muted-or-extreme audio with no error. Skip the call
+  // outright instead.
+  if (
+    !Number.isFinite(worldXZ.x) ||
+    !Number.isFinite(worldXZ.z) ||
+    !Number.isFinite(cameraXZ.x) ||
+    !Number.isFinite(cameraXZ.z) ||
+    !Number.isFinite(cameraAzimuth)
+  ) {
+    return;
+  }
   const dx = worldXZ.x - cameraXZ.x;
   const dz = worldXZ.z - cameraXZ.z;
   const dist = Math.hypot(dx, dz);

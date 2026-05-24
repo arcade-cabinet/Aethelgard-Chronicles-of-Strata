@@ -58,7 +58,12 @@ export default defineConfig(({ mode }) => ({
         // bundles workers as separate URLs so this isn't needed there.
         return html.replace(
           /script-src 'self'/,
-          "script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:",
+          // M_SEC_REVIEW.5 — dropped 'unsafe-inline'. Vite HMR
+          // injects ES module <script type="module"> tags which
+          // are NOT covered by 'unsafe-inline' anyway; allowing it
+          // was broader than needed and would have allowed any
+          // accidentally-introduced inline <script> XSS during dev.
+          "script-src 'self' 'unsafe-eval' blob:",
         );
       },
     },
