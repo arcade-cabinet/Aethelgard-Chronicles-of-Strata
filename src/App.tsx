@@ -8,6 +8,7 @@ import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
 import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
+import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
@@ -91,7 +92,16 @@ const persistence = createPersistence();
  * startGame call) or a pre-built `initialGame` (resumed from a save —
  * caller has already called deserializeGame).
  */
-function GameSession({ config, initialGame }: { config?: NewGameConfig; initialGame?: GameState }) {
+function GameSession({
+  config,
+  initialGame,
+  onOpenSettings,
+}: {
+  config?: NewGameConfig;
+  initialGame?: GameState;
+  /** M_POLISH2.MOBILE.15 — opens the SettingsModal owned by the App root. */
+  onOpenSettings?: () => void;
+}) {
   const game = useMemo(() => {
     const g = initialGame ?? (config ? startGame(config) : startGame('default'));
     // Attach the 5-minute auto-save — runEconomyTick advances the timer.
@@ -159,7 +169,16 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
           <SpeedControl game={game} />
         </>
       )}
-      <ResignButton game={game} />
+      {/* M_POLISH2.MOBILE.15 — Resign + Settings collapse into a
+            single top-left hamburger on portrait phones. ResignButton
+            stays mounted on desktop/landscape as its own pill;
+            Settings is accessible from the title screen on every
+            viewport AND from this menu on portrait. */}
+      {viewport.class === 'phonePortrait' ? (
+        <MobileSystemMenu game={game} onSettings={() => onOpenSettings?.()} />
+      ) : (
+        <ResignButton game={game} />
+      )}
       <EndTurnButton game={game} />
       <DiscoveriesPanel game={game} />
       <KeyboardShortcuts game={game} />
@@ -216,14 +235,14 @@ export function App() {
     // 1–2s frozen title screen.
     return (
       <DelayedSession>
-        <GameSession initialGame={resumedGame} />
+        <GameSession initialGame={resumedGame} onOpenSettings={() => setShowSettings(true)} />
       </DelayedSession>
     );
   }
   if (config !== null) {
     return (
       <DelayedSession>
-        <GameSession config={config} />
+        <GameSession config={config} onOpenSettings={() => setShowSettings(true)} />
       </DelayedSession>
     );
   }
