@@ -959,7 +959,15 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
 
   // death resolution — deathSystem returns the enemies removed this tick;
   // a removed enemy is a player kill.
-  game.economy.player.kills += deathSystem(game.world, delta);
+  const deathResult = deathSystem(game.world, delta);
+  game.economy.player.kills += deathResult.enemyKills;
+  // M_EXPANSION.F.96 — Hero permadeath. If the player's Hero died
+  // this tick, flip outcome to 'loss' immediately. Outcome is
+  // monotonic so a concurrent base-destruction win-loss eval won't
+  // overwrite it.
+  if (deathResult.playerHeroDied && game.outcome === 'playing') {
+    game.outcome = 'loss';
+  }
 
   // building destruction — 0-HP buildings (excluding FactionBase, which is
   // the win/loss anchor) are removed; tile walkability + nav graph rebuild.

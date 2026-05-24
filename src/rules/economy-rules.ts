@@ -10,7 +10,7 @@ export const SUPPLY_COST: Record<UnitType, number> = ECONOMY.supplyCosts;
  * trainable-unit subset of UnitType; widening as new trainable units
  * land (Wizard, etc.) only requires adding the row to economy.json.
  */
-export type TrainableUnit = 'Peon' | 'Footman' | 'Wizard';
+export type TrainableUnit = 'Peon' | 'Footman' | 'Wizard' | 'Hero';
 export const UNIT_COSTS: Record<TrainableUnit, ResourceCost> = ECONOMY.unitCosts as Record<
   TrainableUnit,
   ResourceCost
@@ -31,7 +31,7 @@ export function canTrain(economy: GameEconomy, unit: UnitType): boolean {
  */
 export function canTrainComplete(
   economy: GameEconomy,
-  unit: 'Peon' | 'Footman',
+  unit: TrainableUnit,
   peonCount: number,
   houseCount: number,
   granaryCount: number,

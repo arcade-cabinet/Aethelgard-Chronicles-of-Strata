@@ -195,6 +195,10 @@ const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
   Scout: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },
   // Settler (M_MODES.6) — civilian appearance; reuse the engineer mesh.
   Settler: { tier: 'medium', meshLogicalId: 'characters.heroes.engineer' },
+  // M_EXPANSION.F.96 — Hero uses the Knight mesh (premium melee tell).
+  // Larger selectionRadius (0.95) in UNIT_PROFILES helps the player
+  // pick the Hero out of a melee scrum.
+  Hero: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
   // Goblin: no dedicated KayKit goblin; the hooded Rogue is the closest
   // small humanoid. Tinted/scaled distinctly at render time.
   Goblin: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },

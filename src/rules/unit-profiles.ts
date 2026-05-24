@@ -168,6 +168,21 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     meleeWeapon: 'none',
     parryChance: 0,
   },
+  Hero: {
+    // M_EXPANSION.F.96 — Hero. Premium melee unit, sword wielder
+    // with the highest parry rate of any unit. Permadeath rule
+    // is enforced in deathSystem (a player Hero dying → game.outcome
+    // flips to 'loss'). Only one Hero alive at a time per match —
+    // trainUnit guards on the player not already having one.
+    harvester: false,
+    nonCombat: false,
+    founder: false,
+    damageType: 'normal',
+    combatRole: 'military',
+    selectionRadius: 0.95,
+    meleeWeapon: 'sword',
+    parryChance: 0.2,
+  },
   Goblin: {
     harvester: false,
     nonCombat: false,

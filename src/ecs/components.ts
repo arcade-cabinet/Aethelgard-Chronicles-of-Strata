@@ -8,6 +8,7 @@ export type UnitType =
   | 'Wizard'
   | 'Scout'
   | 'Settler'
+  | 'Hero'
   | 'Goblin'
   | 'Orc'
   | 'Vampire'

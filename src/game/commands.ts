@@ -281,10 +281,22 @@ export function placeRoad(
  */
 export function trainUnit(
   game: GameState,
-  role: 'Peon' | 'Footman',
+  role: 'Peon' | 'Footman' | 'Hero',
   faction: Faction = 'player',
 ): boolean {
   const eco = game.economy[faction];
+  // M_EXPANSION.F.96 — only ONE Hero alive per match per faction.
+  // Permadeath is enforced in deathSystem (a player Hero dying →
+  // game.outcome = 'loss'), so a player can never have a Hero
+  // respawn opportunity. The AI never trains Hero anyway (no
+  // AiPlayer evaluator for the 'Hero' role); this guard is the
+  // belt + braces.
+  if (role === 'Hero') {
+    for (const e of game.world.query(Unit, FactionTrait)) {
+      if (e.get(FactionTrait)?.faction !== faction) continue;
+      if (e.get(Unit)?.unitType === 'Hero') return false;
+    }
+  }
   const peonCount = countPeons(game.world, faction);
   const houseCount = countBuildings(game.world, faction, 'House');
   const granaryCount = countBuildings(game.world, faction, 'Granary');

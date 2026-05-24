@@ -34,6 +34,14 @@
       "attackRange": 0,
       "attackCooldown": 0
     },
+    "Hero": {
+      "speed": 3.5,
+      "faction": "player",
+      "hp": 200,
+      "attackDamage": 30,
+      "attackRange": 1,
+      "attackCooldown": 1.2
+    },
     "Goblin": {
       "speed": 2,
       "faction": "enemy",

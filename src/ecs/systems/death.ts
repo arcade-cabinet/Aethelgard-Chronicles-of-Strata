@@ -13,16 +13,28 @@ import {
 const DEATH_DELAY: number = COMBAT.deathDelay;
 
 /**
+ * M_EXPANSION.F.96 — Hero permadeath signal. Returned as part of
+ * the deathSystem tick result so runEconomyTick can flip
+ * game.outcome to 'loss' immediately when the player's Hero dies.
+ * Permadeath is a hard rule — no respawn, no retreat heal.
+ */
+export interface DeathSystemResult {
+  enemyKills: number;
+  playerHeroDied: boolean;
+}
+
+/**
  * Handle unit death. A unit at 0 Health enters the DYING animation state and
  * gains a `DeathTimer` component; after `DEATH_DELAY` seconds (the death clip
  * length) it is removed from the world. The timer is an ECS component, so a
  * mid-death unit survives a save/load round-trip.
  *
- * Returns the number of enemy-faction units removed this tick — the caller
- * credits kills from this rather than re-scanning the roster.
+ * Returns: `{ enemyKills, playerHeroDied }` — the caller credits enemy kills
+ * and flips game.outcome on hero permadeath (M_EXPANSION.F.96).
  */
-export function deathSystem(world: World, delta: number): number {
+export function deathSystem(world: World, delta: number): DeathSystemResult {
   let enemyKills = 0;
+  let playerHeroDied = false;
   for (const entity of world.query(Unit, Health, AnimationState)) {
     const health = entity.get(Health);
     if (!health || health.current > 0) continue;
@@ -39,6 +51,12 @@ export function deathSystem(world: World, delta: number): number {
     if (elapsed >= DEATH_DELAY) {
       const faction = entity.get(FactionTrait)?.faction;
       if (faction === 'enemy') enemyKills += 1;
+      // M_EXPANSION.F.96 — Hero permadeath. If THIS removed entity
+      // is a player-faction Hero, signal up so the runtime can flip
+      // game.outcome to 'loss'. The signal fires once per death tick;
+      // the only-one-hero-alive guard in trainUnit prevents respawn.
+      const unitType = entity.get(Unit)?.unitType;
+      if (faction === 'player' && unitType === 'Hero') playerHeroDied = true;
       // M_EXPANSION.A.17 — drop a coffin visual at the death tile for
       // 3s after the unit removal. Enemy deaths only (player corpses
       // wouldn't be coffin-themed). DeathDropLayer (world component)
@@ -66,5 +84,5 @@ export function deathSystem(world: World, delta: number): number {
       entity.set(DeathTimer, { elapsed });
     }
   }
-  return enemyKills;
+  return { enemyKills, playerHeroDied };
 }
