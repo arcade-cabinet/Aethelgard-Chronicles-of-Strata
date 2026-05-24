@@ -3,10 +3,13 @@ import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
+import { Building, FactionTrait } from '@/ecs/components';
 import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
+import { selectEntity } from '@/game/selection';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
 import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
+import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
 import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
@@ -126,9 +129,29 @@ function GameSession({
       if (!detail?.type) return;
       setBuildContext({ type: detail.type, onPlaced: () => setBuildContext(null) });
     };
+    // M_POLISH2.B.1 — open-build-menu was dispatched by the keyboard
+    // shortcut + the new mobile build chip but NOTHING was listening.
+    // The listener selects the player's TownHall (which has
+    // showsBuildMenu=true) and lets the existing SelectionPanel render
+    // the build-button list — re-uses the single source of truth
+    // instead of forking a separate build modal.
+    const onOpenBuildMenu = () => {
+      for (const ent of game.world.query(Building, FactionTrait)) {
+        const b = ent.get(Building);
+        const f = ent.get(FactionTrait);
+        if (b?.buildingType === 'TownHall' && f?.faction === 'player') {
+          selectEntity(game, ent);
+          break;
+        }
+      }
+    };
     window.addEventListener('aethelgard:trigger-build', onTriggerBuild);
-    return () => window.removeEventListener('aethelgard:trigger-build', onTriggerBuild);
-  }, []);
+    window.addEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
+    return () => {
+      window.removeEventListener('aethelgard:trigger-build', onTriggerBuild);
+      window.removeEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
+    };
+  }, [game]);
   // r3f camera ref for HUD overlays that project world → screen (SelectionRect).
   const cameraRef = useRef<Camera | null>(null);
   const getCamera = useCallback(() => cameraRef.current, []);
@@ -154,6 +177,10 @@ function GameSession({
       />
       <SelectionRect game={game} getCamera={getCamera} />
       <SoundToggle persistence={persistence} />
+      {/* M_POLISH2.B.1 — visible touch-reachable build button.
+            Dispatches the open-build-menu event the App listener now
+            handles. Mobile-first but useful on desktop too. */}
+      <BuildMenuButton />
       {/* M_POLISH2.MOBILE.14 — portrait/phone viewports get the unified
             Speed+Pause pill; everywhere else keeps the two original
             independent controls. PauseControl still mounts on mobile so
