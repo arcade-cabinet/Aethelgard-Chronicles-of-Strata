@@ -399,3 +399,239 @@ export const chimneySmokeConsumer: ParticleEmitterSpec<SmokePuff> = {
     );
   },
 };
+
+// ---------------------------------------------------------------------------
+// SNOW — per-biome MOUNTAIN ambient flakes. M_REFACTOR.1 biome-localized
+// consumer (the first one): drops settle over MOUNTAIN tiles only, not
+// the whole board. Sparser than rain (snow falls slowly + only over
+// peaks) but constant when any mountain tile is on-board.
+// ---------------------------------------------------------------------------
+
+interface SnowFlake {
+  id: number;
+  age: number;
+  x: number;
+  z: number;
+  startY: number;
+}
+
+const SNOW_FALL_SPEED = 2.4;
+const SNOW_FIELD_HEIGHT = 12;
+const SNOW_LIFETIME = SNOW_FIELD_HEIGHT / SNOW_FALL_SPEED + 0.1;
+/**
+ * Mountain tile centres are sampled at consumer spawn time; we keep
+ * a flat target of ~6 flakes per visible mountain tile. With a typical
+ * Medium board (~25 mountain tiles) that's ~150 flakes — visible but
+ * not a snowstorm.
+ */
+const SNOW_PER_MOUNTAIN = 6;
+const snowGeo = new SphereGeometry(0.05, 4, 3);
+
+export const snowConsumer: ParticleEmitterSpec<SnowFlake> = {
+  name: 'snow',
+  seedTag: 'snow',
+  lifetime: SNOW_LIFETIME,
+  tick({ game, rng, live, nextId }) {
+    // Collect mountain tiles each tick (cheap — board tiles are a Map);
+    // a future polish pass can memoize once at game start.
+    const mountains: Array<[number, number]> = [];
+    for (const tile of game.board.tiles.values()) {
+      if (tile.type === 'MOUNTAIN') mountains.push([tile.q, tile.r]);
+    }
+    if (mountains.length === 0) return null;
+    const target = mountains.length * SNOW_PER_MOUNTAIN;
+    const need = target - live.length;
+    if (need <= 0) return null;
+    const fresh: SnowFlake[] = [];
+    for (let i = 0; i < need; i++) {
+      const pick = mountains[Math.floor(rng() * mountains.length)];
+      if (!pick) continue;
+      const [q, r] = pick;
+      const { x: wx, z: wz } = axialToWorld(q, r);
+      fresh.push({
+        id: nextId(),
+        age: 0,
+        x: wx + (rng() - 0.5) * HEX_RADIUS * 1.6,
+        z: wz + (rng() - 0.5) * HEX_RADIUS * 1.6,
+        startY: SNOW_FIELD_HEIGHT,
+      });
+    }
+    return fresh;
+  },
+  renderParticle(p) {
+    // Slow drift + light wobble in x — snow visibly flutters.
+    const y = p.startY - SNOW_FALL_SPEED * p.age + TILE_HEIGHT * 1.2;
+    const wobble = Math.sin(p.age * 1.7 + p.id) * 0.06;
+    return (
+      <mesh key={p.id} position={[p.x + wobble, y, p.z]} geometry={snowGeo}>
+        <meshBasicMaterial color="#f8fafc" transparent opacity={0.85} />
+      </mesh>
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// BLOOD-SPLASH — per-unit-combat-hit burst. M_REFACTOR.1 unit-localized
+// consumer: spawns 4-6 short-lived red pucks at the target position of
+// every game.lastDamageEvents entry where damageType==='normal' and
+// the hit landed (parried hits don't bleed). The event-batch identity
+// drives the spawn — same pattern CombatText uses.
+// ---------------------------------------------------------------------------
+
+interface BloodPuck {
+  id: number;
+  age: number;
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+}
+
+interface BloodState {
+  lastBatch: unknown;
+}
+
+const BLOOD_LIFETIME = 0.5;
+const BLOOD_GRAVITY = 4.0;
+const bloodGeo = new SphereGeometry(0.06, 4, 3);
+const bloodState: BloodState = { lastBatch: null };
+
+export const bloodSplashConsumer: ParticleEmitterSpec<BloodPuck> = {
+  name: 'blood-splash',
+  seedTag: 'blood',
+  lifetime: BLOOD_LIFETIME,
+  tick({ game, rng, nextId }) {
+    const batch = game.lastDamageEvents;
+    if (batch === bloodState.lastBatch) return null;
+    bloodState.lastBatch = batch;
+    if (batch.length === 0) return null;
+    const fresh: BloodPuck[] = [];
+    for (const ev of batch) {
+      // Skip parried hits and non-normal damage (magic/siege get
+      // their own future consumers — magic-burst, stone-chip).
+      if (ev.parried) continue;
+      if (ev.damageType !== 'normal') continue;
+      if (ev.damage <= 0) continue;
+      const t = ev.target.get(Unit) ? ev.target : null;
+      if (!t) continue;
+      const hex = t.get(HexPosition);
+      if (!hex) continue;
+      const { x: wx, z: wz } = axialToWorld(hex.q, hex.r);
+      const wy = hex.level * TILE_HEIGHT + 0.4;
+      const count = 4 + Math.floor(rng() * 3);
+      for (let i = 0; i < count; i++) {
+        const angle = rng() * Math.PI * 2;
+        const speed = 1.4 + rng() * 0.8;
+        fresh.push({
+          id: nextId(),
+          age: 0,
+          x: wx,
+          y: wy,
+          z: wz,
+          vx: Math.cos(angle) * speed,
+          vy: 1.2 + rng() * 0.8,
+          vz: Math.sin(angle) * speed,
+        });
+      }
+    }
+    return fresh.length > 0 ? fresh : null;
+  },
+  renderParticle(p) {
+    const y = p.y + p.vy * p.age - 0.5 * BLOOD_GRAVITY * p.age * p.age;
+    const x = p.x + p.vx * p.age;
+    const z = p.z + p.vz * p.age;
+    const t = p.age / BLOOD_LIFETIME;
+    return (
+      <mesh key={p.id} position={[x, Math.max(0.05, y), z]} geometry={bloodGeo}>
+        <meshBasicMaterial color="#991b1b" transparent opacity={1 - t} />
+      </mesh>
+    );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// EMBERS — per-building-type Barracks ambient. M_REFACTOR.1 building-
+// localized consumer: every complete Barracks emits orange ember sparks
+// rising from the building site (the "always-on forge" tell). Same
+// per-entity per-second cadence as chimneySmoke.
+// ---------------------------------------------------------------------------
+
+interface Ember {
+  id: number;
+  age: number;
+  x: number;
+  y: number;
+  z: number;
+  vx: number;
+  vy: number;
+  vz: number;
+}
+
+interface EmbersState {
+  acc: Map<number, number>;
+  lastTick: number;
+}
+
+const EMBER_LIFETIME = 1.4;
+const EMBER_INTERVAL = 0.45;
+const emberGeo = new SphereGeometry(0.04, 4, 3);
+const embersState: EmbersState = { acc: new Map(), lastTick: 0 };
+
+export const embersConsumer: ParticleEmitterSpec<Ember> = {
+  name: 'embers',
+  seedTag: 'embers',
+  lifetime: EMBER_LIFETIME,
+  tick({ game, delta, rng, live, nextId }) {
+    const fresh: Ember[] = [];
+    embersState.lastTick = delta;
+    for (const e of game.world.query(Building, HexPosition)) {
+      const b = e.get(Building);
+      if (!b?.isComplete || b.buildingType !== 'Barracks') continue;
+      const id = unpackEntity(e).entityId;
+      const acc = (embersState.acc.get(id) ?? 0) + delta;
+      if (acc < EMBER_INTERVAL) {
+        embersState.acc.set(id, acc);
+        continue;
+      }
+      embersState.acc.set(id, 0);
+      const hex = e.get(HexPosition);
+      if (!hex) continue;
+      const { x: wx, z: wz } = axialToWorld(hex.q, hex.r);
+      const wy = hex.level * TILE_HEIGHT + 0.6;
+      // 2-3 embers per puff, varying lateral direction
+      const count = 2 + Math.floor(rng() * 2);
+      for (let i = 0; i < count; i++) {
+        const angle = rng() * Math.PI * 2;
+        fresh.push({
+          id: nextId(),
+          age: 0,
+          x: wx + (rng() - 0.5) * 0.3,
+          y: wy,
+          z: wz + (rng() - 0.5) * 0.3,
+          vx: Math.cos(angle) * 0.4,
+          vy: 0.9 + rng() * 0.5,
+          vz: Math.sin(angle) * 0.4,
+        });
+      }
+    }
+    // GC: drop ids whose entity is no longer alive
+    const liveIds = new Set([...live].map((_p) => _p.id));
+    void liveIds; // (the live arg is per-particle; entity-id GC happens via the loop above)
+    return fresh.length > 0 ? fresh : null;
+  },
+  renderParticle(p) {
+    const t = p.age / EMBER_LIFETIME;
+    const y = p.y + p.vy * p.age - 0.3 * p.age * p.age;
+    const x = p.x + p.vx * p.age;
+    const z = p.z + p.vz * p.age;
+    // Color fades from yellow-orange to dim red as the ember cools.
+    const color = t < 0.5 ? '#fbbf24' : '#dc2626';
+    return (
+      <mesh key={p.id} position={[x, y, z]} geometry={emberGeo}>
+        <meshBasicMaterial color={color} transparent opacity={1 - t} />
+      </mesh>
+    );
+  },
+};

@@ -13,10 +13,13 @@ import { Mountains } from '@/world/Mountains';
 import { ParticleEmitter } from '@/world/ParticleEmitter';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
 import {
+  bloodSplashConsumer,
   buildCompleteConsumer,
   chimneySmokeConsumer,
+  embersConsumer,
   rainConsumer,
   sawdustConsumer,
+  snowConsumer,
   victoryConfettiConsumer,
 } from '@/world/particle-consumers';
 import { RallyMarker } from '@/world/RallyMarker';
@@ -155,14 +158,22 @@ function Scene({
         <DecorationLive game={game} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
         <Roads game={game} />
-        {/* M_REGISTRY.6 — 4 sibling particle FX → ParticleEmitter +
-            archetype specs. Same per-particle shape; spawn/age/cull
-            shared. */}
+        {/* M_REGISTRY.6 + M_HIERARCHY.1 — particle consumers mounted
+            on the shared ParticleEmitter archetype. Spawn/age/cull
+            loop is shared; each consumer tunes spawn cadence + visual. */}
         <ParticleEmitter game={game} spec={buildCompleteConsumer} />
         <ParticleEmitter game={game} spec={sawdustConsumer} />
         {/* M_EXPANSION.A.12 — chimney smoke for every complete House. */}
         <ParticleEmitter game={game} spec={chimneySmokeConsumer} />
         <ParticleEmitter game={game} spec={victoryConfettiConsumer} />
+        {/* M_REFACTOR.1 — biome-localized SNOW (over MOUNTAIN tiles only). */}
+        <ParticleEmitter game={game} spec={snowConsumer} />
+        {/* M_REFACTOR.1 — unit-localized blood splash on combat hits
+            (damageType='normal', not parried). */}
+        <ParticleEmitter game={game} spec={bloodSplashConsumer} />
+        {/* M_REFACTOR.1 — building-localized embers from every
+            complete Barracks (the always-on forge tell). */}
+        <ParticleEmitter game={game} spec={embersConsumer} />
         {/* M_REGISTRY.4 — ONE faction-symmetric base renderer mounted */}
         {/* twice with different `faction` props. Visual divergence is */}
         {/* 100% data (SKINS[faction] in src/rules/skins.ts), 0% code.  */}

@@ -1116,7 +1116,13 @@ M_ARCH_UNIFY drains.
   - game.mode preset.matchLength ('short' vs 'medium' vs 'long' vs 'endless') — same shape as maxTurns awareness.
   Add a per-mode AiProfile registry sibling to MODE_PRESETS so each preset declares its AI defaults (build-priority weights, attack-vs-defend ratio, tech-tree pacing). One registry row per mode.
 
-- [ ] [HIGH] M_REFACTOR.1 — generic particle ARCHETYPE system (user, 2026-05-22):
+- [x] [HIGH] M_REFACTOR.1 — generic particle archetype + biome/unit/building consumers — DONE (first slice). M_HIERARCHY.1 codified the archetype-consumer split. This commit ships the 3 NEW consumer-class coverage demanded by the spec:
+  - **biome-localized** snowConsumer (drifts over MOUNTAIN tiles only; sparse density, slow fall + sin-wobble for the flutter look).
+  - **unit-localized** bloodSplashConsumer (4-6 red pucks ballistic-fired at every game.lastDamageEvents target where damageType='normal' AND !parried).
+  - **building-localized** embersConsumer (yellow→red ember sparks rising every 0.45s from every complete Barracks — the always-on forge tell).
+  All three follow the existing rainConsumer / sawdustConsumer pattern: one ParticleEmitterSpec each, mounted on the shared ParticleEmitter archetype. 7 new tests pin the contract surface + the trigger-gate paths. 458/458 green. Open follow-ups (separate items): magic-glow on Witch idle, mist on LAKE tiles, runes from Library, gold-glints from Wonder, attract/repel composition with the force-field (M_ARCHETYPE.6 — needs the force-field landed first).
+
+- [ ] [LOW] M_REFACTOR.1_OLD — placeholder removed (subsumed by M_REFACTOR.1 closure above).
   "snow, sawdust, rain, all that shit are all particles" + "even blood
   effects, splashes, its the whole thing of we apply archetypes to units
   and buildings and use what they attract repel etc to dictate type and

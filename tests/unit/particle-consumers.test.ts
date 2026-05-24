@@ -13,9 +13,12 @@ import { describe, expect, it } from 'vitest';
 import { createMapPrng } from '@/core/rng';
 import { startGame } from '@/game/game-state';
 import {
+  bloodSplashConsumer,
   buildCompleteConsumer,
+  embersConsumer,
   rainConsumer,
   sawdustConsumer,
+  snowConsumer,
   victoryConfettiConsumer,
 } from '@/world/particle-consumers';
 
@@ -132,6 +135,90 @@ describe('M_REGISTRY.6 — particle consumer specs', () => {
       expect(victoryConfettiConsumer.lifetime).toBe(3.0);
       expect(victoryConfettiConsumer.seedTag).toBe('confetti');
       expect(victoryConfettiConsumer.name).toBe('victory-confetti');
+    });
+  });
+
+  // -----------------------------------------------------------------
+  // M_REFACTOR.1 — 3 new consumers (biome / unit / building)
+  // -----------------------------------------------------------------
+  describe('snowConsumer (biome-localized: MOUNTAIN)', () => {
+    it('contract surface', () => {
+      expect(snowConsumer.name).toBe('snow');
+      expect(snowConsumer.seedTag).toBe('snow');
+      expect(snowConsumer.lifetime).toBeGreaterThan(0);
+    });
+
+    it('returns null when the board has no MOUNTAIN tiles', () => {
+      const game = startGame('snow-no-mountain');
+      // Force every tile to grass so MOUNTAIN count == 0.
+      for (const tile of game.board.tiles.values()) tile.type = 'GRASS';
+      const fresh = snowConsumer.tick({
+        game,
+        delta: 1 / 60,
+        rng: createMapPrng('test'),
+        live: [],
+        nextId,
+      });
+      expect(fresh).toBeNull();
+    });
+
+    it('spawns flakes when MOUNTAIN tiles exist', () => {
+      const game = startGame('snow-emit');
+      // Guarantee at least one mountain tile.
+      const tile = game.board.tiles.values().next().value;
+      if (tile) tile.type = 'MOUNTAIN';
+      const fresh = snowConsumer.tick({
+        game,
+        delta: 1 / 60,
+        rng: createMapPrng('test'),
+        live: [],
+        nextId,
+      });
+      expect(fresh).not.toBeNull();
+      expect((fresh ?? []).length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('bloodSplashConsumer (unit-localized: combat hits)', () => {
+    it('contract surface', () => {
+      expect(bloodSplashConsumer.name).toBe('blood-splash');
+      expect(bloodSplashConsumer.seedTag).toBe('blood');
+      expect(bloodSplashConsumer.lifetime).toBeGreaterThan(0);
+    });
+
+    it('returns null when no damage events fired', () => {
+      const game = startGame('blood-no-events');
+      // game.lastDamageEvents is empty at game start.
+      const fresh = bloodSplashConsumer.tick({
+        game,
+        delta: 1 / 60,
+        rng: createMapPrng('test'),
+        live: [],
+        nextId,
+      });
+      expect(fresh).toBeNull();
+    });
+  });
+
+  describe('embersConsumer (building-localized: Barracks)', () => {
+    it('contract surface', () => {
+      expect(embersConsumer.name).toBe('embers');
+      expect(embersConsumer.seedTag).toBe('embers');
+      expect(embersConsumer.lifetime).toBeGreaterThan(0);
+    });
+
+    it('returns null when no Barracks are built', () => {
+      const game = startGame('embers-no-barracks');
+      // fresh game has no buildings beyond the starting TownHall;
+      // Barracks query is empty.
+      const fresh = embersConsumer.tick({
+        game,
+        delta: 1 / 60,
+        rng: createMapPrng('test'),
+        live: [],
+        nextId,
+      });
+      expect(fresh).toBeNull();
     });
   });
 });
