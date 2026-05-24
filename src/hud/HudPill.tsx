@@ -41,13 +41,19 @@ const SLOT_POSITIONS: Record<
   'landscape' | 'portrait' | 'tablet',
   Record<HudPillSlot, SlotPosition>
 > = {
+  // M_POLISH3.B.2 — pills crowded with 80px stride; "Pause" overlapped
+  // "Audio" + "Discoveries" was clipped on 1280x720. Bump stride to
+  // 110px (pill widths vary 70-110px; 110 gives an ~8-10px breathing
+  // gap on the widest pills). 6 pills × 110px = 660px right-edge
+  // budget — still fits inside the WinConditionPill's anchor at
+  // approx right:660 (the centred "Destroy enemy base" chip).
   landscape: {
-    weather: { top: 12, right: 620 },
-    speed: { top: 12, right: 540 },
-    pause: { top: 12, right: 460 },
-    sound: { top: 12, right: 380 },
-    discoveries: { top: 12, right: 300 },
-    resign: { top: 12, right: 220 },
+    weather: { top: 12, right: 700 },
+    speed: { top: 12, right: 590 },
+    pause: { top: 12, right: 480 },
+    sound: { top: 12, right: 370 },
+    discoveries: { top: 12, right: 260 },
+    resign: { top: 12, right: 150 },
   },
   // M_POLISH2.B.2 — portrait layout overhaul. The previous layout
   // packed every pill into top:12 + top:56 + top:100 rows on the
