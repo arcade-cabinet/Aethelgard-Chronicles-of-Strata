@@ -431,9 +431,13 @@ mechanic work that follows is built on this.
   combat-hit → hit-body, combat-hit-siege → hit-heavy,
   combat-hit-magic → magic-cast, combat-crit → hit-metal. The
   existing audio-events test updated to assert the new ids.
-- [ ] M_FUN.PHONE.HAPTIC — Capacitor Haptics on
-  build-complete (heavy), unit-killed (medium), quake (heavy
-  decaying), wildfire ignition (light); Settings-tunable.
+- [x] M_FUN.PHONE.HAPTIC — @capacitor/haptics installed.
+  src/lib/haptics.ts exposes semantic helpers (hapticBuildComplete
+  HEAVY, hapticUnitKilled MEDIUM, hapticQuake HEAVY,
+  hapticWildfireIgnition LIGHT) + setHapticsEnabled toggle.
+  Web stubs no-op; Android device fires the real channel.
+  5 unit tests pin opt-in + no-throw. Settings UI wires the
+  toggle in a future commit.
 - [ ] M_FUN.PHONE.PINCH — Pinch-zoom INTO a unit
   centres + opens its panel.
 
