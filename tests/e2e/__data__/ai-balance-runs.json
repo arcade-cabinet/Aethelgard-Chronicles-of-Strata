@@ -15,6 +15,62 @@
       "peakSupplyEnemy": 0,
       "resolvedWithinBudget": false,
       "chunksRan": 60
+    },
+    {
+      "player": "the-builder",
+      "enemy": "the-builder",
+      "seed": "balance-the-builder-vs-the-builder",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 0,
+      "buildingsPlayer": 1,
+      "buildingsEnemy": 0,
+      "peakSupplyPlayer": 2,
+      "peakSupplyEnemy": 0,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60
+    },
+    {
+      "player": "the-builder",
+      "enemy": "the-builder",
+      "seed": "balance-the-builder-vs-the-builder",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 0,
+      "buildingsPlayer": 1,
+      "buildingsEnemy": 0,
+      "peakSupplyPlayer": 2,
+      "peakSupplyEnemy": 0,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60
+    },
+    {
+      "player": "the-builder",
+      "enemy": "the-builder",
+      "seed": "balance-the-builder-vs-the-builder",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 0,
+      "buildingsPlayer": 1,
+      "buildingsEnemy": 0,
+      "peakSupplyPlayer": 2,
+      "peakSupplyEnemy": 0,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60
+    },
+    {
+      "player": "the-builder",
+      "enemy": "the-builder",
+      "seed": "balance-the-builder-vs-the-builder",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 0,
+      "buildingsPlayer": 1,
+      "buildingsEnemy": 0,
+      "peakSupplyPlayer": 6,
+      "peakSupplyEnemy": 5,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60
     }
   ]
 }

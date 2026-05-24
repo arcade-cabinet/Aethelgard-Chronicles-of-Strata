@@ -54,11 +54,21 @@ export interface BuildingTierRow {
   type: BuildingType;
   tier?: number;
 }
+/**
+ * M_FUN.QA.AIVAI.TUNE — baseline supply cap (House-less). Without
+ * this, recomputeMaxSupply would zero out the cap for a faction
+ * with no completed buildings, blocking the AI from ever training
+ * a Peon to build the House that lifts the cap. The baseline
+ * matches ECONOMY.startingResources.maxSupply so both factions
+ * can field the starting kit at t=0.
+ */
+const BASELINE_SUPPLY_CAP = 5;
+
 export function recomputeMaxSupply(
   economy: GameEconomy,
   buildings: ReadonlyArray<BuildingType | BuildingTierRow>,
 ): void {
-  let total = 0;
+  let total = BASELINE_SUPPLY_CAP;
   for (const b of buildings) {
     if (typeof b === 'string') {
       total += buildingSupplyFor(b);

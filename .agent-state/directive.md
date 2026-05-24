@@ -343,14 +343,22 @@ mechanic work that follows is built on this.
   10 sim-minutes unresolved). Next step is M_FUN.QA.AIVAI.TUNE.
 - [ ] [WAIT-DEPS] M_FUN.QA.AIVAI.TUNE — v0.4 RELEASE BLOCKER.
   Tune AI personalities + per-mode AiProfile weights so every
-  matchup in the harness passes (terminal outcome reached
-  in [1, 15] sim-minutes, kills > 0, buildings >= 1 per faction,
-  supply peaks > 1). Specifically: the-builder vs the-builder
-  produces zero combat and zero enemy-side production — Builder
-  weights need a "must train at least minimum military" floor
-  + an attack trigger that overrides build bias when both sides
-  have walled up. Re-run M_FUN.QA.AIVAI.HARNESS until all 10
-  matchups pass.
+  matchup in the harness passes. Progress so far (3 root causes
+  fixed, more remain):
+  1. TrainEvaluator now inherits military weight (was fixed 0.75)
+     + must-train floor when ownMilitary=0; closes Builder-vs-
+     Builder build-forever loop.
+  2. AI-vs-AI mode now spawns 2 peons + 1 Footman on the enemy
+     base (matching player kit); without this enemy AiPlayer
+     had no peons to assign to harvest or build.
+  3. recomputeMaxSupply baselined at BASELINE_SUPPLY_CAP=5 so a
+     House-less faction can field the starting kit; usedSupply
+     recomputed each tick from owned-unit count (direct
+     createCharacter no longer leaks supply accounting).
+  Remaining: enemy AI still doesn't complete any building in
+  10 sim-minutes despite having the resources. Likely a
+  BuildGoal completion gap (build site placed but peon never
+  assigned to construct it for enemy faction). Next session.
 
 ### v0.4.8 fold-ins from reviewer trio (must land before v0.4.9)
 

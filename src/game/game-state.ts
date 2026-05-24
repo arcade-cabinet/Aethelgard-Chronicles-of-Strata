@@ -72,7 +72,13 @@ import { type BurnState, wildfireSystem } from '@/ecs/systems/wildfire';
 import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
-import { behaviorsFor, ensureAttractorResources, presetFor, recomputeMaxSupply } from '@/rules';
+import {
+  behaviorsFor,
+  ensureAttractorResources,
+  presetFor,
+  recomputeMaxSupply,
+  SUPPLY_COST,
+} from '@/rules';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import type { AutoSave } from './auto-save';
 import { tickAutoSave } from './auto-save';
@@ -673,6 +679,44 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     level: footmanSpawn.level,
   });
 
+  // M_FUN.QA.AIVAI.TUNE — in AI-vs-AI mode the enemy faction needs
+  // the SAME starting kit as the player so its AiPlayer has peons
+  // to assign to harvest + a Footman to seed military. Without
+  // these the enemy AiPlayer would deadlock at "need Barracks
+  // before training Footman, but need a Peon to build the
+  // Barracks". Single-player mode keeps the asymmetric start —
+  // there the enemy gets units from the EnemySpawner cadence.
+  const isAiVsAi = typeof config === 'object' && config.aiVsAi;
+  if (isAiVsAi) {
+    const enemyPeonSpawns = adjacentWalkableTiles(
+      board,
+      enemyBaseTile.q,
+      enemyBaseTile.r,
+      2,
+    );
+    if (enemyPeonSpawns.length === 0) enemyPeonSpawns.push(enemyBaseTile);
+    for (let i = 0; i < 2; i++) {
+      const spawn = enemyPeonSpawns[i] ?? enemyPeonSpawns[0]!;
+      createCharacter({
+        world,
+        role: 'Peon',
+        q: spawn.q,
+        r: spawn.r,
+        level: spawn.level,
+        factionOverride: 'enemy',
+      });
+    }
+    const enemyFootmanSpawn = enemyPeonSpawns[0]!;
+    createCharacter({
+      world,
+      role: 'Footman',
+      q: enemyFootmanSpawn.q,
+      r: enemyFootmanSpawn.r,
+      level: enemyFootmanSpawn.level,
+      factionOverride: 'enemy',
+    });
+  }
+
   // Spawn resource nodes using the map PRNG (deterministic, phrase-only).
   const mapRng = createMapPrng(seedPhrase);
   const eventRng = createEventPrng(eventSeed);
@@ -1069,6 +1113,20 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   }
   recomputeMaxSupply(game.economy.player, completeByFaction.player);
   recomputeMaxSupply(game.economy.enemy, completeByFaction.enemy);
+  // M_FUN.QA.AIVAI.TUNE — recompute usedSupply from owned units so
+  // directly-spawned (createCharacter, e.g. starting kit) units count
+  // against the cap. Without this, trainUnit's canTrainComplete
+  // check sees stale usedSupply and over-trains, OR (worse for
+  // AI-vs-AI) under-counts and the cap never tightens.
+  const supplyByFaction: Record<Faction, number> = { player: 0, enemy: 0 };
+  for (const e of game.world.query(Unit, FactionTrait)) {
+    const u = e.get(Unit);
+    const f = e.get(FactionTrait)?.faction;
+    if (!u || !f) continue;
+    supplyByFaction[f] += SUPPLY_COST[u.unitType] ?? 1;
+  }
+  game.economy.player.usedSupply = supplyByFaction.player;
+  game.economy.enemy.usedSupply = supplyByFaction.enemy;
   // M_EXPANSION.U.122 — track peak usedSupply for post-match stats.
   if (game.economy.player.usedSupply > game.economy.player.peakSupply) {
     game.economy.player.peakSupply = game.economy.player.usedSupply;

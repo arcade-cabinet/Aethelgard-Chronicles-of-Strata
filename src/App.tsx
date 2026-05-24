@@ -180,9 +180,9 @@ function GameSession({
       // src/ which Playwright doesn't bundle.
       (
         window as unknown as DevWindow & {
-          __game_traits?: { Building: unknown; FactionTrait: unknown };
+          __game_traits?: { Building: unknown; FactionTrait: unknown; Unit: unknown };
         }
-      ).__game_traits = { Building, FactionTrait };
+      ).__game_traits = { Building, FactionTrait, Unit };
     }
     return g;
   }, [config, initialGame]);

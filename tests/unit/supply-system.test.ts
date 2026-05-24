@@ -21,10 +21,13 @@ describe('supply system', () => {
   });
 
   it('recomputeMaxSupply sums building supply contributions', () => {
+    // M_FUN.QA.AIVAI.TUNE — baseline of 5 (BASELINE_SUPPLY_CAP)
+    // is now added on top of building contributions so a House-less
+    // faction can still field the starting kit. Expected = 5 + sum.
     const eco = createEconomy();
     recomputeMaxSupply(eco, ['TownHall', 'Farm']);
-    expect(eco.maxSupply).toBe(15);
+    expect(eco.maxSupply).toBe(20);
     recomputeMaxSupply(eco, ['TownHall', 'Farm', 'Farm']);
-    expect(eco.maxSupply).toBe(25);
+    expect(eco.maxSupply).toBe(30);
   });
 });

@@ -64,7 +64,11 @@ export class AiPlayer extends GameEntity {
     const p = personalityFor(this.personalityKey);
     this.brain = new AiBrain(this);
     this.brain.addEvaluator(new BuildEvaluator(p.weights.build));
-    this.brain.addEvaluator(new TrainEvaluator());
+    // M_FUN.QA.AIVAI.TUNE — train inherits the military weight (not
+    // build) since training units IS military investment. This
+    // closes the Builder-vs-Builder loop where both sides built
+    // forever without ever fielding a unit.
+    this.brain.addEvaluator(new TrainEvaluator(p.weights.military));
     this.brain.addEvaluator(new MilitaryEvaluator(p.weights.military));
     // M_EXPANSION.S.55 — patrol verb (verb 5 of 5). Idle military
     // units circulate the zone perimeter when there's no enemy in
@@ -130,6 +134,22 @@ function ownedPeonCount(game: GameState, faction: Faction): number {
   for (const e of game.world.query(Unit, FactionTrait)) {
     if (e.get(FactionTrait)?.faction !== faction) continue;
     if (e.get(Unit)?.unitType === 'Peon') n += 1;
+  }
+  return n;
+}
+
+/**
+ * M_FUN.QA.AIVAI.TUNE — count owned military units. Used by the
+ * must-train floor in TrainEvaluator so a Builder vs Builder match
+ * doesn't loop on build-forever with zero combat.
+ */
+function ownedMilitaryCount(game: GameState, faction: Faction): number {
+  let n = 0;
+  const MILITARY = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
+  for (const e of game.world.query(Unit, FactionTrait)) {
+    if (e.get(FactionTrait)?.faction !== faction) continue;
+    const t = e.get(Unit)?.unitType;
+    if (t && MILITARY.has(t)) n += 1;
   }
   return n;
 }
@@ -356,10 +376,27 @@ class MoveMilitaryGoal extends Goal<AiPlayer> {
  *   2. Footman if a Barracks exists and the AI can afford one.
  */
 class TrainEvaluator extends GoalEvaluator<AiPlayer> {
+  /**
+   * M_FUN.QA.AIVAI.TUNE — personality bias on training. Default 1.0
+   * = neutral. Builder underweights, Raider/Mad-King overweight.
+   */
+  constructor(private readonly personalityMul: number = 1.0) {
+    super();
+  }
+
   calculateDesirability(owner: AiPlayer): number {
     const choice = this.pickTrainable(owner);
-    return choice ? 0.75 : 0; // slightly higher than build — training is the
-    // closest-loop way to convert resources into capability
+    if (!choice) return 0;
+    // M_FUN.QA.AIVAI.TUNE — must-train floor: if the faction has
+    // ZERO military units and there's an enemy on the board, training
+    // is the only path to ever scoring a kill. Override the bias
+    // ladder when this is the case so a heavy Builder never gets
+    // stuck in "build-forever" loops vs another Builder.
+    if (owner.game && choice === 'Footman') {
+      const ownMilitary = ownedMilitaryCount(owner.game, owner.faction);
+      if (ownMilitary === 0) return 1.1;
+    }
+    return 0.75 * this.personalityMul;
   }
 
   setGoal(owner: AiPlayer): void {
