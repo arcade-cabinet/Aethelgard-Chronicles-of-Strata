@@ -25,6 +25,7 @@
     "test:browser": "vitest run --project browser",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
+    "test:e2e:multiview": "MULTIVIEW=1 playwright test",
     "test:e2e:visual": "VISUAL=1 playwright test",
     "test:e2e:update": "VISUAL=1 playwright test --update-snapshots",
     "assets:manifest": "tsx scripts/build-manifest.ts",
