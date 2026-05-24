@@ -914,11 +914,18 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
 
   // recompute each faction's supply cap from its own complete buildings —
   // a finished Farm raises that faction's max supply.
-  const completeByFaction: Record<Faction, BuildingType[]> = { player: [], enemy: [] };
+  // M_EXPANSION.F.86 — supply scaling needs the tier alongside the
+  // type. Pass {type, tier} rows so recomputeMaxSupply can multiply.
+  const completeByFaction: Record<Faction, Array<{ type: BuildingType; tier: number }>> = {
+    player: [],
+    enemy: [],
+  };
   for (const e of game.world.query(Building, FactionTrait)) {
     const b = e.get(Building);
     const faction = e.get(FactionTrait)?.faction;
-    if (b?.isComplete && faction) completeByFaction[faction].push(b.buildingType);
+    if (b?.isComplete && faction) {
+      completeByFaction[faction].push({ type: b.buildingType, tier: b.tier ?? 1 });
+    }
   }
   recomputeMaxSupply(game.economy.player, completeByFaction.player);
   recomputeMaxSupply(game.economy.enemy, completeByFaction.enemy);

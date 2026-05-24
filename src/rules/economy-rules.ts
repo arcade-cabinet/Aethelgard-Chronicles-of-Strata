@@ -43,9 +43,31 @@ export function canTrainComplete(
   return true;
 }
 
-/** Recompute a faction's supply cap from its list of complete buildings. */
-export function recomputeMaxSupply(economy: GameEconomy, buildings: BuildingType[]): void {
-  economy.maxSupply = buildings.reduce((sum, b) => sum + buildingSupplyFor(b), 0);
+/**
+ * Recompute a faction's supply cap from its list of complete
+ * buildings. M_EXPANSION.F.86 — buildings may carry a `tier` (1, 2,
+ * or 3); supply scales linearly by tier so a tier-3 House yields
+ * 3× the supply cap of a tier-1 House. Backward-compat: a plain
+ * BuildingType (no tier info) is treated as tier 1.
+ */
+export interface BuildingTierRow {
+  type: BuildingType;
+  tier?: number;
+}
+export function recomputeMaxSupply(
+  economy: GameEconomy,
+  buildings: ReadonlyArray<BuildingType | BuildingTierRow>,
+): void {
+  let total = 0;
+  for (const b of buildings) {
+    if (typeof b === 'string') {
+      total += buildingSupplyFor(b);
+    } else {
+      const tier = Math.max(1, b.tier ?? 1);
+      total += buildingSupplyFor(b.type) * tier;
+    }
+  }
+  economy.maxSupply = total;
 }
 
 /** How many peons each House supports. */

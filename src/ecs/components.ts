@@ -114,11 +114,17 @@ export const Harvester = trait({ harvestRate: 1, harvestTimer: 0 });
 /** A carried resource load. `carryType` is 'none' when empty. */
 export const Carrier = trait({ carryType: 'none' as ResourceType | 'none', amount: 0 });
 
-/** A building — tracks type and construction progress. */
+/** A building — tracks type, construction progress, and upgrade tier. */
 export const Building = trait({
   buildingType: 'Farm' as BuildingType,
   isComplete: false,
   progress: 0,
+  // M_EXPANSION.F.86 — upgrade tier (1 = base, 2 = mid, 3 = max).
+  // Tier 1 is the construction default. upgradeBuilding command
+  // bumps in place + re-spends per-tier delta cost. Higher tiers
+  // scale BuildingProfile.supply and producer.rate (when present)
+  // by tier-multiplier at runtime read.
+  tier: 1,
 });
 
 /** A peon's current job assignment: the state machine + the target entity id. */

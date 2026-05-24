@@ -31,7 +31,7 @@ import {
   SUPPLY_COST,
   UNIT_COSTS,
 } from '@/rules';
-import { spend } from './economy';
+import { spend, type ResourceCost } from './economy';
 import { baseKeyFor, type GameState } from './game-state';
 import { setRallyPoint } from './rally';
 import { applyResearch, type ResearchId } from './research';
@@ -456,6 +456,54 @@ export function resign(game: GameState, faction: Faction = 'player'): void {
 export function setRally(game: GameState, tileKey: string, faction: Faction = 'player'): void {
   if (faction !== 'player') return;
   setRallyPoint(game.rally, tileKey);
+}
+
+/**
+ * M_EXPANSION.F.86 — upgrade a complete Building one tier higher.
+ * Tier ladder: 1 → 2 → 3 (max). Returns true on a successful
+ * upgrade; false if the building isn't complete, is already at
+ * max tier, the player can't afford the delta cost, or the
+ * target entity isn't a Building.
+ *
+ * Per-tier delta cost = base cost × tier (so tier-2 = base × 2,
+ * tier-3 = base × 3 — total spend across tiers is base × 6 for a
+ * fully-upgraded building). Higher tiers scale supply + producer
+ * rate by tier at runtime read time (no SKIN/mesh swap today;
+ * see M_BUILD.TIERS.1 follow-up for multi-tile kit composition).
+ */
+export function upgradeBuilding(
+  game: GameState,
+  buildingEntity: Entity,
+  faction: Faction = 'player',
+): boolean {
+  const b = buildingEntity.get(Building);
+  if (!b) return false;
+  if (!b.isComplete) return false;
+  if (b.tier >= 3) return false;
+  if (buildingEntity.get(FactionTrait)?.faction !== faction) return false;
+  // TownHall is exempt from upgrades (it's the FactionBase + has
+  // no buildingCost — Object.hasOwn guard for the
+  // BUILDING_COSTS lookup keeps tsc + the contract happy).
+  if (b.buildingType === 'TownHall') return false;
+  const costs = BUILDING_COSTS as Record<string, ResourceCost>;
+  const baseCost = costs[b.buildingType];
+  if (!baseCost) return false;
+  const nextTier = b.tier + 1;
+  // Delta cost = base × (nextTier - 1) so tier 1→2 = 1× base, tier
+  // 2→3 = 2× base. Total full-ladder spend = base + 2×base = 3×base.
+  const multiplier = nextTier - 1;
+  const cost: ResourceCost = {};
+  for (const [k, v] of Object.entries(baseCost) as Array<
+    [import('@/ecs/components').ResourceType, number]
+  >) {
+    cost[k] = Math.round(v * multiplier);
+  }
+  const eco = game.economy[faction];
+  if (!spend(eco, cost)) return false;
+  buildingEntity.set(Building, { ...b, tier: nextTier });
+  // Bump generation so FactionBase re-memos visual + supply recompute fires.
+  game.buildSitesGeneration += 1;
+  return true;
 }
 
 /**
