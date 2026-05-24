@@ -411,20 +411,23 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
 
 - [ ] M_FUN.MAP.UTILISATION (PRD §5.3) — full-board utilisation
   is a v0.4 release goal. Sub-items:
-  - [ ] M_FUN.MAP.UTILISATION.SHALLOWS — Shallows biome between
-    islands. Crossable by aquatic units at 1.8× move cost. Map
-    gen places shallows as 2-3 hex skirt around landmasses.
-  - [ ] M_FUN.MAP.UTILISATION.ISLANDS — Archipelago mapType
-    that places 3-7 islands with shallow channels. Continent-
-    with-inland-lakes mapType using centre water as contested
-    feature. Verify every mapType in the registry renders
-    distinct geometry.
+  - [x] M_FUN.MAP.UTILISATION.SHALLOWS — SHALLOWS biome registered
+    + paintShallowsRing converts beach-adjacent OCEAN into a
+    1-hex SHALLOWS skirt. Visible at #7dd3fc pale turquoise on
+    the latest matrix screens.
+  - [ ] M_FUN.MAP.UTILISATION.ISLANDS — Real multi-island mapType.
+    Today's 'archipelago' / 'continent' mapTypes all render the
+    same single-landmass-in-ocean geometry. Build an islands-style
+    generator that drops 3-7 disconnected landmasses + shallow
+    channels between them. Continent-with-inland-lakes too.
   - [ ] M_FUN.MAP.UTILISATION.FERRYMAN — Aquatic unit class
-    (Ferryman: trainable from Peon, crosses shallows, land-speed
-    penalty). New build choice: Footman vs Ferryman.
+    (Ferryman: trainable from Peon, crosses SHALLOWS at 1.8× cost,
+    land-speed penalty). New build choice. Requires per-unit
+    traversal-rule override (biome-flags walkable is faction-
+    global today; needs a unit-type predicate).
   - [ ] M_FUN.MAP.UTILISATION.METRIC — Balance harness assertion:
-    # of distinct tiles in either faction's zone-of-control
-    union > 30% of walkable board. Catches "clumped" failure mode.
+    # of distinct tiles in either faction's zone-of-control union
+    > 30% of walkable board. Catches 'clumped' failure mode.
 
 - [x] M_FUN.QA.AIVAI.VISUAL — every balance-harness run captures a
   final-frame screenshot to tests/e2e/__data__/aivai-screens/

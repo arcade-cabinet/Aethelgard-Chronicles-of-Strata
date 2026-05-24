@@ -281,8 +281,15 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     // out-scoring military forever, even after the base is fully
     // built up — matches stall at "two factions of farms" with
     // zero combat. Each building past the 6th halves the bias.
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-D — sharpened saturation curve.
+    // Was 1/(1+(n-6)*0.5) — too gentle (Hoarder still hit 7 b at
+    // 10 sim-min). Now: 1.0 up to 4, then 1/(1+(n-4)^2 * 0.3) so
+    // the 5th building costs ~0.77×, the 6th ~0.45×, the 7th
+    // ~0.21× — military will out-score build past 5-6 buildings
+    // for any non-extreme personality.
     const builtCount = owner.game ? totalOwnedBuildings(owner.game, owner.faction) : 0;
-    const saturationMul = builtCount <= 6 ? 1.0 : 1.0 / (1 + (builtCount - 6) * 0.5);
+    const saturationMul =
+      builtCount <= 4 ? 1.0 : 1.0 / (1 + (builtCount - 4) ** 2 * 0.3);
     return 0.7 * bias * profile.buildWeight * defensiveMul * this.personalityMul * saturationMul;
   }
 
