@@ -2178,8 +2178,8 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 #### M_POLISH3.JOURNEY — playthrough expansion (each capture = a moment the agent now reviews)
 
 - [x] [HIGH] M_POLISH3.J.1 — DONE 2026-05-24 commit 62ab325. tests/e2e/per-mode-journey.spec.ts captures all 6 modes × 4 time-points (t=0, 10s, 60s, 180s) = 24 PNGs in artifacts/journey/per-mode/<mode>/<label>.png. Uses ?ai-vs-ai=1 URL auto-start.
-- [ ] [HIGH] M_POLISH3.J.2 — Capture each weather state (sunny/fog/rain) over the cove biome. artifacts/journey/weather/.
-- [ ] [HIGH] M_POLISH3.J.3 — Capture each day-night phase (dawn/noon/dusk/midnight) over the same scene. artifacts/journey/day-night/.
+- [x] [HIGH] M_POLISH3.J.2 — DONE 2026-05-24 commit 00f2c46. tests/e2e/weather-journey.spec.ts captures sunny/fog/rain. 3 PNGs in artifacts/journey/weather/.
+- [x] [HIGH] M_POLISH3.J.3 — DONE 2026-05-24 commit 00f2c46. tests/e2e/day-night-journey.spec.ts captures dawn/noon/dusk/midnight. 4 PNGs in artifacts/journey/day-night/. Hemisphere light is constant 0.6 by design (game stays playable at night) — visual swing between phases is subtle but the artefacts pin the phase positions.
 - [ ] [HIGH] M_POLISH3.J.4 — Capture each selection state (no-selection / peon-selected / military-selected / building-selected / multi-select 3+) so SelectionPanel layout is reviewable.
 - [ ] [HIGH] M_POLISH3.J.5 — Capture each modal (NewGame default + per-tab variants when MOBILE.4a lands, Settings default, Hotkey editor expanded, Discoveries panel).
 - [ ] [HIGH] M_POLISH3.J.6 — Capture viewport matrix: every important moment × {desktop 1280×720, mobile 412×915, tablet 768×1024}. artifacts/journey/<scene>/<viewport>.png.
