@@ -28,6 +28,11 @@ export interface NewGameChoices {
    * presses (M_TURNS.1 actually enforces).
    */
   turnsMode: TurnsMode;
+  /**
+   * M_TURNS.2 — Max turns cap (turn-based only). null = uncapped.
+   * Ignored when turnsMode === 'real-time'. Common picks: 30/60/90.
+   */
+  maxTurns: number | null;
 }
 
 // M_BRAND.1 — brand-aligned mode labels. The labels are the
@@ -141,6 +146,12 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   const [turnsMode, setTurnsModeState] = useState<TurnsMode>(
     presetFor('border-clash').turnsMode,
   );
+  // M_TURNS.2 — Max turns cap. null = uncapped. Surfaces in UI only
+  // when turnsMode === 'turn-based'. Cascades from the preset on
+  // mode change; overriding flips the Custom Realm flag.
+  const [maxTurns, setMaxTurnsState] = useState<number | null>(
+    presetFor('border-clash').maxTurns,
+  );
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
 
   // M_BRAND.3 — when the player overrides any cascaded control after
@@ -171,6 +182,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     };
     setDifficulty(aiByMode[mode]);
     setTurnsModeState(preset.turnsMode);
+    setMaxTurnsState(preset.maxTurns);
     setPresetModified(false);
   }, [mode]);
 
@@ -187,6 +199,15 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     setTurnsModeState(next);
     if (next !== presetFor(mode).turnsMode) setPresetModified(true);
   };
+  // M_TURNS.2 — maxTurns is a 4-way pick (30 / 60 / 90 / Unlimited).
+  // Maps to the segmented control's string options; null encodes
+  // Unlimited.
+  const setMaxTurnsOverride = (next: string) => {
+    const val = next === 'unlimited' ? null : Number.parseInt(next, 10);
+    setMaxTurnsState(val);
+    if (val !== presetFor(mode).maxTurns) setPresetModified(true);
+  };
+  const maxTurnsValue: string = maxTurns === null ? 'unlimited' : String(maxTurns);
 
   useEffect(() => {
     void availableMapSizes().then(setSizeKeys);
@@ -393,7 +414,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           Custom Realm flag.
         */}
         <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Turn style</p>
-        <div style={{ margin: '6px 0 24px' }}>
+        <div style={{ margin: '6px 0 18px' }}>
           <Segmented
             value={turnsMode}
             options={['real-time', 'turn-based'] as const}
@@ -401,6 +422,28 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             onChange={setTurnsModeOverride}
           />
         </div>
+
+        {/*
+          M_TURNS.2 — Max turns control. Visible only when
+          turn-based — the cap is meaningless in real-time mode
+          (which has no turn counter). Picks: 30 / 60 / 90 /
+          Unlimited. age-of-strata default is 60.
+        */}
+        {turnsMode === 'turn-based' && (
+          <>
+            <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>
+              Max turns
+            </p>
+            <div style={{ margin: '6px 0 24px' }}>
+              <Segmented
+                value={maxTurnsValue}
+                options={['30', '60', '90', 'unlimited'] as const}
+                labels={{ '30': '30', '60': '60', '90': '90', unlimited: 'Unlimited' }}
+                onChange={setMaxTurnsOverride}
+              />
+            </div>
+          </>
+        )}
 
         {/* M_AUDIT2.UX.6 — sticky bottom Begin CTA. The above form
             sections scroll inside the flex column when the modal hits
@@ -430,6 +473,10 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 eventSeed,
                 mode,
                 turnsMode,
+                // M_TURNS.2 — maxTurns is meaningful only in turn-based
+                // mode; passing it through unconditionally is safe
+                // because the runtime ignores it in real-time.
+                maxTurns,
               })
             }
             style={{

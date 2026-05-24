@@ -207,6 +207,9 @@ export function App() {
       // M_TURNS.3 — the player's Turn-style override (may differ
       // from the preset's default after the cascade overrides).
       turnsMode: choices.turnsMode,
+      // M_TURNS.2 — explicit maxTurns cap. Ignored when turnsMode is
+      // real-time. null = uncapped.
+      maxTurns: choices.maxTurns,
     });
   };
 

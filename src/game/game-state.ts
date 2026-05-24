@@ -106,6 +106,12 @@ export interface NewGameConfig {
    * turn-based for an explore-at-leisure session.
    */
   turnsMode?: 'real-time' | 'turn-based';
+  /**
+   * M_TURNS.2 — explicit max-turn cap. When omitted, falls back to
+   * the preset's maxTurns. null is a legitimate override ("uncapped
+   * 4X session"); the type accepts undefined too (use preset default).
+   */
+  maxTurns?: number | null;
 }
 
 /**
@@ -217,6 +223,19 @@ export interface GameState {
     secondsRemaining: number;
     /** Total length of each turn (seconds). */
     turnLength: number;
+    /**
+     * M_TURNS.2 — turns elapsed since the match began (both factions
+     * counted; one player turn + one enemy turn = 2). win-loss reads
+     * this against the maxTurns cap to decide a time-limit victor.
+     */
+    turnsElapsed: number;
+    /**
+     * M_TURNS.2 — cap on total turns. null = uncapped (long-reign,
+     * coexistence, real-time modes). When turnsElapsed >= maxTurns,
+     * the win-loss system flips outcome to win/loss/draw based on
+     * zone-control + score; tie → draw.
+     */
+    maxTurns: number | null;
   };
   /**
    * Goal-driven AI players, keyed by faction. The enemy faction always has one;
@@ -590,8 +609,21 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     // M_MODES.8 + M_TURNS.3 — turn-based superposition. The effective
     // turn style is the player's override (when set by NewGameModal)
     // OR the preset default. 60s turns; player starts.
+    // M_TURNS.2 — maxTurns also takes the override → preset chain.
     ...((config.turnsMode ?? preset.turnsMode) === 'turn-based'
-      ? { turn: { active: 'player' as Faction, secondsRemaining: 60, turnLength: 60 } }
+      ? {
+          turn: {
+            active: 'player' as Faction,
+            secondsRemaining: 60,
+            turnLength: 60,
+            turnsElapsed: 0,
+            // M_TURNS.2 — `null` is a legitimate override (uncapped),
+            // distinct from `undefined` (use preset default). ?? would
+            // collapse both to preset default; explicit `in` check
+            // preserves the player's null choice.
+            maxTurns: 'maxTurns' in config ? (config.maxTurns ?? null) : preset.maxTurns,
+          },
+        }
       : {}),
     // the enemy faction always runs a yuka AI player; AI-vs-AI mode swaps in
     // the player faction's via the test harness (M8.7).
@@ -661,6 +693,27 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     if (game.turn.secondsRemaining <= 0) {
       game.turn.active = game.turn.active === 'player' ? 'enemy' : 'player';
       game.turn.secondsRemaining = game.turn.turnLength;
+      // M_TURNS.2 — count every full turn handoff (player→enemy or
+      // enemy→player). Doubling-up the count on each handoff gives
+      // a 'turns elapsed' = full cycles of both factions completed.
+      game.turn.turnsElapsed += 1;
+      // M_TURNS.2 — turn-cap victory: when the elapsed turns reach
+      // the cap, flip outcome based on zone-control + score. Tie
+      // goes to draw (game.outcome = 'draw' is rendered the same as
+      // 'loss' UI today; future polish: dedicated draw screen).
+      if (
+        game.turn.maxTurns !== null &&
+        game.turn.maxTurns > 0 &&
+        game.turn.turnsElapsed >= game.turn.maxTurns
+      ) {
+        const playerZones = game.zones.player.controlled.size;
+        const enemyZones = game.zones.enemy.controlled.size;
+        const playerScore = (game.score?.player ?? 0) + playerZones * 10;
+        const enemyScore = (game.score?.enemy ?? 0) + enemyZones * 10;
+        if (playerScore > enemyScore) game.outcome = 'win';
+        else if (enemyScore > playerScore) game.outcome = 'loss';
+        else game.outcome = 'draw';
+      }
     }
   }
 

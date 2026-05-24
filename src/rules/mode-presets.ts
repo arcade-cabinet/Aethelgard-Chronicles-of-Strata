@@ -30,6 +30,15 @@ export interface ModePreset {
   guidedMapGen: boolean;
   /** When true, FactionBases take 0 damage (endless mode). */
   invulnerableBases: boolean;
+  /**
+   * M_TURNS.2 — turn cap for turn-based modes. null = uncapped (the
+   * match runs until base destruction / resign). Real-time modes also
+   * carry this knob for future consistency, but only the turn-based
+   * win-loss path consults it today. When game.turnsElapsed reaches
+   * maxTurns, the win goes to the faction with higher zone-control +
+   * score; tie → draw.
+   */
+  maxTurns: number | null;
 }
 
 /**
@@ -44,6 +53,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     mapType: 'balanced',
     guidedMapGen: true,
     invulnerableBases: false,
+    maxTurns: null,
   },
   'frontier-raid': {
     mapSize: 'small',
@@ -52,6 +62,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     mapType: 'balanced',
     guidedMapGen: false,
     invulnerableBases: false,
+    maxTurns: null,
   },
   'long-reign': {
     mapSize: 'large',
@@ -60,6 +71,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     mapType: 'balanced',
     guidedMapGen: true,
     invulnerableBases: true,
+    maxTurns: null,
   },
   'strata-wars': {
     mapSize: 'large',
@@ -68,6 +80,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     mapType: 'continent',
     guidedMapGen: true,
     invulnerableBases: false,
+    maxTurns: null,
   },
   'age-of-strata': {
     mapSize: 'huge',
@@ -76,6 +89,10 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     mapType: 'continent',
     guidedMapGen: true,
     invulnerableBases: false,
+    // M_TURNS.2 — 60 turns is the 4X-genre canonical match length
+    // (Civ standard) — long enough for tech progression, short
+    // enough that a session fits in one sitting.
+    maxTurns: 60,
   },
   // M_EXPANSION.F.100 — Coexistence: no win condition.
   // invulnerableBases prevents either base from dying; endless
@@ -88,6 +105,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     mapType: 'balanced',
     guidedMapGen: true,
     invulnerableBases: true,
+    maxTurns: null,
   },
 };
 
