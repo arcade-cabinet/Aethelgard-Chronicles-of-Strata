@@ -7,6 +7,62 @@
     "animations": [],
     "pack": "GameLoops Vol.5 Fantasy RPG + PixelLoops Tavern/Menu"
   },
+  "audio.ambient.forest": {
+    "id": "audio.ambient.forest",
+    "path": "assets/audio/ambient/forest.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 — SilverForest LOOP30s"
+  },
+  "audio.ambient.grass": {
+    "id": "audio.ambient.grass",
+    "path": "assets/audio/ambient/grass.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 — GoldenVillage LOOP30s"
+  },
+  "audio.ambient.desert": {
+    "id": "audio.ambient.desert",
+    "path": "assets/audio/ambient/desert.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 — MysticBazaar LOOP30s"
+  },
+  "audio.ambient.highland": {
+    "id": "audio.ambient.highland",
+    "path": "assets/audio/ambient/highland.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 — RiverstoneTown LOOP30s"
+  },
+  "audio.ambient.coast": {
+    "id": "audio.ambient.coast",
+    "path": "assets/audio/ambient/coast.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 — QuietAdventure LOOP30s"
+  },
+  "audio.ambient.swamp": {
+    "id": "audio.ambient.swamp",
+    "path": "assets/audio/ambient/swamp.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 — WarmInn LOOP30s"
+  },
+  "audio.ambient.volcano": {
+    "id": "audio.ambient.volcano",
+    "path": "assets/audio/ambient/volcano.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "GameLoops Vol.5 — LuteAndLantern LOOP30s"
+  },
   "audio.music.biome.crafting-hall": {
     "id": "audio.music.biome.crafting-hall",
     "path": "assets/audio/music/biome/crafting-hall.wav",

@@ -415,10 +415,16 @@ mechanic work that follows is built on this.
 
 ### v0.4.9 — Polish (PRD §7.9)
 
-- [ ] M_FUN.AUDIO.BIOME — Ingest curated ambient
-  tracks from references/GameLoops_Vol5_FantasyRPG (SilverForest→
-  FOREST, GoldenVillage→GRASS, MysticBazaar→DESERT, etc) via
-  pnpm assets:ingest; cross-fade per camera-centre biome.
+- [x] M_FUN.AUDIO.BIOME — 7 ambient loops copied from
+  references/GameLoops_Vol5_FantasyRPG/LOOPS_30s/ to
+  public/assets/audio/ambient/ (forest/grass/desert/highland/
+  coast/swamp/volcano.wav). Registered in src/config/
+  asset-metadata.json with `pack` attribution lines.
+  src/audio/biome-ambient.ts maps every BiomeType to an asset
+  id (OCEAN/LAKE/SHALLOWS/BEACH → coast; MOUNTAIN* → highland;
+  LAVA → volcano). 2 unit tests pin every biome maps to a
+  registered asset. Cross-fade hook (`useAudio` integration)
+  ships separately.
 - [ ] M_FUN.AUDIO.COMBAT — Ingest references/
   Impact_Hit + fantasy_magic_spell + footsteps packs; wire to
   sound-map; per-UnitType+event SFX.

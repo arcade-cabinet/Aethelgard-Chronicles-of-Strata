@@ -2,6 +2,13 @@
 
 
 export type StaticAssetPath =
+  'assets/audio/ambient/coast.wav' |
+  'assets/audio/ambient/desert.wav' |
+  'assets/audio/ambient/forest.wav' |
+  'assets/audio/ambient/grass.wav' |
+  'assets/audio/ambient/highland.wav' |
+  'assets/audio/ambient/swamp.wav' |
+  'assets/audio/ambient/volcano.wav' |
   'assets/audio/music/ambient.wav' |
   'assets/audio/music/biome/crafting-hall.wav' |
   'assets/audio/music/biome/map-of-realms.wav' |
@@ -187,6 +194,7 @@ export type StaticAssetDirectory =
   '.' |
   'assets/' |
   'assets/audio/' |
+  'assets/audio/ambient/' |
   'assets/audio/music/' |
   'assets/audio/music/biome/' |
   'assets/audio/sfx/' |
@@ -256,6 +264,13 @@ export type FilesInFolder<Dir extends '.' | StaticAssetDirectory> =
 
 
 const assets = new Set<string>([
+  'assets/audio/ambient/coast.wav',
+  'assets/audio/ambient/desert.wav',
+  'assets/audio/ambient/forest.wav',
+  'assets/audio/ambient/grass.wav',
+  'assets/audio/ambient/highland.wav',
+  'assets/audio/ambient/swamp.wav',
+  'assets/audio/ambient/volcano.wav',
   'assets/audio/music/ambient.wav',
   'assets/audio/music/biome/crafting-hall.wav',
   'assets/audio/music/biome/map-of-realms.wav',

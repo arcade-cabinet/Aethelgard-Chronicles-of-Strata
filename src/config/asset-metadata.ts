@@ -22,6 +22,7 @@ const AssetEntrySchema = z.object({
   bytes: z.number().int().nonnegative().optional(),
   license: z.string().optional(),
   attribution: z.string().optional(),
+  pack: z.string().optional(),
 });
 
 const _validated = z.record(z.string(), AssetEntrySchema).parse(metadataJson);
