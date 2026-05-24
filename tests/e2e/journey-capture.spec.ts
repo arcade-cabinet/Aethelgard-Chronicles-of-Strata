@@ -124,10 +124,15 @@ test.describe('journey capture (manual review)', () => {
     await enterGame(page, 'ancient-silver-forest');
     await dismissOnboardingAndWaitForScene(page);
     await page.evaluate(() => {
-      const w = window as unknown as { __game?: { outcome: string } };
-      if (w.__game) w.__game.outcome = 'win';
+      const w = window as unknown as { __triggerGameOver?: (o: 'win' | 'loss' | 'draw') => void };
+      w.__triggerGameOver?.('win');
     });
-    await page.waitForTimeout(800);
+    // GameOverModal polls outcome via rAF; in headless rAF is
+    // throttled but eventually fires. Don't fail if the modal
+    // never appears — the screenshot captures whatever state
+    // resulted (see M_POLISH3.SCENE.4 follow-up).
+    await page.waitForSelector('#game-over-modal', { timeout: 8_000 }).catch(() => undefined);
+    await page.waitForTimeout(400);
     await snap(page, '06-game-over-win');
   });
 
@@ -135,10 +140,11 @@ test.describe('journey capture (manual review)', () => {
     await enterGame(page, 'ancient-silver-forest');
     await dismissOnboardingAndWaitForScene(page);
     await page.evaluate(() => {
-      const w = window as unknown as { __game?: { outcome: string } };
-      if (w.__game) w.__game.outcome = 'loss';
+      const w = window as unknown as { __triggerGameOver?: (o: 'win' | 'loss' | 'draw') => void };
+      w.__triggerGameOver?.('loss');
     });
-    await page.waitForTimeout(800);
+    await page.waitForSelector('#game-over-modal', { timeout: 8_000 }).catch(() => undefined);
+    await page.waitForTimeout(400);
     await snap(page, '07-game-over-loss');
   });
 });

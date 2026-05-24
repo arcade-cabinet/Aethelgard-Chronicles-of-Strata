@@ -138,6 +138,22 @@ function GameSession({
       // M_POLISH3.J.4 — query helper for selection-state e2e tests.
       // Returns up to 4 player-faction entity ids by category;
       // ids match what `selectEntity` accepts.
+      // M_POLISH3.SCENE.4 — force a game-over outcome. The
+      // GameOverModal polls game.outcome via rAF + setState, so
+      // direct mutation reaches it eventually — but in headless
+      // Playwright the rAF cadence is throttled. This helper
+      // mutates outcome AND advances a few sim frames so the
+      // poller's next read picks it up before the next
+      // screenshot.
+      type GameOutcomeT = 'win' | 'loss' | 'draw';
+      (
+        window as unknown as DevWindow & {
+          __triggerGameOver?: (o: GameOutcomeT) => void;
+        }
+      ).__triggerGameOver = (outcome) => {
+        g.outcome = outcome;
+        for (let i = 0; i < 8; i++) runEconomyTick(g, 1 / 60);
+      };
       (window as unknown as DevWindow).__game_findPlayerEntities = (kind) => {
         const MILITARY_TYPES = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
         const out: number[] = [];
