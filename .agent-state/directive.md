@@ -117,11 +117,12 @@ mechanic work that follows is built on this.
 
 **Schema + validation**
 
-- [ ] M_FUN.FOUNDATION.ZOD-CONFIG — Zod schemas for
-  every runtime-loaded config: world.json, economy.json,
-  combat.json, discoveries.json, asset-metadata.json, credits.json
-  (mapgen.json already done). Replace hand-rolled type guards in
-  the corresponding .ts accessors.
+- [x] M_FUN.FOUNDATION.ZOD-CONFIG — Zod parse at module load for
+  world.json, economy.json, combat.json, discoveries.json (existing
+  .ts accessors). Promoted credits.json + asset-metadata.json to
+  dedicated .ts accessors (CREDITS, ASSET_METADATA) with the same
+  Zod-parse pattern. CreditsModal + src/assets/assets.ts updated
+  to import the typed accessors. mapgen.json was already Zod'd.
 - [ ] M_FUN.FOUNDATION.ZOD-PERSIST — Migrate
   serialize-game.ts validateSnapshot to a Zod SaveSnapshotSchema.
   Replaces the hand-rolled clamp logic with declarative validation.

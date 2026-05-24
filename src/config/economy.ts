@@ -1,61 +1,95 @@
+import { z } from 'zod';
 import type { BuildingType, ResourceType, UnitType } from '@/ecs/components';
 import type { ResourceCost } from '@/game/economy';
 import economyJson from './economy.json';
 
+/**
+ * M_FUN.FOUNDATION.ZOD-CONFIG — Zod-validated typed accessor for
+ * `economy.json`. Replaces the bare `as EconomyConfig` cast with
+ * runtime parse + fail-fast on schema drift. CI catches a typo'd
+ * JSON edit at module load time.
+ */
+
+// ResourceCost is a Partial<Record<ResourceType, number>> in game
+// code — every key optional. Building rows specify only what they
+// cost ({wood:60} House; {stone:60} Wall etc).
+const ResourceCostSchema = z.object({
+  wood: z.number().int().nonnegative().optional(),
+  stone: z.number().int().nonnegative().optional(),
+  gold: z.number().int().nonnegative().optional(),
+  science: z.number().int().nonnegative().optional(),
+  mana: z.number().int().nonnegative().optional(),
+});
+
+const ResourceSpawnRuleSchema = z.object({
+  resourceType: z.string(),
+  biomes: z.array(z.string()),
+  chance: z.number().min(0).max(1),
+  amount: z.number().positive(),
+});
+
+const StartingResourcesSchema = z.object({
+  wood: z.number().nonnegative(),
+  stone: z.number().nonnegative(),
+  gold: z.number().nonnegative(),
+  science: z.number().nonnegative(),
+  /** M_EXPANSION.F.72 — optional mana; defaults to 0 elsewhere. */
+  mana: z.number().nonnegative().optional(),
+  maxSupply: z.number().int().nonnegative(),
+});
+
+const EconomyConfigSchema = z.object({
+  buildingCosts: z.record(z.string(), ResourceCostSchema),
+  buildingSupply: z.record(z.string(), z.number().nonnegative()),
+  buildableBiomes: z.array(z.string()).min(1),
+  supplyCosts: z.record(z.string(), z.number().int().nonnegative()),
+  unitCosts: z.record(z.string(), ResourceCostSchema),
+  startingResources: StartingResourcesSchema,
+  resourceSpawn: z.array(ResourceSpawnRuleSchema),
+  // M_FUN.FOUNDATION.ZOD-CONFIG — science/mana yields = 0 (those
+  // resources are produced by buildings, not peon harvest), so the
+  // schema is nonnegative not positive.
+  harvestYield: z.record(z.string(), z.number().nonnegative()),
+  roadCosts: z.record(z.string(), ResourceCostSchema),
+});
+
 /** A resource node's spawn rule. */
-export interface ResourceSpawnRule {
-  /** Which resource this node yields. */
+export type ResourceSpawnRule = z.infer<typeof ResourceSpawnRuleSchema> & {
   resourceType: ResourceType;
-  /** Biome type names the node may spawn on. */
-  biomes: string[];
-  /** Per-eligible-tile spawn probability. */
-  chance: number;
-  /** Starting resource amount in the node. */
-  amount: number;
-}
+};
 
 /**
- * Typed accessor for `economy.json` — building costs, supply, starting
- * resources, research costs, resource spawning, and harvest yields. The JSON is
- * asserted to this shape exactly once, here; consumers import the typed
- * `ECONOMY` object instead of re-declaring partial interfaces per module.
+ * Typed accessor for `economy.json`. Same surface as before; now
+ * Zod-validated at module load. The cross-reference between
+ * `Record<keyof, ResourceCost>` and the JSON's open string keys is
+ * done by typed accessor functions below — Zod can't fully express
+ * 'every UnitType key MUST be present' without a partial allowlist
+ * cycle, so the accessor functions still cast at the boundary.
  */
 export interface EconomyConfig {
-  /** Resource cost to construct each player building. */
   buildingCosts: Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
-  /** Supply capacity each building contributes. */
   buildingSupply: Record<BuildingType, number>;
-  /** Biome type names a building may be placed on. */
   buildableBiomes: string[];
-  /** Supply each unit role consumes. */
   supplyCosts: Record<UnitType, number>;
-  /** Resource cost to TRAIN each trainable unit (Peon at Town Hall, Footman at Barracks). */
   unitCosts: Record<'Peon' | 'Footman', ResourceCost>;
-  /** The economy a fresh game starts with. */
   startingResources: {
-    /** Starting wood. */
     wood: number;
-    /** Starting stone. */
     stone: number;
-    /** Starting gold. */
     gold: number;
-    /** Starting science. */
     science: number;
-    /** M_EXPANSION.F.72 — starting mana. Optional in config; defaults to 0. */
     mana?: number;
-    /** Starting supply cap. */
     maxSupply: number;
   };
-  /** Resource-node spawn rules. */
   resourceSpawn: ResourceSpawnRule[];
-  /** Resource yielded per completed harvest cycle. */
   harvestYield: Record<ResourceType, number>;
-  /** Resource cost per road tile, keyed by Mover material (M_FEATURE.1). */
   roadCosts: Record<'stone' | 'wood' | 'dirt', ResourceCost>;
 }
 
+// Parse at module load — throws a structured Zod error on schema drift.
+const _validated = EconomyConfigSchema.parse(economyJson);
+
 /** The validated economy tuning. Import this — never `economy.json` directly. */
-export const ECONOMY: EconomyConfig = economyJson as EconomyConfig;
+export const ECONOMY: EconomyConfig = _validated as unknown as EconomyConfig;
 
 // Typed accessors — the single place the total-key Records are read under
 // `noUncheckedIndexedAccess`. The keys are guaranteed present in economy.json

@@ -1,6 +1,52 @@
+import { z } from 'zod';
 import type { Faction, UnitType } from '@/ecs/components';
 import type { Difficulty } from '@/game/difficulty';
 import combatJson from './combat.json';
+
+/**
+ * M_FUN.FOUNDATION.ZOD-CONFIG — Zod-validated typed accessor for
+ * `combat.json`. Replaces the bare `as CombatConfig` cast with a
+ * runtime parse so JSON drift fails at module load.
+ */
+
+const FactionSchema = z.enum(['player', 'enemy']);
+const DifficultySchema = z.enum(['easy', 'normal', 'hard']);
+
+const UnitStatSchema = z.object({
+  speed: z.number().positive(),
+  faction: FactionSchema,
+  hp: z.number().positive().optional(),
+  attackDamage: z.number().nonnegative().optional(),
+  attackRange: z.number().int().nonnegative().optional(),
+  // Non-combat roles (Scout) carry attackCooldown=0 as a sentinel
+  // for "doesn't attack". Allow 0 here; the combat tick already
+  // skips entities with attackDamage=0.
+  attackCooldown: z.number().nonnegative().optional(),
+});
+
+const CombatConfigSchema = z.object({
+  unitStats: z.record(z.string(), UnitStatSchema),
+  difficultyMultiplier: z.record(DifficultySchema, z.number().positive()),
+  damage: z.object({
+    critChance: z.number().min(0).max(1),
+    varianceMax: z.number().nonnegative(),
+  }),
+  deathDelay: z.number().positive(),
+  spawn: z.object({
+    orcThreshold: z.number().nonnegative(),
+    vampireThreshold: z.number().nonnegative(),
+    witchThreshold: z.number().nonnegative(),
+    blackKnightThreshold: z.number().nonnegative(),
+    spawnIntervalByDifficulty: z.record(DifficultySchema, z.number().positive()),
+  }),
+  ai: z.object({
+    aggroRadius: z.number().positive(),
+    visionRadiusByDifficulty: z.record(DifficultySchema, z.number().positive()),
+  }),
+  encroachment: z.object({
+    graceSecondsByDifficulty: z.record(DifficultySchema, z.number().nonnegative()),
+  }),
+});
 
 /** Base stats for one unit role. */
 export interface UnitStat {
@@ -70,7 +116,8 @@ export interface CombatConfig {
 }
 
 /** The validated combat tuning. Import this — never `combat.json` directly. */
-export const COMBAT: CombatConfig = combatJson as CombatConfig;
+const _validated = CombatConfigSchema.parse(combatJson);
+export const COMBAT: CombatConfig = _validated as unknown as CombatConfig;
 
 // The accessors below are the single, documented place where the config's
 // total-key Records are read. `noUncheckedIndexedAccess` widens every Record

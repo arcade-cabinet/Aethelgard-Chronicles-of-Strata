@@ -1,4 +1,4 @@
-import metadataJson from '../config/asset-metadata.json';
+import { ASSET_METADATA } from '../config/asset-metadata';
 import type { StaticAssetPath } from '../static-assets';
 import { staticAssets } from '../static-assets';
 import type { AssetAccessor } from './manifest';
@@ -15,8 +15,8 @@ import type { AssetEntry } from './manifest-types';
  * Asset lookup is synchronous — no manifest fetch, no loading state.
  */
 
-// Cast the JSON import to a typed record. The shape matches AssetEntry[].
-const metadata = metadataJson as Record<string, AssetEntry>;
+// Zod-validated via @/config/asset-metadata (M_FUN.FOUNDATION.ZOD-CONFIG).
+const metadata: Record<string, AssetEntry> = ASSET_METADATA;
 
 function getEntry(id: string): AssetEntry {
   const e = metadata[id];

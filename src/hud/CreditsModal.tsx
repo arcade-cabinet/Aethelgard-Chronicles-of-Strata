@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import creditsJson from '@/config/credits.json';
+import { CREDITS } from '@/config/credits';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -21,15 +21,11 @@ export interface CreditsModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-// M_EXPANSION.D.176 — credits data lives in src/config/credits.json
-// so a localisation pass or asset-pack rotation can ship without
-// re-reviewing this component. Shape matches the local interface.
-interface CreditSection {
-  heading: string;
-  entries: Array<{ name: string; license: string; author?: string; url?: string }>;
-}
-
-const SECTIONS: ReadonlyArray<CreditSection> = creditsJson as ReadonlyArray<CreditSection>;
+// M_EXPANSION.D.176 / M_FUN.FOUNDATION.ZOD-CONFIG — credits data
+// lives in src/config/credits.json + the typed CREDITS accessor
+// (Zod-validated at module load). A localisation pass or asset-
+// pack rotation that drops a license field fails fast.
+const SECTIONS = CREDITS;
 
 export function CreditsModal({ open, onOpenChange }: CreditsModalProps) {
   return (

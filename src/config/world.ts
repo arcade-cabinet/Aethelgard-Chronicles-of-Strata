@@ -1,4 +1,80 @@
+import { z } from 'zod';
 import worldJson from './world.json';
+
+/**
+ * M_FUN.FOUNDATION.ZOD-CONFIG — Zod-validated typed accessor for
+ * `world.json`. Replaces the bare `: WorldConfig = worldJson` cast
+ * with a runtime parse so schema drift fails at module load.
+ */
+
+const AxialDirSchema = z.object({ q: z.number().int(), r: z.number().int() });
+
+const CameraProfileSchema = z.object({
+  distance: z.number().positive(),
+  fov: z.number().positive(),
+  pitch: z.number(),
+});
+
+const WorldConfigSchema = z.object({
+  hex: z.object({
+    hexRadius: z.number().positive(),
+    tileHeight: z.number().positive(),
+    waterLevelFactor: z.number(),
+    waterDiscHeight: z.number().nonnegative(),
+    directions: z.array(AxialDirSchema).length(6),
+  }),
+  board: z.object({ mapRadius: z.number().int().positive() }),
+  mapSizes: z.object({
+    small: z.number().int().positive(),
+    medium: z.number().int().positive(),
+    large: z.number().int().positive(),
+    huge: z.number().int().positive(),
+  }),
+  dayLength: z.number().positive(),
+  weather: z.object({
+    minInterval: z.number().nonnegative(),
+    maxInterval: z.number().nonnegative(),
+  }),
+  sim: z.object({
+    fixedDt: z.number().positive(),
+    maxStepsPerFrame: z.number().int().positive(),
+  }),
+  vision: z.object({
+    baseUnitRadius: z.number().nonnegative(),
+    unitConeHalfAngle: z.number().positive(),
+  }),
+  crossings: z.object({
+    halfWidth: z.number().positive(),
+    lift: z.number(),
+    stairSteps: z.number().int().nonnegative(),
+  }),
+  floatingText: z.object({
+    popupLifetime: z.number().positive(),
+    popupDrift: z.number(),
+  }),
+  biome: z.object({
+    heightThresholds: z.array(z.number()),
+    moistureCutoffDesert: z.number(),
+    moistureCutoffLake: z.number(),
+    noiseScale: z.number().positive(),
+    islandAttenuationFactor: z.number(),
+    lakeModulo: z.number().positive(),
+    lakeModuloThreshold: z.number(),
+  }),
+  noise: z.object({
+    octaves: z.number().int().positive(),
+    persistence: z.number().positive(),
+    lacunarity: z.number().positive(),
+  }),
+  camera: z.object({
+    minZoom: z.number().positive(),
+    maxZoom: z.number().positive(),
+    desktop: CameraProfileSchema,
+    ultraWide: CameraProfileSchema,
+    phoneLandscape: CameraProfileSchema,
+    phonePortrait: CameraProfileSchema,
+  }),
+});
 
 /** One axial neighbour direction. */
 export interface AxialDir {
@@ -133,7 +209,8 @@ export interface WorldConfig {
 }
 
 /** The validated world config. Import this — never `world.json` directly. */
-export const WORLD: WorldConfig = worldJson;
+const _validated = WorldConfigSchema.parse(worldJson);
+export const WORLD: WorldConfig = _validated as unknown as WorldConfig;
 
 // --- Derived scene-scale values (formerly src/core/constants.ts) ---
 
