@@ -303,6 +303,29 @@ export function App() {
     void persistence.list().then((saves) => setHasSave(saves.length > 0));
   }, []);
 
+  // M_POLISH3.AIVAI.1 — URL-driven AI-vs-AI auto-start. The e2e
+  // playthrough harness loads /?ai-vs-ai=1&seed=X&mode=Y and expects
+  // the title screen to skip straight into a running AI-vs-AI match.
+  useMemo(() => {
+    if (typeof window === 'undefined') return;
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.get('ai-vs-ai') !== '1') return;
+    const seed = sp.get('seed') ?? 'aivai-default';
+    const mode = (sp.get('mode') ?? 'border-clash') as NonNullable<NewGameConfig['mode']>;
+    setConfig({
+      seedPhrase: seed,
+      mapSize: MAP_SIZES.medium.radius,
+      difficulty: 'normal',
+      eventSeed: seed,
+      mode,
+      turnsMode: 'real-time',
+      maxTurns: null,
+      playerColor: null,
+      startingBonus: 'none',
+      aiVsAi: true,
+    });
+  }, []);
+
   if (resumedGame !== null) {
     // M_AUDIT2.UX.32 — paint the LoadingScreen for two frames before
     // the GameSession mounts; startGame()'s synchronous terrain gen
@@ -341,6 +364,8 @@ export function App() {
       playerColor: choices.playerColor,
       // M_EXPANSION.F.84 — starting bonus pick. 'none' = baseline.
       startingBonus: choices.startingBonus,
+      // M_POLISH3.AIVAI.1 — both factions auto-play when set.
+      aiVsAi: choices.aiVsAi,
     });
   };
 

@@ -151,6 +151,13 @@ export interface NewGameConfig {
    * 4X session"); the type accepts undefined too (use preset default).
    */
   maxTurns?: number | null;
+  /**
+   * M_POLISH3.AIVAI.1 — when true, the player faction is also
+   * driven by a yuka AiPlayer (no human input). Used by the e2e
+   * AI-vs-AI playthrough harness and by spectator/demo mode. Defaults
+   * to false (normal human-controlled player).
+   */
+  aiVsAi?: boolean;
 }
 
 /**
@@ -728,9 +735,13 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
           },
         }
       : {}),
-    // the enemy faction always runs a yuka AI player; AI-vs-AI mode swaps in
-    // the player faction's via the test harness (M8.7).
-    aiPlayers: { enemy: new AiPlayer('enemy') },
+    // the enemy faction always runs a yuka AI player; in AI-vs-AI mode
+    // (M_POLISH3.AIVAI.1) the player faction also gets one — both
+    // factions auto-play, no human input required.
+    aiPlayers:
+      typeof config === 'object' && config.aiVsAi
+        ? { enemy: new AiPlayer('enemy'), player: new AiPlayer('player') }
+        : { enemy: new AiPlayer('enemy') },
     assignAllPeonsToHarvest() {
       // find the first wood node (fallback to any node)
       const woodNodes = resourceNodes.filter((n) => n.resourceType === 'wood');

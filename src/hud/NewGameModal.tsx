@@ -45,6 +45,12 @@ export interface NewGameChoices {
    * other picks each give a one-shot start-of-match advantage.
    */
   startingBonus: 'none' | 'extra-wood' | 'extra-peons' | 'extra-hp';
+  /**
+   * M_POLISH3.AIVAI.1 — when true, the player faction is also driven
+   * by a yuka AI. Both factions auto-play; no human input is needed.
+   * Used by the e2e playthrough harness and by spectator/demo mode.
+   */
+  aiVsAi: boolean;
 }
 
 // M_SIMPLIFY.7 — STARTING_BONUSES / PLAYER_COLORS / MODES /
@@ -155,6 +161,8 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   // cascade — a bonus is the player's pre-match handicap dial,
   // orthogonal to the game-mode choice.
   const [startingBonus, setStartingBonus] = useState<NewGameChoices['startingBonus']>('none');
+  // M_POLISH3.AIVAI.1 — AI-vs-AI mode toggle. Both factions auto-play.
+  const [aiVsAi, setAiVsAi] = useState(false);
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
 
   // M_BRAND.3 — when the player overrides any cascaded control after
@@ -518,6 +526,21 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           </>
         )}
 
+        {/*
+          M_POLISH3.AIVAI.1 — AI-vs-AI toggle. Both factions run a
+          yuka AiPlayer; no human input required. Used by e2e
+          playthrough capture + by anyone who wants to spectate.
+        */}
+        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Player input</p>
+        <div style={{ margin: '6px 0 18px' }}>
+          <Segmented
+            value={aiVsAi ? 'ai-vs-ai' : 'human'}
+            options={['human', 'ai-vs-ai'] as const}
+            labels={{ human: 'Human vs AI', 'ai-vs-ai': 'AI vs AI (spectate)' }}
+            onChange={(v) => setAiVsAi(v === 'ai-vs-ai')}
+          />
+        </div>
+
         {/* M_AUDIT2.UX.6 — sticky bottom Begin CTA. The above form
             sections scroll inside the flex column when the modal hits
             its maxHeight; the button stays pinned so a thumb on
@@ -554,6 +577,8 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 playerColor: PLAYER_COLORS.find((c) => c.key === playerColorKey)?.hex ?? null,
                 // M_EXPANSION.F.84 — starting bonus pick.
                 startingBonus,
+                // M_POLISH3.AIVAI.1 — both factions auto-play when set.
+                aiVsAi,
               })
             }
             style={{

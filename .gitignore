@@ -184,3 +184,5 @@ tests/browser/**/__screenshots__
 
 # E2E journey capture outputs (regenerate via pnpm test:e2e tests/e2e/journey-capture.spec.ts)
 artifacts/journey/
+artifacts/ai-vs-ai/
+artifacts/*.log
