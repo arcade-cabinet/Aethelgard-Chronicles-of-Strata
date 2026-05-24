@@ -2329,31 +2329,31 @@ plus follow-on items from the spec.
   paints on OCEAN/BEACH/LAKE; per-mode intensity (balanced 0.55
   centre-biased for funnel intent, continent 0.7, archipelago
   0.25, dry-land 0.75). 665 unit tests green.
-- [ ] [WAIT-SPEC-REVIEW] M_FUN.MAP.PASS — MOUNTAIN_PASS biome
+- [ ] [WAIT-REVIEW] M_FUN.MAP.PASS — MOUNTAIN_PASS biome
   (level 3 walkable ~0.6× speed) inside massifs as fortifiable
   choke. Pending user review of spec 120.
-- [ ] [WAIT-SPEC-REVIEW] M_FUN.MAP.SWAMP — SWAMP biome with
+- [ ] [WAIT-REVIEW] M_FUN.MAP.SWAMP — SWAMP biome with
   disease DoT; Healer unit as counter.
-- [ ] [WAIT-SPEC-REVIEW] M_FUN.MAP.ELEV — fatigue attribute on
+- [ ] [WAIT-REVIEW] M_FUN.MAP.ELEV — fatigue attribute on
   MOUNTAIN_PASS traversal + audit existing level-based slowdown.
-- [ ] [WAIT-SPEC-REVIEW] M_FUN.MAP.PER_MODE — named per-mode
+- [ ] [WAIT-REVIEW] M_FUN.MAP.PER_MODE — named per-mode
   generator strategies (border-clash-rts, frontier-raid-rts, etc).
 
 #### M_FUN.UNIT — new unit types (v0.4 follow-on)
 
-- [ ] [WAIT-SPEC-REVIEW] M_FUN.UNIT.HEAL — Healer/Cleric: aura
+- [ ] [WAIT-REVIEW] M_FUN.UNIT.HEAL — Healer/Cleric: aura
   heal-on-tick; required to push through swamp/disease; ~50%
   Wizard cost; no offensive.
-- [ ] [WAIT-SPEC-REVIEW] M_FUN.UNIT.SCOUT — Scout: fast, +2
+- [ ] [WAIT-REVIEW] M_FUN.UNIT.SCOUT — Scout: fast, +2
   vision, no combat, excavates Ruins. 4X exploration enabler.
 
 #### M_FUN.ATTR — status attributes (v0.4 follow-on)
 
-- [ ] [WAIT-SPEC-REVIEW] M_FUN.ATTR.DISEASE — Health.disease;
+- [ ] [WAIT-REVIEW] M_FUN.ATTR.DISEASE — Health.disease;
   -1 HP/sec; clears via Healer 2-hex range OR GRASS 5+ sec.
-- [ ] [WAIT-SPEC-REVIEW] M_FUN.ATTR.FATIGUE — Combatant.fatigue;
+- [ ] [WAIT-REVIEW] M_FUN.ATTR.FATIGUE — Combatant.fatigue;
   -50% dmg; decays 5 sec out of combat.
-- [ ] [WAIT-SPEC-REVIEW] M_FUN.ATTR.DEHYDRATION — Health.dehydration;
+- [ ] [WAIT-REVIEW] M_FUN.ATTR.DEHYDRATION — Health.dehydration;
   suppresses HP regen; clears by leaving DESERT 3+ sec.
 
 #### M_FUN.DYN — dynamic terrain (v0.5)
