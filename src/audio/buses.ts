@@ -32,14 +32,75 @@ function makeBus(name: string, volume: number): AudioBus {
   return { name, volume, cache: new Map() };
 }
 
+/**
+ * M_EXPANSION.U.112 — per-bus volume registry. SettingsModal writes
+ * here via `setBusVolume`; subsequent buses constructed by
+ * `createAudioBuses` adopt the stored volume, AND any currently-live
+ * Howl on that bus has its `.volume()` updated in-place so the change
+ * is audible immediately (without restarting the music/ambient loop).
+ *
+ * Volumes are 0..1. The defaults match the original makeBus values so
+ * a fresh install sounds exactly as it always has.
+ */
+const BUS_VOLUMES: Record<keyof AudioBuses, number> = {
+  sfx: 0.8,
+  music: 0.5,
+  ambient: 0.4,
+  ui: 0.9,
+};
+
+/** Track every live AudioBuses instance so volume updates reach them. */
+const LIVE_BUSES = new Set<AudioBuses>();
+
+/** Get the current persisted bus volume (0..1). */
+export function getBusVolume(busName: keyof AudioBuses): number {
+  return BUS_VOLUMES[busName];
+}
+
+/**
+ * Set a bus volume (0..1). Clamps out-of-range input. Updates every
+ * live AudioBuses instance + every cached Howl on that bus so the
+ * change is audible without restarting playback. The currently-
+ * playing music Howl is also updated (its baseline volume is the
+ * `music` bus volume).
+ */
+export function setBusVolume(busName: keyof AudioBuses, volume: number): void {
+  const clamped = Math.max(0, Math.min(1, volume));
+  BUS_VOLUMES[busName] = clamped;
+  for (const buses of LIVE_BUSES) {
+    const bus = buses[busName];
+    bus.volume = clamped;
+    // Update every cached Howl's master volume so already-loaded
+    // tracks pick up the change on their next play(). For the
+    // ambient + music loops that are CURRENTLY playing, .volume()
+    // takes effect on the live source immediately.
+    for (const howl of bus.cache.values()) howl.volume(clamped);
+  }
+  if (busName === 'music') {
+    musicBaselineVolume = clamped;
+    if (currentMusicHowl && !duckActive) currentMusicHowl.volume(clamped);
+  }
+}
+
 /** Create the four named audio buses. */
 export function createAudioBuses(): AudioBuses {
-  return {
-    sfx: makeBus('sfx', 0.8),
-    music: makeBus('music', 0.5),
-    ambient: makeBus('ambient', 0.4),
-    ui: makeBus('ui', 0.9),
+  const buses: AudioBuses = {
+    sfx: makeBus('sfx', BUS_VOLUMES.sfx),
+    music: makeBus('music', BUS_VOLUMES.music),
+    ambient: makeBus('ambient', BUS_VOLUMES.ambient),
+    ui: makeBus('ui', BUS_VOLUMES.ui),
   };
+  LIVE_BUSES.add(buses);
+  return buses;
+}
+
+/** Test hook — wipe the live-buses registry between tests. */
+export function _resetBusVolumesForTests(): void {
+  BUS_VOLUMES.sfx = 0.8;
+  BUS_VOLUMES.music = 0.5;
+  BUS_VOLUMES.ambient = 0.4;
+  BUS_VOLUMES.ui = 0.9;
+  LIVE_BUSES.clear();
 }
 
 /**

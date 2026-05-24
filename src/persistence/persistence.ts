@@ -151,6 +151,13 @@ export const PREF_KEYS = {
   // on Android, localStorage on web). Wiping app data wipes both
   // the saves AND the key, so a reinstall starts fresh.
   dbKey: 'aethelgard.dbKey',
+  // M_EXPANSION.U.112 — per-bus volumes (0..1, stored as string of a
+  // number). One key per bus so a single corrupt row doesn't reset
+  // the whole audio profile.
+  volSfx: 'aethelgard.vol.sfx',
+  volMusic: 'aethelgard.vol.music',
+  volAmbient: 'aethelgard.vol.ambient',
+  volUi: 'aethelgard.vol.ui',
 } as const;
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
 

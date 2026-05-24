@@ -1,10 +1,22 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
-import { setMuted } from '@/audio/buses';
+import { type AudioBuses, getBusVolume, setBusVolume, setMuted } from '@/audio/buses';
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 import { MUTE_PREF_KEY } from './SoundToggle';
+
+// M_EXPANSION.U.112 — bus → (preference key, label) mapping.
+const BUS_ROWS: ReadonlyArray<{
+  bus: keyof AudioBuses;
+  key: string;
+  label: string;
+}> = [
+  { bus: 'sfx', key: PREF_KEYS.volSfx, label: 'Effects' },
+  { bus: 'music', key: PREF_KEYS.volMusic, label: 'Music' },
+  { bus: 'ambient', key: PREF_KEYS.volAmbient, label: 'Ambient' },
+  { bus: 'ui', key: PREF_KEYS.volUi, label: 'Interface' },
+];
 
 /** Props for the Settings modal. */
 export interface SettingsModalProps {
@@ -23,6 +35,12 @@ export interface SettingsModalProps {
  */
 export function SettingsModal({ open, onOpenChange, persistence }: SettingsModalProps) {
   const [muted, setMutedState] = useState(false);
+  const [volumes, setVolumes] = useState<Record<keyof AudioBuses, number>>(() => ({
+    sfx: getBusVolume('sfx'),
+    music: getBusVolume('music'),
+    ambient: getBusVolume('ambient'),
+    ui: getBusVolume('ui'),
+  }));
 
   useEffect(() => {
     let cancelled = false;
@@ -37,10 +55,37 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
     ).then((mutedValue) => {
       if (!cancelled) setMutedState(mutedValue);
     });
+    // M_EXPANSION.U.112 — load each bus volume from persistence on mount
+    // and push the read value into the buses module so subsequently-
+    // created bus instances pick it up before the first sound plays.
+    for (const row of BUS_ROWS) {
+      void safePersistenceRead(
+        persistence,
+        row.key,
+        (raw) => {
+          const n = Number(raw);
+          if (!Number.isFinite(n)) return getBusVolume(row.bus);
+          return Math.max(0, Math.min(1, n));
+        },
+        getBusVolume(row.bus),
+        'SettingsModal',
+      ).then((v) => {
+        if (cancelled) return;
+        setBusVolume(row.bus, v);
+        setVolumes((prev) => ({ ...prev, [row.bus]: v }));
+      });
+    }
     return () => {
       cancelled = true;
     };
   }, [persistence]);
+
+  const onVolumeChange = (bus: keyof AudioBuses, key: string, value: number) => {
+    const clamped = Math.max(0, Math.min(1, value));
+    setVolumes((prev) => ({ ...prev, [bus]: clamped }));
+    setBusVolume(bus, clamped);
+    void persistence.setSetting(key, String(clamped));
+  };
 
   const toggleMute = () => {
     const next = !muted;
@@ -105,6 +150,56 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
           >
             {muted ? '🔇 Audio OFF' : '🔊 Audio ON'}
           </button>
+        </div>
+
+        {/* M_EXPANSION.U.112 — per-bus volume sliders. Disabled (and
+            visually muted) when the global mute toggle is on — sliders
+            still respond to drag and persist the value, so unmuting
+            restores the user's chosen mix. */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            padding: '6px 0 4px',
+            opacity: muted ? 0.45 : 1,
+          }}
+        >
+          {BUS_ROWS.map((row) => (
+            <label
+              key={row.bus}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                fontSize: '0.8rem',
+                color: HUD_THEME.color.muted,
+              }}
+            >
+              <span style={{ flex: '0 0 64px' }}>{row.label}</span>
+              <input
+                type="range"
+                min={0}
+                max={1}
+                step={0.05}
+                value={volumes[row.bus]}
+                aria-label={`${row.label} volume`}
+                onChange={(e) => onVolumeChange(row.bus, row.key, Number(e.target.value))}
+                style={{ flex: 1, accentColor: HUD_THEME.color.accent }}
+                data-testid={`settings-volume-${row.bus}`}
+              />
+              <span
+                style={{
+                  flex: '0 0 36px',
+                  textAlign: 'right',
+                  fontVariantNumeric: 'tabular-nums',
+                  color: HUD_THEME.color.accent,
+                }}
+              >
+                {Math.round(volumes[row.bus] * 100)}
+              </span>
+            </label>
+          ))}
         </div>
 
         {/* M_AUDIT2.UX.41 — Replay tutorial. Clears the
