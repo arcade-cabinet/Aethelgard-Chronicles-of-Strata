@@ -112,8 +112,20 @@ export function KeyboardShortcuts({ game }: { game: GameState }) {
           // become no-ops without us having to know the radius here.
           e.preventDefault();
           const step = e.shiftKey ? 4 : 1;
-          const dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0;
-          const dz = e.key === 'ArrowUp' ? -step : e.key === 'ArrowDown' ? step : 0;
+          // M_SIMPLIFY.6 — flat lookup replaces the prior nested
+          // ternaries `dx = key === 'ArrowLeft' ? -step : key ===
+          // 'ArrowRight' ? step : 0`. One ARROW_VECTORS row per
+          // direction; signs are scaled by `step` per press.
+          const ARROW_VECTORS: Record<string, [number, number]> = {
+            ArrowLeft: [-1, 0],
+            ArrowRight: [1, 0],
+            ArrowUp: [0, -1],
+            ArrowDown: [0, 1],
+          };
+          const v = ARROW_VECTORS[e.key];
+          if (!v) break;
+          const dx = v[0] * step;
+          const dz = v[1] * step;
           window.dispatchEvent(new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }));
           break;
         }
