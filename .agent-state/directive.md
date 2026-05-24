@@ -268,8 +268,12 @@ mechanic work that follows is built on this.
   vs majors-separate per-ecosystem, lockfile maintenance Monday
   4am, vulnerability alerts auto-labelled `security`. Dependabot
   stays for now (parallel; remove on confirmed Renovate working).
-- [ ] M_FUN.FOUNDATION.COMMITLINT — Enforce
-  conventional-commits format (today honoured by convention only).
+- [x] M_FUN.FOUNDATION.COMMITLINT — @commitlint/cli +
+  @commitlint/config-conventional installed. commitlint.config.js
+  extends config-conventional (allows long sub-task ids in
+  headers via subject-case off + header-max-length 120).
+  .husky/commit-msg invokes commitlint per commit. Bypassing is
+  banned (--no-verify in commit-gate.mjs).
 
 **Game-specific foundation**
 
