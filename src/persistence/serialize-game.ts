@@ -190,6 +190,9 @@ function pickEconomy(eco: unknown): GameEconomy {
     // safeFinite produces the same shape on missing input).
     mana: safeFinite(e.mana, 0),
     usedSupply: safeFinite(e.usedSupply, 0),
+    // M_EXPANSION.U.122 — peak supply across the match; defaults to
+    // 0 for v0.3 saves that predate the slot.
+    peakSupply: safeFinite(e.peakSupply, 0),
     // Default to the fresh-game cap, not a magic 5 (simplifier feedback).
     maxSupply: safeFinite(e.maxSupply, ECONOMY.startingResources.maxSupply),
     kills: safeFinite(e.kills, 0),

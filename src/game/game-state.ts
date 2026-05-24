@@ -860,6 +860,13 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   }
   recomputeMaxSupply(game.economy.player, completeByFaction.player);
   recomputeMaxSupply(game.economy.enemy, completeByFaction.enemy);
+  // M_EXPANSION.U.122 — track peak usedSupply for post-match stats.
+  if (game.economy.player.usedSupply > game.economy.player.peakSupply) {
+    game.economy.player.peakSupply = game.economy.player.usedSupply;
+  }
+  if (game.economy.enemy.usedSupply > game.economy.enemy.peakSupply) {
+    game.economy.enemy.peakSupply = game.economy.enemy.usedSupply;
+  }
 
   // combat — turn-gated so the player can pause to plan without
   // their units being chewed up mid-thought.

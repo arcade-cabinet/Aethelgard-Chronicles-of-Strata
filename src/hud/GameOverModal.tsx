@@ -1,8 +1,9 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
+import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import type { GameState } from '@/game/game-state';
-import { formatInt } from './format';
+import { formatInt, formatTime } from './format';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -40,11 +41,26 @@ export function GameOverModal({ game }: { game: GameState }) {
   // M_MODES.10 — controlled-tile-time score integral; rounded to whole units.
   const playerScore = Math.round(game.score.player);
   const enemyScore = Math.round(game.score.enemy);
+  // M_EXPANSION.U.122 — count the player faction's surviving
+  // complete buildings at outcome-flip time. Cheap one-pass query.
+  let playerBuildings = 0;
+  for (const e of game.world.query(Building, FactionTrait)) {
+    if (e.get(Building)?.isComplete && e.get(FactionTrait)?.faction === 'player') {
+      playerBuildings += 1;
+    }
+  }
   const stats: StatLine[] = [
     // M_AUDIT2.UX.10 — locale-formatted thousands separator.
     { label: 'Gold Earned', value: formatInt(game.economy.player.gold) },
     { label: 'Lumber Harvested', value: formatInt(game.economy.player.wood) },
     { label: 'Enemies Vanquished', value: formatInt(game.economy.player.kills) },
+    // M_EXPANSION.U.122 — buildings, peak supply, time elapsed.
+    { label: 'Buildings Standing', value: formatInt(playerBuildings) },
+    {
+      label: 'Peak Supply',
+      value: `${formatInt(game.economy.player.peakSupply)} / ${formatInt(game.economy.player.maxSupply)}`,
+    },
+    { label: 'Time Elapsed', value: formatTime(game.clock.elapsed) },
     { label: 'Territory Score', value: `${playerScore} vs ${enemyScore}` },
   ];
 

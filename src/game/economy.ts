@@ -33,6 +33,12 @@ export interface GameEconomy {
   usedSupply: number;
   /** Supply cap — sum of owned buildings' supply contribution. */
   maxSupply: number;
+  /**
+   * M_EXPANSION.U.122 — peak usedSupply across the whole match. Bumped
+   * every tick where usedSupply exceeds the prior peak; surfaces in
+   * the post-match stats screen. Defaults to 0.
+   */
+  peakSupply: number;
   /** Enemy units killed this session. */
   kills: number;
 }
@@ -57,6 +63,7 @@ export function createEconomy(): GameEconomy {
     mana: s.mana ?? 0,
     usedSupply: 0,
     maxSupply: s.maxSupply,
+    peakSupply: 0,
     kills: 0,
   };
 }

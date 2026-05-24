@@ -1917,7 +1917,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [HIGH] M_EXPANSION.U.119 — Tap-and-hold-to-drag scroll on mobile (an alternative to two-finger pan)
 - [ ] [HIGH] M_EXPANSION.U.120 — Click-and-hold a Barracks shows the rally-point ghost continuously
 - [ ] [HIGH] M_EXPANSION.U.121 — Per-unit tooltip on hover (name + HP + behaviour)
-- [ ] [HIGH] M_EXPANSION.U.122 — End-of-game stats screen: kills, buildings, peak supply, time elapsed
+- [x] [HIGH] M_EXPANSION.U.122 — End-of-game stats screen — DONE. GameOverModal now shows the full spec: Gold Earned, Lumber Harvested, Enemies Vanquished, Buildings Standing (player-faction Building+FactionTrait query at outcome-flip), Peak Supply (N / max), Time Elapsed (formatTime(game.clock.elapsed)), Territory Score. GameEconomy gains a `peakSupply` slot bumped each tick where usedSupply exceeds prior peak; serialize-game.ts pickEconomy reads it with 0-fallback so v0.3 saves load forward. 485/485 green.
 - [ ] [HIGH] M_EXPANSION.U.123 — Replay-of-the-match scrubber after victory
 - [x] [LOW]  M_EXPANSION.U.124 — Discoveries panel: search-filter input (with > 8 discoveries the scroll-list grows)
 - [x] [LOW]  M_EXPANSION.U.125 — Onboarding overlay: skip-button always visible (currently only on step 1)
