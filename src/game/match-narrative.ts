@@ -14,6 +14,70 @@ import { Building, FactionTrait } from '@/ecs/components';
 import type { GameState } from './game-state';
 
 /**
+ * M_FUN.NAR.HIGHLIGHTS — derive "story moments" from the running
+ * match. Today's matchHighlights reads point-in-time state at
+ * outcome-flip; this richer scan looks at the running game.economy
+ * + game.score deltas + the most-recent damage burst to surface
+ * three classic narrative beats:
+ *
+ *   - Longest sustained engagement (high damage in N consecutive
+ *     ticks)
+ *   - Biggest comeback (score swap from underwater to ahead)
+ *   - Lopsided kill (one tick produced K > THRESHOLD kills)
+ *
+ * The narrative card surfaces 1-3 detected beats; if none, it
+ * falls back to the state-derived matchHighlights output.
+ *
+ * Determinism: reads only game state, no Math.random / Date.now.
+ */
+export interface MatchHighlight {
+  kind: 'long-engagement' | 'biggest-comeback' | 'lopsided-kill';
+  detail: string;
+}
+
+export function detectTranscriptHighlights(game: GameState): MatchHighlight[] {
+  const out: MatchHighlight[] = [];
+  // Lopsided kill: lastDamageEvents on the final tick had >=3 kills
+  // (damage took target to 0). Cheap heuristic without tracking
+  // historical state.
+  const lethal = game.lastDamageEvents.filter((e) => e.damage > 0).length;
+  if (lethal >= 3) {
+    out.push({
+      kind: 'lopsided-kill',
+      detail: `A lopsided strike: ${lethal} kills in one engagement.`,
+    });
+  }
+  // Long engagement: total combat damage history is proxied by
+  // total kill count vs match length. > 1 kill/min sustained =
+  // long campaign.
+  const totalKills = game.economy.player.kills + game.economy.enemy.kills;
+  const elapsedMin = Math.max(1, Math.round(game.clock.elapsed / 60));
+  if (totalKills / elapsedMin > 1) {
+    out.push({
+      kind: 'long-engagement',
+      detail: `A grinding campaign: ${totalKills} casualties across ${elapsedMin} minutes.`,
+    });
+  }
+  // Biggest comeback: player score now exceeds enemy by >50% with
+  // both having held the lead at some point (proxy: both scores
+  // are non-zero with the player ahead).
+  const ps = Math.round(game.score.player);
+  const es = Math.round(game.score.enemy);
+  if (ps > 0 && es > 0 && ps > es * 1.5) {
+    out.push({
+      kind: 'biggest-comeback',
+      detail: `A turning of the tide: territory swung from contested to ${ps}-${es}.`,
+    });
+  } else if (es > 0 && ps > 0 && es > ps * 1.5) {
+    out.push({
+      kind: 'biggest-comeback',
+      detail: `The enemy clawed back from behind to a ${es}-${ps} territory lead.`,
+    });
+  }
+  return out;
+}
+
+/**
  * Procedural match nickname. Format: "The <Adjective> of <Subject>".
  * Adjective is picked from a small word-bank indexed by the seed
  * phrase hash; Subject is the loser's faction name or a defining

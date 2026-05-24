@@ -3,7 +3,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import type { GameState } from '@/game/game-state';
-import { matchHighlights, matchNickname } from '@/game/match-narrative';
+import {
+  detectTranscriptHighlights,
+  matchHighlights,
+  matchNickname,
+} from '@/game/match-narrative';
 import type { Persistence } from '@/persistence/persistence';
 import { formatInt, formatTime } from './format';
 import { HUD_THEME } from './hud-theme';
@@ -195,7 +199,14 @@ export function GameOverModal({
           <div style={{ marginBottom: 18 }}>
             <MatchSummaryCard
               nickname={matchNickname({ seedPhrase: game.seedPhrase, outcome })}
-              highlights={matchHighlights(game)}
+              highlights={(() => {
+                // M_FUN.NAR.HIGHLIGHTS — prefer transcript-derived
+                // story beats when available; fall back to the
+                // point-in-time state highlights when nothing
+                // dramatic surfaced.
+                const beats = detectTranscriptHighlights(game).map((b) => b.detail);
+                return beats.length > 0 ? beats : matchHighlights(game);
+              })()}
             />
           </div>
         )}

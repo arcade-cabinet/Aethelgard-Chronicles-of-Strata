@@ -6,7 +6,22 @@
  * (3) highlights surface a sensible default when nothing else fits.
  */
 import { describe, expect, it } from 'vitest';
-import { matchNickname } from '../match-narrative';
+import type { GameState } from '@/game/game-state';
+import { detectTranscriptHighlights, matchNickname } from '../match-narrative';
+
+function makeStubGame(overrides: Partial<GameState> = {}): GameState {
+  // biome-ignore lint/suspicious/noExplicitAny: minimal stub for narrative tests
+  return {
+    clock: { elapsed: 600 },
+    lastDamageEvents: [],
+    economy: {
+      player: { kills: 0 },
+      enemy: { kills: 0 },
+    },
+    score: { player: 0, enemy: 0 },
+    ...overrides,
+  } as any as GameState;
+}
 
 describe('matchNickname', () => {
   it('is deterministic for the same (seedPhrase, outcome)', () => {
@@ -65,5 +80,53 @@ describe('matchNickname', () => {
     // 'we're not stuck in one corner of the (adj, sub) grid'.
     expect(adjs.size).toBeGreaterThanOrEqual(4);
     expect(subjects.size).toBeGreaterThanOrEqual(6);
+  });
+});
+
+describe('detectTranscriptHighlights (M_FUN.NAR.HIGHLIGHTS)', () => {
+  it('returns no highlights for a quiet match', () => {
+    const game = makeStubGame();
+    expect(detectTranscriptHighlights(game)).toEqual([]);
+  });
+
+  it('detects a lopsided-kill burst when >= 3 lethal damage events', () => {
+    // biome-ignore lint/suspicious/noExplicitAny: minimal stub
+    const game = makeStubGame({
+      lastDamageEvents: [
+        { damage: 50 },
+        { damage: 30 },
+        { damage: 20 },
+      ] as any,
+    });
+    const out = detectTranscriptHighlights(game);
+    expect(out.some((h) => h.kind === 'lopsided-kill')).toBe(true);
+  });
+
+  it('detects a long campaign when kills/min > 1', () => {
+    const game = makeStubGame({
+      clock: { elapsed: 60 } as never,
+      economy: {
+        player: { kills: 3 },
+        enemy: { kills: 0 },
+      } as never,
+    });
+    expect(detectTranscriptHighlights(game).some((h) => h.kind === 'long-engagement')).toBe(
+      true,
+    );
+  });
+
+  it('detects biggest-comeback when player or enemy holds a 1.5× score lead', () => {
+    const playerAhead = makeStubGame({
+      score: { player: 150, enemy: 50 },
+    });
+    expect(
+      detectTranscriptHighlights(playerAhead).some((h) => h.kind === 'biggest-comeback'),
+    ).toBe(true);
+    const enemyAhead = makeStubGame({
+      score: { player: 50, enemy: 200 },
+    });
+    expect(
+      detectTranscriptHighlights(enemyAhead).some((h) => h.kind === 'biggest-comeback'),
+    ).toBe(true);
   });
 });

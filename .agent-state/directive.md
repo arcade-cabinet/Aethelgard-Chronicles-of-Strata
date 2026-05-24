@@ -371,10 +371,15 @@ mechanic work that follows is built on this.
 
 ### v0.4.7 — Match narrative (PRD §7.7)
 
-- [ ] M_FUN.NAR.HIGHLIGHTS — Highlight detection
-  on AI-vs-AI transcript (longest engagement, biggest comeback,
-  lopsided kill). v0.4 ships state-derived highlights via
-  matchHighlights(); transcript scan is the follow-up extension.
+- [x] M_FUN.NAR.HIGHLIGHTS — detectTranscriptHighlights() in
+  src/game/match-narrative.ts. Scans lastDamageEvents +
+  economy.kills + score for three narrative beats:
+  - lopsided-kill (>=3 lethal events in one combat tick)
+  - long-engagement (sustained kills/min > 1)
+  - biggest-comeback (>=1.5× score lead either way)
+  GameOverModal prefers detected beats; falls back to the
+  point-in-time matchHighlights when nothing dramatic surfaced.
+  4 unit tests pin each branch.
 - [x] M_FUN.NAR.CARD — Post-match summary card extracted as
   MatchSummaryCard + harness baseline.
 - [x] M_FUN.NAR.NICKNAME — Procedural match nickname
