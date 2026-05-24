@@ -6,7 +6,9 @@ import { defineConfig, devices } from '@playwright/test';
 // on every CI is slow + would generate noise without the baselines
 // committed). Use `VISUAL=1 pnpm test:e2e` locally to lock baselines.
 const includeVisual = process.env.VISUAL === '1';
-const testMatch = includeVisual ? ['e2e/**/*.spec.ts', 'visual/**/*.spec.ts'] : ['e2e/**/*.spec.ts'];
+const testMatch = includeVisual
+  ? ['e2e/**/*.spec.ts', 'visual/**/*.spec.ts']
+  : ['e2e/**/*.spec.ts'];
 
 // Per-test timeout (each test). Most e2e specs settle under 20s;
 // the per-mode SMOKE specs do 60s of sim then assert, so the
