@@ -12,6 +12,7 @@ import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
 import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
+import { EraProgressPill } from '@/hud/EraProgressPill';
 import { MatchAgePill } from '@/hud/MatchAgePill';
 import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { WinConditionPill } from '@/hud/WinConditionPill';
@@ -230,6 +231,8 @@ function GameSession({
       <MatchAgePill game={game} />
       {/* M_POLISH2.MODES.42 — strata-wars only: zone-control % chip. */}
       <ZoneControlPill game={game} />
+      {/* M_POLISH2.MODES.43 — age-of-strata only: era progression pill. */}
+      <EraProgressPill game={game} />
       <IdlePeonsIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
