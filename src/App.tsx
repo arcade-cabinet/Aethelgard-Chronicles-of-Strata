@@ -12,6 +12,7 @@ import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
 import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
+import { WinConditionPill } from '@/hud/WinConditionPill';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
@@ -216,6 +217,10 @@ function GameSession({
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />
       <ScoreBar game={game} />
+      {/* M_POLISH2.MODES.39 — per-mode win-condition reminder pill,
+            top-centre. Hidden when the game is over (GameOverModal
+            takes over the messaging). */}
+      <WinConditionPill game={game} />
       <IdlePeonsIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
