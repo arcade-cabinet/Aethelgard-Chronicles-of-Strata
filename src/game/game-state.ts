@@ -249,6 +249,13 @@ export interface GameState {
    */
   wonderTimers: Record<Faction, number>;
   /**
+   * M_POLISH2.MODES.42a — strata-wars zone-control win timer.
+   * Seconds the player has held ≥ 80% of controlled tiles. When
+   * this reaches 30, outcome flips to 'win'. Resets to 0 when the
+   * player drops below 80%. Only ticked in strata-wars mode.
+   */
+  strataWarsControlTimer: number;
+  /**
    * M_EXPANSION.U.111 — speed multiplier applied to runEconomyTick's
    * delta. 1.0 = normal, 2.0 / 4.0 = fast-forward. Determinism-safe:
    * the multiplier is on wall-clock delta, not the event PRNG.
@@ -691,6 +698,9 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     score: { player: 0, enemy: 0 },
     // M_EXPANSION.F.71 — Infinity = no Wonder built yet for that faction.
     wonderTimers: { player: Infinity, enemy: Infinity },
+    // M_POLISH2.MODES.42a — strata-wars 80%-for-30s win timer. Starts
+    // at 0; only ticks in strata-wars mode (see runEconomyTick).
+    strataWarsControlTimer: 0,
     // M_EXPANSION.U.111 — speed multiplier; defaults to 1.0.
     gameSpeed: 1,
     // M_MODES.8 + M_TURNS.3 — turn-based superposition. The effective
@@ -1047,6 +1057,21 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   if (game.outcome === 'playing') {
     if (game.wonderTimers.player === 0) game.outcome = 'win';
     else if (game.wonderTimers.enemy === 0) game.outcome = 'loss';
+  }
+  // M_POLISH2.MODES.42a — strata-wars 80%-zone-control-for-30s win.
+  // Only ticks in strata-wars mode. Resets to 0 the instant the
+  // player drops below 80%; reaching 30 flips outcome → 'win'.
+  if (game.mode === 'strata-wars' && game.outcome === 'playing') {
+    const player = game.zones.player.controlled.size;
+    const enemy = game.zones.enemy.controlled.size;
+    const total = player + enemy;
+    const playerPct = total > 0 ? player / total : 0;
+    if (playerPct >= 0.8) {
+      game.strataWarsControlTimer = Math.min(30, game.strataWarsControlTimer + delta);
+      if (game.strataWarsControlTimer >= 30) game.outcome = 'win';
+    } else {
+      game.strataWarsControlTimer = 0;
+    }
   }
   game.outcome = evaluateWinLoss(game.world, game.outcome);
 
