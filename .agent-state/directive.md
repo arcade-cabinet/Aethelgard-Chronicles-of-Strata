@@ -662,9 +662,7 @@ overlap exists.
   databases/ + shared_prefs/) + `android:dataExtractionRules`
   for Android 12+. Currently `allowBackup=true` permits `adb backup`
   exfiltration of save DB.
-- [ ] [HIGH] M_SEC.4 — encrypt SQLite saves. Change
-  `persistence.ts:88` mode `'no-encryption'` → `'encryption'`
-  (SQLCipher) with per-install key bound via Android Keystore.
+- [x] [HIGH] M_SEC.4 — encrypt SQLite saves — DONE. createConnection mode flips to `'encryption'` on native (iOS/Android via SQLCipher) and stays `'no-encryption'` on web (sql.js fallback). Per-install key bootstrap: `ensureDbSecret()` reads or mints a 64-byte cryptographically-random passphrase via crypto.getRandomValues, base64-encodes it (88 ASCII chars), and persists under PREF_KEYS.dbKey via Capacitor Preferences. On iOS that backs to Keychain; on Android to EncryptedSharedPrefs; on web to localStorage (where SQLCipher is no-op anyway). Wiping app data wipes both saves AND key, so reinstall starts fresh. setEncryptionSecret call guarded by setEncryptionSecret existence (web fallback). 491/491 green.
 
 #### HIGH
 

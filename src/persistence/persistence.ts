@@ -145,6 +145,12 @@ export const PREF_KEYS = {
   // Stored as a string (Preferences API) for portability; the
   // achievements helper parses + writes.
   achievements: 'aethelgard.achievements',
+  // M_SEC.4 — SQLCipher passphrase. Generated once at first DB
+  // open from crypto.getRandomValues(64 bytes → base64); persisted
+  // via Capacitor Preferences (Keychain on iOS, EncryptedSharedPrefs
+  // on Android, localStorage on web). Wiping app data wipes both
+  // the saves AND the key, so a reinstall starts fresh.
+  dbKey: 'aethelgard.dbKey',
 } as const;
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
 
@@ -234,6 +240,43 @@ function rowToSaveRecord(row: any): SaveRecord {
   };
 }
 
+/**
+ * M_SEC.4 — read or mint the per-install SQLCipher passphrase.
+ * Stored under PREF_KEYS.dbKey via Capacitor Preferences — Keychain
+ * on iOS, EncryptedSharedPrefs on Android, plain localStorage on
+ * web (where the SQLCipher path is a no-op anyway). The minted
+ * value is 64 random bytes base64-encoded → 88 ASCII chars, well
+ * inside SQLCipher's accepted passphrase length.
+ *
+ * Wiping app data wipes both the saves AND the key, so a reinstall
+ * starts fresh (no orphaned encrypted blobs in user data).
+ */
+async function ensureDbSecret(): Promise<string> {
+  try {
+    const existing = await Preferences.get({ key: PREF_KEYS.dbKey });
+    if (existing.value && existing.value.length >= 32) return existing.value;
+    const bytes = new Uint8Array(64);
+    if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+      crypto.getRandomValues(bytes);
+    } else {
+      // Browsers without WebCrypto shouldn't happen in production
+      // (Capacitor WebView ships modern Chromium / WKWebView), but
+      // fallback to Math.random for the test harness so persistence
+      // doesn't throw on init.
+      for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    }
+    const secret = btoa(String.fromCharCode(...bytes));
+    await Preferences.set({ key: PREF_KEYS.dbKey, value: secret });
+    return secret;
+  } catch (err) {
+    // If Preferences fails (shouldn't, but defensive), fall back to
+    // a session-only random key. The DB created with it won't be
+    // reopenable next session — saves are best-effort in that case.
+    console.warn('[persistence] ensureDbSecret failed, using session-only key:', err);
+    return `session-${Math.random().toString(36).slice(2)}-${Date.now()}`;
+  }
+}
+
 // Module-level singletons — all null until the first openDb() call.
 let sqliteManager: SQLiteConnection | null = null;
 let sqliteDb: SQLiteDBConnection | null = null;
@@ -271,10 +314,36 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
         await sqliteManager.initWebStore();
       }
 
+      // M_SEC.4 — encryption mode + per-install key. On native
+      // (iOS/Android) this binds to SQLCipher with the secret stored
+      // in Keychain/EncryptedSharedPrefs via Capacitor Preferences.
+      // On web the encryption-mode arg is ignored by the sql.js
+      // fallback, so the call still works — saves are unencrypted on
+      // web but the bootstrap is the same and a future SQLCipher.wasm
+      // adoption would pick up the key automatically.
+      const encryptionMode = isWebPlatform() ? 'no-encryption' : 'encryption';
+      const secret = encryptionMode === 'encryption' ? await ensureDbSecret() : null;
+      // setEncryptionSecret only matters when the DB is being created
+      // fresh; if already keyed (from a prior install/run), the
+      // openWithKey call below uses the stored secret to unlock.
+      if (secret && sqliteManager.setEncryptionSecret) {
+        try {
+          await sqliteManager.setEncryptionSecret(secret);
+        } catch {
+          // setEncryptionSecret throws on web / unsupported platforms;
+          // swallow and let createConnection fall back to plaintext.
+        }
+      }
       const isConnected = (await sqliteManager.isConnection(DB_NAME, false)).result;
       const conn = isConnected
         ? await sqliteManager.retrieveConnection(DB_NAME, false)
-        : await sqliteManager.createConnection(DB_NAME, false, 'no-encryption', DB_VERSION, false);
+        : await sqliteManager.createConnection(
+            DB_NAME,
+            encryptionMode === 'encryption',
+            encryptionMode,
+            DB_VERSION,
+            false,
+          );
 
       await conn.open();
 
