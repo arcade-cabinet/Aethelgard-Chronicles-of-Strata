@@ -3,6 +3,15 @@ updates:
   - package-ecosystem: npm
     directory: '/'
     schedule: { interval: weekly }
+    # Pinned dependencies — dependabot must not propose bumps.
+    # sql.js: jeep-sqlite (the Capacitor SQLite bridge for Android)
+    # statically links against the 1.11.0 ABI; bumping to 1.12+
+    # breaks save/load silently with 'no SQL.Database' errors.
+    # PRs #2 (closed) and #6 both proposed 1.14.x bumps that would
+    # have shipped broken saves to production.
+    ignore:
+      - dependency-name: sql.js
+      - dependency-name: '@types/sql.js'
     # M_EXPANSION.O.151 — split major bumps into a separate group so
     # they get their own review cycle (different review burden than
     # minor/patch). Minor + patch bunch into one PR; majors get one PR

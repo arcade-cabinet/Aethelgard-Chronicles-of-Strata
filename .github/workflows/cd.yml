@@ -1,4 +1,13 @@
-name: Deploy Pages
+name: CD
+
+# Standard arcade-cabinet trio: ci.yml (PR gates) → release.yml
+# (release-please + signed APK + SBOM + attestation on tag) →
+# cd.yml (deploys to GitHub Pages on push:main).
+#
+# Triggers on every push to main so a non-release commit still
+# deploys the latest Pages build. The signed-APK release is
+# independent (release.yml builds + attaches on tag publish; this
+# workflow only handles the web deploy).
 
 on:
   push:
