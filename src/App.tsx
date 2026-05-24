@@ -12,6 +12,7 @@ import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
 import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
+import { MatchAgePill } from '@/hud/MatchAgePill';
 import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { WinConditionPill } from '@/hud/WinConditionPill';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
@@ -224,6 +225,8 @@ function GameSession({
       <WinConditionPill game={game} />
       {/* M_POLISH2.MODES.40 — frontier-raid only: raid-pressure pill. */}
       <RaidPressurePill game={game} />
+      {/* M_POLISH2.MODES.41 — long-reign only: match-age chip. */}
+      <MatchAgePill game={game} />
       <IdlePeonsIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
