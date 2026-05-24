@@ -128,6 +128,13 @@ export function combatSystem(
   rng: Rng,
   delta: number,
   rangedAccuracy = 1,
+  /**
+   * M_POLISH2.RTS.21 — choke-point defender multiplier. Caller passes
+   * a function mapping (q, r) → multiplier (1.0 default, 0.9 when the
+   * defender's tile qualifies as a choke). Optional — when omitted,
+   * combat behaves as before (no choke math).
+   */
+  chokeMultiplier?: (q: number, r: number) => number,
 ): DamageEvent[] {
   const events: DamageEvent[] = [];
   // Index entities by numeric id for target lookup. `Number(entity)` returns
@@ -181,7 +188,12 @@ export function combatSystem(
       (attackerProfile?.meleeWeapon === 'none' || !attackerProfile) && combatant.attackRange > 1;
     // M_POLISH2.RTS.20 — terrain bonus from attacker's tile level vs
     // target's tile level. Pure function in src/rules/terrain-bonus.ts.
-    const terrainMultiplier = computeTerrainBonus(hex.level, targetHex.level);
+    // M_POLISH2.RTS.21 — choke-point defender bonus multiplies the
+    // terrain bonus by the (optional) choke multiplier so a defender
+    // on a choke tile takes 10% less even when attacker has high
+    // ground (still nets ~1.125 net damage instead of 1.25).
+    const choke = chokeMultiplier ? chokeMultiplier(targetHex.q, targetHex.r) : 1;
+    const terrainMultiplier = computeTerrainBonus(hex.level, targetHex.level) * choke;
     const fired = resolveAttacks(
       combatant,
       target,

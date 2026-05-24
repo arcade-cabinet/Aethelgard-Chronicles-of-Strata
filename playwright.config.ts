@@ -17,5 +17,10 @@ export default defineConfig({
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
+    // M_POLISH2.MOBILE.13 — tablet branch (iPad Mini portrait).
+    // The mobile/desktop split skipped the 768-1024 width range
+    // entirely; adding this project lets visual baselines + e2e
+    // flows cover it.
+    { name: 'tablet', use: { ...devices['iPad Mini'] } },
   ],
 });
