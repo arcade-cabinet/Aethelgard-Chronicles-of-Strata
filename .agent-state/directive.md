@@ -283,12 +283,17 @@ mechanic work that follows is built on this.
   state (elapsed, outcome, wood/kills both factions, damage
   count). 5 random seeds per run. PASSING — the codebase's
   determinism contract is intact.
-- [ ] M_FUN.FOUNDATION.CLOCK-AUDIT — Audit every
-  sim/world/ecs module imports `now()` from engine clock facade,
-  NOT `performance.now()`. Tighten Biome ban list.
-- [ ] M_FUN.FOUNDATION.PRNG-AUDIT — Same audit for
-  `rand()` via core/rng.ts. Tighten Biome ban list across
-  src/sim/** src/ecs/** src/world/** src/game/**.
+- [x] M_FUN.FOUNDATION.CLOCK-AUDIT — commit-gate ban_patterns
+  added for `performance.now()` and `Date.now()` in src/ecs/**
+  + src/game/**. src/world/** intentionally exempt for UI/render
+  timing (TileInteraction click-debounce, DeathDropLayer animation);
+  src/core/device-tier.ts kept for the perf-probe heuristic.
+  Current audit: zero violations in sim paths.
+- [x] M_FUN.FOUNDATION.PRNG-AUDIT — Math.random() ban already
+  enforced in commit-gate across src/core/** src/ecs/** src/world/**
+  src/game/**. Current audit: zero actual usages (all 5 grep
+  matches are doctrine comments saying 'no Math.random').
+  PASSING — the determinism contract is enforced + observed.
 
 ### v0.4.2 — Mountain passes (PRD §7.2)
 

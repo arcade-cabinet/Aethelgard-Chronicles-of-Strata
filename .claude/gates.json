@@ -33,7 +33,17 @@
     {
       "pattern": "Math\\.random\\(\\)",
       "globs": ["src/core/**", "src/ecs/**", "src/world/**", "src/game/**"],
-      "message": "Use the seedrandom RNG facade in src/core/rng — determinism."
+      "message": "Use the seedrandom RNG facade in src/core/rng — determinism. (M_FUN.FOUNDATION.PRNG-AUDIT)"
+    },
+    {
+      "pattern": "performance\\.now\\(\\)",
+      "globs": ["src/ecs/**", "src/game/**"],
+      "message": "Use the engine clock facade — determinism. (M_FUN.FOUNDATION.CLOCK-AUDIT). src/core/device-tier.ts + src/world/* render code is intentionally exempt (UI/perf-probe paths)."
+    },
+    {
+      "pattern": "Date\\.now\\(\\)",
+      "globs": ["src/ecs/**", "src/game/**"],
+      "message": "Use the engine clock facade — determinism. (M_FUN.FOUNDATION.CLOCK-AUDIT)"
     },
     {
       "pattern": "as any",
