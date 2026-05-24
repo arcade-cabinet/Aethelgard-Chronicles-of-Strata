@@ -1131,7 +1131,7 @@ M_ARCH_UNIFY drains.
   - [ ] [MED] M_SIMPLIFY.4 — persistence.ts (9 nested try/catch around openDb) — flatten error propagation; environment guards (VITEST/dbUnavailable) at the top, single throw/return-null contract; callers use `if (!db) return ...` instead of wrapping.
   - [ ] [MED] M_SIMPLIFY.5 — particle-consumers.tsx (637 lines) split per-consumer files (src/world/particles/{rain,sawdust,buildComplete,confetti,smoke,snow,blood,embers}.ts) + barrel re-export.
   - [ ] [LOW] M_SIMPLIFY.6 — KeyboardShortcuts.tsx arrow-key nested ternary `dx = e.key === 'ArrowLeft' ? -step : e.key === 'ArrowRight' ? step : 0` → if/else or switch.
-  - [ ] [LOW] M_SIMPLIFY.7 — NewGameModal.tsx (600 lines): extract STARTING_BONUSES + PLAYER_COLORS + MODES + DIFFICULTIES to src/hud/new-game-options.ts (pure data, no React import).
+  - [x] [LOW] M_SIMPLIFY.7 — DONE. STARTING_BONUSES + PLAYER_COLORS + MODES + DIFFICULTIES extracted to src/hud/new-game-options.ts. NewGameModal imports the constants; the modal file is now ~50 lines shorter. Type StartingBonus also moves to the new file so other consumers can import it without pulling the modal.
 
 - [ ] [STANDING] M_PROCESS.REVIEW — Periodic review-trio dispatch as part of the standard directive loop (user, 2026-05-23: "running the security, code quality, and code simplification agents along with test coverage and documentation coverage agents periodically"). After every ~5 commits OR at clean checkpoint moments, dispatch BACKGROUND parallel review agents:
   - security-scanning:security-auditor scoped to the diff against main

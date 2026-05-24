@@ -8,6 +8,7 @@ import { presetFor } from '@/rules';
 import type { TurnsMode } from '@/rules/mode-presets';
 import { HUD_THEME } from './hud-theme';
 import { MapPreview } from './MapPreview';
+import { DIFFICULTIES, MODES, PLAYER_COLORS, STARTING_BONUSES } from './new-game-options';
 import { ModalShell } from './ModalShell';
 
 /** The choices a New Game collects. */
@@ -46,47 +47,10 @@ export interface NewGameChoices {
   startingBonus: 'none' | 'extra-wood' | 'extra-peons' | 'extra-hp';
 }
 
-/**
- * M_EXPANSION.F.84 — starting bonus picks. Surfaces as a 4-segment
- * control under the palette picker. Each pick gives the player a
- * distinct one-shot advantage at match start; the AI never gets
- * one (the bonus IS the difficulty handicap dial).
- */
-const STARTING_BONUSES: ReadonlyArray<{ key: NewGameChoices['startingBonus']; label: string }> = [
-  { key: 'none', label: 'None' },
-  { key: 'extra-wood', label: '+Wood' },
-  { key: 'extra-peons', label: '+Peons' },
-  { key: 'extra-hp', label: '+HP' },
-];
-
-/**
- * M_EXPANSION.F.80 — palette pick options. 4 banner colours + a
- * "Default" pick that uses the SKINS native armor colours. Each
- * entry is a CSS hex string the renderer multiplies into the
- * character material's diffuse.
- */
-const PLAYER_COLORS: ReadonlyArray<{ key: string; label: string; hex: string | null }> = [
-  { key: 'default', label: 'Default', hex: null },
-  { key: 'red', label: 'Red', hex: '#ef4444' },
-  { key: 'blue', label: 'Blue', hex: '#3b82f6' },
-  { key: 'green', label: 'Green', hex: '#22c55e' },
-  { key: 'yellow', label: 'Yellow', hex: '#eab308' },
-];
-
-// M_BRAND.1 — brand-aligned mode labels. The labels are the
-// player-facing names; the keys are stable for save serialization.
-// M_BRAND.2 cascades the preset's mapSize/AI/etc into the visible
-// controls so the player sees what the preset implies without a
-// tagline; M_BRAND.3 frames the whole picker under a "Realm Presets"
-// heading and flips to "Custom Realm" once any control is altered.
-const MODES: ReadonlyArray<{ key: GameMode; label: string }> = [
-  { key: 'border-clash', label: 'Border Clash' },
-  { key: 'frontier-raid', label: 'Frontier Raid' },
-  { key: 'long-reign', label: 'Long Reign' },
-  { key: 'strata-wars', label: 'Strata Wars' },
-  { key: 'age-of-strata', label: 'Age of Strata' },
-  { key: 'coexistence', label: 'Coexistence' },
-];
+// M_SIMPLIFY.7 — STARTING_BONUSES / PLAYER_COLORS / MODES /
+// DIFFICULTIES extracted to src/hud/new-game-options.ts. The data
+// is static config; keeping it in the 600-line modal cost cognitive
+// load every time someone read this component.
 
 /** Props for the New Game modal. */
 export interface NewGameModalProps {
@@ -97,9 +61,6 @@ export interface NewGameModalProps {
   /** Called with the choices when the player begins the game. */
   onBegin: (choices: NewGameChoices) => void;
 }
-
-/** The three AI difficulty options. */
-const DIFFICULTIES: Difficulty[] = ['easy', 'normal', 'hard'];
 
 /** A segmented-control row of options. */
 function Segmented<T extends string>({
