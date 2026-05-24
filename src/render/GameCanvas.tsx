@@ -229,9 +229,7 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
   // useFrame() callback, so pausing here also pauses simulation — which
   // is the correct behaviour (no surprise weather changes / training
   // completions while the user has the app in the background).
-  // M_POLISH3.SCENE.1 — useDocumentVisible() + hasTestHook() are
-  // intentionally unused while we force frameloop='always'. Re-wire
-  // them once the headless canvas-blank issue is root-caused.
+  const visible = useDocumentVisible();
   return (
     <Canvas
       shadows={{ type: PCFSoftShadowMap }}
@@ -240,15 +238,9 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
       // M_POLISH3.B.1 — frameloop must stay 'always' even when
       // document.visibilityState === 'hidden' under Playwright
       // headless (where the tab is technically hidden but tests
-      // need the canvas to paint). The original pause-on-hidden
-      // logic protected against background CPU use; preserved here
-      // by gating on whether window.__game test hook is wired
-      // (e2e flow) — if it is, force 'always'.
-      // M_POLISH3.SCENE.1 — temporarily ALWAYS frameloop while
-      // root-causing the headless canvas-blank issue. visible/hidden
-      // gating is a perf optimisation, not a correctness contract;
-      // re-enable once the scene paints reliably.
-      frameloop="always"
+      // need the canvas to paint). Gate on the e2e test hook
+      // (window.__game) so prod still parks on hidden.
+      frameloop={visible || hasTestHook() ? 'always' : 'never'}
     >
       <Scene
         game={game}
@@ -266,6 +258,21 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
  * (which reports the tab as hidden until interaction) paints the
  * scene + test screenshots aren't empty.
  */
-// Note: previous hasTestHook() + useDocumentVisible() helpers
-// removed when frameloop was forced to 'always' under
-// M_POLISH3.SCENE.1. Re-introduce when canvas-blank is root-caused.
+function hasTestHook(): boolean {
+  if (typeof window === 'undefined') return false;
+  return '__game' in window;
+}
+
+/** Tracks document.visibilityState; rerenders the host on change. */
+function useDocumentVisible(): boolean {
+  const [visible, setVisible] = useState(
+    typeof document !== 'undefined' ? document.visibilityState !== 'hidden' : true,
+  );
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const onChange = () => setVisible(document.visibilityState !== 'hidden');
+    document.addEventListener('visibilitychange', onChange);
+    return () => document.removeEventListener('visibilitychange', onChange);
+  }, []);
+  return visible;
+}
