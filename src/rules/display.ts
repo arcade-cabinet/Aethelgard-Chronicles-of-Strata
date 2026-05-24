@@ -43,6 +43,9 @@ export const RESOURCE_DISPLAY: Record<ResourceType, ResourceDisplay> = {
   stone: { label: 'Stone', color: HUD_THEME.color.stone, domId: 'val-stone' },
   gold: { label: 'Gold', color: HUD_THEME.color.coin, domId: 'val-gold' },
   science: { label: 'Science', color: HUD_THEME.color.accent, domId: 'val-science' },
+  // M_EXPANSION.F.72 — mana display. Magenta reads as 'magic' and
+  // contrasts the existing accent blue used for science.
+  mana: { label: 'Mana', color: '#c084fc', domId: 'val-mana' },
 };
 
 /** Resolve display metadata for a resource type. */

@@ -37,7 +37,7 @@
   "unitCosts": {
     "Peon": { "wood": 5, "stone": 0, "gold": 0 },
     "Footman": { "wood": 0, "stone": 0, "gold": 15 },
-    "Wizard": { "wood": 0, "stone": 0, "gold": 20, "science": 25 }
+    "Wizard": { "wood": 0, "stone": 0, "gold": 20, "science": 25, "mana": 15 }
   },
   "roadCosts": {
     "stone": { "stone": 5, "wood": 0, "gold": 0 },
@@ -49,6 +49,7 @@
     "stone": 20,
     "gold": 20,
     "science": 0,
+    "mana": 0,
     "maxSupply": 5
   },
   "resourceSpawn": [
@@ -60,6 +61,7 @@
     "wood": 10,
     "stone": 8,
     "gold": 5,
-    "science": 0
+    "science": 0,
+    "mana": 0
   }
 }

@@ -67,7 +67,13 @@ export const Selectable = trait({ isSelected: false });
  * `RESOURCE_TYPES` (the enumerable list) so adding a 4th slot is one config
  * row + one union entry, never `if/elseif` branches.
  */
-export type ResourceType = 'wood' | 'stone' | 'gold' | 'science';
+/**
+ * Resource slots. `mana` (M_EXPANSION.F.72) is the 4th non-supply
+ * slot — drives Wizard training + Magic-spell SFX. The slot-iterating
+ * pattern means adding mana required one union entry + one config
+ * row in economy.json + one cost entry on the Wizard unit.
+ */
+export type ResourceType = 'wood' | 'stone' | 'gold' | 'science' | 'mana';
 
 /** The enumerable list of resource slots — iterate this, never hardcode individual slots. */
 export const RESOURCE_TYPES: readonly ResourceType[] = [
@@ -75,6 +81,7 @@ export const RESOURCE_TYPES: readonly ResourceType[] = [
   'stone',
   'gold',
   'science',
+  'mana',
 ] as const;
 
 /**

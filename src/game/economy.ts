@@ -22,6 +22,13 @@ export interface GameEconomy {
    * science-producing buildings.
    */
   science: number;
+  /**
+   * M_EXPANSION.F.72 — Mana, the 4th non-supply resource slot. Drives
+   * Wizard training cost + (future) magic-spell ability budgets. Starts
+   * at 0 like science; trickles up passively + faster with future
+   * mana-producing buildings (Library v2 / Crystal Shrine).
+   */
+  mana: number;
   /** Current supply consumed by units. */
   usedSupply: number;
   /** Supply cap — sum of owned buildings' supply contribution. */
@@ -45,6 +52,9 @@ export function createEconomy(): GameEconomy {
     stone: s.stone,
     gold: s.gold,
     science: s.science,
+    // M_EXPANSION.F.72 — mana starts at 0 by default; the config can
+    // override with a non-zero seed for a "wizard-start" preset.
+    mana: s.mana ?? 0,
     usedSupply: 0,
     maxSupply: s.maxSupply,
     kills: 0,

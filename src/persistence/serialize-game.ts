@@ -185,6 +185,10 @@ function pickEconomy(eco: unknown): GameEconomy {
     stone: safeFinite(e.stone, 0),
     gold: safeFinite(e.gold, 0),
     science: safeFinite(e.science, 0),
+    // M_EXPANSION.F.72 — mana slot; defaults to 0 for v0.3 saves
+    // that predate the slot (no snapshot version bump needed since
+    // safeFinite produces the same shape on missing input).
+    mana: safeFinite(e.mana, 0),
     usedSupply: safeFinite(e.usedSupply, 0),
     // Default to the fresh-game cap, not a magic 5 (simplifier feedback).
     maxSupply: safeFinite(e.maxSupply, ECONOMY.startingResources.maxSupply),

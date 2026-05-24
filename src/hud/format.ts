@@ -12,6 +12,9 @@ const SLOT_GLYPH: Record<ResourceType, string> = {
   stone: '🪨',
   gold: '🪙',
   science: '🧪',
+  // M_EXPANSION.F.72 — mana glyph: sparkles read as 'magic' across
+  // every locale without color-coding (a colorblind-safe pick).
+  mana: '✨',
 };
 
 /**

@@ -26,6 +26,10 @@ export const ATTRACTOR_GUARANTEE: Record<ResourceType, number> = {
   stone: 2,
   gold: 1,
   science: 0,
+  // M_EXPANSION.F.72 — mana is research-tier (not biome-spawned)
+  // like science; its guarantee is 0. A future mana-crystal biome
+  // resource (M_EXPANSION.F.76 / .F.86) would lift this above 0.
+  mana: 0,
 };
 
 /** Hex radius of an attractor's resource-guarantee zone (~2-tile zone of control). */

@@ -73,6 +73,16 @@ export const RESOURCE_PROFILES: Record<ResourceType, ResourceProfile> = {
     biomes: new Set(),
     topupAmount: 0,
   },
+  // M_EXPANSION.F.72 — mana is research-tier today (no world
+  // spawn); the mesh is a placeholder so a future mana-crystal
+  // scatter pass doesn't crash. The crystal-large mesh is the
+  // closest visual fit when that lands.
+  mana: {
+    meshLogicalId: 'nature.rock.crystal-large',
+    harvestYield: harvestYieldFor('mana'),
+    biomes: new Set(),
+    topupAmount: 0,
+  },
 };
 
 export function resourceProfileFor(type: ResourceType): ResourceProfile {

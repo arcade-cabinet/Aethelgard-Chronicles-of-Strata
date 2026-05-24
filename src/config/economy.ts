@@ -41,6 +41,8 @@ export interface EconomyConfig {
     gold: number;
     /** Starting science. */
     science: number;
+    /** M_EXPANSION.F.72 — starting mana. Optional in config; defaults to 0. */
+    mana?: number;
     /** Starting supply cap. */
     maxSupply: number;
   };

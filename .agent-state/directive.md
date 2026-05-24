@@ -1851,7 +1851,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 ### M_EXPANSION.FEATURE — gameplay scope expansions (71-100)
 
 - [x] [HIGH] M_EXPANSION.F.71 — Wonder building: a victory-condition structure (build → 5-min countdown → wonder-win)
-- [ ] [HIGH] M_EXPANSION.F.72 — Mana resource (4th slot): drives Wizard training + Magic-spell SFX
+- [x] [HIGH] M_EXPANSION.F.72 — Mana resource (5th slot) — DONE. Added `'mana'` to ResourceType union + RESOURCE_TYPES tuple + GameEconomy interface + 5 Record<ResourceType, X> tables (RESOURCE_DISPLAY, SLOT_GLYPH, ATTRACTOR_GUARANTEE, RESOURCE_PROFILES, harvestYield). Wizard unit cost in economy.json gains `mana: 15`. Starting economy gets mana=0 (optional in config, defaults). Snapshot deserializer's pickEconomy reads `mana` with 0-fallback so v0.3 saves load forward. Display: magenta `#c084fc` + ✨ glyph. 6 new tests in mana-resource.test.ts pin the slot-iterating contract works for mana through every API. 470/470 green.
   - Design spec landed in docs/specs/107-mana-resource.md. Implementation
     is an 8-step ripple (ResourceType → Profiles → Economy → ResourceBar
     → spawn → migration v1→v2 → Wizard cost rebalance → tests). WAIT until
