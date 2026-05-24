@@ -717,34 +717,54 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     }
   }
 
-  // advance time-based systems
+  // M_TURNS.1 — true turn-based gate. When the active turn is the
+  // player's, FREEZE the autonomous systems (AI decisions, enemy
+  // spawning, target selection, combat resolution, encroachment,
+  // harvest progress, science accumulation, offensive-behavior
+  // ticks). The player's clicks still flow through commands.ts and
+  // resolve immediately; unit path-follow ticks too so an issued
+  // move command visibly executes during the player turn. End-Turn
+  // flips game.turn.active to enemy, at which point this gate opens
+  // and the sim runs through the enemy's turn duration.
+  // Real-time modes (no game.turn) ALWAYS pass the gate.
+  const turnGateOpen = !game.turn || game.turn.active === 'enemy';
+
+  // advance time-based systems (clock + weather + autosave always
+  // tick — wall-clock visuals shouldn't freeze with the sim).
   advanceClock(game.clock, delta);
   advanceWeather(game.weather, game.eventRng, delta);
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 
-  // goal-driven AI players decide + issue commands on their own cadence
-  for (const ai of Object.values(game.aiPlayers)) ai?.tick(game, delta);
+  if (turnGateOpen) {
+    // goal-driven AI players decide + issue commands on their own cadence
+    for (const ai of Object.values(game.aiPlayers)) ai?.tick(game, delta);
 
-  // enemy spawning + AI unit-steering target selection
-  spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
-  aiSystem(game.world, game.board, game.navGraph);
+    // enemy spawning + AI unit-steering target selection
+    spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
+    aiSystem(game.world, game.board, game.navGraph);
+  }
 
+  // M_TURNS.1 — pathFollow ALWAYS ticks so the player can see issued
+  // move commands resolve mid-turn; the autonomous economy systems
+  // below gate on turnGateOpen.
   // movement + economy — apply rain speed penalty from weather state
   pathFollowSystem(game.world, delta, WEATHER_SPEED_MULTIPLIER[game.weather.state]);
-  // encroachment runs BEFORE peon routing so peons see this tick's pulse set
-  // (their decision rule routes them away from threatened tiles).
-  encroachmentSystem(game.world, game.zones, delta, game.difficulty);
-  jobRoutingSystem({
-    world: game.world,
-    board: game.board,
-    graph: game.navGraph,
-    baseKeys: { player: game.townHallKey, enemy: game.enemyBaseKey },
-    zones: game.zones,
-  });
-  harvestSystem(game.world, delta);
-  buildSystem(game.world, game.buildSites, delta);
-  // M_FEATURE.3 — passive trickle + per-Library science accumulation.
-  scienceSystem(game.world, game.economy, delta);
+  if (turnGateOpen) {
+    // encroachment runs BEFORE peon routing so peons see this tick's pulse set
+    // (their decision rule routes them away from threatened tiles).
+    encroachmentSystem(game.world, game.zones, delta, game.difficulty);
+    jobRoutingSystem({
+      world: game.world,
+      board: game.board,
+      graph: game.navGraph,
+      baseKeys: { player: game.townHallKey, enemy: game.enemyBaseKey },
+      zones: game.zones,
+    });
+    harvestSystem(game.world, delta);
+    buildSystem(game.world, game.buildSites, delta);
+    // M_FEATURE.3 — passive trickle + per-Library science accumulation.
+    scienceSystem(game.world, game.economy, delta);
+  }
   // Every offensive-behaviour entity (Watchtower today; future Wonder etc.)
   // damages enemy military in its radius — decoupled from building type.
   // Also emits visible projectile FX (cadence-gated; presentation only).
@@ -754,19 +774,22 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // private array (concat at end) so we don't mutate the immutable
   // combat result.
   const obDamage: DamageEvent[] = [];
-  offensiveBehaviorSystem(
-    game.world,
-    delta,
-    game.eventRng,
-    game.projectiles,
-    game.projectileCooldowns,
-    projectileIdRef,
-    obDamage,
-  );
-  if (obDamage.length > 0) {
-    game.lastDamageEvents = [...game.lastDamageEvents, ...obDamage];
+  if (turnGateOpen) {
+    offensiveBehaviorSystem(
+      game.world,
+      delta,
+      game.eventRng,
+      game.projectiles,
+      game.projectileCooldowns,
+      projectileIdRef,
+      obDamage,
+    );
+    if (obDamage.length > 0) {
+      game.lastDamageEvents = [...game.lastDamageEvents, ...obDamage];
+    }
   }
-  // advance + cull projectile FX
+  // advance + cull projectile FX always (in-flight projectiles
+  // from the enemy turn keep visually flying during player turn).
   advanceProjectiles(game.projectiles, delta);
 
   // recompute each faction's observed battlefield from current unit/base cones
@@ -789,8 +812,11 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   recomputeMaxSupply(game.economy.player, completeByFaction.player);
   recomputeMaxSupply(game.economy.enemy, completeByFaction.enemy);
 
-  // combat
-  game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta);
+  // combat — turn-gated so the player can pause to plan without
+  // their units being chewed up mid-thought.
+  if (turnGateOpen) {
+    game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta);
+  }
 
   // M_MODES.4 — endless mode: FactionBases are invulnerable. Clamp each
   // base entity's Health back to max after combat applies damage. Spec:

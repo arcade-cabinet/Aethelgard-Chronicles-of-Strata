@@ -180,3 +180,4 @@ tests/browser/**/__screenshots__
 .claude/worktrees/
 .clone/
 .claude/screenshots/
+.commit-msg.txt
