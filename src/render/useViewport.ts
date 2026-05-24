@@ -17,12 +17,7 @@ import { type CameraProfileConfig, WORLD } from '@/config/world';
  * switch on it explicitly. Adding this class is purely additive —
  * existing switch consumers fall through to a default branch.
  */
-export type ViewportClass =
-  | 'desktop'
-  | 'ultraWide'
-  | 'tablet'
-  | 'phoneLandscape'
-  | 'phonePortrait';
+export type ViewportClass = 'desktop' | 'ultraWide' | 'tablet' | 'phoneLandscape' | 'phonePortrait';
 
 /** Aspect-ratio threshold above which the viewport classifies as ultraWide. */
 const ULTRAWIDE_ASPECT = 2.4;

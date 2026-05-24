@@ -5,11 +5,6 @@ import { enterGame } from '../e2e/enter-game';
 
 /**
  * M_POLISH2.VISUAL.52 — weather state baselines.
- *
- * 3 weather states (sunny / fog / rain) × project × platform.
- * Forces game.weather.state via the dev-console accessor for
- * determinism — the natural weather-transition is wall-clock
- * scheduled and would never be reproducible in CI.
  */
 const STATES = ['sunny', 'fog', 'rain'] as const;
 
@@ -20,9 +15,8 @@ for (const state of STATES) {
       const skip = page.locator('button', { hasText: 'Skip' });
       if (await skip.count()) await skip.first().click();
       await page.evaluate((s: string) => {
-        // biome-ignore lint/suspicious/noExplicitAny: dev-console accessor
-        const g = (window as any).__game;
-        if (g?.weather) g.weather.state = s;
+        const w = window as unknown as { __game?: { weather?: { state: string } } };
+        if (w.__game?.weather) w.__game.weather.state = s;
       }, state);
       await page.waitForTimeout(500);
 

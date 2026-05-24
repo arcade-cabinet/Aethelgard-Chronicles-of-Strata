@@ -20,7 +20,9 @@ export function ScreenshotButton({ game }: { game: GameState }) {
 
   const onClick = () => {
     // The r3f canvas is the only non-minimap canvas in the DOM.
-    const canvas = document.querySelector('canvas:not(#minimap-canvas)') as HTMLCanvasElement | null;
+    const canvas = document.querySelector(
+      'canvas:not(#minimap-canvas)',
+    ) as HTMLCanvasElement | null;
     if (!canvas) return;
     let dataUrl: string;
     try {

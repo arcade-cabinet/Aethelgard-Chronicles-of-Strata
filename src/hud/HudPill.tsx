@@ -37,7 +37,10 @@ interface SlotPosition {
 // horizontal breathing room is not enough for the 'discoveries'
 // pill text). Re-spaced with a constant 80px stride and the
 // 'weather' pill inserted to the left of pause.
-const SLOT_POSITIONS: Record<'landscape' | 'portrait' | 'tablet', Record<HudPillSlot, SlotPosition>> = {
+const SLOT_POSITIONS: Record<
+  'landscape' | 'portrait' | 'tablet',
+  Record<HudPillSlot, SlotPosition>
+> = {
   landscape: {
     weather: { top: 12, right: 620 },
     speed: { top: 12, right: 540 },

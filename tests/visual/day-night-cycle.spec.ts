@@ -5,10 +5,6 @@ import { enterGame } from '../e2e/enter-game';
 
 /**
  * M_POLISH2.VISUAL.53 — day/night cycle baselines.
- *
- * 4 phases × project × platform. Forces game.clock.elapsed via
- * the dev-console accessor (each phase = DAY_LENGTH * { 0, 0.25,
- * 0.5, 0.75 } — dawn / noon / dusk / midnight).
  */
 const PHASES = [
   { name: 'dawn', fraction: 0 },
@@ -24,13 +20,13 @@ for (const { name, fraction } of PHASES) {
       const skip = page.locator('button', { hasText: 'Skip' });
       if (await skip.count()) await skip.first().click();
       await page.evaluate((f: number) => {
-        // biome-ignore lint/suspicious/noExplicitAny: dev-console accessor
-        const g = (window as any).__game;
+        const w = window as unknown as {
+          __game?: { clock?: { elapsed: number } };
+          WORLD?: { dayLength?: number };
+        };
+        const g = w.__game;
         if (g?.clock) {
-          // DAY_LENGTH is exposed on WORLD config; if not at runtime,
-          // 120s is the documented default in src/config/world.json.
-          // biome-ignore lint/suspicious/noExplicitAny: WORLD config
-          const dayLength = (window as any).WORLD?.dayLength ?? 120;
+          const dayLength = w.WORLD?.dayLength ?? 120;
           g.clock.elapsed = dayLength * f;
         }
       }, fraction);

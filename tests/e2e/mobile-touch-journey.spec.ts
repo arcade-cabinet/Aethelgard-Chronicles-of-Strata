@@ -25,11 +25,21 @@ test('mobile touch journey — every player action reachable via tap', async ({
   await expect(page.locator('#mobile-speed-pause-pill')).toBeVisible({ timeout: 4000 });
   // Tap pause segment.
   await page.locator('#mobile-pause').tap();
-  // Assert game.paused was flipped.
-  expect(await page.evaluate(() => Boolean((window as any).__game?.paused))).toBe(true);
+  // Assert game.paused was flipped via the dev-console accessor.
+  expect(
+    await page.evaluate(() => {
+      const w = window as unknown as { __game?: { paused?: boolean } };
+      return Boolean(w.__game?.paused);
+    }),
+  ).toBe(true);
   // Tap pause again to resume.
   await page.locator('#mobile-pause').tap();
-  expect(await page.evaluate(() => Boolean((window as any).__game?.paused))).toBe(false);
+  expect(
+    await page.evaluate(() => {
+      const w = window as unknown as { __game?: { paused?: boolean } };
+      return Boolean(w.__game?.paused);
+    }),
+  ).toBe(false);
 
   // BuildMenuButton FAB is at bottom-right; tap to surface the
   // SelectionPanel build buttons (B.1's open-build-menu listener
@@ -37,21 +47,16 @@ test('mobile touch journey — every player action reachable via tap', async ({
   await expect(page.locator('#hud-build-menu-button')).toBeVisible();
   await page.locator('#hud-build-menu-button').tap();
   await page.waitForTimeout(300);
-  // After the tap, selectedId should point at SOMETHING (the
-  // TownHall entity). We don't check the exact value because the
-  // packed entityId varies by spawn order.
-  const selectedId = await page.evaluate(() => (window as any).__game?.selectedId);
+  const selectedId = await page.evaluate(() => {
+    const w = window as unknown as { __game?: { selectedId?: number } };
+    return w.__game?.selectedId;
+  });
   expect(selectedId).not.toBeUndefined();
 
   // MobileSystemMenu hamburger at top-left.
   await expect(page.locator('#mobile-system-menu-trigger')).toBeVisible();
-  // Tap opens the menu; Settings should appear in the dropdown.
   await page.locator('#mobile-system-menu-trigger').tap();
   await page.waitForTimeout(300);
-  // The Radix portal may not always open under synthetic .tap();
-  // be defensive — if the menu opened, assert the items are
-  // present; if not, that's a known Radix-portal interaction we
-  // don't fail on.
   const settingsItem = page.locator('#mobile-system-menu-settings');
   if (await settingsItem.count()) {
     await expect(settingsItem).toBeVisible();

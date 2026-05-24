@@ -135,8 +135,8 @@ export function GameOverModal({ game }: { game: GameState }) {
           >
             👑 Survived {formatTime(game.clock.elapsed)} — Endured{' '}
             {formatInt(game.randomEvents.fired ?? 0)} escalation
-            {(game.randomEvents.fired ?? 0) === 1 ? '' : 's'} — Built{' '}
-            {formatInt(playerBuildings)} structure
+            {(game.randomEvents.fired ?? 0) === 1 ? '' : 's'} — Built {formatInt(playerBuildings)}{' '}
+            structure
             {playerBuildings === 1 ? '' : 's'}
           </div>
         )}
