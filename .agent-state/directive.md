@@ -1120,7 +1120,7 @@ M_ARCH_UNIFY drains.
   - [x] [MUST-FIX] M_CODE_REVIEW.3 — auto-save.ts unhandledRejection on transient save failure; DONE — added .catch() before .finally() that logs the error at warn level without re-propagating.
   - [ ] [SHOULD-FIX] M_CODE_REVIEW.4 — persistence.ts crypto fallback uses Math.random()/Date.now() for key material; covered by M_SEC_REVIEW.1 above (same root issue).
   - [x] [SHOULD-FIX] M_CODE_REVIEW.5 — DONE. tradeResource now enforces a TRADEABLE_RESOURCES Set ({wood, stone, gold}) — science + mana return false. 2 new tests pin the reject paths.
-  - [ ] [SHOULD-FIX] M_CODE_REVIEW.6 — main.tsx `as any` cast in audio bridge for unknown unitType; replace with `is UnitType` type guard.
+  - [x] [SHOULD-FIX] M_CODE_REVIEW.6 — DONE. main.tsx audio bridge uses Object.hasOwn(profiles.UNIT_PROFILES, u) guard before calling unitProfileFor. Unknown unitTypes log a single dev warning + fall through to 'unit-death-normal' instead of silently swallowing in try/catch. Bugs surface; audio bridge still doesn't crash.
   - [ ] [NICE] M_CODE_REVIEW.7 — KeyboardShortcuts.tsx 6 trigger-build switch arms; covered by M_SIMPLIFY.1 (DONE above).
   - [ ] [NICE] M_CODE_REVIEW.8 — MapPreview.tsx generateBoard fires per keystroke; add 300ms debounce on seedPhrase for mid-tier Android.
 

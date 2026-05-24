@@ -85,10 +85,21 @@ if (typeof window !== 'undefined') {
     if (!detail) return;
     void Promise.all([import('@/audio/ui-sound-emitter'), import('@/rules/unit-profiles')]).then(
       ([emitter, profiles]) => {
-        // Defensive: unknown unit type → silent (don't crash audio bridge).
+        // M_CODE_REVIEW.6 — runtime type guard replaces the prior
+        // `as any` cast. profiles.UNIT_PROFILES is the registry; we
+        // narrow detail.unitType via Object.hasOwn before calling
+        // unitProfileFor. Unknown unitTypes now produce a single
+        // dev warning instead of silently swallowing in try/catch
+        // — bugs surface, the audio bridge still doesn't crash.
+        const u = detail.unitType;
+        if (!Object.hasOwn(profiles.UNIT_PROFILES, u)) {
+          console.warn('[audio-bridge] unknown unitType in unit-death event:', u);
+          emitter.emitUiSound('unit-death-normal');
+          return;
+        }
+        // u is now known to be a key of UNIT_PROFILES — safe cast.
+        const p = profiles.unitProfileFor(u as keyof typeof profiles.UNIT_PROFILES);
         try {
-          // biome-ignore lint/suspicious/noExplicitAny: cross-module string narrow
-          const p = profiles.unitProfileFor(detail.unitType as any);
           const event =
             p.damageType === 'siege'
               ? 'unit-death-siege'
