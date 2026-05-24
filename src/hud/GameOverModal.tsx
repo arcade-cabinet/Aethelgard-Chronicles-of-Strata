@@ -35,12 +35,18 @@ export function GameOverModal({ game }: { game: GameState }) {
     };
     raf = requestAnimationFrame(tick);
 
-    // M_POLISH3.SCENE.4 — also subscribe to the explicit
-    // outcome-changed CustomEvent so e2e __triggerGameOver flips
-    // the Dialog open immediately (without depending on rAF
-    // cadence in headless / hidden tabs). Read from the live game
-    // ref (not the closure) so a stale closure can't miss the
-    // new value.
+    // M_POLISH3.SCENE.4 — belt-and-suspenders: 100ms setInterval
+    // poll alongside rAF. rAF is throttled in headless / hidden
+    // tabs but setInterval continues. Stops itself once outcome
+    // is terminal. Also subscribes to an explicit CustomEvent for
+    // immediate flip on programmatic triggers (e2e harness +
+    // future multiplayer 'opponent surrendered' path).
+    const interval = window.setInterval(() => {
+      if (game.outcome !== 'playing') {
+        setOutcome(game.outcome);
+        window.clearInterval(interval);
+      }
+    }, 100);
     const onOutcomeChanged = (e: Event) => {
       const detail = (e as CustomEvent<{ outcome: GameOutcome }>).detail;
       const next = detail?.outcome ?? game.outcome;
@@ -50,6 +56,7 @@ export function GameOverModal({ game }: { game: GameState }) {
 
     return () => {
       cancelAnimationFrame(raf);
+      window.clearInterval(interval);
       window.removeEventListener('aethelgard:outcome-changed', onOutcomeChanged);
     };
   }, [game]);
