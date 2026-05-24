@@ -185,6 +185,22 @@ function discoveredEnemyTile(game: GameState, faction: Faction): string | null {
     // OR a tile we currently observe (the observed battlefield).
     if (myZone.has(key) || game.zones[faction].observed.has(key)) return key;
   }
+  // M_FUN.QA.AIVAI.TUNE.PATTERN-B — rage-quit fallback. If we've been
+  // playing for RAGE_QUIT_THRESHOLD sim-seconds without ever spotting
+  // an enemy through legitimate observation, target a WALKABLE
+  // neighbour of the opposing base. The base tile itself is
+  // non-walkable (CodeRabbit fix), so findPath to it would return
+  // null. The first walkable neighbour suffices — combat tick will
+  // engage the base from there once the unit arrives.
+  const RAGE_QUIT_THRESHOLD = 90;
+  if (game.clock.elapsed >= RAGE_QUIT_THRESHOLD) {
+    const oppBaseKey = faction === 'player' ? game.enemyBaseKey : game.townHallKey;
+    const { q: bq, r: br } = parseHexKey(oppBaseKey);
+    for (const nKey of hexNeighbors(bq, br)) {
+      const tile = game.board.tiles.get(nKey);
+      if (tile?.walkable) return nKey;
+    }
+  }
   return null;
 }
 
@@ -375,7 +391,16 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
     const modeMul = profile.militaryWeight * urgency * this.personalityMul;
     // higher score when a tile we own is pulsing — defence is urgent
     if (firstPulsingTile(owner.game, owner.faction)) return 0.85 * bias * modeMul;
-    return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 * bias * modeMul : 0;
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-B — once rage-quit kicks in
+    // (game elapsed past RAGE_QUIT_THRESHOLD), Military desirability
+    // OVERRIDES Build — we've sat on builds too long, time to
+    // engage. Without this boost the Builder personality keeps
+    // out-scoring military forever even after we have a target.
+    const RAGE_QUIT_THRESHOLD = 90;
+    const ragequit = owner.game.clock.elapsed >= RAGE_QUIT_THRESHOLD;
+    const hasTarget = discoveredEnemyTile(owner.game, owner.faction);
+    if (!hasTarget) return 0;
+    return ragequit ? 1.5 * bias * modeMul : 0.6 * bias * modeMul;
   }
 
   setGoal(owner: AiPlayer): void {
