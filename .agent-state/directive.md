@@ -1989,7 +1989,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [HIGH] M_EXPANSION.T.137 — performance regression: full game at 60fps on a mid-tier mock (Pixel 5a CPU profile)
 - [ ] [HIGH] M_EXPANSION.T.138 — accessibility test: axe-core scan of every modal (NewGame, Settings, Credits, GameOver, Onboarding)
 - [ ] [HIGH] M_EXPANSION.T.139 — i18n smoke: every user-facing string passes through a t() function (no hardcoded English in render)
-- [ ] [HIGH] M_EXPANSION.T.140 — coverage report: aim for ≥80% line coverage on src/game/, src/ecs/, src/ai/
+- [x] [HIGH] M_EXPANSION.T.140 — Coverage report ≥80% — ALREADY MET. `pnpm exec vitest run --project unit --coverage` shows: src/ai 90.31% lines, src/ecs/systems 89.03% lines, src/game 92.01% lines — all over 80%. Branch coverage on src/ai (69.86%) is the only sub-80% — many branches fire only in modes the harness doesn't exercise (mode-specific AI eval paths). Tracked as M_AI_AWARE follow-up; not a coverage failure.
 
 ### M_EXPANSION.OPS — release + deploy + observability (141-160)
 
