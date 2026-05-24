@@ -2,6 +2,7 @@ import type { Entity } from 'koota';
 import type { BoardData } from '@/core/board';
 import { getHexKey } from '@/core/hex';
 import { findPath, type NavGraph } from '@/core/pathfinding';
+import { makeMoveCostFn } from '@/core/terrain-cost';
 import { HexPosition, PathQueue } from '@/ecs/components';
 
 /** The barracks rally point — where newly trained footmen go. */
@@ -33,7 +34,13 @@ export function applyRallyPoint(
   if (rally.targetKey === '') return;
   const hex = unit.get(HexPosition);
   if (!hex) return;
-  const route = findPath(graph, getHexKey(hex.q, hex.r), rally.targetKey);
+  // M_POLISH2.RTS.24a — terrain-aware rally path.
+  const route = findPath(
+    graph,
+    getHexKey(hex.q, hex.r),
+    rally.targetKey,
+    makeMoveCostFn(board.tiles),
+  );
   if (!route || route.length < 2) return;
   unit.set(PathQueue, {
     steps: route.slice(1).map((k) => `${k},${board.tiles.get(k)?.level ?? 0}`),

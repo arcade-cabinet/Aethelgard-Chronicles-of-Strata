@@ -2,6 +2,7 @@ import type { World } from 'koota';
 import type { BoardData } from '@/core/board';
 import { getHexKey, hexNeighbors, parseHexKey } from '@/core/hex';
 import { findPath, type NavGraph } from '@/core/pathfinding';
+import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
   AssignedJob,
   Carrier,
@@ -24,13 +25,19 @@ function leveledSteps(board: BoardData, path: string[]): string[] {
  * Find a path ending on a walkable tile adjacent to `targetKey` — a peon stands
  * *next to* a resource or base, never on it. Returns null if none is reachable.
  */
-function pathToAdjacent(graph: NavGraph, startKey: string, targetKey: string): string[] | null {
+function pathToAdjacent(
+  graph: NavGraph,
+  startKey: string,
+  targetKey: string,
+  costOf?: (key: string) => number,
+): string[] | null {
   const { q: tq, r: tr } = parseHexKey(targetKey);
   let best: string[] | null = null;
   for (const adj of hexNeighbors(tq, tr)) {
     if (!graph.has(adj)) continue;
     if (adj === startKey) return [];
-    const route = findPath(graph, startKey, adj);
+    // M_POLISH2.RTS.24a — terrain-cost-aware peon routing.
+    const route = findPath(graph, startKey, adj, costOf);
     if (route && (best === null || route.length < best.length)) best = route.slice(1);
   }
   return best;
@@ -56,6 +63,9 @@ export interface PeonRoutingContext {
  */
 export function jobRoutingSystem(ctx: PeonRoutingContext): void {
   const { world, board, graph, baseKeys, zones } = ctx;
+  // M_POLISH2.RTS.24a — peons prefer cheap (grass/beach/desert)
+  // routes over FOREST (1.25×) / HIGHLAND (1.5×).
+  const costOf = makeMoveCostFn(board.tiles);
 
   // index live resource sites (amount > 0) once
   const allResources: ResourceSite[] = [];
@@ -103,7 +113,7 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
           job.state = 'SEEKING';
           job.targetKey = action.targetKey;
           if (path.steps.length === 0) {
-            const route = pathToAdjacent(graph, peonKey, action.targetKey);
+            const route = pathToAdjacent(graph, peonKey, action.targetKey, costOf);
             if (route) path.steps = leveledSteps(board, route);
             else {
               job.state = 'IDLE';
@@ -122,7 +132,7 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
         case 'carry-home': {
           job.state = 'CARRYING';
           if (path.steps.length === 0) {
-            const route = pathToAdjacent(graph, peonKey, baseKeys[faction]);
+            const route = pathToAdjacent(graph, peonKey, baseKeys[faction], costOf);
             if (route) path.steps = leveledSteps(board, route);
           }
           break;
@@ -137,7 +147,7 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
           job.state = 'SEEKING';
           job.targetKey = '';
           path.steps = [];
-          const route = pathToAdjacent(graph, peonKey, baseKeys[faction]);
+          const route = pathToAdjacent(graph, peonKey, baseKeys[faction], costOf);
           if (route) path.steps = leveledSteps(board, route);
           break;
         }

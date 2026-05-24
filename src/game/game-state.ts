@@ -5,6 +5,7 @@ import { type BoardData, generateBoard } from '@/core/board';
 import { getHexKey, hexDistance, hexNeighbors } from '@/core/hex';
 import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
 import { chokePointMultiplier } from '@/rules/choke-points';
+import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
   AssignedJob,
   AttractorBehavior,
@@ -846,7 +847,9 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     // M_POLISH2.RTS.16 — player military unit stance-driven target selection.
     // Runs after aiSystem so the enemy targets are settled for this tick, then
     // player units pick their own targets based on stance mode.
-    stanceBehaviorSystem(game.world, game.navGraph);
+    // M_POLISH2.RTS.24a — pass the terrain-cost lambda so player
+    // stance moves prefer cheap routes over forest/highland tiles.
+    stanceBehaviorSystem(game.world, game.navGraph, makeMoveCostFn(game.board.tiles));
   }
 
   // M_TURNS.1 — pathFollow ALWAYS ticks so the player can see issued

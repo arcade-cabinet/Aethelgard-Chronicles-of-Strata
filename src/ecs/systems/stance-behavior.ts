@@ -59,7 +59,16 @@ const DEFENSIVE_ENGAGE_RADIUS = 4;
  * @param world  - The koota ECS world.
  * @param graph  - Pre-built A* navigation graph (for return-to-home pathing).
  */
-export function stanceBehaviorSystem(world: World, graph: NavGraph): void {
+export function stanceBehaviorSystem(
+  world: World,
+  graph: NavGraph,
+  /**
+   * M_POLISH2.RTS.24a — optional per-tile move cost. When provided,
+   * A* picks the cheapest route (FOREST/HIGHLAND-aware) instead of
+   * the shortest-by-distance route.
+   */
+  costOf?: (key: string) => number,
+): void {
   // Build an id → entity index for enemy health checks (identical pattern to
   // combatSystem). Rebuilt each tick so dead entities don't linger.
   const byId = new Map<number, ReturnType<World['query']>[number]>();
@@ -154,7 +163,7 @@ export function stanceBehaviorSystem(world: World, graph: NavGraph): void {
           if (nh) {
             const startKey = `${hex.q},${hex.r}`;
             const endKey = `${nh.q},${nh.r}`;
-            const route = findPath(graph, startKey, endKey);
+            const route = findPath(graph, startKey, endKey, costOf);
             if (route && route.length > 1) {
               // Steps are tile keys; pathFollowSystem handles level look-up.
               e.set(PathQueue, { steps: route.slice(1) });
@@ -195,7 +204,7 @@ export function stanceBehaviorSystem(world: World, graph: NavGraph): void {
           if (nh) {
             const startKey = `${hex.q},${hex.r}`;
             const endKey = `${nh.q},${nh.r}`;
-            const route = findPath(graph, startKey, endKey);
+            const route = findPath(graph, startKey, endKey, costOf);
             if (route && route.length > 1) {
               e.set(PathQueue, { steps: route.slice(1) });
             }
@@ -206,7 +215,7 @@ export function stanceBehaviorSystem(world: World, graph: NavGraph): void {
           if (distFromHome > 0) {
             const startKey = `${hex.q},${hex.r}`;
             const homeKey = `${homeQ},${homeR}`;
-            const route = findPath(graph, startKey, homeKey);
+            const route = findPath(graph, startKey, homeKey, costOf);
             if (route && route.length > 1) {
               e.set(PathQueue, { steps: route.slice(1) });
             }

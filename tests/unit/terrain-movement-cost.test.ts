@@ -25,8 +25,18 @@ describe('M_POLISH2.RTS.24 — terrain movement cost', () => {
     // If a future biome is added without a row, runtime returns undefined
     // and the fallback returns 1 — the test asserts the table is full
     // for the present set.
-    const required = ['OCEAN', 'LAKE', 'BEACH', 'DESERT', 'GRASS', 'FOREST', 'HIGHLAND', 'MOUNTAIN'];
-    for (const b of required) expect(TERRAIN_MOVE_COST[b as keyof typeof TERRAIN_MOVE_COST]).toBeDefined();
+    const required = [
+      'OCEAN',
+      'LAKE',
+      'BEACH',
+      'DESERT',
+      'GRASS',
+      'FOREST',
+      'HIGHLAND',
+      'MOUNTAIN',
+    ];
+    for (const b of required)
+      expect(TERRAIN_MOVE_COST[b as keyof typeof TERRAIN_MOVE_COST]).toBeDefined();
   });
 
   /**

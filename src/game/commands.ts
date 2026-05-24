@@ -3,6 +3,7 @@ import { emitUiSound } from '@/audio/ui-sound-emitter';
 import { roadCostFor } from '@/config/economy';
 import { getHexKey, hexNeighbors, parseHexKey } from '@/core/hex';
 import { findPath } from '@/core/pathfinding';
+import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
   AssignedJob,
   AttractorBehavior,
@@ -86,7 +87,10 @@ export function moveUnit(
   const hex = unit.get(HexPosition);
   if (!hex) return null;
   const startKey = getHexKey(hex.q, hex.r);
-  const path = findPath(game.navGraph, startKey, targetKey);
+  // M_POLISH2.RTS.24a — terrain-aware A*. FOREST/HIGHLAND tiles cost
+  // 1.25× / 1.5× to traverse, so the unit picks the cheaper route
+  // even when it's slightly longer in hex-distance.
+  const path = findPath(game.navGraph, startKey, targetKey, makeMoveCostFn(game.board.tiles));
   if (!path || path.length < 2) return null;
   const steps = path.slice(1).map((key) => toLeveledStep(game, key));
   unit.set(PathQueue, { steps });

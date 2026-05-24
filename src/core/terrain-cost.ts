@@ -27,3 +27,22 @@ export const TERRAIN_MOVE_COST: Record<BiomeType, number> = {
 export function moveCostFor(biome: BiomeType): number {
   return TERRAIN_MOVE_COST[biome] ?? 1;
 }
+
+/**
+ * Build a costOf(key) closure suitable for `findPath`. Takes a
+ * board's tiles map; returns 1.0 for unknown keys (defensive — A*
+ * iterates neighbours from the nav graph which was built from the
+ * same board, so unknown keys shouldn't happen but the fallback
+ * prevents a corrupt save from crashing the pathfind).
+ *
+ * Usage:
+ *   const costOf = makeMoveCostFn(game.board.tiles);
+ *   const path = findPath(game.navGraph, startKey, targetKey, costOf);
+ */
+import type { BoardData } from './board';
+export function makeMoveCostFn(tiles: BoardData['tiles']): (key: string) => number {
+  return (key) => {
+    const t = tiles.get(key);
+    return t ? moveCostFor(t.type) : 1;
+  };
+}
