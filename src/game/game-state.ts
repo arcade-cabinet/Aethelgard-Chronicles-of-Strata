@@ -72,6 +72,7 @@ import { createEconomy, type GameEconomy } from './economy';
 import { createRally, type RallyState } from './rally';
 import { createResearch, type ResearchState } from './research';
 import { advanceWeather, createWeather, WEATHER_SPEED_MULTIPLIER, type Weather } from './weather';
+import { createRandomEventsState, type RandomEventsState, tickRandomEvents } from './random-events';
 import {
   BASE_UNIT_VISION_RADIUS,
   createZoneState,
@@ -214,6 +215,12 @@ export interface GameState {
   clock: GameClock;
   /** The current weather state — drives movement penalty and visual effects. */
   weather: Weather;
+  /**
+   * M_EXPANSION.F.81 — random-events scheduler state. Advances each
+   * tick; on a roll, may fire a one-shot world event
+   * (weather-spike / raid-warning / refugee-arrival).
+   */
+  randomEvents: RandomEventsState;
   /** Which research upgrades have been purchased this session. */
   research: ResearchState;
   /** The barracks rally point — where newly trained footmen are directed. */
@@ -665,6 +672,8 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     eventRng,
     clock: createClock(),
     weather: createWeather(),
+    // M_EXPANSION.F.81 — random-events scheduler.
+    randomEvents: createRandomEventsState(),
     research: createResearch(),
     rally: createRally(),
     zones: seedZonesFromAttractors({ player: createZoneState(), enemy: createZoneState() }, board, {
@@ -803,6 +812,10 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // tick — wall-clock visuals shouldn't freeze with the sim).
   advanceClock(game.clock, delta);
   advanceWeather(game.weather, game.eventRng, delta);
+  // M_EXPANSION.F.81 — random-event scheduler ticks alongside weather
+  // (both are wall-clock-driven scheduled events). Outcome is one-
+  // shot world mutations + an aria-live announcement.
+  tickRandomEvents(game, game.eventRng, delta);
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 
   if (turnGateOpen) {
