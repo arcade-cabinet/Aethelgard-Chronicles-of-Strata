@@ -78,6 +78,20 @@ function install(): void {
     push('console.error', msg);
     origConsoleError(...args);
   };
+  // 3b. M_POLISH3.FB.3 — also patch console.warn. Persistence /
+  // resume / audio / onboarding all log warnings on real failures
+  // that the user should see; surfacing them in the overlay lets
+  // the agent + the player notice them without trawling DevTools.
+  const origConsoleWarn = console.warn.bind(console);
+  console.warn = (...args: unknown[]) => {
+    const msg = args
+      .map((a) => (a instanceof Error ? `${a.message}\n${a.stack ?? ''}` : String(a)))
+      .join(' ');
+    // suppress the well-known THREE.* deprecation warnings — they're
+    // upstream noise on every page load, not actionable signals.
+    if (!msg.startsWith('THREE.')) push('console.warn', msg);
+    origConsoleWarn(...args);
+  };
   // 4. Patch fetch so 4xx/5xx + network errors surface
   const origFetch = window.fetch.bind(window);
   window.fetch = async (...args: Parameters<typeof fetch>): Promise<Response> => {
