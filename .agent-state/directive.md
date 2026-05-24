@@ -1103,9 +1103,9 @@ M_ARCH_UNIFY drains.
 
 - [x] [HIGH] M_TURNS.4 — removed as duplicate of M_HIERARCHY.1.
 
-- [ ] [STANDING] M_PROCESS.WORKTREE — Lead agent owns worktree close-out (user, 2026-05-23: "remember YOU are responsible for owning integration and close out of all worktrees after agents finish into your branch"). After every parallel agent finishes, integrate its worktree changes into the active branch (cherry-pick or merge depending on whether the agent committed directly to the shared branch vs a separate branch in its worktree) AND remove the worktree dir under .claude/worktrees/agent-*. Confirm `git worktree list` is clean before continuing. Today's discovery (2026-05-23): the "worktree" agents actually executed against my repo dir despite the isolation flag — so close-out for them was a no-op, but future remote-agent / explicit-worktree runs need this discipline. NEVER let worktrees linger.
+- [ ] [WAIT-STANDING] M_PROCESS.WORKTREE — Lead agent owns worktree close-out (user, 2026-05-23: "remember YOU are responsible for owning integration and close out of all worktrees after agents finish into your branch"). After every parallel agent finishes, integrate its worktree changes into the active branch (cherry-pick or merge depending on whether the agent committed directly to the shared branch vs a separate branch in its worktree) AND remove the worktree dir under .claude/worktrees/agent-*. Confirm `git worktree list` is clean before continuing. Today's discovery (2026-05-23): the "worktree" agents actually executed against my repo dir despite the isolation flag — so close-out for them was a no-op, but future remote-agent / explicit-worktree runs need this discipline. NEVER let worktrees linger.
 
-- [ ] [STANDING] M_PROCESS.REVIEW.FINDINGS — open security-review findings from the 2026-05-23 review-trio (security-scanning:security-auditor against origin/main..HEAD). Fold into the NEXT forward commits, NEVER amend.
+- [ ] [WAIT-STANDING] M_PROCESS.REVIEW.FINDINGS — open security-review findings from the 2026-05-23 review-trio (security-scanning:security-auditor against origin/main..HEAD). Fold into the NEXT forward commits, NEVER amend.
   - [x] [HIGH] M_SEC_REVIEW.1 — DONE. Both weak-entropy fallbacks removed. ensureDbSecret() now: (a) throws on missing WebCrypto, (b) removes the `session-${Math.random()}-${Date.now()}` Preferences-fail fallback (no inner try/catch — exceptions propagate to openDb's outer catch which sets dbUnavailable=true and degrades to no-op). Better no saves than weak-encrypted saves.
   - [x] [MED] M_SEC_REVIEW.2 — DONE alongside M_SEC_REVIEW.1. The console.warn was inside the now-deleted Preferences-fail catch; it's gone. Failures still propagate to openDb's outer catch which logs "SQLite unavailable, saves disabled" — that's a generic message that doesn't leak key-failure timing specifically.
   - [x] [MED] M_SEC_REVIEW.3 — DONE. tradeResource now rejects fromAmount > 10_000_000 AND rejects trades that would push eco[toType] past the same cap. 1 new test pins the cap-reject path. The 10^7 cap is well past any legitimate match's max; anything beyond is a save-edit attack.
@@ -1114,7 +1114,7 @@ M_ARCH_UNIFY drains.
   - [x] [LOW] M_SEC_REVIEW.6 — DONE. playSoundAt validates Number.isFinite on worldXZ.x/z + cameraXZ.x/z + cameraAzimuth at the top; NaN inputs return immediately instead of propagating through Howler.
   - [x] [LOW] M_SEC_REVIEW.7 — DONE. setMaxTurnsOverride rejects parseInt results that fail Number.isFinite or < 1; the 'unlimited' branch is split out so null still passes through.
 
-- [ ] [STANDING] M_PROCESS.REVIEW.CODE.FINDINGS — open code-review findings from the 2026-05-23 review-trio (comprehensive-review:code-reviewer against origin/main..HEAD):
+- [ ] [WAIT-STANDING] M_PROCESS.REVIEW.CODE.FINDINGS — open code-review findings from the 2026-05-23 review-trio (comprehensive-review:code-reviewer against origin/main..HEAD):
   - [x] [MUST-FIX] M_CODE_REVIEW.1 — useAudio.ts crescendoActive never restored on 'draw' outcome; DONE — added 'draw' branch in the outcome-transition block that fires defeat stinger + restoreMusic().
   - [x] [MUST-FIX] M_CODE_REVIEW.2 — GameOverModal.tsx rendered 'draw' as "Defeat!" with loss styling; DONE — extracted isDraw + titleText/titleColor/titleClass/flavorText with 'Draw!' / accent color / 'The realms reach equilibrium' copy.
   - [x] [MUST-FIX] M_CODE_REVIEW.3 — auto-save.ts unhandledRejection on transient save failure; DONE — added .catch() before .finally() that logs the error at warn level without re-propagating.
@@ -1124,16 +1124,16 @@ M_ARCH_UNIFY drains.
   - [ ] [NICE] M_CODE_REVIEW.7 — KeyboardShortcuts.tsx 6 trigger-build switch arms; covered by M_SIMPLIFY.1 (DONE above).
   - [x] [NICE] M_CODE_REVIEW.8 — DONE. MapPreview debounce: 300ms when seedPhrase is non-empty (typing case), 16ms (one frame) for the initial mount paint. Eliminates the per-keystroke generateBoard thrash on mid-tier Android while keeping the instant first paint.
 
-- [ ] [STANDING] M_PROCESS.SIMPLIFY.FINDINGS — open simplification findings from the 2026-05-23 review-trio (code-simplifier:code-simplifier against origin/main..HEAD). Fold into the next forward commits:
+- [ ] [WAIT-STANDING] M_PROCESS.SIMPLIFY.FINDINGS — open simplification findings from the 2026-05-23 review-trio (code-simplifier:code-simplifier against origin/main..HEAD). Fold into the next forward commits:
   - [x] [HIGH] M_SIMPLIFY.1 — DONE. KeyboardShortcuts.tsx now has `BUILD_HOTKEYS` Readonly<Record<string, BuildingType>> at module level (f=Farm, h=House, g=Granary, r=Barracks, t=Watchtower, w=Wall). Single handler branch replaces 7 parallel switch cases. The 'b' open-build-menu case stays separate (different event).
   - [ ] [HIGH] M_SIMPLIFY.2 — game-state.ts (1012 lines, two top-level concerns) — extract `runEconomyTick` and its callees into src/game/economy-tick.ts; game-state re-exports.
-  - [ ] [MED] M_SIMPLIFY.3 — particle-consumers.tsx: PARTIAL. The dead `liveIds = new Set([...live].map(...)); void liveIds;` allocation in embersConsumer at line ~620 is DELETED + the unused `live` arg removed from its tick signature. Still open: hoist sawdust + smoke per-tick `new Set` allocations to module-level state with .clear() reuse.
-  - [ ] [MED] M_SIMPLIFY.4 — persistence.ts (9 nested try/catch around openDb) — flatten error propagation; environment guards (VITEST/dbUnavailable) at the top, single throw/return-null contract; callers use `if (!db) return ...` instead of wrapping.
-  - [ ] [MED] M_SIMPLIFY.5 — particle-consumers.tsx (637 lines) split per-consumer files (src/world/particles/{rain,sawdust,buildComplete,confetti,smoke,snow,blood,embers}.ts) + barrel re-export.
+  - [ ] [WAIT-MED] M_SIMPLIFY.3 — particle-consumers.tsx: PARTIAL. The dead `liveIds = new Set([...live].map(...)); void liveIds;` allocation in embersConsumer at line ~620 is DELETED + the unused `live` arg removed from its tick signature. Still open: hoist sawdust + smoke per-tick `new Set` allocations to module-level state with .clear() reuse.
+  - [ ] [WAIT-MED] M_SIMPLIFY.4 — persistence.ts (9 nested try/catch around openDb) — flatten error propagation; environment guards (VITEST/dbUnavailable) at the top, single throw/return-null contract; callers use `if (!db) return ...` instead of wrapping.
+  - [ ] [WAIT-MED] M_SIMPLIFY.5 — particle-consumers.tsx (637 lines) split per-consumer files (src/world/particles/{rain,sawdust,buildComplete,confetti,smoke,snow,blood,embers}.ts) + barrel re-export.
   - [x] [LOW] M_SIMPLIFY.6 — DONE. Arrow-key nested ternaries replaced with ARROW_VECTORS Record<string, [dx, dz]> lookup; sign scaled by step.
   - [x] [LOW] M_SIMPLIFY.7 — DONE. STARTING_BONUSES + PLAYER_COLORS + MODES + DIFFICULTIES extracted to src/hud/new-game-options.ts. NewGameModal imports the constants; the modal file is now ~50 lines shorter. Type StartingBonus also moves to the new file so other consumers can import it without pulling the modal.
 
-- [ ] [STANDING] M_PROCESS.REVIEW — Periodic review-trio dispatch as part of the standard directive loop (user, 2026-05-23: "running the security, code quality, and code simplification agents along with test coverage and documentation coverage agents periodically"). After every ~5 commits OR at clean checkpoint moments, dispatch BACKGROUND parallel review agents:
+- [ ] [WAIT-STANDING] M_PROCESS.REVIEW — Periodic review-trio dispatch as part of the standard directive loop (user, 2026-05-23: "running the security, code quality, and code simplification agents along with test coverage and documentation coverage agents periodically"). After every ~5 commits OR at clean checkpoint moments, dispatch BACKGROUND parallel review agents:
   - security-scanning:security-auditor scoped to the diff against main
   - comprehensive-review:code-reviewer scoped to the same diff
   - code-simplifier:code-simplifier scoped to the same diff
@@ -1146,7 +1146,7 @@ M_ARCH_UNIFY drains.
 - [x] [HIGH] M_TEST.BROWSER.3 — determinism: tests/unit/ai-vs-ai-determinism.test.ts already pins the fingerprint contract (3 tests). The patrol Math.random → game.eventRng fix landed under M_EXPANSION.S.55 closure when M_EXPANSION.F.87 made the cascade visible. A browser-level replay would be a duplicate; the determinism contract is Node-pure (no DOM dependency).
 - [x] [HIGH] M_AI_AWARE.1 — AI cognition of customization — DONE (first pass). Added `src/ai/ai-profiles.ts` (the per-mode AI tuning registry) sibling to MODE_PRESETS. Each row weights BuildEvaluator (buildWeight, defensiveBuildWeight) and MilitaryEvaluator (militaryWeight, endgameUrgencyMultiplier). Profiles: coexistence zeroes both build + military; long-reign zeroes defensiveBuildWeight (invulnerable bases); frontier-raid rushes (militaryWeight 1.6, defensiveBuildWeight 0.3); strata-wars builds heavy (1.3); age-of-strata 2.0× military urgency in the last 20 turns of the 60-turn cap. BuildEvaluator + MilitaryEvaluator updated to multiply through. 7 new tests pin every profile value. Open follow-ups (separate items): AI cadence batching for true turn-based (one cohesive batch per enemy turn instead of frame-by-frame); mapType awareness (archipelago vs continent scout patterns); matchLength scaling beyond the urgency knob.
 
-- [ ] [STALE] M_AI_AWARE.1 — full-knob audit (continued — referenced from M_AI_AWARE.1 closure above):
+- [ ] [WAIT-STALE] M_AI_AWARE.1 — full-knob audit (continued — referenced from M_AI_AWARE.1 closure above):
   - game.mode (border-clash / frontier-raid / long-reign / strata-wars / age-of-strata / coexistence) — already partly: starve-resign gates on 'long-reign'. NEEDS: AI build priorities scale per mode (coexistence → no military build at all; frontier-raid → fast cheap rushers; strata-wars → tech-up first then military).
   - game.difficulty (easy / normal / hard) — already wired via aiVisionRadiusFor and brain bias; verify no NEW knob ignores it.
   - game.mode preset.turnsMode (turn-based vs real-time, M_TURNS) — AI must take ONE coordinated decision per turn in turn-based mode, not stream per-frame ticks.
@@ -1162,7 +1162,7 @@ M_ARCH_UNIFY drains.
   - **building-localized** embersConsumer (yellow→red ember sparks rising every 0.45s from every complete Barracks — the always-on forge tell).
   All three follow the existing rainConsumer / sawdustConsumer pattern: one ParticleEmitterSpec each, mounted on the shared ParticleEmitter archetype. 7 new tests pin the contract surface + the trigger-gate paths. 458/458 green. Open follow-ups (separate items): magic-glow on Witch idle, mist on LAKE tiles, runes from Library, gold-glints from Wonder, attract/repel composition with the force-field (M_ARCHETYPE.6 — needs the force-field landed first).
 
-- [ ] [LOW] M_REFACTOR.1_OLD — placeholder removed (subsumed by M_REFACTOR.1 closure above).
+- [ ] [WAIT-LOW] M_REFACTOR.1_OLD — placeholder removed (subsumed by M_REFACTOR.1 closure above).
   "snow, sawdust, rain, all that shit are all particles" + "even blood
   effects, splashes, its the whole thing of we apply archetypes to units
   and buildings and use what they attract repel etc to dictate type and
@@ -1929,7 +1929,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [LOW]  M_EXPANSION.F.91 — Selection groups: Ctrl+1..5 saves the current selection; press 1..5 to recall
 - [x] [HIGH] M_EXPANSION.F.92 — Mass-rally — ALREADY DONE by design. RallyState (src/game/rally.ts) holds a single `targetKey` per faction (game.rally is per-game, faction-scoped via the per-faction call site). setRallyPoint() updates this one slot; applyRallyPoint() runs for every newly-trained unit regardless of which Barracks trained it. The "right-click on destination with Barracks selected" UX flow lands on src/hud/SelectionPanel.tsx tile-click handler which calls setRally(game, tileKey) — the singleton design means it ALREADY applies to every Barracks of the faction. No per-Barracks rally state ever existed.
 - [x] [HIGH] M_EXPANSION.F.93 — Resource trade — DONE (command surface). New `tradeResource(game, fromType, toType, fromAmount, faction?)` command in commands.ts. Pays in full from the source slot; receives `floor(fromAmount/3)` of the destination. Rejects same-type, NaN/negative input, sub-3 trades (would round to 0 — guard against free destruction), insufficient resources. Symmetric across any ResourceType pair. 7 new tests in resource-trade.test.ts pin: 3→1 canonical, 15→5 multiple, 10→3 floor, 2-too-small reject, insufficient reject, same-type reject, reverse direction (gold→wood). 485/485 green. Follow-up (separate item): the modal/HUD affordance — a "Trade" panel with two-slot picker + amount slider that issues the command.
-- [ ] [BLOCKED-ON] M_EXPANSION.F.94 — Diplomacy blocked on F.95 (3rd faction). 2-faction games today have no diplomacy surface — either you're fighting the enemy or you're at peace; a truce + alliance only become meaningful when 3+ factions exist. Promote when F.95 lands.
+- [ ] [WAIT-DEPS] M_EXPANSION.F.94 — Diplomacy blocked on F.95 (3rd faction). 2-faction games today have no diplomacy surface — either you're fighting the enemy or you're at peace; a truce + alliance only become meaningful when 3+ factions exist. Promote when F.95 lands.
 - [ ] [WAIT-DEPS] [HIGH] M_EXPANSION.F.95 — 3rd faction (neutral hostile): same multifaction infrastructure blocker as M_POLISH2.X4.29.
 - [x] [HIGH] M_EXPANSION.F.96 — Hero unit — DONE. New 'Hero' UnitType added across UNIT_PROFILES (sword + parry 0.20 + selectionRadius 0.95), combat.json (hp 200, dmg 30, range 1, cd 1.2, speed 3.5), economy.json supplyCosts (3) + unitCosts (100 gold + 50 science), economy-rules.ts TrainableUnit union, SKINS.rig (Knight mesh, medium tier). trainUnit guards on "only one player Hero alive at a time" by querying Unit+FactionTrait for an existing Hero. deathSystem returns DeathSystemResult{enemyKills, playerHeroDied}; runEconomyTick flips game.outcome to 'loss' immediately on playerHeroDied. 4 new tests in hero-unit.test.ts pin: profile stats correct, only-one-alive guard, permadeath flips outcome, enemy Hero death does NOT flip player outcome. 508/508 green.
 - [x] [HIGH] M_EXPANSION.F.97 — Discoverable hidden bonuses — DONE. Tile interface gains optional `hiddenBonus: {type, amount} | null`. startGame seeds ~5% of walkable tiles with a wood/stone/gold bonus using the map PRNG (deterministic per seed). Distribution: 60% wood (25), 25% stone (40), 15% gold (60). New `hiddenBonusSystem(world, board, playerEconomy)` runs every tick (not turn-gated) after pathFollow; finds every player-faction Unit on a bonus tile, credits the economy, clears the slot. Returns the triggered list for a future FX consumer. 4 new tests: grant, enemy-skip, only-once, seed-determinism. 489/489 green. Follow-up (separate item): floating "+25 Wood!" CombatText-like FX on discovery using the returned trigger list.
@@ -1995,24 +1995,24 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 
 - [-] M_EXPANSION.O.141 — REMOVED — Google Play upload automation was self-invented; the user has not asked for Play Store integration, and standing up a Play Store dev account + service-account JSON is the user's call, not mine
 - [-] M_EXPANSION.O.142 — REMOVED — Cloudflare Pages mirror was self-invented; the user has explicitly never asked for Cloudflare
-- [ ] [MED] M_EXPANSION.O.143 — App Store assets bundle (icons, screenshots, promo video) generation script
+- [ ] [WAIT-MED] M_EXPANSION.O.143 — App Store assets bundle (icons, screenshots, promo video) generation script
 - [x] [HIGH] M_EXPANSION.O.144 — Privacy policy URL hosted as a static page in the web build
-- [ ] [MED] M_EXPANSION.O.145 — Crash reporter facade: capture window.onerror + unhandledrejection → an opt-in queue → batch send (when consent flips on)
-- [ ] [MED] M_EXPANSION.O.146 — Performance telemetry: ms/frame histogram bucketed by viewport profile (opt-in)
-- [ ] [MED] M_EXPANSION.O.147 — Feature-flag mechanism: read a JSON from public/ to gate dev-only features
+- [ ] [WAIT-MED] M_EXPANSION.O.145 — Crash reporter facade: capture window.onerror + unhandledrejection → an opt-in queue → batch send (when consent flips on)
+- [ ] [WAIT-MED] M_EXPANSION.O.146 — Performance telemetry: ms/frame histogram bucketed by viewport profile (opt-in)
+- [ ] [WAIT-MED] M_EXPANSION.O.147 — Feature-flag mechanism: read a JSON from public/ to gate dev-only features
 - [x] [MED]  M_EXPANSION.O.148 — `pnpm release:dry-run` — local-simulation of the full release pipeline against a fake keystore
-- [ ] [MED] M_EXPANSION.O.149 — Docker image of the dev environment (Node 22 + pnpm + Java 21 + Android SDK) for contributor onboarding
+- [ ] [WAIT-MED] M_EXPANSION.O.149 — Docker image of the dev environment (Node 22 + pnpm + Java 21 + Android SDK) for contributor onboarding
 - [-] M_EXPANSION.O.150 — REMOVED — Codecov is a third-party SaaS the user never requested
 - [x] [LOW]  M_EXPANSION.O.151 — Renovate or Dependabot grouped major bumps (split from the existing weekly minor/patch)
 - [-] M_EXPANSION.O.152 — REMOVED — SonarCloud is a third-party SaaS the user never requested
 - [-] M_EXPANSION.O.153 — REMOVED — Lighthouse CI integration was self-invented; if perf budgets matter, write a local Playwright perf check instead
-- [ ] [MED] M_EXPANSION.O.154 — Bundle size report: print gzipped JS + asset bytes per `pnpm build`, fail if either grows >20% vs the prior tagged release (local script, no external host)
+- [ ] [WAIT-MED] M_EXPANSION.O.154 — Bundle size report: print gzipped JS + asset bytes per `pnpm build`, fail if either grows >20% vs the prior tagged release (local script, no external host)
 - [x] [LOW]  M_EXPANSION.O.155 — CHANGELOG.md generation from release-please tags (we have config, no published changelog yet)
-- [ ] [MED] M_EXPANSION.O.156 — Demo gif/mp4 baked into README on every release tag (a 10-second loop of the cove + combat)
+- [ ] [WAIT-MED] M_EXPANSION.O.156 — Demo gif/mp4 baked into README on every release tag (a 10-second loop of the cove + combat)
 - [x] [LOW]  M_EXPANSION.O.157 — README badges block: CI / coverage / release / license / app-store
-- [ ] [MED] M_EXPANSION.O.158 — `pnpm assets:lint` — surface any references/ kit not yet ingested into public/assets
-- [ ] [MED] M_EXPANSION.O.159 — `pnpm specs:lint` — surface any spec doc that hasn't been touched in 90 days
-- [ ] [MED] M_EXPANSION.O.160 — `pnpm gates:report` — print every coverage rule + commit-gate finding from the last N commits
+- [ ] [WAIT-MED] M_EXPANSION.O.158 — `pnpm assets:lint` — surface any references/ kit not yet ingested into public/assets
+- [ ] [WAIT-MED] M_EXPANSION.O.159 — `pnpm specs:lint` — surface any spec doc that hasn't been touched in 90 days
+- [ ] [WAIT-MED] M_EXPANSION.O.160 — `pnpm gates:report` — print every coverage rule + commit-gate finding from the last N commits
 
 ### M_EXPANSION.DOCS — documentation gaps (161-170)
 
