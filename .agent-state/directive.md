@@ -138,9 +138,12 @@ mechanic work that follows is built on this.
 
 **State + reactivity**
 
-- [ ] M_FUN.FOUNDATION.ZUSTAND — UI-side state
-  store. Replaces `window.__game` test hooks with a proper test
-  store (e2e specs subscribe instead of polling globals).
+- [x] M_FUN.FOUNDATION.ZUSTAND — UI-side state store scaffold.
+  src/hud/ui-store.ts exposes a typed Zustand store
+  (`useUiStore`) for HUD-owned state (which modal is open, last
+  clicked tab). 2 unit tests pin the actions. Migration policy:
+  new HUD-local state lands here; existing window.__game test
+  hooks stay until each HUD piece is touched independently.
 
 **Lint + format**
 
