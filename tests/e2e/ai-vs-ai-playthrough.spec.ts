@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from '@playwright/test';
 
@@ -31,8 +31,12 @@ interface FrameSummary {
   outcome: string;
   woodPlayer: number;
   woodEnemy: number;
-  unitsPlayer: number;
-  unitsEnemy: number;
+  goldPlayer: number;
+  goldEnemy: number;
+  killsPlayer: number;
+  killsEnemy: number;
+  tilesPlayer: number;
+  tilesEnemy: number;
 }
 
 test.describe('AI-vs-AI playthrough', () => {
@@ -82,9 +86,13 @@ test.describe('AI-vs-AI playthrough', () => {
         const info = await page.evaluate(() => {
           interface G {
             outcome: string;
-            economy: { player: { wood: number }; enemy: { wood: number } };
-            world: {
-              query: (...args: unknown[]) => Iterable<unknown>;
+            economy: {
+              player: { wood: number; gold: number; kills: number };
+              enemy: { wood: number; gold: number; kills: number };
+            };
+            zones: {
+              player: { controlled: Set<string> };
+              enemy: { controlled: Set<string> };
             };
           }
           const w = window as unknown as {
@@ -98,6 +106,12 @@ test.describe('AI-vs-AI playthrough', () => {
             outcome: g.outcome,
             woodPlayer: Math.round(g.economy.player.wood),
             woodEnemy: Math.round(g.economy.enemy.wood),
+            goldPlayer: Math.round(g.economy.player.gold),
+            goldEnemy: Math.round(g.economy.enemy.gold),
+            killsPlayer: g.economy.player.kills,
+            killsEnemy: g.economy.enemy.kills,
+            tilesPlayer: g.zones.player.controlled.size,
+            tilesEnemy: g.zones.enemy.controlled.size,
           };
         });
         if (!info) break;
@@ -112,8 +126,12 @@ test.describe('AI-vs-AI playthrough', () => {
           outcome: info.outcome,
           woodPlayer: info.woodPlayer,
           woodEnemy: info.woodEnemy,
-          unitsPlayer: 0,
-          unitsEnemy: 0,
+          goldPlayer: info.goldPlayer,
+          goldEnemy: info.goldEnemy,
+          killsPlayer: info.killsPlayer,
+          killsEnemy: info.killsEnemy,
+          tilesPlayer: info.tilesPlayer,
+          tilesEnemy: info.tilesEnemy,
         });
 
         if (info.outcome !== 'playing') {
@@ -123,6 +141,28 @@ test.describe('AI-vs-AI playthrough', () => {
         // tiny breath between chunks so r3f's frameloop catches up
         await page.waitForTimeout(150);
       }
+
+      // M_POLISH3.AIVAI.3 — write the transcript as JSON (frame → state
+      // diff). Each per-mode transcript pins the deterministic
+      // playthrough at fixed seed; the file is committed and a
+      // future regression test can replay + assert no divergence.
+      writeFileSync(
+        join(outDir, 'transcript.json'),
+        JSON.stringify(
+          {
+            mode,
+            seed,
+            chunksRecorded: transcript.length,
+            resolved,
+            finalOutcome: transcript.at(-1)?.outcome ?? 'unknown',
+            frames: transcript,
+            recordedAt: '2026-05-24', // pinned date (not Date.now()) for diff stability
+          },
+          null,
+          2,
+        ),
+        'utf-8',
+      );
 
       // Final outcome screenshot
       await page.screenshot({
