@@ -150,6 +150,7 @@ type PaintPass = (tiles: Map<string, Tile>, radius: number, rng: Rng) => void;
 const HYDROLOGY_PASSES: Record<string, PaintPass> = {
   inlandLake: paintInlandLake,
   desertBlanket: paintDesertBlanket,
+  multiIsland: paintMultiIslandChannels,
 };
 
 /**
@@ -492,6 +493,62 @@ function paintInlandLake(tiles: Map<string, Tile>, radius: number, rng: Rng): vo
     if (t) {
       t.type = 'LAKE';
       t.level = 0;
+    }
+  }
+}
+
+/**
+ * M_FUN.MAP.UTILISATION.ISLANDS — multi-island hydrology.
+ *
+ * Carves 2-3 OCEAN strips across the landmass at random angles so
+ * the board renders as 3-7 disconnected islands joined only by
+ * SHALLOWS (added by the later paintShallowsRing pass). Distinct
+ * geometry from inlandLake (one centre carve) and from
+ * desertBlanket (no water at all).
+ *
+ * Used by the 'archipelago' mapType (per src/config/mapgen.json).
+ * Deterministic via the map PRNG.
+ */
+function paintMultiIslandChannels(
+  tiles: Map<string, Tile>,
+  _radius: number,
+  rng: Rng,
+): void {
+  // Three random radial-angle channels, each ~2 tiles wide. The
+  // strip is defined by a perpendicular distance from a line
+  // through the origin at angle θ; tiles within `width/2` of the
+  // line get flipped to OCEAN (level 0). Channels stop short of
+  // the very centre (carve leaves a small inner island).
+  const channelCount = 2 + Math.floor(rng() * 2); // 2 or 3 channels
+  const channels: Array<{ ux: number; uy: number; width: number; gapHalf: number }> = [];
+  for (let c = 0; c < channelCount; c++) {
+    const theta = rng() * Math.PI;
+    channels.push({
+      ux: Math.cos(theta),
+      uy: Math.sin(theta),
+      width: 2.0, // total strip width in axial-unit space
+      gapHalf: 2.5, // half-size of the central gap so the centre stays land
+    });
+  }
+  for (const tile of tiles.values()) {
+    if (tile.type === 'OCEAN' || tile.type === 'BEACH') continue;
+    // Axial → cartesian-ish for distance calcs. Approximation only
+    // matters as a gradient; pointy-top hex math isn't required
+    // because we only care about which side of a line each tile is.
+    const x = tile.q;
+    const y = tile.r;
+    for (const ch of channels) {
+      // Perpendicular distance from the line through origin with
+      // direction (ux, uy): |x*uy - y*ux|.
+      const perp = Math.abs(x * ch.uy - y * ch.ux);
+      // Distance along the line (signed): x*ux + y*uy. Skip tiles
+      // inside the central gap so the carve doesn't bisect a base.
+      const along = Math.abs(x * ch.ux + y * ch.uy);
+      if (perp <= ch.width / 2 && along > ch.gapHalf) {
+        tile.type = 'OCEAN';
+        tile.level = 0;
+        break;
+      }
     }
   }
 }

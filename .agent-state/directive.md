@@ -528,11 +528,16 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
     + paintShallowsRing converts beach-adjacent OCEAN into a
     1-hex SHALLOWS skirt. Visible at #7dd3fc pale turquoise on
     the latest matrix screens.
-  - [ ] M_FUN.MAP.UTILISATION.ISLANDS — Real multi-island mapType.
-    Today's 'archipelago' / 'continent' mapTypes all render the
-    same single-landmass-in-ocean geometry. Build an islands-style
-    generator that drops 3-7 disconnected landmasses + shallow
-    channels between them. Continent-with-inland-lakes too.
+  - [x] M_FUN.MAP.UTILISATION.ISLANDS — paintMultiIslandChannels
+    hydrology added. Carves 2-3 OCEAN strips across the landmass
+    at random angles (gap-half preserved so the centre stays
+    land + bases don't get bisected). Wired to mapType
+    'archipelago' (mapgen.json + Zod enum). Result: archipelago
+    matches now render 3-7 disconnected islands joined only by
+    the SHALLOWS skirt — visually distinct from the existing
+    balanced / continent / dry-land mapTypes. fast-check
+    property test pin (every board has a walkable tile) still
+    passes across 25 random seeds.
   - [ ] M_FUN.MAP.UTILISATION.FERRYMAN — Aquatic unit class
     (Ferryman: trainable from Peon, crosses SHALLOWS at 1.8× cost,
     land-speed penalty). New build choice. Requires per-unit

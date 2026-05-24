@@ -173,10 +173,10 @@
       "hydrology": "inlandLake"
     },
     "archipelago": {
-      "$comment": "Sparse mountains — channels are the funnel.",
+      "$comment": "Multi-island — paintMultiIslandChannels carves 2-3 OCEAN strips across the landmass. Aquatic units (Ferryman) bridge via the SHALLOWS skirt (M_FUN.MAP.UTILISATION).",
       "mountainIntensity": 0.25,
       "channels": true,
-      "hydrology": "inlandLake"
+      "hydrology": "multiIsland"
     },
     "dry-land": {
       "$comment": "Badlands — densest mountain + desert blanket instead of lake.",

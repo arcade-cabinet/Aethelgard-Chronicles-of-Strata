@@ -53,7 +53,7 @@ export type BiomeRule = z.infer<typeof BiomeRuleSchema>;
 const MapTypeRuleSchema = z.object({
   mountainIntensity: z.number().min(0).max(1),
   channels: z.boolean(),
-  hydrology: z.enum(['inlandLake', 'desertBlanket']),
+  hydrology: z.enum(['inlandLake', 'desertBlanket', 'multiIsland']),
 });
 export type MapTypeRule = z.infer<typeof MapTypeRuleSchema>;
 
