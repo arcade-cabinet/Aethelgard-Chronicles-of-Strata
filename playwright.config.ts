@@ -1,35 +1,71 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// THREE config tiers — each maps to a clearly-named pnpm script
-// so contributors run the right one BEFORE pushing:
-//
-//   pnpm test:e2e             default — desktop only, e2e specs
-//                              only, fast. The CI gate.
-//
-//   pnpm test:e2e:multiview   adds mobile + tablet projects
-//                              (still e2e specs only). Run
-//                              before shipping a HUD/touch change.
-//
-//   pnpm test:e2e:visual      adds the tests/visual/* baseline
-//                              specs across all 3 projects. Slow;
-//                              used to lock baselines + check drift.
-//                              Not in default CI.
-//
-// CI-default = tier 1. Multi-project + visual are opt-in.
+/**
+ * Aethelgard e2e + visual test configuration.
+ *
+ * Patterned on ../mean-streets — vite dev server (NOT build + preview),
+ * WebGL-friendly Chromium flags, viewport tiers via env vars rather
+ * than always-on multi-project explosion.
+ *
+ * Three opt-in tiers:
+ *
+ *   pnpm test:e2e             desktop project, e2e specs only,
+ *                              vite dev server. ~30s of test time
+ *                              over a 60s setup + teardown. The
+ *                              CI gate.
+ *
+ *   pnpm test:e2e:multiview   adds mobile (Pixel 7) + tablet
+ *                              (iPad Mini) Playwright projects.
+ *                              Run before HUD/touch changes.
+ *
+ *   pnpm test:e2e:visual      adds tests/visual/* baseline specs
+ *                              across all projects.
+ */
+
+const IS_CI = !!process.env.CI;
+const IS_HEADLESS = process.env.PW_HEADLESS === '1' || IS_CI;
+const CHROMIUM_CHANNEL =
+  process.env.PW_CHROMIUM_CHANNEL ?? (!IS_CI && !IS_HEADLESS ? 'chrome' : undefined);
+
+const DEFAULT_PORT = 4173;
+const configuredPort = Number(process.env.PLAYWRIGHT_PORT ?? process.env.PW_PORT);
+const PORT = Number.isInteger(configuredPort) && configuredPort > 0 ? configuredPort : DEFAULT_PORT;
+const BASE_URL = `http://127.0.0.1:${PORT}/`;
+const REUSE_SERVER = !IS_CI && process.env.PW_REUSE_SERVER === '1';
+
+// WebGL launch args. Aethelgard's r3f scene needs ANGLE-backed GL +
+// blocklist bypass so headless Chromium actually composites. Without
+// these the canvas appears but never paints + selectors timeout.
+const GAME_ARGS = [
+  '--no-sandbox',
+  '--use-angle=gl',
+  '--enable-webgl',
+  '--ignore-gpu-blocklist',
+  '--mute-audio',
+  '--disable-background-timer-throttling',
+  '--disable-backgrounding-occluded-windows',
+  '--disable-renderer-backgrounding',
+];
+
 const includeVisual = process.env.VISUAL === '1';
 const includeMultiview = process.env.MULTIVIEW === '1' || includeVisual;
 const testMatch = includeVisual
   ? ['e2e/**/*.spec.ts', 'visual/**/*.spec.ts']
   : ['e2e/**/*.spec.ts'];
 
-// Per-test timeout. Most e2e settle under 20s; the per-mode SMOKE
-// specs do sim work, so 60s default protects runner cold-start.
-const TEST_TIMEOUT_MS = 60_000;
+const TEST_TIMEOUT_MS = IS_CI ? 60_000 : 45_000;
+const ACTION_TIMEOUT_MS = IS_CI ? 30_000 : 15_000;
+const NAV_TIMEOUT_MS = IS_CI ? 30_000 : 15_000;
 
 const allProjects = [
-  { name: 'desktop', use: { ...devices['Desktop Chrome'] } },
+  {
+    name: 'desktop',
+    use: {
+      ...devices['Desktop Chrome'],
+      viewport: { width: 1280, height: 720 },
+    },
+  },
   { name: 'mobile', use: { ...devices['Pixel 7'] } },
-  // M_POLISH2.MOBILE.13 — tablet branch (iPad Mini portrait).
   { name: 'tablet', use: { ...devices['iPad Mini'] } },
 ];
 const projects = includeMultiview ? allProjects : [allProjects[0]!];
@@ -38,16 +74,28 @@ export default defineConfig({
   testDir: './tests',
   testMatch,
   fullyParallel: true,
-  forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  reporter: process.env.CI ? 'github' : 'list',
+  forbidOnly: IS_CI,
+  retries: IS_CI ? 2 : 0,
+  reporter: IS_CI ? 'github' : 'list',
   timeout: TEST_TIMEOUT_MS,
-  use: { baseURL: 'http://localhost:8080', trace: 'on-first-retry' },
+  use: {
+    baseURL: BASE_URL,
+    headless: IS_HEADLESS,
+    trace: 'on-first-retry',
+    actionTimeout: ACTION_TIMEOUT_MS,
+    navigationTimeout: NAV_TIMEOUT_MS,
+    browserName: 'chromium',
+    channel: CHROMIUM_CHANNEL,
+    launchOptions: { args: GAME_ARGS },
+  },
   webServer: {
-    command: 'pnpm build && pnpm preview',
-    url: 'http://localhost:8080',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
+    // vite dev (not build + preview) — dev server is ~2-3s warmup vs
+    // ~30s for build + preview. The dev HMR + asset path semantics
+    // match what tests + screenshots verify in real-life dev use.
+    command: `pnpm exec vite --host 127.0.0.1 --port ${PORT}`,
+    url: BASE_URL,
+    reuseExistingServer: REUSE_SERVER,
+    timeout: 60_000,
   },
   projects,
 });

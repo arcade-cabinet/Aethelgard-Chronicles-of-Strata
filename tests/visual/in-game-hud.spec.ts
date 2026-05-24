@@ -23,8 +23,8 @@ for (const mode of MODES) {
       const skip = page.locator('button', { hasText: 'Skip' });
       if (await skip.count()) await skip.first().click();
       await page.evaluate(() => {
-        const w = window as unknown as { __game?: { advanceFrames?: (n: number) => void } };
-        w.__game?.advanceFrames?.(300);
+        const w = window as unknown as { __game_advanceFrames?: (n: number) => void };
+        w.__game_advanceFrames?.(300);
       });
       await page.waitForTimeout(500);
 

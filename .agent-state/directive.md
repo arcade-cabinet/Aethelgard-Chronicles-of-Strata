@@ -2158,3 +2158,42 @@ Doctrine for this batch: every item must survive the **mobile-first lens** — "
 - [ ] [WAIT-DEPS] [HIGH] M_POLISH2.E2E.64 — Victory cinematic e2e: BLOCKED on M_POLISH2.X4.36 scientific-victory cinematic system. Promote when X4.36 lands.
 - [ ] [WAIT-DEPS] [HIGH] M_POLISH2.E2E.65 — AI-vs-AI replay-as-test e2e: BLOCKED on spec 100's AI-vs-AI harness + a deterministic golden-transcript record/replay system. Promote when those land.
 
+
+### M_POLISH_PASS_3 — playwright infra + scene-paint + AI-vs-AI playthrough (added 2026-05-24)
+
+Driven by user feedback after the 48min CI hang:
+1. "30+min CI is broken architecture, not bad luck" — fixed in this commit (vite dev server, WebGL flags, 3-tier scope).
+2. "Real Chrome with WebGL + journey screenshots agent reviews itself" — fixed by journey-capture.spec.ts (this commit).
+3. "Never block for me — keep building gameplay + journey + e2e + AI-vs-AI."
+
+The journey captures (this commit) surfaced new BLOCKING bugs the agent should now own:
+
+- [ ] [BLOCKER] M_POLISH3.B.1 — In-game 3D scene appears BLANK in headless Chromium. The HUD chrome renders + minimap shows a generated board, but the r3f canvas paints only the sky colour. Likely WebGL/ANGLE config OR camera positioning bug under headless. Repro: `pnpm test:e2e tests/e2e/journey-capture.spec.ts` → look at artifacts/journey/03-game-fresh-start.png. Without scene paint EVERY visual baseline + every screenshot the agent reviews is wrong.
+- [ ] [BLOCKER] M_POLISH3.B.2 — HUD chrome collision on desktop landscape: WinConditionPill ("Destroy enemy base") is half-clipped + the right pill cluster (Audio/Pause) overlaps neighbouring pills. The MOBILE.B.2 fix only addressed portrait; desktop landscape still crowds. Repro: artifacts/journey/03-game-fresh-start.png. Fix in HudPill SLOT_POSITIONS.landscape with explicit gap budget.
+- [ ] [HIGH] M_POLISH3.S.1 — `window.__game_advanceFrames` hook wired this commit; test specs migrated from `__game?.advanceFrames`. Audit every old spec to use the new hook (some may still reference the old path).
+- [ ] [HIGH] M_POLISH3.S.2 — `?mode=` URL param: NewGameModal randomises mode internally. Wire URL → initial mode so per-mode-match.spec.ts can drive specific modes (currently skipped).
+- [ ] [HIGH] M_POLISH3.S.3 — Save/load Continue button enabled-after-save: persistence.list() refresh is async + the title screen caches. Add a save-notification stream the title screen subscribes to OR expose a force-refresh dev hook. Unblocks save-load e2e.
+- [ ] [HIGH] M_POLISH3.S.4 — Onboarding overlay blocks force-outcome screenshots. journey-capture's 06-game-over-win shows onboarding instead of GameOverModal because `Skip` button finds-but-doesn't-click in time. Either expose a `__game_skipOnboarding()` hook OR change the test to await onboarding dismissal more aggressively.
+
+#### M_POLISH3.JOURNEY — playthrough expansion (each capture = a moment the agent now reviews)
+
+- [ ] [HIGH] M_POLISH3.J.1 — Capture each per-mode HUD (border-clash, frontier-raid, long-reign, strata-wars, age-of-strata, coexistence) at `t=0`, `t=10s`, `t=60s`, `t=peak-action`. Each = one PNG in artifacts/journey/per-mode/. Drives mode-specific HUD pill review.
+- [ ] [HIGH] M_POLISH3.J.2 — Capture each weather state (sunny/fog/rain) over the cove biome. artifacts/journey/weather/.
+- [ ] [HIGH] M_POLISH3.J.3 — Capture each day-night phase (dawn/noon/dusk/midnight) over the same scene. artifacts/journey/day-night/.
+- [ ] [HIGH] M_POLISH3.J.4 — Capture each selection state (no-selection / peon-selected / military-selected / building-selected / multi-select 3+) so SelectionPanel layout is reviewable.
+- [ ] [HIGH] M_POLISH3.J.5 — Capture each modal (NewGame default + per-tab variants when MOBILE.4a lands, Settings default, Hotkey editor expanded, Discoveries panel).
+- [ ] [HIGH] M_POLISH3.J.6 — Capture viewport matrix: every important moment × {desktop 1280×720, mobile 412×915, tablet 768×1024}. artifacts/journey/<scene>/<viewport>.png.
+
+#### M_POLISH3.AIVAI — AI-vs-AI playthrough harness (the user explicitly asked for this)
+
+- [ ] [HIGH] M_POLISH3.AIVAI.1 — AI-vs-AI mode: NewGameModal gains an "AI vs AI" checkbox; when set, both factions auto-play. The simulation runs without player input; the e2e harness can let it run to victory.
+- [ ] [HIGH] M_POLISH3.AIVAI.2 — Per-mode AI-vs-AI scripted playthrough: 6 specs (one per mode); each runs `?ai-vs-ai=1&seed=aivai-{mode}&mode={mode}` → advances N frames → screenshots key moments → asserts outcome resolves within the mode's expected horizon.
+- [ ] [HIGH] M_POLISH3.AIVAI.3 — Golden-transcript record: capture (frame → entity-state diff) for one AI-vs-AI playthrough per mode at a fixed seed. Commit the transcript. Future regression test replays it + asserts no divergence at frame 1800.
+- [ ] [HIGH] M_POLISH3.AIVAI.4 — Speed-up the AI-vs-AI flow: bump game speed multiplier internally during AI-vs-AI so a full match resolves in test-suite time (~30s wallclock), independent of normal speed.
+- [ ] [HIGH] M_POLISH3.AIVAI.5 — Capture the FULL AI-vs-AI run as a video reel via Playwright's video recording, so the agent can review the entire playthrough as a single artifact rather than per-frame screenshots.
+
+#### M_POLISH3.CI — local-first CI discipline
+
+- [ ] [HIGH] M_POLISH3.CI.1 — Pre-push hook: `pnpm verify && pnpm test:browser && pnpm test:e2e` runs before any push. Catches the lint/format/test gate BEFORE it hits CI. Wire via .husky or simple .git/hooks/pre-push.
+- [ ] [HIGH] M_POLISH3.CI.2 — Vitest browser plugin parity: today browser tests run via `@vitest/browser` with playwright provider. Confirm the WebGL flags + chrome channel matches the e2e config so behavior is consistent across both test runners.
+- [ ] [HIGH] M_POLISH3.CI.3 — Sibling-project test parity audit: compare ../mean-streets, ../stellar-descent, ../martian-trail playwright + vitest configs; lift any improvements (xvfb for Linux CI, video recording, governor-test pattern, etc.).

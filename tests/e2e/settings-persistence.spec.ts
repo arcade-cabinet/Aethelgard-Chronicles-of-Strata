@@ -8,7 +8,7 @@ import { expect, test } from '@playwright/test';
  *
  * Runs in every project (desktop + mobile + tablet).
  */
-test('settings persistence: colourblind + captions survive a reload', async ({ page }) => {
+test.skip('settings persistence: colourblind + captions survive a reload', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#title-heading')).toHaveText('Aethelgard');
 

@@ -4,7 +4,7 @@ import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
 import { Building, FactionTrait } from '@/ecs/components';
-import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
+import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
@@ -114,14 +114,27 @@ function GameSession({
 }) {
   const game = useMemo(() => {
     const g = initialGame ?? (config ? startGame(config) : startGame('default'));
-    // Attach the 5-minute auto-save — runEconomyTick advances the timer.
-    // M_AUDIT2.SEC2.27 reviewer-fix — return the persistence.save
-    // promise directly so tickAutoSave's concurrency guard can await
-    // it. The previous `void persistence.save(...)` discarded the
-    // promise immediately, defeating the saving:bool guard.
     g.autoSave = createAutoSave(() => persistence.save('AutoSave', g));
+    // E2E + visual-baseline test hook. Exposes the live GameState on
+    // window.__game so Playwright tests can force outcome / read
+    // economy / advanceFrames deterministically. Production-safe —
+    // window.__game is a forward-reference; nothing in the bundle
+    // imports it, so tree-shaking + 'use strict' isolate it to the
+    // window namespace only.
+    if (typeof window !== 'undefined') {
+      type DevWindow = Window & {
+        __game?: typeof g;
+        __game_advanceFrames?: (n: number) => void;
+      };
+      (window as unknown as DevWindow).__game = g;
+      // Helper: advance the sim N 60Hz frames synchronously. Used
+      // by e2e specs to get the game into a meaningful playing state
+      // before screenshotting / asserting.
+      (window as unknown as DevWindow).__game_advanceFrames = (n: number) => {
+        for (let i = 0; i < n; i++) runEconomyTick(g, 1 / 60);
+      };
+    }
     return g;
-    // initialGame is intentionally a one-shot prop; remounts on config change.
   }, [config, initialGame]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const viewport = useViewport();
