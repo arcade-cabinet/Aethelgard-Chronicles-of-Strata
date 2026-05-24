@@ -101,6 +101,35 @@ Operational metrics:
 - A single seed at `?ai-vs-ai=1&seed=X` plays to a deterministic
   finish AND produces a generated story-card.
 
+### 5.1 Playable-match validation gate (M_FUN.QA.AIVAI) — v0.4 RELEASE BLOCKER
+
+Unit tests prove the SYSTEMS work; they do NOT prove a match
+finishes in a reasonable turn count with real activity. Without
+this gate we ship balance changes blind and the user — not the
+agent — discovers when matches end in 5 seconds, drag forever,
+or have zero combat.
+
+A Playwright AI-vs-AI suite MUST land GREEN before v0.4 ships,
+covering:
+
+- One self-play run per personality (5 runs).
+- One cross-matrix run per personality pair (10 unordered pairs).
+- Each run boots in AI-vs-AI mode at gameSpeed≥4 and asserts
+  WITHIN A WALL-CLOCK BUDGET that:
+  - `game.outcome` reaches a terminal value (win/loss/draw) —
+    the sim actually CAN finish under autonomous play.
+  - Elapsed turn-count is in a sensible band (≥ ~30 turns, ≤ ~300
+    turns) — instant finishes AND drags are both balance failures.
+  - Activity counters cross thresholds: kills > 0 (combat
+    happened), buildings per faction > 2 (builds happened), supply
+    peaked above start (training happened).
+- Run output (turns, kills, builds, outcome) goes to
+  `tests/e2e/__data__/ai-balance-runs.json` for trend tracking.
+
+This runs in CI tier-2 (on-demand) or as a nightly job to keep
+tier-1 fast. It does NOT block per-commit CI. It DOES block
+v0.4 release.
+
 ## 6. Architecture prerequisites
 
 Two structural shifts MUST land before per-mechanic work, or the
