@@ -33,12 +33,11 @@ const PORT = Number.isInteger(configuredPort) && configuredPort > 0 ? configured
 const BASE_URL = `http://127.0.0.1:${PORT}/`;
 const REUSE_SERVER = !IS_CI && process.env.PW_REUSE_SERVER === '1';
 
-// WebGL launch args. Aethelgard's r3f scene needs ANGLE-backed GL +
-// blocklist bypass so headless Chromium actually composites. Without
-// these the canvas appears but never paints + selectors timeout.
+// WebGL launch args. M_POLISH3.SCENE.1 — dropped --use-angle=gl +
+// --no-sandbox (both implicated in WebGL Context Lost on macOS
+// Chromium under headless). Keep minimal: WebGL on, blocklist
+// bypass, mute audio, prevent background throttling.
 const GAME_ARGS = [
-  '--no-sandbox',
-  '--use-angle=gl',
   '--enable-webgl',
   '--ignore-gpu-blocklist',
   '--mute-audio',
@@ -86,7 +85,12 @@ export default defineConfig({
     navigationTimeout: NAV_TIMEOUT_MS,
     browserName: 'chromium',
     channel: CHROMIUM_CHANNEL,
-    launchOptions: { args: GAME_ARGS },
+    // M_POLISH3.SCENE.1 — drop GAME_ARGS entirely while triaging
+    // the canvas-blank issue. Even with --enable-webgl the headless
+    // Chromium may need different launch config to composite r3f
+    // properly. Default args worked in mean-streets — start from
+    // that baseline.
+    // launchOptions: { args: GAME_ARGS },
   },
   webServer: {
     // vite dev (not build + preview) — dev server is ~2-3s warmup vs

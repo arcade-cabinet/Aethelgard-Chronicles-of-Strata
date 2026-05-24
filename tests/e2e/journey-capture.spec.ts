@@ -63,7 +63,7 @@ test.describe('journey capture (manual review)', () => {
       await skip.first().click();
       await page.waitForTimeout(400);
     }
-    await page.waitForTimeout(1500); // scene settle
+    await page.waitForTimeout(5000); // scene settle — longer for headless GLB loads
     await snap(page, '03-game-fresh-start');
   });
 
