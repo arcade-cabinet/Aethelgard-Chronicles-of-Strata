@@ -150,6 +150,30 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: 5,
     decorationDensity: 0.35,
   },
+  // M_FUN.DYN.VOLCANO — landmark. Impassable like MOUNTAIN but
+  // visually distinct (peakLevel + custom material in render path).
+  VOLCANO: {
+    walkable: false,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: 5,
+    decorationDensity: null,
+  },
+  // M_FUN.DYN.LAVA — transient eruption tile. Technically walkable
+  // so a unit's pathing isn't broken by mid-traverse, but the
+  // 2.5× move cost + per-tick damage make it a death sentence.
+  // Reverts to MOUNTAIN_PASS after `lavaSeconds`.
+  LAVA: {
+    walkable: true,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: null,
+  },
 };
 
 /** Resolve the flag tuple for a biome type. */

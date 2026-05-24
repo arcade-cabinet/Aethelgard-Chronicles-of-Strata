@@ -303,8 +303,15 @@ mechanic work that follows is built on this.
   navGraph; sets quakeShakeRemaining; QuakeShake render component
   wobbles camera by decaying amplitude. Config-driven (QUAKE_TUNING).
   4 unit tests.
-- [ ] [WAIT-DEPS] M_FUN.DYN.VOLCANO — Eruption: LAVA tiles
-  30s, then fertile 60s.
+- [x] M_FUN.DYN.VOLCANO — Eruption cycle ships. VOLCANO +
+  LAVA biomes added (full biome-registry update: biome-flags,
+  terrain-cost, palette, mapgen.json). placeVolcanoLandmark
+  rolls placementChance, picks a MOUNTAIN ≥5 from origin.
+  volcanoSystem ticks the eruption cycle (LAVA → revert,
+  fertile timers, eruption every eruptionIntervalSeconds).
+  Adjacent FOREST ignites WILDFIRE via the shared
+  igniteWildfire helper. Config-driven (VOLCANO_TUNING). 6
+  unit tests + harness baseline.
 
 ### v0.4.9 — Polish (PRD §7.9)
 

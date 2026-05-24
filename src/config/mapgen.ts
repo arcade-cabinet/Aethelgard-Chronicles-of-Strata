@@ -25,6 +25,8 @@ const BIOME_TYPES = [
   'HIGHLAND',
   'MOUNTAIN_PASS',
   'MOUNTAIN',
+  'VOLCANO',
+  'LAVA',
 ] as const satisfies readonly BiomeType[];
 
 const BiomeTypeSchema = z.enum(BIOME_TYPES);
@@ -53,6 +55,22 @@ const MapTypeRuleSchema = z.object({
   hydrology: z.enum(['inlandLake', 'desertBlanket']),
 });
 export type MapTypeRule = z.infer<typeof MapTypeRuleSchema>;
+
+const VolcanoTuningSchema = z.object({
+  /** Per-board chance one volcano landmark is placed. */
+  placementChance: z.number().min(0).max(1),
+  /** Wall-clock seconds between eruptions. */
+  eruptionIntervalSeconds: z.number().positive(),
+  /** Seconds a LAVA tile stays lava before reverting. */
+  lavaSeconds: z.number().positive(),
+  /** Seconds GRASS tiles in fertileRadius gain a bonus. */
+  fertileSeconds: z.number().positive(),
+  /** Hex radius from the volcano that gains the fertile-soil bonus. */
+  fertileRadius: z.number().int().positive(),
+  /** HP/tick damage to units standing on a LAVA tile. */
+  damagePerTick: z.number().nonnegative(),
+});
+export type VolcanoTuning = z.infer<typeof VolcanoTuningSchema>;
 
 const QuakeTuningSchema = z.object({
   /** Hex radius from the epicentre that may flip. */
@@ -97,6 +115,7 @@ const MapgenConfigSchema = z
     mountain: MountainTuningSchema,
     wildfire: WildfireTuningSchema,
     quake: QuakeTuningSchema,
+    volcano: VolcanoTuningSchema,
     mapTypes: z.record(z.string(), MapTypeRuleSchema),
   })
   .refine((cfg) => BIOME_TYPES.every((b) => b in cfg.biomes), {
@@ -144,6 +163,9 @@ export const WILDFIRE_TUNING: WildfireTuning = validated.wildfire;
 
 /** Earthquake dynamic-terrain tuning constants. */
 export const QUAKE_TUNING: QuakeTuning = validated.quake;
+
+/** Volcano dynamic-terrain tuning constants. */
+export const VOLCANO_TUNING: VolcanoTuning = validated.volcano;
 
 /** All biomes, for harness / test enumeration. */
 export const ALL_BIOMES: ReadonlyArray<BiomeType> = BIOME_TYPES;

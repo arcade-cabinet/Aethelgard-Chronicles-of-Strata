@@ -16,6 +16,13 @@ export const BIOME_COLORS: Record<BiomeType, string> = {
   // path through stone".
   MOUNTAIN_PASS: '#94a3b8',
   MOUNTAIN: '#475569',
+  // M_FUN.DYN.VOLCANO — black basalt cone, distinct from grey
+  // MOUNTAIN; pairs visually with the LAVA orange so the landmark
+  // reads as "this is the volcano, not just another mountain".
+  VOLCANO: '#1c1917',
+  // LAVA — molten orange-red. High chroma so a player scanning the
+  // map can't miss a fresh eruption.
+  LAVA: '#dc2626',
 };
 
 /**
@@ -40,4 +47,6 @@ export const BIOME_COLORS_EVENING: Record<BiomeType, string> = {
   HIGHLAND: '#78716c', // warmer gray
   MOUNTAIN_PASS: '#a8a29e', // pale path-stone at dusk
   MOUNTAIN: '#52525b', // slightly warm slate
+  VOLCANO: '#27272a', // basalt slightly warmer at dusk
+  LAVA: '#f97316', // molten glow reads brighter against the sunset
 };

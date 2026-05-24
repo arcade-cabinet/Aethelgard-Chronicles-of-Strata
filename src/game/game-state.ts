@@ -62,6 +62,12 @@ import { createEventPrng, createMapPrng } from '@/core/rng';
 import { FACTIONS, type Faction } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
+import {
+  createVolcanoState,
+  placeVolcanoLandmark,
+  type VolcanoState,
+  volcanoSystem,
+} from '@/ecs/systems/volcano';
 import { wildfireSystem } from '@/ecs/systems/wildfire';
 import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
 import { spawnSystem } from '@/ecs/systems/spawn';
@@ -331,6 +337,12 @@ export interface GameState {
    * render layer reads this to apply a brief shake. 0 = no shake.
    */
   quakeShakeRemaining: number;
+  /**
+   * M_FUN.DYN.VOLCANO — volcano landmark + eruption-cycle state.
+   * placeVolcanoLandmark may set position=null (no volcano on this
+   * board); when null, volcanoSystem is a no-op every tick.
+   */
+  volcano: VolcanoState;
   /**
    * The PRIMARY currently-selected entity id (the first in `selectedIds` for
    * single-selection consumers like SelectionPanel). Undefined when nothing is
@@ -741,6 +753,14 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     wildfires: new Map<string, { burnTicksRemaining: number; secondsSinceTick: number }>(),
     // M_FUN.DYN.QUAKE — quake camera-shake countdown (0 = no shake).
     quakeShakeRemaining: 0,
+    // M_FUN.DYN.VOLCANO — place a volcano landmark if the roll
+    // succeeds (placementChance gates it). Position-less state =
+    // no volcano on this board; the volcanoSystem no-ops then.
+    volcano: (() => {
+      const state = createVolcanoState();
+      state.position = placeVolcanoLandmark(board, mapRng);
+      return state;
+    })(),
     // M_POLISH2.MODES.42a — strata-wars 80%-for-30s win timer. Starts
     // at 0; only ticks in strata-wars mode (see runEconomyTick).
     strataWarsControlTimer: 0,
@@ -926,8 +946,12 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // Healer-clear logic, and recovery timers. Runs every tick (not
   // turn-gated) so disease ticks during free movement.
   statusAttributesSystem(game.world, game.board.tiles, delta);
+  // M_FUN.DYN.VOLCANO — tick the eruption cycle BEFORE the
+  // wildfire system so any FOREST→WILDFIRE chain reactions caused
+  // by an eruption land in the same tick.
+  volcanoSystem(game, delta);
   // M_FUN.DYN.WILDFIRE — advance any active burn fronts. Fires
-  // can ignite via random events OR (future) via volcano eruptions;
+  // can ignite via random events OR via volcano eruptions;
   // the system is a no-op when game.wildfires is empty.
   wildfireSystem(game, game.board.tiles, delta);
   // M_FUN.DYN.QUAKE — decay the camera-shake countdown so the HUD

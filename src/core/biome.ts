@@ -28,7 +28,12 @@ export type BiomeType =
   | 'FOREST'
   | 'HIGHLAND'
   | 'MOUNTAIN_PASS'
-  | 'MOUNTAIN';
+  | 'MOUNTAIN'
+  // M_FUN.DYN.VOLCANO — landmark + transient hazard biomes.
+  // VOLCANO is the landmark; LAVA is the transient (paved by an
+  // eruption for `lavaSeconds`, then reverts to MOUNTAIN_PASS).
+  | 'VOLCANO'
+  | 'LAVA';
 
 /** The assigned biome of one tile. */
 export interface Biome {
