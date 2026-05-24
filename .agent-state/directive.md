@@ -2215,6 +2215,6 @@ Every silent fallback in the codebase that hides a failure from the user. Audit 
 
 #### M_POLISH3.LOCAL — pre-push gate enforcement (added 2026-05-24)
 
-- [ ] [HIGH] M_POLISH3.LOCAL.1 — Pre-push hook: .husky/pre-push runs `pnpm verify && pnpm test:e2e` before allowing a push. Catches every CI failure BEFORE it hits the runner. Skip with `git push --no-verify` only when explicitly authorized.
-- [ ] [HIGH] M_POLISH3.LOCAL.2 — `pnpm verify` should also include `pnpm test:browser` so the full local battery matches the CI suite.
-- [ ] [HIGH] M_POLISH3.LOCAL.3 — A pre-push test of `pnpm test:e2e` requires the vite dev server cold-start (~2s) + chromium launch (~2s) each push. Wire `PW_REUSE_SERVER=1` so iterative local pushes don't pay the full setup cost — the running dev server is reused.
+- [x] [HIGH] M_POLISH3.LOCAL.1 — DONE 2026-05-24 commit 1117a81. .husky/pre-push runs pnpm verify + test:browser + PW_REUSE_SERVER=1 test:e2e. husky 9.1.7 added; prepare script wires hooks on install.
+- [x] [HIGH] M_POLISH3.LOCAL.2 — DONE 2026-05-24 commit 1117a81. Added verify:all script (verify + test:browser). pre-push hook runs both already.
+- [x] [HIGH] M_POLISH3.LOCAL.3 — DONE (was already done — playwright.config.ts:34 reads PW_REUSE_SERVER env; pre-push uses it). Confirmed via 1117a81 + the existing webServer.reuseExistingServer config.
