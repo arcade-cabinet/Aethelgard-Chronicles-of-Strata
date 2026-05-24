@@ -58,8 +58,13 @@ export interface DisplaySlot {
   name: string;
   /** One-line description. */
   description: string;
-  /** Which trainable unit (if any) this building produces. */
-  trains?: 'Peon' | 'Footman' | 'Scout';
+  /**
+   * Which trainable units (if any) this building produces.
+   * Replaces the old single-value `trains` slot so a building can offer
+   * more than one unit button (TownHall: Peon + Scout). The HUD renders
+   * one HudButton per entry.
+   */
+  trainsUnits?: ReadonlyArray<'Peon' | 'Footman' | 'Scout'>;
   /** Which research IDs may be purchased here. */
   research?: ReadonlyArray<'forgedBlades' | 'steelPlows'>;
   /** Whether the building offers a "set rally point" interaction. */
@@ -128,8 +133,9 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     behaviors: { attractor: { radius: 2 } },
     display: {
       name: 'Town Hall',
-      description: 'Your home base. Anchors the kingdom and trains peons.',
-      trains: 'Peon',
+      // M_POLISH2.RTS.22 — TownHall now trains both Peon and Scout.
+      description: 'Your home base. Anchors the kingdom, trains peons and scouts.',
+      trainsUnits: ['Peon', 'Scout'],
       showsBuildMenu: true,
     },
     // No cost — TownHall is the starting structure, placed by startGame.
@@ -183,7 +189,7 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
     display: {
       name: 'Barracks',
       description: 'Trains Footmen and unlocks military research.',
-      trains: 'Footman',
+      trainsUnits: ['Footman'],
       research: ['forgedBlades', 'steelPlows'],
       hasRally: true,
     },
@@ -258,19 +264,22 @@ export function profileFor(type: BuildingType): BuildingProfile {
 
 /**
  * The unit roles a player may train, derived from BUILDING_PROFILES.display
- * `trains` fields — NOT hardcoded. Adding a trainer building adds the unit
- * automatically.
+ * `trainsUnits` fields — NOT hardcoded. Adding a trainer building adds its
+ * units automatically.
  */
-export function trainableUnits(): ReadonlyArray<'Peon' | 'Footman'> {
-  const set = new Set<'Peon' | 'Footman'>();
-  for (const p of Object.values(BUILDING_PROFILES)) if (p.display.trains) set.add(p.display.trains);
+export function trainableUnits(): ReadonlyArray<'Peon' | 'Footman' | 'Scout'> {
+  const set = new Set<'Peon' | 'Footman' | 'Scout'>();
+  for (const p of Object.values(BUILDING_PROFILES)) {
+    for (const u of p.display.trainsUnits ?? []) set.add(u);
+  }
   return [...set];
 }
 
 /** The building type that trains `unit`, or null. */
 export function trainerFor(unit: UnitType): BuildingType | null {
   for (const [type, p] of Object.entries(BUILDING_PROFILES)) {
-    if (p.display.trains === unit) return type as BuildingType;
+    if ((p.display.trainsUnits ?? []).includes(unit as 'Peon' | 'Footman' | 'Scout'))
+      return type as BuildingType;
   }
   return null;
 }

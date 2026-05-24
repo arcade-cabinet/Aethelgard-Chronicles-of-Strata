@@ -351,30 +351,28 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                 const meta = displayFor(view.buildingType);
                 return (
                   <div style={{ marginTop: 10 }}>
-                    {/* Train button — driven by display.trains, NOT building type */}
-                    {meta.trains &&
-                      (() => {
-                        const trainReason = trainDisabledReason(
-                          game,
-                          meta.trains,
-                          UNIT_COSTS[meta.trains],
-                        );
-                        return (
-                          <HudButton
-                            label={`Train ${meta.trains} — ${costLabel(UNIT_COSTS[meta.trains])}`}
-                            onClick={() => {
-                              if (!meta.trains) return;
-                              const ok = trainUnit(game, meta.trains, 'player');
-                              // M_EXPANSION.AU.36 — error chime when the
-                              // command was rejected (mid-click prereqs
-                              // changed, supply cap raced, etc.).
-                              emitUiSound(ok ? 'ui-button-click' : 'ui-error');
-                            }}
-                            disabled={!canAffordCost(game, UNIT_COSTS[meta.trains])}
-                            disabledReason={trainReason}
-                          />
-                        );
-                      })()}
+                    {/* Train buttons — driven by display.trainsUnits, NOT building type.
+                        M_POLISH2.RTS.22: TownHall now yields [Peon, Scout]; each gets
+                        its own HudButton rendered in order. */}
+                    {(meta.trainsUnits ?? []).map((role) => {
+                      const cost = UNIT_COSTS[role];
+                      const trainReason = trainDisabledReason(game, role, cost);
+                      return (
+                        <HudButton
+                          key={role}
+                          label={`Train ${role} — ${costLabel(cost)}`}
+                          onClick={() => {
+                            const ok = trainUnit(game, role, 'player');
+                            // M_EXPANSION.AU.36 — error chime when the
+                            // command was rejected (mid-click prereqs
+                            // changed, supply cap raced, etc.).
+                            emitUiSound(ok ? 'ui-button-click' : 'ui-error');
+                          }}
+                          disabled={!canAffordCost(game, cost)}
+                          disabledReason={trainReason}
+                        />
+                      );
+                    })}
                     {/* Build menu — only on buildings that show it (TownHall today) */}
                     {meta.showsBuildMenu &&
                       BUILDABLE_TYPES.map((type) => {
