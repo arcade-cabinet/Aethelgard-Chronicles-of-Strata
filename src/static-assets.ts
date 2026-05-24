@@ -17,6 +17,11 @@ export type StaticAssetPath =
   'assets/audio/music/menu.wav' |
   'assets/audio/sfx/build.ogg' |
   'assets/audio/sfx/chop.ogg' |
+  'assets/audio/sfx/combat/hit-body.ogg' |
+  'assets/audio/sfx/combat/hit-heavy.ogg' |
+  'assets/audio/sfx/combat/hit-metal.ogg' |
+  'assets/audio/sfx/combat/magic-buff.wav' |
+  'assets/audio/sfx/combat/magic-cast.wav' |
   'assets/audio/sfx/death-thud.ogg' |
   'assets/audio/sfx/death-thud.wav' |
   'assets/audio/sfx/deposit.ogg' |
@@ -198,6 +203,7 @@ export type StaticAssetDirectory =
   'assets/audio/music/' |
   'assets/audio/music/biome/' |
   'assets/audio/sfx/' |
+  'assets/audio/sfx/combat/' |
   'assets/audio/stinger/' |
   'assets/audio/ui/' |
   'assets/board/' |
@@ -279,6 +285,11 @@ const assets = new Set<string>([
   'assets/audio/music/menu.wav',
   'assets/audio/sfx/build.ogg',
   'assets/audio/sfx/chop.ogg',
+  'assets/audio/sfx/combat/hit-body.ogg',
+  'assets/audio/sfx/combat/hit-heavy.ogg',
+  'assets/audio/sfx/combat/hit-metal.ogg',
+  'assets/audio/sfx/combat/magic-buff.wav',
+  'assets/audio/sfx/combat/magic-cast.wav',
   'assets/audio/sfx/death-thud.ogg',
   'assets/audio/sfx/death-thud.wav',
   'assets/audio/sfx/deposit.ogg',

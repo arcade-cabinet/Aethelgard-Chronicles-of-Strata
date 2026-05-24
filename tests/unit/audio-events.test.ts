@@ -28,9 +28,9 @@ describe('event-sound map', () => {
 
   it('routes combat-crit to sfx bus with metal-impact sound (M_EXPANSION.AU.45)', () => {
     expect(SOUND_FOR_EVENT['combat-crit'].bus).toBe('sfx');
-    // Reroute from magic-impact → hit-metal so crits sound 'metallic ping'
-    // distinct from magic spells (which now have their own combat-hit-magic).
-    expect(SOUND_FOR_EVENT['combat-crit'].soundId).toBe('audio.sfx.hit-metal');
+    // M_FUN.AUDIO.COMBAT — rerouted to the curated
+    // references/Impact_Hit metal variant; still 'metallic ping'.
+    expect(SOUND_FOR_EVENT['combat-crit'].soundId).toBe('audio.sfx.combat.hit-metal');
   });
 
   it('routes all UI events to ui bus', () => {

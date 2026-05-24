@@ -63,6 +63,46 @@
     "animations": [],
     "pack": "GameLoops Vol.5 — LuteAndLantern LOOP30s"
   },
+  "audio.sfx.combat.hit-metal": {
+    "id": "audio.sfx.combat.hit-metal",
+    "path": "assets/audio/sfx/combat/hit-metal.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops Impact_Hit — pl_impact_metal_01"
+  },
+  "audio.sfx.combat.hit-body": {
+    "id": "audio.sfx.combat.hit-body",
+    "path": "assets/audio/sfx/combat/hit-body.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops Impact_Hit — pl_impact_body_01"
+  },
+  "audio.sfx.combat.hit-heavy": {
+    "id": "audio.sfx.combat.hit-heavy",
+    "path": "assets/audio/sfx/combat/hit-heavy.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops Impact_Hit — pl_impact_heavy_01"
+  },
+  "audio.sfx.combat.magic-cast": {
+    "id": "audio.sfx.combat.magic-cast",
+    "path": "assets/audio/sfx/combat/magic-cast.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "Fantasy Magic Spell SFX — pl_magic_cast_02"
+  },
+  "audio.sfx.combat.magic-buff": {
+    "id": "audio.sfx.combat.magic-buff",
+    "path": "assets/audio/sfx/combat/magic-buff.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "Fantasy Magic Spell SFX — pl_magic_buff_01"
+  },
   "audio.music.biome.crafting-hall": {
     "id": "audio.music.biome.crafting-hall",
     "path": "assets/audio/music/biome/crafting-hall.wav",

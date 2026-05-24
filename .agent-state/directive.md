@@ -425,9 +425,12 @@ mechanic work that follows is built on this.
   LAVA → volcano). 2 unit tests pin every biome maps to a
   registered asset. Cross-fade hook (`useAudio` integration)
   ships separately.
-- [ ] M_FUN.AUDIO.COMBAT — Ingest references/
-  Impact_Hit + fantasy_magic_spell + footsteps packs; wire to
-  sound-map; per-UnitType+event SFX.
+- [x] M_FUN.AUDIO.COMBAT — 5 SFX copied (3 Impact_Hit metal/body/
+  heavy + 2 fantasy_magic_spell cast/buff). Registered in
+  asset-metadata.json with pack attribution. sound-map.ts rerouted:
+  combat-hit → hit-body, combat-hit-siege → hit-heavy,
+  combat-hit-magic → magic-cast, combat-crit → hit-metal. The
+  existing audio-events test updated to assert the new ids.
 - [ ] M_FUN.PHONE.HAPTIC — Capacitor Haptics on
   build-complete (heavy), unit-killed (medium), quake (heavy
   decaying), wildfire ignition (light); Settings-tunable.
