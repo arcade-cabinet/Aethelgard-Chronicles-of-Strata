@@ -82,7 +82,7 @@ export function buildingCostFor(type: Exclude<BuildingType, 'TownHall'>): Resour
 }
 
 /** Resource cost to train a trainable unit. */
-export function unitCostFor(role: 'Peon' | 'Footman' | 'Wizard' | 'Hero'): ResourceCost {
+export function unitCostFor(role: 'Peon' | 'Footman' | 'Scout' | 'Wizard' | 'Hero'): ResourceCost {
   return (ECONOMY.unitCosts as Record<string, ResourceCost>)[role] as ResourceCost;
 }
 
