@@ -16,6 +16,7 @@ import { EraProgressPill } from '@/hud/EraProgressPill';
 import { MatchAgePill } from '@/hud/MatchAgePill';
 import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { WinConditionPill } from '@/hud/WinConditionPill';
+import { ScreenshotButton } from '@/hud/ScreenshotButton';
 import { ZoneFlipPulse } from '@/hud/ZoneFlipPulse';
 import { ZoneControlPill } from '@/hud/ZoneControlPill';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
@@ -236,6 +237,8 @@ function GameSession({
       <EraProgressPill game={game} />
       {/* M_POLISH2.MODES.42b — strata-wars only: tile-flip red-pulse. */}
       <ZoneFlipPulse game={game} />
+      {/* M_POLISH2.MODES.44b — coexistence only: screenshot the realm. */}
+      <ScreenshotButton game={game} />
       <IdlePeonsIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
