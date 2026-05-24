@@ -28,6 +28,7 @@ import { ResourceText } from '@/world/ResourceText';
 import { Roads } from '@/world/Roads';
 import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
+import { HexGridOverlay } from '@/world/HexGridOverlay';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
 import { Units } from '@/world/Units';
@@ -145,6 +146,7 @@ function Scene({
     <>
       <DayNightCycle game={game} />
       <Terrain board={game.board} />
+      <HexGridOverlay board={game.board} />
       <Mountains board={game.board} />
       <Crossings board={game.board} />
       <Water mapRadius={game.board.radius} />

@@ -13,6 +13,7 @@ import {
 import type { GameState } from '@/game/game-state';
 import { selectEntity, selectedEntities } from '@/game/selection';
 import { PathLine } from './PathLine';
+import { hexGridVisibility } from './HexGridOverlay';
 
 /** Long-press threshold (ms) — touch hold beyond this fires as right-click. */
 const LONG_PRESS_MS = 500;
@@ -64,6 +65,7 @@ function TilePick({
           const state = { timer: 0, fired: false };
           state.timer = window.setTimeout(() => {
             state.fired = true;
+            hexGridVisibility.show = true;
             onRight();
           }, LONG_PRESS_MS);
           longPressRef.current = state;
@@ -78,6 +80,7 @@ function TilePick({
         if (!state) return;
         clearTimeout(state.timer);
         longPressRef.current = null;
+        hexGridVisibility.show = false;
         if (!state.fired) onLeft();
       }}
       onPointerLeave={() => {
@@ -85,6 +88,7 @@ function TilePick({
         if (state) {
           clearTimeout(state.timer);
           longPressRef.current = null;
+          hexGridVisibility.show = false;
         }
       }}
       onContextMenu={(e) => {
