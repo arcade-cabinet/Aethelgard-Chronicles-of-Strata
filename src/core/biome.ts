@@ -11,15 +11,23 @@ const {
   lakeModuloThreshold,
 } = WORLD.biome;
 
-/** A biome type. OCEAN and LAKE are water; the rest are land. */
+/**
+ * A biome type. OCEAN and LAKE are water; SWAMP is shallow walkable
+ * water that applies the disease status to standing units; the rest
+ * are land. MOUNTAIN_PASS is HIGHLAND-elevation walkable terrain
+ * inside a MOUNTAIN massif that acts as the fortifiable choke point
+ * (per docs/specs/120-map-architecture.md M_FUN.MAP.PASS).
+ */
 export type BiomeType =
   | 'OCEAN'
   | 'LAKE'
+  | 'SWAMP'
   | 'BEACH'
   | 'DESERT'
   | 'GRASS'
   | 'FOREST'
   | 'HIGHLAND'
+  | 'MOUNTAIN_PASS'
   | 'MOUNTAIN';
 
 /** The assigned biome of one tile. */
@@ -52,9 +60,11 @@ export function biomeStyleFor(type: BiomeType): CrossingStyle {
   switch (type) {
     case 'OCEAN':
     case 'LAKE':
+    case 'SWAMP':
       return 'water';
     case 'MOUNTAIN':
       return 'mountain';
+    case 'MOUNTAIN_PASS':
     case 'HIGHLAND':
       return 'stone';
     case 'BEACH':

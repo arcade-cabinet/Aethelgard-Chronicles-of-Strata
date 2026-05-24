@@ -4,11 +4,17 @@ import type { BiomeType } from '@/core/biome';
 export const BIOME_COLORS: Record<BiomeType, string> = {
   OCEAN: '#0ea5e9',
   LAKE: '#38bdf8',
+  // M_FUN.MAP.SWAMP — sickly green-brown reads as poisonous water.
+  SWAMP: '#4d7c0f',
   BEACH: '#fde047',
   DESERT: '#d97706',
   GRASS: '#84cc16',
   FOREST: '#15803d',
   HIGHLAND: '#64748b',
+  // M_FUN.MAP.PASS — paler slate-grey distinguishes the walkable
+  // pass from the impassible MOUNTAIN around it; reads as "carved
+  // path through stone".
+  MOUNTAIN_PASS: '#94a3b8',
   MOUNTAIN: '#475569',
 };
 
@@ -26,10 +32,12 @@ export const BIOME_COLORS: Record<BiomeType, string> = {
 export const BIOME_COLORS_EVENING: Record<BiomeType, string> = {
   OCEAN: '#0c4a6e', // deep cool — ocean barely warms
   LAKE: '#1e40af',
+  SWAMP: '#3f6212', // swamp glows green-brown at dusk; subtle fog vibe
   BEACH: '#fb923c', // sand glows orange
   DESERT: '#c2410c', // already warm — push deeper amber
   GRASS: '#a3a017', // washed-out olive-gold
   FOREST: '#854d0e', // deep amber forest at dusk
   HIGHLAND: '#78716c', // warmer gray
+  MOUNTAIN_PASS: '#a8a29e', // pale path-stone at dusk
   MOUNTAIN: '#52525b', // slightly warm slate
 };

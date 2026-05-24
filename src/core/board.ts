@@ -142,36 +142,38 @@ type PaintPass = (tiles: Map<string, Tile>, radius: number, rng: Rng) => void;
  * = ONE function + the right entries in pipelines that use it.
  */
 /**
- * Helper: thunk a mountain-pass with a specific intensity. Lets the
- * pipeline registry name the per-mode mountain density without
- * forking the underlying function.
+ * Per-mapType configuration. Differences between modes read as a
+ * table (3 columns × 4 rows) instead of 4 inline array literals
+ * where you have to eyeball-diff what's missing.
+ *
+ * - mountainIntensity: 0..1 dial into paintMountainMassif (balanced
+ *   0.55 = centre-biased funnel; archipelago 0.25 = sparse so the
+ *   channels do the funnel work; dry-land 0.75 = badlands ridge).
+ * - channels: whether to run paintChannelCuts (archipelago only —
+ *   carves the islands).
+ * - hydrology: the third paint pass — inland-lake everywhere except
+ *   dry-land which gets a desert blanket instead.
  */
-const mountainPass =
-  (intensity: number): PaintPass =>
-  (tiles, radius, rng) =>
-    paintMountainMassif(tiles, radius, rng, intensity);
+interface MapTypeConfig {
+  mountainIntensity: number;
+  channels: boolean;
+  hydrology: PaintPass;
+}
 
-const GEN_TIME_PIPELINES: Record<GeneratedMapType, PaintPass[]> = {
-  // balanced — beach ring + medium mountain clumps (centre-biased so
-  // they form choke points between bases) + inland lake. This is the
-  // 1v1 RTS shape; the centre-bias inside paintMountainMassif keeps
-  // the funnel intent without stamping a literal strip.
-  balanced: [paintBeachRing, mountainPass(0.55), paintInlandLake],
-  // continent — larger landmass, denser mountain massifs that read
-  // as a true ridge system (not a strip).
-  continent: [paintBeachRing, mountainPass(0.7), paintInlandLake],
-  // archipelago — small islands separated by channels. SPARSE
-  // mountains (each island gets at most one small peak) — channels
-  // are the funnels, not mountain walls.
-  archipelago: [paintBeachRing, paintChannelCuts, mountainPass(0.25), paintInlandLake],
-  // dry-land — no inland water + extensive desert + dense mountain
-  // ridge-lines (highest intensity for the badlands feel).
-  'dry-land': [paintBeachRing, mountainPass(0.75), paintDesertBlanket],
+const MAP_TYPE_CONFIG: Record<GeneratedMapType, MapTypeConfig> = {
+  balanced: { mountainIntensity: 0.55, channels: false, hydrology: paintInlandLake },
+  continent: { mountainIntensity: 0.7, channels: false, hydrology: paintInlandLake },
+  archipelago: { mountainIntensity: 0.25, channels: true, hydrology: paintInlandLake },
+  'dry-land': { mountainIntensity: 0.75, channels: false, hydrology: paintDesertBlanket },
 };
 
 /**
  * Run the gen-time paint pipeline for `mapType` over `tiles`, then
  * recompute every tile's `walkable` flag from its final biome + level.
+ *
+ * Pipeline order: beach ring → optional channels → mountains →
+ * hydrology. Reusing one assembly removes 4 array literals and the
+ * mountainPass thunk; per-mode differences live in MAP_TYPE_CONFIG.
  */
 function runGenTimePass(
   tiles: Map<string, Tile>,
@@ -179,8 +181,11 @@ function runGenTimePass(
   rng: Rng,
   mapType: GeneratedMapType,
 ): void {
-  const pipeline = GEN_TIME_PIPELINES[mapType];
-  for (const pass of pipeline) pass(tiles, radius, rng);
+  const cfg = MAP_TYPE_CONFIG[mapType];
+  paintBeachRing(tiles, radius, rng);
+  if (cfg.channels) paintChannelCuts(tiles, radius, rng);
+  paintMountainMassif(tiles, radius, rng, cfg.mountainIntensity);
+  cfg.hydrology(tiles, radius, rng);
   // Recompute `walkable` after the guided-paint pass — every tile
   // now reflects its FINAL biome + level.
   for (const tile of tiles.values()) {
@@ -230,6 +235,30 @@ function paintBeachRing(tiles: Map<string, Tile>, radius: number, _rng: Rng): vo
  *     to create the original funnel intent — but as a CLUMP, not
  *     a line, and ONLY on land
  */
+// Noise tuning constants for paintMountainMassif. Named so future
+// tuners don't have to reverse-engineer the formula.
+//
+// - NOISE_FREQ: spatial frequency of the noise sample. Tuned for
+//   3-5 clumps per map at radius 18. Higher = more, smaller clumps.
+// - NOISE_WEIGHT / CENTER_BIAS_WEIGHT: how much each component
+//   contributes to the final mask. Together they sum to 1.0; the
+//   centre bias nudges clumps inward to form choke points without
+//   degenerating into a strip.
+// - INTENSITY_SCALE: maps the [0..1] intensity dial into a threshold
+//   shift. With intensity=0.55 + centerBias=1, mask~=0.85 → threshold
+//   0.67 → ~52% of CENTRAL land becomes mountain; perimeter tiles
+//   (centerBias~=0) need n>0.96 to paint, so almost never. The
+//   asymmetry IS the funnel — documented here so the next tuner
+//   doesn't trust the prior (wrong) "~30% of land" comment.
+const MOUNTAIN_NOISE_FREQ = 0.18;
+const MOUNTAIN_NOISE_WEIGHT = 0.7;
+const MOUNTAIN_CENTER_BIAS_WEIGHT = 0.3;
+const MOUNTAIN_INTENSITY_SCALE = 0.6;
+// Minimum tiles between the perimeter and where mountains may paint.
+// Keeps coastal travel open AND avoids divide-by-zero in centerBias
+// for small maps (radius<=5 would yield centerBias = d / 0 = NaN).
+const MOUNTAIN_SAFETY_RING = 5;
+
 function paintMountainMassif(
   tiles: Map<string, Tile>,
   radius: number,
@@ -240,30 +269,30 @@ function paintMountainMassif(
   // owns this rng, so different seeds give different mountain layouts;
   // same seed reproduces.
   const noise = createNoise2D(rng);
-  // Centre-bias: mountains are more likely to appear in the central
-  // band so they form the funnel that gives RTS modes their choke
-  // point. Falls off smoothly to zero at the perimeter.
+  // Guard the centre-bias denominator: a radius <= MOUNTAIN_SAFETY_RING
+  // would yield negative/zero span and NaN/Infinity bias. Clamp to 1
+  // so tiny radii degrade gracefully (mountains still place; just no
+  // centre-bias). board.ts's generateBoard validates radius in [1, 48].
+  const span = Math.max(1, radius - MOUNTAIN_SAFETY_RING);
   for (const tile of tiles.values()) {
     // Skip water + beach — mountains in water are nonsensical.
     if (tile.type === 'OCEAN' || tile.type === 'BEACH' || tile.type === 'LAKE') continue;
     const d = hexDistFromCenter(tile.q, tile.r);
-    // No mountains in the safety ring around the perimeter (already
-    // beach/ocean) and no mountains right against the perimeter where
-    // they'd block coastal travel.
-    if (d > radius - 5) continue;
-    // Centre-bias coefficient: 1.0 at centre, 0.0 at d=radius-5.
-    const centerBias = Math.max(0, 1 - d / (radius - 5));
-    // Sample noise at a frequency that gives ~3-5 distinct clumps
-    // per map. Higher freq = more, smaller clumps.
-    const n = noise(tile.q * 0.18, tile.r * 0.18);
-    // Final mask = noise + centre-bias contribution. Threshold
-    // cuts the top `intensity` fraction.
-    const mask = n * 0.7 + centerBias * 0.3;
-    // Threshold: intensity=0.5 → top ~30% of land tiles become
-    // mountain; 0.7 → top ~45%; 0.3 → top ~15%.
-    if (mask > 1 - intensity * 0.6) {
+    if (d > radius - MOUNTAIN_SAFETY_RING) continue;
+    // Centre-bias coefficient: 1.0 at centre, 0.0 at d=span.
+    const centerBias = Math.max(0, 1 - d / span);
+    const n = noise(tile.q * MOUNTAIN_NOISE_FREQ, tile.r * MOUNTAIN_NOISE_FREQ);
+    const mask = n * MOUNTAIN_NOISE_WEIGHT + centerBias * MOUNTAIN_CENTER_BIAS_WEIGHT;
+    if (mask > 1 - intensity * MOUNTAIN_INTENSITY_SCALE) {
       tile.type = 'MOUNTAIN';
       tile.level = 5;
+      // Set walkable inline so this function is safe to call OUTSIDE
+      // the GEN_TIME_PIPELINES context (e.g. a unit test that paints
+      // mountains then checks pathing). runGenTimePass also calls
+      // recomputeWalkable() globally afterward, which is fine — this
+      // just removes the foot-gun of standalone-callable footprint
+      // leaving stale walkable=true on level-5 MOUNTAIN.
+      tile.walkable = false;
     }
   }
 }

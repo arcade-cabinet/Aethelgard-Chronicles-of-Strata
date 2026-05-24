@@ -27,23 +27,27 @@ function pickWalkableTestTile(game: ReturnType<typeof startGame>): {
   r: number;
   key: string;
 } {
-  // Pick a walkable tile that is OUTSIDE the player's seed zone
-  // (the base attractor seeds the player's controlled set in a
-  // radius-2 hex around its own tile). Tile q=4+ at r=0 is safely
-  // beyond that radius regardless of player base placement.
-  for (let q = 4; q <= 10; q++) {
-    for (const r of [0, 1, -1, 2, -2]) {
-      const t = game.board.tiles.get(`${q},${r}`);
-      if (!t?.walkable) continue;
-      // also confirm the tile isn't already in either zone (so claim
-      // sets a clean baseline) — the seedZonesFromAttractors pass can
-      // grant it to player or enemy depending on base placement.
-      const key = `${q},${r}`;
-      if (game.zones.enemy.controlled.has(key)) continue;
-      return { q, r, key };
-    }
+  // Walk EVERY board tile in deterministic order. The prior narrow
+  // 7×5 window happened to work for the 4 seeds I tried but is
+  // future-flaky: any noise/centre-bias retune could turn a single
+  // seed unlucky. Scanning the full board with deterministic
+  // ordering (sort by q then r) is O(tiles) ~ 1000 and runs once
+  // per test — cheap insurance against silent CI flake.
+  const candidates: Array<{ q: number; r: number; key: string }> = [];
+  for (const t of game.board.tiles.values()) {
+    if (!t.walkable) continue;
+    const key = `${t.q},${t.r}`;
+    // Reject tiles already in either faction's controlled set so the
+    // claimTile call below sets a clean baseline (no interaction with
+    // the seedZonesFromAttractors radius-2 seed footprint).
+    if (game.zones.player.controlled.has(key)) continue;
+    if (game.zones.enemy.controlled.has(key)) continue;
+    candidates.push({ q: t.q, r: t.r, key });
   }
-  throw new Error('encroachment test could not find a walkable tile outside the seed zones');
+  candidates.sort((a, b) => (a.q !== b.q ? a.q - b.q : a.r - b.r));
+  const first = candidates[0];
+  if (!first) throw new Error('encroachment test could not find a walkable, zone-free tile');
+  return first;
 }
 
 /**
@@ -92,7 +96,11 @@ describe('encroachmentSystem (M_AUDIT2.ARCH.41)', () => {
     const { q, r, key } = pickWalkableTestTile(game);
     claimTile(game.zones.player, key);
     spawnMilitaryAt(game, 'enemy', q, r);
-    // Pick an adjacent walkable tile for the defender.
+    // Pick an adjacent walkable tile for the defender that is itself
+    // ZONE-FREE. Otherwise a defender on an enemy-controlled tile
+    // could pass the test for the wrong reason (defender adjacency
+    // does cancel, BUT we want a clean isolation of the cancel-by-
+    // adjacency path).
     const neighborOffsets = [
       [1, 0],
       [-1, 0],
@@ -105,11 +113,14 @@ describe('encroachmentSystem (M_AUDIT2.ARCH.41)', () => {
     for (const [dq, dr] of neighborOffsets) {
       const nq = q + (dq ?? 0);
       const nr = r + (dr ?? 0);
-      if (game.board.tiles.get(`${nq},${nr}`)?.walkable) {
-        spawnMilitaryAt(game, 'player', nq, nr);
-        defended = true;
-        break;
-      }
+      const nkey = `${nq},${nr}`;
+      const t = game.board.tiles.get(nkey);
+      if (!t?.walkable) continue;
+      if (game.zones.player.controlled.has(nkey)) continue;
+      if (game.zones.enemy.controlled.has(nkey)) continue;
+      spawnMilitaryAt(game, 'player', nq, nr);
+      defended = true;
+      break;
     }
     expect(defended).toBe(true);
     encroachmentSystem(game.world, game.zones, 0.5, game.difficulty);

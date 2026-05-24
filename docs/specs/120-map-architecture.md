@@ -84,6 +84,28 @@ and each should be designed across every mode:
   natural HP regen while set; cleared by leaving DESERT for 3+
   seconds.
 
+### Security note (forward-looking, for when the attributes land)
+
+Per security-auditor review on PR #10 (2026-05-24): the disease/
+fatigue/dehydration fields will end up in the SQLite save schema.
+When implementing:
+
+- **Clamp on deserialize.** Disease/fatigue/dehydration values
+  loaded from a save MUST be bounds-checked (e.g. `disease ∈
+  [0, MAX_TICKS]`). A tampered or corrupt save could set
+  `fatigue = Infinity` (suppress all damage forever) or
+  `disease = -1` (negative tick = infinite damage loop → crash).
+  Belongs in `src/persistence/serialize-game.ts::validateSnapshot`
+  alongside the existing `mapSize` + `research.purchased` guards.
+- **Sim-authoritative if multiplayer ever lands.** "Healer in
+  2-hex range clears disease" is a server check, not a client
+  assertion. Out of scope today (single-player only) but spec
+  this in `100-ai-as-player.md` when netcode arrives.
+- **Determinism.** Attribute tick logic lives in `src/ecs/systems/**`
+  which is in the determinism-guarded ban_patterns
+  (`.claude/gates.json`). No `Math.random` / `Date.now` /
+  `performance.now` — use the engine clock facade.
+
 ## The matrix
 
 6 modes × 4 mapTypes × 4 sizes = 96 configurations. The matrix
@@ -209,17 +231,24 @@ PERMISSIVE — abundant resources, no harsh chokes.
 
 ## Cross-cutting mechanics
 
-### Mountain passes (M_NEXT.MAP.PASS — task #18)
+### Mountain passes (M_NEXT.MAP.PASS — task #18) — STATUS: partial
 
-Within every mountain massif, paintMountainMassif must LEAVE GAPS:
+**Today (shipped in this PR)**: `MOUNTAIN_PASS` biome added to the
+`BiomeType` union + biome-flags + palette + terrain-cost tables.
+Walkable, buildable, level-3 elevation.
+
+**Still to land**: paintMountainMassif must LEAVE GAPS:
 
 - Compute the noise mask
-- After threshold, walk the massif and identify "isthmuses" — narrow
-  necks where the mountain band is 1–2 hex thick
-- Convert those tiles back to HIGHLAND (not flat) so units MOVE
-  through them but at reduced speed
+- After threshold, walk the massif and identify "isthmuses" —
+  narrow necks where the mountain band is 1–2 hex thick
+- Convert those tiles back to MOUNTAIN_PASS (level 3 walkable)
+  with a ~0.6× speedMultiplier in terrain-cost
+- Apply Combatant.fatigue attribute on traversal (-50% damage for
+  5 sec; see M_FUN.ATTR.FATIGUE)
 - Result: visual mountain wall with discrete passes the player can
-  see + plan around
+  see + plan around AND a fortification gameplay loop (build Wall/
+  Watchtower on a pass tile to make the choke yours)
 
 ### Elevation slowdown (M_NEXT.MAP.ELEV)
 

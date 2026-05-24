@@ -16,11 +16,23 @@ import type { BiomeType } from './biome';
 export const TERRAIN_MOVE_COST: Record<BiomeType, number> = {
   OCEAN: 1, // water tiles are impassable; cost is unused
   LAKE: 1,
+  // M_FUN.MAP.SWAMP — walkable but punishingly slow (1.8×). Combined
+  // with the disease DoT on traversal, swamp = "you can cross but
+  // only with a Healer + the willingness to take a long time".
+  SWAMP: 1.8,
   BEACH: 1,
   DESERT: 1,
   GRASS: 1,
   FOREST: 1.25,
   HIGHLAND: 1.5,
+  // M_FUN.MAP.PASS — the fortifiable choke. ~0.6× would imply
+  // FASTER than baseline, which is wrong; we want passes to be
+  // notably slower than HIGHLAND (1.5×) so they read as "carved
+  // path through stone" — 1.7× is the right semantic. The spec's
+  // "~0.6× speed" reference was inverted; cost is the inverse of
+  // speed, so 1.7× cost ≈ 0.6× speed. Documented to prevent the
+  // next reader from "fixing" it.
+  MOUNTAIN_PASS: 1.7,
   MOUNTAIN: 1, // impassable; cost is unused
 };
 

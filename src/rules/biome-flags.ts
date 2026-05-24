@@ -70,6 +70,19 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: null,
     decorationDensity: null,
   },
+  // M_FUN.MAP.SWAMP — walkable shallow-water biome. Units traversing
+  // SWAMP gain a disease attribute that DoTs HP until they leave OR
+  // a friendly Healer is in range. NOT buildable (foundations don't
+  // hold in marshy ground), NOT habitable (no Houses/Farms).
+  SWAMP: {
+    walkable: true,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: 'water',
+    peakLevel: null,
+    decorationDensity: 0.4,
+  },
   BEACH: {
     walkable: true,
     buildable: true,
@@ -114,6 +127,19 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     cliffColor: null,
     peakLevel: 5,
     decorationDensity: 0.3,
+  },
+  // M_FUN.MAP.PASS — walkable HIGHLAND-elevation gap inside a
+  // MOUNTAIN massif. Crosses the choke; applies a fatigue attribute
+  // on traversal (-50% damage for 5 sec). Buildable (Wall +
+  // Watchtower belong here — the fortifiable-choke contract).
+  MOUNTAIN_PASS: {
+    walkable: true,
+    buildable: true,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: 0.15,
   },
   MOUNTAIN: {
     walkable: false,
