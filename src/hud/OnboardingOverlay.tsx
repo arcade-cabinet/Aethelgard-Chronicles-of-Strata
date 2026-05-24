@@ -92,6 +92,19 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
     };
   }, [persistence]);
 
+  // M_POLISH3.SCENE.3 — e2e/dev hook to dismiss the onboarding overlay
+  // without 9 click-throughs. Tests + journey-capture screenshots need
+  // a clean canvas; this is the documented way to bypass the tutorial.
+  // Sets the persistence flag too so subsequent reloads don't re-show.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    type DevWindow = Window & { __skipOnboarding?: () => Promise<void> };
+    (window as unknown as DevWindow).__skipOnboarding = async () => {
+      setOpen(false);
+      await persistence.setSetting(ONBOARDING_KEY, 'true');
+    };
+  }, [persistence]);
+
   const markSeen = () => {
     setOpen(false);
     persistence.setSetting(ONBOARDING_KEY, 'true').catch((err) => {

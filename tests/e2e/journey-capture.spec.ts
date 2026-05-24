@@ -28,6 +28,43 @@ async function snap(page: import('@playwright/test').Page, slug: string): Promis
   });
 }
 
+/**
+ * Skip the onboarding overlay + wait for the r3f scene to fully
+ * paint. `__skipOnboarding` is wired by OnboardingOverlay's
+ * useEffect; the function may not exist yet on enterGame return,
+ * so poll for it. After dismissal, wait for the dialog DOM to
+ * actually be removed (React re-render is async), then for
+ * `__game_advanceFrames` (the GameSession test hook), then a
+ * paint-warmup window for shadow maps + materials to settle.
+ */
+async function dismissOnboardingAndWaitForScene(
+  page: import('@playwright/test').Page,
+): Promise<void> {
+  // 1. wait for __skipOnboarding to be wired
+  await page.waitForFunction(
+    () =>
+      typeof (window as unknown as { __skipOnboarding?: unknown }).__skipOnboarding === 'function',
+    { timeout: 10_000 },
+  );
+  // 2. call it
+  await page.evaluate(async () => {
+    const w = window as unknown as { __skipOnboarding?: () => Promise<void> };
+    await w.__skipOnboarding?.();
+  });
+  // 3. wait for the dialog to leave the DOM
+  await page
+    .waitForSelector('[role="dialog"]', { state: 'detached', timeout: 5_000 })
+    .catch(() => undefined);
+  // 4. wait for the game test hook + paint warmup
+  await page.waitForFunction(
+    () =>
+      typeof (window as unknown as { __game_advanceFrames?: unknown }).__game_advanceFrames ===
+      'function',
+    { timeout: 15_000 },
+  );
+  await page.waitForTimeout(2500);
+}
+
 test.describe('journey capture (manual review)', () => {
   test('00-title-screen', async ({ page }) => {
     await page.goto('/');
@@ -57,21 +94,14 @@ test.describe('journey capture (manual review)', () => {
 
   test('03-game-fresh-start', async ({ page }) => {
     await enterGame(page, 'ancient-silver-forest');
-    // Dismiss onboarding overlay so the canvas is visible.
-    const skip = page.locator('button', { hasText: 'Skip' });
-    if (await skip.count()) {
-      await skip.first().click();
-      await page.waitForTimeout(400);
-    }
-    await page.waitForTimeout(5000); // scene settle — longer for headless GLB loads
+    await dismissOnboardingAndWaitForScene(page);
     await snap(page, '03-game-fresh-start');
   });
 
   test('04-game-after-10s-sim', async ({ page }) => {
     test.setTimeout(60_000);
     await enterGame(page, 'ancient-silver-forest');
-    const skip = page.locator('button', { hasText: 'Skip' });
-    if (await skip.count()) await skip.first().click();
+    await dismissOnboardingAndWaitForScene(page);
     await page.evaluate(() => {
       const w = window as unknown as { __game_advanceFrames?: (n: number) => void };
       w.__game_advanceFrames?.(600);
@@ -82,8 +112,7 @@ test.describe('journey capture (manual review)', () => {
 
   test('05-build-menu-open', async ({ page }) => {
     await enterGame(page, 'ancient-silver-forest');
-    const skip = page.locator('button', { hasText: 'Skip' });
-    if (await skip.count()) await skip.first().click();
+    await dismissOnboardingAndWaitForScene(page);
     await page.evaluate(() => {
       window.dispatchEvent(new CustomEvent('aethelgard:open-build-menu'));
     });
@@ -93,8 +122,7 @@ test.describe('journey capture (manual review)', () => {
 
   test('06-game-over-win', async ({ page }) => {
     await enterGame(page, 'ancient-silver-forest');
-    const skip = page.locator('button', { hasText: 'Skip' });
-    if (await skip.count()) await skip.first().click();
+    await dismissOnboardingAndWaitForScene(page);
     await page.evaluate(() => {
       const w = window as unknown as { __game?: { outcome: string } };
       if (w.__game) w.__game.outcome = 'win';
@@ -105,8 +133,7 @@ test.describe('journey capture (manual review)', () => {
 
   test('07-game-over-loss', async ({ page }) => {
     await enterGame(page, 'ancient-silver-forest');
-    const skip = page.locator('button', { hasText: 'Skip' });
-    if (await skip.count()) await skip.first().click();
+    await dismissOnboardingAndWaitForScene(page);
     await page.evaluate(() => {
       const w = window as unknown as { __game?: { outcome: string } };
       if (w.__game) w.__game.outcome = 'loss';
