@@ -64,6 +64,26 @@ function TilePick({
     startX: number;
     startY: number;
   } | null>(null);
+
+  // M_POLISH2.MOBILE.9 — when the OS cancels a pointer (most often a
+  // pinch-zoom or two-finger pan starting on the canvas while a
+  // single-finger tap was being arrowed at this mesh), abort any
+  // pending long-press AND wipe the longPressRef so the next pointerup
+  // does NOT fire onLeft(). Without this, pinch-zoom released its second
+  // finger on a tile-mesh and the released-pointer-up fired a phantom
+  // select.
+  useEffect(() => {
+    const onCancel = () => {
+      const state = longPressRef.current;
+      if (!state) return;
+      clearTimeout(state.timer);
+      longPressRef.current = null;
+      hexGridVisibility.show = false;
+    };
+    window.addEventListener('pointercancel', onCancel);
+    return () => window.removeEventListener('pointercancel', onCancel);
+  }, []);
+
   return (
     // <mesh> is an r3f three.js node, not a DOM element — the a11y
     // rule misfires on the JSX intrinsic. Suppress here so the broader
