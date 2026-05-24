@@ -2172,7 +2172,7 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 - [x] [BLOCKER] M_POLISH3.B.2 — DONE 2026-05-24 commit 8e98c88. Bumped SLOT_POSITIONS.landscape stride from 80px to 110px. All 6 pills visible + readable; WinConditionPill chip sits cleanly above with 8-10px breathing gap. Verified via artifacts/journey/03-game-fresh-start.png.
 - [x] [HIGH] M_POLISH3.S.1 — DONE — audit complete. `grep advanceFrames tests/` shows only `__game_advanceFrames` (the new hook); no spec still uses the old `__game?.advanceFrames` path.
 - [x] [HIGH] M_POLISH3.S.2 — DONE — `?mode=X` URL param already wired in App.tsx URL-driven auto-start (commit 19f6c22). per-mode-journey + per-mode-match specs can drive specific modes via this.
-- [ ] [HIGH] M_POLISH3.S.3 — Save/load Continue button enabled-after-save: persistence.list() refresh is async + the title screen caches. Add a save-notification stream the title screen subscribes to OR expose a force-refresh dev hook. Unblocks save-load e2e.
+- [x] [HIGH] M_POLISH3.S.3 — DONE 2026-05-24 commit cb0be9b. createAutoSave fires `aethelgard:save-committed` after each commit; App.tsx re-queries persistence.list() on the event; Continue button enables without reload. window.__refreshSaveList() also exposed for e2e force-check.
 - [x] [HIGH] M_POLISH3.S.4 — DONE 2026-05-24 commit b5ff0f5. window.__skipOnboarding hook + dismissOnboardingAndWaitForScene helper wired across all journey specs. Also commit 21c96aa: URL-mode pre-sets the persistence flag so AI-vs-AI specs never even see the onboarding.
 
 #### M_POLISH3.JOURNEY — playthrough expansion (each capture = a moment the agent now reviews)
