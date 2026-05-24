@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# M_POLISH3.LOCAL.1 — pre-push gate.
+# Run the full verify suite + e2e battery BEFORE pushing.
+# Catches every CI failure on the local machine.
+# Skip with `git push --no-verify` only when explicitly authorized.
+
+set -e
+
+echo "[pre-push] running pnpm verify..."
+pnpm verify
+
+echo "[pre-push] running pnpm test:browser..."
+pnpm test:browser
+
+echo "[pre-push] running pnpm test:e2e..."
+PW_REUSE_SERVER=1 pnpm test:e2e
+
+echo "[pre-push] all gates green — push proceeding."
