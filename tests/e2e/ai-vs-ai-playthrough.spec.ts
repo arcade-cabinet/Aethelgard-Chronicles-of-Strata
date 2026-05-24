@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { test } from '@playwright/test';
 
@@ -38,6 +38,11 @@ interface FrameSummary {
   tilesPlayer: number;
   tilesEnemy: number;
 }
+
+// M_POLISH3.AIVAI.5 — record video for every AI-vs-AI playthrough so
+// the agent can review the WHOLE match as one artifact (instead of
+// 12-13 sparse PNGs). 'on' keeps the .webm even on passing tests.
+test.use({ video: { mode: 'on', size: { width: 1280, height: 720 } } });
 
 test.describe('AI-vs-AI playthrough', () => {
   for (const mode of MODES) {
@@ -177,6 +182,21 @@ test.describe('AI-vs-AI playthrough', () => {
         path: join(outDir, '_final.png'),
         fullPage: false,
       });
+
+      // M_POLISH3.AIVAI.5 — copy the recorded video into the per-mode
+      // artifacts dir so the full match plays back as one .webm next
+      // to its transcript + screenshots. video() is async and resolves
+      // after the page closes; close manually so the path is
+      // available before the test ends.
+      const videoSrc = await page.video()?.path();
+      await page.close();
+      if (videoSrc) {
+        try {
+          copyFileSync(videoSrc, join(outDir, '_playthrough.webm'));
+        } catch (err) {
+          console.warn(`[${mode}] video copy failed:`, err);
+        }
+      }
 
       // The match either resolves OR we exceed the cap. Both are
       // valuable to capture; the test only fails if the simulation
