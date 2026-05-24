@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexKey, hexNeighbors } from '@/core/hex';
@@ -11,9 +11,20 @@ import {
   setRally,
 } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
+import { getCursorMode } from '@/game/cursor-mode';
 import { selectEntity, selectedEntities } from '@/game/selection';
+import { HUD_THEME } from '@/hud/hud-theme';
 import { PathLine } from './PathLine';
 import { hexGridVisibility } from './HexGridOverlay';
+
+/**
+ * M_EXPANSION.U.109 — SVG sword cursor as an inline data: URL.
+ * 24×24 px, hot-spot at centre (12,12), crimson fill matching the
+ * combat danger colour from HUD_THEME. Encodes a crossed-sword glyph
+ * for the attack affordance.
+ */
+const ATTACK_CURSOR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><line x1="4" y1="4" x2="20" y2="20" stroke="${HUD_THEME.color.danger}" stroke-width="2.5" stroke-linecap="round"/><line x1="20" y1="4" x2="4" y2="20" stroke="${HUD_THEME.color.danger}" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="4" x2="8" y2="8" stroke="${HUD_THEME.color.danger}" stroke-width="1.5"/><line x1="20" y1="4" x2="16" y2="8" stroke="${HUD_THEME.color.danger}" stroke-width="1.5"/></svg>`;
+const ATTACK_CURSOR = `url("data:image/svg+xml;utf8,${encodeURIComponent(ATTACK_CURSOR_SVG)}") 12 12, crosshair`;
 
 /** Long-press threshold (ms) — touch hold beyond this fires as right-click. */
 const LONG_PRESS_MS = 500;
@@ -29,6 +40,7 @@ function TilePick({
   onLeft,
   onRight,
   onHover,
+  onLeave,
 }: {
   x: number;
   y: number;
@@ -37,6 +49,8 @@ function TilePick({
   onRight: () => void;
   /** M_EXPANSION.U.108 — fires on pointer-over; null on leave. */
   onHover?: () => void;
+  /** M_EXPANSION.U.109 — fires on pointer-leave so the parent can clear hover state. */
+  onLeave?: () => void;
 }) {
   const longPressRef = useRef<{ timer: number; fired: boolean } | null>(null);
   return (
@@ -90,6 +104,7 @@ function TilePick({
           longPressRef.current = null;
           hexGridVisibility.show = false;
         }
+        onLeave?.();
       }}
       onContextMenu={(e) => {
         e.nativeEvent.preventDefault();
@@ -141,6 +156,28 @@ export function TileInteraction({
   const [hoveredTile, setHoveredTile] = useState<{ q: number; r: number; level: number } | null>(
     null,
   );
+
+  /*
+   * M_EXPANSION.U.109 — sword cursor when hovering an enemy with a
+   * military unit selected. Touch devices never fire onPointerOver with
+   * a persistent hover (the pointer disappears on lift), so this is
+   * desktop-only by the nature of pointer events. The effect has a
+   * cleanup path that restores the default cursor so a route change or
+   * component unmount never leaves the sword cursor stuck.
+   */
+  useEffect(() => {
+    const hoveredKey = hoveredTile ? getHexKey(hoveredTile.q, hoveredTile.r) : null;
+    const mode = getCursorMode(game, hoveredKey);
+    if (mode === 'attack') {
+      document.body.style.cursor = ATTACK_CURSOR;
+    } else {
+      document.body.style.cursor = '';
+    }
+    return () => {
+      document.body.style.cursor = '';
+    };
+  }, [game, hoveredTile]);
+
   // M_AUDIT2.SEC2.26 — 100ms click cooldown. Auto-clickers can chain
   // build placements faster than the economy tick can validate (multiple
   // resource-spends before any tick runs). 100ms is invisible to humans.
@@ -228,6 +265,7 @@ export function TileInteraction({
             onLeft={() => onPick(t.q, t.r)}
             onRight={() => onRightPick(t.q, t.r)}
             onHover={() => setHoveredTile({ q: t.q, r: t.r, level: t.level })}
+            onLeave={() => setHoveredTile(null)}
           />
         );
       })}
