@@ -37,7 +37,7 @@ interface SlotPosition {
 // horizontal breathing room is not enough for the 'discoveries'
 // pill text). Re-spaced with a constant 80px stride and the
 // 'weather' pill inserted to the left of pause.
-const SLOT_POSITIONS: Record<'landscape' | 'portrait', Record<HudPillSlot, SlotPosition>> = {
+const SLOT_POSITIONS: Record<'landscape' | 'portrait' | 'tablet', Record<HudPillSlot, SlotPosition>> = {
   landscape: {
     weather: { top: 12, right: 620 },
     speed: { top: 12, right: 540 },
@@ -66,6 +66,20 @@ const SLOT_POSITIONS: Record<'landscape' | 'portrait', Record<HudPillSlot, SlotP
     sound: { top: 56, right: 80 }, // mounted by SoundToggle even on portrait
     discoveries: { top: 104, right: 8 },
     resign: { top: 104, right: 80 }, // unused on portrait (MobileSystemMenu)
+  },
+  // M_POLISH2.MOBILE.13a — tablet row. iPad Mini landscape (1024×768)
+  // has more width than phone landscape; chips spaced 96px apart
+  // (vs the desktop 80px stride) to take advantage. Sound + speed +
+  // pause sit in the top-right cluster like desktop; discoveries +
+  // resign on the second row to balance the side-docked
+  // SelectionPanel from MOBILE.13b.
+  tablet: {
+    weather: { top: 12, right: 504 },
+    speed: { top: 12, right: 408 },
+    pause: { top: 12, right: 312 },
+    sound: { top: 12, right: 216 },
+    discoveries: { top: 60, right: 216 },
+    resign: { top: 60, right: 8 },
   },
 };
 
@@ -103,7 +117,11 @@ export function HudPill({
   type = 'button',
 }: HudPillProps) {
   const viewport = useViewport();
-  const pos = SLOT_POSITIONS[viewport.isPortrait ? 'portrait' : 'landscape'][slot];
+  // M_POLISH2.MOBILE.13a — tablet row picked when viewport.class is
+  // 'tablet'; otherwise fall back to portrait/landscape on isPortrait.
+  const layoutKey: 'portrait' | 'landscape' | 'tablet' =
+    viewport.class === 'tablet' ? 'tablet' : viewport.isPortrait ? 'portrait' : 'landscape';
+  const pos = SLOT_POSITIONS[layoutKey][slot];
   const variantStyle: CSSProperties =
     variant === 'danger'
       ? {
