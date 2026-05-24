@@ -107,6 +107,14 @@ export interface NewGameConfig {
    */
   turnsMode?: 'real-time' | 'turn-based';
   /**
+   * M_EXPANSION.F.80 — player-faction palette swap. CSS hex string
+   * applied as a uniform character tint to player units. Overrides
+   * SKINS.player.characterTint (which defaults to null = native
+   * KayKit colours). Picks today: red/blue/green/yellow + null
+   * (native).
+   */
+  playerColor?: string | null;
+  /**
    * M_TURNS.2 — explicit max-turn cap. When omitted, falls back to
    * the preset's maxTurns. null is a legitimate override ("uncapped
    * 4X session"); the type accepts undefined too (use preset default).
@@ -142,8 +150,14 @@ export interface GameState {
   difficulty: Difficulty;
   /** The event seed string used to initialize the event PRNG. */
   eventSeed: string;
-  /** The selected game-mode preset (M_MODES). Defaults to red-vs-blue. */
+  /** The selected game-mode preset (M_MODES). Defaults to border-clash. */
   mode: GameMode;
+  /**
+   * M_EXPANSION.F.80 — player faction palette tint. CSS hex string
+   * or null = use SKINS default. Read by Units when picking the
+   * per-character tint.
+   */
+  playerColor: string | null;
   /** The generated board. */
   board: BoardData;
   /** The A* navigation graph. */
@@ -573,6 +587,8 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     difficulty,
     eventSeed,
     mode: mode ?? 'border-clash',
+    // M_EXPANSION.F.80 — player palette pick (or null = SKINS default).
+    playerColor: config.playerColor ?? null,
     board,
     navGraph,
     world,

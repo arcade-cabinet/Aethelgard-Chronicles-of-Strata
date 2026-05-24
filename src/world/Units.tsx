@@ -88,8 +88,13 @@ export function Units({ game }: { game: GameState }) {
       // M_EXPANSION.A.29 — resolve faction tint at snapshot time so
       // the per-frame inner render doesn't repeat the FactionTrait
       // lookup. SKINS lookup is a 2-row table — effectively constant.
+      // M_EXPANSION.F.80 — game.playerColor overrides SKINS.player
+      // characterTint when the player picked a palette swap in
+      // NewGameModal. Enemy faction always uses its SKINS default.
       const faction = e.get(FactionTrait)?.faction;
-      const tint = faction ? (SKINS[faction].characterTint ?? null) : null;
+      let tint: string | null = null;
+      if (faction === 'player' && game.playerColor) tint = game.playerColor;
+      else if (faction) tint = SKINS[faction].characterTint ?? null;
       current.push({ id: Number(e), entity: e, role, tint });
     }
     // re-render the unit list only when the membership actually changes

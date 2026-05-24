@@ -210,6 +210,8 @@ export function App() {
       // M_TURNS.2 — explicit maxTurns cap. Ignored when turnsMode is
       // real-time. null = uncapped.
       maxTurns: choices.maxTurns,
+      // M_EXPANSION.F.80 — player palette pick. null = use SKINS default.
+      playerColor: choices.playerColor,
     });
   };
 

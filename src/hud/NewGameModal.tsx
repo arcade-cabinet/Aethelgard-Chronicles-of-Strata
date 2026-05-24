@@ -33,7 +33,26 @@ export interface NewGameChoices {
    * Ignored when turnsMode === 'real-time'. Common picks: 30/60/90.
    */
   maxTurns: number | null;
+  /**
+   * M_EXPANSION.F.80 — player palette pick. CSS hex string or null
+   * (= SKINS default = native KayKit colours).
+   */
+  playerColor: string | null;
 }
+
+/**
+ * M_EXPANSION.F.80 — palette pick options. 4 banner colours + a
+ * "Default" pick that uses the SKINS native armor colours. Each
+ * entry is a CSS hex string the renderer multiplies into the
+ * character material's diffuse.
+ */
+const PLAYER_COLORS: ReadonlyArray<{ key: string; label: string; hex: string | null }> = [
+  { key: 'default', label: 'Default', hex: null },
+  { key: 'red', label: 'Red', hex: '#ef4444' },
+  { key: 'blue', label: 'Blue', hex: '#3b82f6' },
+  { key: 'green', label: 'Green', hex: '#22c55e' },
+  { key: 'yellow', label: 'Yellow', hex: '#eab308' },
+];
 
 // M_BRAND.1 — brand-aligned mode labels. The labels are the
 // player-facing names; the keys are stable for save serialization.
@@ -152,6 +171,10 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   const [maxTurns, setMaxTurnsState] = useState<number | null>(
     presetFor('border-clash').maxTurns,
   );
+  // M_EXPANSION.F.80 — player palette pick. 'default' = null (use
+  // SKINS native colours). Independent of preset cascade (palette
+  // is purely cosmetic; doesn't depend on game mode).
+  const [playerColorKey, setPlayerColorKey] = useState<string>('default');
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
 
   // M_BRAND.3 — when the player overrides any cascaded control after
@@ -424,6 +447,25 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
         </div>
 
         {/*
+          M_EXPANSION.F.80 — Player palette swap. Purely cosmetic;
+          doesn't cascade with the preset. 5 picks: Default (SKINS
+          native) + Red/Blue/Green/Yellow. Selected hex is passed
+          through choices.playerColor and read by Units.tsx to tint
+          every player-faction character mesh.
+        */}
+        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>
+          Player colour
+        </p>
+        <div style={{ margin: '6px 0 18px' }}>
+          <Segmented
+            value={playerColorKey}
+            options={PLAYER_COLORS.map((c) => c.key)}
+            labels={Object.fromEntries(PLAYER_COLORS.map((c) => [c.key, c.label]))}
+            onChange={setPlayerColorKey}
+          />
+        </div>
+
+        {/*
           M_TURNS.2 — Max turns control. Visible only when
           turn-based — the cap is meaningless in real-time mode
           (which has no turn counter). Picks: 30 / 60 / 90 /
@@ -477,6 +519,8 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 // mode; passing it through unconditionally is safe
                 // because the runtime ignores it in real-time.
                 maxTurns,
+                // M_EXPANSION.F.80 — palette pick (null = default).
+                playerColor: PLAYER_COLORS.find((c) => c.key === playerColorKey)?.hex ?? null,
               })
             }
             style={{

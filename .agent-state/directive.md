@@ -1868,7 +1868,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.F.77 — Achievements: track 'first-victory', 'no-build-wonder-win', etc; persist to Preferences
 - [ ] [HIGH] M_EXPANSION.F.78 — Scenario editor: load a saved board state + spawn units interactively (debug mode only)
 - [ ] [HIGH] M_EXPANSION.F.79 — Difficulty: hardcore mode (peons cost food, food depletes over time)
-- [ ] [HIGH] M_EXPANSION.F.80 — Faction palette swap (player can choose red/blue/green/yellow on the New Game modal)
+- [x] [HIGH] M_EXPANSION.F.80 — Faction palette swap — DONE. NewGameModal exposes a "Player colour" Segmented with 5 picks (Default/Red/Blue/Green/Yellow). Chosen hex flows: NewGameChoices.playerColor → App.beginGame → NewGameConfig.playerColor → GameState.playerColor → Units.tsx tint resolver (game.playerColor overrides SKINS.player.characterTint when non-null). Independent of preset cascade (palette is purely cosmetic). 470/470 green.
   - SKINS.player is a module-level constant; runtime palette override
     needs touching every SKIN consumer (FactionBase, ZoneBorder,
     Minimap, Units). Same shape as M_AUDIT2.ARCH.3 ZoneBorder color
