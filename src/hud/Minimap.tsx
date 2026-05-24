@@ -4,6 +4,7 @@ import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { getMinimapZoom, setMinimapZoom, subscribeMinimapZoom } from '@/hud/minimap-zoom';
 import { cameraView } from '@/render/camera-view';
+import { useViewport } from '@/render/useViewport';
 import { SKINS } from '@/rules/skins';
 import { BIOME_COLORS } from '@/world/palette';
 
@@ -162,7 +163,14 @@ export function Minimap({ game, compact = false }: { game: GameState; compact?: 
 
   // the canvas keeps its internal SIZE resolution (projection math is stable);
   // only the on-screen CSS size shrinks on narrow viewports.
-  const displaySize = compact ? 96 : SIZE;
+  // M_POLISH2.MOBILE.13d — tablet branch gets a bigger minimap
+  // (240×240) since iPad Mini landscape has room. compact (phone)
+  // stays at 96; desktop stays at SIZE.
+  const viewportLocal = useViewport();
+  let displaySize: number;
+  if (viewportLocal.class === 'tablet') displaySize = 240;
+  else if (compact) displaySize = 96;
+  else displaySize = SIZE;
 
   return (
     <section
