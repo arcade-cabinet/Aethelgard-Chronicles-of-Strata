@@ -42,8 +42,15 @@ export function getHexKey(q: number, r: number): string {
  * and centralises that fallback decision.
  */
 export function parseHexKey(key: string): { q: number; r: number } {
+  // CodeRabbit MED — `q ?? 0` only catches undefined, not NaN. A
+  // malformed key like 'abc,def' splits to non-empty strings that
+  // Number()s to NaN, which propagates silently through hex math.
+  // Number.isFinite catches both cases.
   const [q, r] = key.split(',').map(Number);
-  return { q: q ?? 0, r: r ?? 0 };
+  return {
+    q: Number.isFinite(q) ? (q as number) : 0,
+    r: Number.isFinite(r) ? (r as number) : 0,
+  };
 }
 
 /**
@@ -54,7 +61,11 @@ export function parseHexKey(key: string): { q: number; r: number } {
  */
 export function parseHexLevelKey(key: string): { q: number; r: number; level: number } {
   const [q, r, level] = key.split(',').map(Number);
-  return { q: q ?? 0, r: r ?? 0, level: level ?? 0 };
+  return {
+    q: Number.isFinite(q) ? (q as number) : 0,
+    r: Number.isFinite(r) ? (r as number) : 0,
+    level: Number.isFinite(level) ? (level as number) : 0,
+  };
 }
 
 /**
