@@ -163,6 +163,8 @@ export const PREF_KEYS = {
   colorblind: 'aethelgard.colorblind',
   // M_EXPANSION.U.114 — visible captions for sound events.
   captions: 'aethelgard.captions',
+  // M_EXPANSION.U.115 — user-remappable hotkey bindings (JSON blob).
+  hotkeyBindings: 'aethelgard.hotkeys',
 } as const;
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
 

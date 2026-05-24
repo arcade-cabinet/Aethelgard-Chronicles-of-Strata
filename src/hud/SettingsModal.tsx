@@ -4,6 +4,8 @@ import { type AudioBuses, getBusVolume, setBusVolume, setMuted } from '@/audio/b
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
 import { isColorblindMode, setColorblindMode } from '@/rules/colorblind';
 import { isCaptionsEnabled, setCaptionsEnabled } from './captions';
+import { HotkeyEditor } from './HotkeyEditor';
+import { loadBindings } from './hotkey-bindings';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 import { MUTE_PREF_KEY } from './SoundToggle';
@@ -82,6 +84,17 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
       if (cancelled) return;
       setCaptionsEnabled(cb);
       setCaptionsState(cb);
+    });
+    // M_EXPANSION.U.115 — load remapped hotkey bindings.
+    void safePersistenceRead(
+      persistence,
+      PREF_KEYS.hotkeyBindings,
+      (raw) => raw,
+      '',
+      'SettingsModal',
+    ).then((json) => {
+      if (cancelled) return;
+      if (json) loadBindings(json);
     });
     // M_EXPANSION.U.112 — load each bus volume from persistence on mount
     // and push the read value into the buses module so subsequently-
@@ -317,6 +330,35 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
           >
             {captions ? '✓ On' : 'Off'}
           </button>
+        </div>
+
+        {/* M_EXPANSION.U.115 — keyboard rebinding editor. Renders
+            one row per remappable action; clicking a row enters
+            "press a key" mode; the next keystroke becomes the new
+            binding (collisions are rejected). Reset restores
+            defaults. The serialized JSON is persisted on every
+            accepted change. */}
+        <div
+          style={{
+            padding: '10px 0',
+            borderTop: `1px solid ${HUD_THEME.color.border}`,
+          }}
+        >
+          <div
+            style={{
+              fontSize: '0.85rem',
+              color: HUD_THEME.color.muted,
+              marginBottom: 8,
+              fontWeight: 700,
+            }}
+          >
+            Keyboard shortcuts
+          </div>
+          <HotkeyEditor
+            onChange={(json) => {
+              void persistence.setSetting(PREF_KEYS.hotkeyBindings, json);
+            }}
+          />
         </div>
 
         {/* M_AUDIT2.UX.41 — Replay tutorial. Clears the

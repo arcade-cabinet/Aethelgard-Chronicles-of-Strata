@@ -204,9 +204,7 @@ export function TileInteraction({
       if (!isDragging()) return;
       const { dx, dz } = computePanDelta(e.clientX, e.clientY, cameraView.distance);
       if (dx === 0 && dz === 0) return;
-      window.dispatchEvent(
-        new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }),
-      );
+      window.dispatchEvent(new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }));
     };
     const onUp = (e: PointerEvent) => {
       if (e.pointerType !== 'touch') return;

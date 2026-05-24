@@ -4,30 +4,28 @@ import { type BuildingType, Selectable } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { clearSelection, selectEntities } from '@/game/selection';
 import { cameraView } from '@/render/camera-view';
+import { BUILDING_ACTION, getBinding, type HotkeyAction } from './hotkey-bindings';
 
 /**
- * M_EXPANSION.U.118 + M_SIMPLIFY.1 — build hotkey data table.
- * Adding a new building hotkey is one row here, not two new switch
- * cases in the keydown handler.
+ * M_EXPANSION.U.115 — build-hotkey lookup is derived from the
+ * user-remappable bindings table rather than hard-coded. The
+ * defaults are:
  *
- *   f = Farm
- *   h = House
- *   g = Granary
- *   r = Barracks (R for Recruit)
- *   t = Watchtower
- *   w = Wall
+ *   f = Farm, h = House, g = Granary, r = Barracks (Recruit),
+ *   t = Watchtower, w = Wall, b = build-menu, Escape = clear selection
  *
- * The 'b' key dispatches a different event ('open-build-menu') and
- * is handled separately in the keydown switch.
+ * Resolved through `getBinding(action)` at lookup time, so a remap
+ * applied via the SettingsModal takes effect on the next keypress
+ * without a reload.
  */
-const BUILD_HOTKEYS: Readonly<Record<string, Exclude<BuildingType, 'TownHall'>>> = {
-  f: 'Farm',
-  h: 'House',
-  g: 'Granary',
-  r: 'Barracks',
-  t: 'Watchtower',
-  w: 'Wall',
-};
+function buildHotkeyForKey(key: string): BuildingType | null {
+  for (const [bt, action] of Object.entries(BUILDING_ACTION) as Array<
+    [BuildingType, HotkeyAction]
+  >) {
+    if (getBinding(action) === key) return bt;
+  }
+  return null;
+}
 
 /** M_EXPANSION.F.89 — module-local camera bookmark slots (1..5). */
 const cameraBookmarks = new Map<number, { x: number; z: number }>();
@@ -88,19 +86,24 @@ export function KeyboardShortcuts({ game }: { game: GameState }) {
         }
         return;
       }
+      // M_EXPANSION.U.115 — resolve to actions via the bindings table
+      // so remapped keys take effect on the next keypress.
+      const clearKey = getBinding('select.clear');
+      const zoomInKey = getBinding('camera.zoom-in');
+      const zoomOutKey = getBinding('camera.zoom-out');
+      if (e.key === clearKey) {
+        clearSelection(game);
+        return;
+      }
+      if (e.key === zoomInKey || e.key === '=') {
+        dispatchWheel(-100);
+        return;
+      }
+      if (e.key === zoomOutKey || e.key === '_') {
+        dispatchWheel(100);
+        return;
+      }
       switch (e.key) {
-        case 'Escape':
-          clearSelection(game);
-          break;
-        case '+':
-        case '=':
-          // synthesise a wheel-up to leverage CameraRig's zoom logic
-          dispatchWheel(-100);
-          break;
-        case '-':
-        case '_':
-          dispatchWheel(100);
-          break;
         case 'ArrowUp':
         case 'ArrowDown':
         case 'ArrowLeft':
@@ -134,14 +137,16 @@ export function KeyboardShortcuts({ game }: { game: GameState }) {
         // letter picks which building; adding a new building type =
         // one new map entry, not two new case lines.
       }
-      // M_EXPANSION.U.118 + M_SIMPLIFY.1 — data-table build hotkeys.
+      // M_EXPANSION.U.118 + U.115 — bindings-table build hotkeys.
+      // Keys land lowercased so a binding stored as 'F' still fires;
+      // the user is more likely to type lower-case but we tolerate
+      // either side.
       const lower = e.key.toLowerCase();
-      if (lower === 'b') {
-        // open-menu dispatches a different event than the direct picks
+      if (lower === getBinding('build.menu')) {
         window.dispatchEvent(new CustomEvent('aethelgard:open-build-menu'));
         return;
       }
-      const buildType = BUILD_HOTKEYS[lower];
+      const buildType = buildHotkeyForKey(lower);
       if (buildType) {
         window.dispatchEvent(
           new CustomEvent('aethelgard:trigger-build', { detail: { type: buildType } }),
