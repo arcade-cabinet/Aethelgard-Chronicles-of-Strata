@@ -486,19 +486,26 @@ class PatrolGoal extends Goal<AiPlayer> {
 function randomPerimeterTile(game: GameState, faction: Faction): string | null {
   const zone = game.zones[faction];
   if (zone.controlled.size === 0) return null;
+  // Deterministic perimeter walk — iterate the Set into a sorted
+  // array so AI-vs-AI determinism holds across worlds (Set iteration
+  // order is insertion order, which can vary if zone updates land in
+  // different sequences). Picking via game.eventRng (not Math.random)
+  // is the determinism contract.
+  const controlledSorted = [...zone.controlled].sort();
   const perim: string[] = [];
-  for (const key of zone.controlled) {
+  // Hex neighbours: 6 axial offsets — module-level constant for
+  // determinism + perf.
+  const NEIGHBORS: ReadonlyArray<[number, number]> = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+    [1, -1],
+    [-1, 1],
+  ];
+  for (const key of controlledSorted) {
     const tile = game.board.tiles.get(key);
     if (!tile) continue;
-    // Hex neighbours: 6 axial offsets.
-    const NEIGHBORS: ReadonlyArray<[number, number]> = [
-      [1, 0],
-      [-1, 0],
-      [0, 1],
-      [0, -1],
-      [1, -1],
-      [-1, 1],
-    ];
     for (const [dq, dr] of NEIGHBORS) {
       const nkey = `${tile.q + dq},${tile.r + dr}`;
       if (!zone.controlled.has(nkey)) {
@@ -508,5 +515,5 @@ function randomPerimeterTile(game: GameState, faction: Faction): string | null {
     }
   }
   if (perim.length === 0) return null;
-  return perim[Math.floor(Math.random() * perim.length)] ?? null;
+  return perim[Math.floor(game.eventRng() * perim.length)] ?? null;
 }

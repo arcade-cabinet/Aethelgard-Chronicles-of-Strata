@@ -65,14 +65,20 @@ import { behaviorsFor, ensureAttractorResources, presetFor, recomputeMaxSupply }
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import type { AutoSave } from './auto-save';
 import { tickAutoSave } from './auto-save';
-import { advanceClock, createClock, type GameClock } from './clock';
+import { advanceClock, createClock, cyclePhase, type GameClock } from './clock';
 import { findBalancedBoard, matchLengthScale } from './mapgen-helpers';
 import type { Difficulty } from './difficulty';
 import { createEconomy, type GameEconomy } from './economy';
 import { createRally, type RallyState } from './rally';
 import { createResearch, type ResearchState } from './research';
 import { advanceWeather, createWeather, WEATHER_SPEED_MULTIPLIER, type Weather } from './weather';
-import { createZoneState, seedZonesFromAttractors, updateObserved, type ZoneState } from './zone';
+import {
+  BASE_UNIT_VISION_RADIUS,
+  createZoneState,
+  seedZonesFromAttractors,
+  updateObserved,
+  type ZoneState,
+} from './zone';
 
 export type { Difficulty } from './difficulty';
 
@@ -867,8 +873,31 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // always uses the base radius. The AI never "cheats" — it just literally
   // sees more or less of the board based on difficulty.
   const aiVision = aiVisionRadiusFor(game.difficulty);
-  updateObserved(game.zones.player, game.world, 'player', game.board.tiles.values());
-  updateObserved(game.zones.enemy, game.world, 'enemy', game.board.tiles.values(), aiVision);
+  // M_EXPANSION.F.87 — day/night vision modifier. Phase 0=noon,
+  // 0.5=midnight (per src/game/clock.ts cyclePhase). NIGHT band
+  // [0.6, 0.9] halves ENEMY vision (so a player raid at midnight
+  // gets surprise). DAWN band [0.15, 0.30] halves PLAYER vision
+  // (so the player CAN'T just exploit always-on omnivision). The
+  // modifiers stack with difficulty scaling.
+  const phase = cyclePhase(game.clock);
+  const isNight = phase >= 0.6 && phase < 0.9;
+  const isDawn = phase >= 0.15 && phase < 0.3;
+  const playerVisionMul = isDawn ? 0.5 : 1.0;
+  const enemyVisionMul = isNight ? 0.5 : 1.0;
+  updateObserved(
+    game.zones.player,
+    game.world,
+    'player',
+    game.board.tiles.values(),
+    BASE_UNIT_VISION_RADIUS * playerVisionMul,
+  );
+  updateObserved(
+    game.zones.enemy,
+    game.world,
+    'enemy',
+    game.board.tiles.values(),
+    aiVision * enemyVisionMul,
+  );
 
   // recompute each faction's supply cap from its own complete buildings —
   // a finished Farm raises that faction's max supply.
