@@ -519,3 +519,55 @@ item closes, the user reads THIS doc to understand what shipped,
 not the directive's audit trail.
 
 `docs/MILESTONES.md` is the post-ship archive (v0.3 + earlier).
+
+## 11. Architecture diagrams (Mermaid)
+
+M_FUN.FOUNDATION.MERMAID — diagrams render in GitHub markdown
+preview + the Vite dev preview. Source-of-truth visual companions
+to the prose above.
+
+### 11.1 runEconomyTick — system ordering
+
+```mermaid
+flowchart TD
+    A[delta from useGameLoop] --> B{outcome === 'playing'?}
+    B -- no --> Z[return]
+    B -- yes --> C{paused?}
+    C -- yes --> Z
+    C -- no --> D[advanceClock]
+    D --> E[advanceWeather]
+    E --> F[tickRandomEvents]
+    F --> G[tickLongReignEscalation]
+    G --> H[autoSave tick]
+    H --> I{turnGateOpen?}
+    I -- yes --> J[AiPlayer.tick * factions]
+    J --> K[spawnSystem + aiSystem]
+    K --> L[stanceBehaviorSystem]
+    L --> M
+    I -- no --> M[pathFollowSystem]
+    M --> N[statusAttributesSystem]
+    N --> O[volcanoSystem]
+    O --> P[wildfireSystem]
+    P --> Q[recomputeMaxSupply both factions]
+    Q --> R[combatSystem]
+    R --> S[deathSystem + buildingDeathSystem]
+    S --> T[evaluateWinLoss]
+    T --> U[zone score integral]
+```
+
+### 11.2 AIVAI balance harness — failure pattern tree
+
+```mermaid
+flowchart LR
+    M0[10-matchup matrix] --> M1{terminal outcome?}
+    M1 -- no --> P_DRAG[PATTERN-B drag / no combat]
+    M1 -- yes --> M2{turns in 2..15?}
+    M2 -- no --> P_RUSH[PATTERN-C early-rush instability]
+    M2 -- yes --> M3{kills > 0?}
+    M3 -- no --> P_PEACE[PATTERN-B compound]
+    M3 -- yes --> M4{both factions built >=1?}
+    M4 -- no --> P_ASYM[PATTERN-A faction asymmetry]
+    M4 -- yes --> M5{builders <= 6?}
+    M5 -- no --> P_SAT[PATTERN-D Hoarder over-build]
+    M5 -- yes --> PASS[GREEN — gate passes]
+```

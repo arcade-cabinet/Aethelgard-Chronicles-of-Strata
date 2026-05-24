@@ -236,8 +236,13 @@ mechanic work that follows is built on this.
   `.markdownlintignore`. `pnpm lint:md` script. Like PRETTIER-MD
   this surfaces ratchet warnings against existing MD files; not
   gated on a flag-day rewrite.
-- [ ] M_FUN.FOUNDATION.MERMAID — Mermaid for spec
-  diagrams (currently ASCII tables).
+- [x] M_FUN.FOUNDATION.MERMAID — mermaid installed as a runtime
+  dep (GitHub markdown renders mermaid blocks natively; the dep
+  is for future client-side rendering of dynamic diagrams). PRD
+  §11 added two seed diagrams: §11.1 runEconomyTick system
+  ordering (flowchart) + §11.2 AIVAI failure-pattern tree
+  (flowchart). Replaces the ASCII art that was previously the
+  only system-flow representation.
 
 **Observability**
 
