@@ -263,10 +263,11 @@ mechanic work that follows is built on this.
   in src/config/ai-personalities.json (Zod-validated). AiPlayer
   reads the per-Evaluator weights. URL ?personality=the-raider
   wires the picker for AI-vs-AI flow.
-- [ ] [WAIT-DEPS] M_FUN.AI.PICKER — NewGameModal opponent
-  picker. Data path (config) done; UI surface lands next.
-- [ ] [WAIT-DEPS] M_FUN.AI.TAUNT — Aria-live AI goal-change
-  announcements. Reads AiPlayer.lastGoal which already exists.
+- [x] M_FUN.AI.PICKER — DONE 2026-05-24 commit dc3fe9e.
+  NewGameModal grid of 5 personality cards; selection highlight;
+  title-attribute reveals description + flaw on hover.
+- [x] M_FUN.AI.TAUNT — DONE 2026-05-24 commit dc3fe9e. src/ai/taunt.ts
+  maps lastGoal slugs to flavoured aria-live lines incl. opponent name.
 - [x] M_FUN.AI.MISTAKES — DONE 2026-05-24 commit 8ebac56. Each
   personality's bias IS the exploitable flaw (the-builder slow to
   attack; the-raider over-extends economy; the-hoarder vulnerable

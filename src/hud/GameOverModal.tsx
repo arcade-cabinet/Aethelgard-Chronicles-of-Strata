@@ -3,8 +3,10 @@ import { useEffect, useState } from 'react';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import type { GameState } from '@/game/game-state';
+import { matchHighlights, matchNickname } from '@/game/match-narrative';
 import { formatInt, formatTime } from './format';
 import { HUD_THEME } from './hud-theme';
+import { MatchSummaryCard } from './MatchSummaryCard';
 import { ModalShell } from './ModalShell';
 
 /** A win/loss stat line. */
@@ -138,7 +140,18 @@ export function GameOverModal({ game }: { game: GameState }) {
         >
           {titleText}
         </Dialog.Title>
-        <p style={{ color: HUD_THEME.color.muted, marginBottom: 24 }}>{flavorText}</p>
+        <p style={{ color: HUD_THEME.color.muted, marginBottom: 16 }}>{flavorText}</p>
+        {/* M_FUN.NAR.CARD — procedural nickname + highlight bullets
+            in a re-usable card. Same component will surface in the
+            save-list UI (M_FUN.NAR.LOREBOOK). */}
+        {outcome !== 'playing' && (
+          <div style={{ marginBottom: 18 }}>
+            <MatchSummaryCard
+              nickname={matchNickname({ seedPhrase: game.seedPhrase, outcome })}
+              highlights={matchHighlights(game)}
+            />
+          </div>
+        )}
         {/* M_POLISH2.MODES.41b — long-reign narrative line. Sits ABOVE
               the generic stat list and reads as a one-line summary
               of the player's reign. */}
