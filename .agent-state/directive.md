@@ -156,9 +156,14 @@ mechanic work that follows is built on this.
   surfaced for next-pass cleanup. The `as` without comment
   enforcement requires a custom rule Biome doesn't ship — that
   one stays a doctrine point until ESLINT lands.
-- [ ] M_FUN.FOUNDATION.ESLINT — typescript-eslint
-  strict preset as a second-pass formatter (covers
-  exhaustive-deps for hooks etc, which Biome doesn't).
+- [x] M_FUN.FOUNDATION.ESLINT — Second-pass linter. eslint +
+  @typescript-eslint/parser + eslint-plugin-react-hooks installed.
+  eslint.config.js (flat config) runs ONLY react-hooks/*
+  rules — Biome owns everything else. `pnpm lint:eslint` script.
+  First run: 6 warnings (5 exhaustive-deps + 1 missing-array-
+  literal in useRafLoop) surfaced — real cases Biome missed
+  during the M_FUN.NAR work. Warnings, not errors, so the queue
+  doesn't block on cleanup; ratchet to error after fixes.
 - [ ] M_FUN.FOUNDATION.PRETTIER-MD — dprint or
   prettier for MD/YML files Biome doesn't format.
 
