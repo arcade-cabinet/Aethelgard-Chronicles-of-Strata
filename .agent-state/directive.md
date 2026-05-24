@@ -258,8 +258,10 @@ mechanic work that follows is built on this.
 
 **CI improvements**
 
-- [ ] M_FUN.FOUNDATION.ACT — act local-runner
-  instructions in CONTRIBUTING.md.
+- [x] M_FUN.FOUNDATION.ACT — CONTRIBUTING.md created with the
+  `act` local-runner section + the full test stack table +
+  Conventional Commits guide. Doctrine moved out of CLAUDE.md
+  into a contributor-facing file.
 - [ ] M_FUN.FOUNDATION.RENOVATE — Renovate alongside
   or replacing Dependabot for finer per-package rules.
 - [ ] M_FUN.FOUNDATION.COMMITLINT — Enforce
