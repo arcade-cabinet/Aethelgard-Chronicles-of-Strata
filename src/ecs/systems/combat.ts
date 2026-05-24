@@ -66,6 +66,8 @@ function resolveAttacks(
   damageType: DamageType,
   isMeleeSword: boolean,
   defenderParryChance: number,
+  isRanged: boolean,
+  rangedAccuracy: number,
 ): number {
   combatant.attackTimer += delta;
   let fired = 0;
@@ -80,13 +82,17 @@ function resolveAttacks(
     // sword-clash + a number). Only meaningful for melee hits — a
     // shield doesn't parry a fireball.
     const parried = defenderParryChance > 0 && isMeleeSword && rng() < defenderParryChance;
-    const dealt = parried ? 0 : roll.damage;
+    // M_EXPANSION.T.135 — weather-driven ranged miss. Only fires
+    // when the attacker is ranged + accuracy < 1; melee strikes
+    // ignore the multiplier (rain doesn't make a sword swing miss).
+    const missed = !parried && isRanged && rangedAccuracy < 1 && rng() > rangedAccuracy;
+    const dealt = parried || missed ? 0 : roll.damage;
     const id = target.targetId;
     damageByTarget.set(id, (damageByTarget.get(id) ?? 0) + dealt);
     events.push({
       target: targetEntity,
       damage: dealt,
-      isCrit: !parried && roll.isCrit,
+      isCrit: !parried && !missed && roll.isCrit,
       damageType,
       isMeleeSword,
       parried,
@@ -103,7 +109,20 @@ function resolveAttacks(
 const REUSABLE_BY_ID: Map<number, Entity> = new Map();
 const REUSABLE_DAMAGE: Map<number, number> = new Map();
 
-export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent[] {
+/**
+ * M_EXPANSION.T.135 — ranged-accuracy multiplier (weather-driven).
+ * When < 1.0, each RANGED attack (attacker's meleeWeapon === 'none'
+ * AND attackRange > 1) rolls against the multiplier; failed rolls
+ * still consume the cooldown but deal 0 damage + emit a "miss"
+ * event (damage 0). Melee attacks ignore the multiplier (they're
+ * close-range physical; rain doesn't make a swing miss).
+ */
+export function combatSystem(
+  world: World,
+  rng: Rng,
+  delta: number,
+  rangedAccuracy = 1,
+): DamageEvent[] {
   const events: DamageEvent[] = [];
   // Index entities by numeric id for target lookup. `Number(entity)` returns
   // the full packed (worldId, generation, entityId) value — two simultaneously
@@ -149,6 +168,12 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
     // unit profile (Footman shields, BlackKnight half-shields).
     const targetUnit = targetEntity.get(Unit)?.unitType;
     const defenderParryChance = targetUnit ? unitProfileFor(targetUnit).parryChance : 0;
+    // M_EXPANSION.T.135 — isRanged for the weather accuracy modifier.
+    // attackerProfile.meleeWeapon === 'none' AND attackRange > 1 =
+    // a true ranged attacker (Wizard, Trebuchet, future archers).
+    // Watchtower buildings (no Unit trait) inherit isRanged via range.
+    const isRanged =
+      (attackerProfile?.meleeWeapon === 'none' || !attackerProfile) && combatant.attackRange > 1;
     const fired = resolveAttacks(
       combatant,
       target,
@@ -160,6 +185,8 @@ export function combatSystem(world: World, rng: Rng, delta: number): DamageEvent
       damageType,
       isMeleeSword,
       defenderParryChance,
+      isRanged,
+      rangedAccuracy,
     );
     if (fired > 0 && e.has(AnimationState)) {
       // M_COMBAT_POLISH.2 — flash the attacker into ATTACKING; animationSystem

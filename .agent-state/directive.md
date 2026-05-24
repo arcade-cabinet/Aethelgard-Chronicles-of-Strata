@@ -1984,7 +1984,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
     tracked as a transient-recompute behaviour (not a save-game bug).
 - [x] [MED]  M_EXPANSION.T.133 — encroachment system: tile-flip integration test with deterministic seed + 60-tick simulation
 - [x] [MED]  M_EXPANSION.T.134 — AI brain arbitration: each evaluator's desirability curve has explicit test points
-- [ ] [HIGH] M_EXPANSION.T.135 — combat damage falloff with weather: rain reduces ranged accuracy 30%, fog reduces sight 50%
+- [x] [HIGH] M_EXPANSION.T.135 — Weather combat modifiers — DONE. WEATHER_PROFILES gains rangedAccuracyMultiplier (sunny 1.0, rain 0.7, fog 0.65) + visionMultiplier (sunny 1.0, rain 0.85, fog 0.5). combatSystem grows a rangedAccuracy 4th arg; resolveAttacks consumes a missed roll (rng() > rangedAccuracy) for RANGED attackers (meleeWeapon='none' AND attackRange > 1), producing a 0-damage non-parried event. Melee strikes ignore the multiplier (rain doesn't make a sword swing miss). Vision multiplier multiplies into the existing day-night player/enemy vision modifiers. 4 new tests pin: profile values, rain ranged miss rate ~30%, melee never weather-misses, sunny never weather-misses. 517/517 green.
 - [ ] [HIGH] M_EXPANSION.T.136 — particle archetype: spawn/age/cull at 60Hz for 10s; no allocations in the steady state
 - [ ] [HIGH] M_EXPANSION.T.137 — performance regression: full game at 60fps on a mid-tier mock (Pixel 5a CPU profile)
 - [ ] [HIGH] M_EXPANSION.T.138 — accessibility test: axe-core scan of every modal (NewGame, Settings, Credits, GameOver, Onboarding)

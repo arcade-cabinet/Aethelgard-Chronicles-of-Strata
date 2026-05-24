@@ -27,12 +27,50 @@ export interface WeatherProfile {
   label: string;
   /** Movement-speed multiplier applied while this weather is active. */
   speedMultiplier: number;
+  /**
+   * M_EXPANSION.T.135 — ranged-attack accuracy multiplier. Rain
+   * makes arrows + magic projectiles less reliable (drop one in
+   * three to ~0.7); fog reduces sight which we model via the
+   * vision multiplier below + an accuracy hit (you fire at a
+   * target you can barely see). 1.0 = no penalty. Combat reads
+   * this for any unit whose meleeWeapon === 'none' (i.e. ranged).
+   */
+  rangedAccuracyMultiplier: number;
+  /**
+   * M_EXPANSION.T.135 — vision-cone-radius multiplier. Fog halves
+   * vision; rain reduces it slightly. Multiplies INTO the existing
+   * day-night vision modifier from F.87. Both factions equally
+   * affected (weather is symmetric).
+   */
+  visionMultiplier: number;
 }
 
 export const WEATHER_PROFILES: Record<WeatherState, WeatherProfile> = {
-  sunny: { label: '☀️ Sunny Skies', speedMultiplier: 1 },
-  fog: { label: '🌫️ Thick Fog', speedMultiplier: 1 },
-  rain: { label: '🌧️ Heavy Rain', speedMultiplier: 0.8 },
+  sunny: {
+    label: '☀️ Sunny Skies',
+    speedMultiplier: 1,
+    rangedAccuracyMultiplier: 1,
+    visionMultiplier: 1,
+  },
+  fog: {
+    label: '🌫️ Thick Fog',
+    speedMultiplier: 1,
+    // Reading a target across fog is hard; the shooter still aims
+    // but the projectile is more likely to clip a rock or trace
+    // wide. 0.65 = roughly one-in-three misses.
+    rangedAccuracyMultiplier: 0.65,
+    // Fog halves the vision cone radius — the spec target.
+    visionMultiplier: 0.5,
+  },
+  rain: {
+    label: '🌧️ Heavy Rain',
+    speedMultiplier: 0.8,
+    // Spec: rain reduces ranged accuracy 30%.
+    rangedAccuracyMultiplier: 0.7,
+    // Rain less impactful on vision than fog — fewer occluded
+    // pixels — but still some.
+    visionMultiplier: 0.85,
+  },
 };
 
 /** Back-compat re-exports — derived from WEATHER_PROFILES. */

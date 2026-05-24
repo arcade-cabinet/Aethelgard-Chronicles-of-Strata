@@ -71,7 +71,13 @@ import type { Difficulty } from './difficulty';
 import { createEconomy, type GameEconomy } from './economy';
 import { createRally, type RallyState } from './rally';
 import { createResearch, type ResearchState } from './research';
-import { advanceWeather, createWeather, WEATHER_SPEED_MULTIPLIER, type Weather } from './weather';
+import {
+  advanceWeather,
+  createWeather,
+  WEATHER_PROFILES,
+  WEATHER_SPEED_MULTIPLIER,
+  type Weather,
+} from './weather';
 import { createRandomEventsState, type RandomEventsState, tickRandomEvents } from './random-events';
 import {
   BASE_UNIT_VISION_RADIUS,
@@ -895,8 +901,12 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   const phase = cyclePhase(game.clock);
   const isNight = phase >= 0.6 && phase < 0.9;
   const isDawn = phase >= 0.15 && phase < 0.3;
-  const playerVisionMul = isDawn ? 0.5 : 1.0;
-  const enemyVisionMul = isNight ? 0.5 : 1.0;
+  // M_EXPANSION.T.135 — multiply in weather vision (fog 0.5, rain
+  // 0.85, sunny 1.0). Both factions equally affected — weather is
+  // symmetric.
+  const weatherVisionMul = WEATHER_PROFILES[game.weather.state].visionMultiplier;
+  const playerVisionMul = (isDawn ? 0.5 : 1.0) * weatherVisionMul;
+  const enemyVisionMul = (isNight ? 0.5 : 1.0) * weatherVisionMul;
   updateObserved(
     game.zones.player,
     game.world,
@@ -940,7 +950,11 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // combat — turn-gated so the player can pause to plan without
   // their units being chewed up mid-thought.
   if (turnGateOpen) {
-    game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta);
+    // M_EXPANSION.T.135 — pass weather-driven ranged accuracy
+    // multiplier (rain 0.7, fog 0.65, sunny 1.0). Combat applies
+    // only to ranged attackers; melee swings ignore weather.
+    const rangedAccuracy = WEATHER_PROFILES[game.weather.state].rangedAccuracyMultiplier;
+    game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta, rangedAccuracy);
   }
 
   // M_MODES.4 — endless mode: FactionBases are invulnerable. Clamp each
