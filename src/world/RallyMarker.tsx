@@ -112,9 +112,7 @@ export function RallyMarker({ game }: { game: GameState }) {
  * Exported for the unit test (M_EXPANSION.U.120) — kept module-private
  * otherwise.
  */
-export function resolveBarracksPos(
-  game: GameState,
-): { x: number; y: number; z: number } | null {
+export function resolveBarracksPos(game: GameState): { x: number; y: number; z: number } | null {
   const id = game.selectedId;
   if (id === undefined) return null;
   for (const e of game.world.query(Building, HexPosition)) {

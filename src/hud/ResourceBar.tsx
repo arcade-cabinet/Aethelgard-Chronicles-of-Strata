@@ -57,6 +57,12 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
         position: 'absolute',
         top: compact ? 8 : 16,
         left: compact ? 8 : 16,
+        // M_POLISH2.MOBILE.2 — portrait/narrow viewports: clip the bar
+        // to the available width minus the safe-area + a 12px gutter
+        // on the right so scroll-snap chips have somewhere to go
+        // without colliding with the Minimap/Settings cluster. On
+        // wider viewports the bar shrinks-to-fit (auto width).
+        maxWidth: compact ? 'calc(100vw - 24px)' : undefined,
         display: 'flex',
         gap: compact ? 9 : 16,
         padding: compact ? '6px 10px' : '10px 16px',
@@ -67,11 +73,41 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
         fontFamily: HUD_THEME.font.body,
         fontWeight: 700,
         fontSize: compact ? 12 : 14,
-        pointerEvents: 'none',
+        // M_POLISH2.MOBILE.2 — scroll-snap horizontal scroll on
+        // narrow widths so the 5 resource chips never wrap to a
+        // second line on 360px. Each chip is its own snap point.
+        // pointer-events is OFF for the wrapper (HUD chrome stays
+        // raycast-transparent) but the bar itself accepts scroll
+        // via the explicit pointerEvents: 'auto' below so iOS
+        // momentum-scroll works through it.
+        overflowX: compact ? 'auto' : 'visible',
+        scrollSnapType: compact ? 'x mandatory' : undefined,
+        // Hide native scrollbar — the gradient fade cues scrollability.
+        scrollbarWidth: 'none',
+        WebkitOverflowScrolling: 'touch',
+        // Fade the right edge so users see there's more off-screen.
+        maskImage: compact
+          ? 'linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%)'
+          : undefined,
+        WebkitMaskImage: compact
+          ? 'linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%)'
+          : undefined,
+        pointerEvents: compact ? 'auto' : 'none',
       }}
     >
       {readouts.map((r) => (
-        <span key={r.id} style={{ display: 'flex', gap: compact ? 4 : 6, alignItems: 'baseline' }}>
+        <span
+          key={r.id}
+          style={{
+            display: 'flex',
+            gap: compact ? 4 : 6,
+            alignItems: 'baseline',
+            scrollSnapAlign: compact ? 'start' : undefined,
+            // Stop each chip shrinking — they should stay at their
+            // natural width and let the parent scroll.
+            flex: compact ? '0 0 auto' : undefined,
+          }}
+        >
           <span style={{ color: r.color, fontSize: compact ? 9 : 11, textTransform: 'uppercase' }}>
             {r.label}
           </span>
