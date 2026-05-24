@@ -129,6 +129,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 4.1.7
         version: 4.1.7(@vitest/browser@4.1.7)(vitest@4.1.7)
+      axe-core:
+        specifier: ^4.11.4
+        version: 4.11.4
       playwright:
         specifier: 1.60.0
         version: 1.60.0
@@ -1166,6 +1169,10 @@ packages:
   at-least-node@1.0.0:
     resolution: {integrity: sha512-+q/t7Ekv1EDY2l6Gda6LLiX14rU9TV20Wa3ofeQmwPFZbOMo9DXrLbOjFaaclkXKWidIaopwAObQDqwWtGUjqg==}
     engines: {node: '>= 4.0.0'}
+
+  axe-core@4.11.4:
+    resolution: {integrity: sha512-KunSNx+TVpkAw/6ULfhnx+HWRecjqZGTOyquAoWHYLRSdK1tB5Ihce1ZW+UY3fj33bYAFWPu7W/GRSmmrCGuxA==}
+    engines: {node: '>=4'}
 
   balanced-match@4.0.4:
     resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
@@ -3117,6 +3124,8 @@ snapshots:
   astral-regex@2.0.0: {}
 
   at-least-node@1.0.0: {}
+
+  axe-core@4.11.4: {}
 
   balanced-match@4.0.4: {}
 

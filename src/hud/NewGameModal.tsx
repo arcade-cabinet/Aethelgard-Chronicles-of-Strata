@@ -142,15 +142,11 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   // M_TURNS.3 — Turn style is the 3rd cascaded control. Defaults to
   // the preset's turnsMode; overriding flips the Custom Realm flag.
-  const [turnsMode, setTurnsModeState] = useState<TurnsMode>(
-    presetFor('border-clash').turnsMode,
-  );
+  const [turnsMode, setTurnsModeState] = useState<TurnsMode>(presetFor('border-clash').turnsMode);
   // M_TURNS.2 — Max turns cap. null = uncapped. Surfaces in UI only
   // when turnsMode === 'turn-based'. Cascades from the preset on
   // mode change; overriding flips the Custom Realm flag.
-  const [maxTurns, setMaxTurnsState] = useState<number | null>(
-    presetFor('border-clash').maxTurns,
-  );
+  const [maxTurns, setMaxTurnsState] = useState<number | null>(presetFor('border-clash').maxTurns);
   // M_EXPANSION.F.80 — player palette pick. 'default' = null (use
   // SKINS native colours). Independent of preset cascade (palette
   // is purely cosmetic; doesn't depend on game mode).
@@ -369,7 +365,11 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           the actual layout before committing.
         */}
         <div style={{ display: 'flex', justifyContent: 'center', margin: '0 0 16px' }}>
-          <MapPreview seedPhrase={seedPhrase.trim() || 'preview'} mapRadius={MAP_SIZES[mapSize].radius} size={200} />
+          <MapPreview
+            seedPhrase={seedPhrase.trim() || 'preview'}
+            mapRadius={MAP_SIZES[mapSize].radius}
+            size={200}
+          />
         </div>
 
         {/*

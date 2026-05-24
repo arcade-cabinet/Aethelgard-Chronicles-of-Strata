@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  createEventLog,
-  eventLogFromNdjson,
-  eventLogToNdjson,
-  logEvent,
-} from '@/game/event-log';
+import { createEventLog, eventLogFromNdjson, eventLogToNdjson, logEvent } from '@/game/event-log';
 
 /**
  * M_EXPANSION.F.74 + F.75 — EventLog round-trip tests. NDJSON

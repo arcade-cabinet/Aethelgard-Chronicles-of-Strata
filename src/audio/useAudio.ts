@@ -88,11 +88,7 @@ export function useAudio(game: GameState): void {
       // (shouldn't happen but defensive).
       const camPos = { x: cameraView.targetX, z: cameraView.targetZ };
       const camAz = cameraView.azimuth;
-      const positionalPlay = (
-        bus: 'sfx',
-        soundId: string,
-        ev: (typeof events)[number],
-      ): void => {
+      const positionalPlay = (bus: 'sfx', soundId: string, ev: (typeof events)[number]): void => {
         const hex = ev.target.get(HexPosition);
         if (!hex) {
           playSound(buses, bus, soundId);

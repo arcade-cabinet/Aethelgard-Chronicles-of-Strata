@@ -162,8 +162,7 @@ export function combatSystem(
     // M_POLISH.3 — sword melee detection: range gate (≤1) + weapon
     // class. A bow-Footman wouldn't trigger this (no such unit today,
     // but range≤1 keeps the contract honest for future ranged variants).
-    const isMeleeSword =
-      attackerProfile?.meleeWeapon === 'sword' && combatant.attackRange <= 1;
+    const isMeleeSword = attackerProfile?.meleeWeapon === 'sword' && combatant.attackRange <= 1;
     // M_EXPANSION.AU.46 — defender's parry chance comes from THEIR
     // unit profile (Footman shields, BlackKnight half-shields).
     const targetUnit = targetEntity.get(Unit)?.unitType;

@@ -224,7 +224,11 @@ export const SKINS: Record<Faction, Skin> = {
       // Quaternius RTS meshes are authored at ~8-unit grid; hex tiles
       // are ~1 unit. Even the L1 town-center reads as a quarter-screen
       // mountain at 0.5 — clamp to 0.12 so it sits on a single hex.
-      TownHall: { logicalId: 'structures.rts.town-center.first-age.l1', scale: 0.12, yOffset: 0.05 },
+      TownHall: {
+        logicalId: 'structures.rts.town-center.first-age.l1',
+        scale: 0.12,
+        yOffset: 0.05,
+      },
       Farm: { logicalId: 'structures.farm', scale: 0.65, yOffset: 0 },
       // M_EXPANSION.A.9 — distinct House silhouette (Fantasy Town stall)
       // instead of a down-scaled farm; reads as "civic dwelling" vs barn.
@@ -235,7 +239,7 @@ export const SKINS: Record<Faction, Skin> = {
       // M_HARDENING.5 — Quaternius RTS Barracks (FirstAge L1) — proper
       // weapon-rack + roof silhouette, much clearer than the prior
       // Tower Defense barracks placeholder.
-      Barracks: { logicalId: 'structures.rts.barracks.first-age.l1', scale: 0.10, yOffset: 0 },
+      Barracks: { logicalId: 'structures.rts.barracks.first-age.l1', scale: 0.1, yOffset: 0 },
       // M_HARDENING.5 — Quaternius RTS TowerHouse (FirstAge) — a
       // proper stone-and-wood watchtower distinct from the Castle
       // Kit tower-square previously borrowed for Watchtower duty.
@@ -243,7 +247,7 @@ export const SKINS: Record<Faction, Skin> = {
       // M_HARDENING.5 — Quaternius RTS Wall — palisaded fortification
       // segment instead of the single Castle Kit slab. Reads as a
       // real wall section, not a single brick.
-      Wall: { logicalId: 'structures.rts.wall.first-age', scale: 0.10, yOffset: 0 },
+      Wall: { logicalId: 'structures.rts.wall.first-age', scale: 0.1, yOffset: 0 },
       // M_EXPANSION.A.5 — Wonder mounts a Castle Kit keep silhouette
       // (was the literal town-hall scaled up). Distinct + imposing.
       Wonder: { logicalId: 'structures.wonder-keep', scale: 1.2, yOffset: 0 },
@@ -298,12 +302,12 @@ export const SKINS: Record<Faction, Skin> = {
       // Barracks SecondAge (darker stone variant), so the enemy
       // military silhouette reads as "fortified" instead of just
       // "fenced". Still distinct from the player FirstAge variant.
-      Barracks: { logicalId: 'structures.rts.barracks.second-age.l1', scale: 0.10, yOffset: 0 },
+      Barracks: { logicalId: 'structures.rts.barracks.second-age.l1', scale: 0.1, yOffset: 0 },
       Watchtower: { logicalId: 'nature.gravestone.cross', scale: 1.2, yOffset: 0 },
       // M_HARDENING.5 — enemy Wall now Quaternius RTS Wall SecondAge,
       // matching the new Barracks; the rusted-iron fence read poorly
       // as a wall and gave the enemy no defensive silhouette.
-      Wall: { logicalId: 'structures.rts.wall.second-age', scale: 0.10, yOffset: 0 },
+      Wall: { logicalId: 'structures.rts.wall.second-age', scale: 0.1, yOffset: 0 },
       // M_EXPANSION.A.20 — Wonder now mounts the Tower Defense cannon
       // (literal siege-piece silhouette signals 'final game-changer
       // building' way better than another reskinned crypt).

@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { _setInteractionGateForTests, createAudioBuses, playSoundAt, setMuted } from '@/audio/buses';
+import {
+  _setInteractionGateForTests,
+  createAudioBuses,
+  playSoundAt,
+  setMuted,
+} from '@/audio/buses';
 
 // howler touches the Web Audio API — stub it for the node unit test.
 // We capture stereo() + volume() calls so playSoundAt's spatial math

@@ -46,12 +46,21 @@ export interface EventLog {
   entries: EventLogEntry[];
 }
 
-export function createEventLog(seedPhrase: string, eventSeed: string, config: Record<string, unknown>): EventLog {
+export function createEventLog(
+  seedPhrase: string,
+  eventSeed: string,
+  config: Record<string, unknown>,
+): EventLog {
   return { seedPhrase, eventSeed, config, entries: [] };
 }
 
 /** Append one entry. */
-export function logEvent(log: EventLog, t: number, kind: EventLogKind, args: Record<string, unknown>): void {
+export function logEvent(
+  log: EventLog,
+  t: number,
+  kind: EventLogKind,
+  args: Record<string, unknown>,
+): void {
   log.entries.push({ t, kind, args });
 }
 
@@ -116,7 +125,11 @@ export function eventLogFromNdjson(ndjson: string): EventLog {
     if (entry.args === null || typeof entry.args !== 'object') {
       throw new Error(`eventLogFromNdjson: bad args on line ${i + 1}`);
     }
-    log.entries.push({ t: entry.t, kind: entry.kind as EventLogKind, args: entry.args as Record<string, unknown> });
+    log.entries.push({
+      t: entry.t,
+      kind: entry.kind as EventLogKind,
+      args: entry.args as Record<string, unknown>,
+    });
   }
   return log;
 }

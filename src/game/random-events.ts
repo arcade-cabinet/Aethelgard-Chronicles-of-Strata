@@ -45,11 +45,7 @@ export function createRandomEventsState(): RandomEventsState {
  * probability and applies its effect to `game`. Returns the kind
  * that fired (or null on miss / no event).
  */
-export function tickRandomEvents(
-  game: GameState,
-  rng: Rng,
-  delta: number,
-): RandomEventKind | null {
+export function tickRandomEvents(game: GameState, rng: Rng, delta: number): RandomEventKind | null {
   const state = game.randomEvents;
   state.nextRollIn -= delta;
   if (state.nextRollIn > 0) return null;
@@ -85,7 +81,8 @@ function applyEvent(game: GameState, rng: Rng, kind: RandomEventKind): void {
       // (Spawning physical peons would require a free-spawn ECS path
       // I'd rather not add here — wood credit is the same player
       // benefit.)
-      const count = REFUGEE_COUNT_MIN + Math.floor(rng() * (REFUGEE_COUNT_MAX - REFUGEE_COUNT_MIN + 1));
+      const count =
+        REFUGEE_COUNT_MIN + Math.floor(rng() * (REFUGEE_COUNT_MAX - REFUGEE_COUNT_MIN + 1));
       const wood = count * 10;
       game.economy.player.wood += wood;
       announce(`Refugees arrive bringing +${wood} wood.`);
