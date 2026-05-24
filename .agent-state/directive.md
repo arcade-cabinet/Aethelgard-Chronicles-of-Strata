@@ -2177,7 +2177,7 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 
 #### M_POLISH3.JOURNEY — playthrough expansion (each capture = a moment the agent now reviews)
 
-- [ ] [HIGH] M_POLISH3.J.1 — Capture each per-mode HUD (border-clash, frontier-raid, long-reign, strata-wars, age-of-strata, coexistence) at `t=0`, `t=10s`, `t=60s`, `t=peak-action`. Each = one PNG in artifacts/journey/per-mode/. Drives mode-specific HUD pill review.
+- [x] [HIGH] M_POLISH3.J.1 — DONE 2026-05-24 commit 62ab325. tests/e2e/per-mode-journey.spec.ts captures all 6 modes × 4 time-points (t=0, 10s, 60s, 180s) = 24 PNGs in artifacts/journey/per-mode/<mode>/<label>.png. Uses ?ai-vs-ai=1 URL auto-start.
 - [ ] [HIGH] M_POLISH3.J.2 — Capture each weather state (sunny/fog/rain) over the cove biome. artifacts/journey/weather/.
 - [ ] [HIGH] M_POLISH3.J.3 — Capture each day-night phase (dawn/noon/dusk/midnight) over the same scene. artifacts/journey/day-night/.
 - [ ] [HIGH] M_POLISH3.J.4 — Capture each selection state (no-selection / peon-selected / military-selected / building-selected / multi-select 3+) so SelectionPanel layout is reviewable.
