@@ -155,12 +155,18 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
       <ModalShell
         zIndex={200}
         width="min(380px, 92vw)"
-        maxHeight="none"
+        // M_POLISH2.MOBILE.7 — bound the modal height so the body
+        // scrolls if it grows past the viewport (settings panel keeps
+        // growing as we ship more toggles). The sticky Done bar at
+        // bottom-of-modal stays visible above the safe-area inset.
+        maxHeight="min(85vh, 720px)"
         contentStyle={{
           border: `1px solid ${HUD_THEME.color.border}`,
           borderRadius: 16,
           padding: 28,
+          paddingBottom: 0, // sticky footer owns its own bottom spacing
           fontFamily: HUD_THEME.font.body,
+          overflowY: 'auto',
         }}
       >
         <Dialog.Title
@@ -388,24 +394,44 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
           Replay tutorial on next session
         </button>
 
-        <button
-          type="button"
-          onClick={() => onOpenChange(false)}
+        {/* M_POLISH2.MOBILE.7 — one-handed reachability. The Done
+            button is sticky at the bottom of the modal with a
+            safe-area-inset-bottom padding so on a 6.7" portrait
+            phone the thumb can reach it without two-handed grip.
+            Position: sticky + bottom: 0 keeps it visible even if
+            the modal body scrolls (e.g. with the hotkey editor
+            making the panel taller than the viewport). */}
+        <div
           style={{
-            width: '100%',
+            position: 'sticky',
+            bottom: 0,
             marginTop: 14,
-            padding: '12px',
-            borderRadius: 10,
-            border: `1px solid ${HUD_THEME.color.border}`,
-            background: 'rgba(56,189,248,0.14)',
-            color: HUD_THEME.color.accent,
-            fontFamily: HUD_THEME.font.body,
-            fontWeight: 700,
-            cursor: 'pointer',
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+            background: `linear-gradient(to top, ${HUD_THEME.color.panel} 78%, transparent)`,
           }}
         >
-          Done
-        </button>
+          <button
+            type="button"
+            onClick={() => onOpenChange(false)}
+            style={{
+              width: '100%',
+              padding: '14px',
+              borderRadius: 10,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(56,189,248,0.18)',
+              color: HUD_THEME.color.accent,
+              fontFamily: HUD_THEME.font.body,
+              fontWeight: 700,
+              fontSize: '0.95rem',
+              cursor: 'pointer',
+              // 44px minimum touch target (14px padding × 2 + 16px
+              // font line height = ~44px; nudge to be safe).
+              minHeight: 48,
+            }}
+          >
+            Done
+          </button>
+        </div>
       </ModalShell>
     </Dialog.Root>
   );
