@@ -2197,3 +2197,27 @@ The journey captures (this commit) surfaced new BLOCKING bugs the agent should n
 - [ ] [HIGH] M_POLISH3.CI.1 — Pre-push hook: `pnpm verify && pnpm test:browser && pnpm test:e2e` runs before any push. Catches the lint/format/test gate BEFORE it hits CI. Wire via .husky or simple .git/hooks/pre-push.
 - [ ] [HIGH] M_POLISH3.CI.2 — Vitest browser plugin parity: today browser tests run via `@vitest/browser` with playwright provider. Confirm the WebGL flags + chrome channel matches the e2e config so behavior is consistent across both test runners.
 - [ ] [HIGH] M_POLISH3.CI.3 — Sibling-project test parity audit: compare ../mean-streets, ../stellar-descent, ../martian-trail playwright + vitest configs; lift any improvements (xvfb for Linux CI, video recording, governor-test pattern, etc.).
+
+#### M_POLISH3.SCENE — root-cause WebGL Context Lost (added 2026-05-24)
+
+- [ ] [BLOCKER] M_POLISH3.SCENE.1 — In-game 3D canvas is BLANK under Playwright headless. Root cause confirmed: `THREE.WebGLRenderer: Context Lost` fires after the first few GLB loads. Hypotheses (in priority order):
+  1. **GPU resource pressure**: 50+ useGLTF.preload calls (Decoration, FactionBase, ResourceNodes, AnimatedCharacter, Crossings, plus per-instance loads) all fetch + decode concurrently. The Linux headless Chromium under --use-angle=gl has tight GPU buffer limits; the batch exhausts them.
+  2. **Shadow map allocation**: Terrain.tsx + DayNightCycle.tsx both use castShadow + receiveShadow with PCFSoftShadowMap. Large terrain mesh shadow map = big VRAM allocation.
+  3. **Async error in a worker**: troika worker font fetch was fixed (Inter loads fine); still ONE unexplained 404 + a 'Failed to fetch' pageerror that lands BEFORE Context Lost.
+  - REMEDIATION: Either (a) gate preload batches behind a queue (load N at a time), (b) drop shadows in test mode, (c) use a real desktop Chromium channel (mean-streets does this with `channel: 'chrome'` when not headless). The user has Chrome installed locally — running `pnpm test:e2e` without `CI=1` uses channel:'chrome' which has more permissive WebGL limits.
+- [ ] [HIGH] M_POLISH3.SCENE.2 — ErrorOverlay never appeared in the journey-capture artifacts even though context loss is observable. Investigate: ErrorOverlay's install() runs on mount but the console.error patches happen AFTER initial fonts/wasm load — early failures might miss the patch window. Move install() to a top-level script in index.html so it runs before main.tsx.
+- [ ] [HIGH] M_POLISH3.SCENE.3 — Onboarding overlay must be skip-able via dev hook for screenshots. Add `window.__skipOnboarding = () => persistence.setSetting(PREF_KEYS.onboarding, '1')` so journey-capture tests can dismiss without the visual artifact of the overlay covering the scene.
+
+#### M_POLISH3.FALLBACK — silent-fallback audit (added 2026-05-24)
+
+Every silent fallback in the codebase that hides a failure from the user. Audit grep result (34 sites of `?? null` / `|| null` / `catch.*=>\s*null` / `catch.*{}`).
+
+- [ ] [HIGH] M_POLISH3.FB.1 — Audit all 34 hits + classify: (a) legitimate optional (skip), (b) failure-hiding (replace with logged error). Fix each (b) site so ErrorOverlay catches.
+- [ ] [HIGH] M_POLISH3.FB.2 — Suspense fallback={null} in GameCanvas + Units. `null` swallows the loading state — if a child throws AFTER suspending, the throw bypasses ErrorBoundary because Suspense caught the original promise rejection first. Replace null with a marker mesh that ALSO emits console.warn on extended duration (>5s of suspension).
+- [ ] [HIGH] M_POLISH3.FB.3 — Convert all `console.warn` paths to either `console.error` (when they signal a real bug) or to a dedicated `report-non-blocking-issue` channel (when they're truly informational), so ErrorOverlay can show only actionable issues.
+
+#### M_POLISH3.LOCAL — pre-push gate enforcement (added 2026-05-24)
+
+- [ ] [HIGH] M_POLISH3.LOCAL.1 — Pre-push hook: .husky/pre-push runs `pnpm verify && pnpm test:e2e` before allowing a push. Catches every CI failure BEFORE it hits the runner. Skip with `git push --no-verify` only when explicitly authorized.
+- [ ] [HIGH] M_POLISH3.LOCAL.2 — `pnpm verify` should also include `pnpm test:browser` so the full local battery matches the CI suite.
+- [ ] [HIGH] M_POLISH3.LOCAL.3 — A pre-push test of `pnpm test:e2e` requires the vite dev server cold-start (~2s) + chromium launch (~2s) each push. Wire `PW_REUSE_SERVER=1` so iterative local pushes don't pay the full setup cost — the running dev server is reused.

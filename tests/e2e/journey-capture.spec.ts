@@ -57,6 +57,12 @@ test.describe('journey capture (manual review)', () => {
 
   test('03-game-fresh-start', async ({ page }) => {
     await enterGame(page, 'ancient-silver-forest');
+    // Dismiss onboarding overlay so the canvas is visible.
+    const skip = page.locator('button', { hasText: 'Skip' });
+    if (await skip.count()) {
+      await skip.first().click();
+      await page.waitForTimeout(400);
+    }
     await page.waitForTimeout(1500); // scene settle
     await snap(page, '03-game-fresh-start');
   });

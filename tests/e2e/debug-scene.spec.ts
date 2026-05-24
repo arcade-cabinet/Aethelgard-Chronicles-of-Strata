@@ -12,10 +12,8 @@ test('debug: capture scene console + errors', async ({ page }) => {
   page.on('requestfailed', (r) => {
     messages.push(`[reqfail] ${r.method()} ${r.url()} - ${r.failure()?.errorText}`);
   });
-  page.on('response', async (r) => {
-    if (r.status() >= 400) {
-      messages.push(`[${r.status()}] ${r.url()}`);
-    }
+  page.on('response', (r) => {
+    messages.push(`[${r.status()}] ${r.url()}`);
   });
 
   // Listeners attached BEFORE goto so first-request 404s are caught.
