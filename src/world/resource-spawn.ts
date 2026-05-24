@@ -1,5 +1,6 @@
 import { ECONOMY } from '@/config/economy';
 import type { BoardData } from '@/core/board';
+import { hexDistance } from '@/core/hex';
 import type { Rng } from '@/core/rng';
 import type { ResourceType } from '@/ecs/components';
 
@@ -56,9 +57,7 @@ export function spawnResourceNodes(
     // clear so the player has guaranteed buildable space at start.
     let blocked = false;
     for (const c of protectedCenters) {
-      const d =
-        (Math.abs(tile.q - c.q) + Math.abs(tile.r - c.r) + Math.abs(tile.q + tile.r - c.q - c.r)) /
-        2;
+      const d = hexDistance(c.q, c.r, tile.q, tile.r);
       if (d <= SAFETY_RADIUS) {
         blocked = true;
         break;

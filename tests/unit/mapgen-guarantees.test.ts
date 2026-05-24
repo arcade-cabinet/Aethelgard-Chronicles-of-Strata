@@ -4,12 +4,23 @@ import { generateBoard } from '@/core/board';
 describe('M_MAPGEN guarantees', () => {
   it('M_MAPGEN.4 — beach ring + ocean perimeter', () => {
     const board = generateBoard('mapgen-test-1', 18);
+    let beachChecked = 0;
+    let oceanChecked = 0;
     for (const tile of board.tiles.values()) {
       const d = (Math.abs(tile.q) + Math.abs(tile.r) + Math.abs(tile.q + tile.r)) / 2;
       if (d > board.radius - 2) {
+        oceanChecked += 1;
         expect(tile.type).toBe('OCEAN');
+      } else if (d > board.radius - 4) {
+        // CodeRabbit follow-up: test title claims both beach ring AND
+        // ocean perimeter; assert the beach band so a regression in
+        // ring painting fails this test (was only checking ocean).
+        beachChecked += 1;
+        expect(tile.type).toBe('BEACH');
       }
     }
+    expect(oceanChecked).toBeGreaterThan(0);
+    expect(beachChecked).toBeGreaterThan(0);
   });
 
   it('M_MAPGEN.3 — mountain spine creates funneling (≥3 MOUNTAIN tiles in central band)', () => {

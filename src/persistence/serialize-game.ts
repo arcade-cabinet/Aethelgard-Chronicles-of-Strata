@@ -254,8 +254,11 @@ function validateSnapshot(snap: unknown): asserts snap is GameSnapshot {
   if (!cfg || typeof cfg.seedPhrase !== 'string' || cfg.seedPhrase.length > 256) {
     throw new Error('serialize-game: snapshot.config.seedPhrase missing or too long');
   }
+  // CodeRabbit follow-up: mapSize must be an integer. Fractional
+  // values used to pass the gate and later trigger opaque errors
+  // inside board-gen indexing.
   const mapSize = safeFinite(cfg.mapSize, 0);
-  if (mapSize < 1 || mapSize > MAX_MAP_SIZE) {
+  if (!Number.isInteger(mapSize) || mapSize < 1 || mapSize > MAX_MAP_SIZE) {
     throw new Error(`serialize-game: snapshot.config.mapSize out of bounds (got ${mapSize})`);
   }
   if (cfg.difficulty !== 'easy' && cfg.difficulty !== 'normal' && cfg.difficulty !== 'hard') {
@@ -286,8 +289,17 @@ function validateSnapshot(snap: unknown): asserts snap is GameSnapshot {
   if (!s.weather || typeof s.weather !== 'object') {
     throw new Error('serialize-game: snapshot.weather missing');
   }
-  if (!s.research || typeof (s.research as Record<string, unknown>).purchased !== 'object') {
-    throw new Error('serialize-game: snapshot.research.purchased missing');
+  // CodeRabbit follow-up: tighten research.purchased to actually be a
+  // string[] (was 'any object passes'). A non-array would later throw
+  // at `new Set(...)` with an opaque message instead of failing
+  // here with the explicit corruption error.
+  const research = s.research as Record<string, unknown> | undefined;
+  if (
+    !research ||
+    !Array.isArray(research.purchased) ||
+    !research.purchased.every((id) => typeof id === 'string')
+  ) {
+    throw new Error('serialize-game: snapshot.research.purchased must be string[]');
   }
   if (!s.rally || typeof s.rally !== 'object') {
     throw new Error('serialize-game: snapshot.rally missing');

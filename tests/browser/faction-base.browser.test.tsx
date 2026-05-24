@@ -101,17 +101,18 @@ describe('FactionBase rendering (M_REGISTRY.4 unified)', () => {
       </Canvas>,
     );
 
-    // Enemy base: central crypt + 3 gravestones + 3 fences. Each
-    // GLB contributes ≥1 mesh, so expect ≥4. Coupling to the SKINS
-    // baseProps count is intentional — adjusting the Skin entry would
-    // and SHOULD change this expectation.
+    // CodeRabbit follow-up: assert spec-level behavior (FactionBase
+    // mounts AND renders at least one mesh) rather than coupling to
+    // the SKINS.baseProps count. Edits to the art slots — adding a
+    // 4th gravestone or removing a fence — shouldn't fail CI when
+    // the contract (the base renders meshes) is intact.
     await vi.waitFor(
       () => {
         let meshCount = 0;
         captured.scene?.traverse((o) => {
           if ((o as { isMesh?: boolean }).isMesh) meshCount += 1;
         });
-        expect(meshCount).toBeGreaterThanOrEqual(4);
+        expect(meshCount).toBeGreaterThanOrEqual(1);
       },
       { timeout: 20_000, interval: 250 },
     );

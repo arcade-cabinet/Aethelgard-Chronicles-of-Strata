@@ -40,11 +40,19 @@ describe('mode presets (M_MODES.2-.6)', () => {
     }
     // advance one tick — invulnerability clamp should restore
     runEconomyTick(game, 1 / 60);
+    let checked = 0;
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase)?.faction;
       const h = e.get(Health);
-      if (f === 'player' && h) expect(h.current).toBe(h.max);
+      if (f === 'player' && h) {
+        checked += 1;
+        expect(h.current).toBe(h.max);
+      }
     }
+    // CodeRabbit follow-up: prevent vacuous pass — if no player
+    // FactionBase ever matches, the loop runs zero expects and the
+    // test silently passes. Force at least one match.
+    expect(checked).toBeGreaterThan(0);
   });
 
   it('red-vs-blue (default) does NOT clamp base health', () => {
@@ -63,10 +71,15 @@ describe('mode presets (M_MODES.2-.6)', () => {
       }
     }
     runEconomyTick(game, 1 / 60);
+    let checked = 0;
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase)?.faction;
       const h = e.get(Health);
-      if (f === 'player' && h) expect(h.current).toBeLessThan(h.max);
+      if (f === 'player' && h) {
+        checked += 1;
+        expect(h.current).toBeLessThan(h.max);
+      }
     }
+    expect(checked).toBeGreaterThan(0);
   });
 });
