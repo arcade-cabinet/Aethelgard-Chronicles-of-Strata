@@ -93,6 +93,54 @@ export function KeyboardShortcuts({ game }: { game: GameState }) {
           window.dispatchEvent(new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }));
           break;
         }
+        case 'b':
+        case 'B':
+          // M_EXPANSION.U.118 — open the build menu. SelectionPanel
+          // listens for this event when a builder unit is selected.
+          window.dispatchEvent(new CustomEvent('aethelgard:open-build-menu'));
+          break;
+        case 'f':
+        case 'F':
+          // M_EXPANSION.U.118 — direct-pick Farm.
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Farm' } }),
+          );
+          break;
+        case 'h':
+        case 'H':
+          // M_EXPANSION.U.118 — direct-pick House.
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'House' } }),
+          );
+          break;
+        case 'g':
+        case 'G':
+          // M_EXPANSION.U.118 — direct-pick Granary.
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Granary' } }),
+          );
+          break;
+        case 'r':
+        case 'R':
+          // M_EXPANSION.U.118 — direct-pick Barracks (R for Recruit).
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Barracks' } }),
+          );
+          break;
+        case 't':
+        case 'T':
+          // M_EXPANSION.U.118 — direct-pick Watchtower.
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Watchtower' } }),
+          );
+          break;
+        case 'w':
+        case 'W':
+          // M_EXPANSION.U.118 — direct-pick Wall.
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Wall' } }),
+          );
+          break;
       }
     };
     document.addEventListener('keydown', onKey);

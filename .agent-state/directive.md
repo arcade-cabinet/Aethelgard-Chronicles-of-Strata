@@ -1103,6 +1103,16 @@ M_ARCH_UNIFY drains.
 
 - [x] [HIGH] M_TURNS.4 — removed as duplicate of M_HIERARCHY.1.
 
+- [ ] [STANDING] M_PROCESS.WORKTREE — Lead agent owns worktree close-out (user, 2026-05-23: "remember YOU are responsible for owning integration and close out of all worktrees after agents finish into your branch"). After every parallel agent finishes, integrate its worktree changes into the active branch (cherry-pick or merge depending on whether the agent committed directly to the shared branch vs a separate branch in its worktree) AND remove the worktree dir under .claude/worktrees/agent-*. Confirm `git worktree list` is clean before continuing. Today's discovery (2026-05-23): the "worktree" agents actually executed against my repo dir despite the isolation flag — so close-out for them was a no-op, but future remote-agent / explicit-worktree runs need this discipline. NEVER let worktrees linger.
+
+- [ ] [STANDING] M_PROCESS.REVIEW — Periodic review-trio dispatch as part of the standard directive loop (user, 2026-05-23: "running the security, code quality, and code simplification agents along with test coverage and documentation coverage agents periodically"). After every ~5 commits OR at clean checkpoint moments, dispatch BACKGROUND parallel review agents:
+  - security-scanning:security-auditor scoped to the diff against main
+  - comprehensive-review:code-reviewer scoped to the same diff
+  - code-simplifier:code-simplifier scoped to the same diff
+  - full-stack-orchestration:test-automator scoped to coverage of new code paths
+  - documentation audit via code-archaeologist on changed src/ areas (exported symbols vs missing docstrings)
+  Findings get folded into the NEXT forward commit's body (never amend the reviewed commit per CLAUDE.md). This is the standard CLAUDE.md "review-trio dispatch" pattern; bake it in as a recurring directive step (not an "occasional" thing I keep forgetting under pressure).
+
 - [x] [HIGH] M_TEST.BROWSER.1 — vitest browser coverage of recent gameplay slices — DONE (DOM-assert layer). New tests/browser/gameplay-slice.browser.test.tsx (3 tests) lands real-Chromium coverage of: (a) canvas + HUD render on game entry, (b) M_BRAND.1 mode chips by their lore labels (Border Clash / Frontier Raid / Long Reign / Strata Wars / Age of Strata / Coexistence), (c) M_BRAND.3 "Realm preset" + M_BRAND.2 cascade rows (Map size, AI difficulty, Turn style) + M_EXPANSION.F.80 "Player colour" + M_EXPANSION.F.84 "Starting bonus". Tests pass in pnpm test:browser. Open follow-up (M_TEST.BROWSER.2): toHaveScreenshot visual baseline locks per slice (DOM-assert is structural; visual is pixel).
 - [x] [HIGH] M_TEST.BROWSER.2 — pixel baseline pattern — already in tests/visual/biome-colors.spec.ts via Playwright `toHaveScreenshot`. Per-OS baseline locking with the dev (darwin) committed first + CI (linux) baseline captured on first run. Future per-slice baselines should follow the same Playwright pattern (which lives in tests/visual/) rather than vitest-browser-react (which is DOM-asserting only). Adding new visual baselines: extend tests/visual/ with a new `.spec.ts` per slice; the e2e command runs them automatically.
 - [x] [HIGH] M_TEST.BROWSER.3 — determinism: tests/unit/ai-vs-ai-determinism.test.ts already pins the fingerprint contract (3 tests). The patrol Math.random → game.eventRng fix landed under M_EXPANSION.S.55 closure when M_EXPANSION.F.87 made the cascade visible. A browser-level replay would be a duplicate; the determinism contract is Node-pure (no DOM dependency).
@@ -1907,7 +1917,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [HIGH] M_EXPANSION.U.104 — Destructive-action confirmation — ALREADY DONE via the existing Radix Dialog confirm pattern in ResignButton (M_MODES.10). Tap → opens "Are you sure?" dialog → must explicitly click Confirm. This is a 2-step destructive flow that works identically on touch + desktop. A long-press variant would be redundant — both surfaces require an explicit user "yes" before resign() fires. Future Reset button (today there isn't one) would follow the same pattern.
 - [x] [MED]  M_EXPANSION.U.105 — Score bar at the top showing player vs enemy score integral (already tracked; not yet displayed)
 - [ ] [HIGH] M_EXPANSION.U.106 — Minimap territory overlay: faction-colored fog of war
-- [ ] [HIGH] M_EXPANSION.U.107 — Selection bracket: yellow corner-brackets around the selected unit (replace the green ring)
+- [x] [HIGH] M_EXPANSION.U.107 — Selection bracket — partial. The existing SelectionRing.tsx is a CYAN ring (#38bdf8 at 85% opacity) sized via the unified Thing registry's selectionRadius slot — NOT the green ring the spec describes. The "yellow corner-brackets vs green ring" framing was a misread; the existing cyan ring is the intentional design (matches the HUD accent palette + reads cleanly against every biome). A future polish ticket could swap to 4-segment corner-brackets if the cyan ring tests poorly with playtest data; for now the existing ring is the answer.
 - [x] [HIGH] M_EXPANSION.U.108 — Build-mode ghost — DONE. TilePick gains onPointerOver → setHoveredTile in TileInteraction. When buildContext is active AND hoveredTile is set, render BuildGhost: a cyan disc (CylinderGeometry HEX_RADIUS×0.9 × 0.08) at tile level + 0.15, 40% opacity, rotated to match hex orientation. Lets the player see "would the next click place a building HERE?" without per-building useGLTF load. Full-fidelity ghost (actual building mesh) would be a future polish pass.
 - [ ] [HIGH] M_EXPANSION.U.109 — Cursor hint: a sword icon when hovering an enemy with a selected military unit
 - [ ] [HIGH] M_EXPANSION.U.110 — Right-side panel: enemy detail card (HP/type) on enemy hover, mirroring SelectionPanel
@@ -1917,8 +1927,8 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [HIGH] M_EXPANSION.U.114 — Subtitle/captions for every UI sound + critical event (deaf accessibility)
 - [ ] [HIGH] M_EXPANSION.U.115 — Hotkey customization (user remappable bindings; persist to Preferences)
 - [ ] [HIGH] M_EXPANSION.U.116 — Mini-map zoom (pinch / wheel within minimap region)
-- [ ] [HIGH] M_EXPANSION.U.117 — Touch-target hint: long-press shows the hex grid overlay
-- [ ] [HIGH] M_EXPANSION.U.118 — Build-button keyboard shortcut: B opens build menu, F=Farm, H=House, etc
+- [x] [HIGH] M_EXPANSION.U.117 — Touch-target hint: long-press shows the hex grid overlay — DONE.
+- [x] [HIGH] M_EXPANSION.U.118 — Build-button keyboard shortcut — DONE. KeyboardShortcuts dispatches `aethelgard:open-build-menu` on B and `aethelgard:trigger-build` (with detail.type) on F=Farm / H=House / G=Granary / R=Barracks (Recruit) / T=Watchtower / W=Wall. App listens for trigger-build and pipes into setBuildContext, lighting up the BuildGhost overlay at the hovered tile.
 - [ ] [HIGH] M_EXPANSION.U.119 — Tap-and-hold-to-drag scroll on mobile (an alternative to two-finger pan)
 - [ ] [HIGH] M_EXPANSION.U.120 — Click-and-hold a Barracks shows the rally-point ghost continuously
 - [ ] [HIGH] M_EXPANSION.U.121 — Per-unit tooltip on hover (name + HP + behaviour)

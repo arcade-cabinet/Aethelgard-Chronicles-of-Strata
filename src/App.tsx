@@ -103,6 +103,20 @@ function GameSession({ config, initialGame }: { config?: NewGameConfig; initialG
   }, [config, initialGame]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const viewport = useViewport();
+
+  // M_EXPANSION.U.118 — keyboard shortcut bridge. KeyboardShortcuts
+  // dispatches a 'aethelgard:trigger-build' CustomEvent for direct
+  // building-type pickers (F/H/G/R/T/W keys); App pipes it into the
+  // existing buildContext flow.
+  useEffect(() => {
+    const onTriggerBuild = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { type?: BuildContext['type'] } | undefined;
+      if (!detail?.type) return;
+      setBuildContext({ type: detail.type, onPlaced: () => setBuildContext(null) });
+    };
+    window.addEventListener('aethelgard:trigger-build', onTriggerBuild);
+    return () => window.removeEventListener('aethelgard:trigger-build', onTriggerBuild);
+  }, []);
   // r3f camera ref for HUD overlays that project world → screen (SelectionRect).
   const cameraRef = useRef<Camera | null>(null);
   const getCamera = useCallback(() => cameraRef.current, []);
