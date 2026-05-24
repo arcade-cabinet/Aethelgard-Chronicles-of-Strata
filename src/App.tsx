@@ -152,7 +152,12 @@ function GameSession({
         }
       ).__triggerGameOver = (outcome) => {
         g.outcome = outcome;
-        for (let i = 0; i < 8; i++) runEconomyTick(g, 1 / 60);
+        // M_POLISH3.SCENE.4 — dispatch a CustomEvent so the
+        // GameOverModal can react immediately (without waiting on
+        // rAF, which Chromium throttles in headless / hidden tabs).
+        window.dispatchEvent(
+          new CustomEvent('aethelgard:outcome-changed', { detail: { outcome } }),
+        );
       };
       (window as unknown as DevWindow).__game_findPlayerEntities = (kind) => {
         const MILITARY_TYPES = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);

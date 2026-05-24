@@ -34,7 +34,24 @@ export function GameOverModal({ game }: { game: GameState }) {
       if (game.outcome === 'playing') raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+
+    // M_POLISH3.SCENE.4 — also subscribe to the explicit
+    // outcome-changed CustomEvent so e2e __triggerGameOver flips
+    // the Dialog open immediately (without depending on rAF
+    // cadence in headless / hidden tabs). Read from the live game
+    // ref (not the closure) so a stale closure can't miss the
+    // new value.
+    const onOutcomeChanged = (e: Event) => {
+      const detail = (e as CustomEvent<{ outcome: GameOutcome }>).detail;
+      const next = detail?.outcome ?? game.outcome;
+      setOutcome(next);
+    };
+    window.addEventListener('aethelgard:outcome-changed', onOutcomeChanged);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('aethelgard:outcome-changed', onOutcomeChanged);
+    };
   }, [game]);
 
   const isWin = outcome === 'win';
