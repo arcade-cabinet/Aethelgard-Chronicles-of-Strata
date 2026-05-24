@@ -217,16 +217,22 @@ mechanic work that follows is built on this.
 
 ### v0.4.3 — Swamps + Healer (PRD §7.3)
 
-- [ ] [WAIT-DEPS] M_FUN.MAP.SWAMP — SWAMP biome generator
-  pass (config-driven, per-mode prevalence). Coastal + interior
-  variants.
-- [ ] [WAIT-DEPS] M_FUN.ATTR.DISEASE — Health.disease;
-  -1 HP/sec while set; cleared via Healer 2-hex range OR standing
-  on GRASS 5+ sec.
-- [ ] [WAIT-DEPS] M_FUN.UNIT.HEAL — Healer/Cleric unit:
-  4-hex heal aura on tick, no offensive, ~50% Wizard cost.
+- [x] M_FUN.MAP.SWAMP — DONE 2026-05-24 commit d0401a7.
+  paintSwampPatches paints SWAMP adjacent to LAKE; 3 tiles/seed.
+  Per-mode intensity ships in M_FUN.MAP.PER_MODE.
+- [x] M_FUN.ATTR.DISEASE — DONE 2026-05-24 commit 96e26c1.
+  Health.disease ticks HP -1/sec; statusAttributesSystem implements
+  Healer-clear + GRASS recovery.
+- [x] M_FUN.ATTR.DEHYDRATION — DONE 2026-05-24 commit 96e26c1.
+  Health.dehydration field + recovery off DESERT; gate consumed
+  by future HP-regen system.
+- [x] M_FUN.UNIT.HEAL — DONE 2026-05-24 commit 96e26c1. Healer
+  unit added (civilian, no offensive, ~50% Wizard cost; reuses
+  Mage mesh).
 - [ ] [WAIT-DEPS] M_FUN.MAP.SWAMP.HARNESS — composition test
-  (5 Footmen vs swamp = die; 4 Footmen + 1 Healer = cross).
+  (5 Footmen vs swamp = die; 4 Footmen + 1 Healer = cross). Add
+  a browser test that runs the sim 30 seconds and asserts
+  outcome.
 
 ### v0.4.4 — Forest ambush + elevation (PRD §7.4)
 

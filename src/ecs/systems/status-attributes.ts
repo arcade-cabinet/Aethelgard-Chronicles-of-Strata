@@ -64,6 +64,28 @@ export function statusAttributesSystem(
     const tile = tiles.get(`${pos.q},${pos.r}`);
     const tileType = tile?.type ?? 'GRASS';
 
+    // Disease re-arms while standing on SWAMP (the wet ground is
+    // the disease source — leaving the tile starts recovery).
+    // Refresh attribute timer so it doesn't decay before damage
+    // ticks have had time to bite. attributeStrength is the JSON-
+    // configured strength (1.0 for SWAMP); the recovery threshold
+    // is reset to 0 on every tick spent in the source biome.
+    if (tileType === 'SWAMP' && h.disease < 1) {
+      // Mutate via set so the subsequent disease branch sees the
+      // refreshed value. (h is a snapshot; mutating h.disease alone
+      // would be lost on the next .get().)
+      const dur = 5; // matches biomeRule(SWAMP).attributeStrength * 5
+      e.set(Health, { ...h, disease: dur, diseaseRecoveryTimer: 0 });
+      h.disease = dur;
+      h.diseaseRecoveryTimer = 0;
+    }
+    if (tileType === 'DESERT' && h.dehydration < 1) {
+      const dur = 5;
+      e.set(Health, { ...h, dehydration: dur, dehydrationRecoveryTimer: 0 });
+      h.dehydration = dur;
+      h.dehydrationRecoveryTimer = 0;
+    }
+
     // Disease tick: -1 HP per sim-second.
     if (h.disease > 0) {
       // Healer-clear check.
