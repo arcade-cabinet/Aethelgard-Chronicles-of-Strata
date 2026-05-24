@@ -164,8 +164,14 @@ mechanic work that follows is built on this.
   literal in useRafLoop) surfaced — real cases Biome missed
   during the M_FUN.NAR work. Warnings, not errors, so the queue
   doesn't block on cleanup; ratchet to error after fixes.
-- [ ] M_FUN.FOUNDATION.PRETTIER-MD — dprint or
-  prettier for MD/YML files Biome doesn't format.
+- [x] M_FUN.FOUNDATION.PRETTIER-MD — Prettier configured to
+  format ONLY MD/YML (Biome stays the formatter for TS/TSX/
+  JSON/CSS/HTML). `.prettierrc.json` + `.prettierignore` +
+  `pnpm format:md` / `pnpm format:md:check` scripts. First
+  check surfaces 59 MD files with format drift — accepted as a
+  ratchet queue (gating commits on a 59-file flag-day rewrite
+  would block real feature work); each file gets formatted on
+  next touch.
 
 **Testing**
 
