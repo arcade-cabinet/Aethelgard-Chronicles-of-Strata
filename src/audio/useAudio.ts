@@ -12,10 +12,18 @@
 
 import { useFrame } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
-import { Building } from '@/ecs/components';
+import { Building, FactionBase, Health } from '@/ecs/components';
 import type { DamageEvent } from '@/ecs/systems/combat';
 import type { GameState } from '@/game/game-state';
-import { createAudioBuses, playMusic, playSound, startAmbient, stopAmbient } from './buses';
+import {
+  createAudioBuses,
+  duckMusic,
+  playMusic,
+  playSound,
+  restoreMusic,
+  startAmbient,
+  stopAmbient,
+} from './buses';
 import { resolveSoundId, SOUND_FOR_EVENT } from './sound-map';
 import { registerUiSoundPlayer } from './ui-sound-emitter';
 
@@ -33,6 +41,13 @@ export function useAudio(game: GameState): void {
   const lastBatchRef = useRef<DamageEvent[] | null>(null);
   // Track completed building count to detect new completions each tick.
   const lastCompleteBuildingsRef = useRef<number>(0);
+  // M_EXPANSION.AU.42 — pre-victory crescendo. Music ducks to 40%
+  // when imminent victory is detected (enemy TownHall HP <10% OR
+  // wonderTimer <3s on EITHER faction). When the trigger releases
+  // (e.g. the enemy heals or the wonder is cancelled — both unlikely
+  // but cheap to support), music restores. The outcome-transition
+  // block above ALSO restores so we never leave music ducked.
+  const crescendoActiveRef = useRef<boolean>(false);
 
   useEffect(() => {
     // Start the gameplay music loop when the hook mounts.
@@ -97,9 +112,52 @@ export function useAudio(game: GameState): void {
         // a peaceful village track for the victory state. playMusic
         // stops the current track first.
         playMusic(buses, 'audio.music.biome.town-of-eldor');
+        // M_EXPANSION.AU.42 — restore the duck on win-flip; the
+        // victory music is the new track, no need to keep ducked.
+        if (crescendoActiveRef.current) {
+          restoreMusic();
+          crescendoActiveRef.current = false;
+        }
       } else if (currentOutcome === 'loss') {
         const map = SOUND_FOR_EVENT.defeat;
         playSound(buses, map.bus, resolveSoundId(map));
+        if (crescendoActiveRef.current) {
+          restoreMusic();
+          crescendoActiveRef.current = false;
+        }
+      }
+    }
+
+    // M_EXPANSION.AU.42 — pre-victory crescendo detection. Only
+    // arm while still playing. Triggers (any one):
+    //   - Enemy TownHall (FactionBase + faction='enemy') HP <10% of max
+    //   - Player wonderTimer between 0.01 and 3.0 seconds
+    //   - Enemy wonderTimer between 0.01 and 3.0 seconds (loss-edge —
+    //     a defeat crescendo deserves the same musical breath)
+    if (currentOutcome === 'playing') {
+      let imminent = false;
+      // Wonder edge — both factions, both directions.
+      const wp = game.wonderTimers?.player;
+      const we = game.wonderTimers?.enemy;
+      if (typeof wp === 'number' && wp > 0 && wp < 3) imminent = true;
+      if (!imminent && typeof we === 'number' && we > 0 && we < 3) imminent = true;
+      // Enemy TownHall HP edge.
+      if (!imminent) {
+        for (const e of game.world.query(FactionBase, Health)) {
+          const f = e.get(FactionBase);
+          if (f?.faction !== 'enemy') continue;
+          const h = e.get(Health);
+          if (!h) continue;
+          if (h.current > 0 && h.current / h.max < 0.1) imminent = true;
+          break;
+        }
+      }
+      if (imminent && !crescendoActiveRef.current) {
+        duckMusic(0.4);
+        crescendoActiveRef.current = true;
+      } else if (!imminent && crescendoActiveRef.current) {
+        restoreMusic();
+        crescendoActiveRef.current = false;
       }
     }
 

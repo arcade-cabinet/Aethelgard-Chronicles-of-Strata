@@ -1774,11 +1774,11 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [MED]  M_EXPANSION.AU.39 — wire `GLV5_CraftingHall.wav` as construction-in-progress ambient layer
 - [x] [LOW]  M_EXPANSION.AU.40 — wire `GLV5_MapOfRealms.wav` as overlay music when DiscoveriesPanel is open
 - [x] [LOW]  M_EXPANSION.AU.41 — duck music bus to 40% while critical-alarm is firing
-- [ ] [HIGH] M_EXPANSION.AU.42 — pre-victory crescendo: cross-fade combat→victory stinger over the final 3s before win
-  - Requires a deterministic "imminent victory" signal (enemy TownHall
-    HP <10%, AI last-unit-dying, wonder-timer <3s). Predicting wrong
-    would fire false-positive crescendos. Tracked WAIT until F.71
-    Wonder lands a deterministic countdown.
+- [x] [HIGH] M_EXPANSION.AU.42 — pre-victory crescendo — DONE. F.71 Wonder landed deterministic countdown so the imminence signal is reliable. useAudio.ts polls each frame while game.outcome==='playing' and triggers `duckMusic(0.4)` when ANY of:
+  - player wonderTimer in (0, 3) seconds (player about to win via wonder)
+  - enemy wonderTimer in (0, 3) seconds (player about to lose via wonder)
+  - enemy TownHall HP under 10% of max (player about to win via base-destruction)
+  Releases the duck on the inverse edge, or when outcome flips to win/loss. Crossfade lands automatically via the existing `playMusic` swap on win (which stops the ducked combat track and starts the unducked victory loop). False-positive guard: HP must be >0 (excludes the dead-base frame) and wonderTimer must be >0.01 (excludes the timer-fired frame).
 
 **Footsteps + Impact + Magic SFX (43-50)** — partial usage
 - [x] [HIGH] M_EXPANSION.AU.43 — footsteps per terrain biome (grass/sand/stone) — currently single sound
