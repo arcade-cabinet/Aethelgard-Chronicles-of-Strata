@@ -3,7 +3,7 @@ import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
-import { AssignedJob, Building, FactionTrait, Unit } from '@/ecs/components';
+import { AssignedJob, Building, FactionTrait, Health, Unit } from '@/ecs/components';
 import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
@@ -185,9 +185,10 @@ function GameSession({
             FactionTrait: unknown;
             Unit: unknown;
             AssignedJob: unknown;
+            Health: unknown;
           };
         }
-      ).__game_traits = { Building, FactionTrait, Unit, AssignedJob };
+      ).__game_traits = { Building, FactionTrait, Unit, AssignedJob, Health };
     }
     return g;
   }, [config, initialGame]);

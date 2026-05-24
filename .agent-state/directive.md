@@ -398,6 +398,38 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
   OR buildSites is empty (BuildGoal never even ran for enemy).
   Two very different root causes.
 
+- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-G — Mystery outcome=loss at
+  t=24 with player base at 3000 HP intact and enemy military
+  count = 1 (player military = 0). Debug spec confirms the
+  flip happens in the same tick the player's Footman dies.
+  No path through evaluateWinLoss should set loss while the
+  base is at full HP. Audit every game.outcome write across
+  src/game/ + src/ecs/systems/ for a stray flip. Likely a
+  Hero/Footman conflation OR a defaultStanceMode-mediated
+  side effect from PATTERN-B's aggressive-stance flip.
+
+- [ ] M_FUN.MAP.UTILISATION (PRD §5.3) — full-board utilisation
+  is a v0.4 release goal. Sub-items:
+  - [ ] M_FUN.MAP.UTILISATION.SHALLOWS — Shallows biome between
+    islands. Crossable by aquatic units at 1.8× move cost. Map
+    gen places shallows as 2-3 hex skirt around landmasses.
+  - [ ] M_FUN.MAP.UTILISATION.ISLANDS — Archipelago mapType
+    that places 3-7 islands with shallow channels. Continent-
+    with-inland-lakes mapType using centre water as contested
+    feature. Verify every mapType in the registry renders
+    distinct geometry.
+  - [ ] M_FUN.MAP.UTILISATION.FERRYMAN — Aquatic unit class
+    (Ferryman: trainable from Peon, crosses shallows, land-speed
+    penalty). New build choice: Footman vs Ferryman.
+  - [ ] M_FUN.MAP.UTILISATION.METRIC — Balance harness assertion:
+    # of distinct tiles in either faction's zone-of-control
+    union > 30% of walkable board. Catches "clumped" failure mode.
+
+- [x] M_FUN.QA.AIVAI.VISUAL — every balance-harness run captures a
+  final-frame screenshot to tests/e2e/__data__/aivai-screens/
+  <outcome>/<player>-vs-<enemy>_t<n>_k<n>_b<n>-<n>.png. Per the
+  visual-ownership rule in CLAUDE.md; gitignored (large).
+
 ### v0.4.8 fold-ins from reviewer trio (must land before v0.4.9)
 
 - [x] M_FUN.DYN.FIX.LAVA-WALKABLE — LAVA now walkable=false in

@@ -199,9 +199,31 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
       };
       appendArtifact(run);
 
+      // M_FUN.QA.AIVAI.VISUAL — capture a final-frame screenshot for
+      // every run so the agent can eyeball balance failures visually
+      // (units stuck in clumps, peons walking off-map, buildings
+      // bunched on the wrong side, etc.) instead of inferring from
+      // numbers alone. Filename includes outcome + key counters so
+      // the artifact dir is self-narrating.
+      try {
+        const { mkdirSync } = await import('node:fs');
+        const dir = `tests/e2e/__data__/aivai-screens/${run.outcome}`;
+        mkdirSync(dir, { recursive: true });
+        await page.screenshot({
+          path: `${dir}/${player}-vs-${enemy}_t${run.elapsedTurns}_k${run.totalKills}_b${run.buildingsPlayer}-${run.buildingsEnemy}.png`,
+          fullPage: false,
+        });
+      } catch {
+        // screenshot is best-effort; never fail a test for it
+      }
+
       // Real assertions — these are the gate.
       expect.soft(resolvedWithinBudget, 'match must reach a terminal outcome').toBe(true);
-      expect.soft(elapsedTurns, 'turn count too low — instant finish').toBeGreaterThanOrEqual(1);
+      // PATTERN-C — tightened from >=1 to >=2 sim-min. A win in
+      // 1 sim-min means a single-Footman rush instakilled a
+      // TownHall, which is a balance failure (the gate should
+      // catch it as such).
+      expect.soft(elapsedTurns, 'turn count too low — instant finish').toBeGreaterThanOrEqual(2);
       expect.soft(elapsedTurns, 'turn count too high — drag').toBeLessThanOrEqual(15);
       expect.soft(snapshot.kills, 'combat must occur').toBeGreaterThan(0);
       expect

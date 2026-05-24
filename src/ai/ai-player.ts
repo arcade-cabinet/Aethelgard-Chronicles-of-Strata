@@ -193,7 +193,7 @@ function discoveredEnemyTile(game: GameState, faction: Faction): string | null {
   // non-walkable (CodeRabbit fix), so findPath to it would return
   // null. The first walkable neighbour suffices — combat tick will
   // engage the base from there once the unit arrives.
-  const RAGE_QUIT_THRESHOLD = 90;
+  const RAGE_QUIT_THRESHOLD = 180;
   if (game.clock.elapsed >= RAGE_QUIT_THRESHOLD) {
     const oppBaseKey = faction === 'player' ? game.enemyBaseKey : game.townHallKey;
     const { q: bq, r: br } = parseHexKey(oppBaseKey);
@@ -397,7 +397,7 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
     // OVERRIDES Build — we've sat on builds too long, time to
     // engage. Without this boost the Builder personality keeps
     // out-scoring military forever even after we have a target.
-    const RAGE_QUIT_THRESHOLD = 90;
+    const RAGE_QUIT_THRESHOLD = 180;
     const ragequit = owner.game.clock.elapsed >= RAGE_QUIT_THRESHOLD;
     const hasTarget = discoveredEnemyTile(owner.game, owner.faction);
     if (!hasTarget) return 0;

@@ -8,7 +8,7 @@ import { startGame } from '@/game/game-state';
  * initial GameState shape as documented.
  */
 describe('M_EXPANSION.F.84 — starting bonus picks', () => {
-  it('"none" (default) — baseline starts with 50 wood + 2 Peons + 500hp TownHall', () => {
+  it('"none" (default) — baseline starts with 50 wood + 2 Peons + 3000hp TownHall', () => {
     const game = startGame({
       seedPhrase: 'bonus-none',
       mapSize: 10,
@@ -25,7 +25,8 @@ describe('M_EXPANSION.F.84 — starting bonus picks', () => {
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase);
       if (f?.faction !== 'player') continue;
-      expect(e.get(Health)?.max).toBe(500);
+      // PATTERN-C bump to 1500.
+      expect(e.get(Health)?.max).toBe(3000);
     }
   });
 
@@ -67,8 +68,9 @@ describe('M_EXPANSION.F.84 — starting bonus picks', () => {
       const f = e.get(FactionBase);
       if (f?.faction !== 'player') continue;
       const h = e.get(Health);
-      expect(h?.max).toBe(700);
-      expect(h?.current).toBe(700);
+      // PATTERN-C: baseline raised to 1500, so extra-hp = 1700.
+      expect(h?.max).toBe(3200);
+      expect(h?.current).toBe(3200);
     }
   });
 
@@ -83,7 +85,10 @@ describe('M_EXPANSION.F.84 — starting bonus picks', () => {
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase);
       if (f?.faction !== 'enemy') continue;
-      expect(e.get(Health)?.max).toBe(300);
+      // M_FUN.QA.AIVAI.TUNE.PATTERN-C — bases equalised at 1500 HP
+      // so AI-vs-AI matches can't end at t=0 from a solo-Footman
+      // rush (100 sim-seconds to solo a TownHall now).
+      expect(e.get(Health)?.max).toBe(3000);
     }
   });
 });

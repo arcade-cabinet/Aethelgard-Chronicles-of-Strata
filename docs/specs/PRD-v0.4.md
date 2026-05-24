@@ -187,6 +187,56 @@ E (personality intent audit). Re-run the matrix after each fix;
 delta on the JSON ledger is the evidence. Each fix earns its own
 sub-task in the directive.
 
+### 5.3 Use the full board (M_FUN.MAP.UTILISATION)
+
+Observation from running the balance matrix at the visual level:
+the current maps waste enormous amounts of the board on water +
+border islands. Two factions clump in a strip across the middle
+while 40%+ of the hex grid is dead ocean. This:
+
+- Caps how interesting a 10-min match can be (no room to maneuver).
+- Makes some matchups physically impossible (factions can't reach
+  each other when an inland sea cuts the map in half).
+- Wastes asset budget on terrain the player never interacts with.
+
+Required for v0.4 release:
+
+- **Shallows-bridging contract.** The existing
+  beach→grass elevation bridge has a direct counterpart: shallow
+  water between islands should be CROSSABLE by units with an
+  "aquatic" trait (Settlers + future amphibious unit), at higher
+  move-cost. Deep ocean stays impassable. Map gen layers shallows
+  as a 2-3 hex skirt around each landmass.
+- **Multi-island maps as a first-class mapType.** Today every
+  generated map is "1-2 landmasses + ocean filler". Add an
+  archipelago variant that places 3-7 islands with shallows
+  channels, plus a continent-with-inland-lakes variant that uses
+  the centre as a contested water feature. Selectable in the
+  mapType registry alongside the existing dry-land / archipelago /
+  balanced / continent options (which the implementation only
+  PARTIALLY supports — verify each renders distinct geometry).
+- **Aquatic skill / unit class.** A trainable that converts a Peon
+  into a "Ferryman" (or similar) — speed penalty on land but able
+  to cross shallows. Adds a build-order strategic choice: do you
+  spend the wood on a Footman or a Ferryman to claim the second
+  island?
+- **Map-utilisation metric in the AIVAI harness.** Add a new
+  assertion: # of distinct tiles touched by either faction's
+  zone of control > UTILISATION_FLOOR (e.g. 30% of walkable
+  board). Catches future regressions where a balance change makes
+  factions cluster instead of expand.
+
+### 5.4 Visual review at every step (M_FUN.QA.AIVAI.VISUAL)
+
+Per the visual-ownership rule in CLAUDE.md: any change to the
+balance harness MUST capture a final-frame screenshot per run.
+The screenshot lands in `tests/e2e/__data__/aivai-screens/<outcome>/`
+(gitignored — large + churns) with a self-narrating filename
+(`<player>-vs-<enemy>_t<turns>_k<kills>_b<pl>-<en>.png`). The
+agent reviews these visually between tuning rounds — clumping,
+peons walking off-map, units stuck at impassable tiles, all of
+which the numeric ledger can't surface alone.
+
 ## 6. Architecture prerequisites
 
 Two structural shifts MUST land before per-mechanic work, or the

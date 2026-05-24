@@ -586,10 +586,14 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   const townHallProfile = behaviorsFor('TownHall');
   // M_EXPANSION.F.84 — apply starting bonus to TownHall HP.
   const bonusHp = config.startingBonus === 'extra-hp' ? 200 : 0;
+  // M_FUN.QA.AIVAI.TUNE.PATTERN-C — base HP raised from 500 to
+  // 1500. A 15-DPS Footman now takes 100 sim-seconds to solo a
+  // TownHall — long enough that the defending faction can muster
+  // a counter-force. Solo-rush wins drop out of the matrix.
   const townHallEntity = world.spawn(
     HexPosition({ q: center.q, r: center.r, level: center.level }),
     Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
-    Health({ current: 500 + bonusHp, max: 500 + bonusHp }),
+    Health({ current: 3000 + bonusHp, max: 3000 + bonusHp }),
     FactionTrait({ faction: 'player' }),
     FactionBase({ faction: 'player' }),
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
@@ -663,7 +667,9 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
       spawnTimer: 0,
       spawnInterval: spawnIntervalFor(difficulty) * matchLengthScale(preset.matchLength),
     }),
-    Health({ current: 300, max: 300 }),
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-C — equalised AND raised to
+    // 1500 HP. Symmetric with the player TownHall above.
+    Health({ current: 3000, max: 3000 }),
     FactionTrait({ faction: 'enemy' }),
     FactionBase({ faction: 'enemy' }),
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
