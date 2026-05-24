@@ -12,6 +12,7 @@ import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
 import { SKINS } from '@/rules/skins';
 import { aiProfileFor, endgameUrgencyFor } from './ai-profiles';
+import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
 import { baseKeyFor, type GameState } from '@/game/game-state';
 import { canBuild, peonCap, UNIT_COSTS } from '@/rules';
 
@@ -47,18 +48,28 @@ export class AiPlayer extends GameEntity {
   /** Seconds the faction has been "starved" (M_MODES.10) — accumulates across ticks. */
   starvedFor = 0;
 
-  constructor(faction: Faction) {
+  /**
+   * M_FUN.AI.NAMED — opponent personality key (e.g. 'the-builder',
+   * 'the-raider'). Multiplies per-Evaluator desirability so each
+   * named opponent plays a distinct style. Defaults to the
+   * 'default' personality from ai-personalities.json.
+   */
+  readonly personalityKey: string;
+
+  constructor(faction: Faction, personalityKey?: string) {
     super();
     this.faction = faction;
+    this.personalityKey = personalityKey ?? DEFAULT_PERSONALITY;
+    const p = personalityFor(this.personalityKey);
     this.brain = new AiBrain(this);
-    this.brain.addEvaluator(new BuildEvaluator());
+    this.brain.addEvaluator(new BuildEvaluator(p.weights.build));
     this.brain.addEvaluator(new TrainEvaluator());
-    this.brain.addEvaluator(new MilitaryEvaluator());
+    this.brain.addEvaluator(new MilitaryEvaluator(p.weights.military));
     // M_EXPANSION.S.55 — patrol verb (verb 5 of 5). Idle military
     // units circulate the zone perimeter when there's no enemy in
     // sight + no defensive trigger. Without this they stand at base
     // waiting for the next raid, which reads as inert AI.
-    this.brain.addEvaluator(new PatrolEvaluator());
+    this.brain.addEvaluator(new PatrolEvaluator(p.weights.patrol));
     this.brain.addEvaluator(new ResignEvaluator());
   }
 
@@ -159,6 +170,14 @@ function freeBuildTile(game: GameState, faction: Faction): string | null {
 
 /** Decide what (if anything) to build next; the highest-priority unmet need wins. */
 class BuildEvaluator extends GoalEvaluator<AiPlayer> {
+  /**
+   * M_FUN.AI.NAMED — personality multiplier. Default 1.0 = neutral.
+   * the-builder=1.5 (eager to build), the-mad-king=0.4 (rarely builds).
+   */
+  constructor(private readonly personalityMul: number = 1.0) {
+    super();
+  }
+
   calculateDesirability(owner: AiPlayer): number {
     const choice = this.pickBuildable(owner);
     if (!choice) return 0;
@@ -175,7 +194,7 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     const defensiveMul = defensiveTypes.includes(choice as string)
       ? profile.defensiveBuildWeight
       : 1.0;
-    return 0.7 * bias * profile.buildWeight * defensiveMul;
+    return 0.7 * bias * profile.buildWeight * defensiveMul * this.personalityMul;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -257,6 +276,10 @@ class BuildGoal extends Goal<AiPlayer> {
  * encroachment costs the AI its zone of control.
  */
 class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
+  constructor(private readonly personalityMul: number = 1.0) {
+    super();
+  }
+
   calculateDesirability(owner: AiPlayer): number {
     if (!owner.game) return 0;
     if (!firstMilitary(owner.game, owner.faction)) return 0;
@@ -273,7 +296,7 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
       owner.game.turn?.turnsElapsed,
       owner.game.turn?.maxTurns,
     );
-    const modeMul = profile.militaryWeight * urgency;
+    const modeMul = profile.militaryWeight * urgency * this.personalityMul;
     // higher score when a tile we own is pulsing — defence is urgent
     if (firstPulsingTile(owner.game, owner.faction)) return 0.85 * bias * modeMul;
     return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 * bias * modeMul : 0;
@@ -435,6 +458,10 @@ class ResignGoal extends Goal<AiPlayer> {
  * unpredictable from the player's perspective.
  */
 class PatrolEvaluator extends GoalEvaluator<AiPlayer> {
+  constructor(private readonly personalityMul: number = 1.0) {
+    super();
+  }
+
   calculateDesirability(owner: AiPlayer): number {
     if (!owner.game) return 0;
     if (owner.game.outcome !== 'playing') return 0;
@@ -450,7 +477,7 @@ class PatrolEvaluator extends GoalEvaluator<AiPlayer> {
     const profile = aiProfileFor(owner.game.mode);
     // Low base score (0.25) — patrol is the LOWEST-priority verb,
     // beaten by every concrete need.
-    return 0.25 * profile.militaryWeight;
+    return 0.25 * profile.militaryWeight * this.personalityMul;
   }
 
   setGoal(owner: AiPlayer): void {

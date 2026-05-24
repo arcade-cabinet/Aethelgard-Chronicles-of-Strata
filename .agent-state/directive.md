@@ -250,10 +250,11 @@ mechanic work that follows is built on this.
 
 ### v0.4.5 — Per-mode generator strategies (PRD §7.5)
 
-- [ ] [WAIT-DEPS] M_FUN.MAP.PER_MODE — Each mode gets a
-  named generator strategy in config. Border-clash, frontier-raid,
-  long-reign, strata-wars, age-of-strata, coexistence — each with
-  its choke/pressure/relief table from PRD §3.
+- [x] M_FUN.MAP.PER_MODE — DONE 2026-05-24 commit f385893. Each
+  mode picks the mapType matching its mechanical identity
+  (frontier-raid=dry-land, age-of-strata=archipelago,
+  coexistence=archipelago; others unchanged). 4/6 modes used to
+  share 'balanced' — now each looks + plays differently.
 
 ### v0.4.6 — Named AI personalities (PRD §7.6)
 

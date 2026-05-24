@@ -376,6 +376,10 @@ export function App() {
     void persistence.setSetting(PREF_KEYS.onboarding, 'true');
     const seed = sp.get('seed') ?? 'aivai-default';
     const mode = (sp.get('mode') ?? 'border-clash') as NonNullable<NewGameConfig['mode']>;
+    // M_FUN.AI.NAMED — also accept ?personality=the-raider for the
+    // named opponent picker (URL-driven flow). Falls back to the
+    // registry default when omitted.
+    const personality = sp.get('personality') ?? undefined;
     setConfig({
       seedPhrase: seed,
       mapSize: MAP_SIZES.medium.radius,
@@ -387,6 +391,7 @@ export function App() {
       playerColor: null,
       startingBonus: 'none',
       aiVsAi: true,
+      ...(personality ? { enemyPersonality: personality } : {}),
     });
   }, []);
 

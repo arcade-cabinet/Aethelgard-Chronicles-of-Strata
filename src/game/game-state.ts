@@ -159,6 +159,13 @@ export interface NewGameConfig {
    * to false (normal human-controlled player).
    */
   aiVsAi?: boolean;
+  /**
+   * M_FUN.AI.NAMED — opponent personality key (the-builder,
+   * the-raider, the-hoarder, the-diplomat, the-mad-king). See
+   * src/config/ai-personalities.json. Defaults to the registry
+   * default ('the-diplomat').
+   */
+  enemyPersonality?: string;
 }
 
 /**
@@ -741,8 +748,19 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     // factions auto-play, no human input required.
     aiPlayers:
       typeof config === 'object' && config.aiVsAi
-        ? { enemy: new AiPlayer('enemy'), player: new AiPlayer('player') }
-        : { enemy: new AiPlayer('enemy') },
+        ? {
+            enemy: new AiPlayer('enemy', config.enemyPersonality),
+            // Player faction in AI-vs-AI uses the default personality
+            // (the-diplomat) — playable mode is human-controlled so
+            // the player-side personality field would never matter.
+            player: new AiPlayer('player'),
+          }
+        : {
+            enemy: new AiPlayer(
+              'enemy',
+              typeof config === 'object' ? config.enemyPersonality : undefined,
+            ),
+          },
     assignAllPeonsToHarvest() {
       // find the first wood node (fallback to any node)
       const woodNodes = resourceNodes.filter((n) => n.resourceType === 'wood');
