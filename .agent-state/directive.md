@@ -123,9 +123,12 @@ mechanic work that follows is built on this.
   dedicated .ts accessors (CREDITS, ASSET_METADATA) with the same
   Zod-parse pattern. CreditsModal + src/assets/assets.ts updated
   to import the typed accessors. mapgen.json was already Zod'd.
-- [ ] M_FUN.FOUNDATION.ZOD-PERSIST — Migrate
-  serialize-game.ts validateSnapshot to a Zod SaveSnapshotSchema.
-  Replaces the hand-rolled clamp logic with declarative validation.
+- [x] M_FUN.FOUNDATION.ZOD-PERSIST — validateSnapshot is now a
+  thin wrapper over SaveSnapshotSchema.safeParse. Version mismatch
+  keeps its dedicated error message so the migration framework +
+  existing tests still grep correctly; everything else uses the
+  declarative Zod schema. Replaces ~60 lines of hand-rolled
+  typeof / length / array checks with one schema declaration.
 - [ ] M_FUN.FOUNDATION.BRANDED-IDS — Branded types
   for tileKey / entityId / factionKey so a footgun like
   `selectEntity(factionKey)` is a compile error.

@@ -7,6 +7,7 @@
  * mutable state needs to round-trip.
  */
 
+import { z } from 'zod';
 import { ECONOMY } from '@/config/economy';
 import type { Faction } from '@/ecs/components';
 import type { GameClock } from '@/game/clock';
@@ -354,72 +355,70 @@ function migrateSnapshot(snap: Record<string, unknown>): Record<string, unknown>
  * by deserializeGame, so version-N saves auto-upgrade to current
  * SNAPSHOT_VERSION before the structural check.
  */
+/**
+ * M_FUN.FOUNDATION.ZOD-PERSIST — declarative validation of the
+ * save snapshot. Replaces the hand-rolled chain of typeof / array /
+ * length checks with a Zod schema that mirrors the GameSnapshot
+ * interface. The schema is intentionally PERMISSIVE on nested
+ * objects (clock, weather, world entity rows etc) since the
+ * deserialize path already field-by-field copies the values it
+ * trusts. The schema's job is to reject SHAPE corruption + cap
+ * the size knobs before any consumer can be NaN-poisoned.
+ */
+// z.record(string, unknown) is the v4-compatible "any object with
+// any extra keys is fine" — replaces the deprecated .passthrough().
+const _OpaqueObj = z.record(z.string(), z.unknown());
+
+const SaveSnapshotSchema = z.object({
+  version: z.literal(SNAPSHOT_VERSION),
+  config: z.object({
+    seedPhrase: z.string().min(1).max(256),
+    // M_SEC.5 — mapSize must be an integer in [1, MAX_MAP_SIZE].
+    mapSize: z.number().int().min(1).max(MAX_MAP_SIZE),
+    difficulty: z.enum(['easy', 'normal', 'hard']),
+    eventSeed: z.string().min(1).max(256),
+  }),
+  world: z
+    .object({ entities: z.array(z.unknown()).max(MAX_ENTITY_COUNT) })
+    .and(_OpaqueObj),
+  economy: z.object({ player: _OpaqueObj, enemy: _OpaqueObj }),
+  clock: _OpaqueObj,
+  weather: _OpaqueObj,
+  research: z.object({ purchased: z.array(z.string()) }),
+  rally: _OpaqueObj,
+  zones: z.object({ player: _OpaqueObj, enemy: _OpaqueObj }),
+  outcome: z.string(),
+  // M_FUN.DYN — optional dynamic-terrain snapshot blocks; missing
+  // on v1 saves (migration fills defaults).
+  wildfires: z.array(z.unknown()).optional(),
+  quakeShakeRemaining: z.number().optional(),
+  volcano: _OpaqueObj.optional(),
+});
+
 function validateSnapshot(snap: unknown): asserts snap is GameSnapshot {
-  if (!snap || typeof snap !== 'object') {
-    throw new Error('serialize-game: snapshot is not an object');
-  }
-  const s = snap as Record<string, unknown>;
-  if (s.version !== SNAPSHOT_VERSION) {
-    throw new Error(
-      `serialize-game: snapshot version ${String(s.version)} not supported (expected ${SNAPSHOT_VERSION})`,
-    );
-  }
-  const cfg = s.config as Record<string, unknown> | undefined;
-  if (!cfg || typeof cfg.seedPhrase !== 'string' || cfg.seedPhrase.length > 256) {
-    throw new Error('serialize-game: snapshot.config.seedPhrase missing or too long');
-  }
-  // CodeRabbit follow-up: mapSize must be an integer. Fractional
-  // values used to pass the gate and later trigger opaque errors
-  // inside board-gen indexing.
-  const mapSize = safeFinite(cfg.mapSize, 0);
-  if (!Number.isInteger(mapSize) || mapSize < 1 || mapSize > MAX_MAP_SIZE) {
-    throw new Error(`serialize-game: snapshot.config.mapSize out of bounds (got ${mapSize})`);
-  }
-  if (cfg.difficulty !== 'easy' && cfg.difficulty !== 'normal' && cfg.difficulty !== 'hard') {
-    throw new Error('serialize-game: snapshot.config.difficulty not a known tier');
-  }
-  if (typeof cfg.eventSeed !== 'string' || cfg.eventSeed.length > 256) {
-    throw new Error('serialize-game: snapshot.config.eventSeed missing or too long');
-  }
-  // Entity-count cap (M_SEC.11) — a 100k-entity snapshot would spawn
-  // 100k yuka Vehicles on the next AI tick. Reject early.
-  const world = s.world as { entities?: unknown[] } | undefined;
-  if (!world || !Array.isArray(world.entities)) {
-    throw new Error('serialize-game: snapshot.world.entities is not an array');
-  }
-  if (world.entities.length > MAX_ENTITY_COUNT) {
-    throw new Error(
-      `serialize-game: snapshot has ${world.entities.length} entities (cap ${MAX_ENTITY_COUNT})`,
-    );
-  }
-  // Shape gates for the nested overlays we Object.assign-replace.
-  const eco = s.economy as Record<string, unknown> | undefined;
-  if (!eco || typeof eco.player !== 'object' || typeof eco.enemy !== 'object') {
-    throw new Error('serialize-game: snapshot.economy.{player,enemy} missing');
-  }
-  if (!s.clock || typeof s.clock !== 'object') {
-    throw new Error('serialize-game: snapshot.clock missing');
-  }
-  if (!s.weather || typeof s.weather !== 'object') {
-    throw new Error('serialize-game: snapshot.weather missing');
-  }
-  // CodeRabbit follow-up: tighten research.purchased to actually be a
-  // string[] (was 'any object passes'). A non-array would later throw
-  // at `new Set(...)` with an opaque message instead of failing
-  // here with the explicit corruption error.
-  const research = s.research as Record<string, unknown> | undefined;
+  // Special-case the version mismatch so existing callers (migration
+  // framework + serialize-game test) keep getting the original
+  // 'snapshot version N not supported' message they grep for.
+  // migrateSnapshot rejects versions older than current with its own
+  // 'no migration from version N' message; an unknown future version
+  // (> SNAPSHOT_VERSION) falls through to here.
   if (
-    !research ||
-    !Array.isArray(research.purchased) ||
-    !research.purchased.every((id) => typeof id === 'string')
+    snap &&
+    typeof snap === 'object' &&
+    (snap as { version?: unknown }).version !== SNAPSHOT_VERSION
   ) {
-    throw new Error('serialize-game: snapshot.research.purchased must be string[]');
+    throw new Error(
+      `serialize-game: snapshot version ${String((snap as { version?: unknown }).version)} not supported (expected ${SNAPSHOT_VERSION})`,
+    );
   }
-  if (!s.rally || typeof s.rally !== 'object') {
-    throw new Error('serialize-game: snapshot.rally missing');
-  }
-  const zones = s.zones as Record<string, unknown> | undefined;
-  if (!zones || typeof zones.player !== 'object' || typeof zones.enemy !== 'object') {
-    throw new Error('serialize-game: snapshot.zones.{player,enemy} missing');
+  const result = SaveSnapshotSchema.safeParse(snap);
+  if (!result.success) {
+    // Prefix Zod issue paths with 'serialize-game:' so the message
+    // matches the CorruptSaveError boundary the App listens for.
+    const first = result.error.issues[0];
+    const path = first?.path?.join('.') ?? '(root)';
+    throw new Error(
+      `serialize-game: snapshot validation failed at ${path}: ${first?.message ?? 'unknown'}`,
+    );
   }
 }
