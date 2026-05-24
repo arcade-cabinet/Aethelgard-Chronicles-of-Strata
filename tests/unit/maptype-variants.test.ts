@@ -26,9 +26,14 @@ describe('mapType variants (M_MODES.9)', () => {
   it('continent keeps the balanced layout (default behavior)', () => {
     const board = generateBoard('maptype-continent', 18, true, 'continent');
     // Continent uses the balanced layout — mountain spine present.
-    let mountain = 0;
-    for (const tile of board.tiles.values()) if (tile.type === 'MOUNTAIN') mountain += 1;
-    expect(mountain).toBeGreaterThanOrEqual(3);
+    // M_FUN.MAP.PASS — count MOUNTAIN + MOUNTAIN_PASS (the
+    // isthmus pass converts mountain necks to passes; massif
+    // footprint is the sum).
+    let massif = 0;
+    for (const tile of board.tiles.values()) {
+      if (tile.type === 'MOUNTAIN' || tile.type === 'MOUNTAIN_PASS') massif += 1;
+    }
+    expect(massif).toBeGreaterThanOrEqual(3);
   });
 
   it('mapType is deterministic per seed', () => {

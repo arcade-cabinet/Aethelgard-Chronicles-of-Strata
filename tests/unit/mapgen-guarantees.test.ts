@@ -25,13 +25,16 @@ describe('M_MAPGEN guarantees', () => {
 
   it('M_MAPGEN.3 — mountain spine creates funneling (≥3 MOUNTAIN tiles in central band)', () => {
     const board = generateBoard('mapgen-test-2', 18);
-    let mountainCount = 0;
+    let massifCount = 0;
     for (const tile of board.tiles.values()) {
       const d = (Math.abs(tile.q) + Math.abs(tile.r) + Math.abs(tile.q + tile.r)) / 2;
       if (d > 6) continue; // central band
-      if (tile.type === 'MOUNTAIN') mountainCount += 1;
+      // MOUNTAIN + MOUNTAIN_PASS together = the funnelling massif.
+      // M_FUN.MAP.PASS converts isthmus necks to MOUNTAIN_PASS, so
+      // a pure MOUNTAIN count understates the choke-point footprint.
+      if (tile.type === 'MOUNTAIN' || tile.type === 'MOUNTAIN_PASS') massifCount += 1;
     }
-    expect(mountainCount).toBeGreaterThanOrEqual(3);
+    expect(massifCount).toBeGreaterThanOrEqual(3);
   });
 
   it('M_MAPGEN.5 — guaranteed inland LAKE cluster (≥4 LAKE tiles)', () => {

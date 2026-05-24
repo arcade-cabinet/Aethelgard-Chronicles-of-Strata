@@ -2,7 +2,7 @@ import { MAP_RADIUS } from '@/config/world';
 import { biomeFlagsFor } from '@/rules/biome-flags';
 import { assignBiome, type Biome } from './biome';
 import { type Crossing, placeCrossings } from './crossings';
-import { getHexKey, hexDistance } from './hex';
+import { getHexKey, hexDistance, hexNeighbors } from './hex';
 import { createNoise2D } from './noise';
 import { createMapPrng, type Rng } from './rng';
 
@@ -293,6 +293,40 @@ function paintMountainMassif(
       // just removes the foot-gun of standalone-callable footprint
       // leaving stale walkable=true on level-5 MOUNTAIN.
       tile.walkable = false;
+    }
+  }
+
+  // M_FUN.MAP.PASS — isthmus detection. After the massif is
+  // stamped, find every MOUNTAIN tile whose mountain-neighbour count
+  // is at most ISTHMUS_THRESHOLD; convert to MOUNTAIN_PASS. Necks +
+  // isolated peaks fit this filter: an interior mountain has 6
+  // mountain neighbours, a hard-coast edge ~4-5, an isthmus 2-3, an
+  // isolated peak 0-1.
+  //
+  // Result: the massif gains discrete passes where units can move
+  // through at reduced speed (terrain-cost MOUNTAIN_PASS=1.7×) and
+  // Wall/Watchtower can fortify the choke (biome-flags buildable=true).
+  // Doesn't carve a hole in the massif's core (interior mountains
+  // have 6 neighbours) — only the natural narrow points.
+  const ISTHMUS_THRESHOLD = 3;
+  // Snapshot the keys to avoid iteration mutation; pass-tile creation
+  // could otherwise feed back into the same loop's neighbour count.
+  const mountainKeys: string[] = [];
+  for (const tile of tiles.values()) {
+    if (tile.type === 'MOUNTAIN') mountainKeys.push(getHexKey(tile.q, tile.r));
+  }
+  for (const key of mountainKeys) {
+    const tile = tiles.get(key);
+    if (!tile) continue;
+    let mountainNeighbours = 0;
+    for (const nKey of hexNeighbors(tile.q, tile.r)) {
+      const n = tiles.get(nKey);
+      if (n?.type === 'MOUNTAIN') mountainNeighbours += 1;
+    }
+    if (mountainNeighbours <= ISTHMUS_THRESHOLD) {
+      tile.type = 'MOUNTAIN_PASS';
+      tile.level = 3;
+      tile.walkable = true;
     }
   }
 }

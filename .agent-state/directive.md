@@ -2463,3 +2463,37 @@ Every milestone PR in v0.4+ must ship at LEAST one item from
 the M_FUN.* sections above (not just polish-delta). The game
 accretes texture by adding genuinely new toys, not by fine-
 tuning the existing ones (user mandate).
+
+---
+
+### M_FUN.ARCH — architectural patches that BLOCK further M_FUN work
+
+User mandate (2026-05-24): two structural shifts the M_FUN cycle
+work needs as PREREQUISITES — without them the work doesn't scale.
+
+- [ ] [WAIT-REVIEW] M_FUN.ARCH.CONFIG — Config-driven biome /
+  mapgen rules. Today every per-mode value (mountainIntensity,
+  channels, hydrology, ISTHMUS_THRESHOLD, MOUNTAIN_NOISE_FREQ,
+  etc) is a constant in src/core/board.ts. User: "you're falling
+  back to hardcoded if/then logic versus setting up different
+  rules for biomes spread and depth and accretion in config".
+  Required pattern: src/config/mapgen.json (Zod-validated) with
+  one row per mapType + per biome type; generator iterates the
+  config rows. Adding a new mapType or biome rule = 1 config row,
+  0 code. THIS BLOCKS further M_FUN.MAP work — refactor in same
+  arc as the next feature.
+
+- [ ] [WAIT-REVIEW] M_FUN.ARCH.HARNESS — Visual component tests
+  with screenshot capture in vitest browser, per-feature. User:
+  "you MUST [stop] heavily relying on unit tests versus building
+  visual component tests for each feature with screenshot capture
+  in vitest browser so that YOU can review isolated features".
+  Pattern: tests/harness/<feature>.browser.test.tsx mounts the
+  feature in isolation, screenshots via vi browser, locks baseline.
+  Build for biomes first (each biome rendered in isolation, locked),
+  then HUD pills, modals, particle bursts. EVERY M_FUN.* milestone
+  PR must add at least one harness test for the feature it ships.
+
+These two items take priority over the next M_FUN.MAP impl
+(SWAMP biome generator, isthmus detection re-eval, etc) because
+THEY are the scaling foundation those impls would be built on.

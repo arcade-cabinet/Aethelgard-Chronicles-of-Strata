@@ -44,10 +44,17 @@ describe('M_TURNS.2 — turn cap victory', () => {
       maxTurns: 2,
     });
     if (!game.turn) throw new Error('turn missing');
+    // M_FUN.MAP — seedZonesFromAttractors gives both factions a
+    // RADIUS=2 starting hex, so player.controlled.size and
+    // enemy.controlled.size both begin at ~7. Tilt the balance by
+    // removing player's seed entirely + adding extra enemy tiles
+    // so the turn-cap victor check fires the LOSS branch
+    // deterministically regardless of seed asymmetry from the new
+    // mountain-massif pass.
+    game.zones.player.controlled.clear();
     game.zones.player.controlled.add('0,0');
-    game.zones.enemy.controlled.add('5,0');
-    game.zones.enemy.controlled.add('6,0');
-    game.zones.enemy.controlled.add('7,0');
+    game.zones.enemy.controlled.clear();
+    for (let q = 3; q <= 8; q++) game.zones.enemy.controlled.add(`${q},0`);
     game.turn.secondsRemaining = 0.01;
     runEconomyTick(game, 1);
     game.turn.secondsRemaining = 0.01;
