@@ -181,6 +181,10 @@ function runGenTimePass(
   if (cfg.channels) paintChannelCuts(tiles, radius, rng);
   paintMountainMassif(tiles, radius, rng, cfg.mountainIntensity);
   hydrology(tiles, radius, rng);
+  // M_FUN.MAP.SWAMP — paint after hydrology so the lake-adjacency
+  // check finds the freshly-placed LAKE. Skips dry-land (no lake to
+  // adjacent to → no swamp candidates).
+  paintSwampPatches(tiles, radius, rng);
   // Recompute `walkable` after the guided-paint pass — every tile
   // now reflects its FINAL biome + level.
   for (const tile of tiles.values()) {
@@ -351,6 +355,63 @@ function paintDesertBlanket(tiles: Map<string, Tile>, radius: number, _rng: Rng)
  * inside the beach ring but NOT on the mountain spine. Picks a seeded
  * candidate center, stamps a 4-tile rosette.
  */
+/**
+ * M_FUN.MAP.SWAMP — paint SWAMP patches in low-elevation moist
+ * pockets. Two-axis policy: must be currently GRASS or FOREST AND
+ * adjacent to LAKE (or, on continents, near the centre at high
+ * moisture). Walkable but applies disease (M_FUN.ATTR.DISEASE) so
+ * armies need a Healer to push through (M_FUN.UNIT.HEAL).
+ *
+ * Per-mode intensity will land in mapgen.json#mapTypes once the
+ * generator strategies milestone (M_FUN.MAP.PER_MODE) splits the
+ * generator into per-mode composers. For now: ONE small patch
+ * adjacent to the inland lake, deterministic per seed.
+ */
+function paintSwampPatches(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
+  // Find LAKE-adjacent walkable tiles.
+  const NEIGHBORS = [
+    [1, 0],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [0, -1],
+    [1, -1],
+  ] as const;
+  const candidates: Array<{ q: number; r: number }> = [];
+  for (const tile of tiles.values()) {
+    if (tile.type !== 'GRASS' && tile.type !== 'FOREST') continue;
+    if (hexDistFromCenter(tile.q, tile.r) > radius - 3) continue;
+    // Adjacent to LAKE?
+    for (const [dq, dr] of NEIGHBORS) {
+      const n = tiles.get(getHexKey(tile.q + dq, tile.r + dr));
+      if (n?.type === 'LAKE') {
+        candidates.push({ q: tile.q, r: tile.r });
+        break;
+      }
+    }
+  }
+  if (candidates.length === 0) return;
+  const pick = candidates[Math.floor(rng() * candidates.length)];
+  if (!pick) return;
+  // Stamp center + 1-2 adjacent walkable tiles as SWAMP.
+  const center = tiles.get(getHexKey(pick.q, pick.r));
+  if (!center) return;
+  center.type = 'SWAMP';
+  center.level = 1;
+  const shuffled = NEIGHBORS.map((n) => ({ n, k: rng() })).sort((a, b) => a.k - b.k);
+  let stamped = 0;
+  for (const { n } of shuffled) {
+    if (stamped >= 2) break;
+    const [dq, dr] = n;
+    const t = tiles.get(getHexKey(pick.q + dq, pick.r + dr));
+    if (t && (t.type === 'GRASS' || t.type === 'FOREST')) {
+      t.type = 'SWAMP';
+      t.level = 1;
+      stamped++;
+    }
+  }
+}
+
 function paintInlandLake(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
   // Find a candidate center: walkable, GRASS/FOREST, distance from edge ≥ 5.
   const candidates: Array<{ q: number; r: number }> = [];

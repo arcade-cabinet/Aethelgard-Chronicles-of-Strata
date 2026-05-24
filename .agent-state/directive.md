@@ -206,13 +206,11 @@ mechanic work that follows is built on this.
 
 ### v0.4.2 — Mountain passes (PRD §7.2)
 
-- [ ] [WAIT-DEPS] M_FUN.MAP.PASS — Refactor existing isthmus
-  detection (already in `src/core/board.ts` after PR #10) to read
-  config-driven threshold + neighbour rule. Blocked on
-  M_FUN.ARCH.CONFIG.
-- [ ] [WAIT-DEPS] M_FUN.MAP.ELEV — Fatigue attribute on
-  MOUNTAIN_PASS traversal. Combatant.fatigue: -50% dmg, decays 5
-  sec out of combat.
+- [x] M_FUN.MAP.PASS — DONE 2026-05-24 commit 477f8ac (isthmus
+  detection reads config-driven threshold from MOUNTAIN_TUNING).
+- [x] M_FUN.MAP.ELEV — DONE 2026-05-24 commit 2431502.
+  Combatant.fatigue field + biome-rule attribute application on
+  arrival + decay loop. 3 unit tests pin behaviour.
 - [ ] [WAIT-DEPS] M_FUN.MAP.FORTIFY — Wall/Watchtower built
   on MOUNTAIN_PASS reduces fatigue for owning faction's units —
   realises the "fortifiable choke" contract.
