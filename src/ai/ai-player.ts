@@ -1,5 +1,5 @@
 import { GameEntity, Goal, GoalEvaluator, Think } from 'yuka';
-import { hexNeighbors, parseHexKey } from '@/core/hex';
+import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import {
   Building,
   type BuildingType,
@@ -128,6 +128,16 @@ function ownedBuildingCount(game: GameState, faction: Faction, type: BuildingTyp
   return n;
 }
 
+/** Total complete buildings the faction owns. M_FUN.QA.AIVAI.TUNE saturation curve input. */
+function totalOwnedBuildings(game: GameState, faction: Faction): number {
+  let n = 0;
+  for (const e of game.world.query(Building, FactionTrait)) {
+    if (e.get(FactionTrait)?.faction !== faction) continue;
+    if (e.get(Building)?.isComplete) n += 1;
+  }
+  return n;
+}
+
 /** This faction's peon count (used vs. peonCap). */
 function ownedPeonCount(game: GameState, faction: Faction): number {
   let n = 0;
@@ -178,20 +188,44 @@ function discoveredEnemyTile(game: GameState, faction: Faction): string | null {
   return null;
 }
 
-/** A free walkable tile adjacent to the faction's base for placing a building. */
+/**
+ * A free walkable tile near the faction's base. Tries radius-1
+ * neighbours first (the historical behaviour); if every immediate
+ * neighbour is blocked (water/mountain/build site/opposing base),
+ * expands to radius 2 by sweeping each radius-1 neighbour's
+ * neighbours. Stops at radius 2 — going further risks the AI
+ * stamping a Farm into mid-map territory which silently moves
+ * encroachment goal posts. Reviewer-fix M_FUN.QA.AIVAI.TUNE.
+ */
 function freeBuildTile(game: GameState, faction: Faction): string | null {
-  // M_REGISTRY.14 — baseKeyFor() is the single faction → baseKey source.
   const baseKey = baseKeyFor(game, faction);
   const { q: bq, r: br } = parseHexKey(baseKey);
-  // Both faction-base tiles are off-limits (CodeRabbit HIGH-4 symmetric fix):
-  // the AI must not stamp a Farm onto the player's TownHall if its base
-  // happens to be adjacent.
+  const blocked = (key: string) =>
+    key === game.townHallKey || key === game.enemyBaseKey || game.buildSites.has(key);
+  // Radius 1 — preserve original neighbour-ordered iteration.
   for (const nKey of hexNeighbors(bq, br)) {
-    if (nKey === game.townHallKey || nKey === game.enemyBaseKey) continue;
+    if (blocked(nKey)) continue;
     const tile = game.board.tiles.get(nKey);
-    if (tile?.walkable && !game.buildSites.has(nKey)) return nKey;
+    if (tile?.walkable) return nKey;
   }
-  return null;
+  // Radius 2 fallback — neighbours-of-neighbours. Visit in stable
+  // order (sorted on the eventual hex key) so the choice is
+  // deterministic across seeds.
+  const r2: string[] = [];
+  for (const nKey of hexNeighbors(bq, br)) {
+    const { q, r } = parseHexKey(nKey);
+    for (const nnKey of hexNeighbors(q, r)) {
+      if (nnKey === baseKey) continue;
+      if (blocked(nnKey)) continue;
+      const tile = game.board.tiles.get(nnKey);
+      if (!tile?.walkable) continue;
+      // Make sure it's actually distance 2 (skip radius-1 hits).
+      if (hexDistance(tile.q, tile.r, bq, br) !== 2) continue;
+      r2.push(nnKey);
+    }
+  }
+  r2.sort();
+  return r2[0] ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -224,7 +258,14 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     const defensiveMul = defensiveTypes.includes(choice as string)
       ? profile.defensiveBuildWeight
       : 1.0;
-    return 0.7 * bias * profile.buildWeight * defensiveMul * this.personalityMul;
+    // M_FUN.QA.AIVAI.TUNE — diminishing returns past 6 buildings.
+    // Without this a Builder personality (build weight 1.5) keeps
+    // out-scoring military forever, even after the base is fully
+    // built up — matches stall at "two factions of farms" with
+    // zero combat. Each building past the 6th halves the bias.
+    const builtCount = owner.game ? totalOwnedBuildings(owner.game, owner.faction) : 0;
+    const saturationMul = builtCount <= 6 ? 1.0 : 1.0 / (1 + (builtCount - 6) * 0.5);
+    return 0.7 * bias * profile.buildWeight * defensiveMul * this.personalityMul * saturationMul;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -249,6 +290,12 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     // first; placement succeeds when any is buildable on the chosen tile.
     const priority: Array<Exclude<BuildingType, 'TownHall'>> = [];
     if (atCap) priority.push('House'); // immediate cap-pressure relief
+    // M_FUN.QA.AIVAI.TUNE — House first regardless of cap. Without
+    // it the AI never establishes a supply pipeline; combined with
+    // the M_FUN.QA.AIVAI.TUNE BASELINE_SUPPLY_CAP=5 this means a
+    // first House takes a faction from 5→9 supply cap, unblocking
+    // a third Footman / second Peon.
+    if (!atCap && ownedBuildingCount(game, faction, 'House') < 2) priority.push('House');
     priority.push('Farm'); // supply ceiling
     const enemySighted = discoveredEnemyTile(game, faction) !== null;
     if (ownedBuildingCount(game, faction, 'Barracks') === 0 && enemySighted)
@@ -258,12 +305,11 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     // observed-battlefield gap).
     if (ownedBuildingCount(game, faction, 'Watchtower') === 0 && enemySighted)
       priority.push('Watchtower');
-    // Wall once we have a military presence (closes a gap in the perimeter).
-    if (
-      ownedBuildingCount(game, faction, 'Wall') < 2 &&
-      ownedBuildingCount(game, faction, 'Barracks') > 0
-    )
-      priority.push('Wall');
+    // M_FUN.QA.AIVAI.TUNE — Wall is the resource-cheap fallback
+    // (0 wood, 60 stone). Available without a Barracks so a wood-
+    // starved AI can still place SOMETHING and not loop forever
+    // on Build → null → Train.
+    if (ownedBuildingCount(game, faction, 'Wall') < 2) priority.push('Wall');
 
     const tile = freeBuildTile(game, faction);
     if (!tile) return null;

@@ -157,6 +157,20 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
           // clear any stale path — an idle peon must not keep walking
           path.steps = [];
           break;
+        case 'build': {
+          // M_FUN.QA.AIVAI.TUNE — peon is constructing a building.
+          // Leave state = 'BUILDING' + targetKey untouched so the
+          // build system advances progress on this tick. Clear any
+          // stale path (the peon stands at the site / nearby — no
+          // need to keep walking; buildSystem doesn't require co-
+          // location). buildSystem flips the peon back to IDLE when
+          // the building completes; if the build site is destroyed
+          // mid-construction, that system also resets state.
+          job.state = 'BUILDING';
+          job.targetKey = action.targetKey;
+          path.steps = [];
+          break;
+        }
       }
     });
 }

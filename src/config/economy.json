@@ -20,7 +20,7 @@
     "Wonder": 5,
     "Library": 0
   },
-  "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH"],
+  "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH", "MOUNTAIN_PASS"],
   "supplyCosts": {
     "Peon": 1,
     "Footman": 2,

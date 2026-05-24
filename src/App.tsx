@@ -3,7 +3,7 @@ import type { Camera } from 'three';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
-import { Building, FactionTrait, Unit } from '@/ecs/components';
+import { AssignedJob, Building, FactionTrait, Unit } from '@/ecs/components';
 import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
@@ -180,9 +180,14 @@ function GameSession({
       // src/ which Playwright doesn't bundle.
       (
         window as unknown as DevWindow & {
-          __game_traits?: { Building: unknown; FactionTrait: unknown; Unit: unknown };
+          __game_traits?: {
+            Building: unknown;
+            FactionTrait: unknown;
+            Unit: unknown;
+            AssignedJob: unknown;
+          };
         }
-      ).__game_traits = { Building, FactionTrait, Unit };
+      ).__game_traits = { Building, FactionTrait, Unit, AssignedJob };
     }
     return g;
   }, [config, initialGame]);

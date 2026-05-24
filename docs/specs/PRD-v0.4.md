@@ -130,6 +130,63 @@ This runs in CI tier-2 (on-demand) or as a nightly job to keep
 tier-1 fast. It does NOT block per-commit CI. It DOES block
 v0.4 release.
 
+### 5.2 Balance-run failure taxonomy (M_FUN.QA.AIVAI.TUNE)
+
+The first comprehensive matrix run (all 10 matchups, 10 sim-minute
+budget) surfaced FIVE distinct failure patterns + one instability
+edge case. Each is a release-blocker until passing.
+
+**Pattern A — FACTION ASYMMETRY (8 of 10 matchups).** Player faction
+systematically out-develops enemy faction REGARDLESS of personality;
+mad-king-vs-builder inverts the asymmetry (enemy=8 buildings,
+player=1). This rules out personality as the root cause and points
+at faction-specific bias — resource cluster placement biased toward
+one side, or peon SEEKING gradient creating one-sided harvest. Fix
+must be FACTION-SYMMETRIC at game-gen and at runtime.
+
+**Pattern B — ZERO COMBAT (9 of 10 matchups, 10 sim-minute runs).**
+totalKills = 0 in 9 of 10 runs. MilitaryEvaluator fires only when
+`discoveredEnemyTile()` is non-null. Two faction starts ~5-10 hexes
+apart never expand observation enough to discover each other under
+the default vision cone. Fix: either grow zone observation faster
+(starting-Footman patrol radius), or have MilitaryEvaluator fall
+back to attractor-target the opposing baseKey at threshold time
+(once military > N or wall-clock > T).
+
+**Pattern C — INSTABILITY (diplomat vs raider).** Win in 1 turn,
+4 chunks (~40s wall-clock), 2 kills. A lone Footman lucky-rushed
+the diplomat TownHall before the diplomat had any military. Healthy
+matches don't end in 40s. The harness should tighten its lower
+bound from `elapsedTurns >= 1` to `>= 2` (i.e. >= 2 sim-min) so
+single-Footman rushes fail the gate as the imbalance they are.
+Fix the GAME so the early game isn't lethal to a peaceful
+personality (Town Hall has 300 HP — should survive a single
+Footman attack; investigate whether Footman damage is mis-tuned).
+
+**Pattern D — HOARDER OVERBUILDS (hoarder/hoarder, mad-king/builder).**
+Saturation cap from M_FUN.QA.AIVAI.TUNE round-1 didn't bite (Hoarder
+hit 9 buildings, mad-king-side enemy hit 8). Saturation curve needs
+to begin earlier or be sharper. Or: hard cap of 8 complete buildings
+per faction with the AI flipping to "all military" after.
+
+**Pattern E — MAD-KING IS PASSIVE.** mad-king/mad-king produces the
+LOWEST building counts (1, 0) and 0 kills. "Mad king" personality
+suggests erratic-aggressive but the weights (build 0.4, military
+high) somehow translate to inert. Fix: review personality weight
+shape vs intent for ALL 5 personalities, not just Mad King.
+
+**Pattern F — ENEMY BUILD COMPLETION (builder/raider player=6 enemy=0).**
+Even with resource imbalance, ZERO enemy buildings complete in 10
+sim-minutes for some matchups. The Pattern A asymmetry compounds:
+enemy faction may build SITES but they never complete because peons
+don't reach BUILDING state OR build progress doesn't accrue.
+
+Order to fix: A (faction symmetry) → F (build completion) → B
+(combat discovery) → C (early-game safety) → D (saturation) →
+E (personality intent audit). Re-run the matrix after each fix;
+delta on the JSON ledger is the evidence. Each fix earns its own
+sub-task in the directive.
+
 ## 6. Architecture prerequisites
 
 Two structural shifts MUST land before per-mechanic work, or the

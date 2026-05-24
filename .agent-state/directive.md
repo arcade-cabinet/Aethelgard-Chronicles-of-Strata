@@ -347,24 +347,56 @@ mechanic work that follows is built on this.
   Confirmed working: first run surfaced a REAL balance bug
   (the-builder vs the-builder = 0 kills, enemy 0 buildings,
   10 sim-minutes unresolved). Next step is M_FUN.QA.AIVAI.TUNE.
-- [ ] M_FUN.QA.AIVAI.TUNE — v0.4 RELEASE BLOCKER.
-  Tune AI personalities + per-mode AiProfile weights so every
-  matchup in the harness passes. Progress so far (3 root causes
-  fixed, more remain):
-  1. TrainEvaluator now inherits military weight (was fixed 0.75)
-     + must-train floor when ownMilitary=0; closes Builder-vs-
-     Builder build-forever loop.
-  2. AI-vs-AI mode now spawns 2 peons + 1 Footman on the enemy
-     base (matching player kit); without this enemy AiPlayer
-     had no peons to assign to harvest or build.
-  3. recomputeMaxSupply baselined at BASELINE_SUPPLY_CAP=5 so a
-     House-less faction can field the starting kit; usedSupply
-     recomputed each tick from owned-unit count (direct
-     createCharacter no longer leaks supply accounting).
-  Remaining: enemy AI still doesn't complete any building in
-  10 sim-minutes despite having the resources. Likely a
-  BuildGoal completion gap (build site placed but peon never
-  assigned to construct it for enemy faction). Next session.
+- [x] M_FUN.QA.AIVAI.TUNE.ROUND1 — first-wave foundational fixes
+  (TrainEvaluator military weight + must-train floor; aiVsAi
+  enemy starting kit; recomputeMaxSupply baseline; usedSupply
+  recompute from owned units; assignAllPeonsToHarvest faction
+  anchor; nextPeonAction base-anchored scoring with decaying
+  bias; freeBuildTile radius-2 fallback; House+Wall added to
+  build priority list; MOUNTAIN_PASS added to buildableBiomes;
+  diminishing-returns saturation past 6 buildings). Matrix-wide
+  result captured in tests/e2e/__data__/ai-balance-runs.json.
+
+The first comprehensive matrix run produced FIVE distinct failure
+patterns + one instability case (PRD §5.2). Each becomes its own
+sub-task. Re-run the matrix after each fix; ledger delta is the
+evidence. The matrix passing GREEN is the v0.4 release gate.
+
+- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-A — Faction asymmetry. 8 of
+  10 matchups show one faction's buildings >> the other,
+  independent of personality (mad-king-vs-builder inverts it).
+  Audit board gen for resource cluster placement bias; ensure
+  attractor-spawned nodes are symmetric around the midline.
+  Audit peon zone-of-control growth for systems that read
+  factions in a fixed order.
+- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-B — Zero combat in 9/10
+  matchups. MilitaryEvaluator only fires when
+  discoveredEnemyTile is non-null. Add rage-quit: after T sim-
+  seconds with no contact, MilitaryEvaluator targets the
+  opposing baseKey directly. Alternatively grow starting Footman
+  vision/patrol radius so early observation crosses the midline.
+- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-C — Diplomat vs raider ended
+  in 40s (1 sim-min, 2 kills). A lone Footman lethally rushed
+  the TownHall. Investigate Footman damage vs TownHall HP
+  (300 HP, 10 dmg = 30 swings expected — if it's killing in 4,
+  damage scaling is wrong). Also tighten the harness lower
+  bound to elapsedTurns >= 2 so rushes fail the gate.
+- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-D — Hoarder overbuilds
+  (9 buildings, 0 kills). Saturation cap from ROUND1 didn't
+  bite hard enough. Either hard-cap at 8 with flip to all-
+  military OR sharpen the saturation curve so the 7th building
+  costs > 1.0× desirability vs military.
+- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-E — Mad-king is the LOWEST-
+  activity matchup (1+0 buildings, 0 kills) despite the name.
+  Audit personality weight shapes vs intent for ALL 5
+  personalities; produce a head-to-head comparison table in
+  the spec doc as the calibration evidence.
+- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-F — Pattern A residual: some
+  matchups have enemy=0 buildings even after structural fixes.
+  Confirm via debug spec whether enemy.buildSites is non-empty
+  with progress=0 (BuildGoal placed but build never advances)
+  OR buildSites is empty (BuildGoal never even ran for enemy).
+  Two very different root causes.
 
 ### v0.4.8 fold-ins from reviewer trio (must land before v0.4.9)
 

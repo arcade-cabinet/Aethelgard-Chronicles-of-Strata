@@ -2,7 +2,7 @@ import type { Entity, World } from 'koota';
 import { AiPlayer } from '@/ai/ai-player';
 import { BALANCE_TOLERANCE, reachableBuildableCount } from '@/core/balance-audit';
 import { type BoardData, generateBoard } from '@/core/board';
-import { getHexKey, hexDistance, hexNeighbors } from '@/core/hex';
+import { getHexKey, hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
 import { chokePointMultiplier } from '@/rules/choke-points';
 import { makeMoveCostFn } from '@/core/terrain-cost';
@@ -855,27 +855,47 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
             ),
           },
     assignAllPeonsToHarvest() {
-      // find the first wood node (fallback to any node)
+      // M_FUN.QA.AIVAI.TUNE — faction-aware harvest with a base-
+      // proximity bias. Previously every peon (player + enemy) was
+      // assigned to the nearest GLOBAL node — enemy peons trekked
+      // across the map to player wood and stayed SEEKING forever.
+      // Score = distance from faction's base (primary) +
+      // 0.1 * distance from peon (tie-break) so the chosen node
+      // is anchored to the faction, not the peon's starting tile.
       const woodNodes = resourceNodes.filter((n) => n.resourceType === 'wood');
       if (woodNodes.length === 0 && resourceNodes.length === 0) return;
+      const candidates = woodNodes.length > 0 ? woodNodes : resourceNodes;
+      const anchors = {
+        player: parseHexKey(townHallKey),
+        enemy: parseHexKey(enemyBaseKey),
+      };
 
-      // query all peons with AssignedJob
-      for (const entity of world.query(Unit, AssignedJob, HexPosition)) {
+      for (const entity of world.query(Unit, AssignedJob, HexPosition, FactionTrait)) {
         const unitComp = entity.get(Unit);
         if (unitComp?.unitType !== 'Peon') continue;
         const job = entity.get(AssignedJob);
         if (!job || job.state !== 'IDLE') continue;
         const hexPos = entity.get(HexPosition);
         if (!hexPos) continue;
+        const faction = entity.get(FactionTrait)?.faction;
+        if (!faction) continue;
+        const anchor = anchors[faction];
 
-        // find the nearest resource node by hexDistance
+        // Matches nearestResource() in src/rules/peon-rules.ts —
+        // peon-distance + decaying base-bias past BIAS_RADIUS.
+        // Centralising this in one shared helper would be cleaner;
+        // for now both call sites use the same constants.
+        const BASE_BIAS = 0.5;
+        const BIAS_RADIUS = 6;
         let nearest: ResourceNodePlan | null = null;
-        let nearestDist = Number.POSITIVE_INFINITY;
-        const candidates = woodNodes.length > 0 ? woodNodes : resourceNodes;
+        let nearestScore = Number.POSITIVE_INFINITY;
         for (const node of candidates) {
-          const d = hexDistance(hexPos.q, hexPos.r, node.q, node.r);
-          if (d < nearestDist) {
-            nearestDist = d;
+          const baseDist = hexDistance(anchor.q, anchor.r, node.q, node.r);
+          const peonDist = hexDistance(hexPos.q, hexPos.r, node.q, node.r);
+          const baseBias = BASE_BIAS * Math.max(0, baseDist - BIAS_RADIUS);
+          const score = peonDist + baseBias;
+          if (score < nearestScore) {
+            nearestScore = score;
             nearest = node;
           }
         }
