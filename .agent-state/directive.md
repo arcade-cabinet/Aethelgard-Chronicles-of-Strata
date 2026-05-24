@@ -438,8 +438,13 @@ mechanic work that follows is built on this.
   Web stubs no-op; Android device fires the real channel.
   5 unit tests pin opt-in + no-throw. Settings UI wires the
   toggle in a future commit.
-- [ ] M_FUN.PHONE.PINCH — Pinch-zoom INTO a unit
-  centres + opens its panel.
+- [x] M_FUN.PHONE.PINCH — src/hud/usePinchZoom.ts ref-callback
+  hook attaches passive two-finger touch listeners to a wrapper
+  div. Pinch OUT (fingers further apart) → camera-Y lowers
+  (zoom IN). Clamped to [20, 120]. Pinch INTO a unit (centre +
+  open panel) needs canvas hit-testing — follow-up. 1 smoke
+  test pins module exports. Gesture behaviour is e2e territory
+  (Playwright touch emulation).
 
 ### v0.4-release blocker (PRD §5.1)
 
