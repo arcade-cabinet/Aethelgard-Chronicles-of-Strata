@@ -16,11 +16,10 @@ on:
   release:
     types: [published]
 
+# Workflow-level grants are minimal; each job overrides with the
+# subset it actually needs (zizmor / CodeRabbit least-privilege fix).
 permissions:
-  contents: write       # release-please updates CHANGELOG + tags; build-and-sign uploads assets
-  pull-requests: write  # release-please opens the release PR
-  id-token: write       # Sigstore keyless signing
-  attestations: write   # actions/attest-build-provenance
+  contents: read
 
 concurrency:
   group: release
@@ -31,6 +30,9 @@ jobs:
     name: release-please
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write       # release-please updates CHANGELOG + cuts tags
+      pull-requests: write  # release-please opens / updates the release PR
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
@@ -49,6 +51,10 @@ jobs:
     # tag fires the release event which fans out to this job.
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write       # upload release assets
+      id-token: write       # Sigstore keyless signing
+      attestations: write   # actions/attest-build-provenance
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
