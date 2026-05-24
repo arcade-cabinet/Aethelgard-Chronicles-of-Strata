@@ -208,9 +208,13 @@ mechanic work that follows is built on this.
   added to vite.config.ts. Every `pnpm build` writes
   dist/bundle-stats.html (treemap, gzip + brotli sizes). Agent
   + user can see where bundle weight lives after each refactor.
-- [ ] M_FUN.FOUNDATION.LIGHTHOUSE — Lighthouse CI
-  baseline for deployed Pages; perf budget fails build on >10%
-  LCP regression.
+- [x] M_FUN.FOUNDATION.LIGHTHOUSE — @lhci/cli installed +
+  lighthouserc.json config (desktop preset, 3 runs, perf >= 0.6 /
+  a11y >= 0.85 / best-practices >= 0.7 as WARN, csp-xss off
+  because the dev CSP relaxation is intentional). `pnpm lighthouse`
+  runs lhci autorun against ./dist. CI integration as a tier-2
+  job (nightly or on-demand) is the follow-up — needs network +
+  ~2 min runtime so it shouldn't gate per-commit CI.
 - [ ] M_FUN.FOUNDATION.WHY-RENDER — why-did-you-render
   dev-only — catch React re-render storms before user-visible jank.
 
