@@ -58,6 +58,7 @@ import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import { FACTIONS, type Faction } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
+import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
 import { behaviorsFor, ensureAttractorResources, presetFor, recomputeMaxSupply } from '@/rules';
@@ -407,6 +408,20 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   const board = preset.guidedMapGen
     ? findBalancedBoard(seedPhrase, mapSize, preset.mapType)
     : generateBoard(seedPhrase, mapSize, preset.guidedMapGen);
+  // M_EXPANSION.F.97 — discoverable hidden bonuses on ~5% of
+  // walkable tiles. Uses the map PRNG (createMapPrng) so the same
+  // seed places the same bonuses. Wood-weighted distribution (60%
+  // wood, 25% stone, 15% gold) — wood is most useful early; the
+  // others spice the late-game exploration. Amount tier: 25/40/60.
+  const bonusRng = createMapPrng(`${seedPhrase}:f97-discoverable`);
+  for (const tile of board.tiles.values()) {
+    if (!tile.walkable) continue;
+    if (bonusRng() >= 0.05) continue;
+    const roll = bonusRng();
+    const type = roll < 0.6 ? 'wood' : roll < 0.85 ? 'stone' : 'gold';
+    const amount = type === 'wood' ? 25 : type === 'stone' ? 40 : 60;
+    tile.hiddenBonus = { type, amount };
+  }
   // A fresh ECS world — death timers and the portal spawn count are now ECS
   // components, so a new session starts clean with no module state to reset.
   const world = createEcsWorld();
@@ -798,6 +813,11 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // below gate on turnGateOpen.
   // movement + economy — apply rain speed penalty from weather state
   pathFollowSystem(game.world, delta, WEATHER_SPEED_MULTIPLIER[game.weather.state]);
+  // M_EXPANSION.F.97 — discoverable hidden bonus consumer. Runs
+  // every tick (not turn-gated) so a player issuing a move sees
+  // the bonus credit as the unit arrives, not on the next enemy
+  // turn. Cheap one-pass query over player units.
+  hiddenBonusSystem(game.world, game.board, game.economy.player);
   if (turnGateOpen) {
     // encroachment runs BEFORE peon routing so peons see this tick's pulse set
     // (their decision rule routes them away from threatened tiles).

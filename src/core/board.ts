@@ -20,6 +20,16 @@ export interface Tile extends Biome {
    * `docs/specs/99-passability-and-slopes.md`.
    */
   isCrossingLanding: boolean;
+  /**
+   * M_EXPANSION.F.97 — discoverable one-shot resource bonus. Set at
+   * board-gen for ~5% of walkable tiles (excluding faction-base safety
+   * rings). The first time a player unit ENTERS the tile, the bonus
+   * pays out + this field clears to null. Tuple is [ResourceType,
+   * amount]. The discoverable trigger lives in path-follow; the
+   * bonus picker is biased toward wood (most early-game useful) but
+   * occasionally rolls stone or gold.
+   */
+  hiddenBonus?: { type: 'wood' | 'stone' | 'gold'; amount: number } | null;
 }
 
 /** The full generated board. */

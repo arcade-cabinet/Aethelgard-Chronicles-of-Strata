@@ -1889,7 +1889,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [HIGH] M_EXPANSION.F.94 — Diplomacy: a treaty system (truce, alliance) only meaningful for 3+ factions (future)
 - [ ] [HIGH] M_EXPANSION.F.95 — 3rd faction (neutral hostile spawn camp) that periodically raids both player + enemy
 - [ ] [HIGH] M_EXPANSION.F.96 — Hero unit: one player-named character with higher stats and a permadeath rule
-- [ ] [HIGH] M_EXPANSION.F.97 — Discoverable map tiles: 5% of tiles hide a one-shot resource bonus when a peon first walks on
+- [x] [HIGH] M_EXPANSION.F.97 — Discoverable hidden bonuses — DONE. Tile interface gains optional `hiddenBonus: {type, amount} | null`. startGame seeds ~5% of walkable tiles with a wood/stone/gold bonus using the map PRNG (deterministic per seed). Distribution: 60% wood (25), 25% stone (40), 15% gold (60). New `hiddenBonusSystem(world, board, playerEconomy)` runs every tick (not turn-gated) after pathFollow; finds every player-faction Unit on a bonus tile, credits the economy, clears the slot. Returns the triggered list for a future FX consumer. 4 new tests: grant, enemy-skip, only-once, seed-determinism. 489/489 green. Follow-up (separate item): floating "+25 Wood!" CombatText-like FX on discovery using the returned trigger list.
 - [ ] [HIGH] M_EXPANSION.F.98 — Boat/water-crossing — ferries between islands; new building Dock
 - [ ] [HIGH] M_EXPANSION.F.99 — Trade caravans between cities (auto-route peons between two Granaries)
 - [x] [LOW]  M_EXPANSION.F.100 — Endgame slot: a 4th game-mode "Coexist" (no win condition, infinite play)
