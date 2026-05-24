@@ -191,10 +191,16 @@ mechanic work that follows is built on this.
   upload-artifact step (.github/workflows/ci.yml) already
   uploads test-results/ + playwright-report/ on failure — no
   workflow change needed.
-- [ ] M_FUN.FOUNDATION.FASTCHECK — fast-check
-  property tests for deterministic-replay invariants (same seed
-  → same final state) and map-gen invariants (every map has ≥1
-  walkable path between bases at every supported radius).
+- [x] M_FUN.FOUNDATION.FASTCHECK — fast-check property tests
+  in tests/unit/property-mapgen.test.ts. Three properties:
+  (1) same (seed, radius) → byte-equal board for any input
+  (25 random seeds + radii);
+  (2) every board has at least one walkable tile (would crash
+  startGame at pawn-spawn otherwise);
+  (3) every board has at least one BEACH AND one OCEAN tile
+  (M_MAPGEN.4 invariant — shallows pass mustn't consume all).
+  numRuns=25 per property — enough to surface a regression
+  without blowing test time.
 
 **Bundle + perf**
 
