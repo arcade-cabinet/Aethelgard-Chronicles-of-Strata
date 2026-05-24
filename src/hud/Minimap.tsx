@@ -169,7 +169,12 @@ export function Minimap({ game, compact = false }: { game: GameState; compact?: 
       aria-label="Minimap"
       style={{
         position: 'absolute',
-        bottom: compact ? 8 : 16,
+        // M_POLISH2.MOBILE.3 — portrait moves the minimap from
+        // bottom-right (where the BuildMenuButton FAB lives) to
+        // top-right below the MobileSpeedPausePill (top:8 spans
+        // ~44px tall, so minimap sits at top:60). Desktop keeps
+        // bottom-right.
+        ...(compact ? { top: 'calc(env(safe-area-inset-top, 0px) + 60px)' } : { bottom: 16 }),
         right: compact ? 8 : 16,
         width: displaySize,
         height: displaySize,
