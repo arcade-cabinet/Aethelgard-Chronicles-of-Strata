@@ -81,7 +81,12 @@ import {
   WEATHER_SPEED_MULTIPLIER,
   type Weather,
 } from './weather';
-import { createRandomEventsState, type RandomEventsState, tickRandomEvents } from './random-events';
+import {
+  createRandomEventsState,
+  type RandomEventsState,
+  tickLongReignEscalation,
+  tickRandomEvents,
+} from './random-events';
 import {
   BASE_UNIT_VISION_RADIUS,
   createZoneState,
@@ -835,6 +840,9 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // (both are wall-clock-driven scheduled events). Outcome is one-
   // shot world mutations + an aria-live announcement.
   tickRandomEvents(game, game.eventRng, delta);
+  // M_POLISH2.MODES.41a — long-reign mode also fires a deterministic
+  // escalation event every 5 minutes (on top of the random cadence).
+  tickLongReignEscalation(game, game.eventRng, game.clock.elapsed);
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 
   if (turnGateOpen) {

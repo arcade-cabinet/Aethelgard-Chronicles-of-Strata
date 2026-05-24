@@ -40,6 +40,48 @@ export function createRandomEventsState(): RandomEventsState {
 }
 
 /**
+ * M_POLISH2.MODES.41a — long-reign escalation timer.
+ *
+ * Schedules 3 guaranteed escalation events per 5-minute window in
+ * long-reign mode (on top of the normal random-event cadence).
+ * The timing is deterministic per match seed; events fire at the
+ * 5/10/15/20/... minute marks.
+ *
+ * Returns the kind that fired (or null when the elapsed game-time
+ * hasn't crossed the next mark yet).
+ */
+const LONG_REIGN_ESCALATION_INTERVAL = 300; // seconds = 5 minutes
+
+export function tickLongReignEscalation(
+  game: GameState,
+  rng: Rng,
+  elapsedSeconds: number,
+): RandomEventKind | null {
+  if (game.mode !== 'long-reign') return null;
+  if (game.outcome !== 'playing') return null;
+  // Has the current 5-min window crossed a mark we haven't fired yet?
+  const dueCount = Math.floor(elapsedSeconds / LONG_REIGN_ESCALATION_INTERVAL);
+  // Track the number of long-reign escalations on the same `fired`
+  // counter; the random-events path increments `fired` too — but
+  // for the gate we use the modulo-from-elapsed approach so the
+  // schedule is replayable across reload.
+  // Use a property of randomEvents state to track count fired by
+  // THIS path specifically.
+  type StateWithLongReign = RandomEventsState & { longReignFired?: number };
+  const state = game.randomEvents as StateWithLongReign;
+  const alreadyFired = state.longReignFired ?? 0;
+  if (alreadyFired >= dueCount) return null;
+  // Fire one this tick — rotate through the 3 kinds by mark count.
+  const order: RandomEventKind[] = ['raid-warning', 'weather-spike', 'refugee-arrival'];
+  const kind = order[alreadyFired % order.length] ?? 'raid-warning';
+  applyEvent(game, rng, kind);
+  state.fired += 1;
+  state.lastKind = kind;
+  state.longReignFired = alreadyFired + 1;
+  return kind;
+}
+
+/**
  * Tick the random-events scheduler. Drains `delta` from the cooldown;
  * when the cooldown hits 0, rolls a single event with EVENT_CHANCE
  * probability and applies its effect to `game`. Returns the kind
