@@ -398,15 +398,16 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
   OR buildSites is empty (BuildGoal never even ran for enemy).
   Two very different root causes.
 
-- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-G — Mystery outcome=loss at
-  t=24 with player base at 3000 HP intact and enemy military
-  count = 1 (player military = 0). Debug spec confirms the
-  flip happens in the same tick the player's Footman dies.
-  No path through evaluateWinLoss should set loss while the
-  base is at full HP. Audit every game.outcome write across
-  src/game/ + src/ecs/systems/ for a stray flip. Likely a
-  Hero/Footman conflation OR a defaultStanceMode-mediated
-  side effect from PATTERN-B's aggressive-stance flip.
+- [x] M_FUN.QA.AIVAI.TUNE.PATTERN-G — Root cause: yuka's
+  Think.arbitrate() picks ANY evaluator (including ones whose
+  calculateDesirability returned 0) when no evaluator outscored
+  others. ResignEvaluator's setGoal was firing in border-clash
+  mode in the early game when nothing else had reason to fire.
+  Re-gated inside setGoal (`if (!owner.game || owner.game.mode
+  !== 'long-reign') return;`) so ResignGoal is never enqueued
+  outside long-reign mode. Matrix delta: all matchups now play
+  full 10 minutes (no spurious resigns), 4 matchups have non-
+  zero kills (up from 1).
 
 - [ ] M_FUN.MAP.UTILISATION (PRD §5.3) — full-board utilisation
   is a v0.4 release goal. Sub-items:

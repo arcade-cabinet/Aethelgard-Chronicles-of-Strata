@@ -562,6 +562,15 @@ class ResignEvaluator extends GoalEvaluator<AiPlayer> {
   }
 
   setGoal(owner: AiPlayer): void {
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-G — yuka's Think.arbitrate() will
+    // pick ANY evaluator (including ones whose calculateDesirability
+    // returned 0) when no evaluator outscored the others. That meant
+    // ResignEvaluator's setGoal was firing in border-clash mode
+    // before any other evaluator had a real reason to fire (early
+    // game, nothing to build/train/move yet). Re-gate inside
+    // setGoal so we never enqueue ResignGoal in modes that don't
+    // support starvation-resign.
+    if (!owner.game || owner.game.mode !== 'long-reign') return;
     owner.brain.clearSubgoals();
     owner.brain.addSubgoal(new ResignGoal(owner));
   }
