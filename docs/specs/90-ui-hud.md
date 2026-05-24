@@ -1,5 +1,19 @@
 # UI and HUD
 
+> **M_ARCH_UNIFY cross-reference (added 2026-05-23).** Pre-dates the
+> unified Thing/Skin registry. The 4-layer model — Archetypes → Things
+> → Slots → Skins — is the authoritative architectural shape for every
+> visual/data fork in the codebase. See:
+>
+> - `docs/specs/103-particle-archetype.md` — keystone architectural pass
+> - `docs/specs/10-architecture.md` — pillar's full M_ARCH_UNIFY block
+> - `src/rules/building-profiles.ts` — Thing registry (M_REGISTRY.5)
+> - `src/rules/unit-profiles.ts` — Thing registry (M_REGISTRY.1)
+> - `src/rules/skins.ts` — Skin slot (M_REGISTRY.3/4/2)
+>
+> Per-section notes below mark where THIS pillar's text became
+> superseded or extended by the unified-registry doctrine.
+
 All HUD components are implemented using Radix UI primitives and framer-motion
 transitions. The source reference for all layout, styling, and element structure is
 `references/poc2.html`.
@@ -56,9 +70,18 @@ The primary panel has three sub-sections:
   seed phrase.
 
 **Inventory grid** (`.inventory`):
-- 4-column grid showing Gold, Wood, Stone, Supply.
-- Colors: Gold `#fbbf24`, Wood `#f97316`, Stone `#94a3b8`, Supply `#a855f7`.
-- Label text: 0.6rem uppercase, letter-spacing 0.5px.
+- 5-column grid showing Wood, Stone, Gold, Science, Supply
+  (M_AUDIT2.ARCH.38 — Science was added in M_FEATURE.3 / Library /
+  Discoveries; spec previously omitted it).
+- Colors come from `RESOURCE_DISPLAY` in `src/rules/display.ts`
+  (M_AUDIT2.ARCH.2 — single source for both HUD bar + world popups):
+  Wood `#f97316` (theme `wood`), Stone `#94a3b8` (`stone`), Gold
+  `#fbbf24` (`coin`), Science `#38bdf8` (`accent`), Supply `#a855f7`
+  (`supply`, non-resource — separate counter).
+- Numbers are rendered via `formatInt()` (M_AUDIT2.UX.10) so 12,845
+  reads correctly.
+- Label text: 0.78rem (M_AUDIT2.UX.42 mobile-readable floor — was
+  0.6rem and unreadable at phone-portrait sizes).
 - Supply shows `current/max` format.
 
 **Selection panel** (`.selection-panel`, `#sel-panel`):

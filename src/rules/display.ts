@@ -1,86 +1,82 @@
-import type { BuildingType, UnitType } from '@/ecs/components';
-
 /**
- * Display + behavior metadata per building type — the SINGLE source the HUD
- * reads to render labels, descriptions, action lists, and gating. Adding a
- * building type means adding a row HERE; the SelectionPanel does not need
- * to know any building-specific names or branches.
+ * Building display metadata — type re-export + accessor.
  *
- * Architectural rule (per the user's call-out): config + archetype tables
- * drive HUD text/visuals, not type-coupled `if (isTownHall)` branches.
- * See spec 102 — composition algebra; HUD is just a view over the data.
+ * M_REGISTRY.5 — the `BUILDING_DISPLAY` table moved into
+ * `BUILDING_PROFILES[type].display`. This file now publishes the legacy
+ * `BuildingDisplay` type alias (some callers depend on it) and the
+ * accessor that resolves a building type → display slot via the unified
+ * registry. `trainableUnits` + `trainerFor` moved to `building-profiles`
+ * for the same reason — they're derived from the registry, not a separate
+ * table.
  */
-export interface BuildingDisplay {
-  /** Player-facing name. */
-  name: string;
-  /** One-line description (used as a tooltip + onboarding hint). */
-  description: string;
-  /** Which trainable unit (if any) this building produces. */
-  trains?: 'Peon' | 'Footman';
-  /** Whether the building can purchase research (TownHall+Barracks today). */
-  research?: ReadonlyArray<'forgedBlades' | 'steelPlows'>;
-  /** Whether the building offers a "set rally point" interaction. */
-  hasRally?: boolean;
-  /** Whether the building's selection-panel surfaces the build menu. */
-  showsBuildMenu?: boolean;
-}
+import type { BuildingType, ResourceType } from '@/ecs/components';
+import { HUD_THEME } from '@/hud/hud-theme';
+import { BUILDING_PROFILES, type DisplaySlot } from './building-profiles';
 
-/** Per-building display + interaction metadata. Add a row to add a building. */
-export const BUILDING_DISPLAY: Record<BuildingType, BuildingDisplay> = {
-  TownHall: {
-    name: 'Town Hall',
-    description: 'Your home base. Anchors the kingdom and trains peons.',
-    trains: 'Peon',
-    showsBuildMenu: true,
-  },
-  Farm: {
-    name: 'Farm',
-    description: 'Raises your supply cap so you can field more units.',
-  },
-  House: {
-    name: 'House',
-    description: 'Increases your peon cap — train more workers.',
-  },
-  Granary: {
-    name: 'Granary',
-    description: 'Storage that supports additional peons.',
-  },
-  Barracks: {
-    name: 'Barracks',
-    description: 'Trains Footmen and unlocks military research.',
-    trains: 'Footman',
-    research: ['forgedBlades', 'steelPlows'],
-    hasRally: true,
-  },
-  Watchtower: {
-    name: 'Watchtower',
-    description: 'Shoots intruders within its zone — a defensive emitter.',
-  },
-  Wall: {
-    name: 'Wall',
-    description: 'A hard pathing border. Enemies cannot cross it.',
-  },
-};
+/** Alias kept for back-compat with existing imports. */
+export type BuildingDisplay = DisplaySlot;
 
 /** Resolve the display metadata for a building type. */
 export function displayFor(type: BuildingType): BuildingDisplay {
-  return BUILDING_DISPLAY[type];
+  return BUILDING_PROFILES[type].display;
 }
 
 /**
- * The unit roles a player may train, derived from BUILDING_DISPLAY's `trains`
- * fields — NOT hardcoded. Adding a trainer building adds the unit automatically.
+ * Per-resource display metadata (M_AUDIT2.ARCH.2). Collapses the 3
+ * parallel resource-display tables — ResourceText.tsx COLOR,
+ * ResourceBar.tsx SLOT_DISPLAY, and the implicit color naming in
+ * HUD_THEME (wood/stone/coin/accent) — into ONE source. Adding a new
+ * resource = ONE row here + ONE entry in RESOURCE_TYPES; both the
+ * HUD bar and the world-deposit popups pick it up automatically.
  */
-export function trainableUnits(): ReadonlyArray<'Peon' | 'Footman'> {
-  const set = new Set<'Peon' | 'Footman'>();
-  for (const d of Object.values(BUILDING_DISPLAY)) if (d.trains) set.add(d.trains);
-  return [...set];
+export interface ResourceDisplay {
+  /** Player-facing label. */
+  label: string;
+  /** Render color (HUD bar text + world popup). */
+  color: string;
+  /** DOM id for the HUD bar value span (test selectors). */
+  domId: string;
 }
 
-/** The building type that trains `unit`, or null. */
-export function trainerFor(unit: UnitType): BuildingType | null {
-  for (const [type, d] of Object.entries(BUILDING_DISPLAY)) {
-    if (d.trains === unit) return type as BuildingType;
+export const RESOURCE_DISPLAY: Record<ResourceType, ResourceDisplay> = {
+  wood: { label: 'Wood', color: HUD_THEME.color.wood, domId: 'val-wood' },
+  stone: { label: 'Stone', color: HUD_THEME.color.stone, domId: 'val-stone' },
+  gold: { label: 'Gold', color: HUD_THEME.color.coin, domId: 'val-gold' },
+  science: { label: 'Science', color: HUD_THEME.color.accent, domId: 'val-science' },
+  // M_EXPANSION.F.72 — mana display. Magenta reads as 'magic' and
+  // contrasts the existing accent blue used for science.
+  mana: { label: 'Mana', color: '#c084fc', domId: 'val-mana' },
+};
+
+/** Resolve display metadata for a resource type. */
+export function resourceDisplayFor(type: ResourceType): ResourceDisplay {
+  return RESOURCE_DISPLAY[type];
+}
+
+/**
+ * Health-bar color stops (M_AUDIT2.ARCH.16). Was a per-call
+ * `barColor()` switch in HealthBillboard.tsx with literal thresholds
+ * + colors. Lifted to a data table so a future "wound state" pass
+ * (post-AOE flash, low-HP critical alarm) reads the same stops.
+ *
+ * Stops are ORDERED descending by `minFraction`; the first stop
+ * whose `minFraction <= fraction` wins.
+ */
+export interface HealthBarStop {
+  minFraction: number;
+  color: string;
+}
+
+export const HEALTH_BAR_STOPS: ReadonlyArray<HealthBarStop> = [
+  { minFraction: 0.5, color: '#10b981' }, // healthy green
+  { minFraction: 0.25, color: '#eab308' }, // wounded yellow
+  { minFraction: 0, color: '#ef4444' }, // critical red
+];
+
+/** Resolve the bar color for a health fraction. */
+export function healthBarColor(fraction: number): string {
+  for (const stop of HEALTH_BAR_STOPS) {
+    if (fraction >= stop.minFraction) return stop.color;
   }
-  return null;
+  return HEALTH_BAR_STOPS[HEALTH_BAR_STOPS.length - 1]?.color ?? '#ef4444';
 }

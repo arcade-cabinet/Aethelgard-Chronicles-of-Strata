@@ -63,6 +63,32 @@ export interface WorldConfig {
     /** Maximum seconds between weather transitions. */
     maxInterval: number;
   };
+  /**
+   * Simulation tick parameters (M_AUDIT2.ARCH.14). Determinism-
+   * critical: fixed timestep + cap on substeps per render frame.
+   */
+  sim: {
+    fixedDt: number;
+    maxStepsPerFrame: number;
+  };
+  /** Unit vision tuning (M_AUDIT2.ARCH.15). */
+  vision: {
+    /** Base radius (tiles) of a unit's vision cone. */
+    baseUnitRadius: number;
+    /** Half-angle of the cone in radians (~70° total → 1.225 rad). */
+    unitConeHalfAngle: number;
+  };
+  /** Crossing render tuning (M_AUDIT2.ARCH.17). */
+  crossings: {
+    halfWidth: number;
+    lift: number;
+    stairSteps: number;
+  };
+  /** Floating-text popups (CombatText, ResourceText) — M_AUDIT2.ARCH.18. */
+  floatingText: {
+    popupLifetime: number;
+    popupDrift: number;
+  };
   /** Biome-assignment tuning. */
   biome: {
     /** Six ascending raw-height cutoffs separating the seven elevation tiers. */
@@ -97,6 +123,8 @@ export interface WorldConfig {
     maxZoom: number;
     /** Desktop / landscape-tablet camera defaults. */
     desktop: CameraProfileConfig;
+    /** M_EXPANSION.S.63 — ultra-wide (>2.4:1) camera defaults. */
+    ultraWide: CameraProfileConfig;
     /** Phone-landscape camera defaults. */
     phoneLandscape: CameraProfileConfig;
     /** Phone-portrait camera defaults. */

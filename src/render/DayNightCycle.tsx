@@ -1,8 +1,10 @@
 import { useFrame, useThree } from '@react-three/fiber';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Color, type DirectionalLight, FogExp2 } from 'three';
 import { cyclePhase, lightIntensityAt, skyRgbAt } from '@/game/clock';
 import type { GameState } from '@/game/game-state';
+// M_EXPANSION.D.173 — dither-texture extracted to src/render/textures/.
+import { makeDitherTexture } from './textures/dither';
 
 /** Exponential-fog density — a soft distance haze, matching poc1. */
 const FOG_DENSITY = 0.01;
@@ -53,10 +55,26 @@ export function DayNightCycle({ game }: { game: GameState }) {
     fog.current.color.setRGB(r / 255, g / 255, b / 255);
   });
 
+  // M_AUDIT2.UX.29 — dither overlay sphere (back-side, no depth) that
+  // multiplies a ±1-LSB noise into the sky base color so the gradient
+  // stops banding in 8-bit during sunset. The base color comes from
+  // scene.background (set above each frame); the overlay just adds
+  // imperceptible noise on top.
+  const ditherTex = useMemo(makeDitherTexture, []);
   return (
     <>
       <hemisphereLight args={['#ffffff', '#444444', 0.6]} />
       <directionalLight ref={lightRef} position={[40, 60, 25]} intensity={1.5} castShadow />
+      <mesh renderOrder={-1}>
+        <sphereGeometry args={[500, 16, 12]} />
+        <meshBasicMaterial
+          map={ditherTex}
+          side={1 /* BackSide */}
+          depthWrite={false}
+          transparent
+          opacity={0.06}
+        />
+      </mesh>
     </>
   );
 }

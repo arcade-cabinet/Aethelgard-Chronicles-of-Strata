@@ -1,30 +1,115 @@
-import { Canvas, useThree } from '@react-three/fiber';
-import { Suspense, useEffect, useMemo, useRef } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { type Camera, PCFSoftShadowMap } from 'three';
+import { Building, type BuildingType, HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { CombatText } from '@/world/CombatText';
 import { Crossings } from '@/world/Crossings';
+import { DeathDropLayer } from '@/world/DeathDropLayer';
 import { Decoration } from '@/world/Decoration';
-import { EnemyBase } from '@/world/EnemyBase';
+import { FactionBase } from '@/world/FactionBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
-import { HomeBase } from '@/world/HomeBase';
 import { Mountains } from '@/world/Mountains';
+import { ParticleEmitter } from '@/world/ParticleEmitter';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
-import { RainParticles } from '@/world/RainParticles';
+import {
+  bloodSplashConsumer,
+  buildCompleteConsumer,
+  chimneySmokeConsumer,
+  embersConsumer,
+  rainConsumer,
+  sawdustConsumer,
+  snowConsumer,
+  victoryConfettiConsumer,
+} from '@/world/particle-consumers';
 import { RallyMarker } from '@/world/RallyMarker';
 import { ResourceNodes } from '@/world/ResourceNodes';
 import { ResourceText } from '@/world/ResourceText';
+import { Roads } from '@/world/Roads';
 import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
+import { HexGridOverlay } from '@/world/HexGridOverlay';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
 import { Units } from '@/world/Units';
 import { Water } from '@/world/Water';
+import { ContestedPulse } from '@/world/ContestedPulse';
 import { ZoneBorder } from '@/world/ZoneBorder';
 import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';
+import { SuspenseProbe } from './SuspenseProbe';
 import { useGameLoop } from './useGameLoop';
 import { useViewport, type ViewportProfile } from './useViewport';
+
+/**
+ * Decoration wrapper that snapshots game.buildSites per frame into the
+ * shape Decoration's M_MAPGEN.13 building-accretion expects. Keeps the
+ * snapshot diff-equal across frames so React's memo doesn't re-fire on
+ * no-op updates.
+ */
+function DecorationLive({
+  game,
+  occupiedKeys,
+}: {
+  game: GameState;
+  occupiedKeys: ReadonlySet<string>;
+}) {
+  const [sites, setSites] = useState<
+    Array<{
+      key: string;
+      q: number;
+      r: number;
+      level: number;
+      type: BuildingType;
+      isComplete: boolean;
+    }>
+  >([]);
+  useFrame(() => {
+    const next: typeof sites = [];
+    for (const [key, entity] of game.buildSites) {
+      const b = entity.get(Building);
+      const h = entity.get(HexPosition);
+      if (!b || !h) continue;
+      next.push({
+        key,
+        q: h.q,
+        r: h.r,
+        level: h.level,
+        type: b.buildingType,
+        isComplete: b.isComplete,
+      });
+    }
+    setSites((prev) => {
+      if (
+        next.length === prev.length &&
+        next.every(
+          (s, i) =>
+            // M_MICRO.5.4 — also compare level + type so a Wall→Gate
+            // composition swap (same key, same isComplete) triggers a
+            // re-render of the Decoration mask. Without these, the
+            // gate would render visually but pathing/decoration would
+            // miss the swap for one frame.
+            s.key === prev[i]?.key &&
+            s.isComplete === prev[i]?.isComplete &&
+            s.level === prev[i]?.level &&
+            s.type === prev[i]?.type,
+        )
+      ) {
+        return prev;
+      }
+      return next;
+    });
+  });
+  return (
+    <Decoration
+      board={game.board}
+      occupiedKeys={occupiedKeys}
+      enemyBaseKey={game.enemyBaseKey}
+      playerBaseKey={game.townHallKey}
+      buildSites={sites}
+    />
+  );
+}
 
 /** Expose the active r3f camera to the parent via a callback. */
 function CameraTap({ onReady }: { onReady: (cam: Camera) => void }) {
@@ -62,6 +147,7 @@ function Scene({
     <>
       <DayNightCycle game={game} />
       <Terrain board={game.board} />
+      <HexGridOverlay board={game.board} />
       <Mountains board={game.board} />
       <Crossings board={game.board} />
       <Water mapRadius={game.board.radius} />
@@ -71,21 +157,51 @@ function Scene({
         spawnTrackingRing={(q, r) => ringsRef.current?.spawn(q, r)}
       />
       <TrackingRings ref={ringsRef} board={game.board} />
-      <Suspense fallback={null}>
-        <Decoration board={game.board} occupiedKeys={occupiedKeys} />
+      {/* M_POLISH3.FB.2 — SuspenseProbe replaces the prior `null`
+          fallback. If anything inside this Suspense (GLB loads,
+          ParticleEmitter assets, FactionBase models) hangs for
+          >5s, console.warn fires + ErrorOverlay surfaces it. */}
+      <Suspense fallback={<SuspenseProbe label="GameCanvas inner scene" />}>
+        <DecorationLive game={game} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
-        <HomeBase game={game} />
-        <EnemyBase game={game} />
+        <Roads game={game} />
+        {/* M_REGISTRY.6 + M_HIERARCHY.1 — particle consumers mounted
+            on the shared ParticleEmitter archetype. Spawn/age/cull
+            loop is shared; each consumer tunes spawn cadence + visual. */}
+        <ParticleEmitter game={game} spec={buildCompleteConsumer} />
+        <ParticleEmitter game={game} spec={sawdustConsumer} />
+        {/* M_EXPANSION.A.12 — chimney smoke for every complete House. */}
+        <ParticleEmitter game={game} spec={chimneySmokeConsumer} />
+        <ParticleEmitter game={game} spec={victoryConfettiConsumer} />
+        {/* M_REFACTOR.1 — biome-localized SNOW (over MOUNTAIN tiles only). */}
+        <ParticleEmitter game={game} spec={snowConsumer} />
+        {/* M_REFACTOR.1 — unit-localized blood splash on combat hits
+            (damageType='normal', not parried). */}
+        <ParticleEmitter game={game} spec={bloodSplashConsumer} />
+        {/* M_REFACTOR.1 — building-localized embers from every
+            complete Barracks (the always-on forge tell). */}
+        <ParticleEmitter game={game} spec={embersConsumer} />
+        {/* M_REGISTRY.4 — ONE faction-symmetric base renderer mounted */}
+        {/* twice with different `faction` props. Visual divergence is */}
+        {/* 100% data (SKINS[faction] in src/rules/skins.ts), 0% code.  */}
+        <FactionBase game={game} faction="player" />
+        <FactionBase game={game} faction="enemy" />
         <Units game={game} />
       </Suspense>
       <CombatText game={game} />
       <ResourceText game={game} />
       <ProjectileLayer game={game} />
       <FootstepEmitter game={game} />
-      <RainParticles game={game} />
+      {/* M_EXPANSION.A.17 — coffin death-drop for enemy units. */}
+      <DeathDropLayer />
+      <ParticleEmitter game={game} spec={rainConsumer} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
       <ZoneBorder game={game} />
+      {/* M_EXPANSION.S.56 — render the contested-tile pulse on top of
+          encroached tiles (encroachment system already maintains
+          zone.pulsing on the sim side). */}
+      <ContestedPulse game={game} />
       <CameraRig viewport={viewport} boardRadius={game.board.radius} />
       {onCameraReady && <CameraTap onReady={onCameraReady} />}
     </>
@@ -110,11 +226,26 @@ export interface GameCanvasProps {
  */
 export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCanvasProps) {
   const viewport = useViewport();
+  // M_AUDIT2.SEC2.28 — pause the render loop while the page is hidden.
+  // Without this r3f keeps drawing 60fps in a background tab, draining
+  // the battery on phones with no perceptible benefit. 'always' resumes
+  // when visible; 'never' parks the loop entirely while hidden. The
+  // koota world's update tick is wall-clock driven by the EconomyTick
+  // useFrame() callback, so pausing here also pauses simulation — which
+  // is the correct behaviour (no surprise weather changes / training
+  // completions while the user has the app in the background).
+  const visible = useDocumentVisible();
   return (
     <Canvas
       shadows={{ type: PCFSoftShadowMap }}
       camera={{ position: [0, 55, 62], fov: viewport.camera.fov }}
       style={{ position: 'absolute', inset: 0 }}
+      // M_POLISH3.B.1 — frameloop must stay 'always' even when
+      // document.visibilityState === 'hidden' under Playwright
+      // headless (where the tab is technically hidden but tests
+      // need the canvas to paint). Gate on the e2e test hook
+      // (window.__game) so prod still parks on hidden.
+      frameloop={visible || hasTestHook() ? 'always' : 'never'}
     >
       <Scene
         game={game}
@@ -124,4 +255,29 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
       />
     </Canvas>
   );
+}
+
+/**
+ * M_POLISH3.B.1 — true when the e2e test hook (`window.__game`) is
+ * wired. Used to force frameloop='always' so headless Playwright
+ * (which reports the tab as hidden until interaction) paints the
+ * scene + test screenshots aren't empty.
+ */
+function hasTestHook(): boolean {
+  if (typeof window === 'undefined') return false;
+  return '__game' in window;
+}
+
+/** Tracks document.visibilityState; rerenders the host on change. */
+function useDocumentVisible(): boolean {
+  const [visible, setVisible] = useState(
+    typeof document !== 'undefined' ? document.visibilityState !== 'hidden' : true,
+  );
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const onChange = () => setVisible(document.visibilityState !== 'hidden');
+    document.addEventListener('visibilitychange', onChange);
+    return () => document.removeEventListener('visibilitychange', onChange);
+  }, []);
+  return visible;
 }

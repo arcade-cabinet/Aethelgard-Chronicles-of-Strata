@@ -2,18 +2,57 @@ import { ECONOMY } from '@/config/economy';
 import type { BoardData } from '@/core/board';
 import type { BuildingType } from '@/ecs/components';
 import { canAfford, type GameEconomy, type ResourceCost } from '@/game/economy';
+import { BUILDING_PROFILES } from './building-profiles';
 
 /**
  * Resource cost per buildable building type. `TownHall` is excluded — it is a
  * generation-time attractor, never built mid-game (spec 102).
+ *
+ * M_REGISTRY.5 — derived from the unified registry. Buildable rows
+ * MUST declare a `cost`; a missing cost is a registry bug (caught at
+ * module load), not a silent zero-cost build.
  */
+function deriveBuildingCosts(): Record<Exclude<BuildingType, 'TownHall'>, ResourceCost> {
+  const out: Partial<Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>> = {};
+  for (const key of Object.keys(BUILDING_PROFILES) as BuildingType[]) {
+    if (key === 'TownHall') continue;
+    const cost = BUILDING_PROFILES[key].cost;
+    if (cost === undefined) {
+      // Code-reviewer Finding 1 (latent trap): a buildable BuildingType
+      // without a cost field would silently `canAfford → true`, making
+      // its placement free. Fail at module load so a registry edit that
+      // forgets the cost surfaces in a developer test run, not after
+      // ship.
+      throw new Error(
+        `placement: BUILDING_PROFILES[${key}] is buildable (not TownHall) but has no cost. Add a cost row in src/rules/building-profiles.ts.`,
+      );
+    }
+    out[key as Exclude<BuildingType, 'TownHall'>] = cost;
+  }
+  return out as Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
+}
+
 export const BUILDING_COSTS: Record<
   Exclude<BuildingType, 'TownHall'>,
   ResourceCost
-> = ECONOMY.buildingCosts;
+> = Object.freeze(deriveBuildingCosts()) as Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
 
-/** Supply each building contributes once complete. */
-export const BUILDING_SUPPLY: Record<BuildingType, number> = ECONOMY.buildingSupply;
+/**
+ * Supply each building contributes once complete. M_REGISTRY.5 — derived
+ * from the unified registry. `supply` is required on every profile (the
+ * type system enforces this) so no exhaustiveness check is needed.
+ */
+function deriveBuildingSupply(): Record<BuildingType, number> {
+  const out: Partial<Record<BuildingType, number>> = {};
+  for (const key of Object.keys(BUILDING_PROFILES) as BuildingType[]) {
+    out[key] = BUILDING_PROFILES[key].supply;
+  }
+  return out as Record<BuildingType, number>;
+}
+
+export const BUILDING_SUPPLY: Record<BuildingType, number> = Object.freeze(
+  deriveBuildingSupply(),
+) as Record<BuildingType, number>;
 
 /** Biomes any building may be placed on. */
 const BUILDABLE_BIOMES = new Set(ECONOMY.buildableBiomes);

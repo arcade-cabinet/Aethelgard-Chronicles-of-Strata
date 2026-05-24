@@ -1,13 +1,14 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { doResearch } from '@/game/commands';
 import { canAfford } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
-import { useViewport } from '@/render/useViewport';
-import { DISCOVERIES } from '@/rules';
+import { DISCOVERIES, scaledCostFor } from '@/rules';
 import { costLabel } from './format';
+import { HudPill } from './HudPill';
 import { HUD_THEME } from './hud-theme';
+import { ModalShell } from './ModalShell';
 
 /**
  * Discoveries panel (M_DATA.7). A top-right button opens a Radix Dialog
@@ -21,146 +22,215 @@ import { HUD_THEME } from './hud-theme';
  */
 export function DiscoveriesPanel({ game }: { game: GameState }) {
   const [open, setOpen] = useState(false);
+  // M_EXPANSION.U.124 — search filter (case-insensitive substring on
+  // name OR description; empty = show all).
+  const [filter, setFilter] = useState('');
   const eco = game.economy.player;
-  const viewport = useViewport();
-  // narrow phones stack the trigger button below the pause/sound buttons
-  const rightPx = viewport.isPortrait ? 8 : 340;
-  const topPx = viewport.isPortrait ? 52 : 12;
+  // M_EXPANSION.AU.40 — overlay map-of-realms ambient while the
+  // panel is open. The ambient slot is single — this takes
+  // precedence over the crafting-hall ambient while the panel is up.
+  // On close, useAudio's next frame restores crafting-hall if
+  // build sites are still active.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    void Promise.all([import('@/audio/buses'), import('@/audio/ui-sound-emitter')]).then(
+      ([buses, emitter]) => {
+        if (cancelled) return;
+        const b = emitter.getRegisteredBuses();
+        if (b) buses.startAmbient(b, 'audio.music.biome.map-of-realms');
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
       <Dialog.Trigger asChild>
-        <button
-          id="discoveries-button"
-          data-hud-panel
-          type="button"
-          style={{
-            position: 'absolute',
-            top: topPx,
-            right: rightPx,
-            zIndex: 6,
-            padding: '6px 14px',
-            borderRadius: 999,
-            background: HUD_THEME.color.panel,
-            color: HUD_THEME.color.accent,
-            border: `1px solid ${HUD_THEME.color.border}`,
-            fontFamily: HUD_THEME.font.body,
-            fontSize: '0.78rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-            pointerEvents: 'auto',
-          }}
-        >
+        {/* M_MICRO.10.2 — HudPill picks (top, right) from its slot table. */}
+        <HudPill slot="discoveries" id="discoveries-button">
           ⚗ Discoveries
-        </button>
+        </HudPill>
       </Dialog.Trigger>
-      <Dialog.Portal>
-        <Dialog.Overlay
-          style={{ position: 'fixed', inset: 0, background: 'rgba(3,7,18,0.7)', zIndex: 100 }}
-        />
-        <Dialog.Content
-          id="discoveries-panel"
-          aria-describedby={undefined}
+      {/* M_MICRO.10.1 — ModalShell collapses the per-dialog Overlay +
+          Content styling. Only DiscoveriesPanel-specific overrides
+          (font-family) come through contentStyle. */}
+      <ModalShell contentId="discoveries-panel" contentStyle={{ fontFamily: HUD_THEME.font.body }}>
+        <Dialog.Title
           style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 'min(520px, 90vw)',
-            maxHeight: '80vh',
-            overflow: 'auto',
-            background: HUD_THEME.color.panel,
-            border: `2px solid ${HUD_THEME.color.border}`,
-            borderRadius: 14,
-            padding: 24,
-            color: HUD_THEME.color.text,
-            fontFamily: HUD_THEME.font.body,
-            zIndex: 101,
+            fontFamily: HUD_THEME.font.display,
+            fontSize: '1.5rem',
+            color: HUD_THEME.color.gold,
+            margin: '0 0 14px',
           }}
         >
-          <Dialog.Title
+          Discoveries
+        </Dialog.Title>
+        {/* M_EXPANSION.U.124 — search filter. Hidden until the
+            registry grows past 6 rows so a small library doesn't
+            need the chrome. */}
+        {DISCOVERIES.length > 6 && (
+          <input
+            id="discoveries-filter"
+            type="text"
+            value={filter}
+            placeholder="Filter discoveries…"
+            onChange={(e) => setFilter(e.target.value)}
+            aria-label="Filter discoveries"
             style={{
-              fontFamily: HUD_THEME.font.display,
-              fontSize: '1.5rem',
-              color: HUD_THEME.color.gold,
-              margin: '0 0 14px',
+              width: '100%',
+              padding: '6px 10px',
+              borderRadius: 8,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(9,13,22,0.7)',
+              color: HUD_THEME.color.text,
+              fontFamily: HUD_THEME.font.body,
+              fontSize: '0.82rem',
+              margin: '0 0 12px',
+              boxSizing: 'border-box',
             }}
-          >
-            Discoveries
-          </Dialog.Title>
-          {DISCOVERIES.map((d) => {
-            const purchased = game.research.purchased.has(d.id as ResearchId);
-            const prereqMet = (d.prereqs ?? []).every((p) =>
-              game.research.purchased.has(p as ResearchId),
-            );
-            const affordable = canAfford(eco, d.cost);
-            const available = !purchased && prereqMet && affordable;
-            const status = purchased
-              ? 'Purchased'
-              : !prereqMet
-                ? 'Prereqs needed'
-                : !affordable
-                  ? 'Unaffordable'
-                  : 'Available';
-            return (
-              <div
-                key={d.id}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  padding: '10px 0',
-                  borderBottom: '1px solid rgba(255,255,255,0.08)',
-                }}
-              >
-                <div style={{ flex: 1, marginRight: 12 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.92rem' }}>{d.name}</div>
+          />
+        )}
+        {DISCOVERIES.filter((d) => {
+          const q = filter.trim().toLowerCase();
+          if (!q) return true;
+          return d.name.toLowerCase().includes(q) || d.description.toLowerCase().includes(q);
+        }).map((d) => {
+          const purchased = game.research.purchased.has(d.id as ResearchId);
+          const prereqMet = (d.prereqs ?? []).every((p) =>
+            game.research.purchased.has(p as ResearchId),
+          );
+          // M_FEATURE.2 — purchase cost scales with depth in the prereq DAG.
+          const effectiveCost = scaledCostFor(d.id);
+          const affordable = canAfford(eco, effectiveCost);
+          // M_AUDIT2.ARCH.19 — `canResearch` is now the single source of
+          // truth for "is this row purchasable" (was a `void canResearch`
+          // shim). Drives the disabled state below; prereqMet+affordable
+          // are kept locally for the per-row status string formatting.
+          const available = canResearch(eco, game.research, d.id as ResearchId);
+          const status = purchased
+            ? 'Purchased'
+            : !prereqMet
+              ? 'Prereqs needed'
+              : !affordable
+                ? 'Unaffordable'
+                : 'Available';
+          return (
+            <div
+              key={d.id}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                padding: '10px 0',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+              }}
+            >
+              <div style={{ flex: 1, marginRight: 12 }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    fontWeight: 700,
+                    fontSize: '0.92rem',
+                  }}
+                >
+                  {/* M_AUDIT2.UX.17 — status pip: green=purchased,
+                      amber=available, gray=gated, red=unaffordable. */}
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: 8,
+                      background: purchased
+                        ? '#10b981'
+                        : !prereqMet
+                          ? '#64748b'
+                          : !affordable
+                            ? '#ef4444'
+                            : '#f59e0b',
+                    }}
+                  />
+                  {d.name}
+                </div>
+                <div
+                  style={{
+                    fontSize: '0.78rem',
+                    color: HUD_THEME.color.muted,
+                    marginTop: 2,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {d.description}
+                </div>
+                {/* M_AUDIT2.UX.17 — prereq tree row. Lists each prereq
+                    with its own status (✓ met, ✗ missing) so the
+                    player sees the dependency at a glance. Empty for
+                    root Discoveries. */}
+                {(d.prereqs ?? []).length > 0 && (
                   <div
                     style={{
                       fontSize: '0.72rem',
                       color: HUD_THEME.color.muted,
-                      marginTop: 2,
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {d.description}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '0.68rem',
-                      color: HUD_THEME.color.accent,
                       marginTop: 4,
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: 6,
                     }}
                   >
-                    Cost: {costLabel(d.cost)} · {status}
+                    <span>Requires:</span>
+                    {(d.prereqs ?? []).map((p) => {
+                      const ok = game.research.purchased.has(p as ResearchId);
+                      const prereqName = DISCOVERIES.find((x) => x.id === p)?.name ?? p;
+                      return (
+                        <span
+                          key={p}
+                          style={{
+                            color: ok ? '#10b981' : '#ef4444',
+                            fontWeight: 700,
+                          }}
+                        >
+                          {ok ? '✓' : '✗'} {prereqName}
+                        </span>
+                      );
+                    })}
                   </div>
-                </div>
-                <button
-                  type="button"
-                  disabled={!available}
-                  onClick={() => doResearch(game, d.id as ResearchId)}
+                )}
+                <div
                   style={{
-                    padding: '6px 14px',
-                    borderRadius: 8,
-                    border: 'none',
-                    background: available ? HUD_THEME.blueGradient : 'rgba(255,255,255,0.06)',
-                    color: available ? '#fff' : HUD_THEME.color.muted,
                     fontSize: '0.78rem',
-                    fontWeight: 700,
-                    cursor: available ? 'pointer' : 'default',
-                    minWidth: 86,
+                    color: HUD_THEME.color.accent,
+                    marginTop: 4,
                   }}
                 >
-                  {purchased ? '✓' : 'Buy'}
-                </button>
+                  Cost: {costLabel(effectiveCost)} · {status}
+                </div>
               </div>
-            );
-          })}
-        </Dialog.Content>
-      </Dialog.Portal>
+              <button
+                type="button"
+                disabled={!available}
+                onClick={() => doResearch(game, d.id as ResearchId)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: available ? HUD_THEME.blueGradient : 'rgba(255,255,255,0.06)',
+                  color: available ? '#fff' : HUD_THEME.color.muted,
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  cursor: available ? 'pointer' : 'default',
+                  minWidth: 86,
+                }}
+              >
+                {purchased ? '✓' : 'Buy'}
+              </button>
+            </div>
+          );
+        })}
+      </ModalShell>
     </Dialog.Root>
   );
 }
-
-// canResearch is reserved for AI-side gating + a future per-row icon; ensure
-// the symbol stays imported so wiring it next is a one-line edit.
-void canResearch;

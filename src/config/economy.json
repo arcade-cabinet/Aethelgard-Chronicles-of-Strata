@@ -5,7 +5,9 @@
     "Granary": { "wood": 80, "stone": 40, "gold": 0 },
     "Barracks": { "wood": 150, "stone": 100, "gold": 50 },
     "Watchtower": { "wood": 80, "stone": 120, "gold": 0 },
-    "Wall": { "wood": 0, "stone": 60, "gold": 0 }
+    "Wall": { "wood": 0, "stone": 60, "gold": 0 },
+    "Wonder": { "wood": 500, "stone": 400, "gold": 300 },
+    "Library": { "wood": 120, "stone": 60, "gold": 80 }
   },
   "buildingSupply": {
     "TownHall": 5,
@@ -14,12 +16,19 @@
     "Granary": 2,
     "Barracks": 0,
     "Watchtower": 0,
-    "Wall": 0
+    "Wall": 0,
+    "Wonder": 5,
+    "Library": 0
   },
   "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH"],
   "supplyCosts": {
     "Peon": 1,
     "Footman": 2,
+    "Trebuchet": 3,
+    "Wizard": 2,
+    "Scout": 1,
+    "Settler": 4,
+    "Hero": 3,
     "Goblin": 0,
     "Orc": 0,
     "Vampire": 0,
@@ -28,13 +37,22 @@
   },
   "unitCosts": {
     "Peon": { "wood": 5, "stone": 0, "gold": 0 },
-    "Footman": { "wood": 0, "stone": 0, "gold": 15 }
+    "Footman": { "wood": 0, "stone": 0, "gold": 15 },
+    "Scout": { "wood": 30, "stone": 0, "gold": 0 },
+    "Wizard": { "wood": 0, "stone": 0, "gold": 20, "science": 25, "mana": 15 },
+    "Hero": { "wood": 0, "stone": 0, "gold": 100, "science": 50 }
+  },
+  "roadCosts": {
+    "stone": { "stone": 5, "wood": 0, "gold": 0 },
+    "wood": { "wood": 8, "stone": 0, "gold": 0 },
+    "dirt": { "wood": 0, "stone": 0, "gold": 0 }
   },
   "startingResources": {
     "wood": 50,
     "stone": 20,
     "gold": 20,
     "science": 0,
+    "mana": 0,
     "maxSupply": 5
   },
   "resourceSpawn": [
@@ -45,6 +63,8 @@
   "harvestYield": {
     "wood": 10,
     "stone": 8,
-    "gold": 5
+    "gold": 5,
+    "science": 0,
+    "mana": 0
   }
 }

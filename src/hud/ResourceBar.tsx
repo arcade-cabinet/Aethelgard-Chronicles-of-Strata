@@ -1,8 +1,11 @@
 import { motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
-import { RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
+import { useState } from 'react';
+import { RESOURCE_TYPES } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { resourceDisplayFor } from '@/rules';
+import { formatInt } from './format';
 import { HUD_THEME } from './hud-theme';
+import { useRafLoop } from './useRafLoop';
 
 /** One resource readout. */
 interface Readout {
@@ -25,27 +28,21 @@ interface Readout {
 export function ResourceBar({ game, compact = false }: { game: GameState; compact?: boolean }) {
   const [readouts, setReadouts] = useState<Readout[]>(() => snapshot(game));
 
-  useEffect(() => {
-    let raf = 0;
-    const tick = () => {
-      // Diff snapshot vs previous — skip the setState (and React reconcile)
-      // when readouts are unchanged. Resource totals only change on harvest/
-      // spend/training, not every frame. CodeRabbit-flagged: unconditional
-      // setState every RAF was a 60Hz waste.
-      setReadouts((prev) => {
-        const next = snapshot(game);
-        if (
-          next.length === prev.length &&
-          next.every((r, i) => r.value === prev[i]?.value && r.id === prev[i]?.id)
-        ) {
-          return prev;
-        }
-        return next;
-      });
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+  useRafLoop(() => {
+    // Diff snapshot vs previous — skip the setState (and React reconcile)
+    // when readouts are unchanged. Resource totals only change on harvest/
+    // spend/training, not every frame. CodeRabbit-flagged: unconditional
+    // setState every RAF was a 60Hz waste.
+    setReadouts((prev) => {
+      const next = snapshot(game);
+      if (
+        next.length === prev.length &&
+        next.every((r, i) => r.value === prev[i]?.value && r.id === prev[i]?.id)
+      ) {
+        return prev;
+      }
+      return next;
+    });
   }, [game]);
 
   return (
@@ -60,6 +57,12 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
         position: 'absolute',
         top: compact ? 8 : 16,
         left: compact ? 8 : 16,
+        // M_POLISH2.MOBILE.2 — portrait/narrow viewports: clip the bar
+        // to the available width minus the safe-area + a 12px gutter
+        // on the right so scroll-snap chips have somewhere to go
+        // without colliding with the Minimap/Settings cluster. On
+        // wider viewports the bar shrinks-to-fit (auto width).
+        maxWidth: compact ? 'calc(100vw - 24px)' : undefined,
         display: 'flex',
         gap: compact ? 9 : 16,
         padding: compact ? '6px 10px' : '10px 16px',
@@ -70,11 +73,41 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
         fontFamily: HUD_THEME.font.body,
         fontWeight: 700,
         fontSize: compact ? 12 : 14,
-        pointerEvents: 'none',
+        // M_POLISH2.MOBILE.2 — scroll-snap horizontal scroll on
+        // narrow widths so the 5 resource chips never wrap to a
+        // second line on 360px. Each chip is its own snap point.
+        // pointer-events is OFF for the wrapper (HUD chrome stays
+        // raycast-transparent) but the bar itself accepts scroll
+        // via the explicit pointerEvents: 'auto' below so iOS
+        // momentum-scroll works through it.
+        overflowX: compact ? 'auto' : 'visible',
+        scrollSnapType: compact ? 'x mandatory' : undefined,
+        // Hide native scrollbar — the gradient fade cues scrollability.
+        scrollbarWidth: 'none',
+        WebkitOverflowScrolling: 'touch',
+        // Fade the right edge so users see there's more off-screen.
+        maskImage: compact
+          ? 'linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%)'
+          : undefined,
+        WebkitMaskImage: compact
+          ? 'linear-gradient(to right, black 0, black calc(100% - 24px), transparent 100%)'
+          : undefined,
+        pointerEvents: compact ? 'auto' : 'none',
       }}
     >
       {readouts.map((r) => (
-        <span key={r.id} style={{ display: 'flex', gap: compact ? 4 : 6, alignItems: 'baseline' }}>
+        <span
+          key={r.id}
+          style={{
+            display: 'flex',
+            gap: compact ? 4 : 6,
+            alignItems: 'baseline',
+            scrollSnapAlign: compact ? 'start' : undefined,
+            // Stop each chip shrinking — they should stay at their
+            // natural width and let the parent scroll.
+            flex: compact ? '0 0 auto' : undefined,
+          }}
+        >
           <span style={{ color: r.color, fontSize: compact ? 9 : 11, textTransform: 'uppercase' }}>
             {r.label}
           </span>
@@ -85,32 +118,33 @@ export function ResourceBar({ game, compact = false }: { game: GameState; compac
   );
 }
 
-/** Display config per resource slot — label, theme color, HUD id. */
-const SLOT_DISPLAY: Record<ResourceType, { label: string; color: string; id: string }> = {
-  wood: { label: 'Wood', color: HUD_THEME.color.wood, id: 'val-wood' },
-  stone: { label: 'Stone', color: HUD_THEME.color.stone, id: 'val-stone' },
-  gold: { label: 'Gold', color: HUD_THEME.color.coin, id: 'val-gold' },
-  science: { label: 'Science', color: HUD_THEME.color.accent, id: 'val-science' },
-};
-
 /**
- * Snapshot the economy into HUD readouts. Slot-iterating: adding a 4th slot
- * means one row in SLOT_DISPLAY + one entry in RESOURCE_TYPES; no code change
- * here. Supply is non-slot (separate counter), shown last.
+ * Snapshot the economy into HUD readouts. Slot-iterating via the
+ * unified RESOURCE_DISPLAY registry (M_AUDIT2.ARCH.2): adding a 4th
+ * slot is ONE row in rules/display.ts + ONE entry in RESOURCE_TYPES;
+ * no code change here. Supply is non-slot (separate counter), shown last.
  */
 function snapshot(game: GameState): Readout[] {
   const e = game.economy.player;
   const rows: Readout[] = [];
   for (const slot of RESOURCE_TYPES) {
-    const d = SLOT_DISPLAY[slot];
-    if (!d) continue;
-    rows.push({ id: d.id, label: d.label, color: d.color, value: String(e[slot]) });
+    const d = resourceDisplayFor(slot);
+    // M_AUDIT2.UX.10 — locale-formatted with thousands separator.
+    rows.push({ id: d.domId, label: d.label, color: d.color, value: formatInt(e[slot]) });
   }
+  // M_AUDIT2.UX.14 — supply-cap nag. When the player hits cap, the
+  // value flashes danger-red + appends "(cap)" so they know why Train
+  // buttons grey out. Without this the player tries to train, the
+  // button does nothing, and there's no inline signal.
+  const atCap = e.usedSupply >= e.maxSupply;
+  const supplyLabel = atCap
+    ? `${e.usedSupply}/${e.maxSupply} (cap)`
+    : `${e.usedSupply}/${e.maxSupply}`;
   rows.push({
     id: 'val-supply',
     label: 'Supply',
-    color: HUD_THEME.color.supply,
-    value: `${e.usedSupply}/${e.maxSupply}`,
+    color: atCap ? HUD_THEME.color.danger : HUD_THEME.color.supply,
+    value: supplyLabel,
   });
   return rows;
 }

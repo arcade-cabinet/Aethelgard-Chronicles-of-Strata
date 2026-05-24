@@ -17,15 +17,32 @@
     "mapRadius": 20
   },
   "mapSizes": {
-    "small": 12,
-    "medium": 20,
-    "large": 28,
-    "huge": 36
+    "small": 18,
+    "medium": 28,
+    "large": 36,
+    "huge": 43
   },
   "dayLength": 240,
   "weather": {
     "minInterval": 90,
     "maxInterval": 180
+  },
+  "sim": {
+    "fixedDt": 0.016666666666666666,
+    "maxStepsPerFrame": 8
+  },
+  "vision": {
+    "baseUnitRadius": 5,
+    "unitConeHalfAngle": 1.2252211349000193
+  },
+  "crossings": {
+    "halfWidth": 0.44,
+    "lift": 0.1,
+    "stairSteps": 5
+  },
+  "floatingText": {
+    "popupLifetime": 1.4,
+    "popupDrift": 1.8
   },
   "biome": {
     "heightThresholds": [0.1, 0.25, 0.45, 0.6, 0.75, 0.88],
@@ -45,6 +62,7 @@
     "minZoom": 18,
     "maxZoom": 95,
     "desktop": { "distance": 62, "fov": 42, "pitch": 0.85 },
+    "ultraWide": { "distance": 70, "fov": 36, "pitch": 0.88 },
     "phoneLandscape": { "distance": 46, "fov": 48, "pitch": 0.82 },
     "phonePortrait": { "distance": 34, "fov": 55, "pitch": 0.78 }
   }

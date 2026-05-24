@@ -28,6 +28,21 @@ describe('two-PRNG model', () => {
     }
   });
 
+  it('map stream is statistically uniform over 10k draws (mean ≈ 0.5)', () => {
+    // M_MICRO.6.4 — a constant-stream PRNG (e.g. one that returns 0
+    // forever) would pass the range test trivially. Cover the
+    // distribution shape: a uniform [0,1) PRNG should have mean
+    // close to 0.5 over many draws. ±0.05 leaves headroom for the
+    // sample size without making the test flaky.
+    const rng = createMapPrng('mean-distribution-test');
+    let sum = 0;
+    const N = 10_000;
+    for (let i = 0; i < N; i++) sum += rng();
+    const mean = sum / N;
+    expect(mean).toBeGreaterThan(0.45);
+    expect(mean).toBeLessThan(0.55);
+  });
+
   it('createEventPrng is deterministic for the same seed string', () => {
     const a = createEventPrng('event-seed-42');
     const b = createEventPrng('event-seed-42');

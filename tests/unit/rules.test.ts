@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
+import { generateBoard } from '@/core/board';
+import { createEconomy } from '@/game/economy';
 import {
   BUILDING_COSTS,
-  SUPPLY_COST,
   canAddPeon,
   canBuild,
   canTrain,
   peonCap,
   recomputeMaxSupply,
+  SUPPLY_COST,
 } from '@/rules';
-import { generateBoard } from '@/core/board';
-import { createEconomy } from '@/game/economy';
 
 describe('rules engine barrel (M8.6b, spec 101)', () => {
   it('exposes building costs and supply costs', () => {

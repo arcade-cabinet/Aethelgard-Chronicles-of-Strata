@@ -1,5 +1,19 @@
 # Audio
 
+> **M_ARCH_UNIFY cross-reference (added 2026-05-23).** Pre-dates the
+> unified Thing/Skin registry. The 4-layer model — Archetypes → Things
+> → Slots → Skins — is the authoritative architectural shape for every
+> visual/data fork in the codebase. See:
+>
+> - `docs/specs/103-particle-archetype.md` — keystone architectural pass
+> - `docs/specs/10-architecture.md` — pillar's full M_ARCH_UNIFY block
+> - `src/rules/building-profiles.ts` — Thing registry (M_REGISTRY.5)
+> - `src/rules/unit-profiles.ts` — Thing registry (M_REGISTRY.1)
+> - `src/rules/skins.ts` — Skin slot (M_REGISTRY.3/4/2)
+>
+> Per-section notes below mark where THIS pillar's text became
+> superseded or extended by the unified-registry doctrine.
+
 ## Technology
 
 Howler.js (`howler`) manages all audio. It is loaded imperatively from `src/audio/` —
@@ -34,7 +48,36 @@ new Howl({
 
 ## Event → Sound Map
 
-| Event | Sound asset | Bus | Notes |
+> **M_REGISTRY.20 (landed via M_EXPANSION.S.51)** — this event→asset table will move onto
+> the Skin slot as `SKINS[faction].audio[event]`. A third tribe defines
+> its own `audio` map (e.g. necromancer footsteps = bone-clack); the
+> encroachment `faction === 'player'` critical-alarm hard-branch
+> collapses into a Skin slot read. The data shape below remains
+> authoritative; the location migrates.
+
+```mermaid
+flowchart LR
+  subgraph Slot["SKINS[faction].audio (landed M_EXPANSION.S.51)"]
+    EV1[footstep-grass]
+    EV2[footstep-sand]
+    EV3[combat-hit]
+    EV4[critical-alarm]
+    EVN[…]
+  end
+  subgraph Player["SKINS.player.audio"]
+    P1[default sfx pack]
+  end
+  subgraph Enemy["SKINS.enemy.audio"]
+    E1[default sfx pack]
+  end
+  subgraph New["SKINS.NEW_TRIBE.audio (one row to add)"]
+    N1[custom sfx pack]
+  end
+  Event[(game event)] -->|skinFor.audio[event]| Slot
+  Slot -->|asset id| Howler[(Howler bus)]
+```
+
+
 |---|---|---|---|
 | Peon footstep on GRASS | `audio/footstep-grass` | sfx | Triggered every ~0.5s while moving |
 | Peon footstep on BEACH | `audio/footstep-sand` | sfx | |
@@ -99,3 +142,28 @@ changes to "🔇 Audio OFF". State is persisted to preferences so it survives re
 Audio requires a user gesture to start on mobile and modern browsers. The game begins
 audio on the "Enter Realm" button click. All Howler instances are created at this point.
 The launcher itself is silent.
+
+---
+
+## Audio-on-first-interaction gate (M_EXPANSION.D.168 + M_AUDIT2.SEC2.31)
+
+**Contract.** Howler's AudioContext is gated behind the first user
+interaction (pointerdown / keydown / touchstart). Before unlock:
+
+- `playSound()` drops the call silently.
+- `playMusic()` queues via `onAudioUnlock()` so the first menu-button
+  press drains the pending music.
+
+This is a HARD contract — every Howl instance is constructed lazily
+inside `getHowl()`, never at module load. Browser autoplay rules
+(Chrome, Safari, Firefox) require this; without the gate the title
+music would either fail silently or print "AudioContext was not
+allowed to start" warnings.
+
+**Why it matters.** A future refactor that constructs a `new Howl(...)`
+at module scope (e.g. preloading the title track in a top-level
+import) re-introduces the autoplay warning AND breaks the
+fingerprint-resistance the gate also provides (audio capability
+strings only readable after user gesture). The contract is the
+gate, not the implementation — alternative gate implementations
+that delay equally are acceptable.

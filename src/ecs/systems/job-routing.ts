@@ -1,7 +1,8 @@
 import type { World } from 'koota';
 import type { BoardData } from '@/core/board';
-import { getHexKey, hexNeighbors } from '@/core/hex';
+import { getHexKey, hexNeighbors, parseHexKey } from '@/core/hex';
 import { findPath, type NavGraph } from '@/core/pathfinding';
+import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
   AssignedJob,
   Carrier,
@@ -24,13 +25,19 @@ function leveledSteps(board: BoardData, path: string[]): string[] {
  * Find a path ending on a walkable tile adjacent to `targetKey` — a peon stands
  * *next to* a resource or base, never on it. Returns null if none is reachable.
  */
-function pathToAdjacent(graph: NavGraph, startKey: string, targetKey: string): string[] | null {
-  const [tq, tr] = targetKey.split(',').map(Number);
+function pathToAdjacent(
+  graph: NavGraph,
+  startKey: string,
+  targetKey: string,
+  costOf?: (key: string) => number,
+): string[] | null {
+  const { q: tq, r: tr } = parseHexKey(targetKey);
   let best: string[] | null = null;
-  for (const adj of hexNeighbors(tq ?? 0, tr ?? 0)) {
+  for (const adj of hexNeighbors(tq, tr)) {
     if (!graph.has(adj)) continue;
     if (adj === startKey) return [];
-    const route = findPath(graph, startKey, adj);
+    // M_POLISH2.RTS.24a — terrain-cost-aware peon routing.
+    const route = findPath(graph, startKey, adj, costOf);
     if (route && (best === null || route.length < best.length)) best = route.slice(1);
   }
   return best;
@@ -56,6 +63,9 @@ export interface PeonRoutingContext {
  */
 export function jobRoutingSystem(ctx: PeonRoutingContext): void {
   const { world, board, graph, baseKeys, zones } = ctx;
+  // M_POLISH2.RTS.24a — peons prefer cheap (grass/beach/desert)
+  // routes over FOREST (1.25×) / HIGHLAND (1.5×).
+  const costOf = makeMoveCostFn(board.tiles);
 
   // index live resource sites (amount > 0) once
   const allResources: ResourceSite[] = [];
@@ -66,6 +76,14 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
       allResources.push({ key: getHexKey(hex.q, hex.r), q: hex.q, r: hex.r });
     }
   }
+
+  // M_AUDIT2.ARCH.52 — per-tick build of threatened-tile Sets ONCE
+  // (was per-peon inside the updateEach loop — 50 peons × 60 ticks =
+  // 3000 Set allocations/sec just to read pulsing keys).
+  const threatenedByFaction: Record<Faction, Set<string>> = {
+    player: new Set(zones.player.pulsing.keys()),
+    enemy: new Set(zones.enemy.pulsing.keys()),
+  };
 
   world
     .query(Unit, AssignedJob, HexPosition, PathQueue, Carrier, FactionTrait)
@@ -87,7 +105,7 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
         baseKey: baseKeys[faction],
         // pulsing tiles on the faction's own zone are under encroachment —
         // peons flee them (spec 102, wired by the encroachmentSystem)
-        threatenedTiles: new Set(zones[faction].pulsing.keys()),
+        threatenedTiles: threatenedByFaction[faction],
       });
 
       switch (action.kind) {
@@ -95,7 +113,7 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
           job.state = 'SEEKING';
           job.targetKey = action.targetKey;
           if (path.steps.length === 0) {
-            const route = pathToAdjacent(graph, peonKey, action.targetKey);
+            const route = pathToAdjacent(graph, peonKey, action.targetKey, costOf);
             if (route) path.steps = leveledSteps(board, route);
             else {
               job.state = 'IDLE';
@@ -114,7 +132,7 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
         case 'carry-home': {
           job.state = 'CARRYING';
           if (path.steps.length === 0) {
-            const route = pathToAdjacent(graph, peonKey, baseKeys[faction]);
+            const route = pathToAdjacent(graph, peonKey, baseKeys[faction], costOf);
             if (route) path.steps = leveledSteps(board, route);
           }
           break;
@@ -129,7 +147,7 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
           job.state = 'SEEKING';
           job.targetKey = '';
           path.steps = [];
-          const route = pathToAdjacent(graph, peonKey, baseKeys[faction]);
+          const route = pathToAdjacent(graph, peonKey, baseKeys[faction], costOf);
           if (route) path.steps = leveledSteps(board, route);
           break;
         }

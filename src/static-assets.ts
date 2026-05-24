@@ -3,17 +3,31 @@
 
 export type StaticAssetPath =
   'assets/audio/music/ambient.wav' |
+  'assets/audio/music/biome/crafting-hall.wav' |
+  'assets/audio/music/biome/map-of-realms.wav' |
+  'assets/audio/music/biome/town-of-eldor.wav' |
   'assets/audio/music/gameplay.wav' |
   'assets/audio/music/menu.wav' |
   'assets/audio/sfx/build.ogg' |
   'assets/audio/sfx/chop.ogg' |
+  'assets/audio/sfx/death-thud.ogg' |
+  'assets/audio/sfx/death-thud.wav' |
   'assets/audio/sfx/deposit.ogg' |
   'assets/audio/sfx/footstep-grass.ogg' |
+  'assets/audio/sfx/footstep-sand.ogg' |
+  'assets/audio/sfx/footstep-sand.wav' |
   'assets/audio/sfx/footstep-stone.ogg' |
+  'assets/audio/sfx/hit-metal.ogg' |
+  'assets/audio/sfx/hit-metal.wav' |
+  'assets/audio/sfx/hit-stone.ogg' |
+  'assets/audio/sfx/hit-stone.wav' |
   'assets/audio/sfx/hit.ogg' |
+  'assets/audio/sfx/magic-cast.wav' |
   'assets/audio/sfx/magic-impact.wav' |
   'assets/audio/sfx/mine.ogg' |
   'assets/audio/sfx/select.ogg' |
+  'assets/audio/sfx/shield-deflect.wav' |
+  'assets/audio/sfx/sword-clash.wav' |
   'assets/audio/sfx/ui-achievement.wav' |
   'assets/audio/sfx/ui-click.wav' |
   'assets/audio/sfx/ui-confirm.wav' |
@@ -21,6 +35,13 @@ export type StaticAssetPath =
   'assets/audio/sfx/ui-unlock.wav' |
   'assets/audio/stinger/defeat.wav' |
   'assets/audio/stinger/victory.wav' |
+  'assets/audio/ui/achievement.wav' |
+  'assets/audio/ui/click-01.wav' |
+  'assets/audio/ui/click-02.wav' |
+  'assets/audio/ui/click-03.wav' |
+  'assets/audio/ui/discovery-unlock.wav' |
+  'assets/audio/ui/error.wav' |
+  'assets/audio/ui/research-complete.wav' |
   'assets/board/tile/dirt.glb' |
   'assets/board/tile/grass-forest.glb' |
   'assets/board/tile/grass-hill.glb' |
@@ -32,6 +53,7 @@ export type StaticAssetPath =
   'assets/board/tile/stone.glb' |
   'assets/board/tile/water.glb' |
   'assets/characters/enemies/black-knight.glb' |
+  'assets/characters/enemies/monster.glb' |
   'assets/characters/enemies/orc.glb' |
   'assets/characters/enemies/vampire.glb' |
   'assets/characters/enemies/witch.glb' |
@@ -47,21 +69,30 @@ export type StaticAssetPath =
   'assets/characters/rigs/large-movement.glb' |
   'assets/characters/rigs/medium-general.glb' |
   'assets/characters/rigs/medium-movement.glb' |
+  'assets/fonts/Cinzel-Bold.ttf' |
+  'assets/fonts/Cinzel-Regular.ttf' |
+  'assets/fonts/Inter-Bold.ttf' |
+  'assets/fonts/Inter-Regular.ttf' |
+  'assets/fonts/Metamorphous-Regular.ttf' |
   'assets/nature/bush-a.glb' |
   'assets/nature/bush-b.glb' |
   'assets/nature/bush-c.glb' |
   'assets/nature/cactus/short.glb' |
   'assets/nature/cactus/tall.glb' |
+  'assets/nature/coffin.glb' |
+  'assets/nature/crystal-large.glb' |
   'assets/nature/flower-a.glb' |
   'assets/nature/flower-b.glb' |
   'assets/nature/flower-c.glb' |
   'assets/nature/grass-tuft.glb' |
+  'assets/nature/gravestone-cross-large.glb' |
   'assets/nature/gravestone/cross.glb' |
   'assets/nature/gravestone/round.glb' |
   'assets/nature/mound-a.glb' |
   'assets/nature/mound-b.glb' |
   'assets/nature/mushroom-a.glb' |
   'assets/nature/mushroom-b.glb' |
+  'assets/nature/pine-crooked.glb' |
   'assets/nature/rock/crystal-a.glb' |
   'assets/nature/rock/crystal-large.glb' |
   'assets/nature/rock/large-a.glb' |
@@ -71,6 +102,16 @@ export type StaticAssetPath =
   'assets/nature/rock/tall-a.glb' |
   'assets/nature/rock/td-rocks-large.glb' |
   'assets/nature/rock/td-rocks.glb' |
+  'assets/nature/rocks-mossy.glb' |
+  'assets/nature/rts/gold/large.glb' |
+  'assets/nature/rts/gold/medium.glb' |
+  'assets/nature/rts/gold/small.glb' |
+  'assets/nature/rts/rock/large.glb' |
+  'assets/nature/rts/rock/medium.glb' |
+  'assets/nature/rts/rock/small.glb' |
+  'assets/nature/rts/tree/broadleaf-a.glb' |
+  'assets/nature/rts/tree/broadleaf-b.glb' |
+  'assets/nature/rts/tree/pine.glb' |
   'assets/nature/stump-a.glb' |
   'assets/nature/tree/broadleaf-a.glb' |
   'assets/nature/tree/broadleaf-b.glb' |
@@ -83,11 +124,58 @@ export type StaticAssetPath =
   'assets/nature/tree/pine-tall-a.glb' |
   'assets/nature/tree/small-a.glb' |
   'assets/sql-wasm.wasm' |
+  'assets/structures/banner-faction.glb' |
   'assets/structures/barracks.glb' |
+  'assets/structures/crypt.glb' |
   'assets/structures/farm.glb' |
+  'assets/structures/fountain.glb' |
+  'assets/structures/gate-stone.glb' |
+  'assets/structures/granary.glb' |
+  'assets/structures/house.glb' |
+  'assets/structures/iron-fence-column.glb' |
+  'assets/structures/iron-fence.glb' |
+  'assets/structures/library.glb' |
   'assets/structures/portal-crypt.glb' |
   'assets/structures/portal-fence.glb' |
+  'assets/structures/rts/archery/first-age/l1.glb' |
+  'assets/structures/rts/archery/second-age/l1.glb' |
+  'assets/structures/rts/barracks/first-age/l1.glb' |
+  'assets/structures/rts/barracks/first-age/l2.glb' |
+  'assets/structures/rts/barracks/first-age/l3.glb' |
+  'assets/structures/rts/barracks/second-age/l1.glb' |
+  'assets/structures/rts/barracks/second-age/l2.glb' |
+  'assets/structures/rts/barracks/second-age/l3.glb' |
+  'assets/structures/rts/farm/first-age/l1.glb' |
+  'assets/structures/rts/farm/second-age/l1.glb' |
+  'assets/structures/rts/house/second-age.glb' |
+  'assets/structures/rts/market/first-age/l1.glb' |
+  'assets/structures/rts/market/second-age/l1.glb' |
+  'assets/structures/rts/storage/first-age/l1.glb' |
+  'assets/structures/rts/storage/second-age/l1.glb' |
+  'assets/structures/rts/temple/first-age/l1.glb' |
+  'assets/structures/rts/temple/second-age/l1.glb' |
+  'assets/structures/rts/tower-house/first-age.glb' |
+  'assets/structures/rts/tower-house/second-age.glb' |
+  'assets/structures/rts/town-center/first-age/l1.glb' |
+  'assets/structures/rts/town-center/first-age/l2.glb' |
+  'assets/structures/rts/town-center/first-age/l3.glb' |
+  'assets/structures/rts/town-center/second-age/l1.glb' |
+  'assets/structures/rts/town-center/second-age/l2.glb' |
+  'assets/structures/rts/town-center/second-age/l3.glb' |
+  'assets/structures/rts/wall-gate/first-age.glb' |
+  'assets/structures/rts/wall-gate/second-age.glb' |
+  'assets/structures/rts/wall-tower/first-age.glb' |
+  'assets/structures/rts/wall-tower/second-age.glb' |
+  'assets/structures/rts/wall/first-age.glb' |
+  'assets/structures/rts/wall/second-age.glb' |
   'assets/structures/town-hall.glb' |
+  'assets/structures/wall-stone-corner.glb' |
+  'assets/structures/wall-stone.glb' |
+  'assets/structures/watchtower-stone.glb' |
+  'assets/structures/wonder-cannon.glb' |
+  'assets/structures/wonder-keep.glb' |
+  'privacy.html' |
+  'privacy.md' |
   'sql-wasm.wasm';
 
 /**
@@ -99,20 +187,54 @@ export type StaticAssetDirectory =
   'assets/' |
   'assets/audio/' |
   'assets/audio/music/' |
+  'assets/audio/music/biome/' |
   'assets/audio/sfx/' |
   'assets/audio/stinger/' |
+  'assets/audio/ui/' |
   'assets/board/' |
   'assets/board/tile/' |
   'assets/characters/' |
   'assets/characters/enemies/' |
   'assets/characters/heroes/' |
   'assets/characters/rigs/' |
+  'assets/fonts/' |
   'assets/nature/' |
   'assets/nature/cactus/' |
   'assets/nature/gravestone/' |
   'assets/nature/rock/' |
+  'assets/nature/rts/' |
+  'assets/nature/rts/gold/' |
+  'assets/nature/rts/rock/' |
+  'assets/nature/rts/tree/' |
   'assets/nature/tree/' |
-  'assets/structures/';
+  'assets/structures/' |
+  'assets/structures/rts/' |
+  'assets/structures/rts/archery/' |
+  'assets/structures/rts/archery/first-age/' |
+  'assets/structures/rts/archery/second-age/' |
+  'assets/structures/rts/barracks/' |
+  'assets/structures/rts/barracks/first-age/' |
+  'assets/structures/rts/barracks/second-age/' |
+  'assets/structures/rts/farm/' |
+  'assets/structures/rts/farm/first-age/' |
+  'assets/structures/rts/farm/second-age/' |
+  'assets/structures/rts/house/' |
+  'assets/structures/rts/market/' |
+  'assets/structures/rts/market/first-age/' |
+  'assets/structures/rts/market/second-age/' |
+  'assets/structures/rts/storage/' |
+  'assets/structures/rts/storage/first-age/' |
+  'assets/structures/rts/storage/second-age/' |
+  'assets/structures/rts/temple/' |
+  'assets/structures/rts/temple/first-age/' |
+  'assets/structures/rts/temple/second-age/' |
+  'assets/structures/rts/tower-house/' |
+  'assets/structures/rts/town-center/' |
+  'assets/structures/rts/town-center/first-age/' |
+  'assets/structures/rts/town-center/second-age/' |
+  'assets/structures/rts/wall-gate/' |
+  'assets/structures/rts/wall-tower/' |
+  'assets/structures/rts/wall/';
 
 /**
  * Represents the relative paths of files located *directly* within a specific directory.
@@ -134,17 +256,31 @@ export type FilesInFolder<Dir extends '.' | StaticAssetDirectory> =
 
 const assets = new Set<string>([
   'assets/audio/music/ambient.wav',
+  'assets/audio/music/biome/crafting-hall.wav',
+  'assets/audio/music/biome/map-of-realms.wav',
+  'assets/audio/music/biome/town-of-eldor.wav',
   'assets/audio/music/gameplay.wav',
   'assets/audio/music/menu.wav',
   'assets/audio/sfx/build.ogg',
   'assets/audio/sfx/chop.ogg',
+  'assets/audio/sfx/death-thud.ogg',
+  'assets/audio/sfx/death-thud.wav',
   'assets/audio/sfx/deposit.ogg',
   'assets/audio/sfx/footstep-grass.ogg',
+  'assets/audio/sfx/footstep-sand.ogg',
+  'assets/audio/sfx/footstep-sand.wav',
   'assets/audio/sfx/footstep-stone.ogg',
+  'assets/audio/sfx/hit-metal.ogg',
+  'assets/audio/sfx/hit-metal.wav',
+  'assets/audio/sfx/hit-stone.ogg',
+  'assets/audio/sfx/hit-stone.wav',
   'assets/audio/sfx/hit.ogg',
+  'assets/audio/sfx/magic-cast.wav',
   'assets/audio/sfx/magic-impact.wav',
   'assets/audio/sfx/mine.ogg',
   'assets/audio/sfx/select.ogg',
+  'assets/audio/sfx/shield-deflect.wav',
+  'assets/audio/sfx/sword-clash.wav',
   'assets/audio/sfx/ui-achievement.wav',
   'assets/audio/sfx/ui-click.wav',
   'assets/audio/sfx/ui-confirm.wav',
@@ -152,6 +288,13 @@ const assets = new Set<string>([
   'assets/audio/sfx/ui-unlock.wav',
   'assets/audio/stinger/defeat.wav',
   'assets/audio/stinger/victory.wav',
+  'assets/audio/ui/achievement.wav',
+  'assets/audio/ui/click-01.wav',
+  'assets/audio/ui/click-02.wav',
+  'assets/audio/ui/click-03.wav',
+  'assets/audio/ui/discovery-unlock.wav',
+  'assets/audio/ui/error.wav',
+  'assets/audio/ui/research-complete.wav',
   'assets/board/tile/dirt.glb',
   'assets/board/tile/grass-forest.glb',
   'assets/board/tile/grass-hill.glb',
@@ -163,6 +306,7 @@ const assets = new Set<string>([
   'assets/board/tile/stone.glb',
   'assets/board/tile/water.glb',
   'assets/characters/enemies/black-knight.glb',
+  'assets/characters/enemies/monster.glb',
   'assets/characters/enemies/orc.glb',
   'assets/characters/enemies/vampire.glb',
   'assets/characters/enemies/witch.glb',
@@ -178,21 +322,30 @@ const assets = new Set<string>([
   'assets/characters/rigs/large-movement.glb',
   'assets/characters/rigs/medium-general.glb',
   'assets/characters/rigs/medium-movement.glb',
+  'assets/fonts/Cinzel-Bold.ttf',
+  'assets/fonts/Cinzel-Regular.ttf',
+  'assets/fonts/Inter-Bold.ttf',
+  'assets/fonts/Inter-Regular.ttf',
+  'assets/fonts/Metamorphous-Regular.ttf',
   'assets/nature/bush-a.glb',
   'assets/nature/bush-b.glb',
   'assets/nature/bush-c.glb',
   'assets/nature/cactus/short.glb',
   'assets/nature/cactus/tall.glb',
+  'assets/nature/coffin.glb',
+  'assets/nature/crystal-large.glb',
   'assets/nature/flower-a.glb',
   'assets/nature/flower-b.glb',
   'assets/nature/flower-c.glb',
   'assets/nature/grass-tuft.glb',
+  'assets/nature/gravestone-cross-large.glb',
   'assets/nature/gravestone/cross.glb',
   'assets/nature/gravestone/round.glb',
   'assets/nature/mound-a.glb',
   'assets/nature/mound-b.glb',
   'assets/nature/mushroom-a.glb',
   'assets/nature/mushroom-b.glb',
+  'assets/nature/pine-crooked.glb',
   'assets/nature/rock/crystal-a.glb',
   'assets/nature/rock/crystal-large.glb',
   'assets/nature/rock/large-a.glb',
@@ -202,6 +355,16 @@ const assets = new Set<string>([
   'assets/nature/rock/tall-a.glb',
   'assets/nature/rock/td-rocks-large.glb',
   'assets/nature/rock/td-rocks.glb',
+  'assets/nature/rocks-mossy.glb',
+  'assets/nature/rts/gold/large.glb',
+  'assets/nature/rts/gold/medium.glb',
+  'assets/nature/rts/gold/small.glb',
+  'assets/nature/rts/rock/large.glb',
+  'assets/nature/rts/rock/medium.glb',
+  'assets/nature/rts/rock/small.glb',
+  'assets/nature/rts/tree/broadleaf-a.glb',
+  'assets/nature/rts/tree/broadleaf-b.glb',
+  'assets/nature/rts/tree/pine.glb',
   'assets/nature/stump-a.glb',
   'assets/nature/tree/broadleaf-a.glb',
   'assets/nature/tree/broadleaf-b.glb',
@@ -214,11 +377,58 @@ const assets = new Set<string>([
   'assets/nature/tree/pine-tall-a.glb',
   'assets/nature/tree/small-a.glb',
   'assets/sql-wasm.wasm',
+  'assets/structures/banner-faction.glb',
   'assets/structures/barracks.glb',
+  'assets/structures/crypt.glb',
   'assets/structures/farm.glb',
+  'assets/structures/fountain.glb',
+  'assets/structures/gate-stone.glb',
+  'assets/structures/granary.glb',
+  'assets/structures/house.glb',
+  'assets/structures/iron-fence-column.glb',
+  'assets/structures/iron-fence.glb',
+  'assets/structures/library.glb',
   'assets/structures/portal-crypt.glb',
   'assets/structures/portal-fence.glb',
+  'assets/structures/rts/archery/first-age/l1.glb',
+  'assets/structures/rts/archery/second-age/l1.glb',
+  'assets/structures/rts/barracks/first-age/l1.glb',
+  'assets/structures/rts/barracks/first-age/l2.glb',
+  'assets/structures/rts/barracks/first-age/l3.glb',
+  'assets/structures/rts/barracks/second-age/l1.glb',
+  'assets/structures/rts/barracks/second-age/l2.glb',
+  'assets/structures/rts/barracks/second-age/l3.glb',
+  'assets/structures/rts/farm/first-age/l1.glb',
+  'assets/structures/rts/farm/second-age/l1.glb',
+  'assets/structures/rts/house/second-age.glb',
+  'assets/structures/rts/market/first-age/l1.glb',
+  'assets/structures/rts/market/second-age/l1.glb',
+  'assets/structures/rts/storage/first-age/l1.glb',
+  'assets/structures/rts/storage/second-age/l1.glb',
+  'assets/structures/rts/temple/first-age/l1.glb',
+  'assets/structures/rts/temple/second-age/l1.glb',
+  'assets/structures/rts/tower-house/first-age.glb',
+  'assets/structures/rts/tower-house/second-age.glb',
+  'assets/structures/rts/town-center/first-age/l1.glb',
+  'assets/structures/rts/town-center/first-age/l2.glb',
+  'assets/structures/rts/town-center/first-age/l3.glb',
+  'assets/structures/rts/town-center/second-age/l1.glb',
+  'assets/structures/rts/town-center/second-age/l2.glb',
+  'assets/structures/rts/town-center/second-age/l3.glb',
+  'assets/structures/rts/wall-gate/first-age.glb',
+  'assets/structures/rts/wall-gate/second-age.glb',
+  'assets/structures/rts/wall-tower/first-age.glb',
+  'assets/structures/rts/wall-tower/second-age.glb',
+  'assets/structures/rts/wall/first-age.glb',
+  'assets/structures/rts/wall/second-age.glb',
   'assets/structures/town-hall.glb',
+  'assets/structures/wall-stone-corner.glb',
+  'assets/structures/wall-stone.glb',
+  'assets/structures/watchtower-stone.glb',
+  'assets/structures/wonder-cannon.glb',
+  'assets/structures/wonder-keep.glb',
+  'privacy.html',
+  'privacy.md',
   'sql-wasm.wasm'
 ]);
 

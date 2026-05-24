@@ -4,8 +4,12 @@ import { assets } from '@/assets/assets';
 import { TILE_HEIGHT } from '@/config/world';
 import type { BiomeType } from '@/core/biome';
 import type { BoardData } from '@/core/board';
-import { axialToWorld } from '@/core/hex';
+import { axialToWorld, parseHexKey } from '@/core/hex';
 import { createMapPrng } from '@/core/rng';
+import type { BuildingType } from '@/ecs/components';
+import { biomeFlagsFor } from '@/rules/biome-flags';
+import { profileFor } from '@/rules/building-profiles';
+import { skinFor } from '@/rules/skins';
 
 // ---------------------------------------------------------------------------
 // Per-biome decoration palette
@@ -27,15 +31,18 @@ interface PropEntry {
   scale?: number;
 }
 
-/** Weighted palette for one biome. `density` ∈ [0,1] — fraction of eligible tiles decorated. */
+/**
+ * Weighted prop pool for one biome. Density moved to
+ * `BIOME_FLAGS.decorationDensity` (M_AUDIT2.ARCH.1) so other systems
+ * can read it; the prop pool stays here (rules-of-hooks anchors the
+ * 18 useGLTF call order to DECO_IDS).
+ */
 interface BiomePalette {
-  density: number;
   props: PropEntry[];
 }
 
 const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
   FOREST: {
-    density: 0.55,
     props: [
       { id: 'nature.tree.broadleaf-a', weight: 20 },
       { id: 'nature.tree.broadleaf-b', weight: 15 },
@@ -52,7 +59,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   GRASS: {
-    density: 0.32,
     props: [
       { id: 'nature.tree.small-a', weight: 18 },
       { id: 'nature.tree.broadleaf-a', weight: 10 },
@@ -67,7 +73,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   BEACH: {
-    density: 0.18,
     props: [
       { id: 'nature.tree.palm-a', weight: 30 },
       { id: 'nature.tree.palm-bend', weight: 20 },
@@ -77,7 +82,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   DESERT: {
-    density: 0.22,
     props: [
       { id: 'nature.cactus.tall', weight: 25 },
       { id: 'nature.cactus.short', weight: 20 },
@@ -88,7 +92,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   HIGHLAND: {
-    density: 0.3,
     props: [
       { id: 'nature.rock.large-a', weight: 20 },
       { id: 'nature.rock.large-b', weight: 18 },
@@ -101,7 +104,6 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
     ],
   },
   MOUNTAIN: {
-    density: 0.35,
     props: [
       { id: 'nature.rock.large-a', weight: 18 },
       { id: 'nature.rock.large-b', weight: 16 },
@@ -155,6 +157,23 @@ const DECO_IDS = [
   'nature.mound-a',
   'nature.mound-b',
 ] as const;
+
+// M_MICRO.B.4 — verify DECO_IDS covers every asset referenced by
+// PALETTES. The DECO_IDS list is the hook-call source (must be
+// fixed-order for rules-of-hooks); the palettes are the per-biome
+// scatter sources. Drift between the two would silently skip preload
+// for new palette additions; this assertion fires at module-load if
+// a palette mentions an asset DECO_IDS forgot.
+const DECO_ID_SET: ReadonlySet<string> = new Set(DECO_IDS);
+for (const palette of Object.values(PALETTES)) {
+  for (const prop of palette.props) {
+    if (!DECO_ID_SET.has(prop.id)) {
+      throw new Error(
+        `Decoration: PALETTES references "${prop.id}" but it is missing from DECO_IDS — add it (in fixed order) to keep useGLTF call order constant per rules-of-hooks.`,
+      );
+    }
+  }
+}
 
 // Preload every decoration mesh at module load time.
 for (const id of DECO_IDS) {
@@ -308,8 +327,11 @@ function planDecoration(board: BoardData, occupiedKeys: ReadonlySet<string>): De
 
     const palette = PALETTES[tile.type];
     if (!palette) continue;
-
-    if (rng() > palette.density) continue;
+    // M_AUDIT2.ARCH.1 — density scalar moved onto BIOME_FLAGS so other
+    // systems can read it; PALETTES.props stay anchored here (the 18
+    // useGLTF call order is the rules-of-hooks anchor).
+    const density = biomeFlagsFor(tile.type).decorationDensity;
+    if (density === null || rng() > density) continue;
 
     const prop = pickWeighted(palette.props, rng);
 
@@ -337,6 +359,138 @@ function planDecoration(board: BoardData, occupiedKeys: ReadonlySet<string>): De
 // Component
 // ---------------------------------------------------------------------------
 
+// M_REGISTRY.7 + M_ARCH_UNIFY.9 — per-faction base-accretion is the
+// `baseAccretion` slot on Skin (`src/rules/skins.ts` → BaseAccretionSkin).
+// Was a local BaseAccretion interface here; type moved with the data so
+// every consumer reads through skinFor(faction).baseAccretion.
+
+/**
+ * Per-building accretion config (M_MAPGEN.13). Each completed building's
+ * type drives a small prop scatter in a 1-hex ring around it (per user:
+ * "different buildings can have different adherence and accretion rules
+ * and so on"). Composes with BASE_ACCRETION (which is per-FactionBase).
+ * Adding a building accretion = ONE row.
+ */
+// M_REGISTRY.7 + M_ARCH_UNIFY.9 — per-building accretion moved to the
+// BUILDING_PROFILES `accretion` slot (`src/rules/building-profiles.ts`
+// → AccretionSlot). Decoration reads through profileFor(type).accretion;
+// a missing slot = no accretion (House / Watchtower / Wall / TownHall /
+// Wonder remain minimal; TownHall already gets baseAccretion via the
+// Skin slot).
+
+// M_REGISTRY.7 — BASE_ACCRETION moved to SKINS[faction].baseAccretion.
+// Decoration reads through skinFor(faction).baseAccretion; the per-
+// faction config table lives in src/rules/skins.ts. A future tribe
+// drops its accretion pool in as ONE Skin row.
+
+/**
+ * M_MAPGEN.8+.11 — paint a faction-base accretion cluster around the
+ * given base hex. Driven entirely by the BASE_ACCRETION config table;
+ * adding a faction or swapping a prop pool is one config-row change.
+ */
+function appendBaseAccretion(
+  out: DecoInstance[],
+  board: BoardData,
+  baseKey: string | undefined,
+  faction: 'player' | 'enemy',
+): void {
+  if (!baseKey) return;
+  const { q: bq, r: br } = parseHexKey(baseKey);
+  // M_REGISTRY.7 — read from the Skin slot.
+  const cfg = skinFor(faction).baseAccretion;
+  const rng = createMapPrng(`${board.seedPhrase}:${cfg.seedTag}`);
+  const [scaleLo, scaleHi] = cfg.scaleRange;
+  for (let dq = -cfg.radius; dq <= cfg.radius; dq++) {
+    for (let dr = -cfg.radius; dr <= cfg.radius; dr++) {
+      const q = bq + dq;
+      const r = br + dr;
+      const dist = (Math.abs(dq) + Math.abs(dr) + Math.abs(dq + dr)) / 2;
+      if (dist === 0 || dist > cfg.radius) continue;
+      const tile = board.tiles.get(`${q},${r}`);
+      if (!tile || tile.type === 'OCEAN' || tile.type === 'LAKE') continue;
+      if (tile.isCrossingLanding) continue;
+      if (rng() > cfg.density) continue;
+      const idx = Math.floor(rng() * cfg.propPool.length);
+      const assetId = cfg.propPool[idx] ?? cfg.propPool[0];
+      if (!assetId) continue;
+      const offsetX = (rng() - 0.5) * 0.7;
+      const offsetZ = (rng() - 0.5) * 0.7;
+      const rotY = rng() * Math.PI * 2;
+      const { x, z } = axialToWorld(q, r);
+      out.push({
+        key: `${cfg.seedTag}-${q},${r}`,
+        assetId,
+        x: x + offsetX,
+        y: tile.level * TILE_HEIGHT,
+        z: z + offsetZ,
+        rotY,
+        scale: scaleLo + rng() * (scaleHi - scaleLo),
+      });
+    }
+  }
+}
+
+/**
+ * M_MAPGEN.13 — per-completed-building accretion scatter. Reads
+ * BUILDING_ACCRETION; iterates each build site that has a configured
+ * profile + is complete; paints a 1-hex ring of props.
+ */
+interface BuildSiteSnap {
+  key: string;
+  q: number;
+  r: number;
+  level: number;
+  type: BuildingType;
+  isComplete: boolean;
+}
+
+function appendBuildingAccretion(
+  out: DecoInstance[],
+  board: BoardData,
+  sites: ReadonlyArray<BuildSiteSnap>,
+): void {
+  const rng = createMapPrng(`${board.seedPhrase}:building-accretion`);
+  const NEIGHBORS = [
+    [1, 0],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [0, -1],
+    [1, -1],
+  ] as const;
+  for (const site of sites) {
+    if (!site.isComplete) continue;
+    // M_REGISTRY.7 — read from the BUILDING_PROFILES slot.
+    const cfg = profileFor(site.type).accretion;
+    if (!cfg) continue;
+    const [scaleLo, scaleHi] = cfg.scaleRange;
+    for (const [dq, dr] of NEIGHBORS) {
+      const q = site.q + dq;
+      const r = site.r + dr;
+      const tile = board.tiles.get(`${q},${r}`);
+      if (!tile || tile.type === 'OCEAN' || tile.type === 'LAKE') continue;
+      if (tile.isCrossingLanding) continue;
+      if (rng() > cfg.density) continue;
+      const idx = Math.floor(rng() * cfg.propPool.length);
+      const assetId = cfg.propPool[idx] ?? cfg.propPool[0];
+      if (!assetId) continue;
+      const offsetX = (rng() - 0.5) * 0.6;
+      const offsetZ = (rng() - 0.5) * 0.6;
+      const rotY = rng() * Math.PI * 2;
+      const { x, z } = axialToWorld(q, r);
+      out.push({
+        key: `bld-${site.key}-${q},${r}`,
+        assetId,
+        x: x + offsetX,
+        y: tile.level * TILE_HEIGHT,
+        z: z + offsetZ,
+        rotY,
+        scale: scaleLo + rng() * (scaleHi - scaleLo),
+      });
+    }
+  }
+}
+
 /** Props for the Decoration component. */
 export interface DecorationProps {
   /** The generated board (supplies tile biomes + levels). */
@@ -348,6 +502,12 @@ export interface DecorationProps {
    * call site.
    */
   occupiedKeys: ReadonlySet<string>;
+  /** Enemy base tile key — drives the enemy faction accretion cluster. */
+  enemyBaseKey?: string;
+  /** Player base tile key — drives the player faction accretion cluster. */
+  playerBaseKey?: string;
+  /** Live build-site snapshots — drives per-building accretion (M_MAPGEN.13). */
+  buildSites?: ReadonlyArray<BuildSiteSnap>;
 }
 
 /**
@@ -357,15 +517,36 @@ export interface DecorationProps {
  * no pathfinding impact. Geometry is owned by the useGLTF cache and shared via
  * Clone so no manual disposal is needed here.
  */
-export function Decoration({ board, occupiedKeys }: DecorationProps) {
+export function Decoration({
+  board,
+  occupiedKeys,
+  enemyBaseKey,
+  playerBaseKey,
+  buildSites,
+}: DecorationProps) {
   const gltfs = useDecorationGltfs();
 
   // Compute the placement plan once per board + occupiedKeys change.
-  // occupiedKeys is a Set — use its size as a proxy dep so React detects changes.
-  const instances = useMemo(
-    () => planDecoration(board, occupiedKeys),
-    [board, occupiedKeys], // eslint-disable-line react-hooks/exhaustive-deps
-  );
+  // M_AUDIT2.ARCH.56 — buildSitesKey condenses the per-tick snapshot
+  // into a stable string dep. The caller already diff-checks `sites`
+  // for identity (GameCanvas DecorationLive), so this string is short
+  // (active build sites only) and only changes on actual placement
+  // events. Lifting to a counter would require threading
+  // buildSitesGeneration into Decoration's prop API; keep the string
+  // dep since the cost is bounded by the typical ~20 build sites.
+  //
+  // buildSitesKey condenses the per-tick snapshot into a string dep so the
+  // memo re-fires when buildings complete (not on every frame).
+  const buildSitesKey = (buildSites ?? []).map((s) => `${s.key}:${s.isComplete ? 1 : 0}`).join('|');
+  // biome-ignore lint/correctness/useExhaustiveDependencies: buildSitesKey is the intentional snapshot dep (see comment above); raw buildSites would re-run every frame.
+  const instances = useMemo(() => {
+    const list = planDecoration(board, occupiedKeys);
+    appendBaseAccretion(list, board, playerBaseKey, 'player');
+    appendBaseAccretion(list, board, enemyBaseKey, 'enemy');
+    if (buildSites && buildSites.length > 0) appendBuildingAccretion(list, board, buildSites);
+    return list;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board, occupiedKeys, enemyBaseKey, playerBaseKey, buildSitesKey]);
 
   return (
     <group name="decoration">

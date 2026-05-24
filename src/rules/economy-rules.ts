@@ -5,8 +5,16 @@ import { canAfford, type GameEconomy, type ResourceCost } from '@/game/economy';
 /** Supply each trainable unit consumes. Enemies are not supply-tracked. */
 export const SUPPLY_COST: Record<UnitType, number> = ECONOMY.supplyCosts;
 
-/** Resource cost to train a trainable unit (Peon at Town Hall, Footman at Barracks). */
-export const UNIT_COSTS: Record<'Peon' | 'Footman', ResourceCost> = ECONOMY.unitCosts;
+/**
+ * Resource cost to train a trainable unit. The set of keys is the
+ * trainable-unit subset of UnitType; widening as new trainable units
+ * land (Wizard, etc.) only requires adding the row to economy.json.
+ */
+export type TrainableUnit = 'Peon' | 'Footman' | 'Scout' | 'Wizard' | 'Hero';
+export const UNIT_COSTS: Record<TrainableUnit, ResourceCost> = ECONOMY.unitCosts as Record<
+  TrainableUnit,
+  ResourceCost
+>;
 
 /**
  * Whether `unit` can be trained without exceeding `economy`'s supply cap.
@@ -23,7 +31,7 @@ export function canTrain(economy: GameEconomy, unit: UnitType): boolean {
  */
 export function canTrainComplete(
   economy: GameEconomy,
-  unit: 'Peon' | 'Footman',
+  unit: TrainableUnit,
   peonCount: number,
   houseCount: number,
   granaryCount: number,
@@ -35,9 +43,31 @@ export function canTrainComplete(
   return true;
 }
 
-/** Recompute a faction's supply cap from its list of complete buildings. */
-export function recomputeMaxSupply(economy: GameEconomy, buildings: BuildingType[]): void {
-  economy.maxSupply = buildings.reduce((sum, b) => sum + buildingSupplyFor(b), 0);
+/**
+ * Recompute a faction's supply cap from its list of complete
+ * buildings. M_EXPANSION.F.86 — buildings may carry a `tier` (1, 2,
+ * or 3); supply scales linearly by tier so a tier-3 House yields
+ * 3× the supply cap of a tier-1 House. Backward-compat: a plain
+ * BuildingType (no tier info) is treated as tier 1.
+ */
+export interface BuildingTierRow {
+  type: BuildingType;
+  tier?: number;
+}
+export function recomputeMaxSupply(
+  economy: GameEconomy,
+  buildings: ReadonlyArray<BuildingType | BuildingTierRow>,
+): void {
+  let total = 0;
+  for (const b of buildings) {
+    if (typeof b === 'string') {
+      total += buildingSupplyFor(b);
+    } else {
+      const tier = Math.max(1, b.tier ?? 1);
+      total += buildingSupplyFor(b.type) * tier;
+    }
+  }
+  economy.maxSupply = total;
 }
 
 /** How many peons each House supports. */

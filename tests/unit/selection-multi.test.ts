@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { FactionTrait, Selectable, Transform, Unit } from '@/ecs/components';
 import { createEcsWorld } from '@/ecs/world';
-import { clearSelection, selectEntities, selectedEntities } from '@/game/selection';
 import type { GameState } from '@/game/game-state';
+import { clearSelection, selectEntities, selectedEntities } from '@/game/selection';
 
 /** A minimal GameState shim for selection unit tests. */
 function makeGame(): Pick<GameState, 'world' | 'selectedId' | 'selectedIds'> {

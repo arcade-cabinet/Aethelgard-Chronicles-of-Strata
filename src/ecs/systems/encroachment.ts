@@ -1,31 +1,25 @@
 import type { World } from 'koota';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
-import { getHexKey } from '@/core/hex';
-import { type Faction, FactionTrait, HexPosition, Unit, type UnitType } from '@/ecs/components';
+import { encroachmentGraceSecondsFor } from '@/config/combat';
+import { HEX_DIRECTIONS } from '@/config/world';
+import { getHexKey, parseHexKey } from '@/core/hex';
+import { FACTIONS, type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { Difficulty } from '@/game/difficulty';
 import { claimTile, releaseTile, type ZoneState } from '@/game/zone';
 
-/** Military unit roles — peons are nonviolent and never encroach. */
-const MILITARY: ReadonlySet<UnitType> = new Set([
-  'Footman',
-  'Goblin',
-  'Orc',
-  'Vampire',
-  'Witch',
-  'BlackKnight',
-]);
+// M_REGISTRY.17 — MILITARY unified into UNIT_PROFILES.combatRole.
+import { MILITARY_ROLES as MILITARY } from '@/rules/unit-profiles';
 
 /**
  * Encroachment grace window (seconds) per difficulty (spec 102). When an enemy
  * military unit stands on your controlled tile, the tile pulses for this many
  * seconds — if you do not respond by bringing a military unit to defend it, it
  * flips to the encroaching faction.
+ *
+ * M_AUDIT2.ARCH.9 — PULSE_SECONDS table moved into config/combat.json
+ * (COMBAT.encroachment.graceSecondsByDifficulty); accessor
+ * `encroachmentGraceSecondsFor`.
  */
-const PULSE_SECONDS: Record<Difficulty, number> = {
-  easy: 12, // long grace — the player has time to react
-  normal: 7,
-  hard: 4,
-};
 
 /** The other faction. */
 function opposite(faction: Faction): Faction {
@@ -46,19 +40,25 @@ function opposite(faction: Faction): Faction {
  * Peons never encroach (they're nonviolent — `MILITARY` excludes them) and
  * peon-rules already routes them away from pulsing tiles (M8.6c).
  */
+// M_AUDIT2.ARCH.51 — per-tick `new Set()` × 2 was 120 Set allocations/sec
+// at 60Hz. Hoist + .clear() between ticks; identity persists.
+const REUSABLE_MILITARY: Record<Faction, Set<string>> = {
+  player: new Set(),
+  enemy: new Set(),
+};
+
 export function encroachmentSystem(
   world: World,
   zones: Record<Faction, ZoneState>,
   delta: number,
   difficulty: Difficulty,
 ): void {
-  const grace = PULSE_SECONDS[difficulty];
+  const grace = encroachmentGraceSecondsFor(difficulty);
 
   // index every faction's military positions for quick membership tests
-  const militaryByFaction: Record<Faction, Set<string>> = {
-    player: new Set(),
-    enemy: new Set(),
-  };
+  const militaryByFaction = REUSABLE_MILITARY;
+  militaryByFaction.player.clear();
+  militaryByFaction.enemy.clear();
   for (const e of world.query(Unit, HexPosition, FactionTrait)) {
     const role = e.get(Unit)?.unitType;
     if (!role || !MILITARY.has(role)) continue;
@@ -68,7 +68,8 @@ export function encroachmentSystem(
     militaryByFaction[faction].add(getHexKey(hex.q, hex.r));
   }
 
-  for (const faction of ['player', 'enemy'] as const) {
+  // M_REGISTRY.29 — iterate FACTIONS, not literal pair.
+  for (const faction of FACTIONS) {
     const myZone = zones[faction];
     const otherZone = zones[opposite(faction)];
     const myMilitary = militaryByFaction[faction];
@@ -93,9 +94,13 @@ export function encroachmentSystem(
         releaseTile(myZone, tileKey);
         claimTile(otherZone, tileKey);
         myZone.pulsing.delete(tileKey);
-        // M_AUDIO.6 — only chime when the PLAYER loses a tile (an enemy
-        // claim of player territory is the meaningful audio event; the
-        // mirror case would just be the enemy AI's progress chatter).
+        // M_AUDIO.6 — only chime when the LOCAL OBSERVER's faction loses
+        // a tile (today that's hard-coded to 'player' because the local
+        // observer IS the player; in an AI-vs-AI replay this should
+        // become `faction === game.localObserverFaction`). Tracked as
+        // M_REGISTRY.28 — `selectedEntities(game)` + observer-faction
+        // session context. The check stays here as documentation-by-code
+        // until that session context lands.
         if (faction === 'player') emitUiSound('critical-alarm');
       } else {
         myZone.pulsing.set(tileKey, elapsed);
@@ -106,17 +111,11 @@ export function encroachmentSystem(
 
 /** Is any military unit of `set` on a tile adjacent to `tileKey`? */
 function hasAdjacentMilitary(tileKey: string, set: Set<string>): boolean {
-  const [q, r] = tileKey.split(',').map(Number);
-  const dirs: Array<[number, number]> = [
-    [1, 0],
-    [0, 1],
-    [-1, 1],
-    [-1, 0],
-    [0, -1],
-    [1, -1],
-  ];
-  for (const [dq, dr] of dirs) {
-    if (set.has(`${(q ?? 0) + dq},${(r ?? 0) + dr}`)) return true;
+  const { q, r } = parseHexKey(tileKey);
+  // M_MICRO.2.3 — direction pairs come from HEX_DIRECTIONS (shared
+  // config); the local literal was a duplicate.
+  for (const d of HEX_DIRECTIONS) {
+    if (set.has(`${q + d.q},${r + d.r}`)) return true;
   }
   return false;
 }

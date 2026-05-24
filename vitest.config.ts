@@ -1,8 +1,8 @@
 import path from 'node:path';
-import { playwright } from '@vitest/browser-playwright';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import { playwright } from '@vitest/browser-playwright';
 import staticAssetsPlugin from 'vite-static-assets-plugin';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [

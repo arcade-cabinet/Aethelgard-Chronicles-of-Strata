@@ -12,7 +12,7 @@
 import type { AudioBuses } from './buses';
 import { playSound } from './buses';
 import type { GameAudioEvent } from './sound-map';
-import { SOUND_FOR_EVENT } from './sound-map';
+import { resolveSoundId, SOUND_FOR_EVENT } from './sound-map';
 
 /** A registered sound player from the useAudio hook. */
 interface RegisteredPlayer {
@@ -30,11 +30,23 @@ export function registerUiSoundPlayer(buses: AudioBuses): () => void {
 }
 
 /**
+ * M_EXPANSION.AU.40 — Expose the registered AudioBuses so HUD
+ * components can call buses-helpers (startAmbient, duckMusic) that
+ * need the active buses object. Returns null when the audio system
+ * has not mounted yet (matches the emitUiSound no-op contract).
+ */
+export function getRegisteredBuses(): AudioBuses | null {
+  return _player?.buses ?? null;
+}
+
+/**
  * Fire a game audio event from any HUD component.
  * No-op if the audio system has not mounted yet.
  */
 export function emitUiSound(event: GameAudioEvent): void {
   if (!_player) return;
   const mapping = SOUND_FOR_EVENT[event];
-  playSound(_player.buses, mapping.bus, mapping.soundId);
+  const soundId = resolveSoundId(mapping);
+  if (!soundId) return;
+  playSound(_player.buses, mapping.bus, soundId);
 }

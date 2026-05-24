@@ -16,4 +16,35 @@ describe('auto-save', () => {
     for (let i = 0; i < 100; i++) tickAutoSave(auto, 1);
     expect(save).not.toHaveBeenCalled();
   });
+
+  it('M_AUDIT2.SEC2.27 — skips and counts when a previous save is in flight', async () => {
+    let resolvePending: (() => void) | null = null;
+    let fired = 0;
+    const auto = createAutoSave(() => {
+      fired += 1;
+      return new Promise<void>((resolve) => {
+        resolvePending = resolve;
+      });
+    });
+    // First tick fires the save (promise left pending).
+    for (let i = 0; i < 300; i++) tickAutoSave(auto, 1);
+    expect(fired).toBe(1);
+    expect(auto.saving).toBe(true);
+    expect(auto.skipped).toBe(0);
+
+    // Second interval ticks past — should NOT fire; increments skipped.
+    for (let i = 0; i < 300; i++) tickAutoSave(auto, 1);
+    expect(fired).toBe(1);
+    expect(auto.skipped).toBe(1);
+
+    // Resolve the pending save; next interval fires again.
+    (resolvePending as null | (() => void))?.();
+    // Drain enough microtasks for the .then/.catch/.finally chain
+    // to settle (M_POLISH3.S.3 added a .then() for the save-committed
+    // event dispatch, which adds one more microtask hop).
+    for (let i = 0; i < 4; i++) await Promise.resolve();
+    expect(auto.saving).toBe(false);
+    for (let i = 0; i < 300; i++) tickAutoSave(auto, 1);
+    expect(fired).toBe(2);
+  });
 });

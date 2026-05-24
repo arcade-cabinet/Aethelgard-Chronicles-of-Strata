@@ -25,6 +25,7 @@ import { EntityManager } from 'yuka';
 import type { BoardData } from '@/core/board';
 import { axialToWorld, getHexKey } from '@/core/hex';
 import { findPath, type NavGraph } from '@/core/pathfinding';
+import { makeMoveCostFn } from '@/core/terrain-cost';
 import { EnemyTarget, FactionTrait, HexPosition, PathQueue, Transform } from '@/ecs/components';
 import {
   buildEntityIndex,
@@ -124,7 +125,13 @@ export class AiDirector {
         } else {
           const th = target.get(HexPosition);
           if (th) {
-            const route = findPath(graph, getHexKey(hexComp.q, hexComp.r), getHexKey(th.q, th.r));
+            // M_POLISH2.RTS.24a — terrain-aware AI movement.
+            const route = findPath(
+              graph,
+              getHexKey(hexComp.q, hexComp.r),
+              getHexKey(th.q, th.r),
+              makeMoveCostFn(board.tiles),
+            );
             if (route && route.length > 1) {
               // Update PathQueue (used by pathFollow system).
               const newSteps = route.slice(1).map((k) => `${k},${board.tiles.get(k)?.level ?? 0}`);

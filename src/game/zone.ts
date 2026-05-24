@@ -1,6 +1,7 @@
 import type { World } from 'koota';
 import { axialToWorld, getHexKey, hexDistance } from '@/core/hex';
 import {
+  FACTIONS,
   type Faction,
   FactionBase,
   FactionTrait,
@@ -8,6 +9,7 @@ import {
   Transform,
   Unit,
 } from '@/ecs/components';
+import { UNIT_PROFILES } from '@/rules/unit-profiles';
 
 /**
  * Per-faction territory + perception. Two independent sets (spec 102):
@@ -34,27 +36,44 @@ export interface ZoneState {
    * encroachment grace window, the tile flips to the encroaching faction.
    */
   pulsing: Map<string, number>;
+  /**
+   * Generation counter — bumped on every claim/release of a `controlled`
+   * tile (M_MICRO.5.2). ZoneBorder.tsx caches the rendered Float32Array
+   * by this counter; rebuild only when controlled changed. Was rebuilding
+   * every frame at 60Hz — the HOTTEST PERF BUG in the codebase per the
+   * micro audit.
+   */
+  generation: number;
 }
 
 /** Create an empty zone state — no territory, nothing observed. */
 export function createZoneState(): ZoneState {
-  return { controlled: new Set(), observed: new Set(), pulsing: new Map() };
+  return { controlled: new Set(), observed: new Set(), pulsing: new Map(), generation: 0 };
 }
 
 /** Claim a tile for a faction — called when a peon begins exploiting it. */
 export function claimTile(zone: ZoneState, key: string): void {
-  zone.controlled.add(key);
+  if (!zone.controlled.has(key)) {
+    zone.controlled.add(key);
+    zone.generation += 1;
+  }
 }
 
 /** Release a controlled tile — resource cleared, or lost to encroachment. */
 export function releaseTile(zone: ZoneState, key: string): void {
-  zone.controlled.delete(key);
+  if (zone.controlled.delete(key)) {
+    zone.generation += 1;
+  }
 }
 
+// M_AUDIT2.ARCH.15 — vision constants moved to config/world.json
+// (WORLD.vision). The const exports stay for back-compat with existing
+// importers; values now derived from config.
+import { WORLD } from '@/config/world';
 /** Default vision-cone radius (hex tiles) of a unit. */
-export const BASE_UNIT_VISION_RADIUS = 5;
+export const BASE_UNIT_VISION_RADIUS = WORLD.vision.baseUnitRadius;
 /** Half-angle of a unit's forward vision cone, in radians (≈ 70° total). */
-const UNIT_CONE_HALF_ANGLE = Math.PI * 0.39;
+const UNIT_CONE_HALF_ANGLE = WORLD.vision.unitConeHalfAngle;
 /** Vision radius (hex tiles) of a base — a full 360° circle. */
 const BASE_VISION_RADIUS = 7;
 
@@ -104,12 +123,18 @@ export function updateObserved(
     if (e.get(FactionTrait)?.faction !== faction) continue;
     const hex = e.get(HexPosition);
     const tf = e.get(Transform);
-    if (!hex || !tf) continue;
+    const unitComp = e.get(Unit);
+    if (!hex || !tf || !unitComp) continue;
+    // M_POLISH2.RTS.22 — per-unit vision radius: Scout (and any future unit
+    // with visionRadiusMultiplier) gets a scaled radius. All other units use
+    // the global scaled radius unchanged.
+    const profile = UNIT_PROFILES[unitComp.unitType];
+    const radius = unitVisionRadius * (profile.visionRadiusMultiplier ?? 1);
     sources.push({
       q: hex.q,
       r: hex.r,
       facing: tf.rotationY,
-      radius: unitVisionRadius,
+      radius,
       circle: false,
     });
   }
@@ -142,4 +167,33 @@ export function tileController(zones: Record<Faction, ZoneState>, key: string): 
   if (zones.player.controlled.has(key)) return 'player';
   if (zones.enemy.controlled.has(key)) return 'enemy';
   return null;
+}
+
+/**
+ * Seed each faction's `controlled` set with the attractor footprint around
+ * its base — every walkable tile within ATTRACTOR_RADIUS hexes of the
+ * faction's anchor counts as initially-controlled (M_MAPGEN.1). Without
+ * this, the home base appeared to emit no zone of control because the
+ * encroachment system only flips tiles, never seeds them.
+ */
+export function seedZonesFromAttractors(
+  zones: Record<Faction, ZoneState>,
+  board: import('@/core/board').BoardData,
+  centers: Record<Faction, { q: number; r: number }>,
+): Record<Faction, ZoneState> {
+  const RADIUS = 2;
+  // M_REGISTRY.29 — iterate FACTIONS const, not literal pair.
+  for (const f of FACTIONS) {
+    const center = centers[f];
+    for (const tile of board.tiles.values()) {
+      if (!tile.walkable) continue;
+      const d =
+        (Math.abs(tile.q - center.q) +
+          Math.abs(tile.r - center.r) +
+          Math.abs(tile.q + tile.r - center.q - center.r)) /
+        2;
+      if (d <= RADIUS) zones[f].controlled.add(getHexKey(tile.q, tile.r));
+    }
+  }
+  return zones;
 }

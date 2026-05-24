@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { setMuted } from '@/audio/buses';
-import type { Persistence } from '@/persistence/persistence';
-import { HUD_THEME } from './hud-theme';
+import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
+import { HudPill } from './HudPill';
 
 /** The Preferences key the mute state is persisted under. */
-export const MUTE_PREF_KEY = 'muted';
+// M_SEC.33 — Preferences keys are namespaced via the PREF_KEYS enum.
+export const MUTE_PREF_KEY = PREF_KEYS.muted;
 
 /**
  * The audio mute toggle (top-right). Calls `setMuted` and persists the choice
@@ -14,12 +15,20 @@ export const MUTE_PREF_KEY = 'muted';
 export function SoundToggle({ persistence }: { persistence: Persistence }) {
   const [muted, setMutedState] = useState(false);
 
-  // restore the persisted mute state on mount
+  // restore the persisted mute state on mount.
+  // M_SEC.15 — strict ternary: only `'true'` activates mute; any
+  // other value (including a tampered Preferences string) defaults
+  // to unmuted. safePersistenceRead also catches the read failure.
   useEffect(() => {
     let cancelled = false;
-    void persistence.getSetting(MUTE_PREF_KEY).then((value) => {
+    void safePersistenceRead(
+      persistence,
+      MUTE_PREF_KEY,
+      (raw) => raw === 'true',
+      false,
+      'SoundToggle',
+    ).then((isMuted) => {
       if (cancelled) return;
-      const isMuted = value === 'true';
       setMutedState(isMuted);
       setMuted(isMuted);
     });
@@ -35,27 +44,20 @@ export function SoundToggle({ persistence }: { persistence: Persistence }) {
     void persistence.setSetting(MUTE_PREF_KEY, String(next));
   };
 
+  // M_AUDIT2.UX.27 — render through HudPill so the slot table
+  // (SLOT_POSITIONS.{landscape,portrait}.sound) is the single source
+  // of position truth. Was a hand-coded `position: absolute; top: 16;
+  // right: 16` that collided with the pause pill on landscape and
+  // the resource bar on portrait.
   return (
-    <button
-      type="button"
+    <HudPill
+      slot="sound"
       id="sound-toggle"
+      ariaLabel={muted ? 'Unmute audio' : 'Mute audio'}
       onClick={toggle}
-      style={{
-        position: 'absolute',
-        top: 16,
-        right: 16,
-        padding: '8px 12px',
-        borderRadius: 10,
-        border: `1px solid ${HUD_THEME.color.border}`,
-        background: HUD_THEME.color.panel,
-        color: muted ? HUD_THEME.color.muted : HUD_THEME.color.accent,
-        fontFamily: HUD_THEME.font.body,
-        fontSize: '0.8rem',
-        fontWeight: 700,
-        cursor: 'pointer',
-      }}
+      variant={muted ? 'default' : 'default'}
     >
       {muted ? '🔇 Audio OFF' : '🔊 Audio ON'}
-    </button>
+    </HudPill>
   );
 }

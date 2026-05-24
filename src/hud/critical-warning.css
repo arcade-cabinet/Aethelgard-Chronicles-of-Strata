@@ -1,0 +1,26 @@
+/* M_AUDIT2.UX.33 — keyframes lifted out of inline <style>{`...`}</style>
+   inside CriticalWarning.tsx. Inline keyframes re-allocate the style
+   tag on every mount; lifting to a CSS file imported once at the
+   module level lets the browser parse + cache the rule exactly once. */
+
+@keyframes critical-pulse {
+  0% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.4;
+  }
+}
+
+/* Vestibular-safe: kill the infinite pulse for users who prefer
+   reduced motion; static vignette remains (M_AUDIT2.UX.1). */
+@media (prefers-reduced-motion: reduce) {
+  #critical-warning {
+    /* biome-ignore lint/complexity/noImportantStyles: inline-style animation requires !important to override; intentional vestibular-safe escape. */
+    animation: none !important;
+    opacity: 0.85;
+  }
+}

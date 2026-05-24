@@ -70,20 +70,122 @@ export interface Persistence {
    * so each session gets a distinct, deterministic event stream.
    */
   advanceAndPersistEventSeed(currentRng: Rng): Promise<string>;
+  /**
+   * M_AUDIT2.SEC2.6 — wipe ALL persisted state: every save row + every
+   * Preference key (mute, onboarding, event seed). Used by the
+   * "Reset all data" settings option (planned UX hook) and exposed
+   * for tests that need a clean slate without re-creating the
+   * persistence facade. Best-effort: errors on individual rows or
+   * keys are logged + swallowed so a partial failure doesn't strand
+   * the user.
+   */
+  reset(): Promise<void>;
+}
+
+/**
+ * M_SEC.22 — thrown by `Persistence.load(id)` when the row exists
+ * but its snapshot column fails to parse / validate. Lets the App's
+ * resume path differentiate "no save here" (returns null) from "save
+ * corrupted" (throws).
+ */
+export class CorruptSaveError extends Error {
+  constructor(
+    public readonly saveId: number,
+    public readonly reason: string,
+  ) {
+    super(`Save ${saveId} is corrupt: ${reason}`);
+    this.name = 'CorruptSaveError';
+  }
+}
+
+/**
+ * Safe persistence read with a typed parser + fallback (M_MICRO.B.1).
+ * Consolidates the catch-and-default pattern that previously lived
+ * inline in OnboardingOverlay + SettingsModal. The persistence
+ * read may reject (rooted device with corrupt SQLite, race with a
+ * concurrent setSetting); callers want a single contract:
+ * "give me a parsed value or my fallback."
+ */
+export async function safePersistenceRead<T>(
+  persistence: Persistence,
+  key: string,
+  parse: (raw: string | null) => T,
+  fallback: T,
+  source: string,
+): Promise<T> {
+  try {
+    const raw = await persistence.getSetting(key);
+    return parse(raw);
+  } catch (err) {
+    console.warn(`[${source}] safePersistenceRead(${key}) failed:`, err);
+    return fallback;
+  }
 }
 
 // ---------------------------------------------------------------------------
 // Preferences keys (settings + event seed — NOT saves)
 // ---------------------------------------------------------------------------
 
+/**
+ * Namespaced Preferences keys (M_SEC.33). Every Capacitor Preferences
+ * read/write goes through this enum so keys can never collide with
+ * other apps' Preferences storage (Android shares the Preferences API
+ * across the entire process; an embedded WebView in a different host
+ * would leak into the same namespace without an app-specific prefix).
+ *
+ * The single typed enum is also the catalogue: a new pref means
+ * adding ONE row here + getting compile-time enforcement at every
+ * read/write site.
+ */
+export const PREF_KEYS = {
+  eventSeed: 'aethelgard.eventPrngSeed',
+  muted: 'aethelgard.muted',
+  onboarding: 'aethelgard.onboardingSeen',
+  // M_EXPANSION.F.77 — comma-separated list of unlocked achievement ids.
+  // Stored as a string (Preferences API) for portability; the
+  // achievements helper parses + writes.
+  achievements: 'aethelgard.achievements',
+  // M_SEC.4 — SQLCipher passphrase. Generated once at first DB
+  // open from crypto.getRandomValues(64 bytes → base64); persisted
+  // via Capacitor Preferences (Keychain on iOS, EncryptedSharedPrefs
+  // on Android, localStorage on web). Wiping app data wipes both
+  // the saves AND the key, so a reinstall starts fresh.
+  dbKey: 'aethelgard.dbKey',
+  // M_EXPANSION.U.112 — per-bus volumes (0..1, stored as string of a
+  // number). One key per bus so a single corrupt row doesn't reset
+  // the whole audio profile.
+  volSfx: 'aethelgard.vol.sfx',
+  volMusic: 'aethelgard.vol.music',
+  volAmbient: 'aethelgard.vol.ambient',
+  volUi: 'aethelgard.vol.ui',
+  // M_EXPANSION.U.113 — colourblind mode (deuteranopia/protanopia/
+  // tritanopia safe palette: player → orange, enemy → cyan).
+  colorblind: 'aethelgard.colorblind',
+  // M_EXPANSION.U.114 — visible captions for sound events.
+  captions: 'aethelgard.captions',
+  // M_EXPANSION.U.115 — user-remappable hotkey bindings (JSON blob).
+  hotkeyBindings: 'aethelgard.hotkeys',
+} as const;
+export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
+
 /** The Preferences key under which the device-level event PRNG seed is stored. */
-const EVENT_SEED_KEY = 'eventPrngSeed';
+const EVENT_SEED_KEY: PrefKey = PREF_KEYS.eventSeed;
 
 // ---------------------------------------------------------------------------
 // SQLite helpers
 // ---------------------------------------------------------------------------
 
-const DB_NAME = 'aethelgard';
+// M_AUDIT2.SEC2.8 — namespaced DB name. The bare 'aethelgard' name
+// collides with any other app sharing the same WebSQL/IDB origin
+// (the Capacitor webview can be hijacked by side-loaded sibling
+// apps if installed under the same scheme). Prefixing with the
+// reverse-domain appId + version suffix makes the namespace
+// collision-free AND lets future schema migrations rename to
+// `_v2.sqlite` without colliding with the v1 store on the same
+// device. Keep the suffix decoupled from DB_VERSION (which drives
+// the runtime migration path) so this string never changes once
+// chosen.
+const DB_NAME = 'com.aethelgard.chronicles_v1';
 const DB_VERSION = 1;
 
 function isWebPlatform(): boolean {
@@ -121,16 +223,69 @@ async function ensureJeepSqliteElement(): Promise<void> {
   await customElements.whenDefined('jeep-sqlite');
 }
 
+/**
+ * Hard cap on snapshot JSON length (M_AUDIT2.SEC2.9). A tampered
+ * SQLite row (rooted device, sibling-app sideload, future cloud-save
+ * receiving attacker-controlled payload) with a multi-MB JSON blob
+ * would pin a worker thread on JSON.parse BEFORE the entity-count
+ * cap (M_SEC.11) runs. 2 MB leaves significant headroom for a Huge-
+ * map snapshot (typical is ~50-200 KB) while bounding the parse cost.
+ */
+const MAX_SNAPSHOT_BYTES = 2 * 1024 * 1024;
+
 /** Map a raw sqlite row (typed `any` by the driver) to a SaveRecord. */
 // biome-ignore lint/suspicious/noExplicitAny: capacitor-sqlite values are untyped
 function rowToSaveRecord(row: any): SaveRecord {
+  const snapshotStr = row.snapshot as string;
+  if (typeof snapshotStr !== 'string') {
+    throw new Error('persistence: snapshot column missing or non-string');
+  }
+  if (snapshotStr.length > MAX_SNAPSHOT_BYTES) {
+    throw new Error(
+      `persistence: snapshot too large (${snapshotStr.length} > ${MAX_SNAPSHOT_BYTES} bytes)`,
+    );
+  }
   return {
     id: row.id as number,
     name: row.name as string,
     seedPhrase: row.seed as string,
     savedAt: row.saved_at as string,
-    snapshot: JSON.parse(row.snapshot as string) as GameSnapshot,
+    snapshot: JSON.parse(snapshotStr) as GameSnapshot,
   };
+}
+
+/**
+ * M_SEC.4 — read or mint the per-install SQLCipher passphrase.
+ * Stored under PREF_KEYS.dbKey via Capacitor Preferences — Keychain
+ * on iOS, EncryptedSharedPrefs on Android, plain localStorage on
+ * web (where the SQLCipher path is a no-op anyway). The minted
+ * value is 64 random bytes base64-encoded → 88 ASCII chars, well
+ * inside SQLCipher's accepted passphrase length.
+ *
+ * Wiping app data wipes both the saves AND the key, so a reinstall
+ * starts fresh (no orphaned encrypted blobs in user data).
+ */
+/**
+ * M_SEC_REVIEW.1 — hard-fail if WebCrypto isn't available OR
+ * Preferences fails. The prior fallbacks (Math.random() for key
+ * bytes; `session-${Math.random()}-${Date.now()}` on Preferences
+ * failure) produced cryptographically-weak passphrases that an
+ * attacker could enumerate. Crypto unavailability is a hard init
+ * failure — the caller catches the throw, marks `dbUnavailable`,
+ * and saves degrade gracefully to a no-op. Better no saves than
+ * weak-encrypted saves.
+ */
+async function ensureDbSecret(): Promise<string> {
+  if (typeof crypto === 'undefined' || typeof crypto.getRandomValues !== 'function') {
+    throw new Error('ensureDbSecret: WebCrypto unavailable; cannot generate secure DB passphrase');
+  }
+  const existing = await Preferences.get({ key: PREF_KEYS.dbKey });
+  if (existing.value && existing.value.length >= 32) return existing.value;
+  const bytes = new Uint8Array(64);
+  crypto.getRandomValues(bytes);
+  const secret = btoa(String.fromCharCode(...bytes));
+  await Preferences.set({ key: PREF_KEYS.dbKey, value: secret });
+  return secret;
 }
 
 // Module-level singletons — all null until the first openDb() call.
@@ -170,10 +325,36 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
         await sqliteManager.initWebStore();
       }
 
+      // M_SEC.4 — encryption mode + per-install key. On native
+      // (iOS/Android) this binds to SQLCipher with the secret stored
+      // in Keychain/EncryptedSharedPrefs via Capacitor Preferences.
+      // On web the encryption-mode arg is ignored by the sql.js
+      // fallback, so the call still works — saves are unencrypted on
+      // web but the bootstrap is the same and a future SQLCipher.wasm
+      // adoption would pick up the key automatically.
+      const encryptionMode = isWebPlatform() ? 'no-encryption' : 'encryption';
+      const secret = encryptionMode === 'encryption' ? await ensureDbSecret() : null;
+      // setEncryptionSecret only matters when the DB is being created
+      // fresh; if already keyed (from a prior install/run), the
+      // openWithKey call below uses the stored secret to unlock.
+      if (secret && sqliteManager.setEncryptionSecret) {
+        try {
+          await sqliteManager.setEncryptionSecret(secret);
+        } catch {
+          // setEncryptionSecret throws on web / unsupported platforms;
+          // swallow and let createConnection fall back to plaintext.
+        }
+      }
       const isConnected = (await sqliteManager.isConnection(DB_NAME, false)).result;
       const conn = isConnected
         ? await sqliteManager.retrieveConnection(DB_NAME, false)
-        : await sqliteManager.createConnection(DB_NAME, false, 'no-encryption', DB_VERSION, false);
+        : await sqliteManager.createConnection(
+            DB_NAME,
+            encryptionMode === 'encryption',
+            encryptionMode,
+            DB_VERSION,
+            false,
+          );
 
       await conn.open();
 
@@ -217,15 +398,39 @@ export function createPersistence(): Persistence {
     async save(name: string, game: GameState): Promise<void> {
       const db = await openDb();
       if (!db) return;
+      // M_SEC.12 — cap the save name at 256 chars. UI doesn't expose
+      // longer names today, but a future cloud-sync feature could
+      // receive arbitrarily-long input; truncate at the storage layer.
+      const safeName = name.length > 256 ? name.slice(0, 256) : name;
       const seed = game.seedPhrase;
       const savedAt = new Date().toISOString();
       const snapshot = JSON.stringify(serializeGame(game));
+      // M_SEC.26 — UPSERT by name: a save with the same name replaces
+      // the prior row, idempotently. Specifically defends against
+      // React StrictMode double-firing effects in dev that would
+      // otherwise insert duplicate AutoSave rows on every effect
+      // remount. The DELETE+INSERT pattern stays atomic-enough within
+      // sql.js's single-threaded execution.
+      await db.run(`DELETE FROM saves WHERE name = ?;`, [safeName]);
       await db.run(`INSERT INTO saves (name, seed, saved_at, snapshot) VALUES (?, ?, ?, ?);`, [
-        name,
+        safeName,
         seed,
         savedAt,
         snapshot,
       ]);
+      // M_AUDIT2.SEC2.7 — saves table row cap. A long-running auto-
+      // save loop could otherwise grow unbounded; once we exceed
+      // MAX_SAVES, delete the oldest rows by saved_at. AutoSave
+      // already UPSERTs by name so it doesn't contribute multiple
+      // rows, but a user spamming "save with new name" or a future
+      // bug could.
+      const MAX_SAVES = 100;
+      await db.run(
+        `DELETE FROM saves WHERE id IN (
+           SELECT id FROM saves ORDER BY saved_at DESC LIMIT -1 OFFSET ?
+         );`,
+        [MAX_SAVES],
+      );
     },
 
     async load(id: number): Promise<SaveRecord | null> {
@@ -235,24 +440,37 @@ export function createPersistence(): Persistence {
       const rows = result.values ?? [];
       const row = rows[0];
       if (!row) return null;
+      // M_SEC.22 — differentiate "no row found" from "corrupt row".
+      // Returning null for both masks corruption; throw so the UI's
+      // resume path can show "save corrupted" instead of silently
+      // dropping the user into a new game.
       try {
         return rowToSaveRecord(row);
-      } catch {
-        return null;
+      } catch (err) {
+        throw new CorruptSaveError(id, err instanceof Error ? err.message : String(err));
       }
     },
 
     async list(): Promise<SaveRecord[]> {
       const db = await openDb();
       if (!db) return [];
-      const result = await db.query(`SELECT * FROM saves ORDER BY saved_at DESC;`);
+      // M_SEC.13 — cap at 50 most-recent saves. A million-save corrupted
+      // db would otherwise pull every row into memory just for the list
+      // view, hanging the UI thread on a slow device.
+      const result = await db.query(`SELECT * FROM saves ORDER BY saved_at DESC LIMIT 50;`);
       const rows = result.values ?? [];
       const records: SaveRecord[] = [];
       for (const row of rows) {
         try {
           records.push(rowToSaveRecord(row));
-        } catch {
-          // skip corrupt row rather than failing the whole list
+        } catch (err) {
+          // M_SEC.21 — skip corrupt row rather than failing the whole
+          // list, but LOG it so a developer notices in a debug build.
+          const id = (row as { id?: unknown }).id;
+          console.warn(
+            `[persistence] skipping corrupt save row${typeof id === 'number' ? ` id=${id}` : ''}:`,
+            err,
+          );
         }
       }
       return records;
@@ -269,10 +487,15 @@ export function createPersistence(): Persistence {
 
     async getEventSeed(): Promise<string> {
       const { value } = await Preferences.get({ key: EVENT_SEED_KEY });
-      if (value !== null) return value;
-      // First launch: generate a fresh random seed from crypto.getRandomValues.
-      // This is the one allowed non-determinism — it seeds the PRNG, it is not
-      // simulation logic. Lives here in persistence.ts, outside src/core|ecs|game.
+      // M_SEC.14 — validate the stored seed shape before trusting it.
+      // A tampered Preferences value (rooted device, debugger write)
+      // could carry arbitrary content; the seed is consumed by
+      // seedrandom which accepts anything, but the rest of the
+      // codebase passes it through string-concat keys
+      // (`${seed}:sawdust`) so a control-character seed would NaN-
+      // poison the PRNG-keyed material. Whitelist alnum + hyphen,
+      // 1–256 chars; mint a fresh one if invalid.
+      if (value !== null && /^[a-z0-9-]{1,256}$/i.test(value)) return value;
       const buf = new Uint32Array(4);
       crypto.getRandomValues(buf);
       const seed = Array.from(buf)
@@ -286,6 +509,33 @@ export function createPersistence(): Persistence {
       const next = advanceEventSeed(currentRng);
       await Preferences.set({ key: EVENT_SEED_KEY, value: next });
       return next;
+    },
+
+    async reset(): Promise<void> {
+      // M_AUDIT2.SEC2.6 — wipe ALL persisted state. Reviewer-fix
+      // (post-commit): collect per-step failures and rethrow at the
+      // end so the caller sees a useful error. The previous swallow-
+      // and-log silently corrupted PRNG continuity: saves could
+      // survive while the event seed was deleted, regenerating to a
+      // mismatched stream on next launch.
+      const failures: string[] = [];
+      try {
+        const db = await openDb();
+        if (db) await db.run(`DELETE FROM saves;`);
+        else failures.push('saves (db unavailable)');
+      } catch (err) {
+        failures.push(`saves: ${err instanceof Error ? err.message : String(err)}`);
+      }
+      for (const key of Object.values(PREF_KEYS)) {
+        try {
+          await Preferences.remove({ key });
+        } catch (err) {
+          failures.push(`pref:${key} ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+      if (failures.length > 0) {
+        throw new Error(`[persistence] reset partial failure: ${failures.join('; ')}`);
+      }
     },
   };
 }

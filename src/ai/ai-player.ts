@@ -1,7 +1,6 @@
 import { GameEntity, Goal, GoalEvaluator, Think } from 'yuka';
-import { hexNeighbors } from '@/core/hex';
+import { hexNeighbors, parseHexKey } from '@/core/hex';
 import {
-  AssignedJob,
   Building,
   type BuildingType,
   type Faction,
@@ -9,9 +8,11 @@ import {
   HexPosition,
   Unit,
 } from '@/ecs/components';
-import { moveUnit, placeBuilding, trainUnit } from '@/game/commands';
+import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
-import type { GameState } from '@/game/game-state';
+import { SKINS } from '@/rules/skins';
+import { aiProfileFor, endgameUrgencyFor } from './ai-profiles';
+import { baseKeyFor, type GameState } from '@/game/game-state';
 import { canBuild, peonCap, UNIT_COSTS } from '@/rules';
 
 /**
@@ -43,6 +44,9 @@ export class AiPlayer extends GameEntity {
   /** Name of the goal chosen on the last arbitration — for tests / transcripts. */
   lastGoal: string | null = null;
 
+  /** Seconds the faction has been "starved" (M_MODES.10) — accumulates across ticks. */
+  starvedFor = 0;
+
   constructor(faction: Faction) {
     super();
     this.faction = faction;
@@ -50,6 +54,12 @@ export class AiPlayer extends GameEntity {
     this.brain.addEvaluator(new BuildEvaluator());
     this.brain.addEvaluator(new TrainEvaluator());
     this.brain.addEvaluator(new MilitaryEvaluator());
+    // M_EXPANSION.S.55 — patrol verb (verb 5 of 5). Idle military
+    // units circulate the zone perimeter when there's no enemy in
+    // sight + no defensive trigger. Without this they stand at base
+    // waiting for the next raid, which reads as inert AI.
+    this.brain.addEvaluator(new PatrolEvaluator());
+    this.brain.addEvaluator(new ResignEvaluator());
   }
 
   /**
@@ -58,6 +68,12 @@ export class AiPlayer extends GameEntity {
    */
   tick(game: GameState, delta: number): void {
     this.game = game;
+    // Accumulate starvation continuously (independent of decisionInterval) —
+    // ResignEvaluator reads this each arbitration.
+    const zone = game.zones[this.faction];
+    const eco = game.economy[this.faction];
+    const starved = zone.controlled.size === 0 && eco.wood < 10 && eco.gold < 10 && eco.stone < 10;
+    this.starvedFor = starved ? this.starvedFor + delta : 0;
     this.elapsed += delta;
     if (this.elapsed < this.decisionInterval) return;
     this.elapsed -= this.decisionInterval;
@@ -123,12 +139,13 @@ function discoveredEnemyTile(game: GameState, faction: Faction): string | null {
 
 /** A free walkable tile adjacent to the faction's base for placing a building. */
 function freeBuildTile(game: GameState, faction: Faction): string | null {
-  const baseKey = faction === 'player' ? game.townHallKey : game.enemyBaseKey;
-  const [bq, br] = baseKey.split(',').map(Number);
+  // M_REGISTRY.14 — baseKeyFor() is the single faction → baseKey source.
+  const baseKey = baseKeyFor(game, faction);
+  const { q: bq, r: br } = parseHexKey(baseKey);
   // Both faction-base tiles are off-limits (CodeRabbit HIGH-4 symmetric fix):
   // the AI must not stamp a Farm onto the player's TownHall if its base
   // happens to be adjacent.
-  for (const nKey of hexNeighbors(bq ?? 0, br ?? 0)) {
+  for (const nKey of hexNeighbors(bq, br)) {
     if (nKey === game.townHallKey || nKey === game.enemyBaseKey) continue;
     const tile = game.board.tiles.get(nKey);
     if (tile?.walkable && !game.buildSites.has(nKey)) return nKey;
@@ -144,7 +161,21 @@ function freeBuildTile(game: GameState, faction: Faction): string | null {
 class BuildEvaluator extends GoalEvaluator<AiPlayer> {
   calculateDesirability(owner: AiPlayer): number {
     const choice = this.pickBuildable(owner);
-    return choice ? 0.7 : 0;
+    if (!choice) return 0;
+    // M_EXPANSION.S.53 — per-faction economyFocus bias from SKINS.
+    const bias = SKINS[owner.faction].brain?.economyFocus ?? 1.0;
+    // M_AI_AWARE.1 — per-mode AI profile. coexistence sets
+    // buildWeight to 0 so the AI never expands. strata-wars sets
+    // 1.3 so it builds more eagerly than border-clash.
+    const profile = aiProfileFor(owner.game?.mode);
+    // M_AI_AWARE.1 — Wall/Watchtower defensive priority depends on
+    // whether bases can actually be destroyed. long-reign sets
+    // defensiveBuildWeight=0 (invulnerable bases → no point).
+    const defensiveTypes: ReadonlyArray<string> = ['Wall', 'Watchtower'];
+    const defensiveMul = defensiveTypes.includes(choice as string)
+      ? profile.defensiveBuildWeight
+      : 1.0;
+    return 0.7 * bias * profile.buildWeight * defensiveMul;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -229,9 +260,23 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
   calculateDesirability(owner: AiPlayer): number {
     if (!owner.game) return 0;
     if (!firstMilitary(owner.game, owner.faction)) return 0;
+    // M_EXPANSION.S.53 — per-faction aggressiveness bias.
+    const bias = SKINS[owner.faction].brain?.aggressiveness ?? 1.0;
+    // M_AI_AWARE.1 — per-mode militaryWeight. coexistence sets 0
+    // (AI never attacks); frontier-raid sets 1.6 (rush hard).
+    const profile = aiProfileFor(owner.game.mode);
+    // M_AI_AWARE.1 — endgame urgency multiplier: when we're inside
+    // the last `urgencyThreshold` turns of a turn-capped mode, scale
+    // military by `endgameUrgencyMultiplier` to rush the final score.
+    const urgency = endgameUrgencyFor(
+      owner.game.mode,
+      owner.game.turn?.turnsElapsed,
+      owner.game.turn?.maxTurns,
+    );
+    const modeMul = profile.militaryWeight * urgency;
     // higher score when a tile we own is pulsing — defence is urgent
-    if (firstPulsingTile(owner.game, owner.faction)) return 0.85;
-    return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 : 0;
+    if (firstPulsingTile(owner.game, owner.faction)) return 0.85 * bias * modeMul;
+    return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 * bias * modeMul : 0;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -324,7 +369,151 @@ class TrainGoal extends Goal<AiPlayer> {
   }
 }
 
-// AssignedJob import is reserved for future fine-grained goals (e.g. assign
-// idle peon to a specific consumer); kept in the import set so adding a goal
-// later is a one-line trait change.
-void AssignedJob;
+// ---------------------------------------------------------------------------
+// Resign evaluator + goal (M_MODES.10) — AI surrender when starved out.
+// ---------------------------------------------------------------------------
+
+/** Seconds of continuous starvation before the AI resigns. */
+const STARVATION_THRESHOLD = 300;
+
+/**
+ * The AI surrenders when its faction is "starved" for STARVATION_THRESHOLD
+ * seconds (0 controlled tiles AND economy below sustenance). Wins arbitration
+ * (desirability 1.0) the moment the threshold is crossed so the brain
+ * immediately fires the ResignGoal instead of futile build/train/move.
+ */
+class ResignEvaluator extends GoalEvaluator<AiPlayer> {
+  calculateDesirability(owner: AiPlayer): number {
+    if (!owner.game) return 0;
+    if (owner.game.outcome !== 'playing') return 0;
+    // CodeRabbit MAJOR: starve-resign is the long-reign-mode win condition
+    // ONLY. Other modes have base-destruction as the proper outcome; an
+    // AI resigning early would short-circuit those matches.
+    if (owner.game.mode !== 'long-reign') return 0;
+    const zone = owner.game.zones[owner.faction];
+    const eco = owner.game.economy[owner.faction];
+    const starved = zone.controlled.size === 0 && eco.wood < 10 && eco.gold < 10 && eco.stone < 10;
+    if (!starved) {
+      owner.starvedFor = 0;
+      return 0;
+    }
+    return owner.starvedFor >= STARVATION_THRESHOLD ? 1 : 0;
+  }
+
+  setGoal(owner: AiPlayer): void {
+    owner.brain.clearSubgoals();
+    owner.brain.addSubgoal(new ResignGoal(owner));
+  }
+}
+
+/** Issue the resign command on behalf of the AI's faction. */
+class ResignGoal extends Goal<AiPlayer> {
+  activate(): void {
+    const owner = this.owner as AiPlayer;
+    resign(owner.game, owner.faction);
+    owner.lastGoal = 'resign';
+    this.status = Goal.STATUS.COMPLETED;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Patrol evaluator + goal — verb 5 of 5 (M_EXPANSION.S.55)
+// ---------------------------------------------------------------------------
+
+/**
+ * Idle military units patrol the zone perimeter when nothing else
+ * needs doing. Fires when:
+ *   - AI has at least one military unit
+ *   - No enemy is visible (MilitaryEvaluator would return 0)
+ *   - No defensive trigger (no pulsing tile)
+ *   - AI mode allows military (coexistence sets profile.militaryWeight=0
+ *     which zeroes patrol too — peaceful tribe doesn't patrol either)
+ *
+ * Picks a random zone-controlled tile on the perimeter (any tile
+ * whose neighbour hex falls outside the zone) and moves the first
+ * idle military unit there. Re-rolls each tick so patrols stay
+ * unpredictable from the player's perspective.
+ */
+class PatrolEvaluator extends GoalEvaluator<AiPlayer> {
+  calculateDesirability(owner: AiPlayer): number {
+    if (!owner.game) return 0;
+    if (owner.game.outcome !== 'playing') return 0;
+    if (!firstMilitary(owner.game, owner.faction)) return 0;
+    // Don't patrol if there's a real combat trigger — MilitaryEvaluator
+    // wins (higher score) in those cases anyway. This guard keeps the
+    // evaluator cheap (skip the perimeter scan when irrelevant).
+    if (firstPulsingTile(owner.game, owner.faction)) return 0;
+    if (discoveredEnemyTile(owner.game, owner.faction)) return 0;
+    // M_AI_AWARE.1 — coexistence + other low-military profiles
+    // patrol less (or not at all). The militaryWeight directly
+    // scales patrol desirability so coexistence's 0 silences it.
+    const profile = aiProfileFor(owner.game.mode);
+    // Low base score (0.25) — patrol is the LOWEST-priority verb,
+    // beaten by every concrete need.
+    return 0.25 * profile.militaryWeight;
+  }
+
+  setGoal(owner: AiPlayer): void {
+    owner.brain.clearSubgoals();
+    owner.brain.addSubgoal(new PatrolGoal(owner));
+  }
+}
+
+/** Move one idle military unit to a random perimeter tile of the AI's zone. */
+class PatrolGoal extends Goal<AiPlayer> {
+  activate(): void {
+    const owner = this.owner as AiPlayer;
+    const unit = firstMilitary(owner.game, owner.faction);
+    const perimeter = randomPerimeterTile(owner.game, owner.faction);
+    if (!unit || !perimeter) {
+      this.status = Goal.STATUS.FAILED;
+      return;
+    }
+    const path = moveUnit(owner.game, unit, perimeter, owner.faction);
+    this.status = path ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
+    if (path) owner.lastGoal = 'patrol';
+  }
+}
+
+/**
+ * Pick a random tile on the perimeter of the faction's controlled
+ * zone — a tile we own that has at least one non-controlled neighbour.
+ * Returns null if the zone is empty or fully landlocked (no perimeter).
+ * Uses the faction's brain RNG bias slot is not relevant here; the
+ * randomness is presentation-level (a different patrol target each
+ * tick), not sim-determinism-critical.
+ */
+function randomPerimeterTile(game: GameState, faction: Faction): string | null {
+  const zone = game.zones[faction];
+  if (zone.controlled.size === 0) return null;
+  // Deterministic perimeter walk — iterate the Set into a sorted
+  // array so AI-vs-AI determinism holds across worlds (Set iteration
+  // order is insertion order, which can vary if zone updates land in
+  // different sequences). Picking via game.eventRng (not Math.random)
+  // is the determinism contract.
+  const controlledSorted = [...zone.controlled].sort();
+  const perim: string[] = [];
+  // Hex neighbours: 6 axial offsets — module-level constant for
+  // determinism + perf.
+  const NEIGHBORS: ReadonlyArray<[number, number]> = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+    [1, -1],
+    [-1, 1],
+  ];
+  for (const key of controlledSorted) {
+    const tile = game.board.tiles.get(key);
+    if (!tile) continue;
+    for (const [dq, dr] of NEIGHBORS) {
+      const nkey = `${tile.q + dq},${tile.r + dr}`;
+      if (!zone.controlled.has(nkey)) {
+        perim.push(key);
+        break;
+      }
+    }
+  }
+  if (perim.length === 0) return null;
+  return perim[Math.floor(game.eventRng() * perim.length)] ?? null;
+}

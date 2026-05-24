@@ -15,60 +15,18 @@
  */
 import type { Entity, World } from 'koota';
 import { createWorld, unpackEntity } from 'koota';
-import {
-  AnimationState,
-  AssignedJob,
-  Building,
-  Carrier,
-  Combatant,
-  DeathTimer,
-  EnemySpawner,
-  EnemyTarget,
-  FactionBase,
-  FactionTrait,
-  Harvester,
-  Health,
-  HexPosition,
-  Movement,
-  PathQueue,
-  ResourceTrait,
-  Selectable,
-  Transform,
-  Unit,
-} from '@/ecs/components';
+import { SERIALIZED_TRAITS } from '@/ecs/components';
 
 // ---------------------------------------------------------------------------
 // Registry — every trait that survives serialization.
+//
+// M_REGISTRY.25 — the trait list now lives on `SERIALIZED_TRAITS` in
+// `@/ecs/components`. This module reads it directly; adding a new
+// trait that should round-trip means adding ONE row in components.ts
+// (next to the trait definition) — no parallel registry in persistence/.
 // ---------------------------------------------------------------------------
 
-/** A single entry in the trait registry. */
-interface TraitEntry {
-  name: string;
-  // biome-ignore lint/suspicious/noExplicitAny: registry needs generic trait type
-  traitObj: any;
-}
-
-const TRAIT_REGISTRY: TraitEntry[] = [
-  { name: 'Transform', traitObj: Transform },
-  { name: 'HexPosition', traitObj: HexPosition },
-  { name: 'Unit', traitObj: Unit },
-  { name: 'FactionTrait', traitObj: FactionTrait },
-  { name: 'Movement', traitObj: Movement },
-  { name: 'PathQueue', traitObj: PathQueue },
-  { name: 'AnimationState', traitObj: AnimationState },
-  { name: 'Selectable', traitObj: Selectable },
-  { name: 'ResourceTrait', traitObj: ResourceTrait },
-  { name: 'Harvester', traitObj: Harvester },
-  { name: 'Carrier', traitObj: Carrier },
-  { name: 'Building', traitObj: Building },
-  { name: 'AssignedJob', traitObj: AssignedJob },
-  { name: 'Health', traitObj: Health },
-  { name: 'Combatant', traitObj: Combatant },
-  { name: 'EnemySpawner', traitObj: EnemySpawner },
-  { name: 'FactionBase', traitObj: FactionBase },
-  { name: 'EnemyTarget', traitObj: EnemyTarget },
-  { name: 'DeathTimer', traitObj: DeathTimer },
-];
+const TRAIT_REGISTRY = SERIALIZED_TRAITS;
 
 // biome-ignore lint/suspicious/noExplicitAny: trait name → factory map
 const TRAIT_BY_NAME = new Map<string, any>(TRAIT_REGISTRY.map((e) => [e.name, e.traitObj]));
@@ -142,10 +100,27 @@ export function deserializeWorld(snapshot: WorldSnapshot): World {
     // biome-ignore lint/suspicious/noExplicitAny: dynamic trait construction
     const initializers: any[] = [];
     for (const [name, data] of Object.entries(snap)) {
+      // M_SEC.6 — reject prototype-pollution keys at the trait-name layer.
+      // A snapshot containing `{ __proto__: {...}, constructor: {...} }`
+      // would walk into Object.prototype via `Object.entries` (it doesn't,
+      // but be explicit) AND the trait-name lookup must NOT silently match
+      // an inherited Map key. TRAIT_BY_NAME.get returns undefined for
+      // unknown / dangerous names, but the explicit reject documents intent.
+      if (name === '__proto__' || name === 'constructor' || name === 'prototype') continue;
       const traitObj = TRAIT_BY_NAME.get(name);
-      if (traitObj !== undefined && data !== null && typeof data === 'object') {
-        initializers.push(traitObj(data));
+      if (traitObj === undefined) continue;
+      if (data === null || typeof data !== 'object') continue;
+      // M_SEC.6 — trait payload is plain data, no nested __proto__ keys.
+      // `Object.assign({}, data)` strips inherited keys and any setter
+      // that would fire on a normal property assignment in koota's
+      // schema initializer. Trait factories accept partial data and
+      // fill defaults; rejecting unknown trait keys is koota's job.
+      const sanitised: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(data as Record<string, unknown>)) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+        sanitised[k] = v;
       }
+      initializers.push(traitObj(sanitised));
     }
     if (initializers.length > 0) {
       world.spawn(...initializers);

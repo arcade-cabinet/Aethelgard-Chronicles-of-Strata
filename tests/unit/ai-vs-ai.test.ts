@@ -61,13 +61,18 @@ function probe(game: ReturnType<typeof newAiVsAiGame>) {
     if (f === 'player') playerUnits += 1;
     else if (f === 'enemy') enemyUnits += 1;
   }
-  // macro: economies stay non-negative; outcome is one of the three valid values
+  // macro: economies stay non-negative; outcome is one of the three valid values.
+  // M_MICRO.6.5 — also assert at least one faction made positive progress
+  // (units spawned, harvest happened, etc) so "0 of everything" doesn't
+  // pass the signedness check vacuously.
   for (const f of ['player', 'enemy'] as const) {
     expect(eco[f].wood).toBeGreaterThanOrEqual(0);
     expect(eco[f].stone).toBeGreaterThanOrEqual(0);
     expect(eco[f].gold).toBeGreaterThanOrEqual(0);
     expect(eco[f].usedSupply).toBeGreaterThanOrEqual(0);
   }
+  // at least one faction has fielded units (the AI is actually playing).
+  expect(playerUnits + enemyUnits).toBeGreaterThan(0);
   expect(['playing', 'win', 'loss']).toContain(game.outcome);
   return {
     units,

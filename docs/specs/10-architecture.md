@@ -1,5 +1,64 @@
 # Architecture
 
+> **M_ARCH_UNIFY cross-reference (added 2026-05-23).** This pillar pre-dates
+> the unified Thing/Skin registry. The 4-layer model — Archetypes →
+> Things → Slots → Skins — is the authoritative architectural shape for
+> every visual/data fork in the codebase. See:
+>
+> - `docs/specs/103-particle-archetype.md` — the keystone architectural pass
+> - `src/rules/building-profiles.ts` — Thing registry (M_REGISTRY.5)
+> - `src/rules/unit-profiles.ts` — Thing registry (M_REGISTRY.1)
+> - `src/rules/mover-profiles.ts` — Thing registry (M_REGISTRY.11)
+> - `src/rules/skins.ts` — Skin slot (M_REGISTRY.3/4/2)
+>
+> Any "what shape should this be?" question about a per-Thing-type table,
+> a per-faction visual fork, or a multi-branch role/type switch resolves
+> through this stack — NOT through new parallel hierarchies.
+
+## The 4-layer model (M_ARCH_UNIFY)
+
+```mermaid
+flowchart TB
+  subgraph L1["Layer 1 — Archetypes (capability slots)"]
+    A1[OffensiveBehavior]
+    A2[DefensiveBehavior]
+    A3[AttractorBehavior]
+    A4[Movable / Animated]
+    A5[Costable / HasHP]
+    A6[AccretesProps]
+    A7[ParticleArchetype]
+    A8[ProducerSlot]
+  end
+  subgraph L2["Layer 2 — Things (slot tuples per Type)"]
+    T1[BUILDING_PROFILES&lt;BuildingType&gt;]
+    T2[UNIT_PROFILES&lt;UnitType&gt;]
+    T3[MOVER_PROFILES&lt;MoverMaterial&gt;]
+  end
+  subgraph L3["Layer 3 — Pass handlers (ONE per pass)"]
+    P1["Gen-time pass<br/>(board paint, AccretesProps)"]
+    P2["Runtime pass<br/>(ECS systems iterate slot membership)"]
+  end
+  subgraph L4["Layer 4 — Skins (per-Faction visual overlay)"]
+    S1["SKINS.player<br/>{structure, baseProps, rig}"]
+    S2["SKINS.enemy<br/>{structure, baseProps, rig}"]
+    S3["SKINS.NEW_TRIBE<br/>(one row to add)"]
+  end
+  Cfg1[economy.json] -->|tunes| T1
+  Cfg2[combat.json] -->|tunes| T2
+  L1 -->|composed into| L2
+  L2 -->|consumed by| L3
+  L4 -->|overrides visuals of| L3
+  P2 -->|spawns / ticks| Entities[(koota ECS world)]
+  P1 -->|populates| Board[(board + buildSites)]
+```
+
+The four layers map to four files in `src/rules/` plus the legacy
+config JSON. **A new Thing type** = one row in the relevant
+`*_PROFILES` registry + (for units) one stat block in combat.json.
+**A new Skin (tribe)** = one row in SKINS + Faction-union extension +
+nothing else. **A new archetype slot** = one row in the relevant
+Profile interface + one consumer in the pass handler.
+
 ## Technology Stack
 
 | Layer | Library / Tool | Role |

@@ -15,20 +15,32 @@
  */
 
 export { ATTRACTOR_GUARANTEE, ATTRACTOR_RADIUS, ensureAttractorResources } from './attractor';
+export { type BuildingBehaviorProfile, behaviorsFor } from './building-behaviors';
+// M_REGISTRY.5 — unified building Thing registry. Re-exported for the
+// surfaces (HUD, AI, commands) that previously read 5 different tables.
+// trainableUnits / trainerFor now live on the unified registry (M_REGISTRY.5).
 export {
-  BUILDING_BEHAVIORS,
-  type BuildingBehaviorProfile,
-  behaviorsFor,
-} from './building-behaviors';
-export { applyArmor, armorMultiplier } from './damage';
-export type { Discovery } from './discoveries';
-export { DISCOVERIES, discoveryById } from './discovery-registry';
-export {
-  BUILDING_DISPLAY,
-  type BuildingDisplay,
-  displayFor,
+  BUILDING_PROFILES,
+  type BuildingProfile,
+  type DisplaySlot,
+  type ProducerSlot,
+  profileFor,
   trainableUnits,
   trainerFor,
+} from './building-profiles';
+export { applyArmor, armorMultiplier } from './damage';
+export type { Discovery } from './discoveries';
+export { depthOf, scaledCostFor, scaleForDepth } from './discovery-cost';
+export { DISCOVERIES, discoveryById } from './discovery-registry';
+export {
+  type BuildingDisplay,
+  displayFor,
+  HEALTH_BAR_STOPS,
+  type HealthBarStop,
+  healthBarColor,
+  RESOURCE_DISPLAY,
+  type ResourceDisplay,
+  resourceDisplayFor,
 } from './display';
 export {
   canAddPeon,
@@ -42,6 +54,14 @@ export {
 export { type FieldParams, sampleField } from './force-field';
 export { buildGateMap, materialiseGate, tilePassable } from './gates';
 export {
+  type MapType,
+  type MatchLength,
+  MODE_PRESETS,
+  type ModePreset,
+  presetFor,
+  type TurnsMode,
+} from './mode-presets';
+export {
   nextPeonAction,
   type PeonAction,
   type PeonView,
@@ -54,6 +74,11 @@ export {
   canBuild,
   type PlacementCheck,
 } from './placement';
+export {
+  RESOURCE_PROFILES,
+  type ResourceProfile,
+  resourceProfileFor,
+} from './resource-profiles';
 export {
   biomeOf,
   clearBit,

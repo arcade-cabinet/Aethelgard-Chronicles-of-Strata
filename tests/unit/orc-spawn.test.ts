@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
-import { FactionTrait, EnemySpawner, HexPosition, Unit } from '@/ecs/components';
+import { EnemySpawner, FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { createEcsWorld } from '@/ecs/world';
 

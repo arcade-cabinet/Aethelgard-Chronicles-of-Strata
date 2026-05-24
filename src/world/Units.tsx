@@ -5,6 +5,7 @@ import type { Group } from 'three';
 import {
   AnimationState,
   AssignedJob,
+  FactionTrait,
   Health,
   Transform,
   Unit,
@@ -13,6 +14,9 @@ import {
 import { type ClipName, clipForState } from '@/ecs/systems/animation';
 import { AnimatedCharacter } from '@/entities/AnimatedCharacter';
 import type { GameState } from '@/game/game-state';
+import { SuspenseProbe } from '@/render/SuspenseProbe';
+import { isColorblindMode, resolveFactionTint } from '@/rules/colorblind';
+import { SKINS } from '@/rules/skins';
 import { BuilderBadge } from './BuilderBadge';
 import { HealthBillboard } from './HealthBillboard';
 
@@ -24,10 +28,12 @@ interface UnitView {
   entity: Entity;
   /** Unit role. */
   role: UnitType;
+  /** M_EXPANSION.A.29 — faction tint resolved at snapshot time. */
+  tint: string | null;
 }
 
 /** One rendered unit — an animated character that follows its ECS entity. */
-function UnitMesh({ entity, role }: { entity: Entity; role: UnitType }) {
+function UnitMesh({ entity, role, tint }: { entity: Entity; role: UnitType; tint: string | null }) {
   const ref = useRef<Group>(null);
   const [clip, setClip] = useState<ClipName>('Idle_A');
   const [health, setHealth] = useState({ current: 1, max: 1 });
@@ -55,8 +61,9 @@ function UnitMesh({ entity, role }: { entity: Entity; role: UnitType }) {
 
   return (
     <group ref={ref}>
-      <Suspense fallback={null}>
-        <AnimatedCharacter role={role} clip={clip} />
+      {/* M_POLISH3.FB.2 — observable Suspense fallback. */}
+      <Suspense fallback={<SuspenseProbe label={`AnimatedCharacter role=${role}`} />}>
+        <AnimatedCharacter role={role} clip={clip} tint={tint} />
       </Suspense>
       <HealthBillboard current={health.current} max={health.max} />
       {building && <BuilderBadge />}
@@ -81,7 +88,26 @@ export function Units({ game }: { game: GameState }) {
     for (const e of game.world.query(Unit)) {
       const role = e.get(Unit)?.unitType;
       if (!role) continue;
-      current.push({ id: Number(e), entity: e, role });
+      // M_EXPANSION.A.29 — resolve faction tint at snapshot time so
+      // the per-frame inner render doesn't repeat the FactionTrait
+      // lookup. SKINS lookup is a 2-row table — effectively constant.
+      // M_EXPANSION.F.80 — game.playerColor overrides SKINS.player
+      // characterTint when the player picked a palette swap in
+      // NewGameModal. Enemy faction always uses its SKINS default.
+      // M_EXPANSION.U.113 — colourblind mode (when on) overrides
+      // BOTH the SKINS default AND the playerColor pick, returning
+      // the cyan/orange dichromacy-safe pair. resolveFactionTint
+      // encapsulates that precedence; we still fall back to the
+      // SKINS native tint when colourblind is off + no playerColor
+      // pick (a one-faction SKIN with characterTint: null reads as
+      // 'use the model's native diffuse', which the resolver doesn't
+      // express, so we keep the existing null-pass-through path).
+      const faction = e.get(FactionTrait)?.faction;
+      let tint: string | null = null;
+      if (faction === 'player' && game.playerColor) tint = game.playerColor;
+      else if (faction) tint = SKINS[faction].characterTint ?? null;
+      if (faction && isColorblindMode()) tint = resolveFactionTint(faction, game.playerColor);
+      current.push({ id: Number(e), entity: e, role, tint });
     }
     // re-render the unit list only when the membership actually changes
     if (current.length !== units.length || current.some((u, i) => u.id !== units[i]?.id)) {
@@ -92,7 +118,7 @@ export function Units({ game }: { game: GameState }) {
   return (
     <group name="units">
       {units.map((u) => (
-        <UnitMesh key={u.id} entity={u.entity} role={u.role} />
+        <UnitMesh key={u.id} entity={u.entity} role={u.role} tint={u.tint} />
       ))}
     </group>
   );

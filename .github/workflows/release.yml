@@ -1,0 +1,127 @@
+name: release
+
+# M_AUDIT2.SEC2.19 — fires when release-please cuts a tag. Builds a
+# SIGNED release APK, generates an SBOM (CycloneDX) for the JS deps,
+# attaches both as release assets, and produces a Sigstore attestation
+# (M_AUDIT2.SEC2.35) over the APK + SBOM.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write       # upload release assets
+  id-token: write       # Sigstore keyless signing
+  attestations: write   # actions/attest-build-provenance
+
+jobs:
+  build-and-sign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          lfs: true
+
+      # --- toolchain --------------------------------------------------------
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+      - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
+        with: { distribution: temurin, java-version: '21' }
+      - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+
+      - run: corepack enable
+      - run: corepack prepare pnpm@9.15.0 --activate
+      - run: pnpm install --frozen-lockfile
+
+      # --- web build + cap sync --------------------------------------------
+      - run: pnpm build
+      - run: pnpm exec cap add android || true
+      - run: pnpm cap:sync
+
+      # --- decode keystore from secrets ------------------------------------
+      - name: Decode signing keystore
+        env:
+          ANDROID_SIGNING_KEYSTORE_B64: ${{ secrets.ANDROID_SIGNING_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$ANDROID_SIGNING_KEYSTORE_B64" ]; then
+            echo "ANDROID_SIGNING_KEYSTORE_B64 secret missing — release build cannot sign." >&2
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/sign"
+          echo "$ANDROID_SIGNING_KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/sign/release.keystore"
+          echo "ANDROID_SIGNING_KEYSTORE_PATH=$RUNNER_TEMP/sign/release.keystore" >> "$GITHUB_ENV"
+
+      # --- assemble signed release APK -------------------------------------
+      - name: Assemble signed release APK
+        env:
+          ANDROID_SIGNING_KEY_ALIAS:      ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+          ANDROID_SIGNING_KEY_PASSWORD:   ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+          ANDROID_SIGNING_STORE_PASSWORD: ${{ secrets.ANDROID_SIGNING_STORE_PASSWORD }}
+        run: cd android && ./gradlew assembleRelease
+
+      # Reviewer-fix: shred keystore + drop env-var path AS SOON AS
+      # signing is done. The previous `if: always()` rm was a backstop;
+      # an explicit early shred prevents any later step (or any debug-
+      # logging accident) from seeing the path or content.
+      - name: Shred signing keystore (early)
+        run: |
+          if command -v shred >/dev/null 2>&1; then
+            shred -uz "$RUNNER_TEMP/sign/release.keystore" 2>/dev/null || true
+          fi
+          rm -f "$RUNNER_TEMP/sign/release.keystore"
+          # Wipe the path env var so subsequent step env dumps don't echo it.
+          echo "ANDROID_SIGNING_KEYSTORE_PATH=" >> "$GITHUB_ENV"
+
+      # Reviewer-fix: guard the exact APK filename before attestation
+      # so a Gradle config drift that emits an unsigned variant can't
+      # smuggle an extra subject into the attestation.
+      - name: Verify exactly one signed APK exists
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          if [ ! -f "$APK" ]; then
+            echo "Expected exactly one signed APK at $APK; not found." >&2
+            ls -la android/app/build/outputs/apk/release/ >&2 || true
+            exit 1
+          fi
+          if ls android/app/build/outputs/apk/release/*-unsigned.apk 2>/dev/null; then
+            echo "Refusing to attest: unsigned APK variant present." >&2
+            exit 1
+          fi
+
+      # --- SBOM (M_AUDIT2.SEC2.35) -----------------------------------------
+      # cyclonedx-npm runs via pnpm dlx so its libxmljs2 transitive
+      # CVE never lands in our lockfile (it's a build-tool, never
+      # bundled into the APK). Exact-version + dlx-cache pinning is
+      # the defense: GitHub-hosted runners get a fresh dlx cache each
+      # job, the version is pinned, and the SBOM output content is
+      # what enters the attestation — the tool itself never ships.
+      - name: Generate CycloneDX SBOM
+        run: |
+          pnpm dlx @cyclonedx/cyclonedx-npm@4.2.1 \
+            --output-format JSON \
+            --output-file sbom.cdx.json
+
+      # --- Sigstore attestation over apk + sbom ----------------------------
+      # Reviewer-fix: subject-path now uses the exact APK filename
+      # verified above instead of a glob. Removes the silent-attest-zero
+      # failure mode if Gradle renames its output.
+      - uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v3.0.0
+        with:
+          subject-path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            sbom.cdx.json
+
+      # --- upload assets to the release -----------------------------------
+      - name: Upload APK + SBOM
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "$GITHUB_REF_NAME" \
+            android/app/build/outputs/apk/release/app-release.apk \
+            sbom.cdx.json \
+            --clobber
+
+      # --- shred the keystore (backstop) ---------------------------------
+      - if: always()
+        run: rm -f "$RUNNER_TEMP/sign/release.keystore"

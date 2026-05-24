@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { reportError } from '@/lib/telemetry';
 
 /** Props for the error boundary. */
 interface ErrorBoundaryProps {
@@ -27,7 +28,21 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    console.error('Aethelgard render error:', error, info.componentStack);
+    // M_AUDIT2.ARCH.64 + M_AUDIT2.SEC2.46 — telemetry facade strips the
+    // stack + componentStack in prod builds so adb logcat doesn't leak
+    // module structure / source-map-aided reverse engineering surface.
+    reportError(error, { source: 'ErrorBoundary', componentStack: info.componentStack });
+    // Per user mandate (2026-05-24): no silent fallbacks. The
+    // patched console.error in ErrorOverlay catches this + surfaces
+    // it to the user instead of hiding behind <SceneError />.
+    console.error(
+      '[ErrorBoundary]',
+      error.message,
+      '\n',
+      error.stack ?? '',
+      '\n',
+      info.componentStack ?? '',
+    );
   }
 
   render(): ReactNode {

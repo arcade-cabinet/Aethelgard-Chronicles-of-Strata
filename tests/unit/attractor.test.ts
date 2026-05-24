@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
 import { hexDistance } from '@/core/hex';
-import { ATTRACTOR_GUARANTEE, ATTRACTOR_RADIUS, ensureAttractorResources } from '@/rules';
 import { createMapPrng } from '@/core/rng';
+import { ATTRACTOR_GUARANTEE, ATTRACTOR_RADIUS, ensureAttractorResources } from '@/rules';
 import { spawnResourceNodes } from '@/world/resource-spawn';
 
 describe('attractor map-gen contract (M8.6e, spec 102)', () => {
@@ -20,11 +20,17 @@ describe('attractor map-gen contract (M8.6e, spec 102)', () => {
       (n) => hexDistance(n.q, n.r, center.q, center.r) <= ATTRACTOR_RADIUS,
     );
     expect(nearby.length).toBeGreaterThan(0);
-    // and counts never exceed the guarantee (the contract only tops up, never overshoots)
+    // M_MICRO.6.3 — assert at least ONE type actually reached the
+    // guarantee floor (catches a regression that silently produces 0
+    // of each type, which would pass the upper-bound check vacuously).
+    let reachedFloor = false;
     for (const type of ['wood', 'stone', 'gold'] as const) {
       const n = nearby.filter((node) => node.resourceType === type).length;
+      // and counts never exceed the guarantee (the contract only tops up, never overshoots)
       expect(n).toBeLessThanOrEqual(ATTRACTOR_GUARANTEE[type]);
+      if (n >= ATTRACTOR_GUARANTEE[type]) reachedFloor = true;
     }
+    expect(reachedFloor).toBe(true);
   });
 
   it('does not place a node on the attractor tile itself', () => {

@@ -1,7 +1,60 @@
 # RTS Systems
 
+> **M_ARCH_UNIFY cross-reference (added 2026-05-23).** Pre-dates the
+> unified Thing/Skin registry. The 4-layer model — Archetypes → Things
+> → Slots → Skins — is the authoritative architectural shape for every
+> visual/data fork in the codebase. See:
+>
+> - `docs/specs/103-particle-archetype.md` — keystone architectural pass
+> - `docs/specs/10-architecture.md` — pillar's full M_ARCH_UNIFY block
+> - `src/rules/building-profiles.ts` — Thing registry (M_REGISTRY.5)
+> - `src/rules/unit-profiles.ts` — Thing registry (M_REGISTRY.1)
+> - `src/rules/skins.ts` — Skin slot (M_REGISTRY.3/4/2)
+>
+> Per-section notes below mark where THIS pillar's text became
+> superseded or extended by the unified-registry doctrine.
+
 Each system described here is reconstructed from `references/conversation.md`. Every
 system has explicit acceptance criteria — these become milestone contract tests.
+
+## Two-pass model (M_ARCH_UNIFY layer 3)
+
+```mermaid
+flowchart TB
+  subgraph GenTime["Gen-time pass — runs once at startGame()"]
+    G1[generateBoard]
+    G2[assignBiomes]
+    G3[scatterResources]
+    G4[paintBeach/Lake/Channel/Desert/Mountain]
+    G5[placeAccretedProps]
+    G6[placeTownHall + EnemyBase]
+  end
+  subgraph RuntimePass["Runtime pass — runs every economy tick"]
+    R1[harvestSystem]
+    R2[depositSystem ×FACTIONS]
+    R3[combatSystem]
+    R4[offensiveBehaviorSystem]
+    R5[scienceSystem]
+    R6[encroachmentSystem]
+    R7[pathFollowSystem]
+    R8[deathSystem]
+    R9[spawnSystem]
+    R10[weatherSystem]
+  end
+  Cfg[economy.json + combat.json] --> GenTime
+  Cfg --> RuntimePass
+  Profiles[BUILDING_PROFILES + UNIT_PROFILES + MOVER_PROFILES] --> RuntimePass
+  Skins[SKINS&lt;Faction&gt;] -.->|reads| Renderer[(r3f scene)]
+  GenTime --> Board[(BoardData + buildSites)]
+  Board --> RuntimePass
+  RuntimePass --> World[(koota world)]
+  World --> Renderer
+```
+
+Every runtime system iterates **slot membership** (`world.query(Trait)`)
+rather than branching on type. Adding a new system = add ONE consumer
+of the relevant slot; adding a new Thing type drops into all existing
+systems automatically because it carries the same traits.
 
 ## Economy System
 
@@ -34,19 +87,39 @@ The core economic loop runs autonomously once peons exist and resources are on t
 
 ### Supply System
 
-Each unit consumes supply capacity. Farm buildings provide supply. The TownHall
-provides a base supply of 5.
+Each unit consumes supply capacity from its faction's pool; buildings
+add supply when complete. The TownHall is the starting structure and
+provides the base capacity.
+
+> **M_AUDIT2.ARCH.37 — regenerated from data sources 2026-05-23.**
+> Supply values below are derived from `src/config/economy.json` +
+> `src/rules/unit-profiles.ts`. If these tables disagree with code,
+> the code is truth (per spec drift rule); re-regenerate this section.
+
+**Supply costs** (from `economy.json` → `supplyCosts`):
 
 | Unit | Supply cost |
 |---|---|
 | Peon | 1 |
+| Settler | 4 |
 | Footman | 2 |
-| Goblin | — (enemy, not tracked) |
+| Trebuchet | 3 |
+| Goblin | 0 (enemy — not supply-tracked) |
+| Orc | 0 |
+| Vampire | 0 |
+| Witch | 0 |
+| BlackKnight | 0 |
+
+**Supply provided** (from `economy.json` → `buildingSupply`):
 
 | Building | Supply provided |
 |---|---|
 | TownHall | 5 |
 | Farm | 10 |
+| House | 4 |
+| Granary | 2 |
+| Wonder | 5 |
+| Barracks / Watchtower / Wall / Library | 0 (not supply structures) |
 
 **Hard cap:** total supply is capped at the sum of all owned buildings' supply. Players
 cannot train units that would exceed their current supply cap. The HUD displays

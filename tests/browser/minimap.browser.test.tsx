@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { Minimap } from '@/hud/Minimap';
 import { startGame } from '@/game/game-state';
+import { Minimap } from '@/hud/Minimap';
 
 describe('Minimap', () => {
   it('draws the board — the canvas has non-empty pixel data', async () => {

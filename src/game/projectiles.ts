@@ -27,6 +27,18 @@ export interface Projectile {
   kind: 'arrow' | 'bolt' | 'magic';
 }
 
+/**
+ * Per-kind default lifetime (M_AUDIT2.ARCH.11). Was a single 0.4s
+ * literal default param. Lifted to a per-kind table so adding a new
+ * projectile kind (or tweaking magic to feel slower) is a one-row
+ * edit; callers can still override via the `lifetime` arg.
+ */
+export const PROJECTILE_LIFETIME: Record<Projectile['kind'], number> = {
+  arrow: 0.4,
+  bolt: 0.3,
+  magic: 0.6,
+};
+
 /** Add a projectile to the active list. */
 export function spawnProjectile(
   list: Projectile[],
@@ -34,7 +46,7 @@ export function spawnProjectile(
   start: { x: number; y: number; z: number },
   target: { x: number; y: number; z: number },
   kind: Projectile['kind'] = 'arrow',
-  lifetime = 0.4,
+  lifetime: number = PROJECTILE_LIFETIME[kind],
 ): void {
   list.push({
     id: nextId.current++,

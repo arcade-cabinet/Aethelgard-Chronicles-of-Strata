@@ -1,8 +1,14 @@
 import type { World } from 'koota';
 import { FactionBase, Health } from '@/ecs/components';
 
-/** The end-state of a session. */
-export type GameOutcome = 'playing' | 'win' | 'loss';
+/**
+ * The end-state of a session. M_TURNS.2 added 'draw' for turn-cap
+ * ties (player and enemy land on equal score + zone-control at the
+ * maxTurns boundary). 'draw' renders today the same as 'loss' UI
+ * branch; a future polish pass can give it its own GameOverModal
+ * branch with a distinct copy ("The realms reach equilibrium").
+ */
+export type GameOutcome = 'playing' | 'win' | 'loss' | 'draw';
 
 /**
  * Evaluate the win/loss condition symmetrically over the `FactionBase` entities:

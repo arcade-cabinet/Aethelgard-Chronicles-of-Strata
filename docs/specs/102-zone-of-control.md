@@ -1,5 +1,19 @@
 # 102 — Zone of Control, Encroachment & Territorial Buildings
 
+> **M_ARCH_UNIFY cross-reference (added 2026-05-23).** Pre-dates the
+> unified Thing/Skin registry. The 4-layer model — Archetypes → Things
+> → Slots → Skins — is the authoritative architectural shape for every
+> visual/data fork in the codebase. See:
+>
+> - `docs/specs/103-particle-archetype.md` — keystone architectural pass
+> - `docs/specs/10-architecture.md` — pillar's full M_ARCH_UNIFY block
+> - `src/rules/building-profiles.ts` — Thing registry (M_REGISTRY.5)
+> - `src/rules/unit-profiles.ts` — Thing registry (M_REGISTRY.1)
+> - `src/rules/skins.ts` — Skin slot (M_REGISTRY.3/4/2)
+>
+> Per-section notes below mark where THIS pillar's text became
+> superseded or extended by the unified-registry doctrine.
+
 Supersedes the black fog-of-war model (specs 100 §3 / the M8.4–M8.5 fog
 rendering). The map is **always fully visible** — a low-poly board is meant to
 be read at a glance, especially on a phone. Territory is shown by **drawn
@@ -120,6 +134,37 @@ many systems — the depth comes from the field, not from each system's
 internal heuristics.
 
 ## Archetype composition algebra — emergent richness without rule explosion
+
+```mermaid
+flowchart TB
+  subgraph Spec102["Spec 102 — the original FIVE archetypes"]
+    A1[Attractor]
+    A2[Offensive]
+    A3[Defensive]
+    A4[Mover]
+    A5[Consumer]
+  end
+  subgraph CrossCut["M_ARCH_UNIFY cross-cutting capability slots"]
+    C1[Movable]
+    C2[Animated]
+    C3[Costable]
+    C4[HasHP]
+    C5[AccretesProps]
+    C6[GenTimePlaced]
+    C7[RuntimePlaced]
+    C8[ParticleArchetype]
+    C9[ProducerSlot]
+  end
+  subgraph Thing["Things compose any subset of these slots"]
+    T1[Watchtower = Offensive + HasHP + Costable + RuntimePlaced]
+    T2[Wonder = Attractor + Offensive + Defensive + HasHP + Costable]
+    T3[Mountain = AccretesProps + GenTimePlaced]
+    T4[Footman = Mover + Offensive + HasHP + Animated + Costable]
+    T5[Library = ProducerSlot + HasHP + Costable]
+  end
+  Spec102 --> Thing
+  CrossCut --> Thing
+```
 
 The five archetypes (Attractor, Offensive, Defensive, Mover, Consumer) are not
 just a taxonomy — they are a **composition algebra**. Every gameplay pattern

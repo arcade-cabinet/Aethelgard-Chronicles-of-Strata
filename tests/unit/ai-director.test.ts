@@ -7,8 +7,10 @@
  *  3. The enemy steers toward its target (PERCEIVE + STEP + WRITE-BACK).
  *  4. The retarget cap (MAX_RETARGETS_PER_TICK = 8) is honoured.
  */
-import { describe, expect, it, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { AiDirector, MAX_RETARGETS_PER_TICK } from '@/ai/index';
 import { generateBoard } from '@/core/board';
+import { axialToWorld } from '@/core/hex';
 import { buildNavGraph } from '@/core/pathfinding';
 import {
   Combatant,
@@ -19,8 +21,6 @@ import {
   PathQueue,
 } from '@/ecs/components';
 import { createEcsWorld } from '@/ecs/world';
-import { AiDirector, MAX_RETARGETS_PER_TICK } from '@/ai/index';
-import { axialToWorld } from '@/core/hex';
 
 const SEED = 'ancient-silver-forest';
 
@@ -108,7 +108,8 @@ describe('AiDirector', () => {
     // sync should have set it correctly before that.
     // We check that a vehicle exists and was created at approximately the right
     // location (within 1 world unit — one hex tile — of the hex centre).
-    const pos = vehicle!.position as unknown as { x: number; y: number; z: number };
+    if (!vehicle) throw new Error('expected vehicle to be defined');
+    const pos = vehicle.position as unknown as { x: number; y: number; z: number };
     expect(Math.abs(pos.x - expectedX)).toBeLessThan(1.5);
     expect(Math.abs(pos.z - expectedZ)).toBeLessThan(1.5);
   });

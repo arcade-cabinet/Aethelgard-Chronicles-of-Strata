@@ -1,9 +1,64 @@
 # ECS Model
 
+> **M_ARCH_UNIFY cross-reference (added 2026-05-23).** Pre-dates the
+> unified Thing/Skin registry. The 4-layer model — Archetypes → Things
+> → Slots → Skins — is the authoritative architectural shape for every
+> visual/data fork in the codebase. See:
+>
+> - `docs/specs/103-particle-archetype.md` — keystone architectural pass
+> - `docs/specs/10-architecture.md` — pillar's full M_ARCH_UNIFY block
+> - `src/rules/building-profiles.ts` — Thing registry (M_REGISTRY.5)
+> - `src/rules/unit-profiles.ts` — Thing registry (M_REGISTRY.1)
+> - `src/rules/skins.ts` — Skin slot (M_REGISTRY.3/4/2)
+>
+> Per-section notes below mark where THIS pillar's text became
+> superseded or extended by the unified-registry doctrine.
+
 The simulation uses `koota` as the Entity Component System library. All game objects
 are entities; all properties are components; all behavior is implemented in pure
 systems. The ECS world is created once at game start and persists for the lifetime of
 a play session.
+
+## Slot taxonomy (M_ARCH_UNIFY layer 1 → layer 2)
+
+```mermaid
+flowchart LR
+  subgraph Traits["koota traits (M_ARCH_UNIFY archetype slots)"]
+    OB[OffensiveBehavior]
+    DB[DefensiveBehavior]
+    AB[AttractorBehavior]
+    MV[Movement]
+    AN[AnimationState]
+    HP[Health]
+    SP[ScienceProducer]
+    BB[Building]
+    UU[Unit]
+    HX[HexPosition]
+    FT[FactionTrait]
+  end
+  subgraph Profiles["Thing registries (slot composition tables)"]
+    BP[BUILDING_PROFILES]
+    UP[UNIT_PROFILES]
+    MP[MOVER_PROFILES]
+  end
+  subgraph Factories["Factories (compose slots → entity)"]
+    CC[createCharacter]
+    PB[placeBuilding]
+    PR[placeRoad]
+  end
+  BP -->|.behaviors / .producer| Factories
+  UP -->|.harvester / .nonCombat / .damageType| Factories
+  MP -->|.color| Factories
+  Factories -->|world.spawn ...traits| Traits
+  Traits --> Entity[(Entity)]
+```
+
+Every spawn site (factory) reads the relevant Profile registry, picks
+the slot values, and assembles the trait tuple. The Factory layer is
+the boundary between **data (Profiles)** and **runtime (Traits on
+entities)**; ECS systems then iterate by querying trait membership.
+**Adding a new capability slot** = add the trait + extend a Profile
+interface + add ONE consumer in the factory or in a system.
 
 ## Component Catalog
 

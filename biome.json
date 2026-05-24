@@ -33,7 +33,12 @@
   },
   "overrides": [
     {
-      "includes": ["src/entities/**", "src/world/**", "src/render/**"],
+      "includes": [
+        "src/entities/**",
+        "src/world/**",
+        "src/render/**",
+        "!src/world/TileInteraction.tsx"
+      ],
       "linter": {
         "rules": {
           "a11y": "off"

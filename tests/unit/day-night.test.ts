@@ -21,13 +21,21 @@ describe('day/night cycle', () => {
     expect(midnight).toBeLessThan(0.15);
   });
 
-  it('light intensity transitions smoothly (no step)', () => {
+  it('light intensity transitions smoothly (no step) AND is non-flat', () => {
     let prev = lightIntensityAt(0);
+    let lo = Number.POSITIVE_INFINITY;
+    let hi = Number.NEGATIVE_INFINITY;
     for (let p = 0.01; p <= 1; p += 0.01) {
       const v = lightIntensityAt(p);
       expect(Math.abs(v - prev)).toBeLessThan(0.1);
+      if (v < lo) lo = v;
+      if (v > hi) hi = v;
       prev = v;
     }
+    // M_MICRO.6.10 — assert the day/night curve actually has a meaningful
+    // amplitude over a full phase; a constant intensity would pass the
+    // smoothness check trivially.
+    expect(hi - lo).toBeGreaterThan(0.5);
   });
 
   it('sky color is light at noon and dark at midnight', () => {

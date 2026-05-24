@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
-import { canBuild, BUILDING_COSTS } from '@/rules';
 import { createEconomy } from '@/game/economy';
+import { BUILDING_COSTS, canBuild } from '@/rules';
 
 describe('build mode placement validation', () => {
   it('rejects placement on an ocean tile', () => {

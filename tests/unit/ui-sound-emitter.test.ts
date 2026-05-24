@@ -12,7 +12,7 @@ vi.mock('@/assets/assets', () => ({
 }));
 
 import { createAudioBuses, playSound } from '@/audio/buses';
-import { registerUiSoundPlayer, emitUiSound } from '@/audio/ui-sound-emitter';
+import { emitUiSound, registerUiSoundPlayer } from '@/audio/ui-sound-emitter';
 
 vi.mock('@/audio/buses', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/audio/buses')>();
@@ -29,12 +29,17 @@ describe('ui-sound-emitter', () => {
     expect(playSound).not.toHaveBeenCalled();
   });
 
-  it('calls playSound after registration', () => {
+  it('calls playSound after registration with a click-pool variant (M_EXPANSION.AU.35)', () => {
     const buses = createAudioBuses();
     const unregister = registerUiSoundPlayer(buses);
 
     emitUiSound('ui-button-click');
-    expect(playSound).toHaveBeenCalledWith(buses, 'ui', 'audio.sfx.ui-click');
+    // Variant pool — emitter picks one of three click variants at random.
+    expect(playSound).toHaveBeenCalledWith(
+      buses,
+      'ui',
+      expect.stringMatching(/^audio\.ui\.click-0[1-3]$/),
+    );
 
     unregister();
   });
@@ -49,12 +54,12 @@ describe('ui-sound-emitter', () => {
     expect(playSound).not.toHaveBeenCalled();
   });
 
-  it('routes research-purchased to ui bus ui-unlock sound', () => {
+  it('routes research-purchased to ui bus discovery-unlock sound (M_EXPANSION.AU.34)', () => {
     const buses = createAudioBuses();
     const unregister = registerUiSoundPlayer(buses);
 
     emitUiSound('research-purchased');
-    expect(playSound).toHaveBeenCalledWith(buses, 'ui', 'audio.sfx.ui-unlock');
+    expect(playSound).toHaveBeenCalledWith(buses, 'ui', 'audio.ui.discovery-unlock');
 
     unregister();
   });

@@ -44,9 +44,21 @@ function ProjectileMesh({ p }: { p: Projectile }) {
  */
 export function ProjectileLayer({ game }: { game: GameState }) {
   const [, setTick] = useState(0);
-  // The projectiles list is mutated in place by the sim tick; force re-render
-  // each frame so React picks up new entries.
-  useFrame(() => setTick((n) => (n + 1) & 0xffff));
+  // M_MICRO.5.1 — diff projectile-list identity (length + first/last id)
+  // before bumping the tick. Steady-state with no projectiles in flight
+  // is the common case (combat is bursty); we don't need to re-render
+  // an empty group at 60Hz.
+  const lastKeyRef = useRef('');
+  useFrame(() => {
+    const projs = game.projectiles;
+    const key =
+      projs.length === 0
+        ? '0'
+        : `${projs.length}|${projs[0]?.id ?? 0}|${projs[projs.length - 1]?.id ?? 0}`;
+    if (key === lastKeyRef.current) return;
+    lastKeyRef.current = key;
+    setTick((n) => (n + 1) & 0xffff);
+  });
   return (
     <group name="projectiles">
       {game.projectiles.map((p) => (

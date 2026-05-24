@@ -1,9 +1,27 @@
 import type { World } from 'koota';
 import { COMBAT } from '@/config/combat';
-import { AnimationState, DeathTimer, FactionTrait, Health, Unit } from '@/ecs/components';
+import {
+  AnimationState,
+  DeathTimer,
+  FactionTrait,
+  Health,
+  HexPosition,
+  Unit,
+} from '@/ecs/components';
 
 /** Seconds a corpse lingers (plays the death clip) before removal. */
 const DEATH_DELAY: number = COMBAT.deathDelay;
+
+/**
+ * M_EXPANSION.F.96 — Hero permadeath signal. Returned as part of
+ * the deathSystem tick result so runEconomyTick can flip
+ * game.outcome to 'loss' immediately when the player's Hero dies.
+ * Permadeath is a hard rule — no respawn, no retreat heal.
+ */
+export interface DeathSystemResult {
+  enemyKills: number;
+  playerHeroDied: boolean;
+}
 
 /**
  * Handle unit death. A unit at 0 Health enters the DYING animation state and
@@ -11,11 +29,12 @@ const DEATH_DELAY: number = COMBAT.deathDelay;
  * length) it is removed from the world. The timer is an ECS component, so a
  * mid-death unit survives a save/load round-trip.
  *
- * Returns the number of enemy-faction units removed this tick — the caller
- * credits kills from this rather than re-scanning the roster.
+ * Returns: `{ enemyKills, playerHeroDied }` — the caller credits enemy kills
+ * and flips game.outcome on hero permadeath (M_EXPANSION.F.96).
  */
-export function deathSystem(world: World, delta: number): number {
+export function deathSystem(world: World, delta: number): DeathSystemResult {
   let enemyKills = 0;
+  let playerHeroDied = false;
   for (const entity of world.query(Unit, Health, AnimationState)) {
     const health = entity.get(Health);
     if (!health || health.current > 0) continue;
@@ -30,11 +49,40 @@ export function deathSystem(world: World, delta: number): number {
     const timer = entity.get(DeathTimer);
     const elapsed = (timer?.elapsed ?? 0) + delta;
     if (elapsed >= DEATH_DELAY) {
-      if (entity.get(FactionTrait)?.faction === 'enemy') enemyKills += 1;
+      const faction = entity.get(FactionTrait)?.faction;
+      if (faction === 'enemy') enemyKills += 1;
+      // M_EXPANSION.F.96 — Hero permadeath. If THIS removed entity
+      // is a player-faction Hero, signal up so the runtime can flip
+      // game.outcome to 'loss'. The signal fires once per death tick;
+      // the only-one-hero-alive guard in trainUnit prevents respawn.
+      const unitType = entity.get(Unit)?.unitType;
+      if (faction === 'player' && unitType === 'Hero') playerHeroDied = true;
+      // M_EXPANSION.A.17 — drop a coffin visual at the death tile for
+      // 3s after the unit removal. Enemy deaths only (player corpses
+      // wouldn't be coffin-themed). DeathDropLayer (world component)
+      // listens for this event and renders + ages the drops.
+      if (faction === 'enemy' && typeof window !== 'undefined') {
+        const hex = entity.get(HexPosition);
+        if (hex) {
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:enemy-death-drop', { detail: { q: hex.q, r: hex.r } }),
+          );
+        }
+      }
+      // M_EXPANSION.AU.47 — death SFX per unit type. main.tsx listens
+      // and routes to emitUiSound('unit-death-*') so the audio layer
+      // can pick a sample appropriate to the unit (rocky thump for
+      // Trebuchet, normal for Footman, magic-impact for Wizard).
+      if (typeof window !== 'undefined') {
+        const unitType = entity.get(Unit)?.unitType;
+        if (unitType) {
+          window.dispatchEvent(new CustomEvent('aethelgard:unit-death', { detail: { unitType } }));
+        }
+      }
       entity.destroy();
     } else {
       entity.set(DeathTimer, { elapsed });
     }
   }
-  return enemyKills;
+  return { enemyKills, playerHeroDied };
 }

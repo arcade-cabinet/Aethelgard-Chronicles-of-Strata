@@ -19,10 +19,13 @@ describe('resource node spawning', () => {
   it('places wood nodes only on forest tiles', () => {
     const board = generateBoard('ancient-silver-forest');
     const nodes = spawnResourceNodes(board, createMapPrng('ancient-silver-forest'));
-    for (const node of nodes) {
-      if (node.resourceType === 'wood') {
-        expect(board.tiles.get(node.key)?.type).toBe('FOREST');
-      }
+    // M_MICRO.6.2 — assert wood was actually placed (a 0-wood board
+    // would pass the per-node check vacuously and hide a regression
+    // in wood spawn rates or biome targeting).
+    const woodNodes = nodes.filter((n) => n.resourceType === 'wood');
+    expect(woodNodes.length).toBeGreaterThan(0);
+    for (const node of woodNodes) {
+      expect(board.tiles.get(node.key)?.type).toBe('FOREST');
     }
   });
 

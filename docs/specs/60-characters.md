@@ -1,5 +1,19 @@
 # Characters
 
+> **M_ARCH_UNIFY cross-reference (added 2026-05-23).** Pre-dates the
+> unified Thing/Skin registry. The 4-layer model — Archetypes → Things
+> → Slots → Skins — is the authoritative architectural shape for every
+> visual/data fork in the codebase. See:
+>
+> - `docs/specs/103-particle-archetype.md` — keystone architectural pass
+> - `docs/specs/10-architecture.md` — pillar's full M_ARCH_UNIFY block
+> - `src/rules/building-profiles.ts` — Thing registry (M_REGISTRY.5)
+> - `src/rules/unit-profiles.ts` — Thing registry (M_REGISTRY.1)
+> - `src/rules/skins.ts` — Skin slot (M_REGISTRY.3/4/2)
+>
+> Per-section notes below mark where THIS pillar's text became
+> superseded or extended by the unified-registry doctrine.
+
 ## KayKit Roster
 
 All characters come from the KayKit Dungeon Pack / Characters pack, licensed CC BY 4.0.
@@ -136,3 +150,38 @@ rendered inside the scene. The component:
 4. Reads `Health` to drive the health billboard (a floating `<Html>` overlay or
    a procedural bar mesh above the character).
 5. Reads `Selectable.isSelected` to show a selection ring beneath the character.
+
+---
+
+## M_CHARACTERS.14 — three character use cases
+
+(Added as part of M_EXPANSION.S.60 spec sweep.)
+
+Aethelgard's character factory serves **three distinct use cases**;
+each has different input/output/identity contracts. The factory
+itself is shared, but the spawn triggers and storage policies differ.
+
+| Use case        | Input                | Output lives in          | Identity stable across |
+|-----------------|----------------------|--------------------------|------------------------|
+| Fixed NPCs      | design-time decl     | `public/assets/` (baked) | every seed             |
+| Generic-fixed   | seed + name table    | OPFS (runtime bake)      | one seed               |
+| Random NPCs     | seed + RNG draw      | OPFS (runtime bake)      | one seed               |
+
+**Fixed NPCs** — TownHall + named heroes (Knight). Same skinned-mesh
+GLB across every seed. The KayKit hero mesh is the source.
+
+**Generic-fixed NPCs** (M_EXPANSION.S.60 — not yet implemented) —
+named characters with seed-randomised stats. Each new game's Wizard
+gets the same Mage mesh but a procedurally-rolled hp/dmg/cooldown
+within a per-role band. Identity is stable for the session; a save
++ resume restores the same stats (snapshot carries them).
+
+**Random NPCs** — enemy raid waves. Mesh + stats both rolled at
+spawn time from the event PRNG. Identity does not survive resume
+across the death (intended — they're spawn-and-forget).
+
+Implementation: `character-factory.ts` accepts an optional
+`statsOverride` slot; the generic-fixed code path pre-rolls from
+a per-role band and passes them in. Random spawns roll fresh per
+unit. Fixed NPCs pass nothing (factory falls back to UNIT_PROFILES).
+

@@ -2,6 +2,7 @@ import { Color } from 'three';
 import { TILE_HEIGHT } from '@/config/world';
 import type { BoardData, Tile } from '@/core/board';
 import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
+import { biomeFlagsFor } from '@/rules/biome-flags';
 import { BIOME_COLORS } from './palette';
 
 /** The raw vertex arrays for the merged terrain mesh. */
@@ -41,9 +42,9 @@ const CLIFF_DIRT = new Color('#78350f');
  */
 function surfaceColor(tile: Tile): Color {
   const c = new Color(BIOME_COLORS[tile.type]);
-  if (tile.type === 'GRASS' || tile.type === 'FOREST') {
-    c.lerp(LUSH, tile.moisture);
-  }
+  // M_REGISTRY.22 — lushBlend slot is the data answer to "does this
+  // biome moisture-shift toward green?" (was a hand-rolled disjunction).
+  if (biomeFlagsFor(tile.type).lushBlend) c.lerp(LUSH, tile.moisture);
   if (tile.level >= 6) {
     c.lerp(SNOW, 0.8);
   }
@@ -60,9 +61,13 @@ function surfaceColor(tile: Tile): Color {
  * patchwork. Mirrors poc1's `getCliffColor`.
  */
 function cliffColor(top: Tile): Color {
-  if (top.type === 'LAKE') return CLIFF_WATER;
+  // M_REGISTRY.21 — biome cliffColor slot replaces the 2-biome type
+  // branch ('LAKE' / 'DESERT'); elevation fallback (rock-vs-dirt by
+  // tier) lives here since it's not biome-keyed.
+  const tag = biomeFlagsFor(top.type).cliffColor;
+  if (tag === 'water') return CLIFF_WATER;
   if (top.level >= 4) return CLIFF_ROCK;
-  if (top.type === 'DESERT') return CLIFF_DESERT;
+  if (tag === 'desert') return CLIFF_DESERT;
   return CLIFF_DIRT;
 }
 
@@ -103,13 +108,19 @@ export function buildTerrainGeometry(board: BoardData): TerrainGeometryData {
         neighbor && neighbor.level > 0 ? neighbor.level * TILE_HEIGHT : -TILE_HEIGHT * 1.5;
       if (neighborY < topY) {
         // Cliff quad, wound so its normal faces outward from the tile edge.
-        const cliff = cliffColor(tile);
-        push(p1.x, topY, p1.z, cliff);
-        push(p2.x, topY, p2.z, cliff);
-        push(p1.x, neighborY, p1.z, cliff);
-        push(p1.x, neighborY, p1.z, cliff);
-        push(p2.x, topY, p2.z, cliff);
-        push(p2.x, neighborY, p2.z, cliff);
+        // M_EXPANSION.S.66 — bottom verts get a 30%-darker cliff color
+        // for an ambient-occlusion impression along the cliff base.
+        // Vertex-color interpolation makes the cliff face fade darker
+        // toward its foot — reads as a soft shadow without the cost of
+        // a true shadow pass.
+        const cliffTop = cliffColor(tile);
+        const cliffBottom = cliffTop.clone().multiplyScalar(0.7);
+        push(p1.x, topY, p1.z, cliffTop);
+        push(p2.x, topY, p2.z, cliffTop);
+        push(p1.x, neighborY, p1.z, cliffBottom);
+        push(p1.x, neighborY, p1.z, cliffBottom);
+        push(p2.x, topY, p2.z, cliffTop);
+        push(p2.x, neighborY, p2.z, cliffBottom);
       }
     }
   }

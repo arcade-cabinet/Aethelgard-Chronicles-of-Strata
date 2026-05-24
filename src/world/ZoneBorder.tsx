@@ -5,15 +5,15 @@ import { HEX_DIRECTIONS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
 import type { Faction } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { SKINS } from '@/rules/skins';
 
 /** Y-lift of the border line above a tile's top face. */
 const BORDER_LIFT = 0.06;
 
-/** Faction colours for the zone-of-control border. */
-const ZONE_COLOR: Record<Faction, string> = {
-  player: '#38bdf8',
-  enemy: '#f43f5e',
-};
+// M_AUDIT2.ARCH.3 — ZONE_COLOR collapsed onto SKINS[faction].minimap
+// .unitColor (the territory border and the minimap unit dot share the
+// faction-identity color by design). Adding a third tribe = ONE Skin
+// row touches both surfaces.
 
 /**
  * Build the line-segment positions for one faction's zone-of-control border:
@@ -45,18 +45,27 @@ function buildBorder(game: GameState, faction: Faction): Float32Array {
   return new Float32Array(pos);
 }
 
-/** One faction's border, rendered as glowing line segments, refreshed each frame. */
+/** One faction's border, rendered as glowing line segments. */
 function FactionBorder({ game, faction }: { game: GameState; faction: Faction }) {
   const ref = useRef<LineSegments>(null);
+  // M_MICRO.5.2 — cache the Float32Array by zone generation. The
+  // border only changes when a tile is claimed or released; rebuilding
+  // every frame was the HOTTEST PERF BUG in the codebase (60Hz, ~30
+  // tiles → ~60 ms/min wasted on hex math). When the generation
+  // counter is unchanged, skip the rebuild entirely.
+  const lastGenRef = useRef<number>(-1);
   useFrame(() => {
     if (!ref.current) return;
+    const gen = game.zones[faction].generation;
+    if (gen === lastGenRef.current) return;
+    lastGenRef.current = gen;
     const geo = ref.current.geometry as BufferGeometry;
     geo.setAttribute('position', new BufferAttribute(buildBorder(game, faction), 3));
   });
   return (
     <lineSegments ref={ref}>
       <bufferGeometry />
-      <lineBasicMaterial color={ZONE_COLOR[faction]} linewidth={2} />
+      <lineBasicMaterial color={SKINS[faction].zoneBorderColor} linewidth={2} />
     </lineSegments>
   );
 }

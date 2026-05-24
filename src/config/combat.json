@@ -1,6 +1,7 @@
 {
   "unitStats": {
     "Peon": { "speed": 3, "faction": "player" },
+    "Settler": { "speed": 2.2, "faction": "player" },
     "Footman": {
       "speed": 2.5,
       "faction": "player",
@@ -8,6 +9,38 @@
       "attackDamage": 15,
       "attackRange": 1,
       "attackCooldown": 1
+    },
+    "Trebuchet": {
+      "speed": 1.0,
+      "faction": "player",
+      "hp": 80,
+      "attackDamage": 22,
+      "attackRange": 4,
+      "attackCooldown": 3.0
+    },
+    "Wizard": {
+      "speed": 2.0,
+      "faction": "player",
+      "hp": 70,
+      "attackDamage": 18,
+      "attackRange": 3,
+      "attackCooldown": 2.0
+    },
+    "Scout": {
+      "speed": 4.5,
+      "faction": "player",
+      "hp": 40,
+      "attackDamage": 0,
+      "attackRange": 0,
+      "attackCooldown": 0
+    },
+    "Hero": {
+      "speed": 3.5,
+      "faction": "player",
+      "hp": 200,
+      "attackDamage": 30,
+      "attackRange": 1,
+      "attackCooldown": 1.2
     },
     "Goblin": {
       "speed": 2,
@@ -72,6 +105,18 @@
     }
   },
   "ai": {
-    "aggroRadius": 10
+    "aggroRadius": 10,
+    "visionRadiusByDifficulty": {
+      "easy": 3,
+      "normal": 5,
+      "hard": 8
+    }
+  },
+  "encroachment": {
+    "graceSecondsByDifficulty": {
+      "easy": 12,
+      "normal": 7,
+      "hard": 4
+    }
   }
 }

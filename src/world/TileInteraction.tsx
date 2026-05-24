@@ -1,8 +1,11 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexKey, hexNeighbors } from '@/core/hex';
-import { Building, FactionTrait, Selectable, Unit, type UnitType } from '@/ecs/components';
+import { Building, FactionTrait, Selectable, Unit } from '@/ecs/components';
+import { cameraView } from '@/render/camera-view';
+import { computePanDelta, isDragging, startDrag, stopDrag } from './touch-drag';
+import { isTap } from './touch-tap-threshold';
 import {
   findSelectableAtTile,
   moveUnit,
@@ -11,8 +14,20 @@ import {
   setRally,
 } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
+import { getCursorMode } from '@/game/cursor-mode';
 import { selectEntity, selectedEntities } from '@/game/selection';
+import { HUD_THEME } from '@/hud/hud-theme';
 import { PathLine } from './PathLine';
+import { hexGridVisibility } from './HexGridOverlay';
+
+/**
+ * M_EXPANSION.U.109 — SVG sword cursor as an inline data: URL.
+ * 24×24 px, hot-spot at centre (12,12), crimson fill matching the
+ * combat danger colour from HUD_THEME. Encodes a crossed-sword glyph
+ * for the attack affordance.
+ */
+const ATTACK_CURSOR_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><line x1="4" y1="4" x2="20" y2="20" stroke="${HUD_THEME.color.danger}" stroke-width="2.5" stroke-linecap="round"/><line x1="20" y1="4" x2="4" y2="20" stroke="${HUD_THEME.color.danger}" stroke-width="2.5" stroke-linecap="round"/><line x1="4" y1="4" x2="8" y2="8" stroke="${HUD_THEME.color.danger}" stroke-width="1.5"/><line x1="20" y1="4" x2="16" y2="8" stroke="${HUD_THEME.color.danger}" stroke-width="1.5"/></svg>`;
+const ATTACK_CURSOR = `url("data:image/svg+xml;utf8,${encodeURIComponent(ATTACK_CURSOR_SVG)}") 12 12, crosshair`;
 
 /** Long-press threshold (ms) — touch hold beyond this fires as right-click. */
 const LONG_PRESS_MS = 500;
@@ -27,19 +42,61 @@ function TilePick({
   z,
   onLeft,
   onRight,
+  onHover,
+  onLeave,
 }: {
   x: number;
   y: number;
   z: number;
   onLeft: () => void;
   onRight: () => void;
+  /** M_EXPANSION.U.108 — fires on pointer-over; null on leave. */
+  onHover?: () => void;
+  /** M_EXPANSION.U.109 — fires on pointer-leave so the parent can clear hover state. */
+  onLeave?: () => void;
 }) {
-  const longPressRef = useRef<{ timer: number; fired: boolean } | null>(null);
+  // M_POLISH2.MOBILE.6 — track pointerdown coords so we can suppress
+  // tile-select when the pointer moved more than MOVE_THRESHOLD_PX
+  // between down and up (treat as a camera-pan, not a tap).
+  const longPressRef = useRef<{
+    timer: number;
+    fired: boolean;
+    startX: number;
+    startY: number;
+  } | null>(null);
+
+  // M_POLISH2.MOBILE.9 — when the OS cancels a pointer (most often a
+  // pinch-zoom or two-finger pan starting on the canvas while a
+  // single-finger tap was being arrowed at this mesh), abort any
+  // pending long-press AND wipe the longPressRef so the next pointerup
+  // does NOT fire onLeft(). Without this, pinch-zoom released its second
+  // finger on a tile-mesh and the released-pointer-up fired a phantom
+  // select.
+  useEffect(() => {
+    const onCancel = () => {
+      const state = longPressRef.current;
+      if (!state) return;
+      clearTimeout(state.timer);
+      longPressRef.current = null;
+      hexGridVisibility.show = false;
+    };
+    window.addEventListener('pointercancel', onCancel);
+    return () => window.removeEventListener('pointercancel', onCancel);
+  }, []);
+
   return (
+    // <mesh> is an r3f three.js node, not a DOM element — the a11y
+    // rule misfires on the JSX intrinsic. Suppress here so the broader
+    // override (M_AUDIT2.SEC2.50) doesn't have to re-blanket the file.
+    // biome-ignore lint/a11y/noStaticElementInteractions: r3f mesh, not DOM
     <mesh
       position={[x, y, z]}
       rotation={[0, Math.PI / 6, 0]}
       geometry={pickGeometry}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        onHover?.();
+      }}
       onPointerDown={(e) => {
         e.stopPropagation();
         const ne = e.nativeEvent as PointerEvent;
@@ -50,9 +107,17 @@ function TilePick({
         }
         // touch: arm a long-press timer; release before threshold = left.
         if (ne.pointerType === 'touch') {
-          const state = { timer: 0, fired: false };
+          const state = {
+            timer: 0,
+            fired: false,
+            startX: ne.clientX,
+            startY: ne.clientY,
+          };
           state.timer = window.setTimeout(() => {
             state.fired = true;
+            hexGridVisibility.show = true;
+            // M_EXPANSION.U.119 — long-press also starts drag-scroll mode.
+            startDrag(ne.clientX, ne.clientY);
             onRight();
           }, LONG_PRESS_MS);
           longPressRef.current = state;
@@ -63,18 +128,28 @@ function TilePick({
       onPointerUp={(e) => {
         const ne = e.nativeEvent as PointerEvent;
         if (ne.pointerType !== 'touch') return;
+        // M_EXPANSION.U.119 — exit drag mode whenever the touch lifts.
+        stopDrag();
         const state = longPressRef.current;
         if (!state) return;
         clearTimeout(state.timer);
         longPressRef.current = null;
-        if (!state.fired) onLeft();
+        hexGridVisibility.show = false;
+        // M_POLISH2.MOBILE.6 — drag-pan suppresses the tap. If the
+        // pointer moved more than MOVE_THRESHOLD_PX between down and
+        // up, the user was panning the camera; do NOT fire a select.
+        if (state.fired) return;
+        if (!isTap(state.startX, state.startY, ne.clientX, ne.clientY)) return;
+        onLeft();
       }}
       onPointerLeave={() => {
         const state = longPressRef.current;
         if (state) {
           clearTimeout(state.timer);
           longPressRef.current = null;
+          hexGridVisibility.show = false;
         }
+        onLeave?.();
       }}
       onContextMenu={(e) => {
         e.nativeEvent.preventDefault();
@@ -85,15 +160,8 @@ function TilePick({
   );
 }
 
-/** Military roles right-click-move applies to (peons remain autonomous). */
-const MILITARY: ReadonlySet<UnitType> = new Set([
-  'Footman',
-  'Goblin',
-  'Orc',
-  'Vampire',
-  'Witch',
-  'BlackKnight',
-]);
+// M_REGISTRY.17 — MILITARY unified into UNIT_PROFILES.combatRole.
+import { MILITARY_ROLES as MILITARY } from '@/rules/unit-profiles';
 
 const pickGeometry = new CylinderGeometry(HEX_RADIUS * 0.95, HEX_RADIUS * 0.95, 0.2, 6);
 
@@ -129,6 +197,73 @@ export function TileInteraction({
   spawnTrackingRing?: (q: number, r: number) => void;
 }) {
   const [pathKeys, setPathKeys] = useState<string[]>([]);
+  // M_EXPANSION.U.108 — hovered tile (q,r) for the build-mode ghost.
+  const [hoveredTile, setHoveredTile] = useState<{ q: number; r: number; level: number } | null>(
+    null,
+  );
+
+  /*
+   * M_EXPANSION.U.109 — sword cursor when hovering an enemy with a
+   * military unit selected. Touch devices never fire onPointerOver with
+   * a persistent hover (the pointer disappears on lift), so this is
+   * desktop-only by the nature of pointer events. The effect has a
+   * cleanup path that restores the default cursor so a route change or
+   * component unmount never leaves the sword cursor stuck.
+   */
+  useEffect(() => {
+    const hoveredKey = hoveredTile ? getHexKey(hoveredTile.q, hoveredTile.r) : null;
+    const mode = getCursorMode(game, hoveredKey);
+    if (mode === 'attack') {
+      document.body.style.cursor = ATTACK_CURSOR;
+    } else {
+      document.body.style.cursor = '';
+    }
+    return () => {
+      document.body.style.cursor = '';
+    };
+  }, [game, hoveredTile]);
+
+  /*
+   * M_EXPANSION.U.119 — touch drag-scroll.
+   *
+   * A global pointermove handler (installed once on mount) checks whether drag
+   * mode is active via the touch-drag module.  When active it converts the raw
+   * pointer delta into a world-space {dx, dz} pair scaled by the current camera
+   * distance, then dispatches 'aethelgard:pan-camera' so CameraRig applies it.
+   * A global pointerup handler clears drag mode; the per-tile pointerup in
+   * TilePick also calls stopDrag() for robustness.
+   *
+   * Desktop: pointerType is 'mouse'; isDragging() is always false because
+   * startDrag() is only called from the touch branch of the long-press timer,
+   * so the pointermove handler is a cheap no-op on desktop.
+   */
+  useEffect(() => {
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') return;
+      if (!isDragging()) return;
+      const { dx, dz } = computePanDelta(e.clientX, e.clientY, cameraView.distance);
+      if (dx === 0 && dz === 0) return;
+      window.dispatchEvent(new CustomEvent('aethelgard:pan-camera', { detail: { dx, dz } }));
+    };
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerType !== 'touch') return;
+      stopDrag();
+    };
+    window.addEventListener('pointermove', onMove);
+    window.addEventListener('pointerup', onUp);
+    window.addEventListener('pointercancel', onUp);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
+      stopDrag();
+    };
+  }, []);
+
+  // M_AUDIT2.SEC2.26 — 100ms click cooldown. Auto-clickers can chain
+  // build placements faster than the economy tick can validate (multiple
+  // resource-spends before any tick runs). 100ms is invisible to humans.
+  const lastClickMsRef = useRef<number>(0);
   const tiles = [...game.board.tiles.values()].filter((t) => t.walkable);
 
   /**
@@ -158,6 +293,10 @@ export function TileInteraction({
   };
 
   const onPick = (q: number, r: number): void => {
+    // performance.now() is allowed here — render-layer code, not sim.
+    const now = performance.now();
+    if (now - lastClickMsRef.current < 100) return;
+    lastClickMsRef.current = now;
     const tileKey = getHexKey(q, r);
 
     // Priority 1: select a unit or building on the tile.
@@ -207,9 +346,39 @@ export function TileInteraction({
             z={z}
             onLeft={() => onPick(t.q, t.r)}
             onRight={() => onRightPick(t.q, t.r)}
+            onHover={() => setHoveredTile({ q: t.q, r: t.r, level: t.level })}
+            onLeave={() => setHoveredTile(null)}
           />
         );
       })}
+      {/*
+        M_EXPANSION.U.108 — build-mode ghost. Translucent disc at the
+        hovered tile while a build context is active; lets the player
+        see "would this fit here" before clicking.
+      */}
+      {buildContext && hoveredTile && <BuildGhost tile={hoveredTile} />}
     </>
+  );
+}
+
+/**
+ * M_EXPANSION.U.108 — translucent build-mode ghost. A cyan disc the
+ * size of one hex, hovering 0.05 above tile level, with 40% opacity
+ * so the underlying terrain colour still reads. Lets the player see
+ * "would the next click place a building HERE?" without any mesh
+ * load for the building type itself (a full-fidelity ghost would
+ * need a useGLTF per building type — overkill for first pass).
+ */
+const ghostGeo = new CylinderGeometry(HEX_RADIUS * 0.9, HEX_RADIUS * 0.9, 0.08, 6, 1, false);
+function BuildGhost({ tile }: { tile: { q: number; r: number; level: number } }) {
+  const { x, z } = axialToWorld(tile.q, tile.r);
+  return (
+    <mesh
+      position={[x, tile.level * TILE_HEIGHT + 0.15, z]}
+      rotation={[0, Math.PI / 6, 0]}
+      geometry={ghostGeo}
+    >
+      <meshBasicMaterial color="#38bdf8" transparent opacity={0.4} />
+    </mesh>
   );
 }

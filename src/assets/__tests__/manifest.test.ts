@@ -14,7 +14,6 @@ const fixture: AssetManifest = {
       triangles: 120,
       animations: [],
       pack: 'Hexagon Kit',
-      license: 'CC0',
     },
     'characters.heroes.knight': {
       id: 'characters.heroes.knight',
@@ -24,7 +23,6 @@ const fixture: AssetManifest = {
       triangles: 956,
       animations: ['Idle', 'Walking', 'Attack'],
       pack: 'KayKit Adventurers',
-      license: 'CC-BY',
     },
   },
 };

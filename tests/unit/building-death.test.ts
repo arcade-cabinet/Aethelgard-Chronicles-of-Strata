@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { generateBoard } from '@/core/board';
 import { Building, FactionBase, FactionTrait, Health, HexPosition } from '@/ecs/components';
 import { buildingDeathSystem } from '@/ecs/systems/building-death';
-import { generateBoard } from '@/core/board';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('buildingDeathSystem (M_GAMEPLAY.6)', () => {

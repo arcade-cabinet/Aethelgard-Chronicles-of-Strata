@@ -5,19 +5,27 @@ import type { Mesh } from 'three';
 import { HEX_RADIUS } from '@/config/world';
 import { Building, FactionBase, Selectable, Transform, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { profileFor } from '@/rules/building-profiles';
+import { unitProfileFor } from '@/rules/unit-profiles';
 
 /**
- * Per-entity-archetype ring scale (M_COMBAT_POLISH.4). The selection ring
- * sizes itself to match what's selected: small for a peon, larger for a
- * military unit, large for a building, largest for a faction base. Per the
- * original conversation's "adaptive selection rings" call-out.
+ * Per-entity-archetype ring scale (M_COMBAT_POLISH.4 + M_REGISTRY.19).
+ * The selection ring sizes itself to match what's selected via the
+ * unified Thing registry's `selectionRadius` slot:
+ *
+ *   - FactionBase  → 1.5  (the home base ring, fixed)
+ *   - Building     → BUILDING_PROFILES[type].selectionRadius
+ *   - Unit         → UNIT_PROFILES[role].selectionRadius
+ *
+ * No more 4-branch if-ladder; the per-thing data IS the answer. Adding
+ * a new building type or unit role drops in via its profile row.
  */
 function ringScale(entity: Entity): number {
   if (entity.has(FactionBase)) return 1.5;
-  if (entity.has(Building)) return 1.25;
+  const buildingType = entity.get(Building)?.buildingType;
+  if (buildingType) return profileFor(buildingType).selectionRadius;
   const role = entity.get(Unit)?.unitType;
-  if (role === 'Peon') return 0.65;
-  if (role) return 0.85; // any military unit
+  if (role) return unitProfileFor(role).selectionRadius;
   return 1;
 }
 

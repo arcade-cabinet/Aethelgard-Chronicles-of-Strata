@@ -10,19 +10,13 @@ import {
   OffensiveBehavior,
   Transform,
   Unit,
-  type UnitType,
 } from '@/ecs/components';
 import { type Projectile, spawnProjectile } from '@/game/projectiles';
-
-/** Military roles an offensive zone targets (peons are nonviolent — not targeted). */
-const MILITARY: ReadonlySet<UnitType> = new Set([
-  'Footman',
-  'Goblin',
-  'Orc',
-  'Vampire',
-  'Witch',
-  'BlackKnight',
-]);
+import type { DamageEvent } from '@/ecs/systems/combat';
+// M_REGISTRY.17 — MILITARY set unified into UNIT_PROFILES.combatRole.
+// Was a 6-role hand-built set duplicated across 3 modules; corrected
+// by-derivation to include Trebuchet (was missing in the legacy set).
+import { MILITARY_ROLES as MILITARY } from '@/rules/unit-profiles';
 
 /** Seconds between projectile shots per offensive source (cadence). */
 const FIRE_CADENCE = 1.2;
@@ -52,6 +46,9 @@ export function offensiveBehaviorSystem(
   projectiles?: Projectile[],
   cooldowns?: Map<number, number>,
   projectileIdRef?: { current: number },
+  /** M_EXPANSION.U.101 — optional sink for damage events so CombatText
+   *  can render floating numbers for offensive-behavior hits too. */
+  damageSink?: DamageEvent[],
 ): void {
   const sources: Array<{
     e: Entity;
@@ -60,6 +57,7 @@ export function offensiveBehaviorSystem(
     faction: Faction;
     radius: number;
     dps: number;
+    damageType: string;
   }> = [];
   for (const e of world.query(OffensiveBehavior, FactionTrait, HexPosition)) {
     const b = e.get(Building);
@@ -68,7 +66,15 @@ export function offensiveBehaviorSystem(
     const f = e.get(FactionTrait)?.faction;
     const h = e.get(HexPosition);
     if (!ob || !f || !h) continue;
-    sources.push({ e, q: h.q, r: h.r, faction: f, radius: ob.radius, dps: ob.dps });
+    sources.push({
+      e,
+      q: h.q,
+      r: h.r,
+      faction: f,
+      radius: ob.radius,
+      dps: ob.dps,
+      damageType: ob.damageType,
+    });
   }
   if (sources.length === 0) return;
 
@@ -86,7 +92,32 @@ export function offensiveBehaviorSystem(
     for (const s of sources) {
       if (s.faction === unitFaction) continue;
       if (hexDistance(s.q, s.r, hex.q, hex.r) <= s.radius) {
-        hp.current = Math.max(0, hp.current - s.dps * delta);
+        // M_AUDIT2.ARCH.42 LATENT BUG FIX: koota `entity.get(Health)`
+        // returns a SNAPSHOT (SoA-layout copy); mutating `hp.current`
+        // in place was a no-op since the system shipped. Use `.set`
+        // like combat.ts does so the canonical store receives the
+        // damage. Surfaced by the new test (offensive-behavior.test.ts).
+        const applied = s.dps * delta;
+        target.set(Health, {
+          ...hp,
+          current: Math.max(0, hp.current - applied),
+        });
+        // M_EXPANSION.U.101 — push a DamageEvent so CombatText shows
+        // a floating number above the target. Round to int — fractional
+        // dps* delta reads as noisy. Skip 0-ish.
+        if (damageSink && applied >= 0.5) {
+          damageSink.push({
+            target,
+            damage: Math.round(applied),
+            isCrit: false,
+            damageType: (s.damageType as DamageEvent['damageType']) ?? 'normal',
+            // M_POLISH.3 — this path is the ranged/dps overlay; melee
+            // sword strikes go through combat.ts proper, so flag false
+            // and never trigger a parry from here.
+            isMeleeSword: false,
+            parried: false,
+          });
+        }
         // record the first picked source for projectile FX
         const sid = Number(s.e);
         if (!picks.has(sid)) picks.set(sid, { src: s, target });
@@ -109,6 +140,15 @@ export function offensiveBehaviorSystem(
     const start = worldAt(src.e);
     const end = worldAt(target);
     if (!start || !end) continue;
-    spawnProjectile(projectiles, projectileIdRef, start, end, 'arrow');
+    // M_EXPANSION.AU.44 — pick projectile kind from damageType so the
+    // visual matches the sim. Wizards (damageType='magic') get the
+    // 'magic' projectile + a magic-cast SFX emitted through a window
+    // event (sim is DOM-free; the HUD listener routes to emitUiSound).
+    const kind =
+      src.damageType === 'magic' ? 'magic' : src.damageType === 'siege' ? 'bolt' : 'arrow';
+    spawnProjectile(projectiles, projectileIdRef, start, end, kind);
+    if (kind === 'magic' && typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('aethelgard:magic-cast'));
+    }
   }
 }

@@ -19,7 +19,13 @@ game described in `references/conversation.md`.
 - **Run:** `pnpm dev` (vite)
 - **Test (unit):** `pnpm test` (vitest)
 - **Test (browser):** `pnpm test:browser` (vitest browser mode, real Chromium)
-- **Test (e2e/visual):** `pnpm test:e2e` (playwright)
+- **Test (e2e):** `pnpm test:e2e` — desktop project, e2e specs only (~2-3min; the CI gate)
+- **Test (e2e, multi-viewport):** `pnpm test:e2e:multiview` — adds mobile + tablet projects
+- **Test (visual baselines):** `pnpm test:e2e:visual` — adds tests/visual/* (slow; opt-in)
+- **Lock visual baselines:** `pnpm test:e2e:update` — VISUAL=1 + --update-snapshots
+- CI runs ONLY `pnpm test:e2e` (tier 1). Multi-view + visual are explicit on-demand
+  runs. NEVER push a new e2e spec without running `pnpm test:e2e` locally first —
+  CI is a slow proving ground, not the local-first dev loop.
 - **Build:** `pnpm build` (web) / `pnpm build:pages` (GitHub Pages) /
   `pnpm build:native` (capacitor sync)
 - **Typecheck:** `pnpm check` (`tsc --noEmit`)

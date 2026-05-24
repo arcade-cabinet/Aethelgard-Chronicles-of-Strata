@@ -41,6 +41,8 @@ export interface EconomyConfig {
     gold: number;
     /** Starting science. */
     science: number;
+    /** M_EXPANSION.F.72 — starting mana. Optional in config; defaults to 0. */
+    mana?: number;
     /** Starting supply cap. */
     maxSupply: number;
   };
@@ -48,6 +50,8 @@ export interface EconomyConfig {
   resourceSpawn: ResourceSpawnRule[];
   /** Resource yielded per completed harvest cycle. */
   harvestYield: Record<ResourceType, number>;
+  /** Resource cost per road tile, keyed by Mover material (M_FEATURE.1). */
+  roadCosts: Record<'stone' | 'wood' | 'dirt', ResourceCost>;
 }
 
 /** The validated economy tuning. Import this — never `economy.json` directly. */
@@ -78,6 +82,11 @@ export function buildingCostFor(type: Exclude<BuildingType, 'TownHall'>): Resour
 }
 
 /** Resource cost to train a trainable unit. */
-export function unitCostFor(role: 'Peon' | 'Footman'): ResourceCost {
-  return ECONOMY.unitCosts[role] as ResourceCost;
+export function unitCostFor(role: 'Peon' | 'Footman' | 'Scout' | 'Wizard' | 'Hero'): ResourceCost {
+  return (ECONOMY.unitCosts as Record<string, ResourceCost>)[role] as ResourceCost;
+}
+
+/** Resource cost to place one road tile of `material` (M_FEATURE.1). */
+export function roadCostFor(material: 'stone' | 'wood' | 'dirt'): ResourceCost {
+  return ECONOMY.roadCosts[material] as ResourceCost;
 }

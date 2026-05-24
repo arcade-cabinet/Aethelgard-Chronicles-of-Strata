@@ -1,5 +1,5 @@
 import type { World } from 'koota';
-import { type Discovery, discoveryById } from '@/rules';
+import { type Discovery, discoveryById, scaledCostFor } from '@/rules';
 import { canAfford, type GameEconomy, spend } from './economy';
 
 /**
@@ -39,12 +39,15 @@ export function canResearch(
   const d = discoveryById(id);
   if (!d) return false;
   if (d.prereqs && !d.prereqs.every((p) => research.purchased.has(p as ResearchId))) return false;
-  return canAfford(economy, d.cost);
+  // M_FEATURE.2 — costs scale with depth in the prereq DAG, not the raw
+  // JSON value. depth-0 pays base; deeper rows pay base × log scaling.
+  return canAfford(economy, scaledCostFor(id));
 }
 
 /**
- * Purchase a Discovery — validate, spend, dispatch its `apply(world)` effect,
- * record it as purchased. Dispatches through the registry; no code branches.
+ * Purchase a Discovery — validate, spend (scaled cost), dispatch its
+ * `apply(world)` effect, record it as purchased. Dispatches through the
+ * registry; no code branches.
  */
 export function applyResearch(
   world: World,
@@ -55,7 +58,7 @@ export function applyResearch(
   const d: Discovery | undefined = discoveryById(id);
   if (!d) return false;
   if (!canResearch(economy, research, id)) return false;
-  if (!spend(economy, d.cost)) return false;
+  if (!spend(economy, scaledCostFor(id))) return false;
   research.purchased.add(id);
   d.apply(world);
   return true;

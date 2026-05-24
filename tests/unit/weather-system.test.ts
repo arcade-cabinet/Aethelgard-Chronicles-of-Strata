@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createEventPrng } from '@/core/rng';
-import { type WeatherState, advanceWeather, createWeather } from '@/game/weather';
+import { advanceWeather, createWeather, type WeatherState } from '@/game/weather';
 
 describe('weather state machine', () => {
   it('starts Sunny', () => {
@@ -28,6 +28,9 @@ describe('weather state machine', () => {
         prev = w.state;
       }
     }
+    // M_MICRO.6.6 — assert at least ONE transition happened so the
+    // per-transition check isn't vacuously satisfied by zero loops.
+    expect(seen.length).toBeGreaterThan(0);
     for (const [from, to] of seen) {
       expect(from === 'fog' && to === 'rain').toBe(false);
       expect(from === 'rain' && to === 'fog').toBe(false);

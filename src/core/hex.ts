@@ -30,6 +30,54 @@ export function getHexKey(q: number, r: number): string {
   return `${q},${r}`;
 }
 
+/**
+ * Inverse of getHexKey — parses a "q,r" string into axial coords.
+ * Returns `{q:0,r:0}` on a malformed key (the caller's invariants
+ * usually rule that out — keys are always built via getHexKey).
+ *
+ * M_MICRO.2.2 — collapses 12 hand-rolled `const [q, r] =
+ * key.split(',').map(Number)` patterns scattered across the codebase.
+ * `Number(undefined)` is NaN which would silently NaN-poison the
+ * caller's hex math; this helper coerces the missing-coord case to 0
+ * and centralises that fallback decision.
+ */
+export function parseHexKey(key: string): { q: number; r: number } {
+  // CodeRabbit MED — `q ?? 0` only catches undefined, not NaN. A
+  // malformed key like 'abc,def' splits to non-empty strings that
+  // Number()s to NaN, which propagates silently through hex math.
+  // Number.isFinite catches both cases.
+  const [q, r] = key.split(',').map(Number);
+  return {
+    q: Number.isFinite(q) ? (q as number) : 0,
+    r: Number.isFinite(r) ? (r as number) : 0,
+  };
+}
+
+/**
+ * 3-coord variant of parseHexKey — `"q,r,level"`. The pathfinder
+ * encodes ramp-step waypoints with an explicit level so the path-
+ * follow system knows which tier to land on. M_MICRO.2.2 collapses
+ * `path-follow.ts`'s hand-roll into this helper.
+ */
+export function parseHexLevelKey(key: string): { q: number; r: number; level: number } {
+  const [q, r, level] = key.split(',').map(Number);
+  return {
+    q: Number.isFinite(q) ? (q as number) : 0,
+    r: Number.isFinite(r) ? (r as number) : 0,
+    level: Number.isFinite(level) ? (level as number) : 0,
+  };
+}
+
+/**
+ * Absolute elevation gap between two tiles. M_MICRO.2.4 — extracts
+ * the `Math.abs(a.level - b.level)` pattern duplicated in
+ * pathfinding.ts:25 and crossings.ts:85. Both consult elevation deltas
+ * with the same shape: "1-tier step (ramp) vs disallowed jump".
+ */
+export function levelDelta(a: { level: number }, b: { level: number }): number {
+  return Math.abs(a.level - b.level);
+}
+
 /** Cube-distance between two axial coordinates. */
 export function hexDistance(q1: number, r1: number, q2: number, r2: number): number {
   const s1 = -q1 - r1;
@@ -45,6 +93,6 @@ export function hexNeighbors(q: number, r: number): string[] {
 /** Whether two hex keys are adjacent (exactly one tile apart). */
 export function areAdjacent(keyA: string, keyB: string): boolean {
   if (keyA === keyB) return false;
-  const [aq, ar] = keyA.split(',').map(Number);
-  return hexNeighbors(aq ?? 0, ar ?? 0).includes(keyB);
+  const { q, r } = parseHexKey(keyA);
+  return hexNeighbors(q, r).includes(keyB);
 }

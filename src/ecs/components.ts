@@ -1,10 +1,32 @@
 import { trait } from 'koota';
 
 /** A unit class. Source: docs/specs/50-ecs-model.md. */
-export type UnitType = 'Peon' | 'Footman' | 'Goblin' | 'Orc' | 'Vampire' | 'BlackKnight' | 'Witch';
+export type UnitType =
+  | 'Peon'
+  | 'Footman'
+  | 'Trebuchet'
+  | 'Wizard'
+  | 'Scout'
+  | 'Settler'
+  | 'Hero'
+  | 'Goblin'
+  | 'Orc'
+  | 'Vampire'
+  | 'BlackKnight'
+  | 'Witch';
 
 /** Faction ownership for targeting and AI. */
 export type Faction = 'player' | 'enemy';
+
+/**
+ * The complete set of factions in the current game. M_REGISTRY.16 —
+ * the single iteration target for any per-faction loop (science
+ * trickle, deposit pump, job routing, AI tick). Every literal
+ * player+enemy hand-unrolled pair across the codebase should iterate
+ * this constant instead. A future Necromancer tribe extends the
+ * Faction union AND this constant in one place; the loops auto-extend.
+ */
+export const FACTIONS: readonly Faction[] = ['player', 'enemy'] as const;
 
 /** Animation state — drives which clip a character plays. */
 export type AnimState = 'IDLE' | 'MOVING' | 'HARVESTING' | 'ATTACKING' | 'DYING' | 'BUILDING';
@@ -46,7 +68,13 @@ export const Selectable = trait({ isSelected: false });
  * `RESOURCE_TYPES` (the enumerable list) so adding a 4th slot is one config
  * row + one union entry, never `if/elseif` branches.
  */
-export type ResourceType = 'wood' | 'stone' | 'gold' | 'science';
+/**
+ * Resource slots. `mana` (M_EXPANSION.F.72) is the 4th non-supply
+ * slot — drives Wizard training + Magic-spell SFX. The slot-iterating
+ * pattern means adding mana required one union entry + one config
+ * row in economy.json + one cost entry on the Wizard unit.
+ */
+export type ResourceType = 'wood' | 'stone' | 'gold' | 'science' | 'mana';
 
 /** The enumerable list of resource slots — iterate this, never hardcode individual slots. */
 export const RESOURCE_TYPES: readonly ResourceType[] = [
@@ -54,6 +82,7 @@ export const RESOURCE_TYPES: readonly ResourceType[] = [
   'stone',
   'gold',
   'science',
+  'mana',
 ] as const;
 
 /**
@@ -69,7 +98,9 @@ export type BuildingType =
   | 'Granary'
   | 'Barracks'
   | 'Watchtower'
-  | 'Wall';
+  | 'Wall'
+  | 'Wonder'
+  | 'Library';
 
 /** The peon job state machine. */
 export type JobState = 'IDLE' | 'SEEKING' | 'HARVESTING' | 'CARRYING' | 'DEPOSITING' | 'BUILDING';
@@ -83,11 +114,17 @@ export const Harvester = trait({ harvestRate: 1, harvestTimer: 0 });
 /** A carried resource load. `carryType` is 'none' when empty. */
 export const Carrier = trait({ carryType: 'none' as ResourceType | 'none', amount: 0 });
 
-/** A building — tracks type and construction progress. */
+/** A building — tracks type, construction progress, and upgrade tier. */
 export const Building = trait({
   buildingType: 'Farm' as BuildingType,
   isComplete: false,
   progress: 0,
+  // M_EXPANSION.F.86 — upgrade tier (1 = base, 2 = mid, 3 = max).
+  // Tier 1 is the construction default. upgradeBuilding command
+  // bumps in place + re-spends per-tier delta cost. Higher tiers
+  // scale BuildingProfile.supply and producer.rate (when present)
+  // by tier-multiplier at runtime read.
+  tier: 1,
 });
 
 /** A peon's current job assignment: the state machine + the target entity id. */
@@ -219,3 +256,99 @@ export const EnemyTarget = trait({ targetId: -1 });
  * (not module state) so a mid-death unit survives a save/load round-trip.
  */
 export const DeathTimer = trait({ elapsed: 0 });
+
+/**
+ * Science producer (M_FEATURE.3) — any building with this trait adds
+ * `rate` science per second to its faction's economy. Composes orthogonally
+ * with the ZoC archetypes — a Wonder could carry ScienceProducer too.
+ * Today only the Library building spawns with it.
+ */
+export const ScienceProducer = trait({ rate: 1 });
+
+// ---------------------------------------------------------------------------
+// Stance system (M_POLISH2.RTS.16)
+// ---------------------------------------------------------------------------
+
+/**
+ * The four stance modes for military units.
+ *
+ * - `aggressive`     — chases any visible enemy up to AGGRESSIVE_CHASE_RADIUS
+ *                      hexes from the unit's last commanded tile.
+ * - `defensive`      — engages adjacent enemies; returns to the commanded tile
+ *                      when no enemy is adjacent (DEFAULT).
+ * - `hold-position`  — never moves; attacks only enemies within attackRange.
+ * - `stand-ground`   — attacks enemies within attackRange but will NOT move
+ *                      toward a target to close distance.
+ */
+export type StanceMode = 'aggressive' | 'defensive' | 'hold-position' | 'stand-ground';
+
+/**
+ * Stance trait for military units (Footman, Wizard, Hero, and all combat roles).
+ * `mode` governs how the stanceBehaviorSystem selects and pursues targets.
+ * Default is `'defensive'` — attack nearby, then return home.
+ */
+export const Stance = trait({ mode: 'defensive' as StanceMode });
+
+/**
+ * The last tile the player explicitly commanded this unit to — used by
+ * defensive stance to determine the "home" position to return to, and by
+ * aggressive stance to bound the chase radius.
+ *
+ * Set by `moveUnit` (and the `setStance` command's home-tile snapshot).
+ * Initialised to the spawn tile.
+ */
+export const CommandedTile = trait({ q: 0, r: 0 });
+
+// ---------------------------------------------------------------------------
+// SERIALIZED_TRAITS (M_REGISTRY.25)
+// ---------------------------------------------------------------------------
+
+/**
+ * The single source of truth for which traits survive serialization.
+ * The persistence layer reads this list; adding a new trait + putting
+ * it in this map is enough to round-trip it across save/load.
+ *
+ * Per the user's `ONE UNIFIED PRODUCTION CODEBASE` doctrine: a hand-
+ * built parallel registry in persistence/serialize.ts (the previous
+ * shape) silently DROPPED archetype traits (OffensiveBehavior,
+ * DefensiveBehavior, AttractorBehavior, MoverBehavior, ConsumerBehavior,
+ * Gate, ScienceProducer) — placed Walls / Watchtowers / Wonders / Roads
+ * / Libraries lost their archetype roles after a save/load round-trip.
+ * Lifting the registry here makes the inclusion explicit and adds the
+ * missing 7 traits in one pass.
+ */
+// biome-ignore lint/suspicious/noExplicitAny: registry needs generic trait type
+export const SERIALIZED_TRAITS: ReadonlyArray<{ name: string; traitObj: any }> = [
+  { name: 'Transform', traitObj: Transform },
+  { name: 'HexPosition', traitObj: HexPosition },
+  { name: 'Unit', traitObj: Unit },
+  { name: 'FactionTrait', traitObj: FactionTrait },
+  { name: 'Movement', traitObj: Movement },
+  { name: 'PathQueue', traitObj: PathQueue },
+  { name: 'AnimationState', traitObj: AnimationState },
+  { name: 'Selectable', traitObj: Selectable },
+  { name: 'ResourceTrait', traitObj: ResourceTrait },
+  { name: 'Harvester', traitObj: Harvester },
+  { name: 'Carrier', traitObj: Carrier },
+  { name: 'Building', traitObj: Building },
+  { name: 'AssignedJob', traitObj: AssignedJob },
+  { name: 'Health', traitObj: Health },
+  { name: 'Combatant', traitObj: Combatant },
+  { name: 'EnemySpawner', traitObj: EnemySpawner },
+  { name: 'FactionBase', traitObj: FactionBase },
+  { name: 'EnemyTarget', traitObj: EnemyTarget },
+  { name: 'DeathTimer', traitObj: DeathTimer },
+  // M_REGISTRY.25 — added: ZoC archetype + producer slots that were
+  // previously not round-tripped. Without these a saved game lost
+  // building behaviors on resume.
+  { name: 'OffensiveBehavior', traitObj: OffensiveBehavior },
+  { name: 'DefensiveBehavior', traitObj: DefensiveBehavior },
+  { name: 'AttractorBehavior', traitObj: AttractorBehavior },
+  { name: 'MoverBehavior', traitObj: MoverBehavior },
+  { name: 'ConsumerBehavior', traitObj: ConsumerBehavior },
+  { name: 'Gate', traitObj: Gate },
+  { name: 'ScienceProducer', traitObj: ScienceProducer },
+  // M_POLISH2.RTS.16 — stance system traits round-trip across save/load.
+  { name: 'Stance', traitObj: Stance },
+  { name: 'CommandedTile', traitObj: CommandedTile },
+];

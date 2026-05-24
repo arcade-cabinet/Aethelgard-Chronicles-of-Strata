@@ -1,0 +1,23 @@
+/* M_AUDIT2.UX.33 (extended) — keyframes lifted out of inline <style>
+   in IdlePeonsIndicator. Same reasoning as critical-warning.css:
+   the inline style block re-parses on every mount of the chip. */
+
+@keyframes idle-peons-pulse {
+  0% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #idle-peons {
+    /* biome-ignore lint/complexity/noImportantStyles: inline-style animation requires !important to override; intentional vestibular-safe escape. */
+    animation: none !important;
+    opacity: 0.9;
+  }
+}

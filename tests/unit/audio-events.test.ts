@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { SOUND_FOR_EVENT, type GameAudioEvent } from '@/audio/sound-map';
+import { type GameAudioEvent, SOUND_FOR_EVENT } from '@/audio/sound-map';
 
 describe('event-sound map', () => {
   it('maps every game audio event to a sound id', () => {
@@ -17,30 +17,37 @@ describe('event-sound map', () => {
       'victory',
       'defeat',
     ];
+    // M_MICRO.6.8 — assert the events array itself is non-empty so a
+    // future copy-paste accidentally emptying the array doesn't pass
+    // the per-event loop vacuously.
+    expect(events.length).toBeGreaterThan(0);
     for (const e of events) {
       expect(SOUND_FOR_EVENT[e]).toBeTruthy();
     }
   });
 
-  it('routes combat-crit to sfx bus with magic-impact sound', () => {
+  it('routes combat-crit to sfx bus with metal-impact sound (M_EXPANSION.AU.45)', () => {
     expect(SOUND_FOR_EVENT['combat-crit'].bus).toBe('sfx');
-    expect(SOUND_FOR_EVENT['combat-crit'].soundId).toBe('audio.sfx.magic-impact');
+    // Reroute from magic-impact → hit-metal so crits sound 'metallic ping'
+    // distinct from magic spells (which now have their own combat-hit-magic).
+    expect(SOUND_FOR_EVENT['combat-crit'].soundId).toBe('audio.sfx.hit-metal');
   });
 
   it('routes all UI events to ui bus', () => {
     const uiEvents: GameAudioEvent[] = ['ui-button-click', 'ui-panel-open', 'unit-select'];
+    expect(uiEvents.length).toBe(3);
     for (const e of uiEvents) {
       expect(SOUND_FOR_EVENT[e].bus).toBe('ui');
     }
   });
 
-  it('routes research-purchased to ui bus', () => {
+  it('routes research-purchased to ui bus (M_EXPANSION.AU.34)', () => {
     expect(SOUND_FOR_EVENT['research-purchased'].bus).toBe('ui');
-    expect(SOUND_FOR_EVENT['research-purchased'].soundId).toBe('audio.sfx.ui-unlock');
+    expect(SOUND_FOR_EVENT['research-purchased'].soundId).toBe('audio.ui.discovery-unlock');
   });
 
-  it('routes building-completed to sfx bus', () => {
+  it('routes building-completed to sfx bus (M_EXPANSION.AU.32)', () => {
     expect(SOUND_FOR_EVENT['building-completed'].bus).toBe('sfx');
-    expect(SOUND_FOR_EVENT['building-completed'].soundId).toBe('audio.sfx.ui-achievement');
+    expect(SOUND_FOR_EVENT['building-completed'].soundId).toBe('audio.ui.research-complete');
   });
 });

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { startGame } from '@/game/game-state';
-import { runEconomyTick } from '@/game/game-state';
+import { runEconomyTick, startGame } from '@/game/game-state';
 
 describe('economy integration', () => {
   it('startGame creates an economy, a Town Hall, and resource nodes', () => {
@@ -16,14 +15,24 @@ describe('economy integration', () => {
     // assign every peon to the nearest wood node and run the loop
     game.assignAllPeonsToHarvest();
     for (let i = 0; i < 3600; i++) runEconomyTick(game, 1 / 60);
-    expect(game.economy.player.wood).toBeGreaterThanOrEqual(woodBefore);
-  });
+    // M_MICRO.6.7 — assert MEANINGFUL harvest progress; the prior
+    // `>= woodBefore` would pass even if the peons harvested nothing
+    // (a regression in the harvest loop). +10 leaves headroom for
+    // seed variation but rejects "harvested ~0".
+    expect(game.economy.player.wood).toBeGreaterThan(woodBefore + 10);
+    // M_EXPANSION.T.135 added vision/weather modifiers + a few new
+    // tick-time multiplies; the 3600-tick body crosses the default
+    // 5s timeout on slower runs. 30s matches the sibling test below.
+  }, 30000);
 
+  // 3600 ticks = 60 game-seconds; ~3-5s locally, occasionally over the
+  // 5s default on slower CI runners (esp after the science-system + endless-
+  // clamp added per-tick work). 30s headroom for CI.
   it('runs 3600 ticks without throwing', () => {
     const game = startGame('ancient-silver-forest');
     game.assignAllPeonsToHarvest();
     expect(() => {
       for (let i = 0; i < 3600; i++) runEconomyTick(game, 1 / 60);
     }).not.toThrow();
-  });
+  }, 30000);
 });

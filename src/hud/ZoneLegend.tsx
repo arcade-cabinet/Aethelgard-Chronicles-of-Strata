@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useViewport } from '@/render/useViewport';
 import { HUD_THEME } from './hud-theme';
 
 /** One legend entry — a coloured swatch + a one-line meaning. */
@@ -62,12 +63,16 @@ const ROWS: LegendRow[] = [
  */
 export function ZoneLegend() {
   const [open, setOpen] = useState(false);
+  // M_AUDIT2.UX.38 — ResourceBar shrinks on portrait, so the legend
+  // pill can move closer to the top edge. Avoid the prior 2-px overlap.
+  const viewport = useViewport();
+  const topPx = viewport.isPortrait ? 60 : 80;
   return (
     <div
       style={{
         position: 'absolute',
         left: 16,
-        top: 70,
+        top: topPx,
         // wrapper must NOT block canvas raycasts — only the interactive
         // children below opt back into pointer events.
         pointerEvents: 'none',
@@ -90,9 +95,18 @@ export function ZoneLegend() {
           pointerEvents: 'auto',
         }}
         aria-expanded={open}
-        aria-label="Toggle territory legend"
+        // M_AUDIT2.UX.2 — describe the action verb based on state.
+        aria-label={open ? 'Close territory legend' : 'Open territory legend'}
       >
-        {open ? '× Legend' : '? Legend'}
+        {open ? (
+          <>
+            <span aria-hidden="true">×</span> <span>Legend</span>
+          </>
+        ) : (
+          <>
+            <span aria-hidden="true">?</span> <span>Legend</span>
+          </>
+        )}
       </button>
       {open && (
         <div

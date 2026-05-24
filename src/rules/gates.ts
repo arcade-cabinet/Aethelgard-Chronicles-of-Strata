@@ -1,6 +1,6 @@
 import type { Entity, World } from 'koota';
 import { getHexKey } from '@/core/hex';
-import { type Faction, FactionTrait, Gate, HexPosition, MoverBehavior } from '@/ecs/components';
+import { type Faction, FactionTrait, Gate, HexPosition } from '@/ecs/components';
 
 /**
  * Gate-passability lookup (M_ARCHETYPE.2). For each tile holding a Gate,
@@ -48,7 +48,3 @@ export function materialiseGate(entity: Entity, faction: Faction): void {
   // road was placed neutrally elsewhere
   if (!entity.has(FactionTrait)) entity.add(FactionTrait({ faction }));
 }
-
-// MoverBehavior is part of the gate concept; importing it here so a future
-// gate-decay / wall-destruction system can read the material from one source.
-void MoverBehavior;

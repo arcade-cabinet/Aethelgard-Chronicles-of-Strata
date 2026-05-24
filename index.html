@@ -6,14 +6,66 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
-    <title>Aethelgard: Chronicles of Strata</title>
-    <!-- Epic-fantasy branding fonts (poc2) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Metamorphous&family=Inter:wght@400;600;700;800;900&display=swap"
-      rel="stylesheet"
+    <!--
+      M_SEC.10 — Content-Security-Policy. Tight policy: same-origin only
+      for scripts/styles/fonts/connections; data: + blob: allowed for
+      images/audio (canvas screenshots, generated audio buffers,
+      asset blobs); no inline scripts. Self-hosted webfonts via
+      @fontsource/* (M_SEC.9) make font-src 'self' viable.
+      'unsafe-inline' on style-src is needed for r3f/emotion runtime
+      styles + drei effects; tightening this requires nonces or hashes
+      which Vite doesn't emit by default — tracked separately.
+    -->
+    <!--
+      CodeRabbit follow-up: `frame-ancestors` is silently ignored by
+      every browser when CSP is delivered via <meta http-equiv>
+      (per the HTML spec + MDN). Removing it from the meta to stop
+      reporting an unenforceable directive; clickjacking protection
+      should be applied at the HTTP-header layer (CSP header or
+      X-Frame-Options) at the hosting/CDN configuration — tracked
+      separately as a deployment-config concern.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; media-src 'self' data: blob:; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'none';"
     />
+    <!--
+      M_AUDIT2.SEC2.42 — Trusted Types report-only. Promoting this to
+      an enforcing directive (require-trusted-types-for 'script')
+      would also require sanitising every drei/r3f internal
+      innerHTML/script-src assignment — drei uses raw HTML for the
+      DOM Html portal and r3f boots WebGLRenderer in a way Chrome
+      flags as a TT sink without a wrapper policy. Report-Only keeps
+      the policy advertised + violations visible in DevTools so we
+      can prove the migration before flipping enforcement on.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy-Report-Only"
+      content="require-trusted-types-for 'script'; trusted-types default;"
+    />
+    <!--
+      M_AUDIT2.SEC2.43 — Referrer-Policy. The game has no outbound
+      requests (PRIVACY.md no-network), but the WebView can be
+      navigated to a deeplink and we should NEVER leak the in-app
+      URL (which encodes seed/state) as a Referer header. Strictest
+      sensible setting is 'no-referrer'.
+      COOP/COEP are not settable via meta in a WebView, but the
+      Capacitor server.androidScheme=https origin policy + no-network
+      posture already isolates us — tracked as native interceptor
+      work if we ever add SharedArrayBuffer (not currently needed).
+    -->
+    <meta name="referrer" content="no-referrer" />
+    <!--
+      M_AUDIT2.SEC2.45 — Permissions-Policy: explicitly deny every
+      browser capability the game doesn't use (camera/mic/geo/USB/
+      serial/payment) so a future XSS or dependency injection can't
+      escalate by silently requesting them.
+    -->
+    <meta
+      http-equiv="Permissions-Policy"
+      content="camera=(), microphone=(), geolocation=(), usb=(), serial=(), payment=(), magnetometer=(), accelerometer=(self), gyroscope=(self), interest-cohort=()"
+    />
+    <title>Aethelgard: Chronicles of Strata</title>
     <style>
       html,
       body,
@@ -22,6 +74,48 @@
         height: 100%;
         background: #090d16;
         overflow: hidden;
+      }
+      /*
+        M_AUDIT2.UX.5 — viewport-fit=cover + safe-area-inset padding.
+        Android gesture nav + iPhone home-bar would otherwise occlude
+        the Minimap, EndTurnButton, and bottom-edge HUD pills.
+      */
+      #root {
+        padding: env(safe-area-inset-top) env(safe-area-inset-right)
+          env(safe-area-inset-bottom) env(safe-area-inset-left);
+        box-sizing: border-box;
+      }
+      /*
+        M_AUDIT2.UX.7 — disable browser pan/scroll so SelectionRect
+        drag-select and TileInteraction long-press don't compete with
+        native pull-to-refresh / pan gestures.
+      */
+      body {
+        touch-action: none;
+        overscroll-behavior: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      /*
+        M_AUDIT2.UX.3 — global focus-visible outline. Custom button
+        styling suppresses Chrome's default ring; without this rule
+        keyboard-only nav has no visible focus indicator.
+      */
+      *:focus-visible {
+        outline: 2px solid #38bdf8;
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+      /*
+        M_AUDIT2.UX.4 — minimum touch target on coarse pointers
+        (phone + tablet). Buttons inside HudPill / EndTurnButton /
+        SoundToggle inherit this floor.
+      */
+      @media (pointer: coarse) {
+        button {
+          min-height: 44px;
+          min-width: 44px;
+        }
       }
     </style>
   </head>

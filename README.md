@@ -1,5 +1,12 @@
 # Aethelgard: Chronicles of Strata
 
+<!-- M_EXPANSION.O.157 — repo state badges. CI runs on every PR;
+     release tags shipped as signed APK + Pages deploy. -->
+[![CI](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/actions/workflows/ci.yml/badge.svg)](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/arcade-cabinet/Aethelgard-Chronicles-of-Strata?include_prereleases&label=release)](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Privacy](https://img.shields.io/badge/privacy-no--network-success)](public/privacy.html)
+
 A low-poly hex-tile real-time strategy game playable in the browser and on Android.
 Build a settlement, command peons and footmen, harvest resources, and destroy the
 Goblin Portal before the enemy reaches your Town Hall.

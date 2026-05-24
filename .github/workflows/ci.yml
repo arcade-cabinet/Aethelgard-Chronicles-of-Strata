@@ -16,6 +16,12 @@ jobs:
   build-and-test:
     name: Build and test
     runs-on: ubuntu-latest
+    # Hard cap. Anything past 15min is a hang or unintended scope creep,
+    # not a legitimate run. The full local suite (verify + browser + e2e
+    # smoke) completes in ~3min on dev hardware; the runner adds ~1min
+    # for setup. 15min gives generous headroom while killing infinite
+    # loops fast enough to learn from.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -23,6 +29,20 @@ jobs:
       - run: corepack enable
       - run: corepack prepare pnpm@9.15.0 --activate
       - run: pnpm install --frozen-lockfile
+      # M_AUDIT2.SEC2.13 — fail PRs that introduce HIGH/CRITICAL dep CVEs.
+      # `--prod` scopes to runtime deps only; devDeps are caught separately
+      # by dependency-review on PR diff.
+      - name: pnpm audit (prod, high+)
+        run: pnpm audit --audit-level=high --prod
+        continue-on-error: false
+      # M_AUDIT2.SEC2.49 — verify lockfile matches package.json. A
+      # hand-edited package.json with forgotten lockfile update would
+      # silently float deps when --frozen-lockfile flips to install
+      # mode in a downstream pipeline.
+      - name: Lockfile is in sync with package.json
+        run: |
+          pnpm install --lockfile-only
+          git diff --exit-code pnpm-lock.yaml
       - name: Typecheck
         run: pnpm check
       - name: Lint
@@ -34,18 +54,61 @@ jobs:
       # (tests/unit/asset-manifest.test.ts).
       - name: Unit tests
         run: pnpm test
-      - name: Install Playwright
+      # M_AUDIT2.SEC2.21 — skip Playwright deps install on fork PRs.
+      # Browser tests run an attacker-controlled bundle inside a real
+      # Chromium; the install step is expensive (CI minutes) and the
+      # browser test surface itself could be weaponised. Maintainer
+      # PRs (same repo) still run the full browser suite.
+      - name: Install Playwright (maintainer PRs + push only)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         run: pnpm exec playwright install --with-deps chromium
-      - name: Browser tests
+      - name: Browser tests (maintainer PRs + push only)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        timeout-minutes: 5
         run: pnpm test:browser
-      - name: Build web
-        run: pnpm build
       - name: Build GitHub Pages
         run: pnpm build:pages
+      # Reordered: build:pages first (verifies the pages-base path
+      # works), then `pnpm build` LAST so the resulting static-assets.ts
+      # uses the default base="/" — matching what's committed locally.
+      # Without this the diff gate below would always fire because
+      # build:pages bakes the repo subpath into BASE_PATH.
+      - name: Build web (default base — matches committed file)
+        run: pnpm build
+      # M_AUDIT2.SEC2.22 — vite-static-assets-plugin writes src/static-
+      # assets.ts at build time. A supply-chain attacker who landed a
+      # malicious plugin update could inject code via this file. Diff
+      # check fails CI if the build produced a tree-different output
+      # than was committed.
+      #
+      # CONSTRAINT: build steps above MUST NOT modify public/. Both
+      # `pnpm build` and `pnpm build:pages` regenerate static-assets.ts
+      # from public/; any build step that writes into public/ would
+      # cause the second run to diverge from the committed file and
+      # produce a spurious CI failure (reviewer finding).
+      - name: Static assets file is deterministic
+        run: git diff --exit-code src/static-assets.ts
+      # M_AUDIT2.SEC2.44 — defense-in-depth post-CSP: no contributor
+      # may add cross-origin script/style/font/image references to
+      # index.html. The CSP `default-src 'self'` would block them at
+      # runtime; this fails the PR at CI so the policy intent is
+      # version-controlled.
+      - name: No third-party origins in index.html
+        run: |
+          if grep -nE 'https?://' index.html; then
+            echo "::error::index.html contains a cross-origin URL — CSP forbids this. Self-host the asset."
+            exit 1
+          fi
       - name: E2E tests
+        timeout-minutes: 8
         run: pnpm test:e2e
+      # M_SEC.16 — skip artifact upload on fork PRs. Fork PRs run
+      # against attacker-controlled code; uploading playwright-report/
+      # or test-results/ could exfiltrate secrets injected into the
+      # report (e.g. env-leaking screenshots). Maintainer PRs (same
+      # repo) still upload on failure.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
-        if: failure()
+        if: failure() && github.event.pull_request.head.repo.full_name == github.repository
         with:
           name: test-results-${{ github.run_id }}
           path: |
@@ -53,9 +116,44 @@ jobs:
             test-results/
           retention-days: 7
 
+  dependency-review:
+    name: Dependency review (M_SEC.17)
+    # Block dep changes that introduce known-vulnerable packages.
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      # M_AUDIT2.SEC2.15 — SHA-pinned (GitHub OpenSSF best practice).
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: high
+          # M_AUDIT2 fixup: fail only on advisories that touch the
+          # production runtime. The previous all-scopes config blocked
+          # transient build-tool vulns (e.g. cyclonedx-npm pulls
+          # libxmljs2 — never executed at runtime). Devtool vulns
+          # still surface as warnings in the PR comment; releases
+          # require an explicit override there.
+          fail-on-scopes: runtime
+
+  # CodeQL is handled by GitHub's repo-level default setup (Security
+  # > Code security and analysis > CodeQL > Default). Running our own
+  # codeql-action workflow alongside default-setup makes the SARIF
+  # upload fail with "advanced configurations cannot be processed when
+  # the default setup is enabled". Keep one or the other; default-setup
+  # is sufficient for a JS/TS-only repo.
+
+
   android-apk:
     name: Build debug APK
     runs-on: ubuntu-latest
+    # M_AUDIT2.SEC2.17 — explicit job-level permissions block (defense
+    # in depth; workflow-level read can be overridden by a future
+    # contributor without anyone noticing).
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -63,14 +161,19 @@ jobs:
       - uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with: { distribution: temurin, java-version: '21' }
       - uses: android-actions/setup-android@40fd30fb8d7440372e1316f5d1809ec01dcd3699 # v4.0.1
+      # M_AUDIT2.SEC2.16 — Gradle cache key is scoped to ref_name so a
+      # PR cannot prime a poisoned cache entry that a later main-branch
+      # build restores. The broad `runner.os-gradle-` restore-keys
+      # prefix is removed for the same reason; an exact-key miss
+      # downloads dependencies fresh (≈30s slower) rather than risking
+      # a tampered ~/.gradle/caches/ tree from an attacker PR.
       - name: Cache Gradle
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('android/**/*.gradle*', 'android/**/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
+          key: ${{ runner.os }}-${{ github.ref_name }}-gradle-${{ hashFiles('android/**/*.gradle*', 'android/**/gradle-wrapper.properties') }}
       - run: corepack enable
       - run: corepack prepare pnpm@9.15.0 --activate
       - run: pnpm install --frozen-lockfile
@@ -85,3 +188,7 @@ jobs:
         with:
           name: app-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
+          # M_AUDIT2.SEC2.18 — cap retention at 7 days. Debug APKs are
+          # signed with the predictable Android debug keystore; 90-day
+          # default retention on a public repo is a re-signing surface.
+          retention-days: 7

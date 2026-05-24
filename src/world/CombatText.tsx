@@ -1,4 +1,5 @@
 import { Billboard, Text } from '@react-three/drei';
+import { WORLD_TEXT_FONT } from '@/world/world-text-font';
 import { useFrame } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 import { Transform } from '@/ecs/components';
@@ -20,6 +21,8 @@ interface Popup {
   text: string;
   /** Whether the hit was a crit (larger, gold). */
   isCrit: boolean;
+  /** M_EXPANSION.AU.46 — parry banner ("Parried!" in steel-blue). */
+  isParry: boolean;
   /** Age in seconds. */
   age: number;
 }
@@ -48,8 +51,9 @@ export function CombatText({ game }: { game: GameState }) {
         return {
           id: nextId.current++,
           origin: [t?.x ?? 0, (t?.y ?? 0) + 1.8, t?.z ?? 0] as [number, number, number],
-          text: e.isCrit ? `★-${e.damage}` : `-${e.damage}`,
+          text: e.parried ? 'Parried!' : e.isCrit ? `★-${e.damage}` : `-${e.damage}`,
           isCrit: e.isCrit,
+          isParry: e.parried,
           age: 0,
         };
       });
@@ -57,10 +61,13 @@ export function CombatText({ game }: { game: GameState }) {
     }
     lastBatch.current = events;
 
-    // age and cull popups
-    setPopups((prev) =>
-      prev.map((p) => ({ ...p, age: p.age + delta })).filter((p) => p.age < POPUP_LIFETIME),
-    );
+    // age and cull popups — M_MICRO.5.7: short-circuit the common
+    // empty case so the per-frame setPopups doesn't churn a new
+    // empty array reference 60 times a second.
+    setPopups((prev) => {
+      if (prev.length === 0) return prev;
+      return prev.map((p) => ({ ...p, age: p.age + delta })).filter((p) => p.age < POPUP_LIFETIME);
+    });
   });
 
   return (
@@ -70,8 +77,9 @@ export function CombatText({ game }: { game: GameState }) {
         return (
           <Billboard key={p.id} position={[p.origin[0], p.origin[1] + POPUP_RISE * t, p.origin[2]]}>
             <Text
-              fontSize={p.isCrit ? 0.5 : 0.35}
-              color={p.isCrit ? '#fbbf24' : '#ef4444'}
+              font={WORLD_TEXT_FONT}
+              fontSize={p.isCrit ? 0.5 : p.isParry ? 0.4 : 0.35}
+              color={p.isCrit ? '#fbbf24' : p.isParry ? '#94c5ff' : '#ef4444'}
               outlineWidth={0.02}
               outlineColor="#0b0f17"
               fillOpacity={1 - t}

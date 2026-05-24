@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createEconomy } from '@/game/economy';
-import { SUPPLY_COST, canTrain, recomputeMaxSupply } from '@/rules';
+import { canTrain, recomputeMaxSupply, SUPPLY_COST } from '@/rules';
 
 describe('supply system', () => {
   it('defines supply costs per unit', () => {
