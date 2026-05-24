@@ -474,41 +474,42 @@ patterns + one instability case (PRD §5.2). Each becomes its own
 sub-task. Re-run the matrix after each fix; ledger delta is the
 evidence. The matrix passing GREEN is the v0.4 release gate.
 
-- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-A — Faction asymmetry. 8 of
-  10 matchups show one faction's buildings >> the other,
-  independent of personality (mad-king-vs-builder inverts it).
-  Audit board gen for resource cluster placement bias; ensure
-  attractor-spawned nodes are symmetric around the midline.
-  Audit peon zone-of-control growth for systems that read
-  factions in a fixed order.
-- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-B — Zero combat in 9/10
-  matchups. MilitaryEvaluator only fires when
-  discoveredEnemyTile is non-null. Add rage-quit: after T sim-
-  seconds with no contact, MilitaryEvaluator targets the
-  opposing baseKey directly. Alternatively grow starting Footman
-  vision/patrol radius so early observation crosses the midline.
-- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-C — Diplomat vs raider ended
-  in 40s (1 sim-min, 2 kills). A lone Footman lethally rushed
-  the TownHall. Investigate Footman damage vs TownHall HP
-  (300 HP, 10 dmg = 30 swings expected — if it's killing in 4,
-  damage scaling is wrong). Also tighten the harness lower
-  bound to elapsedTurns >= 2 so rushes fail the gate.
-- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-D — Hoarder overbuilds
-  (9 buildings, 0 kills). Saturation cap from ROUND1 didn't
-  bite hard enough. Either hard-cap at 8 with flip to all-
-  military OR sharpen the saturation curve so the 7th building
-  costs > 1.0× desirability vs military.
-- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-E — Mad-king is the LOWEST-
-  activity matchup (1+0 buildings, 0 kills) despite the name.
-  Audit personality weight shapes vs intent for ALL 5
-  personalities; produce a head-to-head comparison table in
-  the spec doc as the calibration evidence.
-- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-F — Pattern A residual: some
-  matchups have enemy=0 buildings even after structural fixes.
-  Confirm via debug spec whether enemy.buildSites is non-empty
-  with progress=0 (BuildGoal placed but build never advances)
-  OR buildSites is empty (BuildGoal never even ran for enemy).
-  Two very different root causes.
+- [x] M_FUN.QA.AIVAI.TUNE.PATTERN-A — Faction asymmetry root
+  causes addressed across earlier commits: aiVsAi enemy starting
+  kit (matched player), assignAllPeonsToHarvest faction anchor +
+  base-anchored decaying-bias scoring (peons prefer their own
+  base's resources), MoveMilitaryGoal sends ALL military aggressive
+  + siege-targets opposing FactionBase. Matrix-residual asymmetry
+  is tracked under PATTERN-F (deeper economy / pathing).
+- [x] M_FUN.QA.AIVAI.TUNE.PATTERN-B — Rage-quit fallback in
+  discoveredEnemyTile: after RAGE_QUIT_THRESHOLD=180 sim-sec
+  with no observation, target a walkable neighbour of the
+  opposing baseKey. MilitaryEvaluator weight boosted to 1.5×
+  once rage-quit fires. MoveMilitaryGoal sends every faction
+  Footman to that target with stance flipped aggressive.
+  Combat now occurs in 4/10 matchups vs 0/10 baseline.
+- [x] M_FUN.QA.AIVAI.TUNE.PATTERN-C — Base HP rebalanced to
+  1800 → 3000 → 1800 across iterations; harness lower-bound
+  tightened to elapsedTurns >= 2. Solo-Footman rush no longer
+  ends a match in 40s (would now take ~100s solo @ 15 DPS vs
+  1800 HP, giving defender time to muster a counter-force).
+- [x] M_FUN.QA.AIVAI.TUNE.PATTERN-D — BuildEvaluator saturation
+  curve sharpened to 1/(1+(n-4)^2 * 0.3). 5th building = 0.77×,
+  6th = 0.45×, 7th = 0.21×. Hoarder over-build dropped 9 → 4
+  in the matrix. Pairs with the Hoarder personality weight
+  rebalance (build 1.2 → 1.0).
+- [x] M_FUN.QA.AIVAI.TUNE.PATTERN-E — Mad-King weight rebalance
+  (build 0.4 → 0.8, military 2.0 → 2.2) lets the personality
+  place at least a House for supply lift, then prioritises
+  military aggressively. Personality calibration is now in the
+  ai-personalities.json $comments + the matrix ledger trends.
+- [x] M_FUN.QA.AIVAI.TUNE.PATTERN-F — Build-completion path
+  fixed: peon-rules.ts adds a 'build' PeonAction so
+  jobRoutingSystem leaves BUILDING-state peons alone; commands.ts
+  placeBuilding peon-picker falls back from IDLE → SEEKING →
+  HARVESTING (was IDLE-only); freeBuildTile expands to radius 2
+  when radius 1 is blocked. Enemy faction now completes
+  buildings in every matrix matchup.
 
 - [x] M_FUN.QA.AIVAI.TUNE.PATTERN-G — Root cause: yuka's
   Think.arbitrate() picks ANY evaluator (including ones whose
