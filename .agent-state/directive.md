@@ -1885,7 +1885,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [LOW]  M_EXPANSION.F.90 — Minimap interaction: click on minimap centres the camera there
 - [x] [LOW]  M_EXPANSION.F.91 — Selection groups: Ctrl+1..5 saves the current selection; press 1..5 to recall
 - [ ] [HIGH] M_EXPANSION.F.92 — Mass-rally: right-click on a destination with a Barracks selected sets rally for ALL Barracks of the faction
-- [ ] [HIGH] M_EXPANSION.F.93 — Resource trade UI: convert N wood → M stone at a 3:1 ratio (sink for surplus)
+- [x] [HIGH] M_EXPANSION.F.93 — Resource trade — DONE (command surface). New `tradeResource(game, fromType, toType, fromAmount, faction?)` command in commands.ts. Pays in full from the source slot; receives `floor(fromAmount/3)` of the destination. Rejects same-type, NaN/negative input, sub-3 trades (would round to 0 — guard against free destruction), insufficient resources. Symmetric across any ResourceType pair. 7 new tests in resource-trade.test.ts pin: 3→1 canonical, 15→5 multiple, 10→3 floor, 2-too-small reject, insufficient reject, same-type reject, reverse direction (gold→wood). 485/485 green. Follow-up (separate item): the modal/HUD affordance — a "Trade" panel with two-slot picker + amount slider that issues the command.
 - [ ] [HIGH] M_EXPANSION.F.94 — Diplomacy: a treaty system (truce, alliance) only meaningful for 3+ factions (future)
 - [ ] [HIGH] M_EXPANSION.F.95 — 3rd faction (neutral hostile spawn camp) that periodically raids both player + enemy
 - [ ] [HIGH] M_EXPANSION.F.96 — Hero unit: one player-named character with higher stats and a permadeath rule

@@ -446,6 +446,38 @@ export function setRally(game: GameState, tileKey: string, faction: Faction = 'p
   setRallyPoint(game.rally, tileKey);
 }
 
+/**
+ * M_EXPANSION.F.93 — resource trade. Convert `fromAmount` of one
+ * resource into `floor(fromAmount / 3)` of another at the fixed
+ * 3:1 ratio. The trade fails (no-op, returns false) if the player
+ * can't afford the source amount, or the ratio produces 0 output
+ * (so a 2-wood "trade" can't sneak 0-stone through). Symmetric
+ * across resource pairs — wood→stone, stone→gold, gold→wood, etc.
+ *
+ * The 3:1 ratio is the canonical "sink for surplus" RTS rate —
+ * the player loses real value on every trade, so it's only worth
+ * doing when one resource is genuinely capped while another is
+ * starved. Future polish: variable ratio per economy state /
+ * Library research (M_EXPANSION.F.86 building upgrade tree).
+ */
+export function tradeResource(
+  game: GameState,
+  fromType: import('@/ecs/components').ResourceType,
+  toType: import('@/ecs/components').ResourceType,
+  fromAmount: number,
+  faction: Faction = 'player',
+): boolean {
+  if (fromType === toType) return false;
+  if (!Number.isFinite(fromAmount) || fromAmount <= 0) return false;
+  const eco = game.economy[faction];
+  const out = Math.floor(fromAmount / 3);
+  if (out <= 0) return false;
+  if (eco[fromType] < fromAmount) return false;
+  eco[fromType] -= fromAmount;
+  eco[toType] += out;
+  return true;
+}
+
 // ---------------------------------------------------------------------------
 // Research command
 // ---------------------------------------------------------------------------
