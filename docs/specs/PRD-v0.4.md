@@ -158,6 +158,120 @@ repeatedly as non-negotiable.
 Start: each biome rendered in isolation (one harness per biome).
 Then: each HUD pill, each modal, each particle archetype.
 
+### 6.3 Engineering foundation (M_FUN.ARCH.FOUNDATION)
+
+User mandate (2026-05-24): "you act like not having zod is a good
+thing. append your directives and PRD to INCLUDE ALL THE SHIT YOU
+ACTUALLY SHOULD HAVE BEEN DOING IN THE FIRST PLACE".
+
+Industry-standard tooling the project should have adopted from
+day one. These land in v0.4.1 alongside CONFIG + HARNESS — the
+WHOLE foundation lands as one cycle slice so the mechanic work
+that follows is built on solid ground.
+
+#### Schema + validation
+
+- **Zod** for every runtime-loaded config (mapgen, world, economy,
+  combat, discoveries, asset-metadata, credits) AND for the
+  persistence schema (save snapshot validation in
+  serialize-game.ts). The hand-rolled type guards in
+  serialize-game.ts get migrated to z.object() schemas;
+  validateSnapshot becomes `SaveSnapshotSchema.parse()`.
+- **Branded types** for ids that today are bare strings (tileKey,
+  entityId, factionKey) so a footgun like
+  `selectEntity(factionKey)` becomes a compile error.
+
+#### State management + reactivity
+
+- **Zustand** (or equivalent — koota already provides ECS-side
+  reactivity; this is for UI-side state we currently pass through
+  props or window globals). Replaces `window.__game` test hooks
+  with a proper test store.
+- **React Query / TanStack Query** if/when we add a server (post
+  v1.0).
+
+#### Validation + lint
+
+- **Biome** lint already in place — extend with stricter rules
+  per arcade-game profile (no `any`, no `as` casts without
+  comment, no inline literals where a const would do).
+- **ESLint + typescript-eslint** strict preset as a second pass
+  Biome doesn't cover (exhaustive-deps for hooks, etc).
+- **dprint** or **prettier** parity check (today only Biome
+  formats; some MD/YML files don't see a formatter at all).
+
+#### Testing
+
+- **Vitest browser mode** already in place — extend per
+  M_FUN.ARCH.HARNESS with `toHaveScreenshot` baselines for every
+  visual feature.
+- **Storybook** (or **Histoire** — the Vite-native equivalent)
+  for component-isolation review. Each HUD pill, modal, biome
+  tile renders as a story; the agent + user can browse the
+  catalog without spinning up the full game.
+- **Playwright trace viewer** integration in the e2e CI artifact
+  upload so a failed run is debuggable from CI artifacts alone,
+  not just the logs.
+- **MSW** (Mock Service Worker) if/when networked features land —
+  test the network boundary as a first-class concern.
+- **Property-based testing** with **fast-check** for the
+  deterministic-replay invariants (same seed + same input → same
+  final state) and for the map-gen invariants (every map has ≥1
+  walkable path between bases at every supported radius).
+
+#### Bundle + perf
+
+- **vite-plugin-bundle-visualizer** in dev so the agent + user
+  can see where bundle weight comes from after each refactor.
+- **Lighthouse CI** baseline for the deployed Pages; perf budget
+  fails the build if Largest Contentful Paint regresses by >10%.
+- **why-did-you-render** (dev-only) to catch React re-render
+  storms before they become user-visible jank.
+
+#### Docs + tooling
+
+- **TypeDoc** for the public API surface (every `export` in
+  src/) so the agent can answer "what types does this module
+  expose" without grep.
+- **Markdownlint** for the spec / PRD / MILESTONES files so
+  the doc set has a consistent style.
+- **Mermaid** for any diagrams in the spec docs (currently
+  ASCII tables — Mermaid renders properly on GitHub + the
+  Pages site if we mount the docs).
+
+#### Observability + analytics (opt-in)
+
+- **Sentry** for production error capture from the deployed
+  Pages (gated behind a Settings opt-in per the no-network
+  posture).
+- **Plausible** or self-hosted analytics for "did the game load
+  / did they reach mode X / did they finish a match" funnel
+  (also opt-in).
+
+#### CI improvements
+
+- **act** local-runner instructions in CONTRIBUTING.md so the
+  agent can dry-run GitHub Actions changes before pushing.
+- **Renovate** alongside (or replacing) Dependabot — Renovate
+  has finer per-package config (the sql.js pin would have been
+  one Renovate rule, no need for an ignore list).
+- **commitlint** so every commit message is a valid
+  conventional-commits format (today we honour it by convention
+  but nothing enforces).
+
+#### Game-specific engineering foundation
+
+- **Deterministic-replay test** for the AI-vs-AI transcript:
+  load a saved transcript, replay the seed, assert byte-for-byte
+  state match at every recorded frame. Catches any
+  non-determinism regression.
+- **Engine-clock facade audit** — `src/engine/test-mode.ts`
+  exists; verify EVERY sim/world/ecs module imports `now()` from
+  it, NOT `performance.now()`. Enforce via Biome custom rule.
+- **PRNG audit** — same pattern for `rand()` via
+  `src/core/rng.ts`. Biome ban-pattern enforces no `Math.random`
+  in `src/sim/**` etc but the ban list could be tighter.
+
 ## 7. Cycle plan
 
 v0.4 ships as multiple PR-sized milestones. Each ships ONE

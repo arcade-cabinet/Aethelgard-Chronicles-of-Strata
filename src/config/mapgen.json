@@ -1,0 +1,53 @@
+{
+  "$comment": "Per-biome and per-mapType generation + behaviour rules. Loaded by src/config/mapgen.ts at module init; runtime validation enforces the schema. Adding a new biome or mapType = add a row here + harness test (M_FUN.ARCH.HARNESS).",
+
+  "biomes": {
+    "OCEAN":         { "elevation": 0, "walkable": false, "buildable": false, "habitable": false, "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 },
+    "LAKE":          { "elevation": 2, "walkable": false, "buildable": false, "habitable": false, "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 },
+    "SWAMP":         { "elevation": 1, "walkable": true,  "buildable": false, "habitable": false, "moveCost": 1.8, "appliesAttribute": "disease",      "attributeStrength": 1.0 },
+    "BEACH":         { "elevation": 1, "walkable": true,  "buildable": true,  "habitable": false, "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 },
+    "DESERT":        { "elevation": 2, "walkable": true,  "buildable": false, "habitable": false, "moveCost": 1.0, "appliesAttribute": "dehydration",  "attributeStrength": 1.0 },
+    "GRASS":         { "elevation": 2, "walkable": true,  "buildable": true,  "habitable": true,  "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 },
+    "FOREST":        { "elevation": 3, "walkable": true,  "buildable": false, "habitable": true,  "moveCost": 1.25, "appliesAttribute": null,          "attributeStrength": 0 },
+    "HIGHLAND":      { "elevation": 4, "walkable": true,  "buildable": true,  "habitable": true,  "moveCost": 1.5, "appliesAttribute": null,           "attributeStrength": 0 },
+    "MOUNTAIN_PASS": { "elevation": 3, "walkable": true,  "buildable": true,  "habitable": false, "moveCost": 1.7, "appliesAttribute": "fatigue",      "attributeStrength": 0.5 },
+    "MOUNTAIN":      { "elevation": 5, "walkable": false, "buildable": false, "habitable": false, "moveCost": 1.0, "appliesAttribute": null,           "attributeStrength": 0 }
+  },
+
+  "mountain": {
+    "$comment": "Tunables for paintMountainMassif. See src/core/board.ts.",
+    "noiseFreq": 0.18,
+    "noiseWeight": 0.7,
+    "centerBiasWeight": 0.3,
+    "intensityScale": 0.6,
+    "safetyRing": 5,
+    "isthmusThreshold": 3
+  },
+
+  "mapTypes": {
+    "balanced": {
+      "$comment": "1v1 RTS — centre-biased funnel; chokepoint between bases.",
+      "mountainIntensity": 0.55,
+      "channels": false,
+      "hydrology": "inlandLake"
+    },
+    "continent": {
+      "$comment": "Larger landmass; denser ridge system.",
+      "mountainIntensity": 0.70,
+      "channels": false,
+      "hydrology": "inlandLake"
+    },
+    "archipelago": {
+      "$comment": "Sparse mountains — channels are the funnel.",
+      "mountainIntensity": 0.25,
+      "channels": true,
+      "hydrology": "inlandLake"
+    },
+    "dry-land": {
+      "$comment": "Badlands — densest mountain + desert blanket instead of lake.",
+      "mountainIntensity": 0.75,
+      "channels": false,
+      "hydrology": "desertBlanket"
+    }
+  }
+}

@@ -98,12 +98,117 @@ and start the next.
   with Zod validation. Generator iterates config rows; adding a new
   mapType OR biome rule = 1 row, 0 code. Migration commit MUST
   preserve current behaviour byte-for-byte before any tuning lands.
+  STATUS: mapgen.json + zod-validated src/config/mapgen.ts loader
+  landed; src/core/board.ts still uses inline constants — wire
+  the loader THERE next.
 - [ ] [WAIT-REVIEW] M_FUN.ARCH.HARNESS — Per-feature visual
   component tests in vitest browser. Pattern:
   `tests/harness/<feature>.browser.test.tsx` mounts feature in
   isolation, screenshots, locks baseline. First 9 tests: one per
   biome (including SWAMP + MOUNTAIN_PASS). EVERY M_FUN.* milestone
   PR adds at least one harness test for the feature it ships.
+
+#### M_FUN.ARCH.FOUNDATION — engineering foundation (PRD §6.3)
+
+User: "include ALL THE SHIT YOU ACTUALLY SHOULD HAVE BEEN DOING
+IN THE FIRST PLACE". Industry-standard tooling that should have
+been adopted from day one. ALL of v0.4.1 lands together — the
+mechanic work that follows is built on this.
+
+**Schema + validation**
+
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.ZOD-CONFIG — Zod schemas for
+  every runtime-loaded config: world.json, economy.json,
+  combat.json, discoveries.json, asset-metadata.json, credits.json
+  (mapgen.json already done). Replace hand-rolled type guards in
+  the corresponding .ts accessors.
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.ZOD-PERSIST — Migrate
+  serialize-game.ts validateSnapshot to a Zod SaveSnapshotSchema.
+  Replaces the hand-rolled clamp logic with declarative validation.
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.BRANDED-IDS — Branded types
+  for tileKey / entityId / factionKey so a footgun like
+  `selectEntity(factionKey)` is a compile error.
+
+**State + reactivity**
+
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.ZUSTAND — UI-side state
+  store. Replaces `window.__game` test hooks with a proper test
+  store (e2e specs subscribe instead of polling globals).
+
+**Lint + format**
+
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.BIOME-STRICT — Tighten
+  Biome rules: no `any`, no `as` without justifying comment, no
+  inline literals where a const would do (matches arcade-game
+  profile mandate).
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.ESLINT — typescript-eslint
+  strict preset as a second-pass formatter (covers
+  exhaustive-deps for hooks etc, which Biome doesn't).
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.PRETTIER-MD — dprint or
+  prettier for MD/YML files Biome doesn't format.
+
+**Testing**
+
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.HISTOIRE — Component-
+  isolation story catalog (Histoire — Vite-native, lighter than
+  Storybook). Each HUD pill / modal / biome tile is a story; the
+  agent + user browse without spinning up the full game.
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.PW-TRACE — Wire Playwright
+  trace upload as a CI artifact so failed e2e runs are debuggable
+  from CI alone.
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.FASTCHECK — fast-check
+  property tests for deterministic-replay invariants (same seed
+  → same final state) and map-gen invariants (every map has ≥1
+  walkable path between bases at every supported radius).
+
+**Bundle + perf**
+
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.BUNDLE-VIZ —
+  vite-plugin-bundle-visualizer in dev — agent + user can see
+  where bundle weight lives after each refactor.
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.LIGHTHOUSE — Lighthouse CI
+  baseline for deployed Pages; perf budget fails build on >10%
+  LCP regression.
+- [ ] [WAIT-LOW] M_FUN.FOUNDATION.WHY-RENDER — why-did-you-render
+  dev-only — catch React re-render storms before user-visible jank.
+
+**Docs + tooling**
+
+- [ ] [WAIT-LOW] M_FUN.FOUNDATION.TYPEDOC — TypeDoc on the public
+  API surface so the agent can answer "what types does this module
+  expose" without grep.
+- [ ] [WAIT-LOW] M_FUN.FOUNDATION.MDLINT — markdownlint for spec /
+  PRD / MILESTONES docs.
+- [ ] [WAIT-LOW] M_FUN.FOUNDATION.MERMAID — Mermaid for spec
+  diagrams (currently ASCII tables).
+
+**Observability**
+
+- [ ] [WAIT-LOW] M_FUN.FOUNDATION.SENTRY — Sentry for production
+  errors (gated behind Settings opt-in per no-network posture).
+- [ ] [WAIT-LOW] M_FUN.FOUNDATION.ANALYTICS — Plausible or
+  self-hosted; opt-in funnel metrics.
+
+**CI improvements**
+
+- [ ] [WAIT-LOW] M_FUN.FOUNDATION.ACT — act local-runner
+  instructions in CONTRIBUTING.md.
+- [ ] [WAIT-LOW] M_FUN.FOUNDATION.RENOVATE — Renovate alongside
+  or replacing Dependabot for finer per-package rules.
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.COMMITLINT — Enforce
+  conventional-commits format (today honoured by convention only).
+
+**Game-specific foundation**
+
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.REPLAY-DETERMINISM — Test
+  that loads a saved transcript, replays the seed, asserts
+  byte-for-byte state match at every recorded frame.
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.CLOCK-AUDIT — Audit every
+  sim/world/ecs module imports `now()` from engine clock facade,
+  NOT `performance.now()`. Tighten Biome ban list.
+- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.PRNG-AUDIT — Same audit for
+  `rand()` via core/rng.ts. Tighten Biome ban list across
+  src/sim/** src/ecs/** src/world/** src/game/**.
 
 ### v0.4.2 — Mountain passes (PRD §7.2)
 
