@@ -212,6 +212,8 @@ export function App() {
       maxTurns: choices.maxTurns,
       // M_EXPANSION.F.80 — player palette pick. null = use SKINS default.
       playerColor: choices.playerColor,
+      // M_EXPANSION.F.84 — starting bonus pick. 'none' = baseline.
+      startingBonus: choices.startingBonus,
     });
   };
 

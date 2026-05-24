@@ -1876,7 +1876,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [HIGH] M_EXPANSION.F.81 — Random-event system: weather-spike, raid-warning, refugee-arrival (one-shot ECS events from event PRNG)
 - [x] [MED]  M_EXPANSION.F.82 — Custom map seed input: 64-char hex direct entry (bypass the adjective-adjective-noun mnemonic)
 - [ ] [HIGH] M_EXPANSION.F.83 — Map preview thumbnail in New Game modal (render the seeded board at 256×256 before commit)
-- [ ] [HIGH] M_EXPANSION.F.84 — Per-faction starting bonus picks (extra peons / extra wood / extra HP at start)
+- [x] [HIGH] M_EXPANSION.F.84 — Starting bonus picks — DONE. NewGameModal exposes a "Starting bonus" Segmented (None / +Wood / +Peons / +HP). Effect: 'extra-wood' +50 wood, 'extra-peons' +2 spawned Peons, 'extra-hp' +200 max HP on player TownHall. Enemy TownHall never affected — bonus IS the player's pre-match handicap dial. Orthogonal to preset cascade. Flow: NewGameChoices → App → NewGameConfig.startingBonus → startGame which conditionally branches at TownHall spawn, peon spawn, economy init. 5 new tests in starting-bonus.test.ts pin every bonus's effect (and the enemy-unaffected invariant). 475/475 green.
 - [ ] [HIGH] M_EXPANSION.F.85 — Surrender consequences: AI keeps the surrendered player's tiles (currently they evaporate)
 - [ ] [HIGH] M_EXPANSION.F.86 — Building upgrade trees: Watchtower→Tower→Castle, each costs prior + delta
 - [ ] [HIGH] M_EXPANSION.F.87 — Day/night vision modifier: enemy vision halves at night, player vision halves at dawn

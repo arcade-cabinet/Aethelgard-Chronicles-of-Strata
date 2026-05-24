@@ -38,7 +38,25 @@ export interface NewGameChoices {
    * (= SKINS default = native KayKit colours).
    */
   playerColor: string | null;
+  /**
+   * M_EXPANSION.F.84 — starting bonus pick. 'none' = baseline; the
+   * other picks each give a one-shot start-of-match advantage.
+   */
+  startingBonus: 'none' | 'extra-wood' | 'extra-peons' | 'extra-hp';
 }
+
+/**
+ * M_EXPANSION.F.84 — starting bonus picks. Surfaces as a 4-segment
+ * control under the palette picker. Each pick gives the player a
+ * distinct one-shot advantage at match start; the AI never gets
+ * one (the bonus IS the difficulty handicap dial).
+ */
+const STARTING_BONUSES: ReadonlyArray<{ key: NewGameChoices['startingBonus']; label: string }> = [
+  { key: 'none', label: 'None' },
+  { key: 'extra-wood', label: '+Wood' },
+  { key: 'extra-peons', label: '+Peons' },
+  { key: 'extra-hp', label: '+HP' },
+];
 
 /**
  * M_EXPANSION.F.80 — palette pick options. 4 banner colours + a
@@ -175,6 +193,10 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   // SKINS native colours). Independent of preset cascade (palette
   // is purely cosmetic; doesn't depend on game mode).
   const [playerColorKey, setPlayerColorKey] = useState<string>('default');
+  // M_EXPANSION.F.84 — starting bonus pick. Independent of preset
+  // cascade — a bonus is the player's pre-match handicap dial,
+  // orthogonal to the game-mode choice.
+  const [startingBonus, setStartingBonus] = useState<NewGameChoices['startingBonus']>('none');
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
 
   // M_BRAND.3 — when the player overrides any cascaded control after
@@ -466,6 +488,28 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
         </div>
 
         {/*
+          M_EXPANSION.F.84 — Starting bonus pick. Orthogonal to the
+          preset; doesn't trip Custom Realm. The AI never gets a
+          bonus — this IS the player's pre-match handicap dial.
+        */}
+        <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>
+          Starting bonus
+        </p>
+        <div style={{ margin: '6px 0 18px' }}>
+          <Segmented
+            value={startingBonus}
+            options={STARTING_BONUSES.map((b) => b.key)}
+            labels={
+              Object.fromEntries(STARTING_BONUSES.map((b) => [b.key, b.label])) as Record<
+                NewGameChoices['startingBonus'],
+                string
+              >
+            }
+            onChange={(v) => setStartingBonus(v as NewGameChoices['startingBonus'])}
+          />
+        </div>
+
+        {/*
           M_TURNS.2 — Max turns control. Visible only when
           turn-based — the cap is meaningless in real-time mode
           (which has no turn counter). Picks: 30 / 60 / 90 /
@@ -521,6 +565,8 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 maxTurns,
                 // M_EXPANSION.F.80 — palette pick (null = default).
                 playerColor: PLAYER_COLORS.find((c) => c.key === playerColorKey)?.hex ?? null,
+                // M_EXPANSION.F.84 — starting bonus pick.
+                startingBonus,
               })
             }
             style={{

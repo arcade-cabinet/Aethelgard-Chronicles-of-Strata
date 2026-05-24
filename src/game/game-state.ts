@@ -115,6 +115,15 @@ export interface NewGameConfig {
    */
   playerColor?: string | null;
   /**
+   * M_EXPANSION.F.84 — starting bonus pick for the player faction.
+   * 'none' (default) is the baseline; the other picks each give a
+   * one-shot advantage at game start:
+   *   'extra-wood'  +50 wood (≈ 1 extra building's worth)
+   *   'extra-peons' +2 spawned Peons at the home tile
+   *   'extra-hp'    TownHall starts with +200 max HP
+   */
+  startingBonus?: 'none' | 'extra-wood' | 'extra-peons' | 'extra-hp';
+  /**
    * M_TURNS.2 — explicit max-turn cap. When omitted, falls back to
    * the preset's maxTurns. null is a legitimate override ("uncapped
    * 4X session"); the type accepts undefined too (use preset default).
@@ -412,6 +421,11 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     player: createEconomy(),
     enemy: createEconomy(),
   };
+  // M_EXPANSION.F.84 — extra-wood bonus: +50 wood to the player
+  // economy (about one extra building's worth of construction).
+  if (config.startingBonus === 'extra-wood') {
+    economy.player.wood += 50;
+  }
 
   // Mark the Town Hall tile unwalkable BEFORE building the nav graph — units
   // path around the building and deposit from an adjacent tile. The enemy
@@ -444,14 +458,33 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     selected: false,
   });
 
+  // M_EXPANSION.F.84 — extra-peons bonus: spawn 2 more Peons at the
+  // next available spawn tiles. Falls back to firstSpawn if the
+  // peonSpawns list ran out.
+  if (config.startingBonus === 'extra-peons') {
+    for (let i = 2; i < 4; i++) {
+      const spawn = peonSpawns[i] ?? firstSpawn;
+      createCharacter({
+        world,
+        role: 'Peon',
+        q: spawn.q,
+        r: spawn.r,
+        level: spawn.level,
+        selected: false,
+      });
+    }
+  }
+
   // Spawn the player home base (the Town Hall — loss condition when destroyed).
   // Town Hall composes AttractorBehavior (spec 102) — radius drives the
   // map-gen guarantee AND the initial zone-of-control footprint.
   const townHallProfile = behaviorsFor('TownHall');
+  // M_EXPANSION.F.84 — apply starting bonus to TownHall HP.
+  const bonusHp = config.startingBonus === 'extra-hp' ? 200 : 0;
   const townHallEntity = world.spawn(
     HexPosition({ q: center.q, r: center.r, level: center.level }),
     Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
-    Health({ current: 500, max: 500 }),
+    Health({ current: 500 + bonusHp, max: 500 + bonusHp }),
     FactionTrait({ faction: 'player' }),
     FactionBase({ faction: 'player' }),
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
