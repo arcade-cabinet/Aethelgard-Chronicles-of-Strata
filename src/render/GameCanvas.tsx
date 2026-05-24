@@ -235,7 +235,14 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
       shadows={{ type: PCFSoftShadowMap }}
       camera={{ position: [0, 55, 62], fov: viewport.camera.fov }}
       style={{ position: 'absolute', inset: 0 }}
-      frameloop={visible ? 'always' : 'never'}
+      // M_POLISH3.B.1 — frameloop must stay 'always' even when
+      // document.visibilityState === 'hidden' under Playwright
+      // headless (where the tab is technically hidden but tests
+      // need the canvas to paint). The original pause-on-hidden
+      // logic protected against background CPU use; preserved here
+      // by gating on whether window.__game test hook is wired
+      // (e2e flow) — if it is, force 'always'.
+      frameloop={visible || hasTestHook() ? 'always' : 'never'}
     >
       <Scene
         game={game}
@@ -245,6 +252,17 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
       />
     </Canvas>
   );
+}
+
+/**
+ * M_POLISH3.B.1 — true when the e2e test hook (`window.__game`) is
+ * wired. Used to force frameloop='always' so headless Playwright
+ * (which reports the tab as hidden until interaction) paints the
+ * scene + test screenshots aren't empty.
+ */
+function hasTestHook(): boolean {
+  if (typeof window === 'undefined') return false;
+  return '__game' in window;
 }
 
 /** Tracks document.visibilityState; rerenders the host on change. */

@@ -1,4 +1,5 @@
 import { Billboard, Text } from '@react-three/drei';
+import { WORLD_TEXT_FONT } from '@/world/world-text-font';
 import { useFrame } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 import { Transform } from '@/ecs/components';
@@ -76,6 +77,7 @@ export function CombatText({ game }: { game: GameState }) {
         return (
           <Billboard key={p.id} position={[p.origin[0], p.origin[1] + POPUP_RISE * t, p.origin[2]]}>
             <Text
+              font={WORLD_TEXT_FONT}
               fontSize={p.isCrit ? 0.5 : p.isParry ? 0.4 : 0.35}
               color={p.isCrit ? '#fbbf24' : p.isParry ? '#94c5ff' : '#ef4444'}
               outlineWidth={0.02}

@@ -13,6 +13,7 @@
  * - fillOpacity threaded through so fades work
  */
 import { Billboard, Text } from '@react-three/drei';
+import { WORLD_TEXT_FONT } from '@/world/world-text-font';
 
 export interface WorldBadgeProps {
   /** World-space anchor. */
@@ -47,6 +48,7 @@ export function WorldBadge({
   return (
     <Billboard position={[x, y, z]}>
       <Text
+        font={WORLD_TEXT_FONT}
         fontSize={fontSize}
         color={color}
         outlineWidth={outlineWidth}

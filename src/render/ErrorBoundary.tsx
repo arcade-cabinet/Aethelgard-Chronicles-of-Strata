@@ -32,6 +32,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     // stack + componentStack in prod builds so adb logcat doesn't leak
     // module structure / source-map-aided reverse engineering surface.
     reportError(error, { source: 'ErrorBoundary', componentStack: info.componentStack });
+    // Per user mandate (2026-05-24): no silent fallbacks. The
+    // patched console.error in ErrorOverlay catches this + surfaces
+    // it to the user instead of hiding behind <SceneError />.
+    console.error(
+      '[ErrorBoundary]',
+      error.message,
+      '\n',
+      error.stack ?? '',
+      '\n',
+      info.componentStack ?? '',
+    );
   }
 
   render(): ReactNode {

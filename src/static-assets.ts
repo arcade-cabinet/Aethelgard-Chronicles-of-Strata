@@ -69,6 +69,11 @@ export type StaticAssetPath =
   'assets/characters/rigs/large-movement.glb' |
   'assets/characters/rigs/medium-general.glb' |
   'assets/characters/rigs/medium-movement.glb' |
+  'assets/fonts/Cinzel-Bold.ttf' |
+  'assets/fonts/Cinzel-Regular.ttf' |
+  'assets/fonts/Inter-Bold.ttf' |
+  'assets/fonts/Inter-Regular.ttf' |
+  'assets/fonts/Metamorphous-Regular.ttf' |
   'assets/nature/bush-a.glb' |
   'assets/nature/bush-b.glb' |
   'assets/nature/bush-c.glb' |
@@ -192,6 +197,7 @@ export type StaticAssetDirectory =
   'assets/characters/enemies/' |
   'assets/characters/heroes/' |
   'assets/characters/rigs/' |
+  'assets/fonts/' |
   'assets/nature/' |
   'assets/nature/cactus/' |
   'assets/nature/gravestone/' |
@@ -316,6 +322,11 @@ const assets = new Set<string>([
   'assets/characters/rigs/large-movement.glb',
   'assets/characters/rigs/medium-general.glb',
   'assets/characters/rigs/medium-movement.glb',
+  'assets/fonts/Cinzel-Bold.ttf',
+  'assets/fonts/Cinzel-Regular.ttf',
+  'assets/fonts/Inter-Bold.ttf',
+  'assets/fonts/Inter-Regular.ttf',
+  'assets/fonts/Metamorphous-Regular.ttf',
   'assets/nature/bush-a.glb',
   'assets/nature/bush-b.glb',
   'assets/nature/bush-c.glb',

@@ -9,6 +9,7 @@ import { selectEntity } from '@/game/selection';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
 import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
+import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
 import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
@@ -178,6 +179,13 @@ function GameSession({
 
   return (
     <div id="app-shell" data-viewport={viewport.class} style={{ position: 'absolute', inset: 0 }}>
+      {/* Per user mandate (2026-05-24): no silent fallbacks.
+            ErrorBoundary still catches so the rest of the app keeps
+            working, but the caught error is logged to console.error
+            (which the ErrorOverlay patches → user sees it
+            immediately). The previous SceneError component was a
+            generic 'failed to load' message that ate the actual
+            stack. */}
       <ErrorBoundary fallback={<SceneError />}>
         <GameCanvas
           game={game}
@@ -338,6 +346,11 @@ export function App() {
 
   return (
     <>
+      {/* Global error surface — installs window.error +
+            unhandledrejection + console.error + fetch + resource
+            patches on mount. EVERY failure surfaces here. NO silent
+            fallbacks. */}
+      <ErrorOverlay />
       {saveCorruptedNotice && (
         <div
           role="alert"
