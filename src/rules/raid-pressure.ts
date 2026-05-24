@@ -30,7 +30,10 @@ export function raidPressureForElapsed(elapsedSeconds: number): number {
  *   0.4 < p ≤ 0.75 → 'Raiding' (orange)
  *   p > 0.75    → 'Total War' (red)
  */
-export function raidPressureLabel(p: number): { text: string; tone: 'calm' | 'stir' | 'raid' | 'war' } {
+export function raidPressureLabel(p: number): {
+  text: string;
+  tone: 'calm' | 'stir' | 'raid' | 'war';
+} {
   if (p <= 0) return { text: 'Calm', tone: 'calm' };
   if (p <= 0.4) return { text: 'Stirring', tone: 'stir' };
   if (p <= 0.75) return { text: 'Raiding', tone: 'raid' };
