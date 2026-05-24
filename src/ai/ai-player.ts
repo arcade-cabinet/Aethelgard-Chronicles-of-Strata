@@ -54,6 +54,11 @@ export class AiPlayer extends GameEntity {
     this.brain.addEvaluator(new BuildEvaluator());
     this.brain.addEvaluator(new TrainEvaluator());
     this.brain.addEvaluator(new MilitaryEvaluator());
+    // M_EXPANSION.S.55 — patrol verb (verb 5 of 5). Idle military
+    // units circulate the zone perimeter when there's no enemy in
+    // sight + no defensive trigger. Without this they stand at base
+    // waiting for the next raid, which reads as inert AI.
+    this.brain.addEvaluator(new PatrolEvaluator());
     this.brain.addEvaluator(new ResignEvaluator());
   }
 
@@ -409,4 +414,99 @@ class ResignGoal extends Goal<AiPlayer> {
     owner.lastGoal = 'resign';
     this.status = Goal.STATUS.COMPLETED;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Patrol evaluator + goal — verb 5 of 5 (M_EXPANSION.S.55)
+// ---------------------------------------------------------------------------
+
+/**
+ * Idle military units patrol the zone perimeter when nothing else
+ * needs doing. Fires when:
+ *   - AI has at least one military unit
+ *   - No enemy is visible (MilitaryEvaluator would return 0)
+ *   - No defensive trigger (no pulsing tile)
+ *   - AI mode allows military (coexistence sets profile.militaryWeight=0
+ *     which zeroes patrol too — peaceful tribe doesn't patrol either)
+ *
+ * Picks a random zone-controlled tile on the perimeter (any tile
+ * whose neighbour hex falls outside the zone) and moves the first
+ * idle military unit there. Re-rolls each tick so patrols stay
+ * unpredictable from the player's perspective.
+ */
+class PatrolEvaluator extends GoalEvaluator<AiPlayer> {
+  calculateDesirability(owner: AiPlayer): number {
+    if (!owner.game) return 0;
+    if (owner.game.outcome !== 'playing') return 0;
+    if (!firstMilitary(owner.game, owner.faction)) return 0;
+    // Don't patrol if there's a real combat trigger — MilitaryEvaluator
+    // wins (higher score) in those cases anyway. This guard keeps the
+    // evaluator cheap (skip the perimeter scan when irrelevant).
+    if (firstPulsingTile(owner.game, owner.faction)) return 0;
+    if (discoveredEnemyTile(owner.game, owner.faction)) return 0;
+    // M_AI_AWARE.1 — coexistence + other low-military profiles
+    // patrol less (or not at all). The militaryWeight directly
+    // scales patrol desirability so coexistence's 0 silences it.
+    const profile = aiProfileFor(owner.game.mode);
+    // Low base score (0.25) — patrol is the LOWEST-priority verb,
+    // beaten by every concrete need.
+    return 0.25 * profile.militaryWeight;
+  }
+
+  setGoal(owner: AiPlayer): void {
+    owner.brain.clearSubgoals();
+    owner.brain.addSubgoal(new PatrolGoal(owner));
+  }
+}
+
+/** Move one idle military unit to a random perimeter tile of the AI's zone. */
+class PatrolGoal extends Goal<AiPlayer> {
+  activate(): void {
+    const owner = this.owner as AiPlayer;
+    const unit = firstMilitary(owner.game, owner.faction);
+    const perimeter = randomPerimeterTile(owner.game, owner.faction);
+    if (!unit || !perimeter) {
+      this.status = Goal.STATUS.FAILED;
+      return;
+    }
+    const path = moveUnit(owner.game, unit, perimeter, owner.faction);
+    this.status = path ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
+    if (path) owner.lastGoal = 'patrol';
+  }
+}
+
+/**
+ * Pick a random tile on the perimeter of the faction's controlled
+ * zone — a tile we own that has at least one non-controlled neighbour.
+ * Returns null if the zone is empty or fully landlocked (no perimeter).
+ * Uses the faction's brain RNG bias slot is not relevant here; the
+ * randomness is presentation-level (a different patrol target each
+ * tick), not sim-determinism-critical.
+ */
+function randomPerimeterTile(game: GameState, faction: Faction): string | null {
+  const zone = game.zones[faction];
+  if (zone.controlled.size === 0) return null;
+  const perim: string[] = [];
+  for (const key of zone.controlled) {
+    const tile = game.board.tiles.get(key);
+    if (!tile) continue;
+    // Hex neighbours: 6 axial offsets.
+    const NEIGHBORS: ReadonlyArray<[number, number]> = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+      [1, -1],
+      [-1, 1],
+    ];
+    for (const [dq, dr] of NEIGHBORS) {
+      const nkey = `${tile.q + dq},${tile.r + dr}`;
+      if (!zone.controlled.has(nkey)) {
+        perim.push(key);
+        break;
+      }
+    }
+  }
+  if (perim.length === 0) return null;
+  return perim[Math.floor(Math.random() * perim.length)] ?? null;
 }

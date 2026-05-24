@@ -1812,7 +1812,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [x] [HIGH] M_EXPANSION.S.52 — spec 104-archetype-unification.md M_REGISTRY.24 — resource-spawn unification (currently 3 parallel spawn paths in resource generation; consolidate to one driven by RESOURCE_PROFILES)
 - [x] [MED]  M_EXPANSION.S.53 — spec 105-brain-archetype.md "future steps" §M_REGISTRY.18 — finish brain-archetype migration for ResignGoal + ScoutGoal + DefendGoal
 - [x] [MED]  M_EXPANSION.S.54 — spec 70-rts-systems.md HealthBar §Health billboard — animate fill on damage (lerp toward target fraction over 0.3s)
-- [ ] [HIGH] M_EXPANSION.S.55 — spec 100-ai-as-player.md "patrol" goal — AI military units idle into PatrolGoal between raids (currently sit at base)
+- [x] [HIGH] M_EXPANSION.S.55 — AI patrol verb — DONE. PatrolEvaluator (5th evaluator on AiBrain) fires when: AI has military, no enemy visible, no pulsing tile, AND aiProfileFor(mode).militaryWeight > 0 (so coexistence's 0 silences patrol too — the peaceful tribe doesn't patrol). Desirability 0.25 * militaryWeight — lowest priority verb, beaten by every concrete need. PatrolGoal picks a random perimeter tile from zone.controlled and moves the first idle military unit there. randomPerimeterTile helper walks the 6 axial neighbours and includes only tiles that have at least one non-controlled neighbour. 2 new tests pin the evaluator surface. 460/460 green.
   - PatrolGoal needs: per-unit patrol pattern (border-walk vs random-
     walk vs nearest-discovered-enemy-walk) + interaction with the
     existing MoveMilitaryGoal preemption + UX (player needs to see
