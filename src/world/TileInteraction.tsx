@@ -4,7 +4,8 @@ import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexKey, hexNeighbors } from '@/core/hex';
 import { Building, FactionTrait, Selectable, Unit } from '@/ecs/components';
 import { cameraView } from '@/render/camera-view';
-import { startDrag, stopDrag, isDragging, computePanDelta } from './touch-drag';
+import { computePanDelta, isDragging, startDrag, stopDrag } from './touch-drag';
+import { isTap } from './touch-tap-threshold';
 import {
   findSelectableAtTile,
   moveUnit,
@@ -54,7 +55,15 @@ function TilePick({
   /** M_EXPANSION.U.109 — fires on pointer-leave so the parent can clear hover state. */
   onLeave?: () => void;
 }) {
-  const longPressRef = useRef<{ timer: number; fired: boolean } | null>(null);
+  // M_POLISH2.MOBILE.6 — track pointerdown coords so we can suppress
+  // tile-select when the pointer moved more than MOVE_THRESHOLD_PX
+  // between down and up (treat as a camera-pan, not a tap).
+  const longPressRef = useRef<{
+    timer: number;
+    fired: boolean;
+    startX: number;
+    startY: number;
+  } | null>(null);
   return (
     // <mesh> is an r3f three.js node, not a DOM element — the a11y
     // rule misfires on the JSX intrinsic. Suppress here so the broader
@@ -78,7 +87,12 @@ function TilePick({
         }
         // touch: arm a long-press timer; release before threshold = left.
         if (ne.pointerType === 'touch') {
-          const state = { timer: 0, fired: false };
+          const state = {
+            timer: 0,
+            fired: false,
+            startX: ne.clientX,
+            startY: ne.clientY,
+          };
           state.timer = window.setTimeout(() => {
             state.fired = true;
             hexGridVisibility.show = true;
@@ -101,7 +115,12 @@ function TilePick({
         clearTimeout(state.timer);
         longPressRef.current = null;
         hexGridVisibility.show = false;
-        if (!state.fired) onLeft();
+        // M_POLISH2.MOBILE.6 — drag-pan suppresses the tap. If the
+        // pointer moved more than MOVE_THRESHOLD_PX between down and
+        // up, the user was panning the camera; do NOT fire a select.
+        if (state.fired) return;
+        if (!isTap(state.startX, state.startY, ne.clientX, ne.clientY)) return;
+        onLeft();
       }}
       onPointerLeave={() => {
         const state = longPressRef.current;
