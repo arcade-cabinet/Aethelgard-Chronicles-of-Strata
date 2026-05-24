@@ -37,6 +37,7 @@ import { ContestedPulse } from '@/world/ContestedPulse';
 import { ZoneBorder } from '@/world/ZoneBorder';
 import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';
+import { SuspenseProbe } from './SuspenseProbe';
 import { useGameLoop } from './useGameLoop';
 import { useViewport, type ViewportProfile } from './useViewport';
 
@@ -156,7 +157,11 @@ function Scene({
         spawnTrackingRing={(q, r) => ringsRef.current?.spawn(q, r)}
       />
       <TrackingRings ref={ringsRef} board={game.board} />
-      <Suspense fallback={null}>
+      {/* M_POLISH3.FB.2 — SuspenseProbe replaces the prior `null`
+          fallback. If anything inside this Suspense (GLB loads,
+          ParticleEmitter assets, FactionBase models) hangs for
+          >5s, console.warn fires + ErrorOverlay surfaces it. */}
+      <Suspense fallback={<SuspenseProbe label="GameCanvas inner scene" />}>
         <DecorationLive game={game} occupiedKeys={occupiedKeys} />
         <ResourceNodes game={game} />
         <Roads game={game} />

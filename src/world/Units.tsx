@@ -14,6 +14,7 @@ import {
 import { type ClipName, clipForState } from '@/ecs/systems/animation';
 import { AnimatedCharacter } from '@/entities/AnimatedCharacter';
 import type { GameState } from '@/game/game-state';
+import { SuspenseProbe } from '@/render/SuspenseProbe';
 import { isColorblindMode, resolveFactionTint } from '@/rules/colorblind';
 import { SKINS } from '@/rules/skins';
 import { BuilderBadge } from './BuilderBadge';
@@ -60,7 +61,8 @@ function UnitMesh({ entity, role, tint }: { entity: Entity; role: UnitType; tint
 
   return (
     <group ref={ref}>
-      <Suspense fallback={null}>
+      {/* M_POLISH3.FB.2 — observable Suspense fallback. */}
+      <Suspense fallback={<SuspenseProbe label={`AnimatedCharacter role=${role}`} />}>
         <AnimatedCharacter role={role} clip={clip} tint={tint} />
       </Suspense>
       <HealthBillboard current={health.current} max={health.max} />
