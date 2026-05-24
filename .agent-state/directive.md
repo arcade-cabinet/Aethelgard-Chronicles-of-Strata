@@ -340,28 +340,30 @@ mechanic work that follows is built on this.
 
 ### v0.4.8 fold-ins from reviewer trio (must land before v0.4.9)
 
-- [ ] [WAIT-DEPS] M_FUN.DYN.FIX.LAVA-WALKABLE — LAVA
-  walkable=true causes A* to route units across active lava.
-  Set walkable=false; one-shot evacuation for units mid-traverse
-  when a tile becomes lava under them.
-- [ ] [WAIT-DEPS] M_FUN.DYN.FIX.SAVE-GAP — wildfires +
-  quakeShakeRemaining + volcano fields missing from
-  GameSnapshot. Add + serialize + restore; bump SNAPSHOT_VERSION
-  with migration defaulting to fresh state.
-- [ ] [WAIT-DEPS] M_FUN.DYN.FIX.WILDFIRE-CAP — Add
-  MAX_CONCURRENT_FIRES cap to WILDFIRE_TUNING (200) to bound
-  worst-case all-FOREST main-thread cost.
-- [ ] [WAIT-DEPS] M_FUN.DYN.FIX.SHAKE-DET — QuakeShake uses
-  state.clock.elapsedTime (= performance.now); profile bans
-  this in render code. Switch to deterministic time source
-  OR mask the shake region in visual tests.
-- [ ] [WAIT-DEPS] M_FUN.DYN.FIX.DAMAGE-UNITS — wildfire damage
-  is per-tick-flat; volcano damage is damagePerTick*dt. Align
-  to one model + document the unit in mapgen.json.
-- [ ] [WAIT-DEPS] M_FUN.DYN.FIX.SHAKE-CLAMP — clamp
-  quakeShakeRemaining at write-time to QUAKE_TUNING.shakeSeconds
-  * 2 + Number.isFinite guard in QuakeShake to defend against
-  DevTools-injected huge values.
+- [x] M_FUN.DYN.FIX.LAVA-WALKABLE — LAVA now walkable=false in
+  biome-flags + mapgen.json. erupt() pushes any unit standing on
+  a fresh LAVA tile to its nearest walkable non-lava neighbour
+  (one-shot teleport). navGraph rebuilt on every eruption +
+  every LAVA→MOUNTAIN_PASS revert tick.
+- [x] M_FUN.DYN.FIX.SAVE-GAP — wildfires + quakeShakeRemaining
+  + volcano added to GameSnapshot. SNAPSHOT_VERSION bumped to 2
+  with a v1→v2 migration filling defaults. deserialize validates
+  per-entry shape + caps (500 lava/fertile entries, 500 wildfire
+  entries, 32-char key length).
+- [x] M_FUN.DYN.FIX.WILDFIRE-CAP — maxConcurrent added to
+  WILDFIRE_TUNING (default 200); spread rolls skipped once the
+  cap is reached this tick. New unit test pins the cap.
+- [x] M_FUN.DYN.FIX.SHAKE-DET — QuakeShake uses a local frame-
+  delta accumulator instead of state.clock.elapsedTime. Camera
+  shake is now deterministic across visual-regression runs.
+- [x] M_FUN.DYN.FIX.DAMAGE-UNITS — clarified via rename:
+  WILDFIRE_TUNING.damagePerTick = per-spread-tick flat; new
+  VOLCANO_TUNING.damagePerSecond = continuous DoT scaled by dt.
+  $comment fields name the units explicitly.
+- [x] M_FUN.DYN.FIX.SHAKE-CLAMP — quakeShakeRemaining clamped
+  at write-time to QUAKE_TUNING.shakeSeconds * 2; QuakeShake's
+  useFrame guards with Number.isFinite to defend against DevTools
+  injection of huge values.
 
 ### Parking lot (v0.5+ per PRD §8)
 

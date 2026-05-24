@@ -34,11 +34,13 @@ export const TERRAIN_MOVE_COST: Record<BiomeType, number> = {
   // next reader from "fixing" it.
   MOUNTAIN_PASS: 1.7,
   MOUNTAIN: 1, // impassable; cost is unused
-  // M_FUN.DYN.VOLCANO — landmark is impassable (cost unused) while
-  // LAVA is technically walkable but at 2.5× — actively suicidal,
-  // see also the per-tick LAVA damage in the volcano system.
+  // M_FUN.DYN.VOLCANO — both impassable. LAVA was originally 2.5×
+  // walkable but A* would route units across active lava (reviewer
+  // CRITICAL #2). LAVA is now hard-impassable in biome-flags;
+  // cost here is unused but defined to satisfy the exhaustive
+  // record type.
   VOLCANO: 1,
-  LAVA: 2.5,
+  LAVA: 1,
 };
 
 export function moveCostFor(biome: BiomeType): number {

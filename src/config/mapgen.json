@@ -103,23 +103,23 @@
     },
     "LAVA": {
       "elevation": 3,
-      "walkable": true,
+      "walkable": false,
       "buildable": false,
       "habitable": false,
-      "moveCost": 2.5,
+      "moveCost": 1.0,
       "appliesAttribute": null,
       "attributeStrength": 0
     }
   },
 
   "volcano": {
-    "$comment": "Tunables for the VOLCANO landmark + LAVA eruption cycle (M_FUN.DYN.VOLCANO). 'eruptionIntervalSeconds' is the wall-clock gap between eruptions. 'lavaSeconds' is how long a fresh LAVA tile stays lava before reverting to MOUNTAIN_PASS. 'fertileSeconds' is the bonus duration on GRASS tiles in fertileRadius (post-eruption). 'damagePerTick' is HP/sec for units standing on LAVA. 'placementChance' is the per-board roll for whether a volcano lands at all.",
+    "$comment": "Tunables for the VOLCANO landmark + LAVA eruption cycle (M_FUN.DYN.VOLCANO). damagePerSecond is continuous HP/sec drain on units stranded on LAVA (volcano damage runs per-frame scaled by dt; wildfire fires per-tickSeconds flat — distinct units, intentional). LAVA is hard-impassable so the only way a unit gets damaged is being on a tile that flips to LAVA under them and not yet evacuated.",
     "placementChance": 0.45,
     "eruptionIntervalSeconds": 75,
     "lavaSeconds": 30,
     "fertileSeconds": 60,
     "fertileRadius": 3,
-    "damagePerTick": 12
+    "damagePerSecond": 12
   },
 
   "quake": {
@@ -131,12 +131,13 @@
   },
 
   "wildfire": {
-    "$comment": "Tunables for the dynamic wildfire system (M_FUN.DYN.WILDFIRE). Fire ignites on a FOREST tile, spreads to neighbouring FOREST tiles each tick, deals damage-over-time to units standing on burning tiles, and is extinguished after burnTicks elapse OR by adjacency to water (RIVER/LAKE/OCEAN). All probabilities are 0..1; tickSeconds gates the spread cadence so a 60Hz sim doesn't immolate the world in a frame.",
+    "$comment": "Tunables for the dynamic wildfire system (M_FUN.DYN.WILDFIRE). damagePerTick is flat HP loss per spread-tick (NOT per frame; fires once every tickSeconds). maxConcurrent caps the burning-tile registry to bound worst-case main-thread cost on an all-FOREST map.",
     "tickSeconds": 1.5,
     "spreadChance": 0.32,
     "burnTicks": 8,
     "damagePerTick": 4,
-    "ignitionChancePerEvent": 0.18
+    "ignitionChancePerEvent": 0.18,
+    "maxConcurrent": 200
   },
 
   "mountain": {

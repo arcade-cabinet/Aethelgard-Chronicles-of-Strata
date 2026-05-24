@@ -161,12 +161,14 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: 5,
     decorationDensity: null,
   },
-  // M_FUN.DYN.LAVA — transient eruption tile. Technically walkable
-  // so a unit's pathing isn't broken by mid-traverse, but the
-  // 2.5× move cost + per-tick damage make it a death sentence.
+  // M_FUN.DYN.LAVA — transient eruption tile. Reviewer-fix: LAVA
+  // is IMPASSABLE so A* will not route units through active lava.
+  // The DoT damage still applies to units who were already on the
+  // tile when it became lava (volcanoSystem handles their flight
+  // via a one-shot evacuation when a tile flips under them).
   // Reverts to MOUNTAIN_PASS after `lavaSeconds`.
   LAVA: {
-    walkable: true,
+    walkable: false,
     buildable: false,
     habitable: false,
     lushBlend: false,

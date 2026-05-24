@@ -68,7 +68,7 @@ import {
   type VolcanoState,
   volcanoSystem,
 } from '@/ecs/systems/volcano';
-import { wildfireSystem } from '@/ecs/systems/wildfire';
+import { type BurnState, wildfireSystem } from '@/ecs/systems/wildfire';
 import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
@@ -330,7 +330,7 @@ export interface GameState {
    * adds entries; tiles extinguish either by burning out OR by
    * water-adjacency (RIVER/LAKE/OCEAN neighbour).
    */
-  wildfires: Map<string, { burnTicksRemaining: number; secondsSinceTick: number }>;
+  wildfires: Map<string, BurnState>;
   /**
    * M_FUN.DYN.QUAKE — seconds of camera-shake remaining after the
    * last triggered earthquake. Decremented by runEconomyTick; the
@@ -750,7 +750,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     // M_FUN.DYN.WILDFIRE — empty burning-tile registry. The wildfire
     // system creates entries via igniteWildfire and prunes via the
     // tick loop; default is the empty map (no fires lit at game start).
-    wildfires: new Map<string, { burnTicksRemaining: number; secondsSinceTick: number }>(),
+    wildfires: new Map<string, BurnState>(),
     // M_FUN.DYN.QUAKE — quake camera-shake countdown (0 = no shake).
     quakeShakeRemaining: 0,
     // M_FUN.DYN.VOLCANO — place a volcano landmark if the roll

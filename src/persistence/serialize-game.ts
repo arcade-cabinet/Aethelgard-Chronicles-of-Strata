@@ -27,6 +27,27 @@ interface ZoneSnapshot {
   generation?: number;
 }
 
+/**
+ * M_FUN.DYN.FIX.SAVE-GAP — wildfire / quake / volcano snapshot
+ * blocks. Stored as plain JSON-safe shapes (Maps serialized as
+ * `[string, number][]` arrays). Defaults reconstruct cleanly on
+ * v1→v2 migration (no active fires, fresh volcano cooldown).
+ */
+interface WildfireEntry {
+  key: string;
+  burnTicksRemaining: number;
+  secondsSinceTick: number;
+}
+
+interface VolcanoSnapshot {
+  position: string | null;
+  cooldown: number;
+  /** Array form of Map<tileKey, lavaSecondsRemaining>. */
+  lavaTiles: Array<[string, number]>;
+  /** Array form of Map<tileKey, fertileSecondsRemaining>. */
+  fertileTiles: Array<[string, number]>;
+}
+
 /** Full game snapshot — everything needed to resume. */
 export interface GameSnapshot {
   /** Snapshot format version — bumped on any breaking schema change. */
@@ -45,9 +66,20 @@ export interface GameSnapshot {
   rally: RallyState;
   zones: Record<Faction, ZoneSnapshot>;
   outcome: GameState['outcome'];
+  /** M_FUN.DYN — burning-tile registry; empty on v0.3 saves (v1→v2 migration). */
+  wildfires?: WildfireEntry[];
+  /** M_FUN.DYN — quake shake countdown in seconds; 0 on v0.3 saves. */
+  quakeShakeRemaining?: number;
+  /** M_FUN.DYN — volcano state; absent on v0.3 saves (rebuilt fresh by startGame). */
+  volcano?: VolcanoSnapshot;
 }
 
-const SNAPSHOT_VERSION = 1;
+// M_FUN.DYN.FIX.SAVE-GAP — bumped to 2 to flag presence of the
+// dynamic-terrain blocks. v1 saves load fine: the migration leaves
+// the new fields undefined; deserializeGame uses fresh defaults
+// (no active fires, fresh volcano cooldown — the same state a
+// brand-new game has at t=0).
+const SNAPSHOT_VERSION = 2;
 
 /** ZoneState → serializable form (Set+Map → arrays). */
 function zoneToSnapshot(zone: ZoneState): ZoneSnapshot {
@@ -93,6 +125,18 @@ export function serializeGame(game: GameState): GameSnapshot {
       enemy: zoneToSnapshot(game.zones.enemy),
     },
     outcome: game.outcome,
+    wildfires: Array.from(game.wildfires.entries()).map(([key, s]) => ({
+      key,
+      burnTicksRemaining: s.burnTicksRemaining,
+      secondsSinceTick: s.secondsSinceTick,
+    })),
+    quakeShakeRemaining: game.quakeShakeRemaining,
+    volcano: {
+      position: game.volcano.position,
+      cooldown: game.volcano.cooldown,
+      lavaTiles: Array.from(game.volcano.lavaTiles.entries()),
+      fertileTiles: Array.from(game.volcano.fertileTiles.entries()),
+    },
   };
 }
 
@@ -148,6 +192,61 @@ export function deserializeGame(snap: GameSnapshot): GameState {
   game.zones.player = zoneFromSnapshot(snap.zones.player);
   game.zones.enemy = zoneFromSnapshot(snap.zones.enemy);
   game.outcome = snap.outcome === 'win' || snap.outcome === 'loss' ? snap.outcome : 'playing';
+  // M_FUN.DYN.FIX.SAVE-GAP — restore dynamic-terrain state with caps.
+  if (Array.isArray(snap.wildfires)) {
+    game.wildfires.clear();
+    const MAX_WILDFIRES = 500; // generous; bigger than runtime cap
+    for (const entry of snap.wildfires.slice(0, MAX_WILDFIRES)) {
+      if (
+        !entry ||
+        typeof entry.key !== 'string' ||
+        entry.key.length > 32 ||
+        !Number.isFinite(entry.burnTicksRemaining) ||
+        !Number.isFinite(entry.secondsSinceTick)
+      )
+        continue;
+      game.wildfires.set(entry.key, {
+        burnTicksRemaining: Math.max(0, Math.floor(entry.burnTicksRemaining)),
+        secondsSinceTick: Math.max(0, entry.secondsSinceTick),
+      });
+    }
+  }
+  game.quakeShakeRemaining = Math.max(
+    0,
+    Math.min(60, safeFinite(snap.quakeShakeRemaining, 0)),
+  );
+  if (snap.volcano && typeof snap.volcano === 'object') {
+    const v = snap.volcano;
+    game.volcano.position =
+      typeof v.position === 'string' && v.position.length <= 32 ? v.position : null;
+    game.volcano.cooldown = Math.max(0, safeFinite(v.cooldown, 0));
+    game.volcano.lavaTiles.clear();
+    if (Array.isArray(v.lavaTiles)) {
+      for (const pair of v.lavaTiles.slice(0, 500)) {
+        if (
+          !Array.isArray(pair) ||
+          typeof pair[0] !== 'string' ||
+          pair[0].length > 32 ||
+          !Number.isFinite(pair[1])
+        )
+          continue;
+        game.volcano.lavaTiles.set(pair[0], Math.max(0, pair[1] as number));
+      }
+    }
+    game.volcano.fertileTiles.clear();
+    if (Array.isArray(v.fertileTiles)) {
+      for (const pair of v.fertileTiles.slice(0, 500)) {
+        if (
+          !Array.isArray(pair) ||
+          typeof pair[0] !== 'string' ||
+          pair[0].length > 32 ||
+          !Number.isFinite(pair[1])
+        )
+          continue;
+        game.volcano.fertileTiles.set(pair[0], Math.max(0, pair[1] as number));
+      }
+    }
+  }
   // Step 4 — run a zero-delta tick so derived caches (buildSites map,
   // selection ids) re-sync with the restored world.
   runEconomyTick(game, 0);
@@ -207,13 +306,28 @@ function pickEconomy(eco: unknown): GameEconomy {
  * `SNAPSHOT_VERSION`, applying every entry along the way. When a future
  * schema change lands, add ONE row here; existing saves carry forward.
  *
- * Today the table is empty (we're at version 1 and no migrations are
- * needed). The framework is in place so the first schema bump won't
- * brick every existing player's save.
+ * v1 → v2: M_FUN.DYN.FIX.SAVE-GAP added the wildfires +
+ * quakeShakeRemaining + volcano blocks. v1 saves migrate by
+ * filling defaults.
  */
 type SnapshotMigration = (snap: Record<string, unknown>) => Record<string, unknown>;
 const SNAPSHOT_MIGRATIONS: Record<number, SnapshotMigration> = {
-  // 1: (snap) => { ...snap, version: 2, /* new field defaults */ },
+  // v1 → v2 (M_FUN.DYN.FIX.SAVE-GAP): wildfires, quakeShakeRemaining,
+  // volcano added. v1 saves never carried these — default to empty
+  // burn registry, no shake, and an absent volcano block (the
+  // deserialize path treats undefined as "leave the startGame()
+  // defaults in place", which is correct: a v1 save predates
+  // M_FUN.DYN entirely, so its world has no fires/lava/shake state
+  // to restore).
+  1: (snap) => ({
+    ...snap,
+    version: 2,
+    wildfires: [],
+    quakeShakeRemaining: 0,
+    // volcano stays undefined so the deserialize path keeps the
+    // fresh-from-startGame placement (which may or may not have
+    // placed a volcano this seed — that's deterministic anyway).
+  }),
 };
 
 function migrateSnapshot(snap: Record<string, unknown>): Record<string, unknown> {

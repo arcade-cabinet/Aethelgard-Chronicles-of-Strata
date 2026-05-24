@@ -129,8 +129,16 @@ export function wildfireSystem(
       continue;
     }
 
-    // Spread to FOREST neighbours.
+    // Spread to FOREST neighbours, bounded by the registry cap so
+    // a worst-case all-FOREST map can't lock the main thread on
+    // O(N * 6) iterations per spread tick. Once the projected
+    // post-tick population would exceed the cap, drop further
+    // spread rolls this tick (the existing fires continue to burn
+    // normally — only the *spread* is gated).
+    const projectedTotal = () =>
+      game.wildfires.size + newIgnitions.length;
     for (const nKey of neighbourKeys) {
+      if (projectedTotal() >= WILDFIRE_TUNING.maxConcurrent) break;
       if (game.wildfires.has(nKey)) continue;
       if (newIgnitions.some(([k]) => k === nKey)) continue;
       const t = tiles.get(nKey);

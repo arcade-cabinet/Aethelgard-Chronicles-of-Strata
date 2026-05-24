@@ -133,6 +133,31 @@ describe('wildfire', () => {
     expect(a).toEqual(b);
   });
 
+  it('honours the maxConcurrent cap (reviewer-fix sec #2)', () => {
+    // Force RNG < spreadChance every roll so every neighbour eligible.
+    const game = makeStubGame(() => 0);
+    // Build a 7×7 FOREST grid (49 tiles) — small enough to fit
+    // under the 200 default cap; we exercise the cap by pre-loading
+    // game.wildfires with `cap - 1` synthetic entries then ignite +
+    // tick once to assert at-most-one new ignition slips in.
+    const tiles = new Map<string, Tile>();
+    for (let q = -3; q <= 3; q++) {
+      for (let r = -3; r <= 3; r++) {
+        tiles.set(getHexKey(q, r), tile(q, r, 'FOREST'));
+      }
+    }
+    igniteWildfire(game, tiles, 0, 0);
+    // Pad up to cap - 1.
+    for (let i = 0; i < WILDFIRE_TUNING.maxConcurrent - 1; i++) {
+      game.wildfires.set(`pad-${i}`, {
+        burnTicksRemaining: WILDFIRE_TUNING.burnTicks,
+        secondsSinceTick: 0,
+      });
+    }
+    wildfireSystem(game, tiles, WILDFIRE_TUNING.tickSeconds);
+    expect(game.wildfires.size).toBeLessThanOrEqual(WILDFIRE_TUNING.maxConcurrent);
+  });
+
   it('damages entities standing on burning tiles', () => {
     // Hand-roll a koota-ish world stub with one entity at (0,0).
     const Health = { __health: true };

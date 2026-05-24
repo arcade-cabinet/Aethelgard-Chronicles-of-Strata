@@ -30,6 +30,7 @@
 import { VOLCANO_TUNING } from '@/config/mapgen';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey, hexDistance, hexNeighbors } from '@/core/hex';
+import { buildNavGraph } from '@/core/pathfinding';
 import { biomeFlagsFor } from '@/rules/biome-flags';
 import type { Rng } from '@/core/rng';
 import { Health, HexPosition } from '@/ecs/components';
@@ -93,9 +94,10 @@ export function volcanoSystem(game: GameState, dt: number): void {
   if (!volcanoTile) return;
 
   // 1. Tick LAVA tiles BEFORE the eruption check so tiles laid by
-  //    the eruption in step 2 are NOT decayed in the same tick
+  //    the eruption in step 3 are NOT decayed in the same tick
   //    (which would instantly revert them when dt > lavaSeconds —
   //    common when test harnesses jump time by `interval+0.01`).
+  let didRevert = false;
   for (const [key, remaining] of [...v.lavaTiles.entries()]) {
     const next = remaining - dt;
     if (next <= 0) {
@@ -105,6 +107,7 @@ export function volcanoSystem(game: GameState, dt: number): void {
         // Cooled basalt = MOUNTAIN_PASS (walkable rock).
         t.type = 'MOUNTAIN_PASS';
         t.walkable = biomeFlagsFor('MOUNTAIN_PASS').walkable;
+        didRevert = true;
       }
     } else {
       v.lavaTiles.set(key, next);
@@ -120,9 +123,17 @@ export function volcanoSystem(game: GameState, dt: number): void {
 
   // 3. Cooldown → eruption.
   v.cooldown -= dt;
+  let didErupt = false;
   if (v.cooldown <= 0) {
     erupt(game, volcanoTile);
+    didErupt = true;
     v.cooldown = VOLCANO_TUNING.eruptionIntervalSeconds;
+  }
+  // 4. Rebuild the nav graph whenever topology changed this tick —
+  //    either by eruption (new LAVA tiles became impassable) or
+  //    by a LAVA tile reverting to MOUNTAIN_PASS (now walkable).
+  if (didErupt || didRevert) {
+    game.navGraph = buildNavGraph(game.board);
   }
 
   // 4. Damage units on LAVA.
@@ -136,7 +147,7 @@ export function volcanoSystem(game: GameState, dt: number): void {
       if (!h) continue;
       e.set(Health, {
         ...h,
-        current: Math.max(0, h.current - VOLCANO_TUNING.damagePerTick * dt),
+        current: Math.max(0, h.current - VOLCANO_TUNING.damagePerSecond * dt),
       });
     }
   }
@@ -145,6 +156,7 @@ export function volcanoSystem(game: GameState, dt: number): void {
 function erupt(game: GameState, volcanoTile: Tile): void {
   const tiles = game.board.tiles;
   const v = game.volcano;
+  const newLavaKeys: string[] = [];
 
   // Lay LAVA on every walkable radius-1 neighbour.
   for (const nKey of hexNeighbors(volcanoTile.q, volcanoTile.r)) {
@@ -163,6 +175,32 @@ function erupt(game: GameState, volcanoTile: Tile): void {
     t.type = 'LAVA';
     t.walkable = biomeFlagsFor('LAVA').walkable;
     v.lavaTiles.set(nKey, VOLCANO_TUNING.lavaSeconds);
+    newLavaKeys.push(nKey);
+  }
+
+  // Reviewer-fix (CRITICAL #2 follow-on): LAVA is hard-impassable in
+  // biome-flags so A* won't route NEW paths through it. But any unit
+  // already standing on the tile when it flips is now stranded on
+  // an "impassable" tile — its pathing would refuse to leave. Push
+  // each affected entity one tile out to the nearest walkable
+  // non-LAVA neighbour (greedy; the volcano is a hazard, not a
+  // tactical maze — a one-tile teleport is the kindest semantic).
+  if (newLavaKeys.length > 0) {
+    const lavaSet = new Set(newLavaKeys);
+    for (const e of game.world.query(HexPosition)) {
+      const pos = e.get(HexPosition);
+      if (!pos) continue;
+      const key = getHexKey(pos.q, pos.r);
+      if (!lavaSet.has(key)) continue;
+      // Find an escape neighbour: walkable AND not in the new lava set.
+      for (const nKey of hexNeighbors(pos.q, pos.r)) {
+        if (lavaSet.has(nKey)) continue;
+        const nt = tiles.get(nKey);
+        if (!nt || !nt.walkable) continue;
+        e.set(HexPosition, { q: nt.q, r: nt.r, level: nt.level });
+        break;
+      }
+    }
   }
 
   // Fertile bonus on every GRASS tile within fertileRadius.

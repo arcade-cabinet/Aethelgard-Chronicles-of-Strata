@@ -67,8 +67,8 @@ const VolcanoTuningSchema = z.object({
   fertileSeconds: z.number().positive(),
   /** Hex radius from the volcano that gains the fertile-soil bonus. */
   fertileRadius: z.number().int().positive(),
-  /** HP/tick damage to units standing on a LAVA tile. */
-  damagePerTick: z.number().nonnegative(),
+  /** HP/sec continuous DoT for units stranded on a LAVA tile (scaled by dt). */
+  damagePerSecond: z.number().nonnegative(),
 });
 export type VolcanoTuning = z.infer<typeof VolcanoTuningSchema>;
 
@@ -91,10 +91,12 @@ const WildfireTuningSchema = z.object({
   spreadChance: z.number().min(0).max(1),
   /** How many ticks a single ignited tile burns before extinguishing. */
   burnTicks: z.number().int().positive(),
-  /** HP damage per tick to a unit standing on a burning tile. */
+  /** Flat HP damage per spread-tick to a unit standing on a burning tile. */
   damagePerTick: z.number().nonnegative(),
   /** Chance an event-PRNG wildfire event picks a FOREST tile to ignite. */
   ignitionChancePerEvent: z.number().min(0).max(1),
+  /** Cap on concurrent burning tiles — bounds worst-case main-thread cost. */
+  maxConcurrent: z.number().int().positive(),
 });
 export type WildfireTuning = z.infer<typeof WildfireTuningSchema>;
 

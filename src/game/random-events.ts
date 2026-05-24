@@ -164,7 +164,13 @@ function applyEvent(game: GameState, rng: Rng, kind: RandomEventKind): void {
       // via game.randomEvents.lastKind === 'quake' + a future
       // game.quakeShakeRemaining field. Persisting the shake on
       // GameState lets the camera-shake hook decay it across ticks.
-      game.quakeShakeRemaining = out.shakeSeconds;
+      // Reviewer-fix (LOW #3): clamp to a sane upper bound so a
+      // tampered or future-changed config can't lock the camera in
+      // permanent shake.
+      game.quakeShakeRemaining = Math.min(
+        out.shakeSeconds,
+        QUAKE_TUNING.shakeSeconds * 2,
+      );
       break;
     }
     case 'wildfire': {
