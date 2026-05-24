@@ -7,6 +7,7 @@ import {
   AssignedJob,
   Carrier,
   Combatant,
+  CommandedTile,
   EnemyTarget,
   FactionTrait,
   Harvester,
@@ -16,6 +17,7 @@ import {
   OffensiveBehavior,
   PathQueue,
   Selectable,
+  Stance,
   Transform,
   Unit,
   type UnitType,
@@ -165,5 +167,10 @@ export function createCharacter(params: CreateCharacterParams): Entity {
       dps: scaledDamage / attackCooldown,
       damageType: profile.damageType,
     }),
+    // M_POLISH2.RTS.16 — stance system. All combat-role units spawn
+    // with defensive stance and a commanded-tile anchored to their
+    // spawn hex. moveUnit updates CommandedTile; setStance changes mode.
+    Stance({ mode: 'defensive' }),
+    CommandedTile({ q, r }),
   );
 }

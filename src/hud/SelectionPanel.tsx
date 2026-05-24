@@ -2,8 +2,15 @@ import * as Tooltip from '@radix-ui/react-tooltip';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
-import { Building, type BuildingType, Health, Unit } from '@/ecs/components';
-import { doResearch, trainUnit } from '@/game/commands';
+import {
+  Building,
+  type BuildingType,
+  Health,
+  Stance,
+  type StanceMode,
+  Unit,
+} from '@/ecs/components';
+import { doResearch, setStance, trainUnit } from '@/game/commands';
 import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
@@ -35,6 +42,9 @@ function canAffordCost(game: GameState, cost: ResourceCost): boolean {
 // trainDisabledReason / buildDisabledReason / researchDisabledReason
 // are imported below.
 
+/** Military unit types that carry a Stance trait (M_POLISH2.RTS.16). */
+const MILITARY_UNIT_TYPES = new Set<string>(['Footman', 'Wizard', 'Hero']);
+
 /** Props for the selection panel. */
 export interface SelectionPanelProps {
   /** The live game. */
@@ -56,6 +66,8 @@ interface SelectionView {
   task: string;
   /** Selected building's type, or null when a unit is selected. */
   buildingType: BuildingType | null;
+  /** Current stance of the selected military unit, or null for non-military. */
+  stance: StanceMode | null;
 }
 
 /** Build a display view from the selected entity. */
@@ -68,15 +80,22 @@ function viewOf(game: GameState): SelectionView | null {
     const task = building.isComplete
       ? 'Operational'
       : `Constructing — ${Math.round(building.progress * 100)}%`;
-    return { name: meta.name, task, buildingType: building.buildingType };
+    return { name: meta.name, task, buildingType: building.buildingType, stance: null };
   }
   const unit = entity.get(Unit);
   if (unit) {
     const health = entity.get(Health);
     const hp = health ? ` — ${health.current}/${health.max} HP` : '';
-    return { name: unit.unitType, task: `Ready${hp}`, buildingType: null };
+    // M_POLISH2.RTS.16 — expose stance for military unit types.
+    const stanceTrait = MILITARY_UNIT_TYPES.has(unit.unitType) ? entity.get(Stance) : null;
+    return {
+      name: unit.unitType,
+      task: `Ready${hp}`,
+      buildingType: null,
+      stance: stanceTrait?.mode ?? null,
+    };
   }
-  return { name: 'Unknown', task: '', buildingType: null };
+  return { name: 'Unknown', task: '', buildingType: null, stance: null };
 }
 
 /**
@@ -152,6 +171,14 @@ function HudButton({
   );
 }
 
+/** Stance chip metadata — label + mode value for the 4-segment picker. */
+const STANCE_CHIPS: ReadonlyArray<{ mode: StanceMode; label: string }> = [
+  { mode: 'aggressive', label: 'Aggressive' },
+  { mode: 'defensive', label: 'Defensive' },
+  { mode: 'hold-position', label: 'Hold' },
+  { mode: 'stand-ground', label: 'Stand' },
+];
+
 /**
  * The HUD selection panel. Slides in from the left (framer-motion) when an
  * entity is selected. The Town Hall shows build buttons (Farm, Barracks); a
@@ -178,7 +205,8 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
         prev !== null &&
         next.name === prev.name &&
         next.task === prev.task &&
-        next.buildingType === prev.buildingType
+        next.buildingType === prev.buildingType &&
+        next.stance === prev.stance
       ) {
         return prev;
       }
@@ -208,6 +236,14 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
   const beginBuild = (ctx: BuildContext) => {
     emitUiSound('ui-button-click');
     onBeginBuild(ctx);
+  };
+
+  /** M_POLISH2.RTS.16 — change the selected military unit's stance. */
+  const changeStance = (mode: StanceMode) => {
+    const entity = selectedEntity(game);
+    if (!entity) return;
+    setStance(game, entity, mode, 'player');
+    emitUiSound('ui-button-click');
   };
 
   return (
@@ -253,6 +289,62 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               {view.name}
             </div>
             <div style={{ fontSize: '0.78rem', color: '#fde047', marginTop: 2 }}>{view.task}</div>
+
+            {/* M_POLISH2.RTS.16 — 4-segment stance picker for military units */}
+            {view.stance !== null && (
+              <div style={{ marginTop: 10 }}>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: HUD_THEME.color.muted,
+                    marginBottom: 4,
+                  }}
+                >
+                  Stance
+                </div>
+                <fieldset
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: 4,
+                    border: 'none',
+                    margin: 0,
+                    padding: 0,
+                  }}
+                  aria-label="Unit stance"
+                >
+                  {STANCE_CHIPS.map(({ mode, label }) => {
+                    const active = view.stance === mode;
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => changeStance(mode)}
+                        style={{
+                          minHeight: 44,
+                          padding: '6px 4px',
+                          borderRadius: 6,
+                          border: `1px solid ${active ? HUD_THEME.color.accent : HUD_THEME.color.border}`,
+                          background: active ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.04)',
+                          color: active ? HUD_THEME.color.accent : HUD_THEME.color.text,
+                          fontFamily: HUD_THEME.font.body,
+                          fontSize: '0.72rem',
+                          fontWeight: active ? 800 : 500,
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </fieldset>
+              </div>
+            )}
 
             {view.buildingType &&
               (() => {

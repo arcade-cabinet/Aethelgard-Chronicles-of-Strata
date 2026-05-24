@@ -8,6 +8,7 @@ import {
   AttractorBehavior,
   Building,
   type BuildingType,
+  CommandedTile,
   DefensiveBehavior,
   type Faction,
   FactionTrait,
@@ -18,6 +19,8 @@ import {
   PathQueue,
   ScienceProducer,
   Selectable,
+  Stance,
+  type StanceMode,
   Unit,
 } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
@@ -87,7 +90,30 @@ export function moveUnit(
   if (!path || path.length < 2) return null;
   const steps = path.slice(1).map((key) => toLeveledStep(game, key));
   unit.set(PathQueue, { steps });
+  // M_POLISH2.RTS.16 — update the commanded tile so defensive/aggressive
+  // stance knows where the unit was last ordered to stand.
+  const { q: tq, r: tr } = parseHexKey(targetKey);
+  if (unit.has(CommandedTile)) unit.set(CommandedTile, { q: tq, r: tr });
   return path;
+}
+
+/**
+ * Change the stance mode for a player military unit (M_POLISH2.RTS.16).
+ * Only applies to units that carry the Stance trait (Footman, Wizard, Hero).
+ * No-op on civilian units (Peons) or if the unit isn't player-faction.
+ *
+ * @returns `true` if the stance was changed, `false` when the unit has no Stance.
+ */
+export function setStance(
+  _game: GameState,
+  entity: Entity,
+  stance: StanceMode,
+  faction: Faction = 'player',
+): boolean {
+  if (!ownedBy(entity, faction)) return false;
+  if (!entity.has(Stance)) return false;
+  entity.set(Stance, { mode: stance });
+  return true;
 }
 
 /**

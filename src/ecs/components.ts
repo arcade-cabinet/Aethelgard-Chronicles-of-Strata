@@ -266,6 +266,40 @@ export const DeathTimer = trait({ elapsed: 0 });
 export const ScienceProducer = trait({ rate: 1 });
 
 // ---------------------------------------------------------------------------
+// Stance system (M_POLISH2.RTS.16)
+// ---------------------------------------------------------------------------
+
+/**
+ * The four stance modes for military units.
+ *
+ * - `aggressive`     — chases any visible enemy up to AGGRESSIVE_CHASE_RADIUS
+ *                      hexes from the unit's last commanded tile.
+ * - `defensive`      — engages adjacent enemies; returns to the commanded tile
+ *                      when no enemy is adjacent (DEFAULT).
+ * - `hold-position`  — never moves; attacks only enemies within attackRange.
+ * - `stand-ground`   — attacks enemies within attackRange but will NOT move
+ *                      toward a target to close distance.
+ */
+export type StanceMode = 'aggressive' | 'defensive' | 'hold-position' | 'stand-ground';
+
+/**
+ * Stance trait for military units (Footman, Wizard, Hero, and all combat roles).
+ * `mode` governs how the stanceBehaviorSystem selects and pursues targets.
+ * Default is `'defensive'` — attack nearby, then return home.
+ */
+export const Stance = trait({ mode: 'defensive' as StanceMode });
+
+/**
+ * The last tile the player explicitly commanded this unit to — used by
+ * defensive stance to determine the "home" position to return to, and by
+ * aggressive stance to bound the chase radius.
+ *
+ * Set by `moveUnit` (and the `setStance` command's home-tile snapshot).
+ * Initialised to the spawn tile.
+ */
+export const CommandedTile = trait({ q: 0, r: 0 });
+
+// ---------------------------------------------------------------------------
 // SERIALIZED_TRAITS (M_REGISTRY.25)
 // ---------------------------------------------------------------------------
 
@@ -314,4 +348,7 @@ export const SERIALIZED_TRAITS: ReadonlyArray<{ name: string; traitObj: any }> =
   { name: 'ConsumerBehavior', traitObj: ConsumerBehavior },
   { name: 'Gate', traitObj: Gate },
   { name: 'ScienceProducer', traitObj: ScienceProducer },
+  // M_POLISH2.RTS.16 — stance system traits round-trip across save/load.
+  { name: 'Stance', traitObj: Stance },
+  { name: 'CommandedTile', traitObj: CommandedTile },
 ];

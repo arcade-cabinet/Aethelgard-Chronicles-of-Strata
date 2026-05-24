@@ -29,6 +29,7 @@ import { harvestSystem } from '@/ecs/systems/harvest';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
 import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
 import { scienceSystem } from '@/ecs/systems/science';
+import { stanceBehaviorSystem } from '@/ecs/systems/stance-behavior';
 import { createEcsWorld } from '@/ecs/world';
 import { createCharacter } from '@/entities/character-factory';
 import { advanceProjectiles, type Projectile } from './projectiles';
@@ -831,6 +832,10 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     // enemy spawning + AI unit-steering target selection
     spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
     aiSystem(game.world, game.board, game.navGraph);
+    // M_POLISH2.RTS.16 — player military unit stance-driven target selection.
+    // Runs after aiSystem so the enemy targets are settled for this tick, then
+    // player units pick their own targets based on stance mode.
+    stanceBehaviorSystem(game.world, game.navGraph);
   }
 
   // M_TURNS.1 — pathFollow ALWAYS ticks so the player can see issued
