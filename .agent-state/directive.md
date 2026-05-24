@@ -31,15 +31,21 @@ checkpoints.
 ## Autonomous-completion contract
 
 Status stays ACTIVE until EVERY `[ ]` item below is `[x]`. The
-anti-stop hook forbids stopping while an ACTIVE directive has any
-non-WAIT open item — that is intentional.
+anti-stop hook forbids stopping while an ACTIVE directive has ANY
+open `[ ]` item — full stop. There is no `WAIT` cloak. If an item
+is truly blocked on external state (CI run, remote review), name
+the blocker explicitly inline AND fall through to the next `[ ]`
+item; never use blocked-ness as a stop.
 
 - Each step: implement, `pnpm verify`, commit, mark `[x]`, immediately
-  start the next.
+  start the next `[ ]` item — no end-of-turn summary, no "ready for
+  the next?" prompt, no review checkpoint.
 - When an item ships, REMOVE its `[x]` line and append a one-line
   entry to `docs/MILESTONES.md`. This directive stays compact.
 - v0.4 PRD `§7 Cycle plan` defines the ordering; the queue below
   mirrors it.
+- The list below has NO `[WAIT-*]` prefixes. Every `[ ]` is the next
+  candidate. Pick the topmost one each turn.
 
 ## Operating loop
 
@@ -111,96 +117,96 @@ mechanic work that follows is built on this.
 
 **Schema + validation**
 
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.ZOD-CONFIG — Zod schemas for
+- [ ] M_FUN.FOUNDATION.ZOD-CONFIG — Zod schemas for
   every runtime-loaded config: world.json, economy.json,
   combat.json, discoveries.json, asset-metadata.json, credits.json
   (mapgen.json already done). Replace hand-rolled type guards in
   the corresponding .ts accessors.
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.ZOD-PERSIST — Migrate
+- [ ] M_FUN.FOUNDATION.ZOD-PERSIST — Migrate
   serialize-game.ts validateSnapshot to a Zod SaveSnapshotSchema.
   Replaces the hand-rolled clamp logic with declarative validation.
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.BRANDED-IDS — Branded types
+- [ ] M_FUN.FOUNDATION.BRANDED-IDS — Branded types
   for tileKey / entityId / factionKey so a footgun like
   `selectEntity(factionKey)` is a compile error.
 
 **State + reactivity**
 
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.ZUSTAND — UI-side state
+- [ ] M_FUN.FOUNDATION.ZUSTAND — UI-side state
   store. Replaces `window.__game` test hooks with a proper test
   store (e2e specs subscribe instead of polling globals).
 
 **Lint + format**
 
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.BIOME-STRICT — Tighten
+- [ ] M_FUN.FOUNDATION.BIOME-STRICT — Tighten
   Biome rules: no `any`, no `as` without justifying comment, no
   inline literals where a const would do (matches arcade-game
   profile mandate).
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.ESLINT — typescript-eslint
+- [ ] M_FUN.FOUNDATION.ESLINT — typescript-eslint
   strict preset as a second-pass formatter (covers
   exhaustive-deps for hooks etc, which Biome doesn't).
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.PRETTIER-MD — dprint or
+- [ ] M_FUN.FOUNDATION.PRETTIER-MD — dprint or
   prettier for MD/YML files Biome doesn't format.
 
 **Testing**
 
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.HISTOIRE — Component-
+- [ ] M_FUN.FOUNDATION.HISTOIRE — Component-
   isolation story catalog (Histoire — Vite-native, lighter than
   Storybook). Each HUD pill / modal / biome tile is a story; the
   agent + user browse without spinning up the full game.
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.PW-TRACE — Wire Playwright
+- [ ] M_FUN.FOUNDATION.PW-TRACE — Wire Playwright
   trace upload as a CI artifact so failed e2e runs are debuggable
   from CI alone.
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.FASTCHECK — fast-check
+- [ ] M_FUN.FOUNDATION.FASTCHECK — fast-check
   property tests for deterministic-replay invariants (same seed
   → same final state) and map-gen invariants (every map has ≥1
   walkable path between bases at every supported radius).
 
 **Bundle + perf**
 
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.BUNDLE-VIZ —
+- [ ] M_FUN.FOUNDATION.BUNDLE-VIZ —
   vite-plugin-bundle-visualizer in dev — agent + user can see
   where bundle weight lives after each refactor.
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.LIGHTHOUSE — Lighthouse CI
+- [ ] M_FUN.FOUNDATION.LIGHTHOUSE — Lighthouse CI
   baseline for deployed Pages; perf budget fails build on >10%
   LCP regression.
-- [ ] [WAIT-LOW] M_FUN.FOUNDATION.WHY-RENDER — why-did-you-render
+- [ ] M_FUN.FOUNDATION.WHY-RENDER — why-did-you-render
   dev-only — catch React re-render storms before user-visible jank.
 
 **Docs + tooling**
 
-- [ ] [WAIT-LOW] M_FUN.FOUNDATION.TYPEDOC — TypeDoc on the public
+- [ ] M_FUN.FOUNDATION.TYPEDOC — TypeDoc on the public
   API surface so the agent can answer "what types does this module
   expose" without grep.
-- [ ] [WAIT-LOW] M_FUN.FOUNDATION.MDLINT — markdownlint for spec /
+- [ ] M_FUN.FOUNDATION.MDLINT — markdownlint for spec /
   PRD / MILESTONES docs.
-- [ ] [WAIT-LOW] M_FUN.FOUNDATION.MERMAID — Mermaid for spec
+- [ ] M_FUN.FOUNDATION.MERMAID — Mermaid for spec
   diagrams (currently ASCII tables).
 
 **Observability**
 
-- [ ] [WAIT-LOW] M_FUN.FOUNDATION.SENTRY — Sentry for production
+- [ ] M_FUN.FOUNDATION.SENTRY — Sentry for production
   errors (gated behind Settings opt-in per no-network posture).
-- [ ] [WAIT-LOW] M_FUN.FOUNDATION.ANALYTICS — Plausible or
+- [ ] M_FUN.FOUNDATION.ANALYTICS — Plausible or
   self-hosted; opt-in funnel metrics.
 
 **CI improvements**
 
-- [ ] [WAIT-LOW] M_FUN.FOUNDATION.ACT — act local-runner
+- [ ] M_FUN.FOUNDATION.ACT — act local-runner
   instructions in CONTRIBUTING.md.
-- [ ] [WAIT-LOW] M_FUN.FOUNDATION.RENOVATE — Renovate alongside
+- [ ] M_FUN.FOUNDATION.RENOVATE — Renovate alongside
   or replacing Dependabot for finer per-package rules.
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.COMMITLINT — Enforce
+- [ ] M_FUN.FOUNDATION.COMMITLINT — Enforce
   conventional-commits format (today honoured by convention only).
 
 **Game-specific foundation**
 
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.REPLAY-DETERMINISM — Test
+- [ ] M_FUN.FOUNDATION.REPLAY-DETERMINISM — Test
   that loads a saved transcript, replays the seed, asserts
   byte-for-byte state match at every recorded frame.
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.CLOCK-AUDIT — Audit every
+- [ ] M_FUN.FOUNDATION.CLOCK-AUDIT — Audit every
   sim/world/ecs module imports `now()` from engine clock facade,
   NOT `performance.now()`. Tighten Biome ban list.
-- [ ] [WAIT-REVIEW] M_FUN.FOUNDATION.PRNG-AUDIT — Same audit for
+- [ ] M_FUN.FOUNDATION.PRNG-AUDIT — Same audit for
   `rand()` via core/rng.ts. Tighten Biome ban list across
   src/sim/** src/ecs/** src/world/** src/game/**.
 
@@ -211,7 +217,7 @@ mechanic work that follows is built on this.
 - [x] M_FUN.MAP.ELEV — DONE 2026-05-24 commit 2431502.
   Combatant.fatigue field + biome-rule attribute application on
   arrival + decay loop. 3 unit tests pin behaviour.
-- [ ] [WAIT-DEPS] M_FUN.MAP.FORTIFY — Wall/Watchtower built
+- [ ] M_FUN.MAP.FORTIFY — Wall/Watchtower built
   on MOUNTAIN_PASS reduces fatigue for owning faction's units —
   realises the "fortifiable choke" contract.
 
@@ -276,7 +282,7 @@ mechanic work that follows is built on this.
 
 ### v0.4.7 — Match narrative (PRD §7.7)
 
-- [ ] [WAIT-DEPS] M_FUN.NAR.HIGHLIGHTS — Highlight detection
+- [ ] M_FUN.NAR.HIGHLIGHTS — Highlight detection
   on AI-vs-AI transcript (longest engagement, biggest comeback,
   lopsided kill). v0.4 ships state-derived highlights via
   matchHighlights(); transcript scan is the follow-up extension.
@@ -315,17 +321,17 @@ mechanic work that follows is built on this.
 
 ### v0.4.9 — Polish (PRD §7.9)
 
-- [ ] [WAIT-DEPS] M_FUN.AUDIO.BIOME — Ingest curated ambient
+- [ ] M_FUN.AUDIO.BIOME — Ingest curated ambient
   tracks from references/GameLoops_Vol5_FantasyRPG (SilverForest→
   FOREST, GoldenVillage→GRASS, MysticBazaar→DESERT, etc) via
   pnpm assets:ingest; cross-fade per camera-centre biome.
-- [ ] [WAIT-DEPS] M_FUN.AUDIO.COMBAT — Ingest references/
+- [ ] M_FUN.AUDIO.COMBAT — Ingest references/
   Impact_Hit + fantasy_magic_spell + footsteps packs; wire to
   sound-map; per-UnitType+event SFX.
-- [ ] [WAIT-DEPS] M_FUN.PHONE.HAPTIC — Capacitor Haptics on
+- [ ] M_FUN.PHONE.HAPTIC — Capacitor Haptics on
   build-complete (heavy), unit-killed (medium), quake (heavy
   decaying), wildfire ignition (light); Settings-tunable.
-- [ ] [WAIT-DEPS] M_FUN.PHONE.PINCH — Pinch-zoom INTO a unit
+- [ ] M_FUN.PHONE.PINCH — Pinch-zoom INTO a unit
   centres + opens its panel.
 
 ### v0.4-release blocker (PRD §5.1)
@@ -341,7 +347,7 @@ mechanic work that follows is built on this.
   Confirmed working: first run surfaced a REAL balance bug
   (the-builder vs the-builder = 0 kills, enemy 0 buildings,
   10 sim-minutes unresolved). Next step is M_FUN.QA.AIVAI.TUNE.
-- [ ] [WAIT-DEPS] M_FUN.QA.AIVAI.TUNE — v0.4 RELEASE BLOCKER.
+- [ ] M_FUN.QA.AIVAI.TUNE — v0.4 RELEASE BLOCKER.
   Tune AI personalities + per-mode AiProfile weights so every
   matchup in the harness passes. Progress so far (3 root causes
   fixed, more remain):
@@ -392,46 +398,46 @@ mechanic work that follows is built on this.
 These are NOT v0.4 work but stay in the directive so the anti-stop
 hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
 
-- [ ] [WAIT-DEPS] M_FUN.CIV.* — Civilian layer (citizens, refugees,
+- [ ] M_FUN.CIV.* — Civilian layer (citizens, refugees,
   trade routes).
-- [ ] [WAIT-DEPS] M_FUN.MYTH.* — Mythology (aether nodes, ruins,
+- [ ] M_FUN.MYTH.* — Mythology (aether nodes, ruins,
   divine intervention, Sacred Grove, monuments).
-- [ ] [WAIT-DEPS] M_FUN.DIPLO.* — Diplomacy + reputation, tributary
+- [ ] M_FUN.DIPLO.* — Diplomacy + reputation, tributary
   states, marriage alliances (post 3-faction).
-- [ ] [WAIT-DEPS] M_FUN.NAR.REPLAY — Replay loading + spectator
+- [ ] M_FUN.NAR.REPLAY — Replay loading + spectator
   skip-to-interesting.
-- [ ] [WAIT-DEPS] M_FUN.MOD.* — Daily challenge, puzzle scenarios,
+- [ ] M_FUN.MOD.* — Daily challenge, puzzle scenarios,
   modifier dial.
-- [ ] [WAIT-LOW] M_FUN.PROC.* — Procedural unit names, building
+- [ ] M_FUN.PROC.* — Procedural unit names, building
   inscriptions, map names.
 
 ### Standing carry-overs (process, not features)
 
-- [ ] [WAIT-STANDING] M_PROCESS.REVIEW — Periodic review-trio
+- [ ] M_PROCESS.REVIEW — Periodic review-trio
   dispatch (code-reviewer + security-auditor + code-simplifier)
   every ~5 commits or at clean checkpoint moments.
-- [ ] [WAIT-STANDING] M_PROCESS.WORKTREE — Lead agent owns
+- [ ] M_PROCESS.WORKTREE — Lead agent owns
   worktree close-out after parallel-agent runs (cherry-pick or
   merge; remove `.claude/worktrees/agent-*`).
-- [ ] [WAIT-DEPS] M_HARDENING.6 — Pixel-5a perf profile + on-device
+- [ ] M_HARDENING.6 — Pixel-5a perf profile + on-device
   APK install. Blocked on emulator / SDK / signed-APK pipeline
   access.
 
 ### Open from prior cycles (true blockers — needs deployment-infra)
 
-- [ ] [WAIT-DEPS] M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer.
+- [ ] M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer.
   GitHub Pages doesn't allow custom response headers; needs
   Cloudflare worker / Pages migration. Deployment-infra concern.
-- [ ] [WAIT-LOW] M_NEXT.DEPLOY.3 — Narrow 'unsafe-eval' via
+- [ ] M_NEXT.DEPLOY.3 — Narrow 'unsafe-eval' via
   SRI/nonce. Lower priority than DEPLOY.2.
-- [ ] [WAIT-LOW] M_NEXT.CI.3 — Sibling-project test parity audit
+- [ ] M_NEXT.CI.3 — Sibling-project test parity audit
   (xvfb / video recording / governor-test).
-- [ ] [WAIT-LOW] M_NEXT.CI.2 — analysis-nightly.yml for slower scans.
-- [ ] [WAIT-LOW] M_NEXT.AIVAI.6 — Player-faction AI inert under
+- [ ] M_NEXT.CI.2 — analysis-nightly.yml for slower scans.
+- [ ] M_NEXT.AIVAI.6 — Player-faction AI inert under
   asymmetric seedZones map-gen.
-- [ ] [WAIT-LOW] M_POLISH3.SCENE.4 — GameOverModal Dialog doesn't
+- [ ] M_POLISH3.SCENE.4 — GameOverModal Dialog doesn't
   render reliably in headless Playwright; production flow works.
-- [ ] [WAIT-LOW] M_POLISH3.HUD.1/2/3 — Tablet HUD pill stride
+- [ ] M_POLISH3.HUD.1/2/3 — Tablet HUD pill stride
   re-audit; mobile per-mode captures; day-night phase visual
   swing.
 
