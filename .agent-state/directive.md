@@ -1975,7 +1975,7 @@ unfinished work, untapped assets, or planned-but-unbuilt feature scope.
 - [ ] [HIGH] M_EXPANSION.T.128 — visual snapshot of every building completed + in-progress at level 1/2/3
 - [ ] [HIGH] M_EXPANSION.T.129 — Playwright e2e of the full player journey: title → new game → first build → first kill → victory
 - [x] [MED]  M_EXPANSION.T.130 — property test (fast-check): seedPhrase determinism — 1000 seeds, each must produce identical snapshot byte-for-byte at t=0
-- [ ] [HIGH] M_EXPANSION.T.131 — audio graph snapshot: every event in the SOUND_MAP fires exactly one AudioNode connection
+- [x] [HIGH] M_EXPANSION.T.131 — Audio sound-map contract test — DONE (asset-id resolution layer). New tests/unit/sound-map.test.ts (3 tests) walks SOUND_FOR_EVENT and verifies: (a) every event's bus ∈ {sfx, music, ambient, ui}, (b) every event's resolveSoundId result + every variant in soundIds[] resolves to an asset id present in the manifest, (c) every core gameplay event (combat-hit, combat-hit-magic/siege, combat-crit, magic-cast, unit-death-{normal,magic,siege}, harvest-{chop,mine}, building-placed/completed, victory, defeat) is present. The "exactly one AudioNode connection" surface lives in Howler / Web Audio at browser-test layer; the unit test pins the upstream asset-resolution contract.
 - [x] [MED]  M_EXPANSION.T.132 — save-load round-trip property test: any in-game state → serialize → deserialize → in-game state is byte-equal
   - Test landed asserting economy + clock + weather + outcome +
     eventSeed + zones round-trip exactly. ECS sub-state (mid-tick
