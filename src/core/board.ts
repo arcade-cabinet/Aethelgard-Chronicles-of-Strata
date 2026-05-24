@@ -185,10 +185,56 @@ function runGenTimePass(
   // check finds the freshly-placed LAKE. Skips dry-land (no lake to
   // adjacent to → no swamp candidates).
   paintSwampPatches(tiles, radius, rng);
+  // M_FUN.MAP.UTILISATION.SHALLOWS — convert the OCEAN ring closest
+  // to land into SHALLOWS so a future aquatic unit (Ferryman) can
+  // bridge between islands. Decouples the gameplay surface from
+  // pure landmass — large oceans stop wasting board space.
+  paintShallowsRing(tiles);
   // Recompute `walkable` after the guided-paint pass — every tile
   // now reflects its FINAL biome + level.
   for (const tile of tiles.values()) {
     tile.walkable = biomeFlagsFor(tile.type).walkable && tile.level < 5;
+  }
+}
+
+/**
+ * M_FUN.MAP.UTILISATION.SHALLOWS — convert OCEAN tiles adjacent to
+ * any LAND tile (BEACH/GRASS/FOREST/DESERT/HIGHLAND/MOUNTAIN/etc)
+ * into SHALLOWS. This creates a 1-hex "wadeable" ring around every
+ * landmass that an aquatic unit can use to bridge between islands.
+ * Deep OCEAN (no land neighbour) stays impassable. Land biomes are
+ * untouched.
+ */
+function paintShallowsRing(tiles: Map<string, Tile>): void {
+  const LAND_TYPES = new Set<Tile['type']>([
+    'BEACH',
+    'GRASS',
+    'FOREST',
+    'DESERT',
+    'HIGHLAND',
+    'MOUNTAIN',
+    'MOUNTAIN_PASS',
+    'SWAMP',
+    'VOLCANO',
+  ]);
+  const newShallows: string[] = [];
+  for (const tile of tiles.values()) {
+    if (tile.type !== 'OCEAN') continue;
+    let adjacentLand = false;
+    for (const nKey of hexNeighbors(tile.q, tile.r)) {
+      const n = tiles.get(nKey);
+      if (n && LAND_TYPES.has(n.type)) {
+        adjacentLand = true;
+        break;
+      }
+    }
+    if (adjacentLand) newShallows.push(getHexKey(tile.q, tile.r));
+  }
+  for (const key of newShallows) {
+    const t = tiles.get(key);
+    if (!t) continue;
+    t.type = 'SHALLOWS';
+    t.level = 1;
   }
 }
 

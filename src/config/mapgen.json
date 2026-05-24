@@ -20,6 +20,15 @@
       "appliesAttribute": null,
       "attributeStrength": 0
     },
+    "SHALLOWS": {
+      "elevation": 1,
+      "walkable": false,
+      "buildable": false,
+      "habitable": false,
+      "moveCost": 1.0,
+      "appliesAttribute": null,
+      "attributeStrength": 0
+    },
     "SWAMP": {
       "elevation": 1,
       "walkable": true,

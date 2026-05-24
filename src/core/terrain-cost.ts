@@ -16,6 +16,10 @@ import type { BiomeType } from './biome';
 export const TERRAIN_MOVE_COST: Record<BiomeType, number> = {
   OCEAN: 1, // water tiles are impassable; cost is unused
   LAKE: 1,
+  // M_FUN.MAP.UTILISATION.SHALLOWS — 1.8× cost for aquatic units
+  // that can traverse it (Ferryman). Land units never reach this
+  // cost because biome-flags marks SHALLOWS unwalkable for them.
+  SHALLOWS: 1.8,
   // M_FUN.MAP.SWAMP — walkable but punishingly slow (1.8×). Combined
   // with the disease DoT on traversal, swamp = "you can cross but
   // only with a Healer + the willingness to take a long time".

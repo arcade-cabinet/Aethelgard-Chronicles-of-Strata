@@ -10,7 +10,9 @@ describe('M_MAPGEN guarantees', () => {
       const d = (Math.abs(tile.q) + Math.abs(tile.r) + Math.abs(tile.q + tile.r)) / 2;
       if (d > board.radius - 2) {
         oceanChecked += 1;
-        expect(tile.type).toBe('OCEAN');
+        // M_FUN.MAP.UTILISATION.SHALLOWS — beach-adjacent ocean
+        // tiles now paint as SHALLOWS. Either is valid 'water'.
+        expect(['OCEAN', 'SHALLOWS']).toContain(tile.type);
       } else if (d > board.radius - 4) {
         // CodeRabbit follow-up: test title claims both beach ring AND
         // ocean perimeter; assert the beach band so a regression in

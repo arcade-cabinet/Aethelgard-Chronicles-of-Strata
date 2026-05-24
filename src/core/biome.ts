@@ -21,6 +21,11 @@ const {
 export type BiomeType =
   | 'OCEAN'
   | 'LAKE'
+  // M_FUN.MAP.UTILISATION.SHALLOWS — shallow water around landmasses.
+  // Crossable ONLY by aquatic-skill units (Ferryman; future amphibious
+  // roles) at high move cost. Deep OCEAN remains impassable. Allows
+  // multi-island maps to feel connected without a free swim.
+  | 'SHALLOWS'
   | 'SWAMP'
   | 'BEACH'
   | 'DESERT'

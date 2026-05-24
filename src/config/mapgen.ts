@@ -17,6 +17,7 @@ import mapgenJson from './mapgen.json';
 const BIOME_TYPES = [
   'OCEAN',
   'LAKE',
+  'SHALLOWS',
   'SWAMP',
   'BEACH',
   'DESERT',

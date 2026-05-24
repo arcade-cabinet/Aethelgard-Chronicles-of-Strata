@@ -70,6 +70,20 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: null,
     decorationDensity: null,
   },
+  // M_FUN.MAP.UTILISATION.SHALLOWS — base flags treat SHALLOWS as
+  // impassable. Aquatic-skill units (Ferryman) will get an explicit
+  // override via a future per-unit traversal table that lets them
+  // path through SHALLOWS at higher move cost. Land units continue
+  // to be blocked by it (same as OCEAN).
+  SHALLOWS: {
+    walkable: false,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: 'water',
+    peakLevel: null,
+    decorationDensity: null,
+  },
   // M_FUN.MAP.SWAMP — walkable shallow-water biome. Units traversing
   // SWAMP gain a disease attribute that DoTs HP until they leave OR
   // a friendly Healer is in range. NOT buildable (foundations don't

@@ -4,6 +4,10 @@ import type { BiomeType } from '@/core/biome';
 export const BIOME_COLORS: Record<BiomeType, string> = {
   OCEAN: '#0ea5e9',
   LAKE: '#38bdf8',
+  // M_FUN.MAP.UTILISATION.SHALLOWS — paler turquoise reads as
+  // shallow vs deep ocean; visually invites the eye to consider
+  // crossing it.
+  SHALLOWS: '#7dd3fc',
   // M_FUN.MAP.SWAMP — sickly green-brown reads as poisonous water.
   SWAMP: '#4d7c0f',
   BEACH: '#fde047',
@@ -39,6 +43,7 @@ export const BIOME_COLORS: Record<BiomeType, string> = {
 export const BIOME_COLORS_EVENING: Record<BiomeType, string> = {
   OCEAN: '#0c4a6e', // deep cool — ocean barely warms
   LAKE: '#1e40af',
+  SHALLOWS: '#7dd3fc', // pale shallows; barely warms at dusk
   SWAMP: '#3f6212', // swamp glows green-brown at dusk; subtle fog vibe
   BEACH: '#fb923c', // sand glows orange
   DESERT: '#c2410c', // already warm — push deeper amber
