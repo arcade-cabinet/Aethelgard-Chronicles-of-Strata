@@ -19,6 +19,10 @@ interface Step {
 // drag-select, pause/keyboard shortcuts, the resource legend, and
 // per-mode win conditions. New players were running into all of
 // these blind.
+// M_POLISH2.MOBILE.12a — touch-first copy. Replaces the
+// desktop-mouse-instruction body text ("RIGHT-CLICK any tile…",
+// "click-drag a rectangle…") with tap / long-press / pinch /
+// drag-pan gestures that work on every viewport.
 const STEPS: Step[] = [
   {
     title: 'Welcome to Aethelgard',
@@ -26,35 +30,35 @@ const STEPS: Step[] = [
   },
   {
     title: 'Reading the HUD',
-    body: 'Top-left shows your resources: 🌲 wood, 🪨 stone, 🪙 gold, 🧪 science, and Supply (used/cap). Top-right pills show weather (movement modifier), pause, and Discoveries. Bottom-left flashes if any peon is idle.',
+    body: 'Top-left shows your resources. The pill at top-centre tells you what you need to do to win this mode. Top-right is pause + speed. Bottom-right has the 🏗 build button; bottom-left flashes if any peon is idle.',
   },
   {
     title: 'Peons are autonomous',
     body: "Your peons find the nearest resource in your zone of control and harvest it. They never need orders — and they're nonviolent. As they exploit tiles, your zone of control (the blue border) grows.",
   },
   {
-    title: 'Build to grow',
-    body: 'Tap your Town Hall to open the build menu. Farms raise your supply, Houses raise the peon cap, Barracks train Footmen, Watchtowers shoot intruders, Walls block enemy pathing. Each building also extends your zone.',
+    title: 'Tap to build',
+    body: 'Tap the 🏗 button (bottom-right) to open your Town Hall build menu. Farms raise your supply, Houses raise the peon cap, Barracks train Footmen, Watchtowers shoot intruders, Walls block enemy pathing.',
   },
   {
     title: 'Commanding military',
-    body: 'Tap a Footman (or any military unit) to select it. RIGHT-CLICK any tile to issue a move order. To select MANY units at once, click-drag a rectangle on empty ground — every player military unit inside becomes selected.',
+    body: 'TAP a Footman (or any military unit) to select it. TAP a destination tile to send it there. To select many units at once: tap-and-hold one, then drag — every unit your finger crosses joins the group.',
   },
   {
     title: 'Defend the border',
-    body: 'If an enemy military unit steps onto a tile YOU control, it pulses yellow. Send a Footman to defend it before the pulse expires — otherwise the tile flips to the enemy. Lose your Town Hall and you lose.',
+    body: 'If an enemy steps onto a tile YOU control, it pulses yellow. Send a Footman to defend it before the pulse expires — otherwise the tile flips to the enemy. Lose your Town Hall and you lose.',
   },
   {
-    title: 'Pause + keyboard shortcuts',
-    body: 'Press P (or tap the Pause pill) to pause the simulation. Arrow keys pan the camera (Shift = faster). + / - zoom. Escape clears your current selection. The full list is in Settings.',
+    title: 'Camera + zoom',
+    body: 'PINCH on the canvas to zoom. TAP-AND-HOLD on empty terrain, then drag to pan the camera. The minimap (top-right on phone, bottom-right on desktop) is also tappable — tap any spot to centre the camera there.',
   },
   {
     title: 'Discoveries',
-    body: "Open the Discoveries pill (⚗) at any time. Each Discovery's prereqs are listed inline; ✓ means met, ✗ means missing. Status pip on the left: green=owned, amber=ready to buy, red=can't afford, gray=gated by prereqs.",
+    body: "Open the Discoveries pill at any time. Each Discovery's prereqs are listed inline; ✓ means met, ✗ means missing. Status pip on the left: green=owned, amber=ready to buy, red=can't afford, gray=gated by prereqs.",
   },
   {
     title: 'Winning the realm',
-    body: 'In red-vs-blue mode (default), raze the enemy Town Hall to win. Other modes — set in New Game — change the victory condition (timed score, conquest, wonder). Resign at any time from the top-right ⚑ pill.',
+    body: 'Every game mode has its own win condition — shown in the top-centre pill. Border-clash: raze the enemy Town Hall. Strata-wars: control 80% of the realm for 30s. Age-of-Strata: reach Renaissance + build a Wonder. Resign at any time from the ☰ menu.',
   },
 ];
 
