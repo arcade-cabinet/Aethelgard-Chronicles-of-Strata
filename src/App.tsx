@@ -343,6 +343,24 @@ export function App() {
     void persistence.list().then((saves) => setHasSave(saves.length > 0));
   }, []);
 
+  // M_POLISH3.S.3 — re-detect saves when the auto-save fires AND
+  // when an e2e spec forces it. Auto-save dispatches
+  // 'aethelgard:save-committed' from createAutoSave (M_POLISH3.S.3
+  // wires the event there). Title-screen Continue button enables
+  // as soon as the first save commits, without forcing a reload.
+  // Also exposes window.__refreshSaveList() for tests.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const refresh = () => {
+      void persistence.list().then((saves) => setHasSave(saves.length > 0));
+    };
+    window.addEventListener('aethelgard:save-committed', refresh);
+    (window as unknown as { __refreshSaveList?: () => void }).__refreshSaveList = refresh;
+    return () => {
+      window.removeEventListener('aethelgard:save-committed', refresh);
+    };
+  }, []);
+
   // M_POLISH3.AIVAI.1 — URL-driven AI-vs-AI auto-start. The e2e
   // playthrough harness loads /?ai-vs-ai=1&seed=X&mode=Y and expects
   // the title screen to skip straight into a running AI-vs-AI match.

@@ -64,6 +64,14 @@ export function tickAutoSave(auto: AutoSave, delta: number): void {
   // logs the error once at warn level (production-strippable via
   // future __DEV__ guard) so a developer still sees it.
   Promise.resolve(result)
+    .then(() => {
+      // M_POLISH3.S.3 — broadcast a save-committed event so the
+      // App title-screen can re-detect Continue eligibility without
+      // a reload (and e2e save-load specs can listen for it).
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('aethelgard:save-committed'));
+      }
+    })
     .catch((err) => {
       console.warn('[auto-save] save failed:', err);
     })

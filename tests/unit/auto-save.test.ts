@@ -39,8 +39,10 @@ describe('auto-save', () => {
 
     // Resolve the pending save; next interval fires again.
     (resolvePending as null | (() => void))?.();
-    await Promise.resolve();
-    await Promise.resolve();
+    // Drain enough microtasks for the .then/.catch/.finally chain
+    // to settle (M_POLISH3.S.3 added a .then() for the save-committed
+    // event dispatch, which adds one more microtask hop).
+    for (let i = 0; i < 4; i++) await Promise.resolve();
     expect(auto.saving).toBe(false);
     for (let i = 0; i < 300; i++) tickAutoSave(auto, 1);
     expect(fired).toBe(2);
