@@ -40,9 +40,27 @@ const REUSE_SERVER = !IS_CI && process.env.PW_REUSE_SERVER === '1';
 
 const includeVisual = process.env.VISUAL === '1';
 const includeMultiview = process.env.MULTIVIEW === '1' || includeVisual;
-const testMatch = includeVisual
-  ? ['e2e/**/*.spec.ts', 'visual/**/*.spec.ts']
-  : ['e2e/**/*.spec.ts'];
+// M_POLISH3.B.3 — journey-capture / AI-vs-AI / per-mode / weather /
+// day-night / modal / selection / viewport-matrix specs are AGENT
+// REVIEW HARNESSES (artefact producers, not functional gates). They
+// take 5-7 minutes total and balloon CI past its 8-minute budget.
+// CI runs only the tier-1 functional e2e; the journey suite is
+// opt-in via JOURNEY=1 for on-demand artefact generation runs.
+const includeJourney = process.env.JOURNEY === '1' || includeVisual;
+const JOURNEY_SPECS = [
+  'e2e/journey-capture.spec.ts',
+  'e2e/ai-vs-ai-playthrough.spec.ts',
+  'e2e/per-mode-journey.spec.ts',
+  'e2e/per-mode-match.spec.ts',
+  'e2e/weather-journey.spec.ts',
+  'e2e/day-night-journey.spec.ts',
+  'e2e/modal-journey.spec.ts',
+  'e2e/selection-journey.spec.ts',
+  'e2e/viewport-matrix-journey.spec.ts',
+];
+const baseE2eGlob = 'e2e/**/*.spec.ts';
+const testMatch = includeVisual ? [baseE2eGlob, 'visual/**/*.spec.ts'] : [baseE2eGlob];
+const testIgnore = includeJourney ? [] : JOURNEY_SPECS;
 
 const TEST_TIMEOUT_MS = IS_CI ? 60_000 : 45_000;
 const ACTION_TIMEOUT_MS = IS_CI ? 30_000 : 15_000;
@@ -64,6 +82,7 @@ const projects = includeMultiview ? allProjects : [allProjects[0]!];
 export default defineConfig({
   testDir: './tests',
   testMatch,
+  testIgnore,
   fullyParallel: true,
   forbidOnly: IS_CI,
   retries: IS_CI ? 2 : 0,

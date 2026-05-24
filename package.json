@@ -28,6 +28,7 @@
     "test:e2e:multiview": "MULTIVIEW=1 playwright test",
     "test:e2e:visual": "VISUAL=1 playwright test",
     "test:e2e:update": "VISUAL=1 playwright test --update-snapshots",
+    "test:e2e:journey": "JOURNEY=1 playwright test",
     "assets:manifest": "tsx scripts/build-manifest.ts",
     "cap": "cap",
     "cap:sync": "pnpm build && cap sync",
