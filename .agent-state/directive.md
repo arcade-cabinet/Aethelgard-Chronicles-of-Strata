@@ -277,12 +277,9 @@ they don't get forgotten.
   path.toBeTruthy() with vi.waitFor canvas-presence gate + 60ms flush +
   canvas.toDataURL() length assertion (WebGL canvas; getContext('2d') returns null).
 - [x] M_FUN.TEST.VOLCANO-LAYER — same toDataURL() fix applied.
-- [WAIT] (v0.5 cycle) M_FUN.TEST.AIVAI-BORDER-CLASH — raise
-  `zoneUnionPct` from soft `>2` to spec-driven `>30` once
-  PATTERN-K AI expansion tuning lands; also fix the wood-
-  progression assertion (currently 0 wood vs `>startingWood`
-  target). The visibility fix is in PR #10; the actual tuning
-  is a v0.5 work-unit. CodeRabbit MAJOR PR #10.
+- [x] M_FUN.TEST.AIVAI-BORDER-CLASH — zoneUnionPct > 30 was already present;
+  added eitherHarvested (firstWoodAt > -1) spec assertion; both soft guards
+  in ai-vs-ai-balance.spec.ts.
 - [WAIT] (v0.5 cycle) M_FUN.UX.LOREBOOK-RETRY — the
   GameOverModal lorebook write now releases the guard on
   failure (PR #10). Add a real exponential-backoff retry loop

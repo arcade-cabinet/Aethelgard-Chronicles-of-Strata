@@ -87,30 +87,43 @@ export function GameOverModal({
   // closure captures the current value once at firing time; making
   // it reactive would re-fire on every parent render and spam DB
   // inserts. The useRef guard ensures at-most-one write per mount.
+  // M_FUN.UX.LOREBOOK-RETRY — exponential-backoff retry (3 attempts,
+  // 200 ms / 400 ms / 800 ms) so a transient DB hiccup does not
+  // permanently drop the lorebook entry. Guard stays true while
+  // attempts are in-flight; released only on permanent failure.
   // biome-ignore lint/correctness/useExhaustiveDependencies: `game` deliberately omitted — see comment block above
   useEffect(() => {
     if (outcome === 'playing' || !persistence) return;
     if (lorebookWrittenRef.current) return;
     lorebookWrittenRef.current = true;
     void (async () => {
-      try {
-        await persistence.recordLorebookEntry({
-          id: 0,
-          endedAt: new Date().toISOString(),
-          seedPhrase: game.seedPhrase,
-          nickname: matchNickname({ seedPhrase: game.seedPhrase, outcome }),
-          outcome,
-          mode: game.mode,
-          enemyPersonality: game.aiPlayers.enemy?.personalityKey ?? null,
-          highlights: matchHighlights(game),
-        });
-      } catch (err) {
-        // Coderabbit MAJOR PR #10 05:46Z — release the write-once
-        // guard on failure so the next outcome change (or a remount)
-        // can retry. Without this, a transient DB hiccup permanently
-        // drops the lorebook entry for the session.
-        lorebookWrittenRef.current = false;
-        console.warn('[lorebook] record failed:', err);
+      const entry = {
+        id: 0,
+        endedAt: new Date().toISOString(),
+        seedPhrase: game.seedPhrase,
+        nickname: matchNickname({ seedPhrase: game.seedPhrase, outcome }),
+        outcome,
+        mode: game.mode,
+        enemyPersonality: game.aiPlayers.enemy?.personalityKey ?? null,
+        highlights: matchHighlights(game),
+      };
+      const MAX_ATTEMPTS = 3;
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        try {
+          await persistence.recordLorebookEntry(entry);
+          return; // success — guard remains true, no further writes
+        } catch (err) {
+          const isLastAttempt = attempt === MAX_ATTEMPTS - 1;
+          if (isLastAttempt) {
+            // All attempts exhausted. Release the guard so a future
+            // remount (e.g. the user navigates away and back) can retry.
+            lorebookWrittenRef.current = false;
+            console.warn(`[lorebook] record failed after ${MAX_ATTEMPTS} attempts:`, err);
+          } else {
+            // Exponential backoff: 200ms, 400ms before the 3rd attempt.
+            await new Promise<void>((res) => setTimeout(res, 200 * 2 ** attempt));
+          }
+        }
       }
     })();
   }, [outcome, persistence]);
