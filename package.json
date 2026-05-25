@@ -29,6 +29,8 @@
     "test": "vitest run --project unit",
     "test:watch": "vitest --project unit",
     "test:browser": "vitest run --project browser",
+    "visual:battery": "node scripts/visual-battery.mjs",
+    "visual:battery:ci": "node scripts/visual-battery.mjs --ci",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:multiview": "MULTIVIEW=1 playwright test",

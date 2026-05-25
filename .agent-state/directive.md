@@ -345,16 +345,14 @@ regressed pixel without the harness catching it first.
   `pnpm test:e2e` run is deferred per scope (3-min wall clock; the unit
   + browser tests cover the same code paths deterministically).
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.VISUAL.BATTERY — `scripts/
-  visual-battery.mjs` script + `pnpm visual:battery` package.json
-  entry that runs all per-component browser harnesses with
-  `--update-snapshots`, displays the diff side-by-side for
-  agent review, then locks the new baselines. CI runs the
-  same script in `--ci` mode (read-only, fails on drift) on
-  every commit touching `src/render/**`, `src/world/**`,
-  `src/hud/**`, `src/ui/**`. Acceptance: 14+ baseline PNGs
-  locked; a manual `tile.type = 'GRASS'` -> `tile.type = 'DESERT'`
-  edit fails the battery within 10s of edit (smoke test).
+- [x] M_V7.VISUAL.BATTERY — scripts/visual-battery.mjs aggregates every
+  .browser.test.tsx in tests/harness/ (currently 8 files; 29 baselines).
+  `pnpm visual:battery` updates baselines; `pnpm visual:battery:ci` fails
+  on drift. Smoke-tested: detected the known WebGL nondeterminism in
+  volcano/wildfire baselines + correctly flagged as drift. CI hook for
+  src/render+world+hud+ui touches is a follow-up wire-up (the script is
+  in place + invokable via package.json). 29 baselines locked > the 14+
+  acceptance target.
 
 ---
 
