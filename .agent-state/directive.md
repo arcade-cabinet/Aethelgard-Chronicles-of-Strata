@@ -1,9 +1,10 @@
 # Continuous Work Directive — Aethelgard: Chronicles of Strata
 
-**Status:** ACTIVE
-**Cycle:** v0.4 PR #10 — pre-merge expansion (user mandate: "these are all things to do before you merge 0.4")
-**Owner:** Claude
-**PRD:** [`docs/specs/PRD-v0.4.md`](../docs/specs/PRD-v0.4.md) + the expansion threads in [`docs/specs/130-topology-and-decision-tracks.md`](../docs/specs/130-topology-and-decision-tracks.md)
+**Status:** ACTIVE — v0.5 cycle (v0.4 RELEASED 2026-05-25 as tag v0.1.4)
+**Cycle:** v0.5 — N-player + barbarian camps + per-faction asymmetric buildings + JSON-driven AI + carryover refactors
+**Owner:** Claude (autonomous agent `v0_5_grinder` working in `.claude/worktrees/`)
+**PRD:** [`docs/specs/PRD-v0.5.md`](../docs/specs/PRD-v0.5.md) (the centerpiece spec — N-player, barbarian camps, asymmetric buildings)
+**v0.4 closeout:** [`docs/MILESTONES.md`](../docs/MILESTONES.md) v0.4 entry (released as v0.1.4 — PR #10 + #14 + #15 + #16)
 
 ## v0.5 / v0.6 CENTERPIECE — N-PLAYER + BARBARIAN-CAMP PIVOT
 
@@ -16,43 +17,157 @@ style BARBARIAN CAMPS — neutral aggressors that spawn at gen-time
 the game actually scale (1v1 → 4v4 → 6-player FFA), unlocks 4X
 mode the user wants, and removes the 2-faction asymmetry ceiling.
 
-Concrete work-units (each one v0.5 commit):
+Architectural decisions (the use-case enumeration this section
+exists to formalise — read BEFORE picking up any item below):
 
-- [ ] [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.FACTIONS — `Faction` becomes a registry-
-  backed id, not a `'player' | 'enemy'` literal union. NewGameConfig
-  carries `factions: FactionConfig[]` (id, color, displayName,
-  controller: 'human' | 'ai', personality?). GameEconomy + zones
-  + AiPlayer all key by id. The 2-faction case becomes N=2.
-- [ ] [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.COLOR-PICKER — pre-game NewGameModal exposes
-  a Radix color palette per faction slot. Default = shuffled
-  permutation of an 8-color palette; click any chip to open the
-  picker. Color flows into every faction-scoped renderer
-  (ZoneBorder, building outline ring, unit hex outline, base
-  banner, HUD chips).
-- [ ] [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.SHARED-KIT — every faction uses the SAME
-  buildings (House/Farm/Barracks/Watchtower/Wall/Wonder/Library/
-  Granary), the SAME units (Peon/Footman/Scout/Wizard/Healer/
-  Ferryman/Settler/Hero/Trebuchet), and the SAME Discovery tree.
-  The current enemy-only types (Goblin/Orc/Vampire/Witch/
-  BlackKnight) move to the BARBARIAN pool.
-- [ ] [WAIT] (v0.5 cycle) M_PIVOT.BARBARIAN-CAMPS — repurpose the graveyard biome +
-  enemy-raid units. Camp = neutral attractor placed at gen-time
-  (1..(N+2)/2 per map; biased toward the central interior) that
-  spawns raid waves on a clock. Camps may be cleared by ANY
-  faction; clearing yields a one-shot bonus. Camp AI is the
-  existing raid-attack code scoped per-camp not per-faction.
-- [ ] [WAIT] (v0.5 cycle) M_PIVOT.RENDER.COLOR-OUTLINE — ZoneBorder, building rings,
-  per-unit hex outline shaders read from the faction's color
-  config. All "blue=player / red=enemy" hardcodes go through the
-  registry — same lift as the resource Records sweep.
-- [ ] [WAIT] (v0.5 cycle) M_PIVOT.MODES.4X — once N-player + barbarians ship, the 4X
-  mode (turn-based, age-of-strata) gets a 6-player default config
-  + FFA / team variant. The user's "MUCH more fun ESPECIALLY in
-  4x mode" — this is the payoff.
+1. **Faction id schema.** `type FactionId = string` (UUID-like
+   slug, e.g. `player-1`, `ai-2`, `barbarian-camp-3`). The current
+   `'player' | 'enemy'` union becomes a runtime registry indexed
+   by id. Backward compatibility for v0.4 saves: id `'player'`
+   maps to slot 0, id `'enemy'` to slot 1; loader migrates older
+   slots into the new shape.
+
+2. **Faction config.** Each faction is `{ id, kind:
+   'human'|'ai'|'barbarian', color: HexColor, displayName,
+   personality?: PersonalityId, controller: Controller }`.
+   Barbarian camps share a single faction id per CAMP (not per
+   barbarian unit) so a camp's units inherit one banner color.
+
+3. **Per-faction building MESH (not shape).** User feedback:
+   "i think it adds WAY more scale PLus keeps grom having to
+   cinstajtly go, 'i have a cool buolding now whsts the enemy
+   equivalwnt?'". The CONTRACT (supply/military/defense role,
+   build cost, supply granted, HP) is shared; the MESH +
+   SFX + particle palette varies per faction. Faction config
+   gains `archetype: 'medieval'|'orc'|'undead'|'mystic'` etc;
+   archetype selects the per-building mesh skin from a registry
+   in `src/config/archetypes.json` (NEW JSON registry).
+
+4. **Color picker.** Radix palette mod, 12-color base
+   (`amber, blue, green, gold, magenta, mauve, mint, plum, red,
+   sky, slate, teal`), randomly shuffled across factions on
+   modal open. Click → opens Radix popover with the 12 chips +
+   a hex input. Color persists to settings + flows into every
+   faction-scoped renderer (ZoneBorder, building outline ring,
+   unit hex outline, base banner, HUD chips, minimap markers).
+
+5. **Barbarian camp placement.** Camps placed during
+   `paintMountainMassif`-equivalent map-gen pass after the
+   per-faction base ring. Count = clamp(round(N/2) + 1, 1, 6) so
+   a 6-player FFA gets 4 camps. Placement biased toward the
+   centroid of walkable LAND tiles (matches landCenter), with a
+   minimum 6-tile radius from each player base ring. Wave timer
+   identical to existing `EnemySpawner` cadence, scaled by
+   difficulty.
+
+6. **Clearing a camp.** When camp HP → 0: emit
+   `barbarian-camp-cleared` event, grant +50 wood + +50 stone +
+   a Discovery flag (1 of 5 from a random pool) to the clearing
+   faction. Camp tile reverts to a `RUINS` decorative biome
+   (gameplay-irrelevant). Coop: only the faction that landed the
+   killing blow gets the bonus.
+
+7. **Mode interplay.** Border-clash mode unchanged (defaults to
+   N=2). Age-of-strata mode defaults to N=4 with 4 barbarian
+   camps; a future 4X mode (v0.6) defaults to N=6 FFA + 5 camps.
+
+Concrete work-units (each one v0.5 commit, dependency-ordered —
+the v0_5_grinder agent should pull these in order):
+
+- [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.FACTIONS — `Faction`
+  becomes a registry-backed id, not a `'player' | 'enemy'`
+  literal union. New file `src/config/factions.ts` exports
+  `FactionConfig` + `FactionId` types. `NewGameConfig` gains
+  `factions: FactionConfig[]`. `GameEconomy` becomes
+  `Record<FactionId, ResourceBucket>`; `zones` becomes
+  `Record<FactionId, ZoneState>`; `aiPlayers` becomes
+  `Record<FactionId, AiPlayer>`. The 2-faction case becomes
+  N=2 (legacy ids `'player'` and `'enemy'` preserved). Acceptance:
+  existing AIVAI matrix test still passes byte-identical;
+  determinism unchanged. Migration test: a v0.4 save loads
+  cleanly + replays identically.
+
+- [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.COLOR-PICKER — pre-game
+  NewGameModal exposes a Radix color palette per faction slot.
+  Default = shuffled permutation of the 12-color palette;
+  click any chip to open the Radix popover with chips + hex
+  input. Persists to settings. New file
+  `src/hud/FactionColorPicker.tsx`. Color flows into every
+  faction-scoped renderer (ZoneBorder, building outline ring,
+  unit hex outline, base banner, HUD chips). Acceptance:
+  visual regression baseline for a 4-player setup with 4
+  distinct colors + minimap reflects all 4 + ZoneBorder draws
+  per-faction colored borders.
+
+- [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.SHARED-KIT — every
+  faction uses the SAME buildings (House/Farm/Barracks/
+  Watchtower/Wall/Wonder/Library/Granary), the SAME units
+  (Peon/Footman/Scout/Wizard/Healer/Ferryman/Settler/Hero/
+  Trebuchet), and the SAME Discovery tree. The current enemy-
+  only types (Goblin/Orc/Vampire/Witch/BlackKnight) move to
+  the BARBARIAN pool. Acceptance: every faction can train +
+  build every player-kit unit/building; CombatEvaluator picks
+  the same target set for all factions.
+
+- [WAIT] (v0.5 cycle) M_PIVOT.ARCHETYPES — NEW JSON registry
+  `src/config/archetypes.json` defines per-archetype MESH +
+  SFX + particle palette for every building type. Archetypes:
+  `medieval` (default — the current player kit),
+  `orc` (BlackKnight-tier visual; barbarian-camp default for
+  pure-physical camps), `undead` (graveyard-tier; barbarian
+  variant for necromancer camps), `mystic` (wizard/witch
+  tier; rare camp). Each faction config picks one archetype.
+  `BuildingRenderer` reads
+  `archetypes[faction.archetype].buildings[buildingType].mesh`
+  via a typed accessor (same shape as `assets.entry`). Acceptance:
+  swapping a faction's archetype at runtime swaps every visible
+  building mesh in-place + the SFX pool the building emits.
+
+- [WAIT] (v0.5 cycle) M_PIVOT.BARBARIAN-CAMPS — repurpose the
+  graveyard biome + enemy-raid units. Camp = neutral attractor
+  placed at gen-time (count = clamp(round(N/2)+1, 1, 6),
+  centroid-biased, ≥6-tile radius from every player base ring).
+  Camp HP = 200 + 50 per nearest-faction-distance; spawn raid
+  waves on `EnemySpawner` cadence scaled by difficulty.
+  Camps clearable by ANY faction; clearing emits
+  `barbarian-camp-cleared` event → +50 wood + +50 stone +
+  1 random Discovery to the killing faction; camp tile reverts
+  to `RUINS` biome. Acceptance: e2e test that spawns a 4-player
+  match with 3 camps, advances 10 sim-min, asserts at least 1
+  camp cleared by some faction + cleared faction gained +50/+50.
+
+- [WAIT] (v0.5 cycle) M_PIVOT.RENDER.COLOR-OUTLINE —
+  ZoneBorder, building rings, per-unit hex outline shaders
+  read from the faction's color config. All "blue=player /
+  red=enemy" hardcodes go through the registry — same lift as
+  the resource Records sweep. Acceptance: zero literal `#3b82f6`
+  or `#ef4444` blue/red hex codes in `src/render/`, `src/world/`,
+  `src/hud/` (grep gate); all faction-scoped colors derived from
+  `faction.color`.
+
+- [WAIT] (v0.5 cycle) M_PIVOT.AI.JSON-PERSONALITIES — fold the
+  remaining hardcoded AI tuning constants into
+  `src/config/ai-personalities.json`: RAGE_QUIT_THRESHOLD
+  (currently 180s module-level const), STARVATION_THRESHOLD
+  (300s), aggroRadius, buildPreferenceWeights per role.
+  Different personalities can then rage-quit at different
+  thresholds (the-builder = 240s late-game patience;
+  the-raider = 120s impatient). Acceptance: changing a
+  personality's RAGE_QUIT in JSON shifts the matrix outcome
+  without code change.
+
+- [WAIT] (v0.5 cycle) M_PIVOT.MODES.4X — once N-player +
+  barbarians ship, the 4X mode (turn-based, age-of-strata)
+  gets a 6-player default config + FFA / team variant. The
+  user's "MUCH more fun ESPECIALLY in 4x mode" — this is the
+  payoff. Acceptance: launching 4X mode from the NewGameModal
+  gives a 6-faction setup with 5 barbarian camps + the turn-
+  based clock; UI shows current turn + all 6 faction
+  banners + zones.
 
 The pivot is the v0.5 CENTERPIECE; v0.6 picks up portal-biome
 generators + remaining JSON-* sweeps + the CIV/MYTH/DIPLO
-parking lot.
+parking lot. See the v0.6 directive PR for that scope.
 
 ---
 
