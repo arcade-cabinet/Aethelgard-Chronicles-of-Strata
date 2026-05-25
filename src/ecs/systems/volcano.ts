@@ -136,13 +136,14 @@ export function volcanoSystem(game: GameState, dt: number): void {
     game.navGraph = buildNavGraph(game.board);
   }
 
-  // 4. Damage units on LAVA.
+  // 4. Damage units on LAVA. Single entity walk + O(1) Set.has per
+  // entity — no per-tile world.query (the unwanted O(N × M) shape
+  // the wildfire fix targets is already absent here).
   if (v.lavaTiles.size > 0) {
     for (const e of game.world.query(Health, HexPosition)) {
       const pos = e.get(HexPosition);
       if (!pos) continue;
-      const key = getHexKey(pos.q, pos.r);
-      if (!v.lavaTiles.has(key)) continue;
+      if (!v.lavaTiles.has(getHexKey(pos.q, pos.r))) continue;
       const h = e.get(Health);
       if (!h) continue;
       e.set(Health, {

@@ -90,6 +90,26 @@ export function wildfireSystem(
   const burningKeys = [...game.wildfires.keys()].sort();
   const newIgnitions: Array<[string, BurnState]> = [];
 
+  // Final-report H2 + user mandate "EVERYTHING working for 0.4" —
+  // per-burn `world.query(Health, HexPosition)` was O(burns × entities).
+  // Build the tile→entities index ONCE per tick; each burn becomes
+  // an O(1) Map.get instead of an O(entities) scan. Typical mid-game:
+  // ~6 burns × ~30 entities = ~180 scans; with the index it's ~30
+  // (one full pass) + 6 Map.gets.
+  type AnyEntity = ReturnType<typeof game.world.query>[number];
+  const entitiesByTile = new Map<string, AnyEntity[]>();
+  for (const e of game.world.query(Health, HexPosition)) {
+    const pos = e.get(HexPosition);
+    if (!pos) continue;
+    const k = getHexKey(pos.q, pos.r);
+    let list = entitiesByTile.get(k);
+    if (!list) {
+      list = [];
+      entitiesByTile.set(k, list);
+    }
+    list.push(e);
+  }
+
   for (const key of burningKeys) {
     const state = game.wildfires.get(key);
     if (!state) continue;
@@ -108,16 +128,18 @@ export function wildfireSystem(
       continue;
     }
 
-    // Damage any Health-bearing entity standing on this tile.
-    for (const e of game.world.query(Health, HexPosition)) {
-      const pos = e.get(HexPosition);
-      if (!pos || getHexKey(pos.q, pos.r) !== key) continue;
-      const h = e.get(Health);
-      if (!h) continue;
-      e.set(Health, {
-        ...h,
-        current: Math.max(0, h.current - WILDFIRE_TUNING.damagePerTick),
-      });
+    // Damage any Health-bearing entity standing on this tile —
+    // O(1) lookup via the per-tick index built above.
+    const onTile = entitiesByTile.get(key);
+    if (onTile) {
+      for (const e of onTile) {
+        const h = e.get(Health);
+        if (!h) continue;
+        e.set(Health, {
+          ...h,
+          current: Math.max(0, h.current - WILDFIRE_TUNING.damagePerTick),
+        });
+      }
     }
 
     // Water-adjacency extinguishes immediately. hexNeighbors returns
