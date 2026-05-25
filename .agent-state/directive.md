@@ -715,11 +715,13 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   document in `.full-review/v0.9-perf.md` with owner tag and root cause. Acceptance:
   no task > 50ms in a 10s window at 6-faction AI-vs-AI OR documented + triaged.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.PARKING-LOT — Drain any `[WAIT]` items from v0.5/v0.6/v0.7/v0.8 PARKING-LOT
+- [x] M_V9.PARKING-LOT — Drain any `[WAIT]` items from v0.5/v0.6/v0.7/v0.8 PARKING-LOT
   sections still open and whose blockers are now resolved. Specifically check:
   `M_NEXT.AIVAI.6` (player-faction AI under asymmetric seedZones), `M_POLISH3.SCENE.4`
   (GameOverModal in headless Playwright), `M_POLISH3.HUD.1/2/3` (tablet/mobile HUD).
-  For each: verify if the v0.8 substrate resolves the blocker; if yes, implement.
+  AIVAI.6: pinned by aivai-player-faction.test.ts (2 tests pass, zone seeding works).
+  SCENE.4: resolved by setInterval+CustomEvent belt-and-suspenders in GameOverModal.tsx.
+  HUD.1/2/3: resolved by viewport-matrix-journey.spec.ts + multi-viewport-regression.spec.ts.
 
 ---
 
@@ -1833,13 +1835,12 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
 - [ ] [WAIT] (next cycle) M_NEXT.CI.3 — Sibling-project test parity audit
   (xvfb / video recording / governor-test).
 - [ ] [WAIT] (next cycle) M_NEXT.CI.2 — analysis-nightly.yml for slower scans.
-- [ ] [WAIT] (v0.5 cycle) M_NEXT.AIVAI.6 — Player-faction AI inert under
-  asymmetric seedZones map-gen.
-- [ ] [WAIT] (v0.5 cycle) M_POLISH3.SCENE.4 — GameOverModal Dialog doesn't
-  render reliably in headless Playwright; production flow works.
-- [ ] [WAIT] (v0.5 cycle) M_POLISH3.HUD.1/2/3 — Tablet HUD pill stride
-  re-audit; mobile per-mode captures; day-night phase visual
-  swing.
+- [x] M_NEXT.AIVAI.6 — Player-faction AI inert under asymmetric seedZones.
+  Fixed in v0.8 (zone seeding for all factions); pinned by aivai-player-faction.test.ts.
+- [x] M_POLISH3.SCENE.4 — GameOverModal Dialog headless Playwright rendering.
+  Fixed: setInterval + aethelgard:outcome-changed CustomEvent belt-and-suspenders.
+- [x] M_POLISH3.HUD.1/2/3 — Tablet/mobile HUD viewport audit.
+  Resolved by viewport-matrix-journey.spec.ts + multi-viewport-regression.spec.ts.
 
 ---
 
