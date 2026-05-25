@@ -15,6 +15,7 @@ import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
 import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
 import { EraProgressPill } from '@/hud/EraProgressPill';
+import { FactionChips } from '@/hud/FactionChips';
 import { MatchAgePill } from '@/hud/MatchAgePill';
 import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { WinConditionPill } from '@/hud/WinConditionPill';
@@ -308,6 +309,10 @@ function GameSession({
       <RaidPressurePill game={game} />
       {/* M_POLISH2.MODES.41 — long-reign only: match-age chip. */}
       <MatchAgePill game={game} />
+      {/* M_V6.CARRY.HUD-N-BANNERS — 3+ player faction strip (4X / FFA).
+          Hidden on legacy 2-faction matches; appears top-center when
+          game.factions has 3+ non-barbarian slots. */}
+      <FactionChips game={game} />
       {/* M_POLISH2.MODES.42 — strata-wars only: zone-control % chip. */}
       <ZoneControlPill game={game} />
       {/* M_POLISH2.MODES.43 — age-of-strata only: era progression pill. */}

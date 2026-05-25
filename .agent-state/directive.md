@@ -244,10 +244,14 @@ the portal/diplomacy work begins so the substrate is fully complete.
   terrain-cost. tickScoringPhase flips cleared camp tile to RUINS so the
   renderer paints "old camp remains". 5 tests pin: registry/flags/palette/
   ambient/cost coverage + the runEconomyTick integration flip.
-- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.HUD-N-BANNERS — the HUD chip
-  strip currently shows player + enemy. For 3+ player matches (4X
-  mode) expand to render one chip per non-barbarian faction (up to 6).
-  Team-mode toggle is a follow-up (single-string assignment per slot).
+- [x] M_V6.CARRY.HUD-N-BANNERS — `src/hud/FactionChips.tsx` renders one
+  banner chip per non-barbarian faction. Hidden for legacy 2-faction matches
+  (player + enemy already have dedicated HUD chips). For 3+ players the
+  strip appears top-center: swatch + displayName + kill count (when economy
+  carries one). Barbarian camps filtered out (neutral aggressors, not
+  opponents). Wired into App.tsx HUD layer. 4 unit + 2 browser tests pin
+  filtering + chip count + registry-driven color flow. Screenshot baseline
+  committed; compared to docs/specs/130 §HUD-chip intent — matches.
 - [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.COLOR-OUTLINE-V2 — extend the
   registry-driven color from ZoneBorder (v0.5) to: per-building
   outline ring, per-unit hex outline shader, minimap marker color.
