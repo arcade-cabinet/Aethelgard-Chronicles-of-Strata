@@ -43,7 +43,10 @@
     "Scout": { "wood": 30, "stone": 0, "gold": 0 },
     "Wizard": { "wood": 0, "stone": 0, "gold": 20, "science": 25, "mana": 15 },
     "Healer": { "wood": 0, "stone": 0, "gold": 10, "science": 12, "mana": 8 },
-    "Hero": { "wood": 0, "stone": 0, "gold": 100, "science": 50 }
+    "Hero": { "wood": 0, "stone": 0, "gold": 100, "science": 50 },
+    "Trebuchet": { "wood": 40, "stone": 30, "gold": 0 },
+    "Ferryman": { "wood": 20, "stone": 0, "gold": 5 },
+    "Settler": { "wood": 25, "stone": 0, "gold": 15 }
   },
   "roadCosts": {
     "stone": { "stone": 5, "wood": 0, "gold": 0 },

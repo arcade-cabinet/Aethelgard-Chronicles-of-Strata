@@ -8,9 +8,24 @@ export const SUPPLY_COST: Record<UnitType, number> = ECONOMY.supplyCosts;
 /**
  * Resource cost to train a trainable unit. The set of keys is the
  * trainable-unit subset of UnitType; widening as new trainable units
- * land (Wizard, etc.) only requires adding the row to economy.json.
+ * land only requires adding the row to economy.json + the union here.
+ *
+ * M_V7.TRAIN.WIDEN-ROLES — extended from the v0.4 5-role union
+ * (Peon/Footman/Scout/Wizard/Hero) to all 9 PLAYER_UNIT_TYPES per
+ * M_PIVOT.N-PLAYER.SHARED-KIT. Without this, the SHARED-KIT contract
+ * was a spec lie — Trebuchet/Wizard/Healer/Ferryman/Settler couldn't
+ * be trained via the build command at all.
  */
-export type TrainableUnit = 'Peon' | 'Footman' | 'Scout' | 'Wizard' | 'Hero';
+export type TrainableUnit =
+  | 'Peon'
+  | 'Footman'
+  | 'Scout'
+  | 'Wizard'
+  | 'Healer'
+  | 'Trebuchet'
+  | 'Ferryman'
+  | 'Settler'
+  | 'Hero';
 export const UNIT_COSTS: Record<TrainableUnit, ResourceCost> = ECONOMY.unitCosts as Record<
   TrainableUnit,
   ResourceCost

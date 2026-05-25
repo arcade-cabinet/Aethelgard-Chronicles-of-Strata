@@ -119,8 +119,22 @@ export function buildingCostFor(type: Exclude<BuildingType, 'TownHall'>): Resour
   return ECONOMY.buildingCosts[type] as ResourceCost;
 }
 
-/** Resource cost to train a trainable unit. */
-export function unitCostFor(role: 'Peon' | 'Footman' | 'Scout' | 'Wizard' | 'Hero'): ResourceCost {
+/**
+ * Resource cost to train a trainable unit. M_V7.TRAIN.WIDEN-ROLES —
+ * accepts all 9 PLAYER_UNIT_TYPES per M_PIVOT.N-PLAYER.SHARED-KIT.
+ */
+export function unitCostFor(
+  role:
+    | 'Peon'
+    | 'Footman'
+    | 'Scout'
+    | 'Wizard'
+    | 'Healer'
+    | 'Trebuchet'
+    | 'Ferryman'
+    | 'Settler'
+    | 'Hero',
+): ResourceCost {
   return (ECONOMY.unitCosts as Record<string, ResourceCost>)[role] as ResourceCost;
 }
 

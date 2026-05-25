@@ -3,6 +3,7 @@
     "Peon": { "speed": 3, "faction": "player" },
     "Settler": { "speed": 2.2, "faction": "player" },
     "Ferryman": { "speed": 1.4, "faction": "player" },
+    "Healer": { "speed": 2.0, "faction": "player" },
     "Footman": {
       "speed": 2.5,
       "faction": "player",

@@ -49,6 +49,7 @@ export {
   peonCap,
   recomputeMaxSupply,
   SUPPLY_COST,
+  type TrainableUnit,
   UNIT_COSTS,
 } from './economy-rules';
 export { type FieldParams, sampleField } from './force-field';

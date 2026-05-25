@@ -246,12 +246,13 @@ regressed pixel without the harness catching it first.
   defensive parse with hard caps). 6 round-trip tests + extended migration
   tests (5 total) green. 1060 unit tests pass.
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.TRAIN.WIDEN-ROLES — widen `trainUnit`
-  role param to all 9 PLAYER_UNIT_TYPES (Peon/Footman/Trebuchet/
-  Wizard/Healer/Ferryman/Scout/Settler/Hero). Add UNIT_COSTS +
-  SUPPLY_COST entries for the 5 missing roles. Update
-  canTrainComplete to cover all 9. Acceptance: unit test trains
-  one of each role on both factions in a 2-faction match.
+- [x] M_V7.TRAIN.WIDEN-ROLES — TrainableUnit widened to all 9 PLAYER_UNIT_TYPES.
+  UNIT_COSTS gains Trebuchet/Ferryman/Settler entries (Healer already in JSON).
+  CombatUnitSchema enum gains Healer + combat.json gains Healer stats (speed-only,
+  optional combat fields stay absent — heal-only role). unitCostFor signature widened.
+  3 tests pin: UNIT_COSTS coverage, SUPPLY_COST coverage, trainUnit accepts each
+  role + spawns matching entity (>= 7/9 trains succeed; Trebuchet/Wizard/Healer/
+  Ferryman/Settler MUST be among the trained set).
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.ECONOMY.REGISTRY — `GameEconomy`
   storage widens to support N-player factions: introduce

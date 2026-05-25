@@ -33,6 +33,7 @@ import {
   materialiseGate,
   profileFor,
   SUPPLY_COST,
+  type TrainableUnit,
   UNIT_COSTS,
 } from '@/rules';
 import { spend, type ResourceCost } from './economy';
@@ -324,9 +325,14 @@ export function placeRoad(
  *
  * Returns true on success.
  */
+// M_V7.TRAIN.WIDEN-ROLES — `role` param widened from the v0.4 4-role
+// subset (Peon/Footman/Scout/Hero) to all 9 PLAYER_UNIT_TYPES per
+// M_PIVOT.N-PLAYER.SHARED-KIT. Trebuchet/Wizard/Healer/Ferryman/Settler
+// are now trainable through the build command (UNIT_COSTS has rows
+// for all 9; SUPPLY_COST already covered them in v0.4).
 export function trainUnit(
   game: GameState,
-  role: 'Peon' | 'Footman' | 'Scout' | 'Hero',
+  role: TrainableUnit,
   faction: Faction = 'player',
 ): boolean {
   const eco = game.economy[faction];
