@@ -347,7 +347,9 @@ function GameSession({
       <AchievementWatcher game={game} />
       <PersistAchievements game={game} persistence={persistence} />
       <ZoneLegend />
-      <OnboardingOverlay persistence={persistence} />
+      {/* M_V8.TUTORIAL.N-PLAYER-MODE — pass faction count so the overlay
+          appends the N-player slide when 3+ factions are in the match. */}
+      <OnboardingOverlay persistence={persistence} factionCount={game.factions.length} />
       <GameOverModal game={game} persistence={persistence} />
       {/* M_V7.4X.SCORING — only renders in age-of-strata mode AND when
           game.victoryRecord is non-null. Legacy modes keep GameOverModal. */}

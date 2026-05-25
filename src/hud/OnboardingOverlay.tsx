@@ -62,13 +62,29 @@ const STEPS: Step[] = [
   },
 ];
 
+/** N-player slide content. */
+const N_PLAYER_STEP: Step = {
+  title: 'Multiple factions',
+  body: 'Multiple factions have joined the map. Build your economy, form alliances, and be the last faction standing. Use the diplomacy panel to propose non-aggression pacts or demand tribute from weaker rivals.',
+};
+
 /**
  * First-run tutorial overlay (M9.1c). Radix Dialog (modal, escape-blocked
  * until acknowledged) explaining the core loop in 4 short steps. Skippable
  * up-front; either way, a Preferences flag (`onboardingSeen`) ensures it
  * shows ONLY ONCE. Driven entirely by the persistence facade — no game state.
+ *
+ * M_V8.TUTORIAL.N-PLAYER-MODE — when `factionCount > 2`, appends a
+ * dedicated N-player slide after the main sequence.
  */
-export function OnboardingOverlay({ persistence }: { persistence: Persistence }) {
+export function OnboardingOverlay({
+  persistence,
+  factionCount = 2,
+}: {
+  persistence: Persistence;
+  /** M_V8.TUTORIAL.N-PLAYER-MODE — number of active factions. */
+  factionCount?: number;
+}) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
 
@@ -114,12 +130,16 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
     });
   };
 
+  // M_V8.TUTORIAL.N-PLAYER-MODE — append the N-player slide for 3+
+  // faction matches, shown after the existing sequence.
+  const steps = factionCount > 2 ? [...STEPS, N_PLAYER_STEP] : STEPS;
+
   const next = () => {
-    if (step + 1 >= STEPS.length) markSeen();
+    if (step + 1 >= steps.length) markSeen();
     else setStep(step + 1);
   };
 
-  const current = STEPS[step] ?? STEPS[0];
+  const current = steps[step] ?? steps[0];
   if (!current) return null;
 
   return (
@@ -163,7 +183,7 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
           }}
         >
           <span style={{ color: HUD_THEME.color.muted, fontSize: '0.78rem' }}>
-            {step + 1} / {STEPS.length}
+            {step + 1} / {steps.length}
           </span>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
@@ -196,7 +216,7 @@ export function OnboardingOverlay({ persistence }: { persistence: Persistence })
                 cursor: 'pointer',
               }}
             >
-              {step + 1 >= STEPS.length ? 'Begin' : 'Next'}
+              {step + 1 >= steps.length ? 'Begin' : 'Next'}
             </button>
           </div>
         </div>
