@@ -1980,34 +1980,8 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
 
 ## v0.9 CYCLE — v0.8 carryovers + cross-platform visual baselines
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.VISUAL.LINUX-LOCK — lock visual-battery
-  baselines from a Linux container so the CI gate is byte-stable.
-  Currently visual-battery is `continue-on-error: true` because
-  Mac-locked baselines drift on the Linux CI runner (subpixel font
-  rounding + GPU driver differences in Chromium headless). v0.9 fix:
-  add a one-time `pnpm visual:battery:lock` script that runs the
-  battery inside a docker container matching the CI image and commits
-  the resulting PNGs as the canonical baselines. Flip the CI job back
-  to `fail on drift` once baselines lock in Linux.
+- [x] M_V9.VISUAL.LINUX-LOCK — shipped in commit 837afd0 (lock-baselines.yml +
+  ci/visual-battery hard fail). See active-queue entry line ~649.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — 6 v0.8
-  test files use source-text grep assertions that CodeRabbit flagged as
-  implementation-coupled. Convert each to behavior/contract assertions:
-    - src/audio/__tests__/wonder-crescendo-n-player.test.ts — export
-      `isCrescendoImminent` from useAudio.ts (or a pure helper module)
-      and import in the test instead of re-implementing.
-    - src/entities/__tests__/character-factory.test.ts — assert fixed
-      expected HP per difficulty/faction from the gameplay spec instead
-      of calling `difficultyMultiplierFor` in-test (which mirrors prod).
-    - src/hud/__tests__/onboarding-n-player.test.ts — replace source-grep
-      for `factionCount > 2` / `[...STEPS, N_PLAYER_STEP]` with rendering
-      the OnboardingOverlay component and asserting slide count/content.
-    - src/world/__tests__/color-outline-v3.test.ts — replace import/JSX
-      string assertions with renderer behavior (mount the scene + assert
-      outline rendered).
-    - src/world/__tests__/ruins-biome.test.ts — drop the Decoration.tsx
-      text-grep block; assert RUINS decoration selection via the public
-      `decorationForBiome` contract.
-    - tests/harness/n-player-picker.browser.test.tsx — replace
-      `if (!aosButton) return;` early-return silent-pass guards with hard
-      `expect(...).not.toBeNull()` assertions before interaction.
+- [x] M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — shipped in commit e51c296.
+  See active-queue entry line ~657 for full resolution summary.
