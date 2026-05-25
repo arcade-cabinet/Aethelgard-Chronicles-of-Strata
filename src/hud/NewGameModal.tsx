@@ -235,11 +235,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           New Realm
         </Dialog.Title>
 
-        <SeedField
-          seedPhrase={seedPhrase}
-          setSeedPhrase={setSeedPhrase}
-          eventRng={eventRng}
-        />
+        <SeedField seedPhrase={seedPhrase} setSeedPhrase={setSeedPhrase} eventRng={eventRng} />
 
         {/*
           M_EXPANSION.F.83 — map preview thumbnail. Regenerates each

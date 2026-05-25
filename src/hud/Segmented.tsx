@@ -36,8 +36,7 @@ export function Segmented<T extends string>({
             padding: '7px 6px',
             borderRadius: 7,
             border: `1px solid ${value === opt ? HUD_THEME.color.accent : HUD_THEME.color.border}`,
-            background:
-              value === opt ? 'rgba(56,189,248,0.18)' : 'rgba(255,255,255,0.04)',
+            background: value === opt ? 'rgba(56,189,248,0.18)' : 'rgba(255,255,255,0.04)',
             color: value === opt ? HUD_THEME.color.text : HUD_THEME.color.muted,
             fontSize: '0.78rem',
             cursor: 'pointer',

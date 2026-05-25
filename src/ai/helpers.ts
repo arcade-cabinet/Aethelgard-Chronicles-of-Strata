@@ -5,7 +5,14 @@
  * evaluator module can import only what it uses without circular deps.
  */
 import { hexNeighbors, parseHexKey } from '@/core/hex';
-import { Building, type BuildingType, type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
+import {
+  Building,
+  type BuildingType,
+  type Faction,
+  FactionTrait,
+  HexPosition,
+  Unit,
+} from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { matchElapsedSeconds } from '@/game/match-time';
 import { MILITARY_ROLES } from '@/rules/unit-profiles';

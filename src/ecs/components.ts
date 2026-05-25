@@ -107,7 +107,8 @@ import { RESOURCE_IDS, type ResourceType } from '@/config/resources';
 // that iterate `RESOURCE_TYPES` or do `(typeof RESOURCE_TYPES)[number]`
 // continue to compile unchanged. It is typed `ReadonlyArray<ResourceType>`
 // so the element type is still the narrow literal union.
-export const RESOURCE_TYPES: ReadonlyArray<ResourceType> = RESOURCE_IDS as ReadonlyArray<ResourceType>;
+export const RESOURCE_TYPES: ReadonlyArray<ResourceType> =
+  RESOURCE_IDS as ReadonlyArray<ResourceType>;
 export type { ResourceType };
 
 /**

@@ -430,10 +430,7 @@ function paintPeakRings(
  * PRE-CONVERSION topology — avoids cascade where earlier conversions lower
  * later tiles' counts and carve a hole in the massif's core.
  */
-function findIsthmusCandidates(
-  tiles: Map<string, Tile>,
-  isthmusThreshold: number,
-): string[] {
+function findIsthmusCandidates(tiles: Map<string, Tile>, isthmusThreshold: number): string[] {
   const mountainKeySet = new Set<string>();
   for (const tile of tiles.values()) {
     if (tile.type === 'MOUNTAIN') mountainKeySet.add(getHexKey(tile.q, tile.r));

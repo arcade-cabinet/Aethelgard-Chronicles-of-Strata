@@ -78,7 +78,9 @@ export function PresetControls({
         <Segmented
           value={mode}
           options={MODES.map((m) => m.key)}
-          labels={Object.fromEntries(MODES.map((m) => [m.key, m.label])) as Record<GameMode, string>}
+          labels={
+            Object.fromEntries(MODES.map((m) => [m.key, m.label])) as Record<GameMode, string>
+          }
           onChange={setMode}
         />
       </div>
@@ -150,9 +152,7 @@ export function PresetControls({
         preset; doesn't trip Custom Realm. The AI never gets a
         bonus — this IS the player's pre-match handicap dial.
       */}
-      <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>
-        Starting bonus
-      </p>
+      <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Starting bonus</p>
       <div style={{ margin: '6px 0 18px' }}>
         <Segmented
           value={startingBonus}
@@ -175,9 +175,7 @@ export function PresetControls({
       */}
       {turnsMode === 'turn-based' && (
         <>
-          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>
-            Max turns
-          </p>
+          <p style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, margin: 0 }}>Max turns</p>
           <div style={{ margin: '6px 0 24px' }}>
             <Segmented
               value={maxTurnsValue}

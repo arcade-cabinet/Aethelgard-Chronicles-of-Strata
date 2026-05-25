@@ -44,11 +44,7 @@ import { spawnIntervalFor } from '@/config/combat';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import { type Faction } from '@/ecs/components';
-import {
-  createVolcanoState,
-  placeVolcanoLandmark,
-  type VolcanoState,
-} from '@/ecs/systems/volcano';
+import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/ecs/systems/volcano';
 import { type BurnState } from '@/ecs/systems/wildfire';
 import { type GameOutcome } from '@/ecs/systems/win-loss';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
