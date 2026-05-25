@@ -22,6 +22,7 @@ import {
   Health,
   Unit,
 } from '@/ecs/components';
+import { factionIds } from '@/config/factions';
 import { aiSystem } from '@/ecs/systems/ai';
 import { animationSystem } from '@/ecs/systems/animation';
 import { buildSystem } from '@/ecs/systems/build';
@@ -224,8 +225,13 @@ export function tickCombatPhase(
     for (const e of game.world.query(Building, FactionTrait)) {
       const b = e.get(Building);
       const faction = e.get(FactionTrait)?.faction;
-      if (b?.isComplete && faction) {
-        completeByFaction[faction].push({ type: b.buildingType, tier: b.tier ?? 1 });
+      // Guard: completeByFaction is keyed by the legacy Faction literal; skip
+      // N-player faction ids (they use economyFor which bypasses this Record).
+      if (b?.isComplete && faction && faction in completeByFaction) {
+        const bucket = (
+          completeByFaction as Record<string, Array<{ type: BuildingType; tier: number }>>
+        )[faction];
+        bucket?.push({ type: b.buildingType, tier: b.tier ?? 1 });
       }
     }
     recomputeMaxSupply(game.economy.player, completeByFaction.player);
@@ -234,8 +240,11 @@ export function tickCombatPhase(
     for (const e of game.world.query(Unit, FactionTrait)) {
       const u = e.get(Unit);
       const f = e.get(FactionTrait)?.faction;
-      if (!u || !f) continue;
-      supplyByFaction[f] += SUPPLY_COST[u.unitType] ?? 1;
+      // Guard: skip N-player factions not in the legacy Record.
+      if (!u || !f || !(f in supplyByFaction)) continue;
+      const cost = SUPPLY_COST[u.unitType] ?? 1;
+      (supplyByFaction as Record<string, number>)[f] =
+        ((supplyByFaction as Record<string, number>)[f] ?? 0) + cost;
     }
     game.economy.player.usedSupply = supplyByFaction.player;
     game.economy.enemy.usedSupply = supplyByFaction.enemy;
@@ -374,29 +383,39 @@ export function tickScoringPhase(game: GameState, delta: number): void {
     game.buildSitesGeneration += 1;
   }
   animationSystem(game.world);
-  // Wonder countdown
+  // Wonder countdown — M_V8.WONDER-TIMERS.N-PLAYER: iterate game.factions
+  // (all registered ids) instead of the closed FACTIONS literal union so
+  // 4X mode tracks all N players. Classic mode: player-id=0 wins, any AI wins = loss.
   const WONDER_COUNTDOWN_SECONDS = 300;
-  for (const faction of FACTIONS) {
+  for (const factionId of factionIds(game.factions)) {
     let hasCompleteWonder = false;
     for (const e of game.world.query(Building, FactionTrait)) {
       const b = e.get(Building);
       const f = e.get(FactionTrait)?.faction;
-      if (f !== faction || !b || b.buildingType !== 'Wonder' || !b.isComplete) continue;
+      if (f !== factionId || !b || b.buildingType !== 'Wonder' || !b.isComplete) continue;
       hasCompleteWonder = true;
       break;
     }
     if (!hasCompleteWonder) {
-      game.wonderTimers[faction] = Infinity;
+      game.wonderTimers[factionId] = Infinity;
       continue;
     }
-    if (game.wonderTimers[faction] === Infinity) {
-      game.wonderTimers[faction] = WONDER_COUNTDOWN_SECONDS;
+    if (game.wonderTimers[factionId] === Infinity) {
+      game.wonderTimers[factionId] = WONDER_COUNTDOWN_SECONDS;
     }
-    game.wonderTimers[faction] = Math.max(0, game.wonderTimers[faction] - delta);
+    game.wonderTimers[factionId] = Math.max(0, (game.wonderTimers[factionId] ?? 0) - delta);
   }
   if (game.outcome === 'playing') {
-    if (game.wonderTimers.player === 0) game.outcome = 'win';
-    else if (game.wonderTimers.enemy === 0) game.outcome = 'loss';
+    // Classic 2-faction: player wins when player-timer=0, loses when enemy-timer=0.
+    // 4X (age-of-strata): first faction (any kind) to hit 0 wins via detectVictory
+    // below; here we just handle the legacy 2-faction classic path.
+    const humanFaction = game.factions.find((f) => f.kind === 'human');
+    const aiFactions = game.factions.filter((f) => f.kind === 'ai');
+    if (humanFaction && (game.wonderTimers[humanFaction.id] ?? Infinity) === 0) {
+      game.outcome = 'win';
+    } else if (aiFactions.some((f) => (game.wonderTimers[f.id] ?? Infinity) === 0)) {
+      game.outcome = 'loss';
+    }
   }
   // Age-of-strata Renaissance+Wonder instant win
   if (game.mode === 'age-of-strata' && game.outcome === 'playing') {

@@ -30,7 +30,11 @@ function takeSnapshot(g: ReturnType<typeof startGame>) {
 }
 
 describe('replay determinism (M_FUN.FOUNDATION.REPLAY-DETERMINISM)', () => {
-  it('same (seedPhrase, tick sequence) produces same observable state', () => {
+  // 30s — fast-check shrinks property-based runs over a multi-faction
+  // sim; CI runner is 2-3× slower than local M-series. Default 5s
+  // tripped a flaky timeout post-v0.7 cycle merge. 30s gives 6× over
+  // worst observed without masking a real perf regression.
+  it('same (seedPhrase, tick sequence) produces same observable state', { timeout: 30_000 }, () => {
     fc.assert(
       fc.property(
         fc.string({ minLength: 4, maxLength: 24 }).filter((s) => s.length > 0),
