@@ -312,17 +312,15 @@ regressed pixel without the harness catching it first.
   + these two close the registry-color flow for every faction-renderer
   in the codebase). 3 source-level tests pin + 1086 total green.
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.4X.SCORING — end-of-game scoring
-  screen UI: reads `game.victoryRecord` and renders a Radix
-  dialog with named outcome ("Glorious Economic Victory!"),
-  per-faction final stats (kills, buildings standing, territory %,
-  Discovery count, diplomacy ties), and the v0.6 victory kind
-  flavor text. Replaces the simple "Victory!" / "Defeat!" of
-  GameOverModal when game.mode === 'age-of-strata' AND
-  game.victoryRecord !== null. Acceptance: browser harness with
-  a stub game state for each victory kind + screenshot baseline
-  per kind (4 baselines total: military / economic / scientific
-  / diplomatic).
+- [x] M_V7.4X.SCORING — ScoringScreen Radix dialog renders only in
+  age-of-strata mode AND when game.victoryRecord !== null. Per-kind
+  flavor (title + 1-line lore + tint color: red military / amber economic /
+  cyan scientific / violet diplomatic). Per-faction stats grid: kills,
+  buildings standing, score (wood+stone+gold sum). Winning faction row
+  visually elevated. "New Match" CTA reloads. Wired into App.tsx alongside
+  the legacy GameOverModal (only one renders at a time per the mode/record
+  gate). 6 browser tests + 4 screenshot baselines (one per victory kind)
+  committed; visually reviewed against directive intent.
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.DISCOVERY-TREE.V6 — flesh out
   src/config/discoveries.json with v0.6 tech entries that the

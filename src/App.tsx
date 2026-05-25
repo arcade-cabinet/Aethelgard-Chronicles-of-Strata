@@ -35,6 +35,7 @@ import { WeatherIndicator } from '@/hud/WeatherIndicator';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { EndTurnButton } from '@/hud/EndTurnButton';
 import { GameOverModal } from '@/hud/GameOverModal';
+import { ScoringScreen } from '@/hud/ScoringScreen';
 import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
 import { Minimap } from '@/hud/Minimap';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
@@ -335,6 +336,9 @@ function GameSession({
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
       <GameOverModal game={game} persistence={persistence} />
+      {/* M_V7.4X.SCORING — only renders in age-of-strata mode AND when
+          game.victoryRecord is non-null. Legacy modes keep GameOverModal. */}
+      <ScoringScreen game={game} />
       {/* M_AUDIT2.UX.12 — single hidden aria-live region; the bus
           (src/hud/aria-live-bus.ts) lets any sim event announce
           accessibly without lifting state. */}
