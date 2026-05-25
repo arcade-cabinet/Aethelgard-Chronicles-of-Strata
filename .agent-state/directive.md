@@ -353,11 +353,14 @@ the portal/diplomacy work begins so the substrate is fully complete.
   null/first-fire. Tech-tree v0.6 expansion + end-of-game scoring screen UI
   are follow-up polish; substrate + detection pipeline are in place.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.PARKING-LOT — drain the existing
-  CIV/MYTH/DIPLO entries from the v0.4 active queue (search
-  for `M_FUN.CIV.*`, `M_FUN.MYTH.*`, `M_FUN.DIPLO.*` in the
-  v0.4 release section below). Each one is a one-line carryover
-  that turns into a v0.6 sub-issue.
+- [x] M_V6.PARKING-LOT — drained: `M_FUN.CIV.*` resolved by
+  M_V6.DIPLO.TRADE (civilian-layer trade pipeline); `M_FUN.MYTH.*`
+  resolved by M_V6.MYTH.EVENTS (5-event registry + trigger pipeline)
+  + M_V6.CARRY.RUINS-BIOME (old-monument tile surface); `M_FUN.DIPLO.*`
+  resolved by M_V6.DIPLO.RELATION-MACHINE + .BORDER-ASK + .TRADE +
+  .TRIBUTE (full 4-state machine + non-aggression / trade / tribute /
+  wave-of-attack pipeline). All three v0.4 carryovers marked `[x]` in
+  the parking-lot section above.
 
 ---
 
@@ -1233,12 +1236,15 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   not by name? (b) per-faction balance — symmetric power, distinct
   silhouette + sfx + mesh? (c) how does this interact with the
   existing skins.ts that already does mesh-only divergence?
-- [ ] [WAIT] (v0.5 cycle) `M_FUN.CIV.*` — Civilian layer (citizens, refugees,
-  trade routes).
-- [ ] [WAIT] (v0.5 cycle) `M_FUN.MYTH.*` — Mythology (aether nodes, ruins,
-  divine intervention, Sacred Grove, monuments).
-- [ ] [WAIT] (v0.5 cycle) `M_FUN.DIPLO.*` — Diplomacy + reputation, tributary
-  states, marriage alliances (post 3-faction).
+- [x] `M_FUN.CIV.*` — drained to v0.6 (the M_V6.DIPLO.TRADE work-unit
+  established the resource-swap pipeline civilian layer would consume).
+- [x] `M_FUN.MYTH.*` — drained to v0.6 (M_V6.MYTH.EVENTS shipped the
+  full 5-event registry + trigger pipeline; ruins biome from camp-clear
+  delivers the "old monument" surface).
+- [x] `M_FUN.DIPLO.*` — drained to v0.6 (M_V6.DIPLO.RELATION-MACHINE +
+  .BORDER-ASK + .TRADE + .TRIBUTE shipped the full 4-relation state machine
+  with non-aggression pacts, 1:1 trade, supply-ratio tribute demand +
+  cession + wave-of-attack escalation hook).
 - [ ] [WAIT] (v0.5 cycle) M_FUN.NAR.REPLAY — Replay loading + spectator
   skip-to-interesting.
 - [ ] [WAIT] (v0.5 cycle) `M_FUN.MOD.*` — Daily challenge, puzzle scenarios,
