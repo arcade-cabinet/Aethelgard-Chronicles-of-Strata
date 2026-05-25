@@ -41,11 +41,15 @@ spec doc citation; each item is a self-contained commit-unit.
   SWAMP ≥20%). The guided-paint work that lifts these to
   ≥95% lives in a follow-up (PATTERN-K). Today's audit makes
   the regression measurable.
-- [ ] M_FUN.ECON.NODE-TIERS — add surface (BEACH-adjacent) / inland
-  / highland resource-node tiers with distinct yield/richness/
-  travel-cost curves so a single match presents the
-  "quick wood now vs sustained mid-game vs late-game commitment"
-  decision.
+- [x] M_FUN.ECON.NODE-TIERS — `spawnResourceNodes` now scales node
+  `amount` and `chance` by distance from board centre, creating
+  three implicit tiers without adding new biomes or rules:
+  surface (d > 0.66 × radius): 0.6× amount, 1.0× chance (quick
+  & cheap coastal); inland (0.33-0.66): baseline; highland
+  (≤ 0.33 × radius): 1.5× amount, 0.8× chance (late-game deep
+  groves). Same Peon harvests all three; what changes is the
+  round-trip economics + decision "extend supply line for deep
+  grove vs claim three surface trees". 859 unit tests green.
 - [ ] M_FUN.QA.AIVAI.ZONE-BREAKDOWN — balance ledger records kills
   per skirmish/encroachment/assault zone class so personality tuning
   can target "this AI engages everywhere" vs "this AI only assaults".
