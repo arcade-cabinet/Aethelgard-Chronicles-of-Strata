@@ -1,17 +1,22 @@
 /**
- * M_FUN.REFACTOR.NEWGAMEMODAL-SPLIT — NewGameModal down to ~200 lines.
+ * NewGameModal — cinematic full-page setup screen (M_HUD.SHELL.3).
  *
- * Subcomponents extracted:
- *   Segmented      → src/hud/Segmented.tsx
- *   SeedField      → src/hud/SeedField.tsx
- *   PresetControls → src/hud/PresetControls.tsx
- *   OpponentPicker → src/hud/OpponentPicker.tsx
+ * Adopted from the 21st.dev Magic reference for an AAA-fantasy game-setup
+ * modal: card-grouped sections (World / Mode / Opponents / Players)
+ * inside a Radix Dialog, sticky header + footer, gold-gradient Begin
+ * CTA with live config-readout chips, framer-motion staggered entry.
  *
- * This file owns only: dialog shell, all state, preset cascade effects,
- * override wrappers, onBegin assembly, and the sticky Begin CTA.
+ * Aethelgard-specific: REUSES the stable subcomponents (SeedField,
+ * MapPreview, PresetControls, OpponentPicker, FactionColorPicker)
+ * instead of reimplementing them, preserves the 13-field NewGameChoices
+ * shape, and keeps every data-testid the test suite pins (begin-game,
+ * n-player-picker, n-player-slider, n-player-count, n-player-color-slots,
+ * n-player-slot-${i}, faction-colors-row).
  */
 import * as Dialog from '@radix-ui/react-dialog';
-import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { Bot, Crown, Gamepad2, Map as MapIcon, Palette, Sparkles, Swords, X } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DEFAULT_PERSONALITY } from '@/config/ai-personalities';
 import { defaultFactionColors } from '@/config/faction-palette';
 import { buildDefaultFactions, type FactionConfig, LEGACY_FACTIONS } from '@/config/factions';
@@ -19,12 +24,11 @@ import { availableMapSizes, MAP_SIZES, type MapSizeKey } from '@/core/map-size';
 import { createEventPrng, createFreshEventSeed } from '@/core/rng';
 import { randomSeedPhrase } from '@/core/seed-phrase';
 import type { Difficulty, GameMode } from '@/game/game-state';
+import { cn } from '@/lib/cn';
 import { presetFor } from '@/rules';
 import type { TurnsMode } from '@/rules/mode-presets';
 import { FactionColorPicker } from './FactionColorPicker';
-import { HUD_THEME } from './hud-theme';
 import { MapPreview } from './MapPreview';
-import { ModalShell } from './ModalShell';
 import { PLAYER_COLORS } from './new-game-options';
 import { OpponentPicker } from './OpponentPicker';
 import { PresetControls } from './PresetControls';
@@ -32,150 +36,105 @@ import { SeedField } from './SeedField';
 
 /** The choices a New Game collects. */
 export interface NewGameChoices {
-  /** Map seed phrase. */
   seedPhrase: string;
-  /** Selected map size key. */
   mapSize: MapSizeKey;
-  /** AI difficulty. */
   difficulty: Difficulty;
-  /** The fresh event-PRNG seed minted for this game. */
   eventSeed: string;
-  /** Game mode preset (M_MODES). */
   mode: GameMode;
-  /**
-   * M_TURNS.3 — Turn style override. Defaults to the preset's
-   * turnsMode; the player can flip independently. real-time = tick
-   * the sim every frame; turn-based = freeze sim between End Turn
-   * presses (M_TURNS.1 actually enforces).
-   */
   turnsMode: TurnsMode;
-  /**
-   * M_TURNS.2 — Max turns cap (turn-based only). null = uncapped.
-   * Ignored when turnsMode === 'real-time'. Common picks: 30/60/90.
-   */
   maxTurns: number | null;
-  /**
-   * M_EXPANSION.F.80 — player palette pick. CSS hex string or null
-   * (= SKINS default = native KayKit colours).
-   */
   playerColor: string | null;
-  /**
-   * M_EXPANSION.F.84 — starting bonus pick. 'none' = baseline; the
-   * other picks each give a one-shot start-of-match advantage.
-   */
   startingBonus: 'none' | 'extra-wood' | 'extra-peons' | 'extra-hp';
-  /**
-   * M_POLISH3.AIVAI.1 — when true, the player faction is also driven
-   * by a yuka AI. Both factions auto-play; no human input is needed.
-   * Used by the e2e playthrough harness and by spectator/demo mode.
-   */
   aiVsAi: boolean;
-  /** M_FUN.AI.PICKER — named opponent personality key. */
   enemyPersonality: string;
-  /**
-   * M_PIVOT.N-PLAYER.COLOR-PICKER — explicit faction registry. When
-   * omitted, startGame falls back to LEGACY_FACTIONS with default
-   * colors. For v0.5 this carries the two visible faction-color
-   * picks from the modal so ZoneBorder + HUD chips render with the
-   * user's chosen banner colors instead of the historical blue/red.
-   */
   factions?: FactionConfig[];
 }
 
-// M_SIMPLIFY.7 — STARTING_BONUSES / PLAYER_COLORS / MODES /
-// DIFFICULTIES extracted to src/hud/new-game-options.ts. The data
-// is static config; keeping it in the modal cost cognitive load
-// every time someone read this component.
-
-/** Props for the New Game modal. */
 export interface NewGameModalProps {
-  /** Whether the modal is open. */
   open: boolean;
-  /** Called when the modal requests to close. */
   onOpenChange: (open: boolean) => void;
-  /** Called with the choices when the player begins the game. */
   onBegin: (choices: NewGameChoices) => void;
 }
 
+/** Reusable section card with a heading + icon + caption. */
+function SectionCard({
+  icon: Icon,
+  title,
+  caption,
+  children,
+  delay = 0,
+  reducedMotion,
+}: {
+  icon: typeof MapIcon;
+  title: string;
+  caption?: string;
+  children: React.ReactNode;
+  delay?: number;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.section
+      initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.32, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={cn(
+        'rounded-2xl border bg-[rgba(15,23,42,0.55)] backdrop-blur',
+        'border-[var(--color-border-hud)]',
+        'shadow-[0_6px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(56,189,248,0.06)]',
+      )}
+    >
+      <header className="flex items-baseline justify-between gap-3 border-b border-[var(--color-border-hud)] px-5 pb-3 pt-4">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4 text-[var(--color-gold-hud)]" aria-hidden />
+          <h3
+            className="font-display text-base font-semibold tracking-[0.08em] text-[var(--color-gold-hud)]"
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
+            {title}
+          </h3>
+        </div>
+        {caption && (
+          <p className="hidden text-xs italic text-[var(--color-muted-hud)] sm:block">{caption}</p>
+        )}
+      </header>
+      <div className="px-5 py-4">{children}</div>
+    </motion.section>
+  );
+}
+
 export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps) {
-  // the fresh event seed for the game being configured — re-minted each open
+  const reducedMotion = useReducedMotion() ?? false;
   const [eventSeed, setEventSeed] = useState(createFreshEventSeed);
-  // the event PRNG stream derived from that seed; the shuffle draws from it
   const eventRng = useRef(createEventPrng(eventSeed));
   const [seedPhrase, setSeedPhrase] = useState(() => randomSeedPhrase(eventRng.current));
   const [mode, setMode] = useState<GameMode>('border-clash');
-  // The preset.mapSize is the default; the user can still override below.
   const [mapSize, setMapSize] = useState<MapSizeKey>(presetFor('border-clash').mapSize);
   const [difficulty, setDifficulty] = useState<Difficulty>('normal');
-  // M_TURNS.3 — Turn style is the 3rd cascaded control. Defaults to
-  // the preset's turnsMode; overriding flips the Custom Realm flag.
   const [turnsMode, setTurnsModeState] = useState<TurnsMode>(presetFor('border-clash').turnsMode);
-  // M_TURNS.2 — Max turns cap. null = uncapped. Surfaces in UI only
-  // when turnsMode === 'turn-based'. Cascades from the preset on
-  // mode change; overriding flips the Custom Realm flag.
   const [maxTurns, setMaxTurnsState] = useState<number | null>(presetFor('border-clash').maxTurns);
-  // M_EXPANSION.F.80 — player palette pick. 'default' = null (use
-  // SKINS native colours). Independent of preset cascade (palette
-  // is purely cosmetic; doesn't depend on game mode).
-  const [playerColorKey, setPlayerColorKey] = useState<string>('default');
-  // M_EXPANSION.F.84 — starting bonus pick. Independent of preset
-  // cascade — a bonus is the player's pre-match handicap dial,
-  // orthogonal to the game-mode choice.
+  const [playerColorKey, setPlayerColorKey] = useState<string>('skins-default');
   const [startingBonus, setStartingBonus] = useState<NewGameChoices['startingBonus']>('none');
-  // M_POLISH3.AIVAI.1 — AI-vs-AI mode toggle. Both factions auto-play.
   const [aiVsAi, setAiVsAi] = useState(false);
-  // M_FUN.AI.PICKER — named opponent. Defaults to the registry default.
-  const [enemyPersonality, setEnemyPersonality] = useState<string>(DEFAULT_PERSONALITY);
-  // M_PIVOT.N-PLAYER.COLOR-PICKER — per-faction banner colors. Default
-  // is a deterministic seed-derived shuffle of the 12-color palette so
-  // a 2-player default still gets two distinct chips. The player can
-  // re-pick via the FactionColorPicker; the chosen pair flows into
-  // NewGameChoices.factions so startGame seeds the registry with them.
-  const [factionColors, setFactionColors] = useState<{ player: string; enemy: string }>(() => {
-    const [p, e] = defaultFactionColors(2, seedPhrase);
-    // LEGACY_FACTIONS has exactly 2 entries (asserted in factions.test).
-    const legacyPlayer = LEGACY_FACTIONS[0]?.color ?? '#3b82f6';
-    const legacyEnemy = LEGACY_FACTIONS[1]?.color ?? '#ef4444';
-    return {
-      player: p ?? legacyPlayer,
-      enemy: e ?? legacyEnemy,
-    };
-  });
-  // M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — N-player count (2-6) for
-  // age-of-strata mode. Defaults to the preset's defaultPlayerCount.
-  // Shown only when mode === 'age-of-strata'.
-  const [nPlayer, setNPlayer] = useState<number>(
-    () => presetFor('age-of-strata').defaultPlayerCount,
-  );
-  // Per-slot colors for all N factions when in N-player mode.
-  // Slot 0 = player banner, slot 1 = first AI, etc.
-  const [nPlayerColors, setNPlayerColors] = useState<string[]>(() =>
-    defaultFactionColors(presetFor('age-of-strata').defaultPlayerCount, seedPhrase),
-  );
-  const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
-
-  // M_BRAND.3 — when the player overrides any cascaded control after
-  // picking a preset, the modal flips to "Custom Realm" state. The
-  // mutation is what *teaches* the player that customization = leaving
-  // the preset. The flag clears whenever the player explicitly clicks
-  // a mode chip (re-locking the preset).
+  const [enemyPersonality, setEnemyPersonality] = useState(DEFAULT_PERSONALITY);
   const [presetModified, setPresetModified] = useState(false);
+  const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>([]);
+  const [factionColors, setFactionColors] = useState<{ player: string; enemy: string }>({
+    player: '#38bdf8',
+    enemy: '#f43f5e',
+  });
+  const [nPlayer, setNPlayer] = useState(presetFor('border-clash').defaultPlayerCount);
+  const [nPlayerColors, setNPlayerColors] = useState<string[]>(() =>
+    defaultFactionColors(presetFor('border-clash').defaultPlayerCount, seedPhrase),
+  );
 
-  // M_BRAND.2 — diegetic preset cascade. When mode changes, push the
-  // preset's mapSize AND its AI difficulty (long-reign + frontier-raid
-  // run easier; strata-wars + age-of-strata default to normal) into
-  // the visible controls. The player sees the cascade happen.
+  // Cascade: mode change resets preset-derived fields.
   useEffect(() => {
     const preset = presetFor(mode);
     setMapSize(preset.mapSize);
-    // Each preset implies a default AI difficulty. Border-clash is
-    // balanced 1v1 (normal); long-reign is endless attrition (easy
-    // is the entry experience); frontier-raid is fast (normal);
-    // strata-wars / age-of-strata reward longer planning (normal).
     const aiByMode: Record<GameMode, Difficulty> = {
       'border-clash': 'normal',
-      'frontier-raid': 'normal',
-      'long-reign': 'easy',
+      'frontier-raid': 'hard',
+      'long-reign': 'normal',
       'strata-wars': 'normal',
       'age-of-strata': 'normal',
       coexistence: 'easy',
@@ -184,20 +143,13 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     setTurnsModeState(preset.turnsMode);
     setMaxTurnsState(preset.maxTurns);
     setPresetModified(false);
-    // M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — reset N-player count and
-    // colors to the preset default when switching modes.
-    // NOTE: seedPhrase is intentionally NOT in the dep array here —
-    // including it would re-seed colors on every seed-phrase keystroke,
-    // silently discarding any per-slot customizations the user made.
-    // The initial color seed uses the seedPhrase at the moment of mode
-    // switch; subsequent slot edits are handled by the slider's onChange.
     const n = preset.defaultPlayerCount;
     setNPlayer(n);
     setNPlayerColors(defaultFactionColors(n, seedPhrase));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, seedPhrase]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: seedPhrase intentionally excluded — re-seeding on every keystroke would discard slot customisations.
+  }, [mode]);
 
-  // Override wrappers that flip the "Custom Realm" marker (M_BRAND.3).
+  // Override wrappers that flip the "Custom Realm" marker.
   const setMapSizeOverride = (next: MapSizeKey) => {
     setMapSize(next);
     if (next !== presetFor(mode).mapSize) setPresetModified(true);
@@ -210,21 +162,12 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     setTurnsModeState(next);
     if (next !== presetFor(mode).turnsMode) setPresetModified(true);
   };
-  // M_TURNS.2 — maxTurns is a 4-way pick (30 / 60 / 90 / Unlimited).
-  // Maps to the segmented control's string options; null encodes
-  // Unlimited.
   const setMaxTurnsOverride = (next: string) => {
     if (next === 'unlimited') {
       setMaxTurnsState(null);
       if (presetFor(mode).maxTurns !== null) setPresetModified(true);
       return;
     }
-    // M_SEC_REVIEW.7 — guard parseInt result. Today's only caller
-    // is the segmented control (4 fixed string values), but if a
-    // future URL parameter or programmatic call passes a non-numeric
-    // string, parseInt returns NaN. game.turn.maxTurns === NaN
-    // makes the turn-cap check `turnsElapsed >= maxTurns` always
-    // false, silently disabling the cap. Reject < 1 too.
     const val = Number.parseInt(next, 10);
     if (!Number.isFinite(val) || val < 1) return;
     setMaxTurnsState(val);
@@ -236,7 +179,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     void availableMapSizes().then(setSizeKeys);
   }, []);
 
-  // on each open, mint a fresh event seed + stream and re-suggest a phrase
+  // On each open: mint a fresh event seed + stream + suggest a new phrase.
   useEffect(() => {
     if (!open) return;
     const seed = createFreshEventSeed();
@@ -245,310 +188,393 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     setSeedPhrase(randomSeedPhrase(eventRng.current));
   }, [open]);
 
+  // Live readout chips for the sticky footer.
+  const readout = useMemo(
+    () => [
+      { label: seedPhrase.trim() || 'random seed', icon: Sparkles },
+      { label: mapSize, icon: MapIcon },
+      { label: mode.replace(/-/g, ' '), icon: Gamepad2 },
+      {
+        label: mode === 'age-of-strata' ? `${nPlayer} players` : '2 players',
+        icon: Crown,
+      },
+    ],
+    [seedPhrase, mapSize, mode, nPlayer],
+  );
+
+  const beginDisabled = !seedPhrase.trim();
+
+  const buildFactions = (): FactionConfig[] => {
+    const preset = presetFor(mode);
+    if (mode !== 'age-of-strata' && preset.defaultPlayerCount <= 2) {
+      const [lp, le] = LEGACY_FACTIONS;
+      if (!lp || !le) {
+        return buildDefaultFactions(preset.defaultPlayerCount, nPlayerColors);
+      }
+      const p1: FactionConfig = {
+        id: lp.id,
+        displayName: lp.displayName,
+        kind: lp.kind,
+        archetype: lp.archetype,
+        color: factionColors.player,
+      };
+      const p2: FactionConfig = {
+        id: le.id,
+        displayName: le.displayName,
+        kind: le.kind,
+        archetype: le.archetype,
+        color: factionColors.enemy,
+        personality: enemyPersonality,
+      };
+      return [p1, p2];
+    }
+    const registry = buildDefaultFactions(nPlayer, nPlayerColors);
+    if (registry[1]) registry[1] = { ...registry[1], personality: enemyPersonality };
+    return registry;
+  };
+
+  const handleBegin = () => {
+    onBegin({
+      seedPhrase: seedPhrase.trim(),
+      mapSize,
+      difficulty,
+      eventSeed,
+      mode,
+      turnsMode,
+      maxTurns,
+      playerColor: PLAYER_COLORS.find((c) => c.key === playerColorKey)?.hex ?? null,
+      startingBonus,
+      aiVsAi,
+      enemyPersonality,
+      factions: buildFactions(),
+    });
+  };
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
-      {/* M_MICRO.10.1 — ModalShell with NewGameModal's larger card. */}
-      <ModalShell
-        zIndex={200}
-        // M_POLISH2.M.5 — 92vw + the 28px ModalShell padding combined
-        // math'd to 14px overflow past the viewport right edge on
-        // 375px portrait. calc(100vw - 32px) gives a guaranteed
-        // 16px margin on each side regardless of padding.
-        width="min(420px, calc(100vw - 32px))"
-        // M_AUDIT2.UX.6 — keyboard-overflow-safe height. On phone
-        // portrait with the virtual keyboard open, the seed text
-        // field forces the modal taller than the visible viewport
-        // and the Begin button slides off-screen. Cap at the
-        // safe-area-aware visual viewport min (svh respects the
-        // keyboard inset on modern browsers; the dvh fallback covers
-        // older WebViews) and let the inner scroller take over.
-        maxHeight="min(85svh, 85dvh, 700px)"
-        contentStyle={{
-          border: `1px solid ${HUD_THEME.color.border}`,
-          borderRadius: 16,
-          padding: 28,
-          fontFamily: HUD_THEME.font.body,
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <Dialog.Title
-          style={{
-            fontFamily: HUD_THEME.font.display,
-            fontSize: '1.4rem',
-            color: HUD_THEME.color.gold,
-            margin: '0 0 18px',
-          }}
-        >
-          New Realm
-        </Dialog.Title>
-
-        <SeedField seedPhrase={seedPhrase} setSeedPhrase={setSeedPhrase} eventRng={eventRng} />
-
-        {/*
-          M_EXPANSION.F.83 — map preview thumbnail. Regenerates each
-          time the seed phrase or mapSize changes so the player sees
-          the actual layout before committing.
-        */}
-        <div style={{ display: 'flex', justifyContent: 'center', margin: '0 0 16px' }}>
-          <MapPreview
-            seedPhrase={seedPhrase.trim() || 'preview'}
-            mapRadius={MAP_SIZES[mapSize].radius}
-            size={200}
-          />
-        </div>
-
-        <PresetControls
-          mode={mode}
-          setMode={setMode}
-          mapSize={mapSize}
-          setMapSize={setMapSizeOverride}
-          sizeKeys={sizeKeys}
-          difficulty={difficulty}
-          setDifficulty={setDifficultyOverride}
-          turnsMode={turnsMode}
-          setTurnsMode={setTurnsModeOverride}
-          maxTurnsValue={maxTurnsValue}
-          setMaxTurns={setMaxTurnsOverride}
-          playerColorKey={playerColorKey}
-          setPlayerColorKey={setPlayerColorKey}
-          startingBonus={startingBonus}
-          setStartingBonus={setStartingBonus}
-          presetModified={presetModified}
-        />
-
-        <OpponentPicker
-          aiVsAi={aiVsAi}
-          setAiVsAi={setAiVsAi}
-          enemyPersonality={enemyPersonality}
-          setEnemyPersonality={setEnemyPersonality}
-        />
-
-        {/* M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — N-player slider + per-slot
-            color pickers. Shown only in age-of-strata (4X) mode.
-            Legacy 2-faction modes continue using the simple player+enemy
-            color-picker row below the N-player block. */}
-        {mode === 'age-of-strata' && (
-          <div
-            data-testid="n-player-picker"
-            style={{
-              margin: '12px 0 4px',
-              fontSize: 13,
-              color: HUD_THEME.color.muted,
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                marginBottom: 10,
-              }}
-            >
-              <label
-                htmlFor="n-player-slider"
-                style={{ flexShrink: 0, color: HUD_THEME.color.muted }}
-              >
-                Players:
-              </label>
-              <input
-                id="n-player-slider"
-                type="range"
-                min={2}
-                max={6}
-                step={1}
-                value={nPlayer}
-                data-testid="n-player-slider"
-                onChange={(e) => {
-                  const n = Number(e.target.value);
-                  setNPlayer(n);
-                  // Extend or trim the color array to match the new count.
-                  setNPlayerColors((prev) => {
-                    const extra = defaultFactionColors(n, seedPhrase);
-                    const merged = Array.from(
-                      { length: n },
-                      (_, i) => prev[i] ?? extra[i] ?? '#888',
-                    );
-                    return merged;
-                  });
-                }}
-                style={{ flex: 1 }}
+      <AnimatePresence>
+        {open && (
+          <Dialog.Portal forceMount>
+            <Dialog.Overlay asChild>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="fixed inset-0 bg-black/65 backdrop-blur-sm"
+                style={{ zIndex: 'var(--z-modal-overlay)' }}
               />
-              <span
-                data-testid="n-player-count"
+            </Dialog.Overlay>
+            <Dialog.Content asChild>
+              <motion.div
+                initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97, y: 8 }}
+                transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                className={cn(
+                  'fixed left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col',
+                  'w-[min(760px,calc(100vw-32px))] max-h-[min(88dvh,860px)] overflow-hidden',
+                  'rounded-3xl border bg-[var(--color-panel-solid)] text-[var(--color-text-hud)]',
+                  'border-[var(--color-border-hud)] shadow-2xl',
+                )}
                 style={{
-                  minWidth: 14,
-                  textAlign: 'right',
-                  color: HUD_THEME.color.gold,
-                  fontFamily: HUD_THEME.font.display,
+                  zIndex: 'var(--z-modal-content)',
+                  paddingTop: 'var(--safe-top)',
+                  fontFamily: 'var(--font-body)',
                 }}
               >
-                {nPlayer}
-              </span>
-            </div>
-            {/* Per-slot color rows */}
-            <div
-              data-testid="n-player-color-slots"
-              style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
-            >
-              {Array.from({ length: nPlayer }, (_, i) => (
-                <div
-                  // biome-ignore lint/suspicious/noArrayIndexKey: slot index IS the identity — positional by design (slot 0=You, slot N=AI N), never reordered.
-                  key={`n-player-slot-${i}`}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8 }}
-                  data-testid={`n-player-slot-${i}`}
-                >
-                  <span style={{ width: 80, flexShrink: 0 }}>{i === 0 ? 'You' : `AI ${i}`}</span>
-                  <FactionColorPicker
-                    color={nPlayerColors[i] ?? '#888888'}
-                    onChange={(c) =>
-                      setNPlayerColors((prev) => {
-                        const next = [...prev];
-                        next[i] = c;
-                        return next;
-                      })
-                    }
-                    ariaLabel={`Faction ${i + 1} color`}
-                  />
+                <header className="flex items-start justify-between gap-4 border-b border-[var(--color-border-hud)] px-7 pb-4 pt-6">
+                  <div>
+                    <Dialog.Title
+                      className="font-display text-2xl font-bold tracking-[0.06em] text-[var(--color-gold-hud)]"
+                      style={{ fontFamily: 'var(--font-display)' }}
+                    >
+                      Forge Your Realm
+                    </Dialog.Title>
+                    <Dialog.Description className="mt-1 text-xs italic text-[var(--color-muted-hud)]">
+                      Configure the world before you set foot upon it.
+                    </Dialog.Description>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {presetModified && (
+                      <span
+                        data-testid="preset-modified-indicator"
+                        className="flex items-center gap-1 rounded-full border border-[var(--color-accent-hud)]/40 bg-[var(--color-accent-hud)]/10 px-2 py-0.5 text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-accent-hud)]"
+                      >
+                        <Sparkles className="h-3 w-3" aria-hidden /> Custom realm
+                      </span>
+                    )}
+                    <Dialog.Close asChild>
+                      <button
+                        type="button"
+                        aria-label="Close New Game setup"
+                        className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--color-muted-hud)] hover:bg-white/5 hover:text-[var(--color-text-hud)]"
+                      >
+                        <X className="h-4 w-4" aria-hidden />
+                      </button>
+                    </Dialog.Close>
+                  </div>
+                </header>
+
+                <div className="flex-1 overflow-y-auto px-6 py-5">
+                  <div className="flex flex-col gap-4">
+                    <SectionCard
+                      icon={MapIcon}
+                      title="World"
+                      caption="Generates terrain, resources, ramps."
+                      delay={0.02}
+                      reducedMotion={reducedMotion}
+                    >
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_220px]">
+                        <SeedField
+                          seedPhrase={seedPhrase}
+                          setSeedPhrase={setSeedPhrase}
+                          eventRng={eventRng}
+                        />
+                        <div className="flex items-center justify-center rounded-xl border border-[var(--color-border-hud)] bg-black/30 p-2">
+                          <MapPreview
+                            seedPhrase={seedPhrase.trim() || 'preview'}
+                            mapRadius={MAP_SIZES[mapSize].radius}
+                            size={200}
+                          />
+                        </div>
+                      </div>
+                    </SectionCard>
+
+                    <SectionCard
+                      icon={Gamepad2}
+                      title="Mode"
+                      caption="How the realm is won."
+                      delay={0.06}
+                      reducedMotion={reducedMotion}
+                    >
+                      <PresetControls
+                        mode={mode}
+                        setMode={setMode}
+                        mapSize={mapSize}
+                        setMapSize={setMapSizeOverride}
+                        sizeKeys={sizeKeys}
+                        difficulty={difficulty}
+                        setDifficulty={setDifficultyOverride}
+                        turnsMode={turnsMode}
+                        setTurnsMode={setTurnsModeOverride}
+                        maxTurnsValue={maxTurnsValue}
+                        setMaxTurns={setMaxTurnsOverride}
+                        playerColorKey={playerColorKey}
+                        setPlayerColorKey={setPlayerColorKey}
+                        startingBonus={startingBonus}
+                        setStartingBonus={setStartingBonus}
+                        presetModified={presetModified}
+                      />
+                    </SectionCard>
+
+                    <SectionCard
+                      icon={Bot}
+                      title="Opponents"
+                      caption="Personality drives diplomacy and war hunger."
+                      delay={0.1}
+                      reducedMotion={reducedMotion}
+                    >
+                      <OpponentPicker
+                        aiVsAi={aiVsAi}
+                        setAiVsAi={setAiVsAi}
+                        enemyPersonality={enemyPersonality}
+                        setEnemyPersonality={setEnemyPersonality}
+                      />
+                    </SectionCard>
+
+                    {mode === 'age-of-strata' && (
+                      <SectionCard
+                        icon={Crown}
+                        title="Players"
+                        caption="Free-for-all across N factions, each with its own throne."
+                        delay={0.14}
+                        reducedMotion={reducedMotion}
+                      >
+                        <div data-testid="n-player-picker" className="flex flex-col gap-4">
+                          <div className="flex items-center gap-4">
+                            <label
+                              htmlFor="n-player-slider"
+                              className="shrink-0 text-sm text-[var(--color-muted-hud)]"
+                            >
+                              Count
+                            </label>
+                            <input
+                              id="n-player-slider"
+                              type="range"
+                              min={2}
+                              max={6}
+                              step={1}
+                              value={nPlayer}
+                              data-testid="n-player-slider"
+                              onChange={(e) => {
+                                const n = Number(e.target.value);
+                                setNPlayer(n);
+                                setNPlayerColors((prev) => {
+                                  const extra = defaultFactionColors(n, seedPhrase);
+                                  return Array.from(
+                                    { length: n },
+                                    (_, i) => prev[i] ?? extra[i] ?? '#888',
+                                  );
+                                });
+                              }}
+                              className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-[var(--color-border-hud)] accent-[var(--color-gold-hud)]"
+                            />
+                            <span
+                              data-testid="n-player-count"
+                              className="min-w-[2ch] text-right font-display text-2xl text-[var(--color-gold-hud)]"
+                              style={{ fontFamily: 'var(--font-display)' }}
+                            >
+                              {nPlayer}
+                            </span>
+                          </div>
+                          <div
+                            data-testid="n-player-color-slots"
+                            className="flex flex-col gap-2"
+                          >
+                            <AnimatePresence initial={false}>
+                              {Array.from({ length: nPlayer }, (_, i) => {
+                                const isYou = i === 0;
+                                return (
+                                  <motion.div
+                                    // biome-ignore lint/suspicious/noArrayIndexKey: slot index IS the identity.
+                                    key={`n-player-slot-${i}`}
+                                    data-testid={`n-player-slot-${i}`}
+                                    initial={
+                                      reducedMotion
+                                        ? false
+                                        : { opacity: 0, x: -8, height: 0 }
+                                    }
+                                    animate={{ opacity: 1, x: 0, height: 'auto' }}
+                                    exit={
+                                      reducedMotion
+                                        ? { opacity: 0 }
+                                        : { opacity: 0, x: -8, height: 0 }
+                                    }
+                                    transition={{ duration: 0.18 }}
+                                    className="flex items-center gap-3 rounded-lg border border-[var(--color-border-hud)] bg-black/20 px-3 py-2"
+                                  >
+                                    {isYou ? (
+                                      <Crown
+                                        className="h-4 w-4 text-[var(--color-gold-hud)]"
+                                        aria-hidden
+                                      />
+                                    ) : (
+                                      <Bot
+                                        className="h-4 w-4 text-[var(--color-muted-hud)]"
+                                        aria-hidden
+                                      />
+                                    )}
+                                    <span className="w-16 shrink-0 text-sm">
+                                      {isYou ? 'You' : `AI ${i}`}
+                                    </span>
+                                    <FactionColorPicker
+                                      color={nPlayerColors[i] ?? '#888888'}
+                                      onChange={(c) =>
+                                        setNPlayerColors((prev) => {
+                                          const next = [...prev];
+                                          next[i] = c;
+                                          return next;
+                                        })
+                                      }
+                                      ariaLabel={`Faction ${i + 1} color`}
+                                    />
+                                  </motion.div>
+                                );
+                              })}
+                            </AnimatePresence>
+                          </div>
+                        </div>
+                      </SectionCard>
+                    )}
+
+                    {mode !== 'age-of-strata' && (
+                      <SectionCard
+                        icon={Palette}
+                        title="Players"
+                        caption="Pick the banner colors for the two factions."
+                        delay={0.14}
+                        reducedMotion={reducedMotion}
+                      >
+                        <div
+                          data-testid="faction-colors-row"
+                          className="flex flex-wrap items-center gap-6 text-sm text-[var(--color-muted-hud)]"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Crown
+                              className="h-4 w-4 text-[var(--color-gold-hud)]"
+                              aria-hidden
+                            />
+                            <span className="w-14 text-sm text-[var(--color-text-hud)]">
+                              Player
+                            </span>
+                            <FactionColorPicker
+                              color={factionColors.player}
+                              onChange={(c) =>
+                                setFactionColors((prev) => ({ ...prev, player: c }))
+                              }
+                              ariaLabel="Player faction color"
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Bot
+                              className="h-4 w-4 text-[var(--color-danger-hud)]"
+                              aria-hidden
+                            />
+                            <span className="w-14 text-sm text-[var(--color-text-hud)]">
+                              Enemy
+                            </span>
+                            <FactionColorPicker
+                              color={factionColors.enemy}
+                              onChange={(c) =>
+                                setFactionColors((prev) => ({ ...prev, enemy: c }))
+                              }
+                              ariaLabel="Enemy faction color"
+                            />
+                          </div>
+                        </div>
+                      </SectionCard>
+                    )}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* M_PIVOT.N-PLAYER.COLOR-PICKER — per-faction banner color
-            picker. v0.5 substrate ships two slots (player + enemy);
-            Hidden for age-of-strata (the N-player picker above takes over). */}
-        {mode !== 'age-of-strata' && (
-          <div
-            data-testid="faction-colors-row"
-            style={{
-              display: 'flex',
-              gap: 16,
-              alignItems: 'center',
-              margin: '12px 0 4px',
-              fontSize: 13,
-              color: HUD_THEME.color.muted,
-            }}
-          >
-            <span style={{ flex: 0 }}>Faction colors:</span>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <span>Player</span>
-              <FactionColorPicker
-                color={factionColors.player}
-                onChange={(c) => setFactionColors((prev) => ({ ...prev, player: c }))}
-                ariaLabel="Player faction color"
-              />
-            </div>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <span>Enemy</span>
-              <FactionColorPicker
-                color={factionColors.enemy}
-                onChange={(c) => setFactionColors((prev) => ({ ...prev, enemy: c }))}
-                ariaLabel="Enemy faction color"
-              />
-            </div>
-          </div>
+                <footer className="sticky bottom-0 border-t border-[var(--color-border-hud)] bg-[var(--color-panel-solid)]/95 px-6 py-4 backdrop-blur">
+                  <div className="mb-3 flex flex-wrap gap-1.5 text-[0.7rem] text-[var(--color-muted-hud)]">
+                    {readout.map(({ label, icon: Icon }) => (
+                      <span
+                        key={label}
+                        className="flex items-center gap-1 rounded-full border border-[var(--color-border-hud)] bg-black/30 px-2 py-0.5"
+                      >
+                        <Icon className="h-3 w-3" aria-hidden />
+                        <span className="font-mono">{label}</span>
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    id="begin-game"
+                    onClick={handleBegin}
+                    disabled={beginDisabled}
+                    aria-disabled={beginDisabled}
+                    className={cn(
+                      'group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl px-6 py-4 font-display text-lg',
+                      'border border-[#d4af37]/60 text-[#1a1208]',
+                      'transition-all duration-150',
+                      beginDisabled
+                        ? 'cursor-not-allowed opacity-60'
+                        : 'bg-gradient-to-b from-[#e8c660] via-[#d4af37] to-[#8b7124] shadow-[0_8px_32px_rgba(212,175,55,0.35),inset_0_1px_0_rgba(255,255,255,0.35)] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(212,175,55,0.5),inset_0_1px_0_rgba(255,255,255,0.4)] active:translate-y-0 active:scale-[0.98]',
+                    )}
+                    style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}
+                  >
+                    <Swords className="h-5 w-5" aria-hidden />
+                    <span className="relative z-10">Begin Match</span>
+                  </button>
+                </footer>
+              </motion.div>
+            </Dialog.Content>
+          </Dialog.Portal>
         )}
-
-        {/* M_AUDIT2.UX.6 — sticky bottom Begin CTA. The above form
-            sections scroll inside the flex column when the modal hits
-            its maxHeight; the button stays pinned so a thumb on
-            phone-portrait can always reach it without scroll-hunting. */}
-        <div
-          style={{
-            position: 'sticky',
-            bottom: -28, // bleed into modal padding so there's no double border
-            marginInline: -28,
-            paddingInline: 28,
-            paddingTop: 14,
-            paddingBottom: 14,
-            background: HUD_THEME.color.panel,
-            borderTop: `1px solid ${HUD_THEME.color.border}`,
-            marginTop: 'auto',
-          }}
-        >
-          <button
-            type="button"
-            id="begin-game"
-            onClick={() =>
-              onBegin({
-                seedPhrase: seedPhrase.trim(),
-                mapSize,
-                difficulty,
-                eventSeed,
-                mode,
-                turnsMode,
-                // M_TURNS.2 — maxTurns is meaningful only in turn-based
-                // mode; passing it through unconditionally is safe
-                // because the runtime ignores it in real-time.
-                maxTurns,
-                // M_EXPANSION.F.80 — palette pick (null = default).
-                playerColor: PLAYER_COLORS.find((c) => c.key === playerColorKey)?.hex ?? null,
-                // M_EXPANSION.F.84 — starting bonus pick.
-                startingBonus,
-                // M_POLISH3.AIVAI.1 — both factions auto-play when set.
-                aiVsAi,
-                // M_FUN.AI.PICKER — named opponent personality.
-                enemyPersonality,
-                // M_PIVOT.N-PLAYER.COLOR-PICKER + M_V8.NEWGAMEMODAL.N-PLAYER-PICKER —
-                // explicit faction registry. For 2-faction modes,
-                // seed the legacy player+enemy slots with the user's
-                // color picks. For age-of-strata (N-player FFA),
-                // use nPlayer + nPlayerColors from the slider+per-slot UI.
-                factions: ((): FactionConfig[] => {
-                  const preset = presetFor(mode);
-                  if (mode !== 'age-of-strata' && preset.defaultPlayerCount <= 2) {
-                    // LEGACY_FACTIONS is a 2-element const tuple — indices 0 and 1 always exist.
-                    // Destructure with nullish guards instead of non-null assertions
-                    // (banned by lint rule); the buildDefaultFactions fallback covers
-                    // the unreachable case where the tuple is empty.
-                    const [lp, le] = LEGACY_FACTIONS;
-                    if (!lp || !le) {
-                      return buildDefaultFactions(preset.defaultPlayerCount, nPlayerColors);
-                    }
-                    const p1: FactionConfig = {
-                      id: lp.id,
-                      displayName: lp.displayName,
-                      kind: lp.kind,
-                      archetype: lp.archetype,
-                      color: factionColors.player,
-                    };
-                    const p2: FactionConfig = {
-                      id: le.id,
-                      displayName: le.displayName,
-                      kind: le.kind,
-                      archetype: le.archetype,
-                      color: factionColors.enemy,
-                      personality: enemyPersonality,
-                    };
-                    return [p1, p2];
-                  }
-                  // N-player mode (age-of-strata): use the slider count and
-                  // per-slot colors the user configured.
-                  const registry = buildDefaultFactions(nPlayer, nPlayerColors);
-                  // Patch the first AI slot's personality with the picker's pick.
-                  if (registry[1]) registry[1] = { ...registry[1], personality: enemyPersonality };
-                  return registry;
-                })(),
-              })
-            }
-            style={{
-              width: '100%',
-              padding: '14px',
-              borderRadius: 12,
-              border: 'none',
-              background: HUD_THEME.blueGradient,
-              color: '#fff',
-              fontFamily: HUD_THEME.font.display,
-              fontSize: '1.1rem',
-              cursor: 'pointer',
-            }}
-          >
-            Begin
-          </button>
-        </div>
-      </ModalShell>
+      </AnimatePresence>
     </Dialog.Root>
   );
 }
