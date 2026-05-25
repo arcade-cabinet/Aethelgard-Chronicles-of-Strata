@@ -236,16 +236,15 @@ regressed pixel without the harness catching it first.
   (M_V7.CARRY.SAVE-V6-STATE + M_V7.TRAIN.WIDEN-ROLES); HIGH items
   fold into the existing M_V7.ECONOMY.REGISTRY scope.
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.CARRY.SAVE-V6-STATE — bump SNAPSHOT_VERSION
-  to 3; extend `GameSnapshot` interface + `SaveSnapshotSchema` Zod
-  + serializeGame writer + deserializeGame restorer for every v0.6
-  field (`diplomacy`, `diplomacyProposals`, `tradeCooldowns`,
-  `mythEvents`, `victoryRecord`, `portalStoneCooldowns`). Add Zod
-  uniqueness refine on `config.factions`. v2 → v3 migration arm
-  initializes the new fields from `createDiplomacyState()` etc.
-  Acceptance: a 4X-mode match with brokered alliances + active
-  myth event + portal-stone cooldown → save → load round-trips
-  identical state; v0.5/v0.6 v2 saves continue to load.
+- [x] M_V7.CARRY.SAVE-V6-STATE — SNAPSHOT_VERSION bumped to 3.
+  GameSnapshot + SaveSnapshotSchema extended for all 6 v0.6 fields
+  (diplomacy / diplomacyProposals / tradeCooldowns / mythEvents /
+  victoryRecord / portalStoneCooldowns). v2 → v3 migration arm keeps
+  every v2 save loading (empty defaults). FactionConfigSchema Zod refine
+  enforces unique ids (resolves HIGH-4). serializeGame writes; deserializeGame
+  defensively restores (per-field Zod loose validation + per-entry
+  defensive parse with hard caps). 6 round-trip tests + extended migration
+  tests (5 total) green. 1060 unit tests pass.
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.TRAIN.WIDEN-ROLES — widen `trainUnit`
   role param to all 9 PLAYER_UNIT_TYPES (Peon/Footman/Trebuchet/

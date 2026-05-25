@@ -82,14 +82,49 @@ export interface GameSnapshot {
   quakeShakeRemaining?: number;
   /** M_FUN.DYN — volcano state; absent on v0.3 saves (rebuilt fresh by startGame). */
   volcano?: VolcanoSnapshot;
+  /**
+   * M_V7.CARRY.SAVE-V6-STATE — every v0.6 runtime substrate field
+   * that holds gameplay-meaningful state mid-match. All optional so
+   * v0.5/v0.6 v2 saves continue to load (the v2→v3 migration arm
+   * initializes each from its `create*State()` default when absent).
+   *
+   * `diplomacy`: per-pair (a|b) Map serialized as Array<[key, entry]>.
+   * `diplomacyProposals`: pending non-aggression pacts (each carries
+   *   proposer/target/expiry, all serializable plain).
+   * `tradeCooldowns`: Map<relationKey, expirySec> serialized as Array<[k,v]>.
+   * `mythEvents`: active event id + expiry + last-fire clock.
+   * `victoryRecord`: kind + winner + detected-at, or null.
+   * `portalStoneCooldowns`: Map<factionId, expirySec> as Array<[k,v]>.
+   */
+  diplomacy?: Array<[string, DiplomacyRelationSnapshot]>;
+  diplomacyProposals?: Array<{ proposer: string; target: string; expiresAtSeconds: number }>;
+  tradeCooldowns?: Array<[string, number]>;
+  mythEvents?: { active: { id: string; expiresAtSeconds: number } | null; lastFireSeconds: number };
+  victoryRecord?: { kind: string; winner: string; detectedAtSeconds: number } | null;
+  portalStoneCooldowns?: Array<[string, number]>;
 }
 
-// M_FUN.DYN.FIX.SAVE-GAP — bumped to 2 to flag presence of the
-// dynamic-terrain blocks. v1 saves load fine: the migration leaves
-// the new fields undefined; deserializeGame uses fresh defaults
-// (no active fires, fresh volcano cooldown — the same state a
-// brand-new game has at t=0).
-const SNAPSHOT_VERSION = 2;
+/** Serialized form of one diplomacy relation entry — flat object. */
+interface DiplomacyRelationSnapshot {
+  relation: 'neutral' | 'ally' | 'enemy' | 'tributary';
+  dominant: string | null;
+  sinceClockSeconds: number;
+}
+
+// M_V7.CARRY.SAVE-V6-STATE — bumped to 3 to flag presence of the
+// v0.6 substrate blocks (diplomacy / proposals / cooldowns / mythEvents
+// / victoryRecord / portalStoneCooldowns). v2 saves load fine: the
+// v2→v3 migration arm leaves the new fields undefined; deserializeGame
+// uses fresh defaults from createDiplomacyState() etc. — the same state
+// a brand-new game has at t=0.
+//
+// History:
+//   v1 — initial save format (v0.3).
+//   v2 — M_FUN.DYN.FIX.SAVE-GAP added wildfires + quakeShakeRemaining
+//        + volcano blocks (all optional; v1 saves migrated).
+//   v3 — M_V7.CARRY.SAVE-V6-STATE added v0.6 substrate blocks
+//        (all optional; v2 saves migrated).
+const SNAPSHOT_VERSION = 3;
 
 /** ZoneState → serializable form (Set+Map → arrays). */
 function zoneToSnapshot(zone: ZoneState): ZoneSnapshot {
@@ -153,6 +188,36 @@ export function serializeGame(game: GameState): GameSnapshot {
       lavaTiles: Array.from(game.volcano.lavaTiles.entries()),
       fertileTiles: Array.from(game.volcano.fertileTiles.entries()),
     },
+    // M_V7.CARRY.SAVE-V6-STATE — round-trip every v0.6 substrate
+    // field. Maps serialize to Array<[k,v]> tuples; flat objects pass
+    // through. All optional in the schema — v2 saves load via the
+    // v2→v3 migration arm with empty defaults.
+    diplomacy: Array.from(game.diplomacy.relations.entries()).map(([key, entry]) => [
+      key,
+      {
+        relation: entry.relation,
+        dominant: entry.dominant,
+        sinceClockSeconds: entry.sinceClockSeconds,
+      },
+    ]),
+    diplomacyProposals: game.diplomacyProposals.pending.map((p) => ({
+      proposer: p.proposer,
+      target: p.target,
+      expiresAtSeconds: p.expiresAtSeconds,
+    })),
+    tradeCooldowns: Array.from(game.tradeCooldowns.cooldowns.entries()),
+    mythEvents: {
+      active: game.mythEvents.active ? { ...game.mythEvents.active } : null,
+      lastFireSeconds: game.mythEvents.lastFireSeconds,
+    },
+    victoryRecord: game.victoryRecord
+      ? {
+          kind: game.victoryRecord.kind,
+          winner: game.victoryRecord.winner,
+          detectedAtSeconds: game.victoryRecord.detectedAtSeconds,
+        }
+      : null,
+    portalStoneCooldowns: Array.from(game.portalStoneCooldowns.entries()),
   };
 }
 
@@ -261,6 +326,97 @@ export function deserializeGame(snap: GameSnapshot): GameState {
     restoreVolcanoTileMap(v.lavaTiles, game.volcano.lavaTiles);
     restoreVolcanoTileMap(v.fertileTiles, game.volcano.fertileTiles);
   }
+  // M_V7.CARRY.SAVE-V6-STATE — restore every v0.6 substrate field
+  // from the snapshot. Defensive: each field is OPTIONAL (v2 saves
+  // omit them; the empty createDiplomacyState() / createMythEventsState()
+  // / new Map() defaults from startGame are the right v2→v3 migration).
+  // Hard caps on entry counts prevent tampered-save memory blowups
+  // (16 factions × 16 = 256 pair entries max; 64 proposals max;
+  // 64 cooldowns each side; 1 active myth event; 1 victory record).
+  if (Array.isArray(snap.diplomacy)) {
+    for (const [keyRaw, entryRaw] of snap.diplomacy.slice(0, 256)) {
+      if (typeof keyRaw !== 'string' || keyRaw.length > 200) continue;
+      if (!entryRaw || typeof entryRaw !== 'object') continue;
+      const e = entryRaw as Partial<{
+        relation: string;
+        dominant: string | null;
+        sinceClockSeconds: number;
+      }>;
+      if (
+        e.relation !== 'ally' &&
+        e.relation !== 'enemy' &&
+        e.relation !== 'tributary' &&
+        e.relation !== 'neutral'
+      )
+        continue;
+      if (e.relation === 'neutral') continue; // empty Map keeps neutral default
+      game.diplomacy.relations.set(keyRaw, {
+        relation: e.relation,
+        dominant: typeof e.dominant === 'string' ? e.dominant : null,
+        sinceClockSeconds: safeFinite(e.sinceClockSeconds, 0),
+      });
+    }
+  }
+  if (Array.isArray(snap.diplomacyProposals)) {
+    for (const p of snap.diplomacyProposals.slice(0, 64)) {
+      if (!p || typeof p !== 'object') continue;
+      const proposer = (p as { proposer?: unknown }).proposer;
+      const target = (p as { target?: unknown }).target;
+      const expiresAtSeconds = (p as { expiresAtSeconds?: unknown }).expiresAtSeconds;
+      if (typeof proposer !== 'string' || proposer.length > 64) continue;
+      if (typeof target !== 'string' || target.length > 64) continue;
+      if (!Number.isFinite(expiresAtSeconds)) continue;
+      game.diplomacyProposals.pending.push({
+        proposer,
+        target,
+        expiresAtSeconds: expiresAtSeconds as number,
+      });
+    }
+  }
+  if (Array.isArray(snap.tradeCooldowns)) {
+    for (const pair of snap.tradeCooldowns.slice(0, 64)) {
+      if (!Array.isArray(pair) || pair.length !== 2) continue;
+      if (typeof pair[0] !== 'string' || pair[0].length > 200) continue;
+      if (!Number.isFinite(pair[1])) continue;
+      game.tradeCooldowns.cooldowns.set(pair[0], Math.max(0, pair[1] as number));
+    }
+  }
+  if (snap.mythEvents && typeof snap.mythEvents === 'object') {
+    const me = snap.mythEvents;
+    game.mythEvents.lastFireSeconds = safeFinite(me.lastFireSeconds, -1);
+    if (me.active && typeof me.active === 'object') {
+      const id = (me.active as { id?: unknown }).id;
+      const exp = (me.active as { expiresAtSeconds?: unknown }).expiresAtSeconds;
+      if (typeof id === 'string' && id.length > 0 && Number.isFinite(exp)) {
+        game.mythEvents.active = { id, expiresAtSeconds: exp as number };
+      }
+    }
+  }
+  if (snap.victoryRecord && typeof snap.victoryRecord === 'object') {
+    const vr = snap.victoryRecord;
+    const VALID_KINDS = new Set(['military', 'economic', 'scientific', 'diplomatic']);
+    if (
+      typeof vr.kind === 'string' &&
+      VALID_KINDS.has(vr.kind) &&
+      typeof vr.winner === 'string' &&
+      vr.winner.length > 0 &&
+      Number.isFinite(vr.detectedAtSeconds)
+    ) {
+      game.victoryRecord = {
+        kind: vr.kind as 'military' | 'economic' | 'scientific' | 'diplomatic',
+        winner: vr.winner,
+        detectedAtSeconds: vr.detectedAtSeconds,
+      };
+    }
+  }
+  if (Array.isArray(snap.portalStoneCooldowns)) {
+    for (const pair of snap.portalStoneCooldowns.slice(0, 64)) {
+      if (!Array.isArray(pair) || pair.length !== 2) continue;
+      if (typeof pair[0] !== 'string' || pair[0].length > 64) continue;
+      if (!Number.isFinite(pair[1])) continue;
+      game.portalStoneCooldowns.set(pair[0], Math.max(0, pair[1] as number));
+    }
+  }
   // Step 4 — run a zero-delta tick so derived caches (buildSites map,
   // selection ids) re-sync with the restored world.
   runEconomyTick(game, 0);
@@ -366,6 +522,12 @@ function pickEconomy(eco: unknown): GameEconomy {
  * v1 → v2: M_FUN.DYN.FIX.SAVE-GAP added the wildfires +
  * quakeShakeRemaining + volcano blocks. v1 saves migrate by
  * filling defaults.
+ *
+ * v2 → v3: M_V7.CARRY.SAVE-V6-STATE added every v0.6 runtime
+ * substrate field (diplomacy / proposals / cooldowns / mythEvents /
+ * victoryRecord / portalStoneCooldowns). v2 saves never carried
+ * these — leave each undefined so the deserialize path keeps the
+ * fresh-from-startGame defaults (createDiplomacyState() etc).
  */
 type SnapshotMigration = (snap: Record<string, unknown>) => Record<string, unknown>;
 const SNAPSHOT_MIGRATIONS: Record<number, SnapshotMigration> = {
@@ -384,6 +546,18 @@ const SNAPSHOT_MIGRATIONS: Record<number, SnapshotMigration> = {
     // volcano stays undefined so the deserialize path keeps the
     // fresh-from-startGame placement (which may or may not have
     // placed a volcano this seed — that's deterministic anyway).
+  }),
+  // v2 → v3 (M_V7.CARRY.SAVE-V6-STATE): diplomacy + mythEvents +
+  // cooldowns + victoryRecord all added. v2 saves predate the
+  // v0.6 substrate entirely, so empty defaults are correct (no
+  // brokered alliances, no active myth events, no recorded victory).
+  // deserializeGame's Optional<>?.()-style restore leaves each field
+  // at its createDiplomacyState() / createMythEventsState() default
+  // when absent from the snapshot.
+  2: (snap) => ({
+    ...snap,
+    version: 3,
+    // No active state to carry forward; all defaults are valid.
   }),
 };
 
@@ -450,7 +624,19 @@ const SaveSnapshotSchema = z.object({
     // LEGACY saves omit this; startGame defaults to LEGACY_FACTIONS
     // overlay. v0.6+ saves write the user's full registry so a 6-faction
     // 4X match round-trips exactly.
-    factions: z.array(FactionConfigSchema).min(1).max(16).optional(),
+    // M_V7.CARRY.SAVE-V6-STATE — refine: enforce unique ids across
+    // the array. Without this, a tampered save with [{id:'player'}, {id:'player'}]
+    // loads cleanly + silently shadows the second slot via findFaction
+    // first-match semantics (HIGH-4 from the v0.7 opening review).
+    factions: z
+      .array(FactionConfigSchema)
+      .min(1)
+      .max(16)
+      .refine(
+        (arr) => new Set(arr.map((f) => f.id)).size === arr.length,
+        'duplicate faction ids in registry',
+      )
+      .optional(),
   }),
   world: z.object({ entities: z.array(z.unknown()).max(MAX_ENTITY_COUNT) }).and(_OpaqueObj),
   economy: z.object({ player: _OpaqueObj, enemy: _OpaqueObj }),
@@ -465,6 +651,25 @@ const SaveSnapshotSchema = z.object({
   wildfires: z.array(z.unknown()).optional(),
   quakeShakeRemaining: z.number().optional(),
   volcano: _OpaqueObj.optional(),
+  // M_V7.CARRY.SAVE-V6-STATE — v0.6 substrate blocks. All optional;
+  // v2 saves load via the v2→v3 migration arm with empty defaults.
+  // Strict shape would reject the legacy saves, so each is loosely
+  // typed at the Zod layer + defensively parsed in deserializeGame.
+  diplomacy: z
+    .array(z.tuple([z.string(), _OpaqueObj]))
+    .max(256)
+    .optional(),
+  diplomacyProposals: z.array(_OpaqueObj).max(64).optional(),
+  tradeCooldowns: z
+    .array(z.tuple([z.string(), z.number()]))
+    .max(64)
+    .optional(),
+  mythEvents: _OpaqueObj.optional(),
+  victoryRecord: _OpaqueObj.nullable().optional(),
+  portalStoneCooldowns: z
+    .array(z.tuple([z.string(), z.number()]))
+    .max(64)
+    .optional(),
 });
 
 function validateSnapshot(snap: unknown): asserts snap is GameSnapshot {
