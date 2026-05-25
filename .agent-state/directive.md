@@ -224,12 +224,14 @@ The v0.5 grinder report named six follow-ups outside the centerpiece
 substrate. Each lands in v0.6 as a self-contained commit-unit BEFORE
 the portal/diplomacy work begins so the substrate is fully complete.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.SAVE-N-PLAYER — serialize-game.ts:
-  GameSnapshot.config gains optional `factions: FactionConfig[]`;
-  serializeGame writes the registry; deserializeGame restores it
-  before startGame runs. v0.4 saves continue to load (factions field
-  absent → LEGACY_FACTIONS fallback). Acceptance: a 6-faction save
-  round-trips identically (same id+color+kind set per slot).
+- [x] M_V6.CARRY.SAVE-N-PLAYER — GameSnapshot.config gains optional
+  `factions: FactionConfig[]` + FactionConfigSchema Zod-validates id/color/
+  archetype/kind/personality. serializeGame writes the full registry
+  (deep-cloned); deserializeGame restores via startGame(snap.config). v0.4
+  LEGACY saves continue to load (factions field absent → LEGACY_FACTIONS
+  overlay fallback). 5 unit tests pin: LEGACY default round-trip, 6-faction
+  round-trip with all slot ids/colors preserved, v0.4 save fallback,
+  tampered color rejection, > 16 faction cap rejection.
 - [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.CAMP-DISCOVERY — camp clearing
   reward extends from +50 wood / +50 stone to +1 random Discovery
   pulled from a deterministic pool. Discovery flag is granted via
