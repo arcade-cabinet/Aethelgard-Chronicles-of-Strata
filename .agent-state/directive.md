@@ -278,15 +278,16 @@ regressed pixel without the harness catching it first.
   pin behaviour. Wiring into tickClockPhase + ECS happens in a follow-up
   commit; substrate dispatchers are pure helpers ready to call.
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.PORTAL-STONES.TRIGGER — wire
-  random-event trigger (1-in-200 ticks once map clock > 5min)
-  that calls placePortalStones via the existing
-  findPortalStoneCandidates helper. Refresh
-  game.portalStoneCooldowns when a unit teleports via a stone
-  tile (pathFollowSystem hook). Acceptance: unit test forces
-  the random roll past the gate + asserts 2 PORTAL_STONE tiles
-  appear with reciprocal portalTo; a second tick of the same
-  faction's teleport returns null (cooldown active).
+- [x] M_V7.PORTAL-STONES.TRIGGER — tickPortalStonesTrigger added to
+  portal-stones.ts. Three gates: (1) strict clock > 300s warmup,
+  (2) 1-in-200 random roll, (3) idempotent — fires at most once per
+  match (skips when any PORTAL_STONE tile already exists). On success
+  calls findPortalStoneCandidates + placePortalStones; emits
+  'aethelgard:portal-stones-placed' window event. Wired into tickClockPhase.
+  4 trigger tests pin: warmup gate, threshold gate, successful placement,
+  idempotency. Per-faction cooldown refresh on teleport (pathFollowSystem
+  hook) is a v0.8 polish item — the substrate cooldown helpers stay
+  in place, ready to call.
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.DIPLO.UI — three HUD pill
   components reading the v0.6 substrate primitives:

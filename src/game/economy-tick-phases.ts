@@ -53,6 +53,7 @@ import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 import type { GameState } from './game-state';
 import { expireProposals } from './diplomacy-border';
+import { tickPortalStonesTrigger } from '@/world/portal-stones';
 import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
 import { detectVictory } from './victory-conditions';
@@ -74,6 +75,19 @@ export function tickClockPhase(game: GameState, delta: number): void {
   // separate optional escalation that the HUD pill can wire on
   // explicit reject.
   expireProposals(game.diplomacyProposals, game.clock.elapsed);
+  // M_V7.PORTAL-STONES.TRIGGER — random-event roll for the rare
+  // portal-stones placement (1-in-200 once map clock > 5min,
+  // at-most-once-per-match). Mutates board.tiles on a successful
+  // roll. Idempotent: if any PORTAL_STONE already exists, the
+  // trigger skips.
+  const portalPair = tickPortalStonesTrigger(game.board, game.eventRng, game.clock.elapsed);
+  if (portalPair && typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('aethelgard:portal-stones-placed', {
+        detail: { keyA: portalPair.keyA, keyB: portalPair.keyB },
+      }),
+    );
+  }
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 }
 

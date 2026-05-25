@@ -113,14 +113,14 @@ describe('pickOracleVision', () => {
     expect(
       pickOracleVision(
         [],
-        () => 0.5,
+        () => '0,0',
         () => 0.5,
       ),
     ).toBeNull();
     expect(
       pickOracleVision(
         ['player'],
-        () => 0.5,
+        () => '0,0',
         () => 0.5,
       ),
     ).toBeNull();
