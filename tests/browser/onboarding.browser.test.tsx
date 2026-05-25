@@ -22,8 +22,10 @@ describe('onboarding overlay (M9.1c)', () => {
     }
     expect(panel).not.toBeNull();
     expect(panel?.textContent ?? '').toMatch(/Aethelgard/i);
-    // a Skip button is rendered
-    const skipBtn = [...document.querySelectorAll('button')].find((b) => b.textContent === 'Skip');
+    // a Skip button is rendered (M_HUD.SHELL.4 — label is now "Skip tutorial")
+    const skipBtn = [...document.querySelectorAll('button')].find(
+      (b) => b.textContent?.trim() === 'Skip tutorial' || b.textContent?.trim() === 'Skip',
+    );
     expect(skipBtn).toBeDefined();
     skipBtn?.click();
     // poll for the overlay to close
