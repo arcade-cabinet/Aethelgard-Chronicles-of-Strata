@@ -138,6 +138,16 @@
       "moveCost": 1.0,
       "appliesAttribute": null,
       "attributeStrength": 0
+    },
+    "PORTAL_STONE": {
+      "$comment": "M_V6.PORTAL.STONES-EVENT — rare event-placed portal pair on opposite ends of the map. Walkable; per-faction 60s cooldown on use lives in GameState.portalStoneCooldowns. Map-gen never produces this tile (event-driven only).",
+      "elevation": 2,
+      "walkable": true,
+      "buildable": false,
+      "habitable": false,
+      "moveCost": 1.0,
+      "appliesAttribute": null,
+      "attributeStrength": 0
     }
   },
 

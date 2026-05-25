@@ -52,6 +52,10 @@ export const TERRAIN_MOVE_COST: Record<BiomeType, number> = {
   // M_V6.CARRY.RUINS-BIOME — cleared-camp tiles cost 1× like grass;
   // the territory is recoverable. Decorative-only difference.
   RUINS: 1,
+  // M_V6.PORTAL.STONES-EVENT — portal-stone tiles are walkable at
+  // baseline cost; the teleport is the gameplay surface, not the
+  // movement cost.
+  PORTAL_STONE: 1,
 };
 
 export function moveCostFor(biome: BiomeType): number {

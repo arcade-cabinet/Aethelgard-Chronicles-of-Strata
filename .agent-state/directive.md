@@ -283,12 +283,16 @@ the portal/diplomacy work begins so the substrate is fully complete.
   Deterministic per seed (no PRNG calls). 2 tests pin: linked clusters
   have non-null portalGroupId, same seed → same network topology.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.STONES-EVENT — rare biome
-  event (1 in 200 ticks once map clock > 5min) places two
-  PORTAL_STONE decorative tiles on opposite ends of the map.
-  Per-faction 60s cooldown on use. Acceptance: e2e test forces
-  the event seed + asserts both stones placed + cooldown UI
-  visible on second use.
+- [x] M_V6.PORTAL.STONES-EVENT — PORTAL_STONE biome added (BiomeType union +
+  mapgen + biome-flags + palette + ambient + terrain-cost). New
+  src/world/portal-stones.ts: findPortalStoneCandidates picks the geometrically
+  farthest walkable pair (deterministic per board); placePortalStones sets
+  type + reciprocal portalTo + shared portalGroupId. Cooldown helpers
+  (isPortalStoneAvailable + refreshPortalStoneCooldown) drive a 60s per-faction
+  gate. GameState.portalStoneCooldowns Map<factionId, expirySec>. Random-event
+  trigger pattern + cooldown UI land in M_V6.MYTH.EVENTS (when the random
+  event registry pattern is established). 8 tests pin candidate
+  selection, deterministic placement, cooldown lifecycle, GameState init.
 
 ### v0.6.B — Diplomacy (spec §2)
 

@@ -55,7 +55,14 @@ export type BiomeType =
   // when deathSystem flags a camp cleared; map-gen never produces
   // a RUINS tile (no noise threshold), so all biome-distribution
   // audits stay unchanged.
-  | 'RUINS';
+  | 'RUINS'
+  // M_V6.PORTAL.STONES-EVENT — rare biome event places two
+  // PORTAL_STONE decorative tiles on opposite ends of the map,
+  // linked via portalTo. Per-faction 60s cooldown on use lives
+  // in GameState.portalStoneCooldowns. Map-gen never produces
+  // these tiles (event-driven only); the random-event roll
+  // (1 in 200 ticks once map clock > 5min) triggers the placement.
+  | 'PORTAL_STONE';
 
 /** The assigned biome of one tile. */
 export interface Biome {

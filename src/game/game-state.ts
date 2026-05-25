@@ -229,6 +229,14 @@ export interface GameState {
    * (M_PIVOT.N-PLAYER.COLOR-PICKER) read color/archetype from here.
    */
   factions: FactionConfig[];
+  /**
+   * M_V6.PORTAL.STONES-EVENT — per-faction portal-stone cooldown map.
+   * Key: factionId. Value: clock.elapsed seconds at which the cooldown
+   * expires. Absent entry = never used = available. Refreshed via
+   * refreshPortalStoneCooldown() when a unit of that faction teleports
+   * through a portal stone.
+   */
+  portalStoneCooldowns: Map<string, number>;
   /** Per-faction resource totals and supply — both factions are symmetric. */
   economy: Record<Faction, GameEconomy>;
   /** The hex key of the player's home-base (Town Hall) tile. */
@@ -870,6 +878,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     world,
     playerPawn,
     factions,
+    portalStoneCooldowns: new Map<string, number>(),
     economy,
     townHallKey,
     enemyBaseKey,

@@ -215,6 +215,17 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: null,
     decorationDensity: 0.2,
   },
+  // M_V6.PORTAL.STONES-EVENT — event-placed portal pair. Walkable but
+  // NOT buildable / habitable (you can't stake a House on a portal).
+  PORTAL_STONE: {
+    walkable: true,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: null,
+  },
 };
 
 /** Resolve the flag tuple for a biome type. */

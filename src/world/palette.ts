@@ -35,6 +35,9 @@ export const BIOME_COLORS: Record<BiomeType, string> = {
   // barbarian camps. Distinct enough from GRASS / DESERT that a
   // returning player can see "I cleared this" at a glance.
   RUINS: '#78716c',
+  // M_V6.PORTAL.STONES-EVENT — violet swirl reads as 'magical' /
+  // 'gateway' — distinct from the QUICKSAND amber + LAVA red.
+  PORTAL_STONE: '#a855f7',
 };
 
 /**
@@ -64,4 +67,5 @@ export const BIOME_COLORS_EVENING: Record<BiomeType, string> = {
   LAVA: '#f97316', // molten glow reads brighter against the sunset
   QUICKSAND: '#fbbf24', // amber swirl reads warmer at dusk
   RUINS: '#6b6660', // cleared-camp stone reads slightly warmer at dusk
+  PORTAL_STONE: '#9333ea', // violet portal swirl saturates against dusk
 };
