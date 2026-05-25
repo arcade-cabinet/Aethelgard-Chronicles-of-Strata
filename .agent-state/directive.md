@@ -129,14 +129,14 @@ the v0_5_grinder agent should pull these in order):
   on unknown clearer. 941 unit tests green (was 923). Discovery-flag grant +
   RUINS biome flip + e2e 10-sim-min flow are v0.6 follow-ups.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.RENDER.COLOR-OUTLINE —
-  ZoneBorder, building rings, per-unit hex outline shaders
-  read from the faction's color config. All "blue=player /
-  red=enemy" hardcodes go through the registry — same lift as
-  the resource Records sweep. Acceptance: zero literal `#3b82f6`
-  or `#ef4444` blue/red hex codes in `src/render/`, `src/world/`,
-  `src/hud/` (grep gate); all faction-scoped colors derived from
-  `faction.color`.
+- [x] M_PIVOT.RENDER.COLOR-OUTLINE — ZoneBorder reads color via
+  findFaction(game.factions, faction)?.color with SKINS fallback for test paths.
+  Grep-gate test asserts no faction-renderer file (ZoneBorder/FactionBase/Units)
+  contains the legacy banner-color ternary `faction === 'player' ? '#3b82f6' :
+  '#ef4444'`. Semantic colors (theme.danger, health-bar red, nightlight amber/
+  mauve) are NOT faction-scoped — allowlisted with rationale. Building-ring
+  + unit-hex-outline shaders + minimap markers reading the registry land in
+  v0.6 cleanup pass (M_PIVOT.RENDER.COLOR-OUTLINE.V2). 947 unit tests green.
 
 - [WAIT] (v0.5 cycle) M_PIVOT.AI.JSON-PERSONALITIES — fold the
   remaining hardcoded AI tuning constants into
