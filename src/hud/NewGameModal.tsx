@@ -184,10 +184,16 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     setPresetModified(false);
     // M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — reset N-player count and
     // colors to the preset default when switching modes.
+    // NOTE: seedPhrase is intentionally NOT in the dep array here —
+    // including it would re-seed colors on every seed-phrase keystroke,
+    // silently discarding any per-slot customizations the user made.
+    // The initial color seed uses the seedPhrase at the moment of mode
+    // switch; subsequent slot edits are handled by the slider's onChange.
     const n = preset.defaultPlayerCount;
     setNPlayer(n);
     setNPlayerColors(defaultFactionColors(n, seedPhrase));
-  }, [mode, seedPhrase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   // Override wrappers that flip the "Custom Realm" marker (M_BRAND.3).
   const setMapSizeOverride = (next: MapSizeKey) => {

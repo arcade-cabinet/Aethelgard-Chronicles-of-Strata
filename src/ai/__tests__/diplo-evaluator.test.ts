@@ -15,6 +15,7 @@ import { DiplomaticEvaluator } from '@/ai/evaluators/diplomatic';
 import { AiPlayer } from '@/ai/ai-player';
 import { startGame } from '@/game/game-state';
 import { createZoneState, type ZoneState } from '@/game/zone';
+import { buildDefaultFactions } from '@/config/factions';
 
 /** Build a minimal ZoneState with a given set of controlled tile keys. */
 function makeZone(keys: string[]): ZoneState {
@@ -92,5 +93,36 @@ describe('M_V8.AI.DIPLO-EVALUATOR', () => {
     const desire = evaluator.calculateDesirability(ai);
     // No other faction → no diplomacy action possible → desirability 0.
     expect(desire).toBe(0);
+  });
+
+  it('ProposePact fires for N-player faction pair (ai-3 vs ai-4)', () => {
+    // M_V8.REVIEWER.FULL-CYCLE (H-2) — verify DiplomaticEvaluator correctly
+    // indexes game.zones by string for faction ids beyond 'player'/'enemy'.
+    // Before the H-2 fix: game.zones[fc.id as 'player'|'enemy'] silently
+    // returned undefined for 'ai-3' and 'ai-4', making ProposePact a no-op.
+    const game = startGame({
+      seedPhrase: 'diplo-eval-n-player',
+      mapSize: 10,
+      difficulty: 'normal',
+      eventSeed: 'diplo-eval-n-player-ev',
+      factions: buildDefaultFactions(4, ['#f00', '#0f0', '#00f', '#ff0']),
+    });
+
+    // Overwrite the N-player faction zones with adjacent tiles so borders touch.
+    // startGame (H-2 fix) seeds all factions in game.zones; here we replace
+    // ai-3 and ai-4's empty zones with ones that share axial neighbours.
+    const zones = game.zones as Record<string, ZoneState>;
+    zones['ai-3'] = makeZone(['0,0', '0,1']);
+    zones['ai-4'] = makeZone(['1,0', '1,1']);
+
+    // Create AI player for ai-3 faction (cast: AiPlayer stores Faction internally,
+    // but game logic treats it as string via `owner.faction as string`).
+    const ai = new AiPlayer('ai-3' as 'enemy');
+    ai.game = game;
+
+    const evaluator = new DiplomaticEvaluator(1.0);
+    const desire = evaluator.calculateDesirability(ai);
+    // Borders touch → ProposePact should be available → desirability > 0.
+    expect(desire).toBeGreaterThan(0);
   });
 });

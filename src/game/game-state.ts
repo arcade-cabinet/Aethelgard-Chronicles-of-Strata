@@ -965,10 +965,30 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     randomEvents: createRandomEventsState(),
     research: createResearch(),
     rally: createRally(),
-    zones: seedZonesFromAttractors({ player: createZoneState(), enemy: createZoneState() }, board, {
-      player: center,
-      enemy: enemyBaseTile,
-    }),
+    zones: (() => {
+      // M_V8.REVIEWER.FULL-CYCLE (H-2) — seed zone states for all factions,
+      // not just the legacy 'player'/'enemy' pair. N-player faction ids get
+      // empty zones (no starting territory, expanded by the game loop).
+      // seedZonesFromAttractors populates player+enemy tiles; extra slots
+      // start empty so DiplomaticEvaluator can index game.zones by any id.
+      const baseZones: Record<Faction, ZoneState> = {
+        player: createZoneState(),
+        enemy: createZoneState(),
+      };
+      const seeded = seedZonesFromAttractors(baseZones, board, {
+        player: center,
+        enemy: enemyBaseTile,
+      });
+      // Attach extra N-player slots as plain string-keyed entries.
+      // The field type is Record<Faction, ZoneState> but the runtime
+      // object is a superset — accesses by non-Faction string id return
+      // the correct ZoneState. DiplomaticEvaluator uses `as Record<string, ...>`
+      // at the call site to avoid the type-narrowing restriction.
+      for (const fc of config.factions ?? LEGACY_FACTIONS) {
+        if (!(fc.id in seeded)) (seeded as Record<string, ZoneState>)[fc.id] = createZoneState();
+      }
+      return seeded;
+    })(),
     score: { player: 0, enemy: 0 },
     // M_V8.WONDER-TIMERS.N-PLAYER — seed all faction ids (Infinity = no Wonder yet).
     wonderTimers: Object.fromEntries(

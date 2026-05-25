@@ -196,11 +196,14 @@ export function useAudio(game: GameState): void {
     //     a defeat crescendo deserves the same musical breath)
     if (currentOutcome === 'playing') {
       let imminent = false;
-      // Wonder edge — both factions, both directions.
-      const wp = game.wonderTimers?.player;
-      const we = game.wonderTimers?.enemy;
-      if (typeof wp === 'number' && wp > 0 && wp < 3) imminent = true;
-      if (!imminent && typeof we === 'number' && we > 0 && we < 3) imminent = true;
+      // Wonder edge — all registered factions (M_V8.WONDER-TIMERS.N-PLAYER).
+      // Any faction within 3s of wonder-win triggers the crescendo.
+      for (const wt of Object.values(game.wonderTimers ?? {})) {
+        if (typeof wt === 'number' && wt > 0 && wt < 3) {
+          imminent = true;
+          break;
+        }
+      }
       // Enemy TownHall HP edge.
       if (!imminent) {
         for (const e of game.world.query(FactionBase, Health)) {
