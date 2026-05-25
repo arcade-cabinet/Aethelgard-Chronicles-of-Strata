@@ -5,6 +5,40 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.14](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.13...v0.1.14) (2026-05-25)
+
+
+### Bug Fixes
+
+* **ci:** raise global Playwright CI timeout 60s→180s + action 30s→60s ([#41](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/41)) ([8864d89](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/8864d8930ef1e018c2f5d31995e85e0edcd00d6e))
+
+
+### Performance
+
+* **e2e:** batch n-player sim advance into single page.evaluate ([#43](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/43)) ([994aa20](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/994aa20c4f90795d357903cb771da3dcb5768a6d))
+
+## [0.1.13](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.12...v0.1.13) (2026-05-25)
+
+
+### Bug Fixes
+
+* **e2e:** raise n-player-camp-clear timeout to 180s for CI headroom ([#38](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/38)) ([8a0dc7b](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/8a0dc7b73e148c02c4c3b2f632ff3741ce24c649))
+
+## [0.1.12](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.11...v0.1.12) (2026-05-25)
+
+
+### Bug Fixes
+
+* **format:** biome format src/world/Units.tsx ([#37](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/37)) ([9a3ff94](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/9a3ff941335d3f68c1930ea3bdd4c5022fc75218))
+* **test:** raise replay-determinism property-test timeout to 30s ([#33](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/33)) ([7b796d3](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/7b796d39f8466da838ce3326df136f7fa4f98f40))
+
+## [0.1.11](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.10...v0.1.11) (2026-05-25)
+
+
+### Features
+
+* **v0.7:** substrate→player polish + 2 CRITICAL fixes + 11 work-units shipped ([#31](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/31)) ([115a886](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/115a88662cf069b1d7675a564facab667db1c9d8))
+
 ## [0.1.10](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.9...v0.1.10) (2026-05-25)
 
 
