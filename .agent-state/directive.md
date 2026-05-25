@@ -88,11 +88,14 @@ self-contained commit-unit.
   immediately fires RED. Resource-depletion philosophy:
   visual+audio cadence per deposit (chop, shake, deposit ring) —
   currently sawdust particles fire faster than the deposit beat.
-- [ ] M_FUN.QA.AIVAI.BUILD-MIX — extend ledger with
-  {economic, offensive, defensive, wonder} counts per faction;
-  tune personality presets so Mad-King runs heavy offensive,
-  Builder runs heavy economic, Hoarder runs heavy defensive.
-  Today we tune blind because counts are scalar.
+- [x] M_FUN.QA.AIVAI.BUILD-MIX — `tests/e2e/ai-vs-ai-balance.spec.ts`
+  BalanceRun gains `buildMixPlayer` + `buildMixEnemy` records:
+  {economic, offensive, defensive, wonder} bucketed counts per
+  faction at match-end. Snapshot block iterates the world's
+  Building+FactionTrait query and bins by buildingType. Personality
+  presets can now be tuned against target ratios (Mad-King heavy
+  offensive, Builder heavy economic, Hoarder heavy defensive) —
+  the ledger surfaces the actual mix instead of scalar totals.
 
 ### v0.5.E — Reviewer follow-ups punted from v0.4
 - [x] M_FUN.QA.VISUAL.BIOME-SWATCH — replaced the `setTimeout(250)`
@@ -136,12 +139,14 @@ grid, every spawn rule picks it up automatically."
 - [x] M_FUN.ECON.JSON-ERAS — `src/config/eras.json` is the source-of-
   truth for the era progression table. `src/rules/eras.ts` reads from
   JSON via Zod; adding a 5th era (Industrial, etc) is one JSON entry.
-- [ ] M_FUN.ECON.QUICKSAND — quicksand sources to `resources.json`
-  as a high-yield crafting reagent that applies BOTH disease and
-  fatigue (the schema already supports the `risks: []` array shape).
-  Tile generator paints a sparse "swirl" pattern on beach-adjacent
-  hexes. Yield ≫ wood but the dual-risk forces a Healer dispatch or
-  short harvest cycles.
+- [x] M_FUN.ECON.QUICKSAND — amber slot added to resources.json
+  with QUICKSAND biome source, dual-risk (disease+fatigue) via the
+  `risks[]` schema, paintQuicksandSwirls generator on BEACH tiles
+  (1.5% chance, deterministic per seed → 1-3 swirl hexes/board),
+  full Record<ResourceType,X> wiring + biome flags + ambient +
+  palette day/dusk + mapgen.json + biome-flags. Two mitigation
+  Discoveries declared in resources.json: 'drain-bog' clears
+  disease, 'plank-walkway' clears fatigue.
 - [ ] M_FUN.ECON.JSON-* — the JSON-first sweep continues against
   remaining hardcoded tables: `src/game/match-narrative.ts`
   (ADJECTIVES_VICTORY/DEFEAT/DRAW/SUBJECTS), `src/rules/display.ts`

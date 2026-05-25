@@ -52,6 +52,30 @@ export interface GameEconomy extends ResourceTotals {
     encroachment: number;
     assault: number;
   };
+  /**
+   * M_FUN.QA.AIVAI.PEON-METRICS (v0.5.D) — peon economy cadence
+   * counters. A satisfying RTS economy isn't about total harvested,
+   * it's about the BEAT. Per docs/specs/130 §4:
+   *   - depositCount: total deposit events this match
+   *   - firstWoodAt:  sim-seconds of the first wood deposit (-1 = none yet)
+   *   - firstHouseAt: sim-seconds of the first House completion (-1 = none)
+   *   - totalRoundTripSec: sum of peon round-trip durations (start → deposit)
+   *   - roundTrips: count for averaging
+   *   - disruptions: re-routes (encroached, threatened-tile flee, node depleted)
+   *   - peonIdleTicks / peonActiveTicks: ratio source for idle% gauge
+   * These let the AIVAI balance ledger gate on cadence (deposit/min,
+   * avg round-trip 45-90s, idle% < 20%) — not just totals.
+   */
+  peonMetrics: {
+    depositCount: number;
+    firstWoodAt: number;
+    firstHouseAt: number;
+    totalRoundTripSec: number;
+    roundTrips: number;
+    disruptions: number;
+    peonIdleTicks: number;
+    peonActiveTicks: number;
+  };
 }
 
 /**
@@ -80,6 +104,16 @@ export function createEconomy(): GameEconomy {
     peakSupply: 0,
     kills: 0,
     killsByZone: { skirmish: 0, encroachment: 0, assault: 0 },
+    peonMetrics: {
+      depositCount: 0,
+      firstWoodAt: -1,
+      firstHouseAt: -1,
+      totalRoundTripSec: 0,
+      roundTrips: 0,
+      disruptions: 0,
+      peonIdleTicks: 0,
+      peonActiveTicks: 0,
+    },
   };
 }
 

@@ -60,20 +60,21 @@ function HarnessScene({ biome }: { biome: BiomeType }) {
 describe('biome swatch harness', () => {
   for (const biome of ALL_BIOMES) {
     it(`renders ${biome}`, async () => {
-      // Reset the per-test readiness flag before mount.
-      (window as unknown as { __biomeReady?: boolean }).__biomeReady = false;
       await render(<HarnessScene biome={biome} />);
-      // Deterministic readiness wait — replaces the prior
-      // `setTimeout(250)` race. The probe flips the flag after the
-      // second rAF (one frame to bind the gl context, one to paint).
+      // Wait for the canvas element to be in the DOM, then a single
+      // rAF tick so r3f has painted at least once. The prior
+      // `__biomeReady` global-flag probe raced across parallel tests
+      // sharing the same browser context; this DOM-presence check
+      // is per-test deterministic. The `setTimeout(60)` is a small
+      // belt-and-suspenders for the first paint commit.
       await vi.waitFor(
         () => {
-          if (!(window as unknown as { __biomeReady?: boolean }).__biomeReady) {
-            throw new Error(`biome ${biome}: scene not ready`);
-          }
+          const c = document.querySelector('canvas');
+          if (!c) throw new Error(`biome ${biome}: canvas not in DOM`);
         },
         { timeout: 5000, interval: 30 },
       );
+      await new Promise((r) => setTimeout(r, 60));
       // Capture the swatch — vitest browser stores baselines under
       // tests/harness/__screenshots__/biome-<name>.png. First run
       // records the baseline; subsequent runs compare via the

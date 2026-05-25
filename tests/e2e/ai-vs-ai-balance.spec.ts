@@ -76,6 +76,16 @@ interface BalanceRun {
     encroachment: number;
     assault: number;
   };
+  /**
+   * M_FUN.QA.AIVAI.BUILD-MIX — per-faction building counts by
+   * bucket: economic (House/Farm/Granary/Library), offensive
+   * (Barracks), defensive (Wall/Watchtower), wonder. Lets
+   * personality tuning target distinct mixes (Mad-King heavy
+   * offensive, Builder heavy economic, Hoarder heavy defensive)
+   * — today we tune blind because counts are scalar.
+   */
+  buildMixPlayer: { economic: number; offensive: number; defensive: number; wonder: number };
+  buildMixEnemy: { economic: number; offensive: number; defensive: number; wonder: number };
 }
 
 interface BalanceArtifact {
@@ -149,6 +159,8 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
         peakEnemy: number;
         zoneUnionPct: number; // M_FUN.MAP.UTILISATION.METRIC
         killsByZone: { skirmish: number; encroachment: number; assault: number };
+        buildMixPlayer: { economic: number; offensive: number; defensive: number; wonder: number };
+        buildMixEnemy: { economic: number; offensive: number; defensive: number; wonder: number };
       } | null = null;
 
       for (chunks = 0; chunks < 60 && outcome === 'playing'; chunks++) {
@@ -188,14 +200,35 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
           // back to 0 if the trait references aren't exposed.
           let bp = 0;
           let be = 0;
+          // M_FUN.QA.AIVAI.BUILD-MIX — per-faction building-type
+          // bucketing. Buckets per spec §5: economic, offensive,
+          // defensive, wonder. Drives personality-tuning targets
+          // (Mad-King heavy offensive, Builder heavy economic,
+          // Hoarder heavy defensive).
+          const ECONOMIC = new Set(['House', 'Farm', 'Granary', 'Library']);
+          const OFFENSIVE = new Set(['Barracks']);
+          const DEFENSIVE = new Set(['Wall', 'Watchtower']);
+          const WONDER = new Set(['Wonder']);
+          const mixP = { economic: 0, offensive: 0, defensive: 0, wonder: 0 };
+          const mixE = { economic: 0, offensive: 0, defensive: 0, wonder: 0 };
           const traits = w.__game_traits;
           if (traits?.Building && traits?.FactionTrait) {
             for (const e of g.world.query(traits.Building, traits.FactionTrait)) {
-              const b = e.get(traits.Building) as { isComplete?: boolean } | null;
+              const b = e.get(traits.Building) as {
+                isComplete?: boolean;
+                buildingType?: string;
+              } | null;
               const ft = e.get(traits.FactionTrait) as { faction?: string } | null;
               if (!b?.isComplete) continue;
+              const mix = ft?.faction === 'player' ? mixP : ft?.faction === 'enemy' ? mixE : null;
+              if (!mix) continue;
               if (ft?.faction === 'player') bp++;
-              else if (ft?.faction === 'enemy') be++;
+              else be++;
+              const t = b.buildingType;
+              if (t && ECONOMIC.has(t)) mix.economic++;
+              else if (t && OFFENSIVE.has(t)) mix.offensive++;
+              else if (t && DEFENSIVE.has(t)) mix.defensive++;
+              else if (t && WONDER.has(t)) mix.wonder++;
             }
           }
           // M_FUN.MAP.UTILISATION.METRIC — % of walkable tiles claimed
@@ -218,6 +251,8 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
             peakEnemy: g.economy.enemy.peakSupply,
             zoneUnionPct,
             killsByZone: g.economy.player.killsByZone,
+            buildMixPlayer: mixP,
+            buildMixEnemy: mixE,
           };
         });
         if (!snapshot) break;
@@ -245,6 +280,10 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
         chunksRan: chunks,
         zoneUnionPct: snapshot.zoneUnionPct,
         killsByZone: snapshot.killsByZone,
+        buildMixPlayer: (snapshot as unknown as { buildMixPlayer?: BalanceRun['buildMixPlayer'] })
+          .buildMixPlayer ?? { economic: 0, offensive: 0, defensive: 0, wonder: 0 },
+        buildMixEnemy: (snapshot as unknown as { buildMixEnemy?: BalanceRun['buildMixEnemy'] })
+          .buildMixEnemy ?? { economic: 0, offensive: 0, defensive: 0, wonder: 0 },
       };
       appendArtifact(run);
 

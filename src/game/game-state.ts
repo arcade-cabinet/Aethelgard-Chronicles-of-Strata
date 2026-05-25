@@ -1055,6 +1055,24 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     });
     harvestSystem(game.world, delta);
     buildSystem(game.world, game.buildSites, delta);
+    // M_FUN.QA.AIVAI.PEON-METRICS — credit first-House completion
+    // per faction. Cheap O(buildings) sweep ONLY while either
+    // faction still has firstHouseAt == -1; flips to a no-op once
+    // both have stamped, so steady-state cost is one branch check.
+    if (
+      game.economy.player.peonMetrics.firstHouseAt < 0 ||
+      game.economy.enemy.peonMetrics.firstHouseAt < 0
+    ) {
+      for (const e of game.world.query(Building, FactionTrait)) {
+        const b = e.get(Building);
+        const f = e.get(FactionTrait);
+        if (!b?.isComplete || b.buildingType !== 'House' || !f) continue;
+        const eco = game.economy[f.faction];
+        if (eco.peonMetrics.firstHouseAt < 0) {
+          eco.peonMetrics.firstHouseAt = game.clock.elapsed;
+        }
+      }
+    }
     // M_FEATURE.3 — passive trickle + per-Library science accumulation.
     scienceSystem(game.world, game.economy, delta);
   }
@@ -1208,6 +1226,16 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     depositSystem(game.world, game.economy[f], baseKeyFor(game, f), f, resourceEvents);
   }
   game.lastResourceEvents = resourceEvents;
+  // M_FUN.QA.AIVAI.PEON-METRICS — credit deposit cadence per faction.
+  // The deposit list is already faction-tagged; iterate once and bump
+  // the per-faction counter + the first-wood timestamp (RTS landmark).
+  for (const ev of resourceEvents) {
+    const eco = game.economy[ev.faction];
+    eco.peonMetrics.depositCount += 1;
+    if (ev.type === 'wood' && eco.peonMetrics.firstWoodAt < 0) {
+      eco.peonMetrics.firstWoodAt = game.clock.elapsed;
+    }
+  }
 
   // death resolution — deathSystem returns the enemies removed this tick;
   // a removed enemy is a player kill.

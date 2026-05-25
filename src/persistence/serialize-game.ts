@@ -302,6 +302,43 @@ function pickEconomy(eco: unknown): GameEconomy {
       ),
       assault: safeFinite((e.killsByZone as Record<string, unknown> | undefined)?.assault, 0),
     },
+    // M_FUN.QA.AIVAI.PEON-METRICS — peon cadence counters; defaults
+    // to all-zero/-1 for pre-v0.5 saves (same migration pattern as
+    // killsByZone — no snapshot version bump needed).
+    peonMetrics: {
+      depositCount: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.depositCount,
+        0,
+      ),
+      firstWoodAt: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.firstWoodAt,
+        -1,
+      ),
+      firstHouseAt: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.firstHouseAt,
+        -1,
+      ),
+      totalRoundTripSec: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.totalRoundTripSec,
+        0,
+      ),
+      roundTrips: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.roundTrips,
+        0,
+      ),
+      disruptions: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.disruptions,
+        0,
+      ),
+      peonIdleTicks: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.peonIdleTicks,
+        0,
+      ),
+      peonActiveTicks: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.peonActiveTicks,
+        0,
+      ),
+    },
   };
 }
 
