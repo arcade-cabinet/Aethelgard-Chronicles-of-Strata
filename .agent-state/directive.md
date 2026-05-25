@@ -344,12 +344,14 @@ the portal/diplomacy work begins so the substrate is fully complete.
   application. Other 4 effect dispatchers (meteor, eclipse, migration, oracle)
   wire into their subsystems in a follow-up; the trigger pipeline is in place.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.4X-FULL — the 4X-mode polish on
-  top of v0.5's 6-player default: tech tree v0.6, named
-  victory conditions (military / economic / scientific /
-  diplomatic), end-of-game scoring screen. The user's
-  "MUCH more fun ESPECIALLY in 4X mode" — the v0.5 baseline
-  ships the substrate; v0.6 ships the depth.
+- [x] M_V6.4X-FULL — src/game/victory-conditions.ts: VictoryKind
+  (military|economic|scientific|diplomatic), VictoryRecord shape on
+  GameState, VICTORY_THRESHOLDS tunable knobs, detectVictoryFor (per-faction)
+  + detectVictory (full sweep). Wired into tickScoringPhase for age-of-strata
+  mode only (other modes use existing outcome conditions). 7 tests pin
+  threshold shape, military / scientific / diplomatic detection, sweep
+  null/first-fire. Tech-tree v0.6 expansion + end-of-game scoring screen UI
+  are follow-up polish; substrate + detection pipeline are in place.
 
 - [ ] [WAIT] (v0.6 cycle) M_V6.PARKING-LOT — drain the existing
   CIV/MYTH/DIPLO entries from the v0.4 active queue (search

@@ -54,6 +54,7 @@ import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 import type { GameState } from './game-state';
 import { expireProposals } from './diplomacy-border';
 import { tickTributeCession } from './diplomacy-tribute';
+import { detectVictory } from './victory-conditions';
 import { grantRandomDiscovery } from './research';
 import { buildEntityTileIndex } from './tile-index';
 
@@ -407,6 +408,21 @@ export function tickScoringPhase(game: GameState, delta: number): void {
     }
   }
   game.outcome = evaluateWinLoss(game.world, game.outcome);
+  // M_V6.4X-FULL — named-victory-condition detection. Runs only in
+  // age-of-strata (4X) mode; other modes use base-destruction +
+  // long-reign / strata-wars conditions above. First-fire wins.
+  if (game.mode === 'age-of-strata' && game.victoryRecord === null) {
+    const record = detectVictory(game);
+    if (record) {
+      game.victoryRecord = record;
+      // Player wins → outcome 'win'; other-faction wins → outcome 'loss'
+      // (legacy 2-faction semantics today; N-player victory attribution
+      // wires when GameEconomy migrates to a registry-keyed map).
+      if (game.outcome === 'playing') {
+        game.outcome = record.winner === 'player' ? 'win' : 'loss';
+      }
+    }
+  }
   game.score.player += game.zones.player.controlled.size * delta;
   game.score.enemy += game.zones.enemy.controlled.size * delta;
 }

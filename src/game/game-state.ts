@@ -78,6 +78,7 @@ import { createDiplomacyState, type DiplomacyState } from './diplomacy';
 import { createDiplomacyProposalState, type DiplomacyProposalState } from './diplomacy-border';
 import { createTradeCooldownState, type TradeCooldownState } from './diplomacy-trade';
 import { createMythEventsState, type MythEventsState } from './myth-events';
+import type { VictoryRecord } from './victory-conditions';
 import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 
 export type { Difficulty } from './difficulty';
@@ -267,6 +268,14 @@ export interface GameState {
    * gate. Effect dispatch lives in tickClockPhase.
    */
   mythEvents: MythEventsState;
+  /**
+   * M_V6.4X-FULL — recorded victory condition + winner when the match
+   * ends via a named 4X-mode condition (military / economic / scientific /
+   * diplomatic). null when no condition has fired yet. The end-of-game
+   * scoring screen reads this to render the named outcome ("Glorious
+   * Economic Victory!" etc).
+   */
+  victoryRecord: VictoryRecord | null;
   /** Per-faction resource totals and supply — both factions are symmetric. */
   economy: Record<Faction, GameEconomy>;
   /** The hex key of the player's home-base (Town Hall) tile. */
@@ -913,6 +922,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     diplomacyProposals: createDiplomacyProposalState(),
     tradeCooldowns: createTradeCooldownState(),
     mythEvents: createMythEventsState(),
+    victoryRecord: null,
     economy,
     townHallKey,
     enemyBaseKey,
