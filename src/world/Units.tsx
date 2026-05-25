@@ -107,8 +107,7 @@ export function Units({ game }: { game: GameState }) {
       let tint: string | null = null;
       if (faction === 'player' && game.playerColor) tint = game.playerColor;
       // faction-narrow: SKINS is Record<Faction,Skin>; skip N-player factions (native tint).
-      else if (faction && faction in SKINS)
-        tint = SKINS[faction as Faction].characterTint ?? null;
+      else if (faction && faction in SKINS) tint = SKINS[faction as Faction].characterTint ?? null;
       // resolveFactionTint takes FactionId (string) — no cast needed.
       if (faction && isColorblindMode()) tint = resolveFactionTint(faction, game.playerColor);
       current.push({ id: Number(e), entity: e, role, tint });
