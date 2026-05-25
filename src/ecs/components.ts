@@ -1,6 +1,19 @@
 import { trait } from 'koota';
 
-/** A unit class. Source: docs/specs/50-ecs-model.md. */
+/** A unit class. Source: docs/specs/50-ecs-model.md.
+ *
+ * M_PIVOT.N-PLAYER.SHARED-KIT: the union mixes two pools —
+ *   1. PLAYER kit (Peon/Footman/Trebuchet/Wizard/Healer/Ferryman/
+ *      Scout/Settler/Hero) — every player faction can train any of
+ *      these via the standard buildings. Symmetric across all factions.
+ *   2. BARBARIAN pool (Goblin/Orc/Vampire/BlackKnight/Witch) — the
+ *      legacy enemy-only raid roster; M_PIVOT.BARBARIAN-CAMPS moves
+ *      these to neutral aggressor camps spawned at gen-time. No
+ *      PLAYER faction trains these; they exist only as camp output.
+ * The single-union shape persists so existing systems (combat,
+ * pathing, deposit, scoring) treat both pools identically — only
+ * the spawn source differs.
+ */
 export type UnitType =
   | 'Peon'
   | 'Footman'
@@ -23,6 +36,43 @@ export type UnitType =
   | 'Vampire'
   | 'BlackKnight'
   | 'Witch';
+
+/**
+ * M_PIVOT.N-PLAYER.SHARED-KIT — the PLAYER unit pool. Every player
+ * faction (id `player`, `enemy`, `player-3`, ...) can train any of
+ * these via the appropriate building; symmetric across all factions.
+ *
+ * The SAME `Unit.unitType` field carries both player and barbarian
+ * roles — the discriminator is `FactionTrait.faction` (a player-kit
+ * faction id implies a PLAYER unit; a barbarian-camp faction id
+ * implies a BARBARIAN unit, regardless of UnitType value).
+ */
+export const PLAYER_UNIT_TYPES: readonly UnitType[] = [
+  'Peon',
+  'Footman',
+  'Trebuchet',
+  'Wizard',
+  'Healer',
+  'Ferryman',
+  'Scout',
+  'Settler',
+  'Hero',
+] as const;
+
+/**
+ * M_PIVOT.N-PLAYER.SHARED-KIT — the BARBARIAN unit pool. These types
+ * spawn only from EnemySpawner entities (legacy v0.4) or from
+ * barbarian-camp spawners (M_PIVOT.BARBARIAN-CAMPS, v0.5). No PLAYER
+ * faction trains these via `trainUnit`. Repurposed as the neutral
+ * aggressor roster: clearing a camp removes its spawner.
+ */
+export const BARBARIAN_UNIT_TYPES: readonly UnitType[] = [
+  'Goblin',
+  'Orc',
+  'Vampire',
+  'BlackKnight',
+  'Witch',
+] as const;
 
 /**
  * Faction ownership for targeting and AI. M_PIVOT.N-PLAYER.FACTIONS:

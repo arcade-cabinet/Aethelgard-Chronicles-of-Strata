@@ -95,15 +95,15 @@ the v0_5_grinder agent should pull these in order):
   committed. Downstream renderer wiring (ZoneBorder + HUD chips reading
   the registry) lands in M_PIVOT.RENDER.COLOR-OUTLINE.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.SHARED-KIT — every
-  faction uses the SAME buildings (House/Farm/Barracks/
-  Watchtower/Wall/Wonder/Library/Granary), the SAME units
-  (Peon/Footman/Scout/Wizard/Healer/Ferryman/Settler/Hero/
-  Trebuchet), and the SAME Discovery tree. The current enemy-
-  only types (Goblin/Orc/Vampire/Witch/BlackKnight) move to
-  the BARBARIAN pool. Acceptance: every faction can train +
-  build every player-kit unit/building; CombatEvaluator picks
-  the same target set for all factions.
+- [x] M_PIVOT.N-PLAYER.SHARED-KIT — PLAYER_UNIT_TYPES + BARBARIAN_UNIT_TYPES
+  partition the UnitType union; documented in components.ts §UnitType.
+  trainUnit + placeBuilding already accept any Faction (verified pre-existing in
+  v0.4 — train-unit.test.ts:70 trains both player + enemy via 'enemy' arg). New
+  shared-kit.test.ts pins: (1) partition disjoint, (2) PLAYER pool = 9 roles,
+  (3) BARBARIAN pool = 5 roles, (4) FactionTrait runtime accepts any string id,
+  (5) Building trait carries identical shape across factions. CombatEvaluator
+  symmetry already true (combat.ts queries by FactionTrait != ownFaction, no
+  per-faction logic). 913 unit tests green.
 
 - [WAIT] (v0.5 cycle) M_PIVOT.ARCHETYPES — NEW JSON registry
   `src/config/archetypes.json` defines per-archetype MESH +
