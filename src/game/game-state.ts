@@ -76,6 +76,7 @@ import {
 } from './economy-tick-phases';
 import { createDiplomacyState, type DiplomacyState } from './diplomacy';
 import { createDiplomacyProposalState, type DiplomacyProposalState } from './diplomacy-border';
+import { createTradeCooldownState, type TradeCooldownState } from './diplomacy-trade';
 import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 
 export type { Difficulty } from './difficulty';
@@ -253,6 +254,12 @@ export interface GameState {
    * `expireProposals(state, now)` from the tick loop.
    */
   diplomacyProposals: DiplomacyProposalState;
+  /**
+   * M_V6.DIPLO.TRADE — per-pair trade cooldown. Map<relationKey,
+   * expiryClockSeconds>. Prevents trade spam during a short window.
+   * Gated behind the `trade-route` Discovery at the call site.
+   */
+  tradeCooldowns: TradeCooldownState;
   /** Per-faction resource totals and supply — both factions are symmetric. */
   economy: Record<Faction, GameEconomy>;
   /** The hex key of the player's home-base (Town Hall) tile. */
@@ -897,6 +904,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     portalStoneCooldowns: new Map<string, number>(),
     diplomacy: createDiplomacyState(),
     diplomacyProposals: createDiplomacyProposalState(),
+    tradeCooldowns: createTradeCooldownState(),
     economy,
     townHallKey,
     enemyBaseKey,

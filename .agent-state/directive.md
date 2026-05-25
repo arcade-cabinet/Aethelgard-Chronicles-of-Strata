@@ -315,10 +315,13 @@ the portal/diplomacy work begins so the substrate is fully complete.
   semantics, GameState init. HUD pill UI lands as a future polish item; the
   primitives are in place for the pill to consume.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.TRADE — wood/stone/gold
-  1:1 swap, gated behind a Discovery `trade-route`. UI is a
-  Radix popover from the HUD; clicking a faction's chip opens
-  the trade widget.
+- [x] M_V6.DIPLO.TRADE — src/game/diplomacy-trade.ts: performTrade does
+  atomic 1:1 wood/stone/gold swap (rolls back A's spend on B-spend failure);
+  isTradeAvailable rejects same-id / enemy / cooldown-active; 20s per-pair
+  cooldown via TradeCooldownState on GameState. Discovery gate (`trade-route`
+  required) checked at the call site. 7 tests pin: gates, atomic mutation,
+  cooldown lifecycle, non-positive/non-finite rejection. Radix popover UI is
+  follow-up polish; the swap primitives are in place.
 
 - [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.TRIBUTE — automatic tribute
   demand when supply×military ratio between two factions exceeds
