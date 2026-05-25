@@ -709,7 +709,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   both pass (up to existing maxRetries). 3 unit tests pin: 6-faction balanced board
   passes both gates, 2-faction board skips the new gates, board with no resources fails.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.PERF.N-PLAYER-PROFILE — Chrome devtools performance trace via chrome-devtools-mcp
+- [x] [WAIT] (v0.9 grinder) M_V9.PERF.N-PLAYER-PROFILE — Chrome devtools performance trace via chrome-devtools-mcp
   against `/?ai-vs-ai=1&nplayer=6&seed=42` (6-faction 4X mode). Capture 60s of trace,
   identify blocking tasks > 50ms in the sim tick loop. Fix the worst offender or
   document in `.full-review/v0.9-perf.md` with owner tag and root cause. Acceptance:
