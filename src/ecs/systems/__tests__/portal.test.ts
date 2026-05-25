@@ -14,7 +14,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { BoardData, Tile } from '@/core/board';
-import { Combatant, HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
+import { Combatant, FactionTrait, HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { createEcsWorld } from '@/ecs/world';
 
@@ -83,5 +83,73 @@ describe('portal teleport (M_FUN.MAP.PORTAL)', () => {
     pathFollowSystem(world, 10, 1, tiles);
     pathFollowSystem(world, 10, 1, tiles);
     expect(entity.get(HexPosition)?.q).toBe(2);
+  });
+});
+
+describe('M_V8.PORTAL-STONE.COOLDOWN-HOOK — onPortalStoneArrival callback', () => {
+  it('cooldown callback fires when unit teleports through a PORTAL_STONE tile', () => {
+    const world = createEcsWorld();
+    // PORTAL_STONE arrival tile with a portalTo destination.
+    const portalStone = tileAt(1, 0, {
+      type: 'PORTAL_STONE',
+      portalTo: '5,5',
+      portalGroupId: 'ps1',
+    });
+    const dest = tileAt(5, 5);
+    const tiles = makeTiles(tileAt(0, 0), portalStone, dest);
+
+    world.spawn(
+      HexPosition({ q: 0, r: 0, level: 0 }),
+      Transform({ x: 0, y: 0, z: 0, rotationY: 0 }),
+      Movement({ speed: 1, isMoving: false }),
+      PathQueue({ steps: ['1,0,0'] }),
+      FactionTrait({ faction: 'player' }),
+    );
+
+    const calledWith: string[] = [];
+    pathFollowSystem(
+      world,
+      10,
+      1,
+      tiles,
+      undefined,
+      (factionId) => calledWith.push(factionId),
+    );
+
+    expect(calledWith).toEqual(['player']);
+  });
+
+  it('cooldown callback does NOT fire for non-PORTAL_STONE portal tiles', () => {
+    const world = createEcsWorld();
+    // A regular (GRASS-typed) portal — quicksand-pair / cave-network style.
+    const regularPortal = tileAt(1, 0, {
+      type: 'GRASS',
+      portalTo: '5,5',
+      portalGroupId: 'g2',
+    });
+    const dest = tileAt(5, 5);
+    const tiles = makeTiles(tileAt(0, 0), regularPortal, dest);
+
+    world.spawn(
+      HexPosition({ q: 0, r: 0, level: 0 }),
+      Transform({ x: 0, y: 0, z: 0, rotationY: 0 }),
+      Movement({ speed: 1, isMoving: false }),
+      PathQueue({ steps: ['1,0,0'] }),
+      FactionTrait({ faction: 'player' }),
+    );
+
+    const calledWith: string[] = [];
+    pathFollowSystem(
+      world,
+      10,
+      1,
+      tiles,
+      undefined,
+      (factionId) => calledWith.push(factionId),
+    );
+
+    // Teleport happened (GRASS portal is still a valid portal) but no
+    // PORTAL_STONE cooldown should fire.
+    expect(calledWith).toEqual([]);
   });
 });

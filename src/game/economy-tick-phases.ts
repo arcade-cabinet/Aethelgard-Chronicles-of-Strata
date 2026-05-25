@@ -53,7 +53,7 @@ import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 import type { GameState } from './game-state';
 import { expireProposals } from './diplomacy-border';
-import { tickPortalStonesTrigger } from '@/world/portal-stones';
+import { tickPortalStonesTrigger, refreshPortalStoneCooldown } from '@/world/portal-stones';
 import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
 import { detectVictory } from './victory-conditions';
@@ -104,12 +104,17 @@ export function tickCommandPhase(game: GameState, delta: number, turnGateOpen: b
     stanceBehaviorSystem(game.world, game.navGraph, makeMoveCostFn(game.board.tiles));
   }
   // M_TURNS.1 — pathFollow ALWAYS ticks so issued move commands resolve.
+  // M_V8.PORTAL-STONE.COOLDOWN-HOOK — closure captures game.portalStoneCooldowns
+  // + game.clock.elapsed so the callback can update the per-faction expiry.
   pathFollowSystem(
     game.world,
     delta,
     WEATHER_SPEED_MULTIPLIER[game.weather.state],
     game.board.tiles,
     game.turn ? game.turn.turnsElapsed : undefined,
+    (factionId: string) => {
+      refreshPortalStoneCooldown(game.portalStoneCooldowns, factionId, game.clock.elapsed);
+    },
   );
 }
 
