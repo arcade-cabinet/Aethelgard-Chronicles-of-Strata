@@ -79,7 +79,9 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
 
     const myId = owner.faction as string;
     // H-2 fix: index zones by string — supports N-player faction ids.
-    const myZone = (game.zones as Record<string, import('@/game/zone').ZoneState | undefined>)[myId];
+    const myZone = (game.zones as Record<string, import('@/game/zone').ZoneState | undefined>)[
+      myId
+    ];
     const myEco = economyFor(game, myId);
 
     for (const fc of game.factions) {
@@ -87,7 +89,9 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
 
       const rel = getRelation(game.diplomacy, myId, fc.id);
       // H-2 fix: index zones by string for any faction id.
-      const theirZone = (game.zones as Record<string, import('@/game/zone').ZoneState | undefined>)[fc.id];
+      const theirZone = (game.zones as Record<string, import('@/game/zone').ZoneState | undefined>)[
+        fc.id
+      ];
 
       // 1. Propose a non-aggression pact if borders touch and not yet allied or enemy.
       if (rel === 'neutral' && myZone && theirZone && bordersAreTouching(myZone, theirZone)) {
@@ -133,14 +137,18 @@ class DiplomaticGoal extends Goal<AiPlayer> {
     }
 
     const myId = owner.faction as string;
-    const myZone = (game.zones as Record<string, import('@/game/zone').ZoneState | undefined>)[myId];
+    const myZone = (game.zones as Record<string, import('@/game/zone').ZoneState | undefined>)[
+      myId
+    ];
     const myEco = economyFor(game, myId);
     const nowSeconds = game.clock.elapsed;
     const { action, targetId } = this.decision;
 
     switch (action) {
       case DiploAction.ProposePact: {
-        const theirZone = (game.zones as Record<string, import('@/game/zone').ZoneState | undefined>)[targetId];
+        const theirZone = (
+          game.zones as Record<string, import('@/game/zone').ZoneState | undefined>
+        )[targetId];
         if (theirZone && myZone && bordersAreTouching(myZone, theirZone)) {
           proposeNonAggressionPact(
             game.diplomacyProposals,

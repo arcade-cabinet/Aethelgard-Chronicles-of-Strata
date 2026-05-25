@@ -34,10 +34,7 @@ describe('M_V8.TUTORIAL.N-PLAYER-MODE — N-player slide logic', () => {
     // source file to check the literal text — a grep-gate pattern.
     const { readFileSync } = await import('node:fs');
     const { resolve } = await import('node:path');
-    const src = readFileSync(
-      resolve(__dirname, '../OnboardingOverlay.tsx'),
-      'utf-8',
-    );
+    const src = readFileSync(resolve(__dirname, '../OnboardingOverlay.tsx'), 'utf-8');
     expect(src).toContain('Multiple factions have joined the map');
     expect(src).toContain('factionCount > 2');
   });
@@ -47,10 +44,7 @@ describe('M_V8.TUTORIAL.N-PLAYER-MODE — N-player slide logic', () => {
     // 3-slide sequence as per the directive). Verify via source grep.
     const { readFileSync } = await import('node:fs');
     const { resolve } = await import('node:path');
-    const src = readFileSync(
-      resolve(__dirname, '../OnboardingOverlay.tsx'),
-      'utf-8',
-    );
+    const src = readFileSync(resolve(__dirname, '../OnboardingOverlay.tsx'), 'utf-8');
     // The computed steps array must spread STEPS first, then the N-player step.
     expect(src).toContain('[...STEPS, N_PLAYER_STEP]');
   });

@@ -21,7 +21,7 @@ describe('M_V8.PORTAL-STONE.AUDIO — sound map', () => {
 
   it('portal-stones-placed soundId is non-empty', () => {
     const entry = SOUND_FOR_EVENT['portal-stones-placed'];
-    const id = entry.soundId ?? (entry.soundIds?.[0] ?? '');
+    const id = entry.soundId ?? entry.soundIds?.[0] ?? '';
     expect(id.length).toBeGreaterThan(0);
   });
 

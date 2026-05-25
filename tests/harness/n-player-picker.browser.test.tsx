@@ -22,9 +22,7 @@ import { NewGameModal } from '@/hud/NewGameModal';
 describe('M_V8.NEWGAMEMODAL.N-PLAYER-PICKER', () => {
   it('N-player picker is hidden in non-4X modes and shown in age-of-strata', async () => {
     const onBegin = vi.fn();
-    await render(
-      <NewGameModal open={true} onOpenChange={() => void 0} onBegin={onBegin} />,
-    );
+    await render(<NewGameModal open={true} onOpenChange={() => void 0} onBegin={onBegin} />);
 
     // Default mode is border-clash — N-player picker should NOT render.
     expect(document.querySelector('[data-testid="n-player-picker"]')).toBeNull();
@@ -47,14 +45,14 @@ describe('M_V8.NEWGAMEMODAL.N-PLAYER-PICKER', () => {
     // Render with mode=age-of-strata is not directly settable via props,
     // but we can mount the modal and interact with the Segmented mode control.
     // Alternatively, test the slider behavior after verifying the picker is present.
-    await render(
-      <NewGameModal open={true} onOpenChange={() => void 0} onBegin={onBegin} />,
-    );
+    await render(<NewGameModal open={true} onOpenChange={() => void 0} onBegin={onBegin} />);
 
     // Switch to age-of-strata mode (chip with the right text or data attribute).
     const allButtons = Array.from(document.querySelectorAll('button'));
-    const aosButton = allButtons.find((b) =>
-      b.textContent?.toLowerCase().includes('age') || b.getAttribute('data-value') === 'age-of-strata',
+    const aosButton = allButtons.find(
+      (b) =>
+        b.textContent?.toLowerCase().includes('age') ||
+        b.getAttribute('data-value') === 'age-of-strata',
     );
     if (!aosButton) {
       // Mode chip not found in this render; skip.
@@ -70,9 +68,16 @@ describe('M_V8.NEWGAMEMODAL.N-PLAYER-PICKER', () => {
     const slots = document.querySelectorAll('[data-testid^="n-player-slot-"]');
     expect(slots.length).toBe(Number(slider.value));
 
-    // Move slider to 3.
-    slider.value = '3';
-    slider.dispatchEvent(new Event('change', { bubbles: true }));
+    // Move slider to 3. React's synthetic-event tracker ignores raw
+    // .value writes — use the native HTMLInputElement.value setter
+    // descriptor so React's onChange fires. The 'input' event (not
+    // 'change') is what React listens for on range inputs.
+    const nativeSetter = Object.getOwnPropertyDescriptor(
+      window.HTMLInputElement.prototype,
+      'value',
+    )?.set;
+    nativeSetter?.call(slider, '3');
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
     // Allow React to re-render.
     await new Promise((r) => setTimeout(r, 50));
     const slotsAfter = document.querySelectorAll('[data-testid^="n-player-slot-"]');
@@ -81,14 +86,14 @@ describe('M_V8.NEWGAMEMODAL.N-PLAYER-PICKER', () => {
 
   it('per-slot color pickers render one FactionColorPicker per slot', async () => {
     const onBegin = vi.fn();
-    await render(
-      <NewGameModal open={true} onOpenChange={() => void 0} onBegin={onBegin} />,
-    );
+    await render(<NewGameModal open={true} onOpenChange={() => void 0} onBegin={onBegin} />);
 
     // Switch to age-of-strata.
     const allButtons = Array.from(document.querySelectorAll('button'));
-    const aosButton = allButtons.find((b) =>
-      b.textContent?.toLowerCase().includes('age') || b.getAttribute('data-value') === 'age-of-strata',
+    const aosButton = allButtons.find(
+      (b) =>
+        b.textContent?.toLowerCase().includes('age') ||
+        b.getAttribute('data-value') === 'age-of-strata',
     );
     if (!aosButton) return;
     await userEvent.click(aosButton);

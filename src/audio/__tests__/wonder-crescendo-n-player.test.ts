@@ -21,9 +21,7 @@ import { describe, expect, it } from 'vitest';
  * Extracted here to make it independently testable without a Canvas.
  */
 function isCrescendoImminent(wonderTimers: Record<string, number>): boolean {
-  return Object.values(wonderTimers).some(
-    (wt) => typeof wt === 'number' && wt > 0 && wt < 3,
-  );
+  return Object.values(wonderTimers).some((wt) => typeof wt === 'number' && wt > 0 && wt < 3);
 }
 
 describe('M_V8.REVIEWER.FULL-CYCLE (H-1) — wonder crescendo N-player regression', () => {
@@ -43,12 +41,10 @@ describe('M_V8.REVIEWER.FULL-CYCLE (H-1) — wonder crescendo N-player regressio
   });
 
   it('does NOT trigger when all timers are Infinity or above 3s', () => {
-    expect(
-      isCrescendoImminent({ player: Infinity, enemy: Infinity, 'ai-3': Infinity }),
-    ).toBe(false);
-    expect(
-      isCrescendoImminent({ player: 5.0, enemy: 10.0, 'ai-3': 7.5 }),
-    ).toBe(false);
+    expect(isCrescendoImminent({ player: Infinity, enemy: Infinity, 'ai-3': Infinity })).toBe(
+      false,
+    );
+    expect(isCrescendoImminent({ player: 5.0, enemy: 10.0, 'ai-3': 7.5 })).toBe(false);
   });
 
   it('does NOT trigger when timer is exactly 0 (wonder-win already fired)', () => {

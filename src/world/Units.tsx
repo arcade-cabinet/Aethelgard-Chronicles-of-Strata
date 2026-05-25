@@ -107,8 +107,7 @@ export function Units({ game }: { game: GameState }) {
       let tint: string | null = null;
       if (faction === 'player' && game.playerColor) tint = game.playerColor;
       // faction-narrow: SKINS is Record<Faction,Skin>; skip N-player factions (native tint).
-      else if (faction && faction in SKINS)
-        tint = SKINS[faction as Faction].characterTint ?? null;
+      else if (faction && faction in SKINS) tint = SKINS[faction as Faction].characterTint ?? null;
       // resolveFactionTint only covers legacy 'player'/'enemy' — skip for N-player factions.
       if (faction && isColorblindMode() && (faction === 'player' || faction === 'enemy'))
         tint = resolveFactionTint(faction, game.playerColor);

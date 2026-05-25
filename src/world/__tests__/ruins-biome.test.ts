@@ -54,7 +54,7 @@ describe('M_V6.CARRY.RUINS-BIOME — registry + flag coverage', () => {
     const { readFileSync } = await import('node:fs');
     const { resolve } = await import('node:path');
     const src = readFileSync(resolve(__dirname, '../Decoration.tsx'), 'utf-8');
-    expect(src).toContain("RUINS: {");
+    expect(src).toContain('RUINS: {');
     expect(src).toContain("'nature.rock.td-rocks'");
     expect(src).toContain("'nature.stump-a'");
   });

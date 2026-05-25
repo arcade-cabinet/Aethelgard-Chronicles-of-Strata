@@ -14,7 +14,14 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { BoardData, Tile } from '@/core/board';
-import { Combatant, FactionTrait, HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
+import {
+  Combatant,
+  FactionTrait,
+  HexPosition,
+  Movement,
+  PathQueue,
+  Transform,
+} from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { createEcsWorld } from '@/ecs/world';
 
@@ -107,14 +114,7 @@ describe('M_V8.PORTAL-STONE.COOLDOWN-HOOK — onPortalStoneArrival callback', ()
     );
 
     const calledWith: string[] = [];
-    pathFollowSystem(
-      world,
-      10,
-      1,
-      tiles,
-      undefined,
-      (factionId) => calledWith.push(factionId),
-    );
+    pathFollowSystem(world, 10, 1, tiles, undefined, (factionId) => calledWith.push(factionId));
 
     expect(calledWith).toEqual(['player']);
   });
@@ -139,14 +139,7 @@ describe('M_V8.PORTAL-STONE.COOLDOWN-HOOK — onPortalStoneArrival callback', ()
     );
 
     const calledWith: string[] = [];
-    pathFollowSystem(
-      world,
-      10,
-      1,
-      tiles,
-      undefined,
-      (factionId) => calledWith.push(factionId),
-    );
+    pathFollowSystem(world, 10, 1, tiles, undefined, (factionId) => calledWith.push(factionId));
 
     // Teleport happened (GRASS portal is still a valid portal) but no
     // PORTAL_STONE cooldown should fire.

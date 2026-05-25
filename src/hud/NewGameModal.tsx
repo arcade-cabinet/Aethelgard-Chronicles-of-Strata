@@ -144,7 +144,9 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   // M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — N-player count (2-6) for
   // age-of-strata mode. Defaults to the preset's defaultPlayerCount.
   // Shown only when mode === 'age-of-strata'.
-  const [nPlayer, setNPlayer] = useState<number>(() => presetFor('age-of-strata').defaultPlayerCount);
+  const [nPlayer, setNPlayer] = useState<number>(
+    () => presetFor('age-of-strata').defaultPlayerCount,
+  );
   // Per-slot colors for all N factions when in N-player mode.
   // Slot 0 = player banner, slot 1 = first AI, etc.
   const [nPlayerColors, setNPlayerColors] = useState<string[]>(() =>
@@ -363,7 +365,10 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                   // Extend or trim the color array to match the new count.
                   setNPlayerColors((prev) => {
                     const extra = defaultFactionColors(n, seedPhrase);
-                    const merged = Array.from({ length: n }, (_, i) => prev[i] ?? extra[i] ?? '#888');
+                    const merged = Array.from(
+                      { length: n },
+                      (_, i) => prev[i] ?? extra[i] ?? '#888',
+                    );
                     return merged;
                   });
                 }}
@@ -392,9 +397,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                   style={{ display: 'flex', alignItems: 'center', gap: 8 }}
                   data-testid={`n-player-slot-${i}`}
                 >
-                  <span style={{ width: 80, flexShrink: 0 }}>
-                    {i === 0 ? 'You' : `AI ${i}`}
-                  </span>
+                  <span style={{ width: 80, flexShrink: 0 }}>{i === 0 ? 'You' : `AI ${i}`}</span>
                   <FactionColorPicker
                     color={nPlayerColors[i] ?? '#888888'}
                     onChange={(c) =>
