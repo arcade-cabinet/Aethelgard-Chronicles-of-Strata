@@ -1566,14 +1566,14 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   `src/world/portal-stones.ts`. 2 tests: cooldown is set after teleport on PORTAL_STONE,
   no cooldown set for non-PORTAL_STONE portal tiles.
 
-- [ ] M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — NewGameModal gains an N-player count
+- [x] M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — NewGameModal gains an N-player count
   slider (2–6) visible only in age-of-strata mode. Beneath it, per-slot rows:
   faction name + color picker chip for each slot (slots 3-N are AI-defaulted +
   auto-colored from the palette shuffle). This replaces the single player+enemy
   color picker UI for 4X mode. Legacy 2-faction modes unchanged. 2 browser tests:
   slider changes slot count, per-slot color pickers render.
 
-- [ ] M_V8.AI.DIPLO-EVALUATOR — `DiplomaticEvaluator` added to the yuka
+- [x] M_V8.AI.DIPLO-EVALUATOR — `DiplomaticEvaluator` added to the yuka
   evaluator stack in `src/ai/evaluators/diplomatic.ts`. Evaluates: can-propose-pact
   (borders touching + not already ally), can-demand-tribute (supply ratio >= 2×),
   can-accept-tribute (weaker than dominant). Calls the existing diplomacy-border.ts +
@@ -1582,26 +1582,26 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   pact-proposal fires when borders touch, tribute demand fires when dominant, skip
   when same-id.
 
-- [ ] M_V8.CI.VISUAL-BATTERY-HOOK — `.github/workflows/ci.yml` gains a
+- [x] M_V8.CI.VISUAL-BATTERY-HOOK — `.github/workflows/ci.yml` gains a
   `visual-battery` job that runs `pnpm visual:battery:ci` when any path in
   `src/render/**`, `src/world/**`, `src/hud/**`, `src/ui/**` changes
   (paths-filter action). Job runs after the main test job. Drift fails CI.
   Script already exists (`scripts/visual-battery.mjs`); this is purely the
   ci.yml wiring + a `paths-filter` step.
 
-- [ ] M_V8.TUTORIAL.N-PLAYER-MODE — `OnboardingOverlay` gains an n-player slide
+- [x] M_V8.TUTORIAL.N-PLAYER-MODE — `OnboardingOverlay` gains an n-player slide
   shown when `game.factions.length > 2`. Slide content: "Multiple factions have
   joined the map. Build your economy, form alliances, and be the last faction
   standing." Shown after the existing 3-slide sequence. 1 browser test: slide
   appears when factions.length > 2.
 
-- [ ] M_V8.PERF.PROFILE-PASS — Run a 4-player AI-vs-AI sim (300s) via the
+- [x] M_V8.PERF.PROFILE-PASS — Run a 4-player AI-vs-AI sim (300s) via the
   existing `?ai-vs-ai=1&nplayer=4` URL and capture a Chrome performance trace
   via `mcp__chrome-devtools-mcp`. Record: mean frame time, max frame time, GC
   pause count. If mean > 16ms: identify the hot path and add a targeted
   optimization. Results go in `docs/specs/perf-baseline.md` (new file).
 
-- [ ] M_V8.REVIEWER.FULL-CYCLE — Dispatch `comprehensive-review:full-review`
+- [x] M_V8.REVIEWER.FULL-CYCLE — Dispatch `comprehensive-review:full-review`
   against the full v0.8 diff (`git diff main..HEAD`). Address every CRITICAL +
   HIGH finding in a forward commit before pushing. MEDIUM/LOW findings logged
   in `docs/specs/review-findings.md`.
