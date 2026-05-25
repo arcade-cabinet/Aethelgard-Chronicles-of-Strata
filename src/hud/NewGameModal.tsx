@@ -385,17 +385,25 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 factions: ((): FactionConfig[] => {
                   const preset = presetFor(mode);
                   if (preset.defaultPlayerCount <= 2) {
-                    return [
-                      {
-                        ...LEGACY_FACTIONS[0],
-                        color: factionColors.player,
-                      } as FactionConfig,
-                      {
-                        ...LEGACY_FACTIONS[1],
-                        color: factionColors.enemy,
-                        personality: enemyPersonality,
-                      } as FactionConfig,
-                    ];
+                    // LEGACY_FACTIONS is a 2-element const tuple — indices 0 and 1 always exist.
+                    const lp = LEGACY_FACTIONS[0]!;
+                    const le = LEGACY_FACTIONS[1]!;
+                    const p1: FactionConfig = {
+                      id: lp.id,
+                      displayName: lp.displayName,
+                      kind: lp.kind,
+                      archetype: lp.archetype,
+                      color: factionColors.player,
+                    };
+                    const p2: FactionConfig = {
+                      id: le.id,
+                      displayName: le.displayName,
+                      kind: le.kind,
+                      archetype: le.archetype,
+                      color: factionColors.enemy,
+                      personality: enemyPersonality,
+                    };
+                    return [p1, p2];
                   }
                   // N-player mode: build a full registry. First two
                   // colors come from the picker; remaining N-2 from the
