@@ -14,14 +14,24 @@ import { generateBoard } from '@/core/board';
 import type { BoardData } from '@/core/board';
 
 /** Build a minimal BoardData with manually-specified tiles. */
-function mockBoard(tiles: Array<{ q: number; r: number; type: string; walkable: boolean }>): BoardData {
+function mockBoard(
+  tiles: Array<{ q: number; r: number; type: string; walkable: boolean }>,
+): BoardData {
   const map = new Map();
   for (const t of tiles) {
     const key = `${t.q},${t.r}`;
     map.set(key, {
-      q: t.q, r: t.r, level: 0, walkable: t.walkable, type: t.type,
-      key, biome: t.type, buildable: t.walkable, habitable: t.walkable,
-      buildableAttributes: [], declaredBiome: t.type,
+      q: t.q,
+      r: t.r,
+      level: 0,
+      walkable: t.walkable,
+      type: t.type,
+      key,
+      biome: t.type,
+      buildable: t.walkable,
+      habitable: t.walkable,
+      buildableAttributes: [],
+      declaredBiome: t.type,
     });
   }
   return { tiles: map, ramps: [] } as unknown as BoardData;
