@@ -319,23 +319,43 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
       //     that prevents the default unrecoverable behaviour and
       //     triggers a full r3f re-render once the context comes back.
       gl={{ powerPreference: 'high-performance', antialias: true, alpha: false }}
-      onCreated={({ gl }) => {
+      onCreated={({ gl, invalidate }) => {
         const canvas = gl.domElement;
+        // User feedback: "it can go solid grey, SOMETHING is failing and
+        // there is no error overlay surfacing shit". Prior handler used
+        // console.warn — ErrorOverlay only patches console.error, so the
+        // loss was silent. Use console.error so the overlay catches it
+        // + dispatch a CustomEvent any UI surface can listen for.
         const onLost = (e: Event) => {
-          // Prevent the browser default — without preventDefault the
-          // context is "permanently lost" and the canvas stays grey.
-          e.preventDefault();
-          console.warn('[GameCanvas] WebGL context LOST — awaiting restore');
+          e.preventDefault(); // without preventDefault the loss is permanent
+          console.error(
+            '[GameCanvas] WebGL CONTEXT LOST — board went grey. ' +
+              'GPU dropped the rendering context (driver bug / OOM / tab switch). ' +
+              'Awaiting restored event.',
+          );
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:webgl-context-lost', { detail: { at: Date.now() } }),
+          );
         };
         const onRestored = () => {
-          console.info('[GameCanvas] WebGL context restored');
-          // r3f's renderer rebuilds GPU resources lazily; nudging
-          // the size resets the framebuffer + forces a redraw on
-          // the next rAF.
+          console.error('[GameCanvas] WebGL context RESTORED — re-rendering scene.');
+          // r3f's frameloop may be 'never' (hidden tab) — setSize + invalidate
+          // force the restored scene to paint even when backgrounded.
           gl.setSize(window.innerWidth, window.innerHeight, false);
+          invalidate();
+          window.dispatchEvent(
+            new CustomEvent('aethelgard:webgl-context-restored', { detail: { at: Date.now() } }),
+          );
         };
         canvas.addEventListener('webglcontextlost', onLost as EventListener, false);
         canvas.addEventListener('webglcontextrestored', onRestored, false);
+        // Defensive: if gl is a stub from a fallback path, surface.
+        if (!gl || !gl.getContext()) {
+          console.error(
+            '[GameCanvas] WebGL CONTEXT FAILED to initialize — board will be blank. ' +
+              'Browser refused getContext("webgl"). Check device GPU compat.',
+          );
+        }
       }}
     >
       <Scene
