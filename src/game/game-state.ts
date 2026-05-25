@@ -75,6 +75,7 @@ import {
   tickTerrainPhase,
 } from './economy-tick-phases';
 import { createDiplomacyState, type DiplomacyState } from './diplomacy';
+import { createDiplomacyProposalState, type DiplomacyProposalState } from './diplomacy-border';
 import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 
 export type { Difficulty } from './difficulty';
@@ -245,6 +246,13 @@ export interface GameState {
    * targets; tribute system reads tributary-dominant flow.
    */
   diplomacy: DiplomacyState;
+  /**
+   * M_V6.DIPLO.BORDER-ASK — pending non-aggression-pact proposals
+   * (10s acceptance window each). Default = empty; the HUD pill watches
+   * the list to render proposal banners. Expired entries are swept by
+   * `expireProposals(state, now)` from the tick loop.
+   */
+  diplomacyProposals: DiplomacyProposalState;
   /** Per-faction resource totals and supply — both factions are symmetric. */
   economy: Record<Faction, GameEconomy>;
   /** The hex key of the player's home-base (Town Hall) tile. */
@@ -888,6 +896,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     factions,
     portalStoneCooldowns: new Map<string, number>(),
     diplomacy: createDiplomacyState(),
+    diplomacyProposals: createDiplomacyProposalState(),
     economy,
     townHallKey,
     enemyBaseKey,

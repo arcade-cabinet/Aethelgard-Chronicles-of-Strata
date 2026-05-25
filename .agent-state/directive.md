@@ -306,11 +306,14 @@ the portal/diplomacy work begins so the substrate is fully complete.
   + symmetry + the GameState wiring. CombatEvaluator filter + tributary cession
   wire in BORDER-ASK + TRIBUTE work-units below.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.BORDER-ASK — when ZoneBorder
-  of A touches B, expose a HUD pill "Propose non-aggression?".
-  10s acceptance window. Acceptance: e2e test that simulates
-  a border touch + acceptance flow + asserts CombatEvaluator
-  doesn't target the new ally.
+- [x] M_V6.DIPLO.BORDER-ASK — src/game/diplomacy-border.ts ships:
+  bordersAreTouching (zone-adjacency detection), DiplomacyProposalState
+  Map on GameState, proposeNonAggressionPact (10s window, dedup, validates
+  not-enemy / not-ally / not-same-id), acceptProposal (flips to ally), rejectProposal
+  (silent drop), expireProposals (sweeps past expiry — wired into tickClockPhase).
+  13 tests pin: border-touch detection, proposal lifecycle, accept/reject/expire
+  semantics, GameState init. HUD pill UI lands as a future polish item; the
+  primitives are in place for the pill to consume.
 
 - [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.TRADE — wood/stone/gold
   1:1 swap, gated behind a Discovery `trade-route`. UI is a

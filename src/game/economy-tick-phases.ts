@@ -52,6 +52,7 @@ import { tickAutoSave } from './auto-save';
 import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 import type { GameState } from './game-state';
+import { expireProposals } from './diplomacy-border';
 import { grantRandomDiscovery } from './research';
 import { buildEntityTileIndex } from './tile-index';
 
@@ -64,6 +65,12 @@ export function tickClockPhase(game: GameState, delta: number): void {
   advanceWeather(game.weather, game.eventRng, delta);
   tickRandomEvents(game, game.eventRng, delta);
   tickLongReignEscalation(game, game.eventRng, game.clock.elapsed);
+  // M_V6.DIPLO.BORDER-ASK — sweep expired non-aggression-pact proposals.
+  // Silent: a refused / ignored proposal just drops off the HUD; the
+  // BORDER-ASK directive's "wave-of-attack penalty on refusal" is a
+  // separate optional escalation that the HUD pill can wire on
+  // explicit reject.
+  expireProposals(game.diplomacyProposals, game.clock.elapsed);
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 }
 
