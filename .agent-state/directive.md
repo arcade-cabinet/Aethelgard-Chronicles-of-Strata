@@ -19,39 +19,39 @@ parallel: PR plumbing, release ladder ownership, audits the grinder
 shouldn't burn its context window on, and meta-work on the directive
 itself.
 
-- [ ] M_MAIN.RELEASE-LADDER — own the post-merge release ladder for
+- [ ] [WAIT-RECURRING] M_MAIN.RELEASE-LADDER — own the post-merge release ladder for
   every PR landed: poll for release-please PR → merge → wait CD →
   re-screenshot Pages → confirm visually shippable. Permanent
   recurring item; never marked [x] until project release.
-- [ ] M_MAIN.DIRECTIVE-EDIT — keep the directive current. Mark
+- [ ] [WAIT-RECURRING] M_MAIN.DIRECTIVE-EDIT — keep the directive current. Mark
   shipped grinder work [x] as PRs land. Add new items as they
   surface from screenshots / playtest reports / user feedback.
   Audit weekly for orphan [WAIT] items.
-- [ ] M_MAIN.DOCS.RELEASE-NOTES — write CHANGELOG.md entries for
+- [ ] [WAIT-RECURRING] M_MAIN.DOCS.RELEASE-NOTES — write CHANGELOG.md entries for
   every release tag the cron fires. release-please generates
   conventional-commit lists but the human-facing prose ("v0.1.16
   brings the 4X mode N-player picker + AI diplomatic evaluator
   to playable shape") lives in the spec docs, not the auto-gen.
-- [ ] M_MAIN.PRD-DRIFT-AUDIT — walk `docs/specs/PRD-v0.4.md`
+- [ ] [WAIT-RECURRING] M_MAIN.PRD-DRIFT-AUDIT — walk `docs/specs/PRD-v0.4.md`
   through PRD-v0.8.md and flag every shipped item that doesn't
   match the PRD, every PRD item that didn't ship. Open a fixup PR
   per drift class.
-- [ ] M_MAIN.PLAYTHROUGH-AUDIT — every cron tick where the ladder
+- [ ] [WAIT-RECURRING] M_MAIN.PLAYTHROUGH-AUDIT — every cron tick where the ladder
   is phase=5 stable, run the AIVAI screenshot battery against the
   current live deploy. Read each PNG. If any visual drift from
   the previous battery (compared by sha + manifest.json), flag a
   fixup PR. The user wants this baseline-watched continuously.
-- [ ] M_MAIN.WORKTREE-CLEANUP — `.claude/worktrees/` accretes
+- [ ] [WAIT-RECURRING] M_MAIN.WORKTREE-CLEANUP — `.claude/worktrees/` accretes
   stale agent worktrees as cycles complete. Run
   `git worktree list` weekly + prune completed branches that have
   already merged to main.
-- [ ] M_MAIN.MEMORY-WRITE — when user feedback surfaces a new
+- [ ] [WAIT-RECURRING] M_MAIN.MEMORY-WRITE — when user feedback surfaces a new
   preference / pattern / rule, save to
   `~/.claude/projects/-Users-jbogaty-src-arcade-cabinet-Aethelgard-Chronicles-of-Strata/memory/`
   per the memory protocol. The recent "FIX YOUR FUCKING DIRECTIVES
   SO YOU ACTUALLY GET EVERYTHING DONE" is exactly the kind of
   preference that should outlive the session.
-- [ ] M_MAIN.GRINDER-WATCH — when the grinder reports a real
+- [ ] [WAIT-RECURRING] M_MAIN.GRINDER-WATCH — when the grinder reports a real
   blocker (CI failed mid-PR, test that needs user knowledge),
   dispatch a fix-PR from main thread + push the unblock so the
   grinder can continue.
