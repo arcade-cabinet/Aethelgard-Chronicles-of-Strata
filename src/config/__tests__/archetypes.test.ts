@@ -59,8 +59,8 @@ describe('ARCHETYPES registry', () => {
       for (const building of EXPECTED_BUILDINGS) {
         const mesh = a?.buildings[building];
         expect(mesh).toBeDefined();
-        expect(mesh!.meshLogicalId.length).toBeGreaterThan(0);
-        expect(mesh!.scale).toBeGreaterThan(0);
+        expect(mesh?.meshLogicalId.length).toBeGreaterThan(0);
+        expect(mesh?.scale).toBeGreaterThan(0);
       }
     }
   });
@@ -70,9 +70,9 @@ describe('ARCHETYPES registry', () => {
     for (const id of EXPECTED_ARCHETYPES) {
       const palette = ARCHETYPES[id]?.particlePalette;
       expect(palette).toBeDefined();
-      expect(palette!.dust).toMatch(HEX_RE);
-      expect(palette!.ember).toMatch(HEX_RE);
-      expect(palette!.smoke).toMatch(HEX_RE);
+      expect(palette?.dust).toMatch(HEX_RE);
+      expect(palette?.ember).toMatch(HEX_RE);
+      expect(palette?.smoke).toMatch(HEX_RE);
     }
   });
 });
@@ -94,7 +94,7 @@ describe('buildingMeshFor', () => {
   it('returns the mesh shape for a known archetype + building', () => {
     const m = buildingMeshFor('medieval', 'TownHall');
     expect(m).not.toBeNull();
-    expect(m!.meshLogicalId).toContain('town-center');
+    expect(m?.meshLogicalId).toContain('town-center');
   });
 
   it('returns null for an unknown building (graceful fallback)', () => {

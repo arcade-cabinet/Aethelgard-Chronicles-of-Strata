@@ -90,8 +90,8 @@ describe('tickTributeCession', () => {
     expect(fired).toBe(1);
     // 10% of 100 wood = 10
     const ceded = Math.floor(100 * TRIBUTE_CESSION_FRACTION * 1);
-    expect(eco.enemy!.wood).toBe(100 - ceded);
-    expect(eco.player!.wood).toBe(50 + ceded);
+    expect(eco.enemy?.wood).toBe(100 - ceded);
+    expect(eco.player?.wood).toBe(50 + ceded);
   });
 
   it('does nothing on neutral pairs', () => {
@@ -103,7 +103,7 @@ describe('tickTributeCession', () => {
     eco.player!.wood = 50;
     eco.enemy!.wood = 100;
     expect(tickTributeCession(d, ['player', 'enemy'], (f) => eco[f], 1)).toBe(0);
-    expect(eco.enemy!.wood).toBe(100);
+    expect(eco.enemy?.wood).toBe(100);
   });
 
   it('zero delta is a no-op', () => {
@@ -115,6 +115,6 @@ describe('tickTributeCession', () => {
     };
     eco.enemy!.wood = 100;
     expect(tickTributeCession(d, ['player', 'enemy'], (f) => eco[f], 0)).toBe(0);
-    expect(eco.enemy!.wood).toBe(100);
+    expect(eco.enemy?.wood).toBe(100);
   });
 });

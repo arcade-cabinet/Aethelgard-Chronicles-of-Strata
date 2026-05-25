@@ -62,10 +62,10 @@ describe('performTrade atomicity', () => {
     expect(performTrade(c, d, 'player', 'enemy', 'wood', 20, 'gold', 30, 0, (f) => eco[f])).toBe(
       true,
     );
-    expect(eco.player!.wood).toBe(80);
-    expect(eco.player!.gold).toBe(130);
-    expect(eco.enemy!.wood).toBe(120);
-    expect(eco.enemy!.gold).toBe(70);
+    expect(eco.player?.wood).toBe(80);
+    expect(eco.player?.gold).toBe(130);
+    expect(eco.enemy?.wood).toBe(120);
+    expect(eco.enemy?.gold).toBe(70);
   });
   it('returns false when a side cannot afford (no mutation)', () => {
     const c = createTradeCooldownState();
@@ -75,8 +75,8 @@ describe('performTrade atomicity', () => {
     expect(performTrade(c, d, 'player', 'enemy', 'wood', 10, 'stone', 10, 0, (f) => eco[f])).toBe(
       false,
     );
-    expect(eco.player!.wood).toBe(5);
-    expect(eco.enemy!.stone).toBe(100);
+    expect(eco.player?.wood).toBe(5);
+    expect(eco.enemy?.stone).toBe(100);
   });
   it('rejects non-positive / non-finite amounts', () => {
     const c = createTradeCooldownState();

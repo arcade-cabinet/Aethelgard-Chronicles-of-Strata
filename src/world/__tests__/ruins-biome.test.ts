@@ -77,26 +77,28 @@ describe('camp clearing flips tile biome to RUINS', () => {
       break;
     }
     expect(campTile).not.toBeNull();
+    if (!campTile) throw new Error('campTile required');
+    const ct = campTile;
     const camp = spawnBarbarianCamp(game.world, {
       factionId: 'barbarian-camp-1',
-      q: campTile!.q,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: ct.q,
+      r: ct.r,
+      level: ct.level,
       hp: 50,
       archetype: 'orc',
     });
     createCharacter({
       world: game.world,
       role: 'Footman',
-      q: campTile!.q + 1,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: ct.q + 1,
+      r: ct.r,
+      level: ct.level,
       factionOverride: 'player',
     });
     camp.set(Health, { current: 0, max: 50 });
     runEconomyTick(game, 1);
 
-    const tileAfter = game.board.tiles.get(campTile!.key);
+    const tileAfter = game.board.tiles.get(ct.key);
     expect(tileAfter?.type).toBe('RUINS');
     expect(tileAfter?.walkable).toBe(true);
   });

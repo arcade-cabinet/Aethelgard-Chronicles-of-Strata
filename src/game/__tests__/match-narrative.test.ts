@@ -26,7 +26,7 @@ const ALL_SUBJECTS = new Set(matchNarrativeJson.subjects);
 /** Parse "The <Adj> <Subject>" into its components. */
 function parseNickname(name: string): { adj: string; subject: string } | null {
   const m = name.match(/^The (\S+) (\S+)$/);
-  if (!m || !m[1] || !m[2]) return null;
+  if (!m?.[1] || !m[2]) return null;
   return { adj: m[1], subject: m[2] };
 }
 
@@ -65,12 +65,12 @@ describe('matchNickname', () => {
     const parsed = parseNickname(name);
     expect(parsed, `nickname should be "The <adj> <subject>", got: "${name}"`).not.toBeNull();
     expect(
-      VICTORY_ADJS.has(parsed!.adj),
-      `adj "${parsed!.adj}" must be in the victory pool: ${[...VICTORY_ADJS].join(', ')}`,
+      VICTORY_ADJS.has(parsed?.adj ?? ''),
+      `adj "${parsed?.adj}" must be in the victory pool: ${[...VICTORY_ADJS].join(', ')}`,
     ).toBe(true);
     expect(
-      ALL_SUBJECTS.has(parsed!.subject),
-      `subject "${parsed!.subject}" must be in the subjects pool`,
+      ALL_SUBJECTS.has(parsed?.subject ?? ''),
+      `subject "${parsed?.subject}" must be in the subjects pool`,
     ).toBe(true);
   });
 
@@ -79,10 +79,10 @@ describe('matchNickname', () => {
     const parsed = parseNickname(name);
     expect(parsed, `nickname should be "The <adj> <subject>", got: "${name}"`).not.toBeNull();
     expect(
-      DEFEAT_ADJS.has(parsed!.adj),
-      `adj "${parsed!.adj}" must be in the defeat pool: ${[...DEFEAT_ADJS].join(', ')}`,
+      DEFEAT_ADJS.has(parsed?.adj ?? ''),
+      `adj "${parsed?.adj}" must be in the defeat pool: ${[...DEFEAT_ADJS].join(', ')}`,
     ).toBe(true);
-    expect(ALL_SUBJECTS.has(parsed!.subject), 'subject must be in pool').toBe(true);
+    expect(ALL_SUBJECTS.has(parsed?.subject ?? ''), 'subject must be in pool').toBe(true);
   });
 
   it('uses the draw pool for draws (reviewer-fix CRITICAL #1)', () => {
@@ -90,10 +90,10 @@ describe('matchNickname', () => {
     const parsed = parseNickname(name);
     expect(parsed, `nickname should be "The <adj> <subject>", got: "${name}"`).not.toBeNull();
     expect(
-      DRAW_ADJS.has(parsed!.adj),
-      `adj "${parsed!.adj}" must be in the draw pool: ${[...DRAW_ADJS].join(', ')}`,
+      DRAW_ADJS.has(parsed?.adj ?? ''),
+      `adj "${parsed?.adj}" must be in the draw pool: ${[...DRAW_ADJS].join(', ')}`,
     ).toBe(true);
-    expect(ALL_SUBJECTS.has(parsed!.subject), 'subject must be in pool').toBe(true);
+    expect(ALL_SUBJECTS.has(parsed?.subject ?? ''), 'subject must be in pool').toBe(true);
   });
 
   it('decorrelates adjective and subject choice across seeds', () => {

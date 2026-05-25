@@ -24,8 +24,8 @@ describe('M_V6.CARRY.COLOR-OUTLINE-V2 — Minimap reads from registry', () => {
       difficulty: 'normal',
       eventSeed: 'evt',
     });
-    expect(findFaction(game.factions, 'player')?.color).toBe(LEGACY_FACTIONS[0]!.color);
-    expect(findFaction(game.factions, 'enemy')?.color).toBe(LEGACY_FACTIONS[1]!.color);
+    expect(findFaction(game.factions, 'player')?.color).toBe(LEGACY_FACTIONS[0]?.color);
+    expect(findFaction(game.factions, 'enemy')?.color).toBe(LEGACY_FACTIONS[1]?.color);
   });
 
   it('user-picked colors flow through to Minimap lookups', () => {

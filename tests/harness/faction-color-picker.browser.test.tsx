@@ -40,7 +40,7 @@ describe('FactionColorPicker harness', () => {
     // 1. Chip is present with the initial color.
     const chip = document.querySelector<HTMLButtonElement>('[data-testid="faction-color-chip"]');
     expect(chip).not.toBeNull();
-    expect(chip!.style.background).toContain('rgb(59, 130, 246)');
+    expect(chip?.style.background).toContain('rgb(59, 130, 246)');
     // popper is closed at start.
     expect(document.querySelector('[data-testid="faction-color-popper"]')).toBeNull();
 

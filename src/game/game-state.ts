@@ -17,11 +17,11 @@ import {
   Unit,
 } from '@/ecs/components';
 import { resetAiDirector } from '@/ecs/systems/ai';
-import { type DamageEvent } from '@/ecs/systems/combat';
-import { type ResourceDepositEvent } from '@/ecs/systems/deposit';
+import type { DamageEvent } from '@/ecs/systems/combat';
+import type { ResourceDepositEvent } from '@/ecs/systems/deposit';
 import { createEcsWorld } from '@/ecs/world';
 import { createCharacter } from '@/entities/character-factory';
-import { type Projectile } from './projectiles';
+import type { Projectile } from './projectiles';
 
 /**
  * Monotonic counter for projectile React keys — shared across all games.
@@ -44,10 +44,10 @@ import { spawnIntervalFor } from '@/config/combat';
 import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/factions';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
-import { type Faction } from '@/ecs/components';
+import type { Faction } from '@/ecs/components';
 import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/ecs/systems/volcano';
-import { type BurnState } from '@/ecs/systems/wildfire';
-import { type GameOutcome } from '@/ecs/systems/win-loss';
+import type { BurnState } from '@/ecs/systems/wildfire';
+import type { GameOutcome } from '@/ecs/systems/win-loss';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
 import {
   defaultCampCount,
@@ -806,7 +806,10 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     }
     if (enemyPeonSpawns.length === 0) enemyPeonSpawns.push(enemyBaseTile);
     for (let i = 0; i < 2; i++) {
-      const spawn = enemyPeonSpawns[i] ?? enemyPeonSpawns[0]!;
+      // enemyPeonSpawns guaranteed non-empty by the push above —
+      // `?? enemyBaseTile` is the type-safe alternative to the
+      // banned `enemyPeonSpawns[0]!` fallback.
+      const spawn = enemyPeonSpawns[i] ?? enemyPeonSpawns[0] ?? enemyBaseTile;
       createCharacter({
         world,
         role: 'Peon',
@@ -816,7 +819,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
         factionOverride: 'enemy',
       });
     }
-    const enemyFootmanSpawn = enemyPeonSpawns[0]!;
+    const enemyFootmanSpawn = enemyPeonSpawns[0] ?? enemyBaseTile;
     createCharacter({
       world,
       role: 'Footman',

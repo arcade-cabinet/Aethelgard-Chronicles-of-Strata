@@ -85,8 +85,8 @@ describe('placeBarbarianCamps', () => {
     const baseKeys =
       walkable.length >= 2
         ? [
-            `${walkable[0]!.q},${walkable[0]!.r}`,
-            `${walkable[walkable.length - 1]!.q},${walkable[walkable.length - 1]!.r}`,
+            `${walkable[0]?.q},${walkable[0]?.r}`,
+            `${walkable[walkable.length - 1]?.q},${walkable[walkable.length - 1]?.r}`,
           ]
         : [];
     const camps = placeBarbarianCamps(board, baseKeys, 3, prng);
@@ -146,7 +146,7 @@ describe('placeBarbarianCamps', () => {
   it('camp hp = 200 + 50 * nearest player distance', () => {
     const board = generateBoard('alpha-bravo-charlie', 14);
     const walkable = [...board.tiles.values()].filter((t) => t.walkable);
-    const baseKeys = walkable.length >= 1 ? [`${walkable[0]!.q},${walkable[0]!.r}`] : [];
+    const baseKeys = walkable.length >= 1 ? [`${walkable[0]?.q},${walkable[0]?.r}`] : [];
     const camps = placeBarbarianCamps(board, baseKeys, 1, createMapPrng('alpha-bravo-charlie'));
     if (camps.length > 0 && baseKeys[0]) {
       const baseTile = board.tiles.get(baseKeys[0]);
@@ -243,11 +243,12 @@ describe('spawnBarbarianCamp', () => {
       }
     }
     expect(campTile).not.toBeNull();
+    if (!campTile) throw new Error('campTile required');
     spawnBarbarianCamp(world, {
       factionId: 'barbarian-camp-1',
-      q: campTile!.q,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: campTile.q,
+      r: campTile.r,
+      level: campTile.level,
       hp: 200,
       archetype: 'orc',
     });

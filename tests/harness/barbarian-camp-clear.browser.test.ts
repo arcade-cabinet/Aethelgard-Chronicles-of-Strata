@@ -56,20 +56,24 @@ describe('M_V6.CARRY.E2E-CAMP-CLEAR — real-Chromium acceptance', () => {
       break;
     }
     expect(campTile).not.toBeNull();
+    // Narrowed by the assertion above; type can't see that, so re-assign
+    // to a const after the guard to give TS the non-null shape.
+    if (!campTile) throw new Error('campTile required');
+    const ct = campTile;
     const camp = spawnBarbarianCamp(game.world, {
       factionId: 'barbarian-camp-99',
-      q: campTile!.q,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: ct.q,
+      r: ct.r,
+      level: ct.level,
       hp: 30,
       archetype: 'orc',
     });
     createCharacter({
       world: game.world,
       role: 'Footman',
-      q: campTile!.q + 1,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: ct.q + 1,
+      r: ct.r,
+      level: ct.level,
       factionOverride: 'player',
     });
     // Zero camp HP → simulate the killing blow.
@@ -83,7 +87,7 @@ describe('M_V6.CARRY.E2E-CAMP-CLEAR — real-Chromium acceptance', () => {
     expect(game.economy.player.stone).toBeGreaterThanOrEqual(startingStone + 50);
 
     // Tile flipped to RUINS.
-    const tileAfter = game.board.tiles.get(campTile!.key);
+    const tileAfter = game.board.tiles.get(ct.key);
     expect(tileAfter?.type).toBe('RUINS');
 
     // Discovery granted (or pool exhausted — accept >= starting).

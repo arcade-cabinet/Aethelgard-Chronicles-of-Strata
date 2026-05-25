@@ -80,7 +80,7 @@ describe('NonAggressionPactPill', () => {
     expect(stack).not.toBeNull();
     const banner = document.querySelector('[data-testid="non-aggression-pact-enemy"]');
     expect(banner).not.toBeNull();
-    expect(banner!.textContent).toContain('Enemy');
+    expect(banner?.textContent).toContain('Enemy');
     await page.screenshot({ path: '__screenshots__/diplo-non-aggression-pact.png' });
     // Click accept → relation flips to ally.
     const acceptBtn = document.querySelector<HTMLButtonElement>(
@@ -113,7 +113,7 @@ describe('TributeDemandBanner', () => {
     );
     const banner = document.querySelector('[data-testid="tribute-demand-banner"]');
     expect(banner).not.toBeNull();
-    expect(banner!.textContent).toContain('Enemy');
+    expect(banner?.textContent).toContain('Enemy');
     await page.screenshot({ path: '__screenshots__/diplo-tribute-demand.png' });
     const acceptBtn = document.querySelector<HTMLButtonElement>('[data-testid="tribute-accept"]');
     expect(acceptBtn).not.toBeNull();

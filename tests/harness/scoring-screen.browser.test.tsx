@@ -69,7 +69,7 @@ describe('ScoringScreen', () => {
       await render(<ScoringScreen game={game} />);
       const title = document.querySelector('[data-testid="scoring-screen-title"]');
       expect(title).not.toBeNull();
-      expect(title!.textContent?.toLowerCase()).toContain(kind);
+      expect(title?.textContent?.toLowerCase()).toContain(kind);
       const winnerEl = document.querySelector('[data-testid="scoring-screen-winner"]');
       expect(winnerEl?.textContent).toContain('Player');
       const playerRow = document.querySelector('[data-testid="scoring-stats-player"]');

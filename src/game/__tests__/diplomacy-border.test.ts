@@ -56,7 +56,7 @@ describe('proposeNonAggressionPact lifecycle', () => {
     const d = createDiplomacyState();
     const p = proposeNonAggressionPact(proposals, d, 'player', 'enemy', 100);
     expect(p).not.toBeNull();
-    expect(p!.expiresAtSeconds).toBe(100 + PROPOSAL_ACCEPTANCE_WINDOW_SECONDS);
+    expect(p?.expiresAtSeconds).toBe(100 + PROPOSAL_ACCEPTANCE_WINDOW_SECONDS);
     expect(proposals.pending).toHaveLength(1);
   });
 

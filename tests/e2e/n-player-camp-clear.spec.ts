@@ -46,10 +46,10 @@ test.describe('M_V7.E2E.4-PLAYER-CAMP-CLEAR', () => {
       };
     });
     expect(factionCounts).not.toBeNull();
-    expect(factionCounts!.players).toBe(4);
-    expect(factionCounts!.camps).toBeGreaterThanOrEqual(1);
-    expect(factionCounts!.ids).toContain('player');
-    expect(factionCounts!.ids).toContain('player-3');
+    expect(factionCounts?.players).toBe(4);
+    expect(factionCounts?.camps).toBeGreaterThanOrEqual(1);
+    expect(factionCounts?.ids).toContain('player');
+    expect(factionCounts?.ids).toContain('player-3');
 
     // Capture starting wood + stone for the 'player' slot.
     const start = await page.evaluate(() => {

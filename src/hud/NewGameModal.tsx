@@ -195,7 +195,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     setNPlayer(n);
     setNPlayerColors(defaultFactionColors(n, seedPhrase));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
+  }, [mode, seedPhrase]);
 
   // Override wrappers that flip the "Custom Realm" marker (M_BRAND.3).
   const setMapSizeOverride = (next: MapSizeKey) => {

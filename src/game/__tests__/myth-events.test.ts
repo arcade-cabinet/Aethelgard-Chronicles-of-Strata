@@ -113,9 +113,9 @@ describe('applyHarvestFestival', () => {
     eco.enemy!.food = 0;
     eco.enemy!.gold = 0;
     applyHarvestFestival((f) => eco[f], ['player', 'enemy']);
-    expect(eco.player!.food).toBe(60);
-    expect(eco.player!.gold).toBe(25);
-    expect(eco.enemy!.food).toBe(50);
-    expect(eco.enemy!.gold).toBe(20);
+    expect(eco.player?.food).toBe(60);
+    expect(eco.player?.gold).toBe(25);
+    expect(eco.enemy?.food).toBe(50);
+    expect(eco.enemy?.gold).toBe(20);
   });
 });
