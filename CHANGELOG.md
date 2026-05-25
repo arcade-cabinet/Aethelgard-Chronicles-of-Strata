@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.19](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.18...v0.1.19) (2026-05-25)
+
+
+### Bug Fixes
+
+* **render:** WebGL context-lost now surfaces to ErrorOverlay + force-repaints on restore ([#57](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/57)) ([f933197](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/f933197a00870d54b4d94bb4ea05ce3cd9e23f4f))
+
 ## [0.1.18](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.17...v0.1.18) (2026-05-25)
 
 
