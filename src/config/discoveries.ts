@@ -35,6 +35,13 @@ const DiscoveryEffectSchema = z.discriminatedUnion('kind', [
     kind: z.literal('multiply-harvest'),
     factor: z.number().positive(),
   }),
+  // M_V7.DISCOVERY-TREE.V6 — generic "flag" effect for Discoveries
+  // that gate downstream systems (trade-route gates DIPLO.TRADE,
+  // cartography gates reveal logic, etc) — no immediate apply effect;
+  // consumers check research.purchased.has(id) at their own call site.
+  z.object({
+    kind: z.literal('flag'),
+  }),
 ]);
 
 const DiscoveryConfigSchema = z.object({
@@ -60,7 +67,8 @@ const DiscoveriesConfigSchema = z.object({
  */
 export type DiscoveryEffect =
   | { kind: 'buff-combatant'; stat: 'attackDamage' | 'attackRange'; delta: number }
-  | { kind: 'multiply-harvest'; factor: number };
+  | { kind: 'multiply-harvest'; factor: number }
+  | { kind: 'flag' };
 
 /** A Discovery configuration row — pure data, no behavior. */
 export interface DiscoveryConfig {

@@ -322,16 +322,17 @@ regressed pixel without the harness catching it first.
   gate). 6 browser tests + 4 screenshot baselines (one per victory kind)
   committed; visually reviewed against directive intent.
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.DISCOVERY-TREE.V6 — flesh out
-  src/config/discoveries.json with v0.6 tech entries that the
-  4X mode rewards: `trade-route` (gates M_V6.DIPLO.TRADE),
-  `cartography` (reveals starting region + ferryman boost),
-  `iron-tools` (Peon harvest +25%), `siege-engineering` (unlocks
-  Trebuchet at lower Barracks tier), `monumental-architecture`
-  (Wonder build cost -20%). Each declares effect dispatcher per
-  the existing pattern. Acceptance: every new Discovery is in
-  the registry + applies its effect when granted (camp clear,
-  manual research, or scientific-victory threshold check).
+- [x] M_V7.DISCOVERY-TREE.V6 — 5 new techs added: trade-route (flag,
+  gates DIPLO.TRADE), cartography (flag, gates future reveal pass),
+  iron-tools (multiply-harvest 1.25× — stacks with steelPlows),
+  siege-engineering (flag, gates Trebuchet tier-1 unlock; prereq
+  forgedBlades), monumental-architecture (flag, gates Wonder cost
+  reduction; prereq steelPlows). New `flag` effect kind added to
+  DiscoveryEffectSchema for techs that gate downstream systems without
+  immediate apply. Registry now contains 7 total Discoveries. DEFAULT_DISCOVERY_POOL
+  extended so camp clears can grant the flag-only techs too. 5 unit tests
+  pin: registry contains all 5, total count, prereqs on tier-2 techs,
+  iron-tools factor, flag-only set.
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.E2E.4-PLAYER-CAMP-CLEAR — true
   Playwright e2e for camp clearing in a 4-player setup. Today

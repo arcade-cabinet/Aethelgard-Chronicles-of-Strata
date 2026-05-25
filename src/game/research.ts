@@ -109,4 +109,13 @@ export function grantRandomDiscovery(
  * not present in the registry so this constant stays a forward-compatible
  * superset.
  */
-const DEFAULT_DISCOVERY_POOL: readonly string[] = ['forgedBlades', 'steelPlows'];
+const DEFAULT_DISCOVERY_POOL: readonly string[] = [
+  'forgedBlades',
+  'steelPlows',
+  // M_V7.DISCOVERY-TREE.V6 — flag-only techs are valid camp-clear
+  // rewards too. Gates downstream systems the moment the id lands in
+  // research.purchased; no apply effect needed at grant time.
+  'trade-route',
+  'cartography',
+  'iron-tools',
+];
