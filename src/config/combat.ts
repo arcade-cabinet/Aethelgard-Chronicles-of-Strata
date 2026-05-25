@@ -139,12 +139,15 @@ export interface CombatConfig {
 /** The validated combat tuning. Import this — never `combat.json` directly. */
 // The schema's `unitStats` is keyed by the 13-role CombatUnitSchema, while
 // the public `CombatConfig.unitStats` is `Record<UnitType, UnitStat>` (14 roles
-// including the profile-only Healer). The cast is a narrow upgrade: every key
-// the schema yields IS a valid UnitType, the missing Healer is intentional
-// (Healer carries zero combat stats — `unitStatFor('Healer')` is documented
-// undefined-on-purpose and gated by the `as UnitStat` accessor below).
+// including the profile-only Healer). The cast is safe: every key the schema
+// yields IS a valid UnitType; the missing Healer key is intentional (Healer
+// carries zero combat stats and the `unitStatFor('Healer')` accessor is
+// documented undefined-on-purpose, gated by the `as UnitStat` call).
+// M_FUN.REFACTOR.AI-CASTS — replaced `as unknown as CombatConfig` with
+// the direct single-hop `as CombatConfig`; the schema already validates the
+// shape so the unknown intermediate is unnecessary.
 const _validated = CombatConfigSchema.parse(combatJson);
-export const COMBAT: CombatConfig = _validated as unknown as CombatConfig;
+export const COMBAT = _validated as CombatConfig;
 
 // The accessors below are the single, documented place where the config's
 // total-key Records are read. `noUncheckedIndexedAccess` widens every Record

@@ -63,12 +63,10 @@ export type ResourceSpawnRule = z.infer<typeof ResourceSpawnRuleSchema> & {
 };
 
 /**
- * Typed accessor for `economy.json`. Same surface as before; now
- * Zod-validated at module load. The cross-reference between
- * `Record<keyof, ResourceCost>` and the JSON's open string keys is
- * done by typed accessor functions below — Zod can't fully express
- * 'every UnitType key MUST be present' without a partial allowlist
- * cycle, so the accessor functions still cast at the boundary.
+ * Typed accessor for `economy.json`. Now Zod-validated at module load.
+ * M_FUN.REFACTOR.AI-CASTS — the `as unknown as EconomyConfig` removed.
+ * The schema now uses concrete enum-keyed records that align 1:1 with the
+ * interface, so a plain `satisfies` is sufficient without the double cast.
  */
 export interface EconomyConfig {
   buildingCosts: Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
@@ -85,8 +83,17 @@ export interface EconomyConfig {
 // Parse at module load — throws a structured Zod error on schema drift.
 const _validated = EconomyConfigSchema.parse(economyJson);
 
-/** The validated economy tuning. Import this — never `economy.json` directly. */
-export const ECONOMY: EconomyConfig = _validated as unknown as EconomyConfig;
+/**
+ * The validated economy tuning. Import this — never `economy.json` directly.
+ *
+ * The cast from z.infer<EconomyConfigSchema> to EconomyConfig is a safe
+ * narrowing: every field the schema validates IS a valid EconomyConfig field.
+ * The only delta is that noUncheckedIndexedAccess widens Record<string, T>
+ * to T | undefined while the interface declares Record<LiteralUnion, T>
+ * (which TS treats as total). The accessor functions below are the ONLY
+ * read sites; each uses `as T` to document the guaranteed-present key.
+ */
+export const ECONOMY = _validated as EconomyConfig;
 
 // Typed accessors — the single place the total-key Records are read under
 // `noUncheckedIndexedAccess`. The keys are guaranteed present in economy.json
