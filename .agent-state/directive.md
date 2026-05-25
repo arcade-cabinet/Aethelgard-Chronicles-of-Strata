@@ -1782,3 +1782,15 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   grant for camp clears tied to the v0.7 camp-clear flow, RUINS decoration
   palette (the palette entry exists; the scatter props for the RUINS biome
   need the accretion pool entry). Each sub-item gets its own commit.
+
+## v0.9 CYCLE — v0.8 carryovers + cross-platform visual baselines
+
+- [ ] [WAIT] (v0.9 grinder) M_V9.VISUAL.LINUX-LOCK — lock visual-battery
+  baselines from a Linux container so the CI gate is byte-stable.
+  Currently visual-battery is `continue-on-error: true` because
+  Mac-locked baselines drift on the Linux CI runner (subpixel font
+  rounding + GPU driver differences in Chromium headless). v0.9 fix:
+  add a one-time `pnpm visual:battery:lock` script that runs the
+  battery inside a docker container matching the CI image and commits
+  the resulting PNGs as the canonical baselines. Flip the CI job back
+  to `fail on drift` once baselines lock in Linux.
