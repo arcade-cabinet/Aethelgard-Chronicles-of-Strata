@@ -317,22 +317,22 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           }}
         >
           <span style={{ flex: 0 }}>Faction colors:</span>
-          <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <span>Player</span>
             <FactionColorPicker
               color={factionColors.player}
               onChange={(c) => setFactionColors((prev) => ({ ...prev, player: c }))}
               ariaLabel="Player faction color"
             />
-          </label>
-          <label style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          </div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
             <span>Enemy</span>
             <FactionColorPicker
               color={factionColors.enemy}
               onChange={(c) => setFactionColors((prev) => ({ ...prev, enemy: c }))}
               ariaLabel="Enemy faction color"
             />
-          </label>
+          </div>
         </div>
 
         {/* M_AUDIT2.UX.6 — sticky bottom Begin CTA. The above form
