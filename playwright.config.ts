@@ -83,6 +83,29 @@ const allProjects = [
   },
   { name: 'mobile', use: { ...devices['Pixel 7'] } },
   { name: 'tablet', use: { ...devices['iPad Mini'] } },
+  // User feedback (OnePlus Open foldable unfolded): HUD overlap +
+  // grey board. The foldable form factor sits between tablet + phone
+  // — wide ~840 CSS-px viewport but Android UA, touch primary, 3x DPR.
+  {
+    name: 'foldable-portrait',
+    use: {
+      ...devices['Pixel 7'],
+      viewport: { width: 840, height: 2120 },
+      deviceScaleFactor: 3,
+    },
+  },
+  {
+    name: 'foldable-landscape',
+    use: {
+      ...devices['Pixel 7'],
+      viewport: { width: 2120, height: 840 },
+      deviceScaleFactor: 3,
+    },
+  },
+  {
+    name: 'ultrawide',
+    use: { ...devices['Desktop Chrome'], viewport: { width: 3440, height: 1440 } },
+  },
 ];
 // allProjects is a non-empty const literal — TS can prove the [0] access
 // is defined without a non-null assertion. Use `at(0) ?? allProjects[0]`
