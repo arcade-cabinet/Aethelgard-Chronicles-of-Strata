@@ -6,9 +6,14 @@
  * 4 Footmen + 1 Healer on SWAMP survive indefinitely (the
  * Healer-clear loop holds disease at 0).
  *
+ * M_FUN.TEST.SWAMP-COMPOSITION-SPEC — assertions are spec-driven:
+ *   - Death test: asserts all dead by 50 sim-sec (not by counting ticks
+ *     to a magic `current === 50` sentinel).
+ *   - Healer test: asserts survivors alive (current > 0), not at exact
+ *     starting HP (which is tick-order-coupled if disease fires first).
+ *
  * Unit-level test (cheaper than a browser harness) — runs
- * pathFollowSystem + statusAttributesSystem in a loop, asserts
- * survivor counts after a window.
+ * statusAttributesSystem in a loop, asserts survivor counts.
  */
 import { describe, expect, it } from 'vitest';
 import { FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
@@ -51,7 +56,7 @@ function spawnFootman(world: ReturnType<typeof createEcsWorld>, q: number, r: nu
 }
 
 describe('SWAMP composition pressure (M_FUN.MAP.SWAMP.HARNESS)', () => {
-  it('5 Footmen on SWAMP all die within 60 sim-seconds', () => {
+  it('5 Footmen on SWAMP all die within 50 sim-seconds (spec: <50s death)', () => {
     const world = createEcsWorld();
     const tiles = swampMap();
     const footmen = [
@@ -61,10 +66,10 @@ describe('SWAMP composition pressure (M_FUN.MAP.SWAMP.HARNESS)', () => {
       spawnFootman(world, 0, 1),
       spawnFootman(world, 0, -1),
     ];
-    // Disease was set to 5; each tick re-checks. Without recovery
-    // (every tile is SWAMP, recovery timer never accumulates) HP
-    // bleeds 1/sec. After 60 sec everyone is dead.
-    for (let i = 0; i < 60; i++) statusAttributesSystem(world, tiles, 1);
+    // Disease was set to 5; each tick re-checks the biome. Without any
+    // Healer (every tile is SWAMP, recovery timer never accumulates) HP
+    // bleeds 1/sec. Spec says "die in <50 sim-seconds" — assert at 50s.
+    for (let i = 0; i < 50; i++) statusAttributesSystem(world, tiles, 1);
     const survivors = footmen.filter((e) => (e.get(Health)?.current ?? 0) > 0).length;
     expect(survivors).toBe(0);
   });
@@ -84,8 +89,12 @@ describe('SWAMP composition pressure (M_FUN.MAP.SWAMP.HARNESS)', () => {
       FactionTrait({ faction: 'player' }),
       Unit({ unitType: 'Healer' }),
     );
+    // Spec: Healer in 2-hex range holds disease at 0 so Footmen survive.
+    // Assert alive (current > 0), not at exact starting HP — the first
+    // tick may apply disease before the Healer clears it, so HP may not
+    // be exactly at max. The structural guarantee is: no Footman dies.
     for (let i = 0; i < 60; i++) statusAttributesSystem(world, tiles, 1);
-    const survivors = footmen.filter((e) => (e.get(Health)?.current ?? 0) === 50).length;
+    const survivors = footmen.filter((e) => (e.get(Health)?.current ?? 0) > 0).length;
     expect(survivors).toBe(4);
   });
 });
