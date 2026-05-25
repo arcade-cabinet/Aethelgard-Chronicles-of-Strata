@@ -35,7 +35,11 @@ beforeAll(async () => {
     });
     const rows = await p.listLorebook();
     dbAvailable = rows.length > 0;
-  } catch {
+    if (!dbAvailable) {
+      console.warn('[lorebook] probe wrote + read 0 rows — DB skip path active');
+    }
+  } catch (err) {
+    console.warn('[lorebook] probe threw:', err);
     dbAvailable = false;
   }
   // Clean the probe row so the real tests start empty.

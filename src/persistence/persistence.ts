@@ -377,19 +377,6 @@ let dbUnavailable = false;
  * Idempotent — concurrent callers share a single open sequence.
  */
 async function openDb(): Promise<SQLiteDBConnection | null> {
-  // Vitest browser environment: jeep-sqlite/loader's defineCustomElements
-  // races against the WebAssembly worker boot in headless Chromium, so a
-  // real DB open here produces unhandled rejections during App mount
-  // tests. Skip to a deterministic null; the production path (real
-  // browser, Android Capacitor) takes the open branch below. The
-  // lorebook + save-snapshot tests gate on `dbAvailable` and skip
-  // when null is returned — they're exercised end-to-end in the
-  // Playwright e2e battery instead, where the full Chromium worker
-  // surface bootstraps cleanly.
-  if (import.meta.env.VITEST) {
-    dbUnavailable = true;
-    return null;
-  }
   if (dbUnavailable) return null;
   if (sqliteDb) return sqliteDb;
   if (openPromise) return openPromise;
