@@ -801,46 +801,46 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
 These are NOT v0.4 work but stay in the directive so the anti-stop
 hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
 
-- [ ] `M_FUN.CIV.*` — Civilian layer (citizens, refugees,
+- [ ] [WAIT-V0.5] `M_FUN.CIV.*` — Civilian layer (citizens, refugees,
   trade routes).
-- [ ] `M_FUN.MYTH.*` — Mythology (aether nodes, ruins,
+- [ ] [WAIT-V0.5] `M_FUN.MYTH.*` — Mythology (aether nodes, ruins,
   divine intervention, Sacred Grove, monuments).
-- [ ] `M_FUN.DIPLO.*` — Diplomacy + reputation, tributary
+- [ ] [WAIT-V0.5] `M_FUN.DIPLO.*` — Diplomacy + reputation, tributary
   states, marriage alliances (post 3-faction).
-- [ ] M_FUN.NAR.REPLAY — Replay loading + spectator
+- [ ] [WAIT-V0.5] M_FUN.NAR.REPLAY — Replay loading + spectator
   skip-to-interesting.
-- [ ] `M_FUN.MOD.*` — Daily challenge, puzzle scenarios,
+- [ ] [WAIT-V0.5] `M_FUN.MOD.*` — Daily challenge, puzzle scenarios,
   modifier dial.
-- [ ] `M_FUN.PROC.*` — Procedural unit names, building
+- [ ] [WAIT-V0.5] `M_FUN.PROC.*` — Procedural unit names, building
   inscriptions, map names.
 
 ### Standing carry-overs (process, not features)
 
-- [ ] M_PROCESS.REVIEW — Periodic review-trio
+- [ ] [WAIT-CYCLE] M_PROCESS.REVIEW — Periodic review-trio
   dispatch (code-reviewer + security-auditor + code-simplifier)
   every ~5 commits or at clean checkpoint moments.
-- [ ] M_PROCESS.WORKTREE — Lead agent owns
+- [ ] [WAIT-CYCLE] M_PROCESS.WORKTREE — Lead agent owns
   worktree close-out after parallel-agent runs (cherry-pick or
   merge; remove `.claude/worktrees/agent-*`).
-- [ ] M_HARDENING.6 — Pixel-5a perf profile + on-device
+- [ ] [WAIT-DEVICE] M_HARDENING.6 — Pixel-5a perf profile + on-device
   APK install. Blocked on emulator / SDK / signed-APK pipeline
   access.
 
 ### Open from prior cycles (true blockers — needs deployment-infra)
 
-- [ ] M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer.
+- [ ] [WAIT-DEPLOY] M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer.
   GitHub Pages doesn't allow custom response headers; needs
   Cloudflare worker / Pages migration. Deployment-infra concern.
-- [ ] M_NEXT.DEPLOY.3 — Narrow 'unsafe-eval' via
+- [ ] [WAIT-DEPLOY] M_NEXT.DEPLOY.3 — Narrow 'unsafe-eval' via
   SRI/nonce. Lower priority than DEPLOY.2.
-- [ ] M_NEXT.CI.3 — Sibling-project test parity audit
+- [ ] [WAIT-CYCLE] M_NEXT.CI.3 — Sibling-project test parity audit
   (xvfb / video recording / governor-test).
-- [ ] M_NEXT.CI.2 — analysis-nightly.yml for slower scans.
-- [ ] M_NEXT.AIVAI.6 — Player-faction AI inert under
+- [ ] [WAIT-CYCLE] M_NEXT.CI.2 — analysis-nightly.yml for slower scans.
+- [ ] [WAIT-V0.5] M_NEXT.AIVAI.6 — Player-faction AI inert under
   asymmetric seedZones map-gen.
-- [ ] M_POLISH3.SCENE.4 — GameOverModal Dialog doesn't
+- [ ] [WAIT-V0.5] M_POLISH3.SCENE.4 — GameOverModal Dialog doesn't
   render reliably in headless Playwright; production flow works.
-- [ ] M_POLISH3.HUD.1/2/3 — Tablet HUD pill stride
+- [ ] [WAIT-V0.5] M_POLISH3.HUD.1/2/3 — Tablet HUD pill stride
   re-audit; mobile per-mode captures; day-night phase visual
   swing.
 

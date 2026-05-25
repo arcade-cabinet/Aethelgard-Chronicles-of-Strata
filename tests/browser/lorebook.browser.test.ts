@@ -57,8 +57,11 @@ describe('lorebook persistence', () => {
 
   it('records and lists a single entry', async () => {
     if (!dbAvailable) {
-      // Reviewer-fix (HIGH #5): explicit skip, not silent pass.
-      return;
+      // Coderabbit MAJOR: a `return` here marks the test PASS with
+      // zero assertions when the test DB isn't reachable. That
+      // hides a regression where the DB stops booting in the
+      // browser harness. Use a hard expectation to surface it.
+      expect.fail('lorebook test DB unavailable — beforeAll setup did not boot the schema');
     }
     const p = createPersistence();
     await p.recordLorebookEntry({
