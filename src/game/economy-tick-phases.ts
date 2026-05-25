@@ -70,11 +70,7 @@ export function tickClockPhase(game: GameState, delta: number): void {
 // Phase 2 — Command: AI decisions, spawning, stance + pathFollow.
 // AI/spawn/stance are turn-gated; pathFollow always runs.
 // ---------------------------------------------------------------------------
-export function tickCommandPhase(
-  game: GameState,
-  delta: number,
-  turnGateOpen: boolean,
-): void {
+export function tickCommandPhase(game: GameState, delta: number, turnGateOpen: boolean): void {
   if (turnGateOpen) {
     for (const ai of Object.values(game.aiPlayers)) ai?.tick(game, delta);
     spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
@@ -96,11 +92,7 @@ export function tickCommandPhase(
 // hidden-bonus discovery, encroachment, job-routing, harvest, build, science.
 // Terrain + discovery always tick; economy/routing are turn-gated.
 // ---------------------------------------------------------------------------
-export function tickTerrainPhase(
-  game: GameState,
-  delta: number,
-  turnGateOpen: boolean,
-): void {
+export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: boolean): void {
   // M_FUN.PERF.TILE-INDEX — build the shared tile→entity index ONCE before
   // all hazard systems run. wildfireSystem and volcanoSystem use it for O(1)
   // lookups instead of separate O(entities) scans per hazard tile.
@@ -282,10 +274,7 @@ export function tickDepositPhase(game: GameState): void {
 // Phase 6 — Scoring: death, building-death, animation, wonder-timers,
 //            win-loss evaluation, score integral.
 // ---------------------------------------------------------------------------
-export function tickScoringPhase(
-  game: GameState,
-  delta: number,
-): void {
+export function tickScoringPhase(game: GameState, delta: number): void {
   const deathResult = deathSystem(game.world, delta);
   game.economy.player.kills += deathResult.enemyKills;
   if (deathResult.enemyDeathKeys.length > 0) {

@@ -151,11 +151,7 @@ export function serializeGame(game: GameState): GameSnapshot {
  * @param dest  - The Map to populate (cleared first)
  * @param limit - Maximum number of entries accepted (default 500)
  */
-function restoreVolcanoTileMap(
-  raw: unknown,
-  dest: Map<string, number>,
-  limit = 500,
-): void {
+function restoreVolcanoTileMap(raw: unknown, dest: Map<string, number>, limit = 500): void {
   dest.clear();
   if (!Array.isArray(raw)) return;
   for (const pair of raw.slice(0, limit)) {

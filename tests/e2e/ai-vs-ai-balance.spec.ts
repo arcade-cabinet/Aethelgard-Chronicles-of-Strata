@@ -395,8 +395,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
       // won by unit rush alone, no economic depth). Both factions
       // running at least one harvest loop is the structural guarantee.
       const eitherHarvested =
-        snapshot.peonMetricsPlayer.firstWoodAt > -1 ||
-        snapshot.peonMetricsEnemy.firstWoodAt > -1;
+        snapshot.peonMetricsPlayer.firstWoodAt > -1 || snapshot.peonMetricsEnemy.firstWoodAt > -1;
       expect
         .soft(eitherHarvested, 'at least one faction must have deposited wood (peon harvest ran)')
         .toBe(true);
