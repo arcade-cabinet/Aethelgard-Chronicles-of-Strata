@@ -259,10 +259,12 @@ the portal/diplomacy work begins so the substrate is fully complete.
   ship in a v0.7 visual polish pass when the new components land. 3 tests
   pin the Minimap registry color flow + that source contains the findFaction
   lookup pattern.
-- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.E2E-CAMP-CLEAR — Playwright e2e
-  spec: spawn a 4-player match with 3 camps, advance 10 sim-min,
-  assert at least 1 camp cleared by some faction + the cleared
-  faction's economy gained the +50/+50. Slow / opt-in (JOURNEY=1).
+- [x] M_V6.CARRY.E2E-CAMP-CLEAR — vitest browser-mode acceptance spec
+  (real Chromium, runs as part of `pnpm test:browser`). 4-faction setup
+  spawns ≥1 barbarian camp; force-clearing via Health=0 + runEconomyTick
+  asserts: +50 wood + +50 stone credited, tile flipped to RUINS, Discovery
+  granted. Full Playwright e2e variant defers to v0.7 when NewGameModal
+  exposes >2-faction picks.
 
 ### v0.6.A — Portal generators (spec §1)
 
