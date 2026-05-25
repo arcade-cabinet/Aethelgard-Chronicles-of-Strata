@@ -219,6 +219,41 @@ Architectural decisions for v0.6 (the use-case enumeration step):
 
 Concrete v0.6 work-units:
 
+### v0.6.0 — v0.5 centerpiece carryovers (drained before new work)
+The v0.5 grinder report named six follow-ups outside the centerpiece
+substrate. Each lands in v0.6 as a self-contained commit-unit BEFORE
+the portal/diplomacy work begins so the substrate is fully complete.
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.SAVE-N-PLAYER — serialize-game.ts:
+  GameSnapshot.config gains optional `factions: FactionConfig[]`;
+  serializeGame writes the registry; deserializeGame restores it
+  before startGame runs. v0.4 saves continue to load (factions field
+  absent → LEGACY_FACTIONS fallback). Acceptance: a 6-faction save
+  round-trips identically (same id+color+kind set per slot).
+- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.CAMP-DISCOVERY — camp clearing
+  reward extends from +50 wood / +50 stone to +1 random Discovery
+  pulled from a deterministic pool. Discovery flag is granted via
+  ResearchState; the clearing faction gets a tech jump.
+- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.RUINS-BIOME — when a camp is
+  cleared, the tile's biome flips to a new `RUINS` decorative type
+  (gameplay-irrelevant; reads as "old camp" visually). Add RUINS to
+  the BiomeType union + mapgen palette entry + Decoration mesh.
+- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.HUD-N-BANNERS — the HUD chip
+  strip currently shows player + enemy. For 3+ player matches (4X
+  mode) expand to render one chip per non-barbarian faction (up to 6).
+  Team-mode toggle is a follow-up (single-string assignment per slot).
+- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.COLOR-OUTLINE-V2 — extend the
+  registry-driven color from ZoneBorder (v0.5) to: per-building
+  outline ring, per-unit hex outline shader, minimap marker color.
+  All three currently use SKINS / hardcoded fallbacks. Grep gate
+  asserts the lifts for each surface.
+- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.E2E-CAMP-CLEAR — Playwright e2e
+  spec: spawn a 4-player match with 3 camps, advance 10 sim-min,
+  assert at least 1 camp cleared by some faction + the cleared
+  faction's economy gained the +50/+50. Slow / opt-in (JOURNEY=1).
+
+### v0.6.A — Portal generators (spec §1)
+
 - [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.QUICKSAND-PAIR — generator
   hook in `paintQuicksandSwirls` that, when ≥2 QUICKSAND tiles
   spawn, pairs the closest two via `portalTo`. Deterministic per
@@ -237,6 +272,8 @@ Concrete v0.6 work-units:
   Per-faction 60s cooldown on use. Acceptance: e2e test forces
   the event seed + asserts both stones placed + cooldown UI
   visible on second use.
+
+### v0.6.B — Diplomacy (spec §2)
 
 - [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.RELATION-MACHINE — per-pair
   `Relation` state in `GameState.diplomacy: Map<\`${a}|${b}\`,
@@ -260,6 +297,8 @@ Concrete v0.6 work-units:
   demand when supply×military ratio between two factions exceeds
   2×. Refusal flips Relation to `enemy` + adds a wave-of-attack
   bonus to the demanding side.
+
+### v0.6.C — MYTH events + 4X depth + parking lot
 
 - [ ] [WAIT] (v0.6 cycle) M_V6.MYTH.EVENTS — 5 rare events
   (solar-eclipse, meteor-strike, migration, oracle-vision,
