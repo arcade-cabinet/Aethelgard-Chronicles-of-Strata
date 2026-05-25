@@ -59,6 +59,7 @@ import { economyFor } from './economy-for';
 import { detectVictory } from './victory-conditions';
 import { grantRandomDiscovery } from './research';
 import { buildEntityTileIndex } from './tile-index';
+import { factionIds } from '@/config/factions';
 
 // ---------------------------------------------------------------------------
 // Phase 1 — Clock: advance time, weather, random events, autosave.
@@ -224,8 +225,10 @@ export function tickCombatPhase(
     for (const e of game.world.query(Building, FactionTrait)) {
       const b = e.get(Building);
       const faction = e.get(FactionTrait)?.faction;
-      if (b?.isComplete && faction) {
-        completeByFaction[faction].push({ type: b.buildingType, tier: b.tier ?? 1 });
+      // faction-narrow: completeByFaction is Record<Faction,X>; skip N-player factions.
+      if (b?.isComplete && faction && faction in completeByFaction) {
+        const bucket = completeByFaction[faction as Faction];
+        bucket.push({ type: b.buildingType, tier: b.tier ?? 1 });
       }
     }
     recomputeMaxSupply(game.economy.player, completeByFaction.player);
@@ -234,8 +237,9 @@ export function tickCombatPhase(
     for (const e of game.world.query(Unit, FactionTrait)) {
       const u = e.get(Unit);
       const f = e.get(FactionTrait)?.faction;
-      if (!u || !f) continue;
-      supplyByFaction[f] += SUPPLY_COST[u.unitType] ?? 1;
+      // faction-narrow: supplyByFaction is Record<Faction,number>; skip N-player factions.
+      if (!u || !f || !(f in supplyByFaction)) continue;
+      supplyByFaction[f as Faction] += SUPPLY_COST[u.unitType] ?? 1;
     }
     game.economy.player.usedSupply = supplyByFaction.player;
     game.economy.enemy.usedSupply = supplyByFaction.enemy;
@@ -374,29 +378,38 @@ export function tickScoringPhase(game: GameState, delta: number): void {
     game.buildSitesGeneration += 1;
   }
   animationSystem(game.world);
-  // Wonder countdown
+  // Wonder countdown — M_V8.WONDER-TIMERS.N-PLAYER: iterate all faction ids.
   const WONDER_COUNTDOWN_SECONDS = 300;
-  for (const faction of FACTIONS) {
+  for (const factionId of factionIds(game.factions)) {
     let hasCompleteWonder = false;
     for (const e of game.world.query(Building, FactionTrait)) {
       const b = e.get(Building);
       const f = e.get(FactionTrait)?.faction;
-      if (f !== faction || !b || b.buildingType !== 'Wonder' || !b.isComplete) continue;
+      if (f !== factionId || !b || b.buildingType !== 'Wonder' || !b.isComplete) continue;
       hasCompleteWonder = true;
       break;
     }
     if (!hasCompleteWonder) {
-      game.wonderTimers[faction] = Infinity;
+      game.wonderTimers[factionId] = Infinity;
       continue;
     }
-    if (game.wonderTimers[faction] === Infinity) {
-      game.wonderTimers[faction] = WONDER_COUNTDOWN_SECONDS;
+    if (game.wonderTimers[factionId] === Infinity) {
+      game.wonderTimers[factionId] = WONDER_COUNTDOWN_SECONDS;
     }
-    game.wonderTimers[faction] = Math.max(0, game.wonderTimers[faction] - delta);
+    game.wonderTimers[factionId] = Math.max(0, (game.wonderTimers[factionId] ?? 0) - delta);
   }
+  // Outcome: human faction timer hits 0 → win; any AI faction timer hits 0 → loss.
+  // First-to-zero wins (handles N-player: first AI wonder beats human faction).
   if (game.outcome === 'playing') {
-    if (game.wonderTimers.player === 0) game.outcome = 'win';
-    else if (game.wonderTimers.enemy === 0) game.outcome = 'loss';
+    for (const fc of game.factions) {
+      if ((game.wonderTimers[fc.id] ?? Infinity) !== 0) continue;
+      if (fc.kind === 'human') {
+        game.outcome = 'win';
+      } else {
+        game.outcome = 'loss';
+      }
+      break; // first-to-zero wins
+    }
   }
   // Age-of-strata Renaissance+Wonder instant win
   if (game.mode === 'age-of-strata' && game.outcome === 'playing') {

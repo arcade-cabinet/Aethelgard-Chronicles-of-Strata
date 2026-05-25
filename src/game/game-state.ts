@@ -344,7 +344,12 @@ export interface GameState {
    * Wonder built yet. The first faction to reach 0 wins (or, if the
    * other faction destroys it mid-countdown, the timer resets).
    */
-  wonderTimers: Record<Faction, number>;
+  /**
+   * M_V8.WONDER-TIMERS.N-PLAYER — widened to Record<FactionId, number>
+   * so all N factions can have wonder countdowns, not just 'player'/'enemy'.
+   * Seeded with Infinity for every faction id at startGame.
+   */
+  wonderTimers: Record<string, number>;
   /**
    * M_POLISH2.MODES.42a — strata-wars zone-control win timer.
    * Seconds the player has held ≥ 80% of controlled tiles. When
@@ -965,8 +970,10 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
       enemy: enemyBaseTile,
     }),
     score: { player: 0, enemy: 0 },
-    // M_EXPANSION.F.71 — Infinity = no Wonder built yet for that faction.
-    wonderTimers: { player: Infinity, enemy: Infinity },
+    // M_V8.WONDER-TIMERS.N-PLAYER — seed all faction ids (Infinity = no Wonder yet).
+    wonderTimers: Object.fromEntries(
+      (config.factions ?? LEGACY_FACTIONS).map((f) => [f.id, Infinity]),
+    ) as Record<string, number>,
     // M_FUN.DYN.WILDFIRE — empty burning-tile registry. The wildfire
     // system creates entries via igniteWildfire and prunes via the
     // tick loop; default is the empty map (no fires lit at game start).
