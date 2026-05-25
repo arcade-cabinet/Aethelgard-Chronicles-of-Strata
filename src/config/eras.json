@@ -1,9 +1,29 @@
 {
   "$comment": "Era progression table — Stone → Bronze → Iron → Renaissance. Each row declares the science threshold to enter the era + future unlocks. Adding a 5th era (Industrial, etc) = ONE entry here; eraForScience, nextEra, eraProgressFraction, the HUD badge, the era-unlock dispatch all pick it up automatically. M_POLISH2.X4.27 + MODES.43.",
   "eras": [
-    { "id": "Stone", "label": "Stone", "scienceThreshold": 0, "$comment": "Starting era — wood + stone economy only." },
-    { "id": "Bronze", "label": "Bronze", "scienceThreshold": 100, "$comment": "Unlocks Barracks tier 2 + faster harvest." },
-    { "id": "Iron", "label": "Iron", "scienceThreshold": 250, "$comment": "Unlocks Watchtower + Wonder." },
-    { "id": "Renaissance", "label": "Renaissance", "scienceThreshold": 500, "$comment": "Final era — build a Wonder while in Renaissance = win." }
+    {
+      "id": "Stone",
+      "label": "Stone",
+      "scienceThreshold": 0,
+      "$comment": "Starting era — wood + stone economy only."
+    },
+    {
+      "id": "Bronze",
+      "label": "Bronze",
+      "scienceThreshold": 100,
+      "$comment": "Unlocks Barracks tier 2 + faster harvest."
+    },
+    {
+      "id": "Iron",
+      "label": "Iron",
+      "scienceThreshold": 250,
+      "$comment": "Unlocks Watchtower + Wonder."
+    },
+    {
+      "id": "Renaissance",
+      "label": "Renaissance",
+      "scienceThreshold": 500,
+      "$comment": "Final era — build a Wonder while in Renaissance = win."
+    }
   ]
 }

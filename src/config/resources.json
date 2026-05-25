@@ -7,10 +7,19 @@
       "kind": "harvest",
       "icon": "🪵",
       "sources": [
-        { "kind": "biome-node", "biomes": ["FOREST"], "harvester": "Peon", "overlayStyle": "tree-cluster", "yield": 100 }
+        {
+          "kind": "biome-node",
+          "biomes": ["FOREST"],
+          "harvester": "Peon",
+          "overlayStyle": "tree-cluster",
+          "yield": 100
+        }
       ],
       "consumers": [
-        { "kind": "building", "types": ["House", "Farm", "Barracks", "Watchtower", "Library", "Wonder", "Granary"] },
+        {
+          "kind": "building",
+          "types": ["House", "Farm", "Barracks", "Watchtower", "Library", "Wonder", "Granary"]
+        },
         { "kind": "road", "style": "wood" }
       ]
     },
@@ -20,10 +29,19 @@
       "kind": "harvest",
       "icon": "🪨",
       "sources": [
-        { "kind": "biome-node", "biomes": ["HIGHLAND"], "harvester": "Peon", "overlayStyle": "stone-pile", "yield": 80 }
+        {
+          "kind": "biome-node",
+          "biomes": ["HIGHLAND"],
+          "harvester": "Peon",
+          "overlayStyle": "stone-pile",
+          "yield": 80
+        }
       ],
       "consumers": [
-        { "kind": "building", "types": ["Granary", "Barracks", "Watchtower", "Wall", "Wonder", "Library"] },
+        {
+          "kind": "building",
+          "types": ["Granary", "Barracks", "Watchtower", "Wall", "Wonder", "Library"]
+        },
         { "kind": "road", "style": "stone" }
       ]
     },
@@ -40,7 +58,9 @@
           "harvester": "Peon",
           "overlayStyle": "ore-vein",
           "yield": 60,
-          "risk": { "attribute": "fatigue", "strength": 0.3, "unlockedBy": "reinforced-pick" },
+          "risks": [
+            { "attribute": "fatigue", "strength": 0.3, "unlockedBy": "reinforced-pick" }
+          ],
           "yieldRateMul": 1.2
         }
       ],
@@ -55,7 +75,13 @@
       "kind": "harvest",
       "icon": "🪙",
       "sources": [
-        { "kind": "biome-node", "biomes": ["GRASS"], "harvester": "Peon", "overlayStyle": "gold-glint", "yield": 60 }
+        {
+          "kind": "biome-node",
+          "biomes": ["GRASS"],
+          "harvester": "Peon",
+          "overlayStyle": "gold-glint",
+          "yield": 60
+        }
       ],
       "consumers": [
         { "kind": "building", "types": ["Farm", "Barracks", "Library", "Wonder"] },
@@ -69,13 +95,38 @@
       "icon": "🍖",
       "$comment": "FOOD is the per-faction unit-upkeep slot. Three biome sources — FOREST (game / hunting), SHALLOWS (fish), GRASS (foraging) — each renders a different overlay style, but all yield the same food slot. Granary buildings boost passive yield.",
       "sources": [
-        { "kind": "biome-node", "biomes": ["FOREST"], "harvester": "Peon", "overlayStyle": "game-trail", "yield": 80, "label": "Game" },
-        { "kind": "biome-node", "biomes": ["SHALLOWS"], "harvester": "Peon", "overlayStyle": "fish-school", "yield": 100, "label": "Fish" },
-        { "kind": "biome-node", "biomes": ["GRASS"], "harvester": "Peon", "overlayStyle": "berry-bush", "yield": 60, "label": "Forage" },
+        {
+          "kind": "biome-node",
+          "biomes": ["FOREST"],
+          "harvester": "Peon",
+          "overlayStyle": "game-trail",
+          "yield": 80,
+          "label": "Game"
+        },
+        {
+          "kind": "biome-node",
+          "biomes": ["SHALLOWS"],
+          "harvester": "Peon",
+          "overlayStyle": "fish-school",
+          "yield": 100,
+          "label": "Fish"
+        },
+        {
+          "kind": "biome-node",
+          "biomes": ["GRASS"],
+          "harvester": "Peon",
+          "overlayStyle": "berry-bush",
+          "yield": 60,
+          "label": "Forage"
+        },
         { "kind": "passive-trickle", "rate": 0.05, "boostedBy": ["Granary", "Farm"] }
       ],
       "consumers": [
-        { "kind": "unit-upkeep", "perUnit": 0.01, "$comment": "0.01 food/sec per supply unit (future M_FUN.ECON.UPKEEP)." }
+        {
+          "kind": "unit-upkeep",
+          "perUnit": 0.01,
+          "$comment": "0.01 food/sec per supply unit (future M_FUN.ECON.UPKEEP)."
+        }
       ]
     },
     {
@@ -91,22 +142,18 @@
           "harvester": "Peon",
           "overlayStyle": "peat-cut",
           "yield": 70,
-          "risk": { "attribute": "disease", "strength": 0.4, "unlockedBy": "peat-mask" },
+          "risks": [{ "attribute": "disease", "strength": 0.4, "unlockedBy": "peat-mask" }],
           "yieldRateMul": 1.4
         }
       ],
-      "consumers": [
-        { "kind": "building", "types": ["Wall", "Watchtower"] }
-      ]
+      "consumers": [{ "kind": "building", "types": ["Wall", "Watchtower"] }]
     },
     {
       "id": "science",
       "label": "Science",
       "kind": "passive",
       "icon": "🔬",
-      "sources": [
-        { "kind": "passive-trickle", "rate": 0.1, "boostedBy": ["Library"] }
-      ],
+      "sources": [{ "kind": "passive-trickle", "rate": 0.1, "boostedBy": ["Library"] }],
       "consumers": [
         { "kind": "discovery", "scope": "all" },
         { "kind": "unit", "types": ["Wizard", "Healer", "Hero"] }
@@ -117,12 +164,8 @@
       "label": "Mana",
       "kind": "passive",
       "icon": "✨",
-      "sources": [
-        { "kind": "passive-trickle", "rate": 0.05, "boostedBy": ["Library"] }
-      ],
-      "consumers": [
-        { "kind": "unit", "types": ["Wizard", "Healer"] }
-      ]
+      "sources": [{ "kind": "passive-trickle", "rate": 0.05, "boostedBy": ["Library"] }],
+      "consumers": [{ "kind": "unit", "types": ["Wizard", "Healer"] }]
     }
   ]
 }
