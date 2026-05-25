@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.9](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.8...v0.1.9) (2026-05-25)
+
+
+### Features
+
+* **v0.5:** N-player + barbarian-camp pivot — full centerpiece ([#27](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/27)) ([f12fbc2](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/f12fbc2d561f84803bcb4ded44e11bedcea0fc6f))
+
 ## [0.1.8](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.7...v0.1.8) (2026-05-25)
 
 
