@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.17](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.16...v0.1.17) (2026-05-25)
+
+
+### Features
+
+* **test:** multi-viewport regression spec + foldable + ultrawide + cycle PRDs ([#50](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/50)) ([31bd7e0](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/31bd7e048e1ba07c6fd55cd6c43f14eb9dfa8bb2))
+
 ## [0.1.16](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.15...v0.1.16) (2026-05-25)
 
 
