@@ -32,6 +32,10 @@ export const BIOME_AMBIENT: Record<BiomeType, string> = {
   // M_FUN.ECON.QUICKSAND — quicksand on a beach hex shares the coast
   // ambient (waves + birds); the visual swirl carries the danger cue.
   QUICKSAND: 'audio.ambient.coast',
+  // M_V6.CARRY.RUINS-BIOME — cleared-camp tile uses the grass ambient
+  // (it's structurally a grass-tier walkable tile; the visual carries
+  // the "old camp" cue, not the audio).
+  RUINS: 'audio.ambient.grass',
 };
 
 // Coderabbit MAJOR PR #10 05:46Z — typed-manifest enforcement.

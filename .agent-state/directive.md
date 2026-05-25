@@ -238,10 +238,12 @@ the portal/diplomacy work begins so the substrate is fully complete.
   loop alongside +50/+50 grant. Emits aethelgard:camp-discovery-granted CustomEvent
   for HUD listeners. 5 tests pin: empty pool no-op, single grant, drained pool null,
   PRNG determinism, integration with camp clearing.
-- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.RUINS-BIOME — when a camp is
-  cleared, the tile's biome flips to a new `RUINS` decorative type
-  (gameplay-irrelevant; reads as "old camp" visually). Add RUINS to
-  the BiomeType union + mapgen palette entry + Decoration mesh.
+- [x] M_V6.CARRY.RUINS-BIOME — RUINS biome added to BiomeType union +
+  mapgen.json (walkable/buildable/habitable, null attribute) + mapgen.ts BIOME_TYPES +
+  biome-flags.ts BIOME_FLAGS + palette day+evening + audio biome-ambient +
+  terrain-cost. tickScoringPhase flips cleared camp tile to RUINS so the
+  renderer paints "old camp remains". 5 tests pin: registry/flags/palette/
+  ambient/cost coverage + the runEconomyTick integration flip.
 - [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.HUD-N-BANNERS — the HUD chip
   strip currently shows player + enemy. For 3+ player matches (4X
   mode) expand to render one chip per non-barbarian faction (up to 6).

@@ -46,7 +46,16 @@ export type BiomeType =
   // gating: a single quicksand hex is the only source of `amber`,
   // which gates Renaissance Hero/Wizard training + Wonder
   // completion.
-  | 'QUICKSAND';
+  | 'QUICKSAND'
+  // M_V6.CARRY.RUINS-BIOME — decorative biome assigned when a
+  // barbarian camp is cleared. Walkable (acts like GRASS for
+  // pathing/biome flags), gameplay-irrelevant. Reads as "old camp
+  // remains" visually; lets the player see at a glance where
+  // they've already cleared. Set at runtime by tickScoringPhase
+  // when deathSystem flags a camp cleared; map-gen never produces
+  // a RUINS tile (no noise threshold), so all biome-distribution
+  // audits stay unchanged.
+  | 'RUINS';
 
 /** The assigned biome of one tile. */
 export interface Biome {

@@ -31,6 +31,10 @@ export const BIOME_COLORS: Record<BiomeType, string> = {
   // Picks up the amber-deposit colour so a player scanning the map
   // sees 'rare deposit here' before they walk onto it.
   QUICKSAND: '#f59e0b',
+  // M_V6.CARRY.RUINS-BIOME — washed-out grey-brown for cleared
+  // barbarian camps. Distinct enough from GRASS / DESERT that a
+  // returning player can see "I cleared this" at a glance.
+  RUINS: '#78716c',
 };
 
 /**
@@ -59,4 +63,5 @@ export const BIOME_COLORS_EVENING: Record<BiomeType, string> = {
   VOLCANO: '#27272a', // basalt slightly warmer at dusk
   LAVA: '#f97316', // molten glow reads brighter against the sunset
   QUICKSAND: '#fbbf24', // amber swirl reads warmer at dusk
+  RUINS: '#6b6660', // cleared-camp stone reads slightly warmer at dusk
 };

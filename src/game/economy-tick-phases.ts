@@ -325,6 +325,13 @@ export function tickScoringPhase(game: GameState, delta: number): void {
         }),
       );
     }
+    // M_V6.CARRY.RUINS-BIOME — flip the camp tile to RUINS so the
+    // renderer paints "old camp remains" decoration. Walkable +
+    // buildable (faction can recover the territory). NavGraph dirty
+    // bit is set below regardless.
+    const campKey = `${cleared.q},${cleared.r}`;
+    const tile = game.board.tiles.get(campKey);
+    if (tile) tile.type = 'RUINS';
     game.navGraphDirty = true;
   }
   const newNavGraph = buildingDeathSystem(game.world, game.buildSites, game.board);

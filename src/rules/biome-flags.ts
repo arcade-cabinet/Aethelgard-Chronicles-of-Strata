@@ -202,6 +202,19 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: null,
     decorationDensity: null,
   },
+  // M_V6.CARRY.RUINS-BIOME — set at runtime on cleared camp tiles. Walkable,
+  // buildable, habitable — gameplay treats it like GRASS so a faction can
+  // recover the territory. Visually distinct via the renderer (different
+  // decoration set; "old camp" tile palette).
+  RUINS: {
+    walkable: true,
+    buildable: true,
+    habitable: true,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: 0.2,
+  },
 };
 
 /** Resolve the flag tuple for a biome type. */
