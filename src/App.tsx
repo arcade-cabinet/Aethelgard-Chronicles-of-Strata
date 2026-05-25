@@ -52,7 +52,7 @@ import { SoundToggle } from '@/hud/SoundToggle';
 import { TitleScreen } from '@/hud/TitleScreen';
 import { ZoneLegend } from '@/hud/ZoneLegend';
 import { createPersistence, PREF_KEYS } from '@/persistence/persistence';
-import { deserializeGame } from '@/persistence/serialize-game';
+import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
 import { useViewport } from '@/render/useViewport';
@@ -207,6 +207,27 @@ function GameSession({
           };
         }
       ).__game_traits = { Building, FactionTrait, Unit, AssignedJob, Health };
+      // M_V9.E2E.SAVE-LOAD-N-PLAYER — expose serialize/deserialize helpers for
+      // Playwright e2e round-trip tests. Production-safe (same isolation as
+      // other __game_* helpers).
+      (
+        window as unknown as DevWindow & {
+          __game_save?: () => ReturnType<typeof serializeGame>;
+          __game_load?: (snap: ReturnType<typeof serializeGame>) => void;
+        }
+      ).__game_save = () => serializeGame(g);
+      (
+        window as unknown as DevWindow & {
+          __game_load?: (snap: ReturnType<typeof serializeGame>) => void;
+        }
+      ).__game_load = (snap) => {
+        const restored = deserializeGame(snap);
+        for (const key of Object.keys(g) as (keyof typeof g)[]) {
+          delete g[key];
+        }
+        Object.assign(g, restored);
+        (window as unknown as DevWindow).__game = g;
+      };
     }
     return g;
   }, [config, initialGame]);

@@ -685,7 +685,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   pin: 2-faction modal unchanged, N-player shows per-faction grid, winner row elevated,
   relation badges rendered, tribute-ally tag appears for tributary winners.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.E2E.SAVE-LOAD-N-PLAYER — Full Playwright e2e: boot `/?ai-vs-ai=1&nplayer=4&seed=42`,
+- [x] [WAIT] (v0.9 grinder) M_V9.E2E.SAVE-LOAD-N-PLAYER — Full Playwright e2e: boot `/?ai-vs-ai=1&nplayer=4&seed=42`,
   advance 5 sim-min via `window.__game.advanceFrames(18000)`, serialise via
   `window.__game.save()`, reload page, restore via `window.__game.load(snapshot)`,
   advance another 5 sim-min, assert: faction count unchanged (4), economy entries for
