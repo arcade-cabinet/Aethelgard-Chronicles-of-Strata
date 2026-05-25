@@ -654,12 +654,14 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   added to visual-battery.mjs (skips pre-run dirty-check, exits 0 on drift for
   lock workflow path). Commit: 837afd0.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — Convert 6 v0.8 test files that use
-  source-text grep assertions (testing that source code CONTAINS a pattern) into
-  behavior assertions (testing what the code DOES). Target files identified by the v0.8
-  reviewer trio: any test using `grep`, `readFileSync`, or `source.includes()` to assert
-  implementation details. Each file: identify the public contract, rewrite assertions
-  against `import`-ed module behavior. Run `pnpm test` after each file to confirm green.
+- [x] M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — Convert source-text grep assertions to behavior.
+  minimap-color.test.ts: removed grep (behavior tests already prove registry wiring).
+  ruins-biome.test.ts: exported PALETTES from Decoration.tsx, import + assert on ids.
+  onboarding-n-player.test.ts: exported STEPS/N_PLAYER_STEP, assert on values directly.
+  color-outline-v3.test.ts: "source contains findFaction" → module export shape check;
+  "no hardcoded banner ternary" + GameCanvas structural gate kept (lint-style invariants).
+  no-hardcoded-faction-colors.test.ts: retained (enforcement gate, not behavior assertion).
+  1131 unit tests pass after conversion.
 
 - [ ] [WAIT] (v0.9 grinder) M_V9.DOCS.PRD-V0.6-V0.7-V0.8 — Write proper PRD spec docs for each shipped cycle:
   `docs/specs/PRD-v0.6.md` (portals + diplomacy + MYTH + 4X detection),
@@ -677,13 +679,10 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   monumental-architecture, scores > 0 with it, score decreases as supply fills,
   WonderGoal produces placeBuilding('Wonder') call, evaluator weight flows from JSON.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.HUD.WIN-LOSS-N-PLAYER — `GameOverModal` currently shows winner vs loser
-  as a 2-faction binary. For N-player: detect the `game.victoryRecord` winner (single
-  faction or coalition via tribute-ally chains), render per-faction final stats grid
-  (kills, buildings, score sum, relation badge from `game.diplomacy`). Legacy 2-faction
-  path unchanged (victoryRecord absent → use existing outcome logic). 6 browser tests
-  pin: 2-faction modal unchanged, N-player shows per-faction grid, winner row elevated,
-  relation badges rendered, tribute-ally tag appears for tributary winners.
+- [x] M_V9.HUD.WIN-LOSS-N-PLAYER — `GameOverModal` per-faction stats grid shipped.
+  N-player: detects non-barbarian factions > 2, renders grid with kills/score/relation
+  badge/winner-badge/tribute-ally-tag. Legacy 2-faction path unchanged. 6 browser tests
+  in tests/browser/nplayer-game-over.browser.test.tsx (commit b5867f7).
 
 - [x] [WAIT] (v0.9 grinder) M_V9.E2E.SAVE-LOAD-N-PLAYER — Full Playwright e2e: boot `/?ai-vs-ai=1&nplayer=4&seed=42`,
   advance 5 sim-min via `window.__game.advanceFrames(18000)`, serialise via

@@ -49,14 +49,14 @@ describe('M_V6.CARRY.RUINS-BIOME — registry + flag coverage', () => {
   });
 
   it('RUINS decoration palette exists with rock + stump scatter props (M_V8.PARKING-LOT.V06)', async () => {
-    // Grep-gate: Decoration.tsx must have a RUINS entry in PALETTES with
-    // the desolate-wasteland scatter set shipped in the parking-lot drain.
-    const { readFileSync } = await import('node:fs');
-    const { resolve } = await import('node:path');
-    const src = readFileSync(resolve(__dirname, '../Decoration.tsx'), 'utf-8');
-    expect(src).toContain('RUINS: {');
-    expect(src).toContain("'nature.rock.td-rocks'");
-    expect(src).toContain("'nature.stump-a'");
+    // M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — converted from readFileSync grep to
+    // import-based behavior assertion. PALETTES is now exported from Decoration.tsx.
+    const { PALETTES } = await import('@/world/Decoration');
+    const ruinsPalette = PALETTES.RUINS;
+    expect(ruinsPalette).toBeDefined();
+    const ids = ruinsPalette!.props.map((p) => p.id);
+    expect(ids).toContain('nature.rock.td-rocks');
+    expect(ids).toContain('nature.stump-a');
   });
 });
 

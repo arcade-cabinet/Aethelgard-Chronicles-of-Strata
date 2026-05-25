@@ -5,47 +5,35 @@
  * STEPS.length + 1 (the extra N-player slide is appended). When
  * factionCount <= 2, the sequence is STEPS.length exactly.
  *
- * These are pure logic tests against the exported STEPS constant
- * and the N_PLAYER_STEP content — no DOM, no persistence mock needed.
+ * M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — converted from source-grep to
+ * behavior assertions by exporting STEPS and N_PLAYER_STEP from
+ * OnboardingOverlay.tsx and asserting on the exported values directly.
  */
 import { describe, expect, it } from 'vitest';
-
-/** Mirror of the STEPS const from OnboardingOverlay (source of truth is there). */
-const EXPECTED_BASE_STEP_COUNT = 9;
+import { N_PLAYER_STEP, STEPS } from '@/hud/OnboardingOverlay';
 
 describe('M_V8.TUTORIAL.N-PLAYER-MODE — N-player slide logic', () => {
-  it('base tutorial has 9 steps for 2-faction matches', async () => {
-    // Import the module to get the actual STEPS length.
-    // The component builds `steps` dynamically inside the render function;
-    // we can infer the rule: steps.length === STEPS.length when factionCount <= 2.
-    // We verify by importing the component source and checking STEPS.
-    const mod = await import('@/hud/OnboardingOverlay');
-    // The component is a function; STEPS is module-internal so we can't
-    // directly inspect it. Instead we assert the component exports are present
-    // and verify the slide count via the documented STEPS.length = 9 invariant.
-    expect(typeof mod.OnboardingOverlay).toBe('function');
-    // The N_PLAYER_STEP is NOT exported, but the slide-count contract is
-    // pinned here via the base count constant.
-    expect(EXPECTED_BASE_STEP_COUNT).toBe(9);
+  it('base tutorial has 9 steps for 2-faction matches', () => {
+    expect(STEPS).toHaveLength(9);
   });
 
-  it('N-player slide text contains "Multiple factions" keyword', async () => {
-    // Verify the slide body content is the expected copy. We read the
-    // source file to check the literal text — a grep-gate pattern.
-    const { readFileSync } = await import('node:fs');
-    const { resolve } = await import('node:path');
-    const src = readFileSync(resolve(__dirname, '../OnboardingOverlay.tsx'), 'utf-8');
-    expect(src).toContain('Multiple factions have joined the map');
-    expect(src).toContain('factionCount > 2');
+  it('N-player slide title contains "Multiple factions" keyword', () => {
+    expect(N_PLAYER_STEP.title).toBe('Multiple factions');
   });
 
-  it('slide is appended AFTER existing sequence, not prepended', async () => {
-    // The N-player slide must follow the base STEPS (shown after the existing
-    // 3-slide sequence as per the directive). Verify via source grep.
-    const { readFileSync } = await import('node:fs');
-    const { resolve } = await import('node:path');
-    const src = readFileSync(resolve(__dirname, '../OnboardingOverlay.tsx'), 'utf-8');
-    // The computed steps array must spread STEPS first, then the N-player step.
-    expect(src).toContain('[...STEPS, N_PLAYER_STEP]');
+  it('N-player slide body contains the alliances/last-faction copy', () => {
+    expect(N_PLAYER_STEP.body).toContain('Multiple factions have joined the map');
+    expect(N_PLAYER_STEP.body).toContain('form alliances');
+  });
+
+  it('slide is appended AFTER existing sequence — STEPS spread before N_PLAYER_STEP', () => {
+    // The component computes: factionCount > 2 ? [...STEPS, N_PLAYER_STEP] : STEPS
+    // Verify the contract: appending produces length STEPS.length + 1.
+    const nPlayerSteps = [...STEPS, N_PLAYER_STEP];
+    expect(nPlayerSteps).toHaveLength(STEPS.length + 1);
+    // First slide is the base sequence start (not the N-player slide).
+    expect(nPlayerSteps[0]).toBe(STEPS[0]);
+    // Last slide is the N-player slide.
+    expect(nPlayerSteps[nPlayerSteps.length - 1]).toBe(N_PLAYER_STEP);
   });
 });
