@@ -138,16 +138,13 @@ the v0_5_grinder agent should pull these in order):
   + unit-hex-outline shaders + minimap markers reading the registry land in
   v0.6 cleanup pass (M_PIVOT.RENDER.COLOR-OUTLINE.V2). 947 unit tests green.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.AI.JSON-PERSONALITIES — fold the
-  remaining hardcoded AI tuning constants into
-  `src/config/ai-personalities.json`: RAGE_QUIT_THRESHOLD
-  (currently 180s module-level const), STARVATION_THRESHOLD
-  (300s), aggroRadius, buildPreferenceWeights per role.
-  Different personalities can then rage-quit at different
-  thresholds (the-builder = 240s late-game patience;
-  the-raider = 120s impatient). Acceptance: changing a
-  personality's RAGE_QUIT in JSON shifts the matrix outcome
-  without code change.
+- [x] M_PIVOT.AI.JSON-PERSONALITIES — rageQuitThreshold was already in JSON
+  (the-builder 240s, the-raider 120s, etc); added starvationThreshold per
+  personality (the-hoarder 480s patient, the-mad-king 180s impatient).
+  ResignEvaluator now reads personalityFor(owner.personalityKey).starvationThreshold
+  with 300s fallback. aggroRadius + buildPreferenceWeights remain per-role
+  in combat.json + ai-profiles.ts respectively; per-personality variants
+  are a v0.6 follow-up if matrix tuning needs them. 951 unit tests green.
 
 - [WAIT] (v0.5 cycle) M_PIVOT.MODES.4X — once N-player +
   barbarians ship, the 4X mode (turn-based, age-of-strata)

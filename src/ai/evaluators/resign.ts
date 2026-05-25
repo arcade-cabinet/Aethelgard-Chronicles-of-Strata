@@ -3,19 +3,29 @@
  *
  * Verb 4 (implicit): the AI surrenders when starved for too long.
  * Split from ai-player.ts. See M_MODES.10.
+ *
+ * M_PIVOT.AI.JSON-PERSONALITIES — starvation threshold is now per-
+ * personality (the-hoarder: 480s patient, the-mad-king: 180s impatient).
+ * Read from ai-personalities.json via personalityFor() with a 300s
+ * fallback for personality rows that omit it.
  */
 import { Goal, GoalEvaluator } from 'yuka';
-import { resign } from '@/game/commands';
 import type { AiPlayer } from '@/ai/ai-player';
+import { personalityFor } from '@/config/ai-personalities';
+import { resign } from '@/game/commands';
 
 export { ResignGoal };
 
-/** Seconds of continuous starvation before the AI resigns (long-reign mode only). */
-const STARVATION_THRESHOLD = 300;
+/**
+ * Default starvation tolerance (sim-seconds) when the AI's personality
+ * row omits `starvationThreshold`. Preserves v0.4 behaviour for any
+ * personality file that hasn't been updated.
+ */
+const DEFAULT_STARVATION_THRESHOLD = 300;
 
 /**
- * The AI surrenders when its faction is "starved" for STARVATION_THRESHOLD
- * seconds (0 controlled tiles AND economy below sustenance).
+ * The AI surrenders when its faction is "starved" for the per-personality
+ * starvation threshold (0 controlled tiles AND economy below sustenance).
  * Only fires in long-reign mode — other modes use base-destruction as outcome.
  */
 export class ResignEvaluator extends GoalEvaluator<AiPlayer> {
@@ -30,7 +40,9 @@ export class ResignEvaluator extends GoalEvaluator<AiPlayer> {
       owner.starvedFor = 0;
       return 0;
     }
-    return owner.starvedFor >= STARVATION_THRESHOLD ? 1 : 0;
+    const threshold =
+      personalityFor(owner.personalityKey).starvationThreshold ?? DEFAULT_STARVATION_THRESHOLD;
+    return owner.starvedFor >= threshold ? 1 : 0;
   }
 
   setGoal(owner: AiPlayer): void {

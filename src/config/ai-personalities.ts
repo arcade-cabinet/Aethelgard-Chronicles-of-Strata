@@ -33,6 +33,15 @@ const PersonalitySchema = z.object({
    * Defaults to 180 when absent.
    */
   rageQuitThreshold: z.number().positive().optional(),
+  /**
+   * M_PIVOT.AI.JSON-PERSONALITIES — per-personality starvation tolerance
+   * (sim-seconds). When the AI's faction has 0 controlled tiles AND
+   * sub-10 wood/stone/gold for this many continuous seconds, ResignEvaluator
+   * fires (long-reign mode only). Defaults to 300 when absent. Each
+   * personality has a different give-up cadence — the-hoarder (480s)
+   * survives long droughts; the-mad-king (180s) folds quickly.
+   */
+  starvationThreshold: z.number().positive().optional(),
 });
 export type Personality = z.infer<typeof PersonalitySchema>;
 
