@@ -142,6 +142,35 @@ export function serializeGame(game: GameState): GameSnapshot {
 }
 
 /**
+ * M_FUN.MAP.SERIALIZE-VOLCANO-DEDUP — restore a volcano tile map (lavaTiles
+ * or fertileTiles) from a raw array of [hexKey, value] pairs. Centralises the
+ * bounds-checking and defensive-validation logic that was duplicated for each
+ * of the two maps inside deserializeGame.
+ *
+ * @param raw   - The raw value from the snapshot (must be Array<[string, number]>)
+ * @param dest  - The Map to populate (cleared first)
+ * @param limit - Maximum number of entries accepted (default 500)
+ */
+function restoreVolcanoTileMap(
+  raw: unknown,
+  dest: Map<string, number>,
+  limit = 500,
+): void {
+  dest.clear();
+  if (!Array.isArray(raw)) return;
+  for (const pair of raw.slice(0, limit)) {
+    if (
+      !Array.isArray(pair) ||
+      typeof pair[0] !== 'string' ||
+      pair[0].length > 32 ||
+      !Number.isFinite(pair[1])
+    )
+      continue;
+    dest.set(pair[0], Math.max(0, pair[1] as number));
+  }
+}
+
+/**
  * Reconstruct a live GameState from a snapshot. Deterministic-derived state
  * (board, navGraph, aiPlayers, resourceNodes, default entities) is rebuilt by
  * calling startGame(config) — the seed makes that step byte-equal. Then the
@@ -218,32 +247,8 @@ export function deserializeGame(snap: GameSnapshot): GameState {
     game.volcano.position =
       typeof v.position === 'string' && v.position.length <= 32 ? v.position : null;
     game.volcano.cooldown = Math.max(0, safeFinite(v.cooldown, 0));
-    game.volcano.lavaTiles.clear();
-    if (Array.isArray(v.lavaTiles)) {
-      for (const pair of v.lavaTiles.slice(0, 500)) {
-        if (
-          !Array.isArray(pair) ||
-          typeof pair[0] !== 'string' ||
-          pair[0].length > 32 ||
-          !Number.isFinite(pair[1])
-        )
-          continue;
-        game.volcano.lavaTiles.set(pair[0], Math.max(0, pair[1] as number));
-      }
-    }
-    game.volcano.fertileTiles.clear();
-    if (Array.isArray(v.fertileTiles)) {
-      for (const pair of v.fertileTiles.slice(0, 500)) {
-        if (
-          !Array.isArray(pair) ||
-          typeof pair[0] !== 'string' ||
-          pair[0].length > 32 ||
-          !Number.isFinite(pair[1])
-        )
-          continue;
-        game.volcano.fertileTiles.set(pair[0], Math.max(0, pair[1] as number));
-      }
-    }
+    restoreVolcanoTileMap(v.lavaTiles, game.volcano.lavaTiles);
+    restoreVolcanoTileMap(v.fertileTiles, game.volcano.fertileTiles);
   }
   // Step 4 — run a zero-delta tick so derived caches (buildSites map,
   // selection ids) re-sync with the restored world.

@@ -285,9 +285,8 @@ they don't get forgotten.
 - [x] M_FUN.AI.MATCH-NARRATIVE-SPEC — adjective-pool assertions now derive
   from match-narrative.json; Set membership replaces hardcoded regex word lists;
   coverage floors scale with pool size.
-- [WAIT] (v0.5 cycle) M_FUN.MAP.HARVEST-ASSIGN-HELPER — extract
-  shared `BASE_BIAS` / `BIAS_RADIUS` constants used by two
-  harvest-assign sites. Quality report M1.
+- [x] M_FUN.MAP.HARVEST-ASSIGN-HELPER — HARVEST_BASE_BIAS / HARVEST_BIAS_RADIUS exported
+  from peon-rules.ts; game-state.ts startup assign imports them instead of duplicating.
 - [WAIT] (v0.5 cycle) M_FUN.MAP.SERIALIZE-VOLCANO-DEDUP — fold
   the volcano-tile defensive-restore duplication in
   `src/persistence/serialize-game.ts:222-245` into a shared
