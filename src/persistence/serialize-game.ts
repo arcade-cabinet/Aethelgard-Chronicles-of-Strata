@@ -293,6 +293,23 @@ function pickEconomy(eco: unknown): GameEconomy {
     // Default to the fresh-game cap, not a magic 5 (simplifier feedback).
     maxSupply: safeFinite(e.maxSupply, ECONOMY.startingResources.maxSupply),
     kills: safeFinite(e.kills, 0),
+    // M_FUN.QA.AIVAI.ZONE-BREAKDOWN — kills-by-zone slot; defaults
+    // to all-zeros for pre-v0.5 saves (snapshot version bump not
+    // needed — same migration pattern as mana/peakSupply).
+    killsByZone: {
+      skirmish: safeFinite(
+        (e.killsByZone as Record<string, unknown> | undefined)?.skirmish,
+        0,
+      ),
+      encroachment: safeFinite(
+        (e.killsByZone as Record<string, unknown> | undefined)?.encroachment,
+        0,
+      ),
+      assault: safeFinite(
+        (e.killsByZone as Record<string, unknown> | undefined)?.assault,
+        0,
+      ),
+    },
   };
 }
 

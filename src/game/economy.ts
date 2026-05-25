@@ -41,6 +41,20 @@ export interface GameEconomy {
   peakSupply: number;
   /** Enemy units killed this session. */
   kills: number;
+  /**
+   * M_FUN.QA.AIVAI.ZONE-BREAKDOWN (v0.5.B) — kills classified by
+   * zone-of-control class at the kill location:
+   *   skirmish     — neutral tile (neither faction's zone)
+   *   encroachment — tile in OPPONENT's zone (attacking)
+   *   assault      — tile within 3 hexes of opponent's faction base
+   * Sums to `kills`. Lets the balance harness assert "this AI
+   * engages everywhere" vs "this AI only assaults" per personality.
+   */
+  killsByZone: {
+    skirmish: number;
+    encroachment: number;
+    assault: number;
+  };
 }
 
 /**
@@ -65,6 +79,7 @@ export function createEconomy(): GameEconomy {
     maxSupply: s.maxSupply,
     peakSupply: 0,
     kills: 0,
+    killsByZone: { skirmish: 0, encroachment: 0, assault: 0 },
   };
 }
 

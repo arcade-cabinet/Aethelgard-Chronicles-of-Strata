@@ -50,9 +50,14 @@ spec doc citation; each item is a self-contained commit-unit.
   groves). Same Peon harvests all three; what changes is the
   round-trip economics + decision "extend supply line for deep
   grove vs claim three surface trees". 859 unit tests green.
-- [ ] M_FUN.QA.AIVAI.ZONE-BREAKDOWN — balance ledger records kills
-  per skirmish/encroachment/assault zone class so personality tuning
-  can target "this AI engages everywhere" vs "this AI only assaults".
+- [x] M_FUN.QA.AIVAI.ZONE-BREAKDOWN — `deathSystem` returns
+  `enemyDeathKeys` (hex of each kill); `runEconomyTick` classifies
+  each into skirmish / encroachment / assault by zone-of-control
+  state at the kill location. `GameEconomy.killsByZone` carries
+  the per-faction breakdown end-to-end through save/load
+  (serialize-game.ts pickEconomy migrates old saves with all-zero
+  defaults). Balance ledger BalanceRun adds the field so each
+  matchup's kill profile is visible. 859 unit tests green.
 
 ### v0.5.C — Turn-aware abstraction (spec §3)
 - [ ] M_FUN.ARCH.TURN-AWARE — audit raw `game.clock.elapsed` reads

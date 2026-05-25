@@ -1209,6 +1209,28 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // a removed enemy is a player kill.
   const deathResult = deathSystem(game.world, delta);
   game.economy.player.kills += deathResult.enemyKills;
+  // M_FUN.QA.AIVAI.ZONE-BREAKDOWN (v0.5.B) — classify each enemy
+  // death by zone-of-control class so the balance ledger can show
+  // "this AI fights at the front" vs "only at base". Skirmish =
+  // neutral, encroachment = inside opponent's controlled zone,
+  // assault = within 3 hexes of opponent's faction base.
+  if (deathResult.enemyDeathKeys.length > 0) {
+    const enemyBaseKey = game.enemyBaseKey;
+    const { q: ebq, r: ebr } = parseHexKey(enemyBaseKey);
+    for (const key of deathResult.enemyDeathKeys) {
+      const { q, r } = parseHexKey(key);
+      const inEnemyZone = game.zones.enemy.controlled.has(key);
+      const inPlayerZone = game.zones.player.controlled.has(key);
+      const distToEnemyBase = hexDistance(q, r, ebq, ebr);
+      if (distToEnemyBase <= 3) {
+        game.economy.player.killsByZone.assault += 1;
+      } else if (inEnemyZone && !inPlayerZone) {
+        game.economy.player.killsByZone.encroachment += 1;
+      } else {
+        game.economy.player.killsByZone.skirmish += 1;
+      }
+    }
+  }
   // M_EXPANSION.F.96 — Hero permadeath. If the player's Hero died
   // this tick, flip outcome to 'loss' immediately. Outcome is
   // monotonic so a concurrent base-destruction win-loss eval won't

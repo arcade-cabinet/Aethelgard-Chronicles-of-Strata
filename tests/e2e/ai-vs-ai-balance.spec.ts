@@ -67,6 +67,15 @@ interface BalanceRun {
   chunksRan: number;
   /** % of walkable board claimed by either faction (M_FUN.MAP.UTILISATION.METRIC). */
   zoneUnionPct: number;
+  /**
+   * M_FUN.QA.AIVAI.ZONE-BREAKDOWN — player-faction kills classified
+   * by where the enemy died (zone-of-control class).
+   */
+  killsByZone: {
+    skirmish: number;
+    encroachment: number;
+    assault: number;
+  };
 }
 
 interface BalanceArtifact {
@@ -139,6 +148,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
         peakPlayer: number;
         peakEnemy: number;
         zoneUnionPct: number; // M_FUN.MAP.UTILISATION.METRIC
+        killsByZone: { skirmish: number; encroachment: number; assault: number };
       } | null = null;
 
       for (chunks = 0; chunks < 60 && outcome === 'playing'; chunks++) {
@@ -149,7 +159,11 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
               outcome: string;
               clock: { elapsed: number };
               economy: {
-                player: { kills: number; peakSupply: number };
+                player: {
+                  kills: number;
+                  peakSupply: number;
+                  killsByZone: { skirmish: number; encroachment: number; assault: number };
+                };
                 enemy: { kills: number; peakSupply: number };
               };
               world: {
@@ -203,6 +217,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
             peakPlayer: g.economy.player.peakSupply,
             peakEnemy: g.economy.enemy.peakSupply,
             zoneUnionPct,
+            killsByZone: g.economy.player.killsByZone,
           };
         });
         if (!snapshot) break;
@@ -229,6 +244,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
         resolvedWithinBudget,
         chunksRan: chunks,
         zoneUnionPct: snapshot.zoneUnionPct,
+        killsByZone: snapshot.killsByZone,
       };
       appendArtifact(run);
 
