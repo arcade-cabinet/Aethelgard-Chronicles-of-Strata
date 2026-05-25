@@ -10,6 +10,7 @@
  */
 
 import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
+import { buildNavGraph } from '@/core/pathfinding';
 import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
   Building,
@@ -138,6 +139,15 @@ export function tickTerrainPhase(
       }
     }
     scienceSystem(game.world, game.economy, delta);
+  }
+  // M_FUN.PERF.VOLCANO-LAZY-NAV — consolidated nav rebuild. volcanoSystem
+  // sets navGraphDirty instead of calling buildNavGraph inline; we do a
+  // single rebuild here after all terrain-phase topology mutations are done,
+  // then clear the flag. Multiple eruptions in one tick now pay O(1) rebuild
+  // cost instead of O(eruptions).
+  if (game.navGraphDirty) {
+    game.navGraph = buildNavGraph(game.board);
+    game.navGraphDirty = false;
   }
 }
 

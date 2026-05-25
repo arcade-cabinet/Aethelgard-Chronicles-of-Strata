@@ -191,6 +191,14 @@ export interface GameState {
   board: BoardData;
   /** The A* navigation graph. */
   navGraph: NavGraph;
+  /**
+   * M_FUN.PERF.VOLCANO-LAZY-NAV — set to true by any system that mutates
+   * board topology (volcanoSystem eruption/revert, buildingDeathSystem).
+   * tickTerrainPhase rebuilds navGraph exactly once at the end of the
+   * terrain phase if this flag is set, then clears it. This consolidates
+   * all per-eruption inline rebuilds into a single rebuild per tick.
+   */
+  navGraphDirty: boolean;
   /** The koota ECS world. */
   world: World;
   /** The player-controlled pawn entity. */
@@ -779,6 +787,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     playerColor: config.playerColor ?? null,
     board,
     navGraph,
+    navGraphDirty: false,
     world,
     playerPawn,
     economy,

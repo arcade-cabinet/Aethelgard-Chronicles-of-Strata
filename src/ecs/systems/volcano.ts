@@ -30,7 +30,6 @@
 import { VOLCANO_TUNING } from '@/config/mapgen';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey, hexDistance, hexNeighbors } from '@/core/hex';
-import { buildNavGraph } from '@/core/pathfinding';
 import { biomeFlagsFor } from '@/rules/biome-flags';
 import type { Rng } from '@/core/rng';
 import { Health, HexPosition } from '@/ecs/components';
@@ -138,11 +137,14 @@ export function volcanoSystem(
     didErupt = true;
     v.cooldown = VOLCANO_TUNING.eruptionIntervalSeconds;
   }
-  // 4. Rebuild the nav graph whenever topology changed this tick —
-  //    either by eruption (new LAVA tiles became impassable) or
-  //    by a LAVA tile reverting to MOUNTAIN_PASS (now walkable).
+  // 4. Flag the nav graph dirty whenever topology changed this tick —
+  //    either by eruption (new LAVA tiles became impassable) or by a LAVA
+  //    tile reverting to MOUNTAIN_PASS (now walkable).
+  //    M_FUN.PERF.VOLCANO-LAZY-NAV — tickTerrainPhase rebuilds the graph
+  //    once per tick (after all terrain systems) when navGraphDirty is set,
+  //    consolidating multiple per-eruption inline rebuilds into one pass.
   if (didErupt || didRevert) {
-    game.navGraph = buildNavGraph(game.board);
+    game.navGraphDirty = true;
   }
 
   // 4. Damage units on LAVA.
