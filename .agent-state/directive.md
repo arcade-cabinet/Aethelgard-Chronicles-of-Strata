@@ -1,9 +1,115 @@
 # Continuous Work Directive — Aethelgard: Chronicles of Strata
 
 **Status:** ACTIVE
-**Cycle:** v0.4 "Make it FUN"
+**Cycle:** v0.5 "Satisfying Loop" (v0.4 RELEASED in PR #10)
 **Owner:** Claude
-**PRD:** [`docs/specs/PRD-v0.4.md`](../docs/specs/PRD-v0.4.md)
+**PRD:** [`docs/specs/PRD-v0.4.md`](../docs/specs/PRD-v0.4.md) (v0.4 archive); v0.5 brief in [`docs/specs/130-topology-and-decision-tracks.md`](../docs/specs/130-topology-and-decision-tracks.md)
+
+## v0.5 — Satisfying Loop (the next cycle)
+
+The user pulled together four design threads during the v0.4
+AIVAI-tune pass. v0.5 ships them. Each section maps to the
+spec doc citation; each item is a self-contained commit-unit.
+
+### v0.5.A — Topology (PR #10 follow-up + spec §1)
+- [ ] M_FUN.MAP.TOPOLOGY.STACK — rework paintMountainMassif to emit
+  3-tier clusters (HIGHLAND foothill ring → MOUNTAIN_PASS saddle
+  ring → MOUNTAIN core → optional VOLCANO peak past intensity 0.85).
+  Stack tier function: `tier = ⌊(mask - threshold) * 3⌋ + 1` —
+  same noise field, layered radial assignment. The flat 1-cell
+  mountains today read as cardboard cutouts; the stack reads as
+  silhouette. Catches "peaks should stack like real topology"
+  user feedback.
+- [ ] M_FUN.MAP.TOPOLOGY.SCREENSHOTS — biome-distribution audit's
+  3 known-bad seed/size corners (mike-november-oscar × small ×
+  balanced|continent|archipelago) → teach findBalancedBoard to
+  re-roll on biome variety in addition to centre-edge reachability.
+  Goal: 60/60 audit permutations green, no skip exemptions.
+
+### v0.5.B — Decision tracks (spec §2)
+- [ ] M_FUN.MAP.DISTRIBUTION.INTERIOR — assert every generated map
+  has ≥1 tile of each status-bearing biome (FATIGUE: MOUNTAIN_PASS;
+  DEHYDRATION: DESERT; DISEASE: SWAMP) INSIDE the inter-base
+  interior. New audit test next to biome-distribution-audit.
+- [ ] M_FUN.ECON.NODE-TIERS — add surface (BEACH-adjacent) / inland
+  / highland resource-node tiers with distinct yield/richness/
+  travel-cost curves so a single match presents the
+  "quick wood now vs sustained mid-game vs late-game commitment"
+  decision.
+- [ ] M_FUN.QA.AIVAI.ZONE-BREAKDOWN — balance ledger records kills
+  per skirmish/encroachment/assault zone class so personality tuning
+  can target "this AI engages everywhere" vs "this AI only assaults".
+
+### v0.5.C — Turn-aware abstraction (spec §3)
+- [ ] M_FUN.ARCH.TURN-AWARE — audit raw `game.clock.elapsed` reads
+  across src/ai/, src/ecs/systems/, src/game/. Each call site
+  redirected through a turn-aware helper that maps seconds → turns
+  for turn-based modes. Today most assume RTS pacing; mapping to
+  age-of-strata / strata-wars / long-reign turn cadences is a
+  per-mechanic decision.
+- [ ] M_FUN.MECH.FATIGUE.TURN-MODE — fatigue accumulator: in RTS
+  units idle Xs before continuing movement; in turn-based units
+  skip N turns. Currently the FATIGUE state exists but turn-mode
+  consumption is RTS-only.
+
+### v0.5.D — Peon economic metrics + AI build-mix (spec §4/§5)
+- [ ] M_FUN.QA.AIVAI.PEON-METRICS — extend balance ledger with
+  timeToFirstWood, timeToFirstHouse, peonHarvestCyclesPerMin,
+  peonAvgRoundTripSec, peonDisruptionRatePerMin, peonIdleRatioPct,
+  nodeDrainTimeAvgSec, nodesActiveSimultaneously per faction per
+  match. Pin a healthy-cadence range per metric so a regression
+  immediately fires RED. Resource-depletion philosophy:
+  visual+audio cadence per deposit (chop, shake, deposit ring) —
+  currently sawdust particles fire faster than the deposit beat.
+- [ ] M_FUN.QA.AIVAI.BUILD-MIX — extend ledger with
+  {economic, offensive, defensive, wonder} counts per faction;
+  tune personality presets so Mad-King runs heavy offensive,
+  Builder runs heavy economic, Hoarder runs heavy defensive.
+  Today we tune blind because counts are scalar.
+
+### v0.5.E — Reviewer follow-ups punted from v0.4
+- [ ] M_FUN.QA.VISUAL.BIOME-SWATCH — replace
+  `tests/harness/biome-swatch.browser.test.tsx`'s
+  `expect(path).toBeTruthy()` with `toMatchScreenshot` (or the
+  Vitest browser equivalent) so the harness actually fires RED
+  on a biome palette regression instead of just confirming a
+  file was written. Coderabbit MAJOR from PR #10.
+- [ ] M_FUN.QA.MAPTYPE-VARIANTS — strengthen
+  `tests/unit/maptype-variants.test.ts` to compare continent vs
+  lower-intensity-mode massif density at the same seed (today
+  the `>= 3` threshold is too permissive to catch intensity
+  regressions). Coderabbit MAJOR from PR #10.
+- [ ] M_FUN.QA.FATIGUE.COMBAT — add the combat-fatigue lock test
+  to `src/ecs/systems/__tests__/fatigue.test.ts`: assert
+  `damage * (1 - fatigue)` AND decay-timer reset on attack.
+  Coderabbit NIT from PR #10 but the existing fatigue feature
+  has no combat-side test.
+- [ ] M_FUN.DOCS.WILDCARD-LINT — bulk-fix MD037 markdownlint
+  warnings: wrap `**` and other wildcard tokens in inline-code
+  backticks across `.agent-state/directive.md`, `docs/MILESTONES.md`,
+  `docs/specs/PRD-v0.4.md`. Many coderabbit MINORs collapse here.
+
+### v0.5.F — Cleanups discovered along the way
+- [ ] M_FUN.PROC.SCREENSHOT-WAIT — AIVAI balance harness was
+  capturing the OnboardingOverlay over gameplay because
+  `__skipOnboarding` was racing the hook registration. Now waits
+  for the hook to mount + 150ms post-dismiss flush. Verify with
+  the next matrix run that screenshots show the gameplay scene
+  (post-fix, this commit lands the wait).
+
+---
+
+## v0.4 — Make it FUN — RELEASED ✅
+
+The v0.4 cycle goal was "playable AI-vs-AI match by harness". As of
+PR #10 the matrix runs all 10 matchups to completion in 10 sim-min,
+both factions build 3-7 buildings, peon harvest cadence is stable,
+and the biome-distribution audit covers 57/60 permutations against
+the playability floor (the 3 known seed/size corners are tracked as
+v0.5.A.SCREENSHOTS). What remains in the queue below is the legacy
+parking lot (M_FUN.CIV.*, M_FUN.MYTH.*, etc) — those move to v0.6.
+
+
 
 ## Purpose
 

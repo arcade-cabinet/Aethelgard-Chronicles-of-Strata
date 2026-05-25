@@ -106,10 +106,23 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
           'function',
         { timeout: 30_000 },
       );
+      // Wait for the onboarding hook to mount BEFORE calling it — the
+      // OnboardingOverlay useEffect registers the hook a frame or two
+      // after game-mount, and racing it means the modal stays open and
+      // screens the gameplay screenshot underneath. Per PATTERN-J.
+      await page.waitForFunction(
+        () =>
+          typeof (window as unknown as { __skipOnboarding?: unknown }).__skipOnboarding ===
+          'function',
+        { timeout: 10_000 },
+      );
       await page.evaluate(async () => {
         const w = window as unknown as { __skipOnboarding?: () => Promise<void> };
         await w.__skipOnboarding?.();
       });
+      // Onboarding setOpen(false) is async via React state — let the
+      // tree flush so the canvas + HUD render cleanly.
+      await page.waitForTimeout(150);
 
       // Advance sim in 600-frame chunks (10 sim-seconds @ 60Hz each)
       // up to 60 chunks = 600 sim-seconds = 10 sim-minutes. Most
