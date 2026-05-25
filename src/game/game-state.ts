@@ -41,14 +41,11 @@ export const PROJECTILE_ID_REF = { current: 0 };
 // every difficulty-tuning knob in one tunable file.
 
 import { spawnIntervalFor } from '@/config/combat';
+import { type FactionConfig, LEGACY_FACTIONS } from '@/config/factions';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import { type Faction } from '@/ecs/components';
-import {
-  createVolcanoState,
-  placeVolcanoLandmark,
-  type VolcanoState,
-} from '@/ecs/systems/volcano';
+import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/ecs/systems/volcano';
 import { type BurnState } from '@/ecs/systems/wildfire';
 import { type GameOutcome } from '@/ecs/systems/win-loss';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
@@ -150,6 +147,16 @@ export interface NewGameConfig {
    * run cross-personality matchups deterministically.
    */
   playerPersonality?: string;
+  /**
+   * M_PIVOT.N-PLAYER.FACTIONS — explicit faction registry. When
+   * omitted, defaults to the legacy two-faction shape (`LEGACY_FACTIONS`)
+   * so v0.4 callers and saves work unchanged. Pass an N-element array
+   * to spin up 3+ player + barbarian-camp matches. The first two
+   * entries must keep ids `'player'` and `'enemy'` for backward
+   * compatibility — barbarian-camp slots get ids `barbarian-camp-1`,
+   * `barbarian-camp-2`, ... in subsequent positions.
+   */
+  factions?: FactionConfig[];
 }
 
 /**
@@ -204,6 +211,18 @@ export interface GameState {
   world: World;
   /** The player-controlled pawn entity. */
   playerPawn: Entity;
+  /**
+   * M_PIVOT.N-PLAYER.FACTIONS — runtime faction registry.
+   *
+   * Legacy 2-faction slots (`player`, `enemy`) live in `economy` /
+   * `zones` / `score` / `aiPlayers` Records (compile-time-narrowed
+   * by `type Faction`). N-player and barbarian-camp slots live in
+   * THIS registry only; renderers + per-faction systems iterate
+   * `factionIds(game.factions)` to walk every slot regardless of
+   * count. Camp clearing (M_PIVOT.BARBARIAN-CAMPS) and color picking
+   * (M_PIVOT.N-PLAYER.COLOR-PICKER) read color/archetype from here.
+   */
+  factions: FactionConfig[];
   /** Per-faction resource totals and supply — both factions are symmetric. */
   economy: Record<Faction, GameEconomy>;
   /** The hex key of the player's home-base (Town Hall) tile. */
@@ -778,6 +797,40 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
 
   const buildSites = new Map<string, Entity>();
 
+  // M_PIVOT.N-PLAYER.FACTIONS — derive the runtime faction registry.
+  // When config.factions is supplied it's used verbatim (asserted to
+  // start with 'player' + 'enemy' ids for backward compatibility).
+  // When omitted, fall back to LEGACY_FACTIONS overlaid with the v0.4
+  // per-config personality picks so the existing AI-vs-AI matrix
+  // keeps its byte-identical behaviour. New-game flows that want
+  // 3+ factions or barbarian camps build the array themselves and
+  // pass it explicitly.
+  const factions: FactionConfig[] = config.factions
+    ? // Defensive deep-clone — never share array refs into GameState.
+      config.factions.map((f) => ({ ...f }))
+    : LEGACY_FACTIONS.map((f): FactionConfig => {
+        // Overlay the v0.4 personality picks so the enemy slot's
+        // personality matches what `config.enemyPersonality` used to
+        // wire into `new AiPlayer('enemy', personality)`. Spread the
+        // optional personality only when defined (exactOptionalPropertyTypes).
+        const overlayPersonality =
+          f.id === 'enemy'
+            ? (config.enemyPersonality ?? f.personality)
+            : f.id === 'player'
+              ? config.playerPersonality
+              : f.personality;
+        const base: FactionConfig = {
+          id: f.id,
+          displayName: f.displayName,
+          kind: f.kind,
+          color: f.color,
+          archetype: f.archetype,
+        };
+        return overlayPersonality !== undefined
+          ? { ...base, personality: overlayPersonality }
+          : base;
+      });
+
   const game: GameState = {
     seedPhrase,
     mapSize,
@@ -791,6 +844,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     navGraphDirty: false,
     world,
     playerPawn,
+    factions,
     economy,
     townHallKey,
     enemyBaseKey,

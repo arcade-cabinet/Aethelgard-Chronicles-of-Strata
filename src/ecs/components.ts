@@ -24,7 +24,28 @@ export type UnitType =
   | 'BlackKnight'
   | 'Witch';
 
-/** Faction ownership for targeting and AI. */
+/**
+ * Faction ownership for targeting and AI. M_PIVOT.N-PLAYER.FACTIONS:
+ * the v0.4 literal union `'player' | 'enemy'` is preserved here for
+ * the two PLAYABLE faction slots — every existing `Record<Faction, X>`
+ * map (economy / zones / score / aiPlayers) keeps its compile-time
+ * narrowing. The N-player + barbarian-camp registry lives in a
+ * PARALLEL space:
+ *
+ *   `src/config/factions.ts` — `FactionConfig` + `FactionId` (string)
+ *   `GameState.factions`     — runtime registry, indexed by FactionId
+ *
+ * Barbarian camps and additional player slots (player-3, player-4,
+ * etc) get FactionId values like `barbarian-camp-1`, `player-3`. They
+ * do NOT join the `Faction` literal union — they live in the registry
+ * + carry FactionTrait with the matching FactionId string. Renderers
+ * read color / archetype from the registry; the legacy 2-faction tick
+ * loops still iterate `FACTIONS` here.
+ *
+ * Acceptance for the M_PIVOT.N-PLAYER.FACTIONS substrate work-unit:
+ * "the 2-faction case still passes byte-identical, determinism
+ * unchanged" — preserved precisely by keeping this union intact.
+ */
 export type Faction = 'player' | 'enemy';
 
 /**
@@ -32,8 +53,11 @@ export type Faction = 'player' | 'enemy';
  * the single iteration target for any per-faction loop (science
  * trickle, deposit pump, job routing, AI tick). Every literal
  * player+enemy hand-unrolled pair across the codebase should iterate
- * this constant instead. A future Necromancer tribe extends the
- * Faction union AND this constant in one place; the loops auto-extend.
+ * this constant instead.
+ *
+ * For N-player code paths (barbarian camps, 3+ players) iterate
+ * `factionIds(game.factions)` from `src/config/factions.ts` — that
+ * registry is the runtime source of truth for non-legacy slots.
  */
 export const FACTIONS: readonly Faction[] = ['player', 'enemy'] as const;
 
@@ -107,7 +131,8 @@ import { RESOURCE_IDS, type ResourceType } from '@/config/resources';
 // that iterate `RESOURCE_TYPES` or do `(typeof RESOURCE_TYPES)[number]`
 // continue to compile unchanged. It is typed `ReadonlyArray<ResourceType>`
 // so the element type is still the narrow literal union.
-export const RESOURCE_TYPES: ReadonlyArray<ResourceType> = RESOURCE_IDS as ReadonlyArray<ResourceType>;
+export const RESOURCE_TYPES: ReadonlyArray<ResourceType> =
+  RESOURCE_IDS as ReadonlyArray<ResourceType>;
 export type { ResourceType };
 
 /**

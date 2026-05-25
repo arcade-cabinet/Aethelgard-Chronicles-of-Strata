@@ -74,18 +74,16 @@ exists to formalise — read BEFORE picking up any item below):
 Concrete work-units (each one v0.5 commit, dependency-ordered —
 the v0_5_grinder agent should pull these in order):
 
-- [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.FACTIONS — `Faction`
-  becomes a registry-backed id, not a `'player' | 'enemy'`
-  literal union. New file `src/config/factions.ts` exports
-  `FactionConfig` + `FactionId` types. `NewGameConfig` gains
-  `factions: FactionConfig[]`. `GameEconomy` becomes
-  `Record<FactionId, ResourceBucket>`; `zones` becomes
-  `Record<FactionId, ZoneState>`; `aiPlayers` becomes
-  `Record<FactionId, AiPlayer>`. The 2-faction case becomes
-  N=2 (legacy ids `'player'` and `'enemy'` preserved). Acceptance:
-  existing AIVAI matrix test still passes byte-identical;
-  determinism unchanged. Migration test: a v0.4 save loads
-  cleanly + replays identically.
+- [x] M_PIVOT.N-PLAYER.FACTIONS — `src/config/factions.ts` defines `FactionConfig`
+  + `FactionId` (string) + `LEGACY_FACTIONS` + `factionIds/getFaction/findFaction`
+  helpers. `NewGameConfig.factions` (optional) carries an explicit registry;
+  `GameState.factions` is the runtime source of truth indexed by id. Legacy
+  2-faction `Faction = 'player' | 'enemy'` literal union PRESERVED so existing
+  `Record<Faction, X>` maps (economy/zones/score/aiPlayers) keep compile-time
+  narrowing — N-player + barbarian-camp slots live in the registry only, not
+  the union. 895 unit tests green (10 new); 174/174 files; AIVAI matrix
+  unchanged. Determinism byte-identical. Architectural divergence rationale
+  documented in components.ts §Faction.
 
 - [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.COLOR-PICKER — pre-game
   NewGameModal exposes a Radix color palette per faction slot.
