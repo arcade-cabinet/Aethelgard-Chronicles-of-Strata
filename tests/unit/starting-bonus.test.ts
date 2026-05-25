@@ -22,12 +22,18 @@ describe('M_EXPANSION.F.84 — starting bonus picks', () => {
       if (e.get(Unit)?.unitType === 'Peon') peonCount++;
     }
     expect(peonCount).toBe(2);
+    // Coderabbit MAJOR — count + assert that we ACTUALLY visited
+    // the player TownHall. A silently-empty loop on no-match would
+    // pass the test without checking HP at all.
+    let playerBaseChecks = 0;
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase);
       if (f?.faction !== 'player') continue;
+      playerBaseChecks++;
       // PATTERN-C bump to 1500.
       expect(e.get(Health)?.max).toBe(1800);
     }
+    expect(playerBaseChecks).toBeGreaterThan(0);
   });
 
   it('"extra-wood" — economy starts with +50 wood (100 total)', () => {

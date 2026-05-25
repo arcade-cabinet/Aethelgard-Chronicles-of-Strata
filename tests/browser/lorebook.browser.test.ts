@@ -85,7 +85,8 @@ describe('lorebook persistence', () => {
   });
 
   it('returns entries newest-first', async () => {
-    if (!dbAvailable) return;
+    if (!dbAvailable)
+      expect.fail('lorebook test DB unavailable — beforeAll setup did not boot the schema');
     const p = createPersistence();
     await p.recordLorebookEntry({
       id: 0,

@@ -295,6 +295,90 @@
         "firstWoodAt": 1.0000000000000013,
         "firstHouseAt": 6.9999999999999805
       }
+    },
+    {
+      "player": "the-diplomat",
+      "enemy": "the-raider",
+      "seed": "balance-the-diplomat-vs-the-raider",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 13,
+      "buildingsPlayer": 5,
+      "buildingsEnemy": 6,
+      "peakSupplyPlayer": 15,
+      "peakSupplyEnemy": 18,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60,
+      "zoneUnionPct": 6.661184210526317,
+      "killsByZone": {
+        "skirmish": 0,
+        "encroachment": 0,
+        "assault": 13
+      },
+      "buildMixPlayer": {
+        "economic": 3,
+        "offensive": 0,
+        "defensive": 1,
+        "wonder": 0
+      },
+      "buildMixEnemy": {
+        "economic": 5,
+        "offensive": 0,
+        "defensive": 1,
+        "wonder": 0
+      },
+      "peonMetricsPlayer": {
+        "depositsPerMin": 42.9,
+        "firstWoodAt": 2.6166666666666623,
+        "firstHouseAt": 3.9999999999999907
+      },
+      "peonMetricsEnemy": {
+        "depositsPerMin": 22.1,
+        "firstWoodAt": 1.0000000000000013,
+        "firstHouseAt": 6.9999999999999805
+      }
+    },
+    {
+      "player": "the-mad-king",
+      "enemy": "the-builder",
+      "seed": "balance-the-mad-king-vs-the-builder",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 8,
+      "buildingsPlayer": 5,
+      "buildingsEnemy": 4,
+      "peakSupplyPlayer": 10,
+      "peakSupplyEnemy": 12,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60,
+      "zoneUnionPct": 4.774714189643578,
+      "killsByZone": {
+        "skirmish": 0,
+        "encroachment": 0,
+        "assault": 8
+      },
+      "buildMixPlayer": {
+        "economic": 2,
+        "offensive": 0,
+        "defensive": 2,
+        "wonder": 0
+      },
+      "buildMixEnemy": {
+        "economic": 2,
+        "offensive": 0,
+        "defensive": 2,
+        "wonder": 0
+      },
+      "peonMetricsPlayer": {
+        "depositsPerMin": 2.9,
+        "firstWoodAt": 266.1166666667533,
+        "firstHouseAt": 259.0000000000931
+      },
+      "peonMetricsEnemy": {
+        "depositsPerMin": 32.9,
+        "firstWoodAt": 7.516666666666645,
+        "firstHouseAt": 10.000000000000076
+      }
     }
   ]
 }
