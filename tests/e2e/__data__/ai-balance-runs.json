@@ -135,6 +135,36 @@
       "resolvedWithinBudget": false,
       "chunksRan": 60,
       "zoneUnionPct": 5.4274084124830395
+    },
+    {
+      "player": "the-diplomat",
+      "enemy": "the-raider",
+      "seed": "balance-the-diplomat-vs-the-raider",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 1,
+      "buildingsPlayer": 1,
+      "buildingsEnemy": 0,
+      "peakSupplyPlayer": 6,
+      "peakSupplyEnemy": 5,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60,
+      "zoneUnionPct": 5.477528089887641
+    },
+    {
+      "player": "the-mad-king",
+      "enemy": "the-builder",
+      "seed": "balance-the-mad-king-vs-the-builder",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 0,
+      "buildingsPlayer": 1,
+      "buildingsEnemy": 6,
+      "peakSupplyPlayer": 6,
+      "peakSupplyEnemy": 14,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60,
+      "zoneUnionPct": 9.064039408866995
     }
   ]
 }

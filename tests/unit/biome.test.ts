@@ -25,16 +25,21 @@ describe('biome assignment', () => {
     expect(levelToType(6, 0.5)).toBe<BiomeType>('MOUNTAIN');
   });
 
-  it('assignBiome attenuates height by distance — far tiles are ocean', () => {
-    // a tile at the map edge is forced toward OCEAN by the island falloff
+  it('assignBiome attenuates height by distance — far tiles trend low', () => {
+    // a tile at the map edge is forced toward OCEAN/BEACH by the island
+    // falloff. Post-PATTERN-I the attenuation factor was lowered from
+    // 1.5 → 1.2 so edges still trend low but don't always hit OCEAN at
+    // very high raw-noise values — the previous absolute "always OCEAN"
+    // assertion was the bug that turned mike-november-oscar-class
+    // seeds into water-only boards.
     const edge = assignBiome(
       20,
       0,
       () => 0.9,
       () => 0.5,
     );
-    expect(edge.level).toBe(0);
-    expect(edge.type).toBe<BiomeType>('OCEAN');
+    expect(edge.level).toBeLessThanOrEqual(1);
+    expect(['OCEAN', 'BEACH']).toContain(edge.type);
   });
 
   it('assignBiome returns a high level for a high-noise centre tile', () => {

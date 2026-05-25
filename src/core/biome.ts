@@ -108,16 +108,30 @@ export function heightToLevel(rawHeight: number): number {
 
 /**
  * Assign the biome of tile (q, r). `height` and `moisture` are noise fields
- * sampled at `(q*noiseScale, r*noiseScale)`. The height is attenuated by normalized cube
- * distance from the map centre to produce an island.
+ * sampled at `(q*noiseScale, r*noiseScale)`. The height is attenuated by normalized
+ * cube distance from the map centre to produce an island.
+ *
+ * `boardRadius` is the radius the caller is actually generating; the
+ * island-attenuation curve is normalised by it so the same noise field
+ * yields the same biome distribution regardless of board size. Prior
+ * to PATTERN-I (M_FUN.QA.AIVAI.TUNE) this normalised by MAP_RADIUS
+ * (a global constant) — boards smaller than the constant got too much
+ * attenuation and ended up almost entirely water/sand, boards bigger
+ * got too little. Default to MAP_RADIUS for legacy callers.
  */
-export function assignBiome(q: number, r: number, height: Noise2D, moisture: Noise2D): Biome {
+export function assignBiome(
+  q: number,
+  r: number,
+  height: Noise2D,
+  moisture: Noise2D,
+  boardRadius: number = MAP_RADIUS,
+): Biome {
   const s = -q - r;
   const nx = q * noiseScale;
   const nz = r * noiseScale;
   let rawHeight = height(nx, nz);
   const moist = moisture(nx + 100, nz + 100);
-  const dist = Math.sqrt(q * q + r * r + s * s) / Math.sqrt(3) / MAP_RADIUS;
+  const dist = Math.sqrt(q * q + r * r + s * s) / Math.sqrt(3) / boardRadius;
   rawHeight -= dist ** 2 * islandAttenuationFactor;
 
   const level = heightToLevel(rawHeight);

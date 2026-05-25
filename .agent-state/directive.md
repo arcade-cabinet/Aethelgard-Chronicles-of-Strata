@@ -522,6 +522,26 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
   full 10 minutes (no spurious resigns), 4 matchups have non-
   zero kills (up from 1).
 
+- [x] M_FUN.QA.AIVAI.TUNE.PATTERN-H — CameraRig framed the AXIAL
+  origin (0,0,0) on mount, not the land-mass centroid. AIVAI
+  screenshots where archipelago / asymmetric gen offset the land
+  cluster showed the canvas as pure water with the minimap-camera
+  frame outside the landmass. Fix: GameCanvas computes a
+  `landCenter` memo from walkable-tile centroid; CameraRig uses
+  it as the initial lookAt + the centre of the pan-clamp box.
+
+- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-I — METRIC gate exposed catastrophic
+  enemy-AI stall in border-clash: post-PATTERN-G ledger snapshot
+  shows ALL 10 matchups outcome=playing (no resolution in 10 sim-
+  minutes), most with `buildingsEnemy: 0`, `totalKills: 0`, and
+  `zoneUnionPct` in the 3-8% range (gate threshold is 30%). Player
+  faction builds 1-4 buildings; enemy faction builds NOTHING. The
+  mode-gating of ResignEvaluator (PATTERN-G) was too aggressive
+  and silenced ALL evaluators because every other evaluator was
+  ALSO checking `game.mode === 'long-reign'` somewhere upstream OR
+  the enemy isn't getting an AIPlayer at all in border-clash. Root-
+  cause then fix.
+
 - [x] M_FUN.MAP.UTILISATION (PRD §5.3) — full-board utilisation
   is a v0.4 release goal. Sub-items:
   - [x] M_FUN.MAP.UTILISATION.SHALLOWS — SHALLOWS biome registered

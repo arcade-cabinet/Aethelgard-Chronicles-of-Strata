@@ -86,7 +86,7 @@ export function generateBoard(
     const rMin = Math.max(-radius, -q - radius);
     const rMax = Math.min(radius, -q + radius);
     for (let r = rMin; r <= rMax; r++) {
-      const biome = assignBiome(q, r, heightNoise, moistureNoise);
+      const biome = assignBiome(q, r, heightNoise, moistureNoise, radius);
       const walkable = biome.type !== 'OCEAN' && biome.type !== 'LAKE' && biome.level < 5;
       tiles.set(getHexKey(q, r), { q, r, ...biome, walkable, isCrossingLanding: false });
     }
