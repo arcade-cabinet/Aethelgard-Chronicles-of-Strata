@@ -47,6 +47,17 @@ describe('M_V6.CARRY.RUINS-BIOME — registry + flag coverage', () => {
     expect(BIOME_AMBIENT.RUINS).toBe('audio.ambient.grass');
     expect(moveCostFor('RUINS')).toBe(1);
   });
+
+  it('RUINS decoration palette exists with rock + stump scatter props (M_V8.PARKING-LOT.V06)', async () => {
+    // Grep-gate: Decoration.tsx must have a RUINS entry in PALETTES with
+    // the desolate-wasteland scatter set shipped in the parking-lot drain.
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const src = readFileSync(resolve(__dirname, '../Decoration.tsx'), 'utf-8');
+    expect(src).toContain("RUINS: {");
+    expect(src).toContain("'nature.rock.td-rocks'");
+    expect(src).toContain("'nature.stump-a'");
+  });
 });
 
 describe('camp clearing flips tile biome to RUINS', () => {

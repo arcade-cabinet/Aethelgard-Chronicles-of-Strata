@@ -114,6 +114,21 @@ const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
       { id: 'nature.rock.td-rocks-large', weight: 10 },
     ],
   },
+  // M_V8.PARKING-LOT.V06 — RUINS biome scatter props.
+  // Cleared barbarian camp tiles read as a desolate wasteland: crumbled
+  // rocks, charred stumps, and low mounds. Uses only assets already in
+  // DECO_IDS (rules-of-hooks: preload list must be fixed-order).
+  // Decorates at the biome's decorationDensity (medium-low, see biome-flags).
+  RUINS: {
+    props: [
+      { id: 'nature.rock.td-rocks', weight: 25, scale: 0.85 },
+      { id: 'nature.rock.td-rocks-large', weight: 20, scale: 0.8 },
+      { id: 'nature.rock.small-a', weight: 18, scale: 0.75 },
+      { id: 'nature.stump-a', weight: 15, scale: 0.9 },
+      { id: 'nature.mound-a', weight: 12, scale: 0.7 },
+      { id: 'nature.mound-b', weight: 10, scale: 0.65 },
+    ],
+  },
 };
 
 // ---------------------------------------------------------------------------
