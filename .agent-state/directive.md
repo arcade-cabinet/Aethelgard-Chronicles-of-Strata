@@ -522,7 +522,7 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
   full 10 minutes (no spurious resigns), 4 matchups have non-
   zero kills (up from 1).
 
-- [ ] M_FUN.MAP.UTILISATION (PRD §5.3) — full-board utilisation
+- [x] M_FUN.MAP.UTILISATION (PRD §5.3) — full-board utilisation
   is a v0.4 release goal. Sub-items:
   - [x] M_FUN.MAP.UTILISATION.SHALLOWS — SHALLOWS biome registered
     + paintShallowsRing converts beach-adjacent OCEAN into a

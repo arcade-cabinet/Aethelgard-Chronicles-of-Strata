@@ -2,6 +2,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { type Camera, PCFSoftShadowMap } from 'three';
 import { Building, type BuildingType, HexPosition } from '@/ecs/components';
+import { axialToWorld } from '@/core/hex';
 import type { GameState } from '@/game/game-state';
 import { CombatText } from '@/world/CombatText';
 import { Crossings } from '@/world/Crossings';
@@ -146,6 +147,26 @@ function Scene({
     [game.resourceNodes],
   );
 
+  // M_FUN.QA.AIVAI.TUNE.PATTERN-H — initial camera target = centroid of
+  // walkable LAND tiles, not the axial origin (0,0,0). When archipelago
+  // hydrology carves OCEAN strips the surviving land mass can be offset
+  // from origin; aiming the camera at origin frames empty water with
+  // the actual play area off-screen. Sample every Nth tile to keep the
+  // memo cheap on huge boards; centroid is stable to within a tile.
+  const landCenter = useMemo<{ x: number; z: number }>(() => {
+    let sx = 0;
+    let sz = 0;
+    let n = 0;
+    for (const tile of game.board.tiles.values()) {
+      if (!tile.walkable) continue;
+      const { x, z } = axialToWorld(tile.q, tile.r);
+      sx += x;
+      sz += z;
+      n++;
+    }
+    return n > 0 ? { x: sx / n, z: sz / n } : { x: 0, z: 0 };
+  }, [game.board]);
+
   return (
     <>
       <DayNightCycle game={game} />
@@ -213,7 +234,11 @@ function Scene({
           encroached tiles (encroachment system already maintains
           zone.pulsing on the sim side). */}
       <ContestedPulse game={game} />
-      <CameraRig viewport={viewport} boardRadius={game.board.radius} />
+      <CameraRig
+        viewport={viewport}
+        boardRadius={game.board.radius}
+        landCenter={landCenter}
+      />
       {onCameraReady && <CameraTap onReady={onCameraReady} />}
     </>
   );
