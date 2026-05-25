@@ -1013,6 +1013,10 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     delta,
     WEATHER_SPEED_MULTIPLIER[game.weather.state],
     game.board.tiles,
+    // M_FUN.MECH.FATIGUE.TURN-MODE — pass turn number ONLY in
+    // turn-based mode so the rest-skip gate fires. RTS leaves
+    // it undefined and the continuous fatigue path runs.
+    game.turn ? game.turn.turnsElapsed : undefined,
   );
   // M_FUN.ATTR.DISEASE + .DEHYDRATION — tick disease HP damage,
   // Healer-clear logic, and recovery timers. Runs every tick (not

@@ -136,4 +136,45 @@ describe('fatigue on MOUNTAIN_PASS traversal (M_FUN.MAP.ELEV)', () => {
       expect(cur).toBeLessThanOrEqual(prev);
     }
   });
+
+  // M_FUN.MECH.FATIGUE.TURN-MODE — turn-based fatigue gating. When
+  // pathFollowSystem is called with a `currentTurn` arg AND a
+  // combatant's `restUntilTurn > currentTurn`, the unit's movement
+  // step is SKIPPED for that tick. RTS-mode callers omit the arg
+  // and the gate never fires.
+  it('turn-based: restUntilTurn > currentTurn skips movement', () => {
+    const world = createEcsWorld();
+    const tile: Tile = {
+      q: 1,
+      r: 0,
+      type: 'GRASS',
+      level: 0,
+      moisture: 0.5,
+      isCrossingLanding: false,
+      walkable: true,
+    };
+    const entity = world.spawn(
+      HexPosition({ q: 0, r: 0, level: 0 }),
+      Transform({ x: 0, y: 0, z: 0, rotationY: 0 }),
+      Movement({ speed: 1, isMoving: false }),
+      PathQueue({ steps: ['1,0,0'] }),
+      Combatant({
+        attackDamage: 10,
+        attackRange: 1,
+        attackCooldown: 1,
+        attackTimer: 0,
+        fatigue: 0.6,
+        fatigueDecayTimer: 0,
+        restUntilTurn: 5, // resting until turn 5
+      }),
+    );
+    // currentTurn=3, restUntilTurn=5 → SKIP. The path step stays
+    // queued and the unit's HexPosition does not advance.
+    pathFollowSystem(world, 1, 1, makeTiles(tile), 3);
+    expect(entity.get(HexPosition)?.q).toBe(0);
+    expect(entity.get(PathQueue)?.steps.length).toBe(1);
+    // currentTurn=6, past restUntilTurn → movement resumes.
+    pathFollowSystem(world, 10, 1, makeTiles(tile), 6);
+    expect(entity.get(HexPosition)?.q).toBe(1);
+  });
 });

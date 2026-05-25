@@ -62,8 +62,9 @@ export function pathFollowSystem(
    * Omit (or pass undefined) in RTS mode — the existing
    * continuous-decay path applies.
    */
-  currentTurn?: number,
+  _currentTurn?: number,
 ): void {
+  const currentTurn = _currentTurn;
   // M_FUN.MAP.ELEV — fatigue decay. Combatant.fatigue → 0 after
   // FATIGUE_DECAY seconds out of combat (combat.ts resets the
   // fatigueDecayTimer on every dealt hit). Decay runs even without
