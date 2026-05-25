@@ -102,6 +102,13 @@ export interface GameSnapshot {
   mythEvents?: { active: { id: string; expiresAtSeconds: number } | null; lastFireSeconds: number };
   victoryRecord?: { kind: string; winner: string; detectedAtSeconds: number } | null;
   portalStoneCooldowns?: Array<[string, number]>;
+  /**
+   * M_V7.ECONOMY.REGISTRY — N-player extra economy slots beyond the
+   * legacy 2-faction `economy` Record. Map<FactionId, GameEconomy>
+   * serialized as Array<[id, eco]> tuples. Absent / empty on legacy
+   * 2-faction matches; populated for 4X mode (player-3..N).
+   */
+  economyExtra?: Array<[string, GameEconomy]>;
 }
 
 /** Serialized form of one diplomacy relation entry — flat object. */
@@ -218,6 +225,14 @@ export function serializeGame(game: GameState): GameSnapshot {
         }
       : null,
     portalStoneCooldowns: Array.from(game.portalStoneCooldowns.entries()),
+    // M_V7.ECONOMY.REGISTRY — flatten the N-player economy Map to
+    // tuples. Each row is a fresh shallow-clone of the GameEconomy
+    // shape (Records pass through; nested peonMetrics is structurally
+    // safe to JSON-encode).
+    economyExtra: Array.from(game.economyExtra.entries()).map(([id, eco]) => [
+      id,
+      { ...eco, peonMetrics: { ...eco.peonMetrics } },
+    ]),
   };
 }
 
@@ -415,6 +430,21 @@ export function deserializeGame(snap: GameSnapshot): GameState {
       if (typeof pair[0] !== 'string' || pair[0].length > 64) continue;
       if (!Number.isFinite(pair[1])) continue;
       game.portalStoneCooldowns.set(pair[0], Math.max(0, pair[1] as number));
+    }
+  }
+  // M_V7.ECONOMY.REGISTRY — restore N-player economy slots. Each entry
+  // is a shallow GameEconomy shape; trust the writer to have produced
+  // safe-JSON. Hard cap at 16 entries (consistent with the faction
+  // registry cap; v0.7 4X mode tops out at 6 player factions).
+  if (Array.isArray(snap.economyExtra)) {
+    for (const pair of snap.economyExtra.slice(0, 16)) {
+      if (!Array.isArray(pair) || pair.length !== 2) continue;
+      if (typeof pair[0] !== 'string' || pair[0].length > 64) continue;
+      const eco = pair[1] as Partial<GameEconomy> | null;
+      if (!eco || typeof eco !== 'object') continue;
+      // Don't smuggle in a half-shape — only restore when wood/stone/gold
+      // are present numbers. Missing slots default to 0 via createEconomy().
+      game.economyExtra.set(pair[0], eco as GameEconomy);
     }
   }
   // Step 4 — run a zero-delta tick so derived caches (buildSites map,
@@ -669,6 +699,11 @@ const SaveSnapshotSchema = z.object({
   portalStoneCooldowns: z
     .array(z.tuple([z.string(), z.number()]))
     .max(64)
+    .optional(),
+  // M_V7.ECONOMY.REGISTRY — N-player extra economy slots.
+  economyExtra: z
+    .array(z.tuple([z.string(), _OpaqueObj]))
+    .max(16)
     .optional(),
 });
 

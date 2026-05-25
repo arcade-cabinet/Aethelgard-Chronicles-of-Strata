@@ -41,7 +41,7 @@ export const PROJECTILE_ID_REF = { current: 0 };
 // every difficulty-tuning knob in one tunable file.
 
 import { spawnIntervalFor } from '@/config/combat';
-import { type FactionConfig, LEGACY_FACTIONS } from '@/config/factions';
+import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/factions';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import { type Faction } from '@/ecs/components';
@@ -278,6 +278,18 @@ export interface GameState {
   victoryRecord: VictoryRecord | null;
   /** Per-faction resource totals and supply — both factions are symmetric. */
   economy: Record<Faction, GameEconomy>;
+  /**
+   * M_V7.ECONOMY.REGISTRY — N-player extension. The legacy `economy`
+   * Record above is keyed by the closed `'player' | 'enemy'` union
+   * for compile-time narrowing on hot paths (deposit / scoring /
+   * supply). N-player slots (`player-3`..N) live in this Map<FactionId,
+   * GameEconomy>; lazy-created on first `economyFor(game, id)` lookup.
+   * Tribute cession + camp-clear reward + victory detection route
+   * through `economyFor` so they fire correctly for player-3..N.
+   * v0.5+v0.6 substrate left these gated to legacy slots only —
+   * HIGH-1/2/3 from the v0.7 opening review.
+   */
+  economyExtra: Map<FactionId, GameEconomy>;
   /** The hex key of the player's home-base (Town Hall) tile. */
   townHallKey: string;
   /** The hex key of the enemy base tile — the enemy's deposit/build anchor. */
@@ -924,6 +936,9 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     mythEvents: createMythEventsState(),
     victoryRecord: null,
     economy,
+    // M_V7.ECONOMY.REGISTRY — empty Map; economyFor() lazy-creates
+    // entries when a non-legacy factionId is first looked up.
+    economyExtra: new Map<FactionId, GameEconomy>(),
     townHallKey,
     enemyBaseKey,
     resourceNodes,

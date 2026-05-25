@@ -54,6 +54,7 @@ import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 import type { GameState } from './game-state';
 import { expireProposals } from './diplomacy-border';
 import { tickTributeCession } from './diplomacy-tribute';
+import { economyFor } from './economy-for';
 import { detectVictory } from './victory-conditions';
 import { grantRandomDiscovery } from './research';
 import { buildEntityTileIndex } from './tile-index';
@@ -282,7 +283,12 @@ export function tickDepositPhase(game: GameState): void {
   // the tributary's pile reflects the harvest first, THEN cedes 10% of
   // it. Pair-iteration is O(N^2) over factionIds; N is small (≤6 player
   // factions for 4X) so this stays cheap. delta is the tick seconds.
-  tickTributeCession(game.diplomacy, FACTIONS, (f) => game.economy[f as Faction], 1);
+  // M_V7.ECONOMY.REGISTRY — iterate ALL non-barbarian factions (legacy
+  // player/enemy + N-player slots) via the registry instead of the
+  // hardcoded 2-faction FACTIONS const. Resolves HIGH-1 from the v0.7
+  // opening review (N-player tribute end-to-end broken before this fix).
+  const playerFactionIds = game.factions.filter((f) => f.kind !== 'barbarian').map((f) => f.id);
+  tickTributeCession(game.diplomacy, playerFactionIds, (f) => economyFor(game, f), 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -317,14 +323,14 @@ export function tickScoringPhase(game: GameState, delta: number): void {
   // + 1 random Discovery from the camp-reward pool. Mark navGraph dirty
   // so the camp tile re-pathing reflects the destroyed entity.
   for (const cleared of deathResult.barbarianCampsCleared) {
-    // Only the two legacy slots have GameEconomy entries today; N-player
-    // economy registry comes with M_PIVOT.N-PLAYER.FACTIONS substrate
-    // when GameEconomy migrates from Record<Faction, …> to a Map<FactionId>.
-    // Until then, route the reward to the 'player' or 'enemy' slot
-    // when the clearedBy id matches; otherwise log and skip (the camp
-    // is still destroyed — the gameplay effect lands).
-    if (cleared.clearedBy === 'player' || cleared.clearedBy === 'enemy') {
-      const eco = game.economy[cleared.clearedBy];
+    // M_V7.ECONOMY.REGISTRY — route the +50/+50 reward to ANY
+    // non-barbarian faction id (legacy player/enemy + N-player
+    // slots). economyFor lazy-creates the slot if it's the first
+    // grant for that id. Resolves HIGH-2 from the v0.7 opening
+    // review — pre-v0.7, this literal-matched only 'player'/'enemy'
+    // and silently no-op'd for player-3..N camp clears.
+    if (!cleared.clearedBy.startsWith('barbarian-camp-')) {
+      const eco = economyFor(game, cleared.clearedBy);
       eco.wood += 50;
       eco.stone += 50;
     }

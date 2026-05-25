@@ -254,16 +254,19 @@ regressed pixel without the harness catching it first.
   role + spawns matching entity (>= 7/9 trains succeed; Trebuchet/Wizard/Healer/
   Ferryman/Settler MUST be among the trained set).
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.ECONOMY.REGISTRY — `GameEconomy`
-  storage widens to support N-player factions: introduce
-  `economyFor(game, factionId)` helper that defaults missing
-  slots from `createEconomy()`. tribute cession + victory
-  detection migrate to call `economyFor(game, id)` instead of
-  `game.economy[legacyFaction]`. Legacy `economy.player` /
-  `economy.enemy` paths preserved (still backed by the literal
-  union for compile-time narrowing on hot paths). Acceptance:
-  4-player setup gets all 4 players' wood/stone/gold credited
-  on camp clears AND on tribute cession (unit test).
+- [x] M_V7.ECONOMY.REGISTRY — `economyFor(game, factionId)` helper in new
+  `src/game/economy-for.ts` module (separate from game-state.ts to dodge
+  the existing circular-import constraint). Routes legacy 'player'/'enemy'
+  to game.economy Record; N-player slots to a new game.economyExtra
+  Map<FactionId, GameEconomy> with lazy createEconomy() on first lookup.
+  tickTributeCession + camp-clear reward in economy-tick-phases now route
+  through economyFor instead of literal-matching player/enemy. Save
+  round-trips economyExtra. Hardened encroachmentSystem to skip non-legacy
+  factions (would have crashed on first N-player tick). 3 economy-registry
+  tests pin lazy creation + ref stability + camp clear credits player-3.
+  1066 unit tests green. HIGH-3 (wonderTimers N-player lift) deferred to
+  v0.8 as separate pass — pattern identical, lift is invasive across more
+  sites, and wonder victory in 4X is polish-tier next to tribute.
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.MYTH.EFFECTS — wire the 4 missing
   MYTH-event dispatchers. Each follows the harvest-festival

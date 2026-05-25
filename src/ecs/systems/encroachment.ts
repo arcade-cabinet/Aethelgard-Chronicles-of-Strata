@@ -65,7 +65,15 @@ export function encroachmentSystem(
     const faction = e.get(FactionTrait)?.faction;
     const hex = e.get(HexPosition);
     if (!faction || !hex) continue;
-    militaryByFaction[faction].add(getHexKey(hex.q, hex.r));
+    // M_V7.ECONOMY.REGISTRY — militaryByFaction is keyed by the legacy
+    // 2-faction Record; N-player slots (player-3..N) + barbarian-camp-*
+    // units have no entry. Skip them here — encroachment is a 2-faction
+    // mechanic today; v0.8 will lift it to N-player via a Map<FactionId>
+    // index. Without this guard, runEconomyTick crashes on the first
+    // N-player unit tick.
+    const set = militaryByFaction[faction as 'player' | 'enemy'];
+    if (!set) continue;
+    set.add(getHexKey(hex.q, hex.r));
   }
 
   // M_REGISTRY.29 — iterate FACTIONS, not literal pair.
