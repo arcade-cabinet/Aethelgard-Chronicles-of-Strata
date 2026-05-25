@@ -1606,7 +1606,7 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   HIGH finding in a forward commit before pushing. MEDIUM/LOW findings logged
   in `docs/specs/review-findings.md`.
 
-- [ ] M_V8.PARKING-LOT.V06 — Drain the [WAIT] items from the parking lot
+- [x] M_V8.PARKING-LOT.V06 — Drain the [WAIT] items from the parking lot
   that are now unblocked: M_PROCESS.REVIEW (review-trio dispatch), discovery-flag
   grant for camp clears tied to the v0.7 camp-clear flow, RUINS decoration
   palette (the palette entry exists; the scatter props for the RUINS biome
