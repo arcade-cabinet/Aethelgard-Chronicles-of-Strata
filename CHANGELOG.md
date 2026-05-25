@@ -5,6 +5,18 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.14](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.13...v0.1.14) (2026-05-25)
+
+
+### Bug Fixes
+
+* **ci:** raise global Playwright CI timeout 60s→180s + action 30s→60s ([#41](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/41)) ([8864d89](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/8864d8930ef1e018c2f5d31995e85e0edcd00d6e))
+
+
+### Performance
+
+* **e2e:** batch n-player sim advance into single page.evaluate ([#43](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/43)) ([994aa20](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/994aa20c4f90795d357903cb771da3dcb5768a6d))
+
 ## [0.1.13](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.12...v0.1.13) (2026-05-25)
 
 
