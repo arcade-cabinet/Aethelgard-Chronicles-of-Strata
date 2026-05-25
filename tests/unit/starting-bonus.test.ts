@@ -70,14 +70,20 @@ describe('M_EXPANSION.F.84 — starting bonus picks', () => {
       eventSeed: 'bonus-hp-events',
       startingBonus: 'extra-hp',
     });
+    // Coderabbit MAJOR — empty-loop silent-pass guard. Without this,
+    // a missing player FactionBase entity slips through with zero
+    // assertions and the test reports GREEN.
+    let playerHpChecks = 0;
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase);
       if (f?.faction !== 'player') continue;
+      playerHpChecks++;
       const h = e.get(Health);
       // PATTERN-C: baseline raised to 1500, so extra-hp = 1700.
       expect(h?.max).toBe(2000);
       expect(h?.current).toBe(2000);
     }
+    expect(playerHpChecks).toBeGreaterThan(0);
   });
 
   it('enemy TownHall is never affected by the bonus', () => {
@@ -88,13 +94,17 @@ describe('M_EXPANSION.F.84 — starting bonus picks', () => {
       eventSeed: 'bonus-enemy-unchanged-events',
       startingBonus: 'extra-hp',
     });
+    let enemyHpChecks = 0;
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase);
       if (f?.faction !== 'enemy') continue;
+      enemyHpChecks++;
       // M_FUN.QA.AIVAI.TUNE.PATTERN-C — bases equalised at 1500 HP
       // so AI-vs-AI matches can't end at t=0 from a solo-Footman
       // rush (100 sim-seconds to solo a TownHall now).
       expect(e.get(Health)?.max).toBe(1800);
     }
+    // Coderabbit MAJOR — empty-loop silent-pass guard.
+    expect(enemyHpChecks).toBeGreaterThan(0);
   });
 });
