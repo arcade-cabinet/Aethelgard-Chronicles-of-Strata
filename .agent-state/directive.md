@@ -287,10 +287,8 @@ they don't get forgotten.
   coverage floors scale with pool size.
 - [x] M_FUN.MAP.HARVEST-ASSIGN-HELPER — HARVEST_BASE_BIAS / HARVEST_BIAS_RADIUS exported
   from peon-rules.ts; game-state.ts startup assign imports them instead of duplicating.
-- [WAIT] (v0.5 cycle) M_FUN.MAP.SERIALIZE-VOLCANO-DEDUP — fold
-  the volcano-tile defensive-restore duplication in
-  `src/persistence/serialize-game.ts:222-245` into a shared
-  helper. Simplifier report.
+- [x] M_FUN.MAP.SERIALIZE-VOLCANO-DEDUP — restoreVolcanoTileMap() helper
+  centralises lavaTiles/fertileTiles restore; 44 lines → 2 call sites.
 
 ---
 
