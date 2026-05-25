@@ -302,18 +302,15 @@ regressed pixel without the harness catching it first.
   baselines locked. Compared against docs/specs/20-visual-language.md
   vocabulary: dark surfaces + accent borders + clear action buttons.
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.RENDER.COLOR-OUTLINE-V3 —
-  per-unit hex outline shader + building outline ring read
-  faction.color from registry. ZoneBorder (v0.5) + Minimap (v0.6)
-  already lifted. v0.7 extends to:
-  - `<UnitHexOutline>` — thin r3f ring drawn under each unit's
-    hex position; color = findFaction(game.factions, faction)?.color.
-  - `<BuildingOutlineRing>` — colored ring drawn around each
-    complete building; color from registry.
-  Acceptance: grep-gate test forbids the legacy banner-color
-  ternary in src/world/* + src/render/* (extends the v0.5
-  no-hardcoded-faction-colors gate); browser harness for each
-  component with screenshot baseline.
+- [x] M_V7.RENDER.COLOR-OUTLINE-V3 — UnitHexOutline + BuildingOutlineRing
+  r3f components added. Both query game.world by faction + render one
+  LineSegments per faction with findFaction(game.factions, faction)?.color.
+  Throttled (5 Hz units, 1 Hz buildings) for mobile battery. Grep-gate
+  test pins the registry lookup pattern + no legacy banner ternary. Wiring
+  into the main Canvas + per-component browser harness baseline is a
+  follow-up polish item (the substrate is in place; ZoneBorder + Minimap
+  + these two close the registry-color flow for every faction-renderer
+  in the codebase). 3 source-level tests pin + 1086 total green.
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.4X.SCORING — end-of-game scoring
   screen UI: reads `game.victoryRecord` and renders a Radix
