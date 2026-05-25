@@ -58,17 +58,22 @@ test.describe('M_V7.E2E.4-PLAYER-CAMP-CLEAR', () => {
       return { wood: g.economy.player.wood, stone: g.economy.player.stone };
     });
 
-    // Advance the sim in 600-frame chunks across 40 chunks ≈ 6.6 sim-min
-    // (40 × 600 frames / 60fps = 400 sec). 6+ sim-min is the smoke
-    // threshold below; running the full 40 chunks gives the AI time
-    // to train + path units, mostly to confirm runEconomyTick stays
-    // stable across the N-player + diplomacy + myth-event +
-    // portal-stone-trigger code paths without crashing.
-    for (let chunk = 0; chunk < 40; chunk++) {
-      await page.evaluate(() => {
-        (window as { __game_advanceFrames?: (n: number) => void }).__game_advanceFrames?.(600);
-      });
-    }
+    // Advance the sim ~6.6 sim-min (24000 frames / 60fps = 400 sec).
+    // 6+ sim-min is the smoke threshold below; running the full burst
+    // gives the AI time to train + path units, mostly to confirm
+    // runEconomyTick stays stable across the N-player + diplomacy +
+    // myth-event + portal-stone-trigger code paths without crashing.
+    //
+    // SINGLE page.evaluate: 40-call loop of cross-context evaluate
+    // round-trips was burning ~60s of CDP overhead on CI runners.
+    // One evaluate = one round-trip; the inner loop runs entirely
+    // in-page where __game_advanceFrames is synchronous.
+    await page.evaluate(() => {
+      const advance = (window as { __game_advanceFrames?: (n: number) => void })
+        .__game_advanceFrames;
+      if (!advance) return;
+      for (let chunk = 0; chunk < 40; chunk++) advance(600);
+    });
 
     // Final assertion: sim advanced AT LEAST 6 sim-minutes without
     // crashing — the structural proof that the 4-player N-player
