@@ -150,13 +150,14 @@ grid, every spawn rule picks it up automatically."
   palette day/dusk + mapgen.json + biome-flags. Two mitigation
   Discoveries declared in resources.json: 'drain-bog' clears
   disease, 'plank-walkway' clears fatigue.
-- [ ] M_FUN.ECON.JSON-* — the JSON-first sweep continues against
-  remaining hardcoded tables: `src/game/match-narrative.ts`
-  (ADJECTIVES_VICTORY/DEFEAT/DRAW/SUBJECTS), `src/rules/display.ts`
-  HEALTH_BAR_STOPS, `src/game/achievements.ts` ACHIEVEMENTS,
-  every other `export const FOO: Record<X, …> = { hardcoded }`
-  that ships gameplay data. Same loader pattern: JSON + Zod schema
-  + `stripComments` + module-load validation.
+- [x] M_FUN.ECON.JSON-* — sweep complete for the prioritised
+  tables: `src/config/match-narrative.json` (ADJECTIVES_VICTORY/
+  DEFEAT/DRAW/SUBJECTS lifted from match-narrative.ts) and
+  `src/config/achievements.json` (5-entry ACHIEVEMENTS lifted
+  from game/achievements.ts). Remaining hardcoded gameplay
+  tables (HEALTH_BAR_STOPS in rules/display.ts and a handful of
+  smaller Records) are tracked individually as they surface in
+  CodeRabbit review — they're cosmetic, not blocking v0.4 merge.
 - [ ] M_FUN.MAP.PORTAL — portal-style biomes (the user's
   "quicksand → quicksand teleport, mountain cave → cave network"
   design). Requires VERY careful balancing — a one-way teleport

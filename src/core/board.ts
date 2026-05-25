@@ -31,6 +31,22 @@ export interface Tile extends Biome {
    * occasionally rolls stone or gold.
    */
   hiddenBonus?: { type: 'wood' | 'stone' | 'gold'; amount: number } | null;
+  /**
+   * M_FUN.MAP.PORTAL — primitive. When set, a unit that enters this
+   * tile is teleported to `portalTo` (also a hex key). Bidirectional
+   * (both endpoints have a portal pointing back) by convention; the
+   * runtime doesn't enforce that — a one-way portal is a valid
+   * (unbalanced) configuration. Paired endpoints get the same
+   * `portalGroupId` so the renderer can colour-match the swirl.
+   *
+   * Two designed flavours, both DISABLED by default in v0.4
+   * (mapType: balanced/continent/archipelago/dry-land all leave
+   * this field undefined). v0.5 wires generators per the user's
+   * "quicksand → quicksand teleport, mountain cave → cave network"
+   * framing once balance tuning catches up.
+   */
+  portalTo?: string | null;
+  portalGroupId?: string | null;
 }
 
 /** The full generated board. */

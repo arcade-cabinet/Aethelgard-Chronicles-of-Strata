@@ -17,33 +17,37 @@ export interface AchievementDef {
   description: string;
 }
 
-export const ACHIEVEMENTS: ReadonlyArray<AchievementDef> = [
-  {
-    id: 'first-victory',
-    title: 'First Victory',
-    description: 'Win your first game.',
-  },
-  {
-    id: 'wonder-win',
-    title: 'Builder of Wonders',
-    description: 'Win by completing the Wonder countdown.',
-  },
-  {
-    id: 'turtle-victory',
-    title: 'Patience',
-    description: 'Win without building a single Watchtower.',
-  },
-  {
-    id: 'first-discovery',
-    title: 'Curious Mind',
-    description: 'Purchase your first Discovery.',
-  },
-  {
-    id: 'first-kill',
-    title: 'Blooded',
-    description: 'Defeat your first enemy unit.',
-  },
-] as const;
+// M_FUN.ECON.JSON-ACHIEVEMENTS — registry sourced from
+// `src/config/achievements.json` via Zod. Adding a new
+// achievement = one JSON entry; the persistence layer + HUD
+// toast picks it up automatically.
+import achievementsJson from '@/config/achievements.json';
+import { z } from 'zod';
+
+const AchievementDefSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().min(1),
+  description: z.string().min(1),
+});
+const AchievementsFileSchema = z.object({ achievements: z.array(AchievementDefSchema).min(1) });
+
+function stripAchievementComments(input: unknown): unknown {
+  if (Array.isArray(input)) return input.map(stripAchievementComments);
+  if (input && typeof input === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+      if (k === '$comment') continue;
+      out[k] = stripAchievementComments(v);
+    }
+    return out;
+  }
+  return input;
+}
+
+const _validatedAchievements = AchievementsFileSchema.parse(
+  stripAchievementComments(achievementsJson),
+);
+export const ACHIEVEMENTS: ReadonlyArray<AchievementDef> = _validatedAchievements.achievements;
 
 /** Read the persisted unlocked-achievement id set. */
 export async function readUnlockedAchievements(persistence: Persistence): Promise<Set<string>> {

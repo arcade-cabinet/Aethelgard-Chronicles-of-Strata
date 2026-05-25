@@ -116,6 +116,30 @@ export function pathFollowSystem(
         transform.y = step.level * TILE_HEIGHT;
         path.steps.shift();
         if (path.steps.length === 0) movement.isMoving = false;
+        // M_FUN.MAP.PORTAL — if the arrival tile is a portal endpoint,
+        // teleport the unit to portalTo. Drop the rest of the path so
+        // the unit re-paths from the new location next tick (the
+        // queued steps are no longer reachable from this destination).
+        // Disabled by default in v0.4 — generators leave portalTo
+        // undefined; only seeded via a v0.5 hydrology/topology pass.
+        if (tiles) {
+          const arriveTile = tiles.get(`${step.q},${step.r}`);
+          if (arriveTile?.portalTo) {
+            const dest = parseStep(`${arriveTile.portalTo},0`);
+            const destWorld = axialToWorld(dest.q, dest.r);
+            const destTile = tiles.get(arriveTile.portalTo);
+            const destLevel = destTile?.level ?? 0;
+            hex.q = dest.q;
+            hex.r = dest.r;
+            hex.level = destLevel;
+            transform.x = destWorld.x;
+            transform.z = destWorld.z;
+            transform.y = destLevel * TILE_HEIGHT;
+            path.steps = [];
+            movement.isMoving = false;
+            return;
+          }
+        }
         // M_FUN.MAP.ELEV — apply biome-rule attribute on arrival.
         if (tiles) {
           const tile = tiles.get(`${step.q},${step.r}`);
