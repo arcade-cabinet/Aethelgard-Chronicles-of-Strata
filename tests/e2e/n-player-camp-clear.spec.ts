@@ -16,16 +16,16 @@
  */
 import { expect, test } from '@playwright/test';
 
+// Default 60s Playwright timeout was tight for the 6-sim-min advance
+// on a 4-player board + barbarian-camp clear sequence. CI runner is
+// 2-3× slower than local. 180s gives 3× headroom; pattern matches
+// PR #25 (border-clash 60→120s) and PR #33 (replay-determinism 5→30s).
+// Uses test.describe.configure so the timeout applies to EVERY test in
+// the file — `test.setTimeout` inside `describe` doesn't override the
+// per-test wall when later code calls test.setTimeout again.
+test.describe.configure({ timeout: 180_000 });
 test.describe('M_V7.E2E.4-PLAYER-CAMP-CLEAR', () => {
-  // Default 60s Playwright timeout was tight for the 6-sim-min advance
-  // on a 4-player board + barbarian-camp clear sequence. CI runner is
-  // 2-3× slower than local; observed 60s wall on b56ce8d. 180s gives
-  // 3× headroom over the worst observed without masking a real
-  // regression — pattern matches PR #25 (border-clash 60→120s) and
-  // PR #33 (replay-determinism 5→30s).
-  test.setTimeout(180_000);
   test('4-player setup auto-spawns camps; clearing one credits reward', async ({ page }) => {
-    test.setTimeout(60_000);
     await page.goto('/?ai-vs-ai=1&seed=n-player-camp-clear-e2e&mode=border-clash&nplayer=4');
 
     // Wait for the game test hooks to mount.
