@@ -95,7 +95,11 @@ export function wildfireSystem(
     if (!state) continue;
     state.secondsSinceTick += dt;
     if (state.secondsSinceTick < WILDFIRE_TUNING.tickSeconds) continue;
-    state.secondsSinceTick = 0;
+    // Coderabbit MAJOR: preserve overflow time. Resetting to 0 drops
+    // any excess dt past tickSeconds, so a long frame (dt > tickSec)
+    // under-simulates the burn (less damage, less spread than the
+    // intended frame-rate-independent rate).
+    state.secondsSinceTick -= WILDFIRE_TUNING.tickSeconds;
 
     const tile = tiles.get(key);
     if (!tile) {

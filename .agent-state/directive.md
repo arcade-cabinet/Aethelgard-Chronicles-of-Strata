@@ -111,6 +111,48 @@ spec doc citation; each item is a self-contained commit-unit.
   docs/specs/PRD-v0.4.md. Resolves the markdownlint MD037 cluster
   the coderabbit MINORs grouped under.
 
+### v0.5.G — JSON-first archetype sweep (the user's "everything in JSON" mandate)
+The user's framing: every domain table should live in JSON config and
+be loaded as consumers registered to archetypes. "Adding a 6th X = ONE
+JSON entry; the union type, all Records, every Zod schema, every UI
+grid, every spawn rule picks it up automatically."
+- [x] M_FUN.ECON.JSON-RESOURCES — `src/config/resources.json` is the
+  SINGLE source-of-truth for resource slots: id/label/icon/kind,
+  per-source biomes + harvester + overlayStyle + yield + risks
+  (DoT/fatigue attribute strength + Discovery unlock id), per-consumer
+  buildings/units/roads/upkeep. RESOURCE_TYPES is now derived. 8 slots
+  active: wood, stone, ore, gold, food, peat, science, mana. GameEconomy
+  extends `Record<ResourceType, number>` so adding a slot needs no
+  type edit. New slots: ore (MOUNTAIN, +fatigue, mitigated by
+  'reinforced-pick'), food (FOREST game + SHALLOWS fish + GRASS
+  forage, 3 overlay styles → same slot), peat (SWAMP, +disease,
+  mitigated by 'peat-mask').
+- [x] M_FUN.ECON.JSON-ERAS — `src/config/eras.json` is the source-of-
+  truth for the era progression table. `src/rules/eras.ts` reads from
+  JSON via Zod; adding a 5th era (Industrial, etc) is one JSON entry.
+- [ ] M_FUN.ECON.QUICKSAND — quicksand sources to `resources.json`
+  as a high-yield crafting reagent that applies BOTH disease and
+  fatigue (the schema already supports the `risks: []` array shape).
+  Tile generator paints a sparse "swirl" pattern on beach-adjacent
+  hexes. Yield ≫ wood but the dual-risk forces a Healer dispatch or
+  short harvest cycles.
+- [ ] M_FUN.ECON.JSON-* — the JSON-first sweep continues against
+  remaining hardcoded tables: `src/game/match-narrative.ts`
+  (ADJECTIVES_VICTORY/DEFEAT/DRAW/SUBJECTS), `src/rules/display.ts`
+  HEALTH_BAR_STOPS, `src/game/achievements.ts` ACHIEVEMENTS,
+  every other `export const FOO: Record<X, …> = { hardcoded }`
+  that ships gameplay data. Same loader pattern: JSON + Zod schema
+  + `stripComments` + module-load validation.
+- [ ] M_FUN.MAP.PORTAL — portal-style biomes (the user's
+  "quicksand → quicksand teleport, mountain cave → cave network"
+  design). Requires VERY careful balancing — a one-way teleport
+  shortcut shifts every map's choke-point calculus. Out of v0.4/v0.5
+  scope; tracked here as the v0.6 anchor item. Open design questions:
+  (a) deterministic destination or random-per-event-PRNG; (b) shared
+  player+enemy portal or per-faction; (c) cooldown vs unlimited use;
+  (d) AI weighting (Raider personalities should LOVE portals,
+  Builders should avoid them).
+
 ### v0.5.F — Cleanups discovered along the way
 - [x] M_FUN.PROC.SCREENSHOT-WAIT — AIVAI balance harness now waits
   for the `__skipOnboarding` hook to mount + 150ms post-dismiss

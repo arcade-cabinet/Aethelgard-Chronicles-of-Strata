@@ -78,21 +78,43 @@ export const Selectable = trait({ isSelected: false });
  * row + one union entry, never `if/elseif` branches.
  */
 /**
- * Resource slots. `mana` (M_EXPANSION.F.72) is the 4th non-supply
- * slot — drives Wizard training + Magic-spell SFX. The slot-iterating
- * pattern means adding mana required one union entry + one config
- * row in economy.json + one cost entry on the Wizard unit.
+ * Resource slots — derived from `src/config/resources.json` (the
+ * SINGLE source-of-truth: each slot declares its sources, consumers,
+ * label, and kind). The `RESOURCE_TYPES` array + `ResourceType`
+ * union flow from the JSON via `src/config/resources.ts`.
+ *
+ * Per the archetype principle (the user's "consumers registered to
+ * archetypes" framing): a resource is a generic slot tied
+ * magnetically to its Consumers + Sources. No JSON file, type, or
+ * schema should hand-enumerate the five names — they iterate
+ * RESOURCE_TYPES. Adding a 6th slot is ONE entry in resources.json;
+ * the union, every Partial<Record<…>>, every Zod cost schema, every
+ * HUD grid, every spawn rule picks it up automatically.
+ *
+ * For backwards-compat with code that imported these names from
+ * `@/ecs/components` (the historic location), the symbols are
+ * re-exported here as a thin pass-through.
  */
-export type ResourceType = 'wood' | 'stone' | 'gold' | 'science' | 'mana';
+import { RESOURCE_IDS } from '@/config/resources';
 
-/** The enumerable list of resource slots — iterate this, never hardcode individual slots. */
-export const RESOURCE_TYPES: readonly ResourceType[] = [
+// The const-array tuple form — strict literal types so downstream
+// `(typeof RESOURCE_TYPES)[number]` continues to produce a literal
+// union, not `string`. The cast is safe because RESOURCE_IDS is
+// validated by Zod at module load and freezes at startup. This is
+// the ONE place in TypeScript that mirrors the JSON list; everything
+// else maps over RESOURCE_TYPES. The Zod parser fail-fasts at module
+// load if the JSON drifts from this tuple.
+export const RESOURCE_TYPES = RESOURCE_IDS as readonly [
   'wood',
   'stone',
+  'ore',
   'gold',
+  'food',
+  'peat',
   'science',
   'mana',
-] as const;
+];
+export type ResourceType = (typeof RESOURCE_TYPES)[number];
 
 /**
  * A building type. `TownHall` is the attractor (start base, not built

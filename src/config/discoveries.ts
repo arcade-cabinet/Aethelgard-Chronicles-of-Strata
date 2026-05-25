@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { RESOURCE_TYPES } from '@/ecs/components';
 import type { ResourceCost } from '@/game/economy';
 import discoveriesJson from './discoveries.json';
 
@@ -8,16 +9,21 @@ import discoveriesJson from './discoveries.json';
  * load instead of when the player clicks an unlock.
  */
 
-// ResourceCost is a Partial<Record<ResourceType, number>> in game
-// code — every key optional. Discovery rows specify only the
-// resources they cost (e.g. {stone:100, gold:150}).
-const ResourceCostSchema = z.object({
-  wood: z.number().int().nonnegative().optional(),
-  stone: z.number().int().nonnegative().optional(),
-  gold: z.number().int().nonnegative().optional(),
-  science: z.number().int().nonnegative().optional(),
-  mana: z.number().int().nonnegative().optional(),
-});
+/**
+ * ResourceCost Zod schema, BUILT from `RESOURCE_TYPES`. Adding a
+ * 6th resource slot (`aether`, etc) means ONE entry in
+ * `src/ecs/components.ts#RESOURCE_TYPES` — the schema picks it up
+ * automatically. The prior implementation hand-listed
+ * wood/stone/gold/science/mana, which silently broke the
+ * "one slot = one line" archetype contract and caused a coderabbit
+ * type-mismatch finding because the schema's inferred optionals
+ * didn't structurally match `Partial<Record<ResourceType, number>>`.
+ */
+const ResourceCostSchema = z.object(
+  Object.fromEntries(
+    RESOURCE_TYPES.map((slot) => [slot, z.number().int().nonnegative().optional()]),
+  ),
+) as z.ZodType<ResourceCost>;
 
 const DiscoveryEffectSchema = z.discriminatedUnion('kind', [
   z.object({
@@ -72,10 +78,15 @@ export interface DiscoveryConfig {
   effect: DiscoveryEffect;
 }
 
-interface DiscoveriesConfig {
-  discoveries: DiscoveryConfig[];
-}
-
-/** The full discoveries table — loaded from JSON, Zod-validated here. */
-const _validated = DiscoveriesConfigSchema.parse(discoveriesJson);
-export const DISCOVERIES_CONFIG: DiscoveriesConfig = _validated as unknown as DiscoveriesConfig;
+/**
+ * The full discoveries table — loaded from JSON, Zod-validated here.
+ * Coderabbit MAJOR fix: replaced the prior `as unknown as
+ * DiscoveriesConfig` cast (which defeated the point of Zod) with the
+ * Zod-inferred type as the public export. The hand-written
+ * `DiscoveriesConfig` interface stays as a backstop for callers that
+ * imported it; it's structurally compatible with the inferred shape
+ * (both expose the same `id/name/cost/effect/prereqs` keys).
+ */
+export type DiscoveriesConfigInferred = z.infer<typeof DiscoveriesConfigSchema>;
+const _validated: DiscoveriesConfigInferred = DiscoveriesConfigSchema.parse(discoveriesJson);
+export const DISCOVERIES_CONFIG: DiscoveriesConfigInferred = _validated;

@@ -42,8 +42,7 @@ function makeStubGame(board: BoardData, rng: () => number = () => 0.5): GameStat
     volcano: createVolcanoState(),
     wildfires: new Map(),
     world: { query: () => [] },
-    // biome-ignore lint/suspicious/noExplicitAny: stub
-  } as any as GameState;
+  } as unknown as GameState;
 }
 
 describe('volcano', () => {

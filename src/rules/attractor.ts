@@ -24,11 +24,16 @@ import { RESOURCE_PROFILES } from './resource-profiles';
 export const ATTRACTOR_GUARANTEE: Record<ResourceType, number> = {
   wood: 3,
   stone: 2,
+  ore: 1,
   gold: 1,
+  food: 2,
+  peat: 0,
   science: 0,
-  // M_EXPANSION.F.72 — mana is research-tier (not biome-spawned)
-  // like science; its guarantee is 0. A future mana-crystal biome
-  // resource (M_EXPANSION.F.76 / .F.86) would lift this above 0.
+  // M_EXPANSION.F.72 — passive-trickle slots (science, mana) and
+  // risk-bearing slots (peat) are guaranteed 0 — the player extends
+  // into them rather than starting next to them. food gets a small
+  // guarantee so the starting kit can sustain a few units before
+  // ranging out.
   mana: 0,
 };
 

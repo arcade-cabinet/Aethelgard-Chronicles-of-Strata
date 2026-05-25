@@ -9,7 +9,7 @@
 
 import { z } from 'zod';
 import { ECONOMY } from '@/config/economy';
-import type { Faction } from '@/ecs/components';
+import { type Faction, RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import type { GameClock } from '@/game/clock';
 import type { GameEconomy } from '@/game/economy';
 import { type GameState, runEconomyTick, startGame } from '@/game/game-state';
@@ -277,15 +277,13 @@ function safeFinite(n: unknown, fallback: number): number {
 /** Whitelisted economy keys; rejects __proto__ / constructor / unknown slots. */
 function pickEconomy(eco: unknown): GameEconomy {
   const e = (eco ?? {}) as Record<string, unknown>;
+  // Iterate RESOURCE_TYPES — any slot added to resources.json
+  // automatically migrates with a 0 default; no per-slot edit
+  // needed here. Same migration pattern as mana/peakSupply.
+  const totals = {} as Record<ResourceType, number>;
+  for (const slot of RESOURCE_TYPES) totals[slot] = safeFinite(e[slot], 0);
   return {
-    wood: safeFinite(e.wood, 0),
-    stone: safeFinite(e.stone, 0),
-    gold: safeFinite(e.gold, 0),
-    science: safeFinite(e.science, 0),
-    // M_EXPANSION.F.72 — mana slot; defaults to 0 for v0.3 saves
-    // that predate the slot (no snapshot version bump needed since
-    // safeFinite produces the same shape on missing input).
-    mana: safeFinite(e.mana, 0),
+    ...totals,
     usedSupply: safeFinite(e.usedSupply, 0),
     // M_EXPANSION.U.122 — peak supply across the match; defaults to
     // 0 for v0.3 saves that predate the slot.

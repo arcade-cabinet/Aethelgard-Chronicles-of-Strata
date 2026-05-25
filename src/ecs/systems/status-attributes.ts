@@ -117,15 +117,20 @@ export function statusAttributesSystem(
     // suppression lives in whatever HP-regen system exists; today we
     // just track the recovery timer so a future regen system can
     // consult Health.dehydration > 0.
-    if (h.dehydration > 0) {
+    // Coderabbit MAJOR — re-read Health here. `h` is the snapshot
+    // captured at the top of the loop, but earlier branches (disease
+    // damage / healer clear / SWAMP re-arm) may have written via
+    // e.set. Spreading the stale `h` would clobber those updates.
+    const hNow = e.get(Health) ?? h;
+    if (hNow.dehydration > 0) {
       const onDesert = tileType === 'DESERT';
-      const newRecovery = onDesert ? 0 : h.dehydrationRecoveryTimer + delta;
-      let newDehydration = Math.max(0, h.dehydration - delta);
+      const newRecovery = onDesert ? 0 : hNow.dehydrationRecoveryTimer + delta;
+      let newDehydration = Math.max(0, hNow.dehydration - delta);
       if (newRecovery >= DEHYDRATION_RECOVERY) {
         newDehydration = 0;
       }
       e.set(Health, {
-        ...h,
+        ...hNow,
         dehydration: newDehydration,
         dehydrationRecoveryTimer: newRecovery,
       });

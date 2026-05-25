@@ -62,7 +62,10 @@ export interface BuildingTierRow {
  * matches ECONOMY.startingResources.maxSupply so both factions
  * can field the starting kit at t=0.
  */
-const BASELINE_SUPPLY_CAP = 5;
+// Coderabbit MAJOR — source of truth = ECONOMY.startingResources.
+// Magic-number drift between this constant and the config would
+// silently break the t=0 supply contract.
+const BASELINE_SUPPLY_CAP = ECONOMY.startingResources.maxSupply;
 
 export function recomputeMaxSupply(
   economy: GameEconomy,

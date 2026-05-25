@@ -1,0 +1,128 @@
+{
+  "$comment": "Resource slot registry. The SINGLE source-of-truth for what resource slots exist in the game, where each one is accumulated FROM, what consumes it, and how it RENDERS on the tile overlay. Loaded by src/config/resources.ts. Adding a 6th slot (aether, food, oil, etc) = one entry here; the union type, all Partial<Record<ResourceType,number>> shapes, every Zod schema that validates a cost, every UI grid, every harvest rule, every tile-overlay renderer picks it up automatically. The user's archetype framing: 'consumers registered to archetypes'.",
+  "resources": [
+    {
+      "id": "wood",
+      "label": "Wood",
+      "kind": "harvest",
+      "icon": "🪵",
+      "sources": [
+        { "kind": "biome-node", "biomes": ["FOREST"], "harvester": "Peon", "overlayStyle": "tree-cluster", "yield": 100 }
+      ],
+      "consumers": [
+        { "kind": "building", "types": ["House", "Farm", "Barracks", "Watchtower", "Library", "Wonder", "Granary"] },
+        { "kind": "road", "style": "wood" }
+      ]
+    },
+    {
+      "id": "stone",
+      "label": "Stone",
+      "kind": "harvest",
+      "icon": "🪨",
+      "sources": [
+        { "kind": "biome-node", "biomes": ["HIGHLAND"], "harvester": "Peon", "overlayStyle": "stone-pile", "yield": 80 }
+      ],
+      "consumers": [
+        { "kind": "building", "types": ["Granary", "Barracks", "Watchtower", "Wall", "Wonder", "Library"] },
+        { "kind": "road", "style": "stone" }
+      ]
+    },
+    {
+      "id": "ore",
+      "label": "Ore",
+      "kind": "harvest",
+      "icon": "⛏️",
+      "$comment": "High-elevation deposit — Peons take fatigue while harvesting. A Renaissance discovery unlocks a 'reinforced-pick' tier that removes the fatigue risk.",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["MOUNTAIN"],
+          "harvester": "Peon",
+          "overlayStyle": "ore-vein",
+          "yield": 60,
+          "risk": { "attribute": "fatigue", "strength": 0.3, "unlockedBy": "reinforced-pick" },
+          "yieldRateMul": 1.2
+        }
+      ],
+      "consumers": [
+        { "kind": "building", "types": ["Wonder", "Watchtower"] },
+        { "kind": "unit", "types": ["Trebuchet", "BlackKnight"] }
+      ]
+    },
+    {
+      "id": "gold",
+      "label": "Gold",
+      "kind": "harvest",
+      "icon": "🪙",
+      "sources": [
+        { "kind": "biome-node", "biomes": ["GRASS"], "harvester": "Peon", "overlayStyle": "gold-glint", "yield": 60 }
+      ],
+      "consumers": [
+        { "kind": "building", "types": ["Farm", "Barracks", "Library", "Wonder"] },
+        { "kind": "unit", "types": ["Footman", "Wizard", "Healer", "Hero"] }
+      ]
+    },
+    {
+      "id": "food",
+      "label": "Food",
+      "kind": "harvest",
+      "icon": "🍖",
+      "$comment": "FOOD is the per-faction unit-upkeep slot. Three biome sources — FOREST (game / hunting), SHALLOWS (fish), GRASS (foraging) — each renders a different overlay style, but all yield the same food slot. Granary buildings boost passive yield.",
+      "sources": [
+        { "kind": "biome-node", "biomes": ["FOREST"], "harvester": "Peon", "overlayStyle": "game-trail", "yield": 80, "label": "Game" },
+        { "kind": "biome-node", "biomes": ["SHALLOWS"], "harvester": "Peon", "overlayStyle": "fish-school", "yield": 100, "label": "Fish" },
+        { "kind": "biome-node", "biomes": ["GRASS"], "harvester": "Peon", "overlayStyle": "berry-bush", "yield": 60, "label": "Forage" },
+        { "kind": "passive-trickle", "rate": 0.05, "boostedBy": ["Granary", "Farm"] }
+      ],
+      "consumers": [
+        { "kind": "unit-upkeep", "perUnit": 0.01, "$comment": "0.01 food/sec per supply unit (future M_FUN.ECON.UPKEEP)." }
+      ]
+    },
+    {
+      "id": "peat",
+      "label": "Peat",
+      "kind": "harvest",
+      "icon": "🟫",
+      "$comment": "Swamp-bog building material. Cheap + smoky alternative to stone for early-game walls + watchtowers. Faster harvest (1.4× rate) but applies disease DoT to harvesting Peons. Unlock 'peat-mask' Discovery to remove the risk.",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["SWAMP"],
+          "harvester": "Peon",
+          "overlayStyle": "peat-cut",
+          "yield": 70,
+          "risk": { "attribute": "disease", "strength": 0.4, "unlockedBy": "peat-mask" },
+          "yieldRateMul": 1.4
+        }
+      ],
+      "consumers": [
+        { "kind": "building", "types": ["Wall", "Watchtower"] }
+      ]
+    },
+    {
+      "id": "science",
+      "label": "Science",
+      "kind": "passive",
+      "icon": "🔬",
+      "sources": [
+        { "kind": "passive-trickle", "rate": 0.1, "boostedBy": ["Library"] }
+      ],
+      "consumers": [
+        { "kind": "discovery", "scope": "all" },
+        { "kind": "unit", "types": ["Wizard", "Healer", "Hero"] }
+      ]
+    },
+    {
+      "id": "mana",
+      "label": "Mana",
+      "kind": "passive",
+      "icon": "✨",
+      "sources": [
+        { "kind": "passive-trickle", "rate": 0.05, "boostedBy": ["Library"] }
+      ],
+      "consumers": [
+        { "kind": "unit", "types": ["Wizard", "Healer"] }
+      ]
+    }
+  ]
+}

@@ -10,7 +10,10 @@ import type { ResourceCost } from '@/game/economy';
 const SLOT_GLYPH: Record<ResourceType, string> = {
   wood: '🌲',
   stone: '🪨',
+  ore: '⛏️',
   gold: '🪙',
+  food: '🍖',
+  peat: '🟫',
   science: '🧪',
   // M_EXPANSION.F.72 — mana glyph: sparkles read as 'magic' across
   // every locale without color-coding (a colorblind-safe pick).

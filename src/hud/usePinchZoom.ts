@@ -28,6 +28,13 @@ export function usePinchZoom(opts: PinchZoomOptions) {
   const ref = useRef<HTMLDivElement | null>(null);
   const startDist = useRef<number | null>(null);
   const startY = useRef<number | null>(null);
+  // Coderabbit MAJOR fix: stash the live opts in a ref so the effect
+  // can re-listen ONLY on mount/unmount. Without this, the effect's
+  // `[opts]` dep array re-fires on every render when the parent
+  // doesn't memoise getCameraY/setCameraY → listeners rebind every
+  // frame on mobile, degrading touch performance.
+  const optsRef = useRef(opts);
+  optsRef.current = opts;
 
   useEffect(() => {
     const node = ref.current;
@@ -42,7 +49,7 @@ export function usePinchZoom(opts: PinchZoomOptions) {
       const [a, b] = [e.touches[0], e.touches[1]];
       if (!a || !b) return;
       startDist.current = dist(a, b);
-      startY.current = opts.getCameraY();
+      startY.current = optsRef.current.getCameraY();
     }
     function onMove(e: TouchEvent) {
       if (e.touches.length !== 2 || startDist.current === null || startY.current === null) return;
@@ -52,7 +59,7 @@ export function usePinchZoom(opts: PinchZoomOptions) {
       // Pinch OUT (fingers further apart) → zoom IN → lower Y.
       const ratio = startDist.current / Math.max(1, d);
       const next = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, startY.current * ratio));
-      opts.setCameraY(next);
+      optsRef.current.setCameraY(next);
     }
     function onEnd(e: TouchEvent) {
       if (e.touches.length < 2) {
@@ -68,7 +75,7 @@ export function usePinchZoom(opts: PinchZoomOptions) {
       node.removeEventListener('touchmove', onMove);
       node.removeEventListener('touchend', onEnd);
     };
-  }, [opts]);
+  }, []);
 
   return ref;
 }

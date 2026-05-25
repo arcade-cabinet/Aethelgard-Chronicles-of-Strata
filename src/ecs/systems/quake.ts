@@ -24,7 +24,7 @@
 import { QUAKE_TUNING } from '@/config/mapgen';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey } from '@/core/hex';
-import { biomeFlagsFor } from '@/rules/biome-flags';
+import { biomeRule } from '@/config/mapgen';
 import type { GameState } from '@/game/game-state';
 
 /** Outcome bag — caller uses this for VFX / aria-live announcements. */
@@ -94,11 +94,18 @@ export function triggerQuake(game: GameState, board: BoardData): QuakeResult {
     const next = FLIP_TABLE[t.type];
     if (!next) continue;
     t.type = next;
-    // Re-derive walkable from the new type's biome flags. Level
-    // intentionally NOT changed — a quake reshapes passability,
-    // not elevation, and changing level would force a height-mesh
-    // rebuild that we don't want mid-match.
-    t.walkable = biomeFlagsFor(t.type).walkable && t.level < 5;
+    // Re-derive walkable from the new type's biome flags. Coderabbit
+    // MAJOR fix: if we keep the prior `t.level < 5` guard, a quake
+    // that flips MOUNTAIN (level 5) → MOUNTAIN_PASS keeps the tile
+    // unwalkable because `t.level` stays 5 (we intentionally don't
+    // change elevation to avoid a height-mesh rebuild). Lower the
+    // level to the new biome's canonical elevation so walkable
+    // resolves to true for MOUNTAIN_PASS. Other quake transitions
+    // (MOUNTAIN_PASS → MOUNTAIN) also benefit from the elevation
+    // realign.
+    const rule = biomeRule(t.type);
+    t.level = rule.elevation;
+    t.walkable = rule.walkable && t.level < 5;
     flipped.push(getHexKey(t.q, t.r));
   }
 

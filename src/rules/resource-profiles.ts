@@ -55,15 +55,46 @@ export const RESOURCE_PROFILES: Record<ResourceType, ResourceProfile> = {
   stone: {
     meshLogicalId: 'nature.rock.large-a',
     harvestYield: harvestYieldFor('stone'),
-    biomes: new Set(['HIGHLAND', 'MOUNTAIN']),
+    biomes: new Set(['HIGHLAND']),
     topupAmount: 80,
+  },
+  // M_FUN.ECON.JSON-RESOURCES — ore is the MOUNTAIN-only variant
+  // (split from the old combined stone-on-HIGHLAND-and-MOUNTAIN).
+  // Higher per-node yield but harvesting it applies fatigue per
+  // resources.json#ore.sources[0].risks.
+  ore: {
+    meshLogicalId: 'nature.rock.crystal-large',
+    meshTint: '#475569',
+    harvestYield: harvestYieldFor('stone') * 1.2,
+    biomes: new Set(['MOUNTAIN']),
+    topupAmount: 60,
   },
   gold: {
     meshLogicalId: 'nature.rock.large-a',
     meshTint: '#fbbf24', // gold veins glow gold
     harvestYield: harvestYieldFor('gold'),
-    biomes: new Set(['GRASS', 'HIGHLAND']),
+    biomes: new Set(['GRASS']),
     topupAmount: 60,
+  },
+  food: {
+    // Food has three biome variants (FOREST game / SHALLOWS fish /
+    // GRASS forage) per resources.json#food.sources — the SCATTER
+    // path keys off the source biome to pick the overlay style. The
+    // shared meshLogicalId is the in-world marker; ResourceNodes.tsx
+    // upgrades it per biome on render (M_FUN.ECON.NODE-VARIANTS).
+    meshLogicalId: 'nature.tree.pine-a',
+    biomes: new Set(['FOREST', 'SHALLOWS', 'GRASS']),
+    harvestYield: 8,
+    topupAmount: 80,
+  },
+  peat: {
+    // Swamp-bog cut. Risk-bearing per resources.json#peat (disease
+    // DoT; mitigated by 'peat-mask' Discovery).
+    meshLogicalId: 'nature.rock.large-a',
+    meshTint: '#78350f',
+    biomes: new Set(['SWAMP']),
+    harvestYield: 10,
+    topupAmount: 70,
   },
   science: {
     // Science nodes are never spawned in the world today; the mesh

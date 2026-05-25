@@ -41,7 +41,14 @@ export interface ResourceDisplay {
 export const RESOURCE_DISPLAY: Record<ResourceType, ResourceDisplay> = {
   wood: { label: 'Wood', color: HUD_THEME.color.wood, domId: 'val-wood' },
   stone: { label: 'Stone', color: HUD_THEME.color.stone, domId: 'val-stone' },
+  // M_FUN.ECON.JSON-RESOURCES — ore / food / peat displays mirror
+  // the resource.json icons. Colors picked to contrast the existing
+  // wood/stone/gold palette: ore = steel grey, food = warm red,
+  // peat = swamp brown.
+  ore: { label: 'Ore', color: '#6b7280', domId: 'val-ore' },
   gold: { label: 'Gold', color: HUD_THEME.color.coin, domId: 'val-gold' },
+  food: { label: 'Food', color: '#ef4444', domId: 'val-food' },
+  peat: { label: 'Peat', color: '#78350f', domId: 'val-peat' },
   science: { label: 'Science', color: HUD_THEME.color.accent, domId: 'val-science' },
   // M_EXPANSION.F.72 — mana display. Magenta reads as 'magic' and
   // contrasts the existing accent blue used for science.

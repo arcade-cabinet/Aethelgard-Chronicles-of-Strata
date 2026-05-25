@@ -13,7 +13,12 @@ import { resourceProfileFor } from '@/rules/resource-profiles';
 describe('M_EXPANSION.F.72 — Mana resource slot', () => {
   it('RESOURCE_TYPES includes mana', () => {
     expect(RESOURCE_TYPES).toContain('mana');
-    expect(RESOURCE_TYPES.length).toBe(5);
+    // M_FUN.ECON.JSON-RESOURCES — RESOURCE_TYPES is derived from
+    // src/config/resources.json. Today the registry carries 8 slots
+    // (wood, stone, ore, gold, food, peat, science, mana). Adding a
+    // 9th slot bumps this assertion; the test pins that the loader
+    // wires through correctly.
+    expect(RESOURCE_TYPES.length).toBe(8);
   });
 
   it('fresh economy starts with mana=0 (per startingResources config)', () => {
