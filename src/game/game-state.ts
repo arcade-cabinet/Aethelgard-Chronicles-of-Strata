@@ -4,13 +4,10 @@ import { BALANCE_TOLERANCE, reachableBuildableCount } from '@/core/balance-audit
 import { type BoardData, generateBoard } from '@/core/board';
 import { getHexKey, hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
-import { chokePointMultiplier } from '@/rules/choke-points';
-import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
   AssignedJob,
   AttractorBehavior,
   Building,
-  type BuildingType,
   EnemySpawner,
   FactionBase,
   FactionTrait,
@@ -19,95 +16,62 @@ import {
   ResourceTrait,
   Unit,
 } from '@/ecs/components';
-import { aiSystem, resetAiDirector } from '@/ecs/systems/ai';
-import { animationSystem } from '@/ecs/systems/animation';
-import { buildSystem } from '@/ecs/systems/build';
-import { buildingDeathSystem } from '@/ecs/systems/building-death';
-import { combatSystem, type DamageEvent } from '@/ecs/systems/combat';
-import { deathSystem } from '@/ecs/systems/death';
-import { depositSystem, type ResourceDepositEvent } from '@/ecs/systems/deposit';
-import { encroachmentSystem } from '@/ecs/systems/encroachment';
-import { harvestSystem } from '@/ecs/systems/harvest';
-import { jobRoutingSystem } from '@/ecs/systems/job-routing';
-import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
-import { scienceSystem } from '@/ecs/systems/science';
-import { stanceBehaviorSystem } from '@/ecs/systems/stance-behavior';
+import { resetAiDirector } from '@/ecs/systems/ai';
+import { type DamageEvent } from '@/ecs/systems/combat';
+import { type ResourceDepositEvent } from '@/ecs/systems/deposit';
 import { createEcsWorld } from '@/ecs/world';
 import { createCharacter } from '@/entities/character-factory';
-import { advanceProjectiles, type Projectile } from './projectiles';
+import { type Projectile } from './projectiles';
 
-/** Monotonic counter for projectile React keys — shared across all games. */
-const projectileIdRef = { current: 0 };
-
+/**
+ * Monotonic counter for projectile React keys — shared across all games.
+ * Exported so economy-tick-phases.ts can reference the same singleton
+ * (M_FUN.REFACTOR.RUN-ECONOMY-TICK phase extraction).
+ */
+export const PROJECTILE_ID_REF = { current: 0 };
 // M_EXPANSION.D.171 — mapgen helpers (matchLengthScale,
 // findBalancedBoard) moved to a sibling (./mapgen-helpers.ts) so
 // this file stays under the 600-line cognitive-load threshold. The
 // exports are re-imported below alongside the rest of game-state's
 // imports.
 
-/**
- * M_EXPANSION.F.71 — seconds between Wonder completion and the
- * wonder-win flip. 300s = 5 minutes per the directive.
- */
-const WONDER_COUNTDOWN_SECONDS = 300;
-
 // M_AUDIT2.ARCH.8 — AI_VISION_RADIUS moved into config/combat.json
 // (COMBAT.ai.visionRadiusByDifficulty); accessor `aiVisionRadiusFor`.
 // The const lived here for one consumer; moving it to config keeps
 // every difficulty-tuning knob in one tunable file.
 
-import { aiVisionRadiusFor, spawnIntervalFor } from '@/config/combat';
+import { spawnIntervalFor } from '@/config/combat';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
-import { FACTIONS, type Faction } from '@/ecs/components';
-import { pathFollowSystem } from '@/ecs/systems/path-follow';
-import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
+import { type Faction } from '@/ecs/components';
 import {
   createVolcanoState,
   placeVolcanoLandmark,
   type VolcanoState,
-  volcanoSystem,
 } from '@/ecs/systems/volcano';
-import { type BurnState, wildfireSystem } from '@/ecs/systems/wildfire';
-import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
-import { spawnSystem } from '@/ecs/systems/spawn';
-import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
-import {
-  behaviorsFor,
-  ensureAttractorResources,
-  presetFor,
-  recomputeMaxSupply,
-  SUPPLY_COST,
-} from '@/rules';
+import { type BurnState } from '@/ecs/systems/wildfire';
+import { type GameOutcome } from '@/ecs/systems/win-loss';
+import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import type { AutoSave } from './auto-save';
-import { tickAutoSave } from './auto-save';
-import { advanceClock, createClock, cyclePhase, type GameClock } from './clock';
+import { createClock, type GameClock } from './clock';
 import { findBalancedBoard, matchLengthScale } from './mapgen-helpers';
 import type { Difficulty } from './difficulty';
 import { createEconomy, type GameEconomy } from './economy';
 import { createRally, type RallyState } from './rally';
 import { createResearch, type ResearchState } from './research';
+import { createWeather, type Weather } from './weather';
+import { createRandomEventsState, type RandomEventsState } from './random-events';
+import { createZoneState, seedZonesFromAttractors, type ZoneState } from './zone';
 import {
-  advanceWeather,
-  createWeather,
-  WEATHER_PROFILES,
-  WEATHER_SPEED_MULTIPLIER,
-  type Weather,
-} from './weather';
-import {
-  createRandomEventsState,
-  type RandomEventsState,
-  tickLongReignEscalation,
-  tickRandomEvents,
-} from './random-events';
-import {
-  BASE_UNIT_VISION_RADIUS,
-  createZoneState,
-  seedZonesFromAttractors,
-  updateObserved,
-  type ZoneState,
-} from './zone';
+  tickClockPhase,
+  tickCommandPhase,
+  tickCombatPhase,
+  tickDepositPhase,
+  tickScoringPhase,
+  tickTerrainPhase,
+} from './economy-tick-phases';
+import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 
 export type { Difficulty } from './difficulty';
 
@@ -228,6 +192,14 @@ export interface GameState {
   board: BoardData;
   /** The A* navigation graph. */
   navGraph: NavGraph;
+  /**
+   * M_FUN.PERF.VOLCANO-LAZY-NAV — set to true by any system that mutates
+   * board topology (volcanoSystem eruption/revert, buildingDeathSystem).
+   * tickTerrainPhase rebuilds navGraph exactly once at the end of the
+   * terrain phase if this flag is set, then clears it. This consolidates
+   * all per-eruption inline rebuilds into a single rebuild per tick.
+   */
+  navGraphDirty: boolean;
   /** The koota ECS world. */
   world: World;
   /** The player-controlled pawn entity. */
@@ -816,6 +788,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     playerColor: config.playerColor ?? null,
     board,
     navGraph,
+    navGraphDirty: false,
     world,
     playerPawn,
     economy,
@@ -930,18 +903,15 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
         if (!faction) continue;
         const anchor = anchors[faction];
 
-        // Matches nearestResource() in src/rules/peon-rules.ts —
-        // peon-distance + decaying base-bias past BIAS_RADIUS.
-        // Centralising this in one shared helper would be cleaner;
-        // for now both call sites use the same constants.
-        const BASE_BIAS = 0.5;
-        const BIAS_RADIUS = 6;
+        // M_FUN.MAP.HARVEST-ASSIGN-HELPER — same formula as nearestResource()
+        // in src/rules/peon-rules.ts; constants shared via exported values so
+        // tuning one site automatically updates the other.
         let nearest: ResourceNodePlan | null = null;
         let nearestScore = Number.POSITIVE_INFINITY;
         for (const node of candidates) {
           const baseDist = hexDistance(anchor.q, anchor.r, node.q, node.r);
           const peonDist = hexDistance(hexPos.q, hexPos.r, node.q, node.r);
-          const baseBias = BASE_BIAS * Math.max(0, baseDist - BIAS_RADIUS);
+          const baseBias = HARVEST_BASE_BIAS * Math.max(0, baseDist - HARVEST_BIAS_RADIUS);
           const score = peonDist + baseBias;
           if (score < nearestScore) {
             nearestScore = score;
@@ -964,27 +934,18 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
 
 /**
  * Run one game tick — advances every ECS system in the fixed order from
- * `docs/specs/50-ecs-model.md`: spawn → ai → pathFollow → jobRouting → harvest
- * → build → combat → deposit → death → animation → winLoss. Build runs before
- * deposit (system #7 before #9) so a freshly-assigned builder advances the same
- * tick. Called once per rendered frame (or per step in tests).
+ * `docs/specs/50-ecs-model.md`: clock → command → terrain → combat → deposit
+ * → scoring. Each phase is a named function in `economy-tick-phases.ts`
+ * (M_FUN.REFACTOR.RUN-ECONOMY-TICK). Called once per rendered frame (or per
+ * step in tests).
  */
 export function runEconomyTick(game: GameState, deltaRaw: number): void {
-  // Skip all ticks once the game has ended.
   if (game.outcome !== 'playing') return;
-  // M_GAMEPLAY.7 — pause flag freezes the simulation; rendering continues.
   if (game.paused) return;
-  // Coderabbit MAJOR PR #10 04:56Z fix — reset the per-tick damage
-  // batch ONCE at tick start so the two combat paths (offensive-
-  // behavior + combatSystem) can both APPEND without one clobbering
-  // the other. CombatText / particle-consumers / match-narrative
-  // read it as "this tick's events" — array-reference identity is
-  // still per-tick fresh.
+  // Reset the per-tick damage batch ONCE at tick start so the two combat
+  // paths (offensive-behavior + combatSystem) can both APPEND.
   game.lastDamageEvents = [];
-  // M_EXPANSION.U.111 — apply the gameSpeed multiplier (1x default,
-  // 2x / 4x for fast-forward). Pure wall-clock scaling; the event PRNG
-  // sees the SAME deterministic delta sequence (just delivered in
-  // larger steps), so seed-replay reproduces with the same outcome.
+  // M_EXPANSION.U.111 — apply the gameSpeed multiplier.
   const delta = deltaRaw * (game.gameSpeed ?? 1);
   // M_MODES.8 — turn-based: drain the active turn's budget; when the budget
   // hits 0, auto-end the turn (flip active + reset budget). Simulation
@@ -1019,402 +980,26 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     }
   }
 
-  // M_TURNS.1 — true turn-based gate. When the active turn is the
-  // player's, FREEZE the autonomous systems (AI decisions, enemy
-  // spawning, target selection, combat resolution, encroachment,
-  // harvest progress, science accumulation, offensive-behavior
-  // ticks). The player's clicks still flow through commands.ts and
-  // resolve immediately; unit path-follow ticks too so an issued
-  // move command visibly executes during the player turn. End-Turn
-  // flips game.turn.active to enemy, at which point this gate opens
-  // and the sim runs through the enemy's turn duration.
-  // Real-time modes (no game.turn) ALWAYS pass the gate.
+  // M_TURNS.1 — true turn-based gate. Real-time modes (no game.turn) ALWAYS pass.
   const turnGateOpen = !game.turn || game.turn.active === 'enemy';
 
-  // advance time-based systems (clock + weather + autosave always
-  // tick — wall-clock visuals shouldn't freeze with the sim).
-  advanceClock(game.clock, delta);
-  advanceWeather(game.weather, game.eventRng, delta);
-  // M_EXPANSION.F.81 — random-event scheduler ticks alongside weather
-  // (both are wall-clock-driven scheduled events). Outcome is one-
-  // shot world mutations + an aria-live announcement.
-  tickRandomEvents(game, game.eventRng, delta);
-  // M_POLISH2.MODES.41a — long-reign mode also fires a deterministic
-  // escalation event every 5 minutes (on top of the random cadence).
-  tickLongReignEscalation(game, game.eventRng, game.clock.elapsed);
-  if (game.autoSave) tickAutoSave(game.autoSave, delta);
+  // Phase 1: Clock — advance time, weather, random events, autosave.
+  // Always ticks; wall-clock visuals must not freeze with the sim.
+  tickClockPhase(game, delta);
 
-  if (turnGateOpen) {
-    // goal-driven AI players decide + issue commands on their own cadence
-    for (const ai of Object.values(game.aiPlayers)) ai?.tick(game, delta);
+  // Phase 2: Command — AI decisions, spawning, stance + pathFollow.
+  tickCommandPhase(game, delta, turnGateOpen);
 
-    // enemy spawning + AI unit-steering target selection
-    spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
-    aiSystem(game.world, game.board, game.navGraph);
-    // M_POLISH2.RTS.16 — player military unit stance-driven target selection.
-    // Runs after aiSystem so the enemy targets are settled for this tick, then
-    // player units pick their own targets based on stance mode.
-    // M_POLISH2.RTS.24a — pass the terrain-cost lambda so player
-    // stance moves prefer cheap routes over forest/highland tiles.
-    stanceBehaviorSystem(game.world, game.navGraph, makeMoveCostFn(game.board.tiles));
-  }
+  // Phase 3: Terrain — status attributes, volcano, wildfire, quake-decay,
+  // hidden-bonus, encroachment, job-routing, harvest, build, science.
+  tickTerrainPhase(game, delta, turnGateOpen);
 
-  // M_TURNS.1 — pathFollow ALWAYS ticks so the player can see issued
-  // move commands resolve mid-turn; the autonomous economy systems
-  // below gate on turnGateOpen.
-  // movement + economy — apply rain speed penalty from weather state
-  pathFollowSystem(
-    game.world,
-    delta,
-    WEATHER_SPEED_MULTIPLIER[game.weather.state],
-    game.board.tiles,
-    // M_FUN.MECH.FATIGUE.TURN-MODE — pass turn number ONLY in
-    // turn-based mode so the rest-skip gate fires. RTS leaves
-    // it undefined and the continuous fatigue path runs.
-    game.turn ? game.turn.turnsElapsed : undefined,
-  );
-  // M_FUN.ATTR.DISEASE + .DEHYDRATION — tick disease HP damage,
-  // Healer-clear logic, and recovery timers. Runs every tick (not
-  // turn-gated) so disease ticks during free movement.
-  statusAttributesSystem(game.world, game.board.tiles, delta);
-  // M_FUN.DYN.VOLCANO — tick the eruption cycle BEFORE the
-  // wildfire system so any FOREST→WILDFIRE chain reactions caused
-  // by an eruption land in the same tick.
-  volcanoSystem(game, delta);
-  // M_FUN.DYN.WILDFIRE — advance any active burn fronts. Fires
-  // can ignite via random events OR via volcano eruptions;
-  // the system is a no-op when game.wildfires is empty.
-  wildfireSystem(game, game.board.tiles, delta);
-  // M_FUN.DYN.QUAKE — decay the camera-shake countdown so the HUD
-  // can render a brief shake after each quake. No system call here:
-  // the actual reshape happens inline at event-fire time via
-  // triggerQuake; this only manages the post-event shake decay.
-  if (game.quakeShakeRemaining > 0) {
-    game.quakeShakeRemaining = Math.max(0, game.quakeShakeRemaining - delta);
-  }
-  // M_EXPANSION.F.97 — discoverable hidden bonus consumer. Runs
-  // every tick (not turn-gated) so a player issuing a move sees
-  // the bonus credit as the unit arrives, not on the next enemy
-  // turn. Cheap one-pass query over player units.
-  hiddenBonusSystem(game.world, game.board, game.economy.player);
-  if (turnGateOpen) {
-    // encroachment runs BEFORE peon routing so peons see this tick's pulse set
-    // (their decision rule routes them away from threatened tiles).
-    encroachmentSystem(game.world, game.zones, delta, game.difficulty);
-    jobRoutingSystem({
-      world: game.world,
-      board: game.board,
-      graph: game.navGraph,
-      baseKeys: { player: game.townHallKey, enemy: game.enemyBaseKey },
-      zones: game.zones,
-    });
-    harvestSystem(game.world, delta);
-    buildSystem(game.world, game.buildSites, delta);
-    // M_FUN.QA.AIVAI.PEON-METRICS — credit first-House completion
-    // per faction. Cheap O(buildings) sweep ONLY while either
-    // faction still has firstHouseAt == -1; flips to a no-op once
-    // both have stamped, so steady-state cost is one branch check.
-    if (
-      game.economy.player.peonMetrics.firstHouseAt < 0 ||
-      game.economy.enemy.peonMetrics.firstHouseAt < 0
-    ) {
-      for (const e of game.world.query(Building, FactionTrait)) {
-        const b = e.get(Building);
-        const f = e.get(FactionTrait);
-        if (!b?.isComplete || b.buildingType !== 'House' || !f) continue;
-        const eco = game.economy[f.faction];
-        if (eco.peonMetrics.firstHouseAt < 0) {
-          eco.peonMetrics.firstHouseAt = game.clock.elapsed;
-        }
-      }
-    }
-    // M_FEATURE.3 — passive trickle + per-Library science accumulation.
-    scienceSystem(game.world, game.economy, delta);
-  }
-  // Every offensive-behaviour entity (Watchtower today; future Wonder etc.)
-  // damages enemy military in its radius — decoupled from building type.
-  // Also emits visible projectile FX (cadence-gated; presentation only).
-  // M_EXPANSION.U.101 — sink offensive-behavior damage events into
-  // game.lastDamageEvents so CombatText renders floating numbers for
-  // Watchtower / Wizard / future ranged hits too. The sink is a
-  // private array (concat at end) so we don't mutate the immutable
-  // combat result.
-  const obDamage: DamageEvent[] = [];
-  if (turnGateOpen) {
-    offensiveBehaviorSystem(
-      game.world,
-      delta,
-      game.eventRng,
-      game.projectiles,
-      game.projectileCooldowns,
-      projectileIdRef,
-      obDamage,
-    );
-    if (obDamage.length > 0) {
-      game.lastDamageEvents = [...game.lastDamageEvents, ...obDamage];
-    }
-  }
-  // advance + cull projectile FX always (in-flight projectiles
-  // from the enemy turn keep visually flying during player turn).
-  advanceProjectiles(game.projectiles, delta);
+  // Phase 4: Combat — offensive behavior, vision, supply, combat, projectiles.
+  tickCombatPhase(game, delta, turnGateOpen, PROJECTILE_ID_REF);
 
-  // recompute each faction's observed battlefield from current unit/base cones
-  // M_AI_DEPTH.1 — difficulty-scaled vision cones for the AI faction.
-  // Easy = narrow short cones (AI sees less); Hard = wide cones. The player
-  // always uses the base radius. The AI never "cheats" — it just literally
-  // sees more or less of the board based on difficulty.
-  const aiVision = aiVisionRadiusFor(game.difficulty);
-  // M_EXPANSION.F.87 — day/night vision modifier. Phase 0=noon,
-  // 0.5=midnight (per src/game/clock.ts cyclePhase). NIGHT band
-  // [0.6, 0.9] halves ENEMY vision (so a player raid at midnight
-  // gets surprise). DAWN band [0.15, 0.30] halves PLAYER vision
-  // (so the player CAN'T just exploit always-on omnivision). The
-  // modifiers stack with difficulty scaling.
-  const phase = cyclePhase(game.clock);
-  const isNight = phase >= 0.6 && phase < 0.9;
-  const isDawn = phase >= 0.15 && phase < 0.3;
-  // M_EXPANSION.T.135 — multiply in weather vision (fog 0.5, rain
-  // 0.85, sunny 1.0). Both factions equally affected — weather is
-  // symmetric.
-  const weatherVisionMul = WEATHER_PROFILES[game.weather.state].visionMultiplier;
-  const playerVisionMul = (isDawn ? 0.5 : 1.0) * weatherVisionMul;
-  const enemyVisionMul = (isNight ? 0.5 : 1.0) * weatherVisionMul;
-  updateObserved(
-    game.zones.player,
-    game.world,
-    'player',
-    game.board.tiles.values(),
-    BASE_UNIT_VISION_RADIUS * playerVisionMul,
-  );
-  updateObserved(
-    game.zones.enemy,
-    game.world,
-    'enemy',
-    game.board.tiles.values(),
-    aiVision * enemyVisionMul,
-  );
+  // Phase 5: Deposit — resource events, peon metrics.
+  tickDepositPhase(game);
 
-  // recompute each faction's supply cap from its own complete buildings —
-  // a finished Farm raises that faction's max supply.
-  // M_EXPANSION.F.86 — supply scaling needs the tier alongside the
-  // type. Pass {type, tier} rows so recomputeMaxSupply can multiply.
-  const completeByFaction: Record<Faction, Array<{ type: BuildingType; tier: number }>> = {
-    player: [],
-    enemy: [],
-  };
-  for (const e of game.world.query(Building, FactionTrait)) {
-    const b = e.get(Building);
-    const faction = e.get(FactionTrait)?.faction;
-    if (b?.isComplete && faction) {
-      completeByFaction[faction].push({ type: b.buildingType, tier: b.tier ?? 1 });
-    }
-  }
-  recomputeMaxSupply(game.economy.player, completeByFaction.player);
-  recomputeMaxSupply(game.economy.enemy, completeByFaction.enemy);
-  // M_FUN.QA.AIVAI.TUNE — recompute usedSupply from owned units so
-  // directly-spawned (createCharacter, e.g. starting kit) units count
-  // against the cap. Without this, trainUnit's canTrainComplete
-  // check sees stale usedSupply and over-trains, OR (worse for
-  // AI-vs-AI) under-counts and the cap never tightens.
-  const supplyByFaction: Record<Faction, number> = { player: 0, enemy: 0 };
-  for (const e of game.world.query(Unit, FactionTrait)) {
-    const u = e.get(Unit);
-    const f = e.get(FactionTrait)?.faction;
-    if (!u || !f) continue;
-    supplyByFaction[f] += SUPPLY_COST[u.unitType] ?? 1;
-  }
-  game.economy.player.usedSupply = supplyByFaction.player;
-  game.economy.enemy.usedSupply = supplyByFaction.enemy;
-  // M_EXPANSION.U.122 — track peak usedSupply for post-match stats.
-  if (game.economy.player.usedSupply > game.economy.player.peakSupply) {
-    game.economy.player.peakSupply = game.economy.player.usedSupply;
-  }
-  if (game.economy.enemy.usedSupply > game.economy.enemy.peakSupply) {
-    game.economy.enemy.peakSupply = game.economy.enemy.usedSupply;
-  }
-
-  // combat — turn-gated so the player can pause to plan without
-  // their units being chewed up mid-thought.
-  if (turnGateOpen) {
-    // M_EXPANSION.T.135 — pass weather-driven ranged accuracy
-    // multiplier (rain 0.7, fog 0.65, sunny 1.0). Combat applies
-    // only to ranged attackers; melee swings ignore weather.
-    const rangedAccuracy = WEATHER_PROFILES[game.weather.state].rangedAccuracyMultiplier;
-    // M_POLISH2.RTS.21 — choke-point defender bonus. Lambda counts
-    // walkable passable neighbours from game.board.tiles; if ≤2,
-    // the defender's tile is a choke and damage is reduced by 10%.
-    const chokeFn = (q: number, r: number): number => {
-      let passable = 0;
-      for (const key of hexNeighbors(q, r)) {
-        const t = game.board.tiles.get(key);
-        if (t?.walkable) passable++;
-      }
-      return chokePointMultiplier(passable);
-    };
-    // Coderabbit MAJOR PR #10 04:56Z — preserve offensive-behavior
-    // damage events. The earlier branch (line ~1109) APPENDS DPS
-    // events to lastDamageEvents; replacing the array here would
-    // discard them on every combat tick. Concat instead.
-    const combatEvents = combatSystem(
-      game.world,
-      game.eventRng,
-      delta,
-      rangedAccuracy,
-      chokeFn,
-      game.board.tiles,
-    );
-    game.lastDamageEvents = [...game.lastDamageEvents, ...combatEvents];
-  }
-
-  // M_MODES.4 — endless mode: FactionBases are invulnerable. Clamp each
-  // base entity's Health back to max after combat applies damage. Spec:
-  // win condition swaps to resign/starve (handled in evaluateWinLoss
-  // when matchLength === 'endless'; future M_MODES.4 follow-up).
-  if (presetFor(game.mode).invulnerableBases) {
-    for (const e of game.world.query(FactionBase, Health)) {
-      const h = e.get(Health);
-      if (h && h.current < h.max) e.set(Health, { ...h, current: h.max });
-    }
-  }
-
-  // resource deposit — each faction's carrying peons deposit at their own base.
-  // M_REGISTRY.16: iterate FACTIONS instead of hand-unrolling player+enemy.
-  // Reviewer follow-up: avoid the per-tick `baseKeyForFaction` allocation;
-  // baseKeyFor() reads the stable game-state fields directly.
-  const resourceEvents: ResourceDepositEvent[] = [];
-  for (const f of FACTIONS) {
-    depositSystem(game.world, game.economy[f], baseKeyFor(game, f), f, resourceEvents);
-  }
-  game.lastResourceEvents = resourceEvents;
-  // M_FUN.QA.AIVAI.PEON-METRICS — credit deposit cadence per faction.
-  // The deposit list is already faction-tagged; iterate once and bump
-  // the per-faction counter + the first-wood timestamp (RTS landmark).
-  for (const ev of resourceEvents) {
-    const eco = game.economy[ev.faction];
-    eco.peonMetrics.depositCount += 1;
-    if (ev.type === 'wood' && eco.peonMetrics.firstWoodAt < 0) {
-      eco.peonMetrics.firstWoodAt = game.clock.elapsed;
-    }
-  }
-
-  // death resolution — deathSystem returns the enemies removed this tick;
-  // a removed enemy is a player kill.
-  const deathResult = deathSystem(game.world, delta);
-  game.economy.player.kills += deathResult.enemyKills;
-  // M_FUN.QA.AIVAI.ZONE-BREAKDOWN (v0.5.B) — classify each enemy
-  // death by zone-of-control class so the balance ledger can show
-  // "this AI fights at the front" vs "only at base". Skirmish =
-  // neutral, encroachment = inside opponent's controlled zone,
-  // assault = within 3 hexes of opponent's faction base.
-  if (deathResult.enemyDeathKeys.length > 0) {
-    const enemyBaseKey = game.enemyBaseKey;
-    const { q: ebq, r: ebr } = parseHexKey(enemyBaseKey);
-    for (const key of deathResult.enemyDeathKeys) {
-      const { q, r } = parseHexKey(key);
-      const inEnemyZone = game.zones.enemy.controlled.has(key);
-      const inPlayerZone = game.zones.player.controlled.has(key);
-      const distToEnemyBase = hexDistance(q, r, ebq, ebr);
-      if (distToEnemyBase <= 3) {
-        game.economy.player.killsByZone.assault += 1;
-      } else if (inEnemyZone && !inPlayerZone) {
-        game.economy.player.killsByZone.encroachment += 1;
-      } else {
-        game.economy.player.killsByZone.skirmish += 1;
-      }
-    }
-  }
-  // M_EXPANSION.F.96 — Hero permadeath. If the player's Hero died
-  // this tick, flip outcome to 'loss' immediately. Outcome is
-  // monotonic so a concurrent base-destruction win-loss eval won't
-  // overwrite it.
-  if (deathResult.playerHeroDied && game.outcome === 'playing') {
-    game.outcome = 'loss';
-  }
-
-  // building destruction — 0-HP buildings (excluding FactionBase, which is
-  // the win/loss anchor) are removed; tile walkability + nav graph rebuild.
-  const newNavGraph = buildingDeathSystem(game.world, game.buildSites, game.board);
-  if (newNavGraph) {
-    game.navGraph = newNavGraph;
-    // M_AUDIT2.ARCH.22 — newNavGraph != null implies anyRemoved == true;
-    // bump the generation counter so renderer memos invalidate.
-    game.buildSitesGeneration += 1;
-  }
-
-  // animation state + end-condition check
-  animationSystem(game.world);
-  // M_EXPANSION.F.71 — Wonder countdown. For each faction that has a
-  // completed Wonder building, decrement the timer; if it hits 0, the
-  // faction wins. If the Wonder is destroyed (missing from the world)
-  // the timer resets to Infinity so a fresh Wonder build re-starts
-  // the countdown.
-  for (const faction of FACTIONS) {
-    let hasCompleteWonder = false;
-    for (const e of game.world.query(Building, FactionTrait)) {
-      const b = e.get(Building);
-      const f = e.get(FactionTrait)?.faction;
-      if (f !== faction || !b || b.buildingType !== 'Wonder' || !b.isComplete) continue;
-      hasCompleteWonder = true;
-      break;
-    }
-    if (!hasCompleteWonder) {
-      game.wonderTimers[faction] = Infinity;
-      continue;
-    }
-    if (game.wonderTimers[faction] === Infinity) {
-      // First tick after completion — seed the countdown.
-      game.wonderTimers[faction] = WONDER_COUNTDOWN_SECONDS;
-    }
-    game.wonderTimers[faction] = Math.max(0, game.wonderTimers[faction] - delta);
-  }
-  // Apply wonder-win precedence: player Wonder hits 0 first → player wins.
-  if (game.outcome === 'playing') {
-    if (game.wonderTimers.player === 0) game.outcome = 'win';
-    else if (game.wonderTimers.enemy === 0) game.outcome = 'loss';
-  }
-  // M_POLISH2.MODES.42a — strata-wars 80%-zone-control-for-30s win.
-  // Only ticks in strata-wars mode. Resets to 0 the instant the
-  // player drops below 80%; reaching 30 flips outcome → 'win'.
-  if (game.mode === 'strata-wars' && game.outcome === 'playing') {
-    const player = game.zones.player.controlled.size;
-    const enemy = game.zones.enemy.controlled.size;
-    const total = player + enemy;
-    const playerPct = total > 0 ? player / total : 0;
-    if (playerPct >= 0.8) {
-      game.strataWarsControlTimer = Math.min(30, game.strataWarsControlTimer + delta);
-      if (game.strataWarsControlTimer >= 30) game.outcome = 'win';
-    } else {
-      game.strataWarsControlTimer = 0;
-    }
-  }
-  // M_POLISH2.MODES.43a — age-of-strata Renaissance+Wonder win.
-  // Triggers immediately when (player reaches Renaissance era)
-  // AND (any player faction has a COMPLETE Wonder building).
-  // Bypasses the 300s WONDER_COUNTDOWN — Renaissance era IS the
-  // long buildup; the Wonder is the punctuation.
-  if (game.mode === 'age-of-strata' && game.outcome === 'playing') {
-    const science = game.economy.player.science;
-    if (science >= 500) {
-      // ERA_SCIENCE_THRESHOLD.Renaissance = 500 (inlined here to
-      // avoid a circular import; the constant lives in
-      // src/rules/eras.ts).
-      let hasCompleteWonder = false;
-      for (const e of game.world.query(Building, FactionTrait)) {
-        const b = e.get(Building);
-        const f = e.get(FactionTrait);
-        if (f?.faction === 'player' && b?.buildingType === 'Wonder' && b.isComplete) {
-          hasCompleteWonder = true;
-          break;
-        }
-      }
-      if (hasCompleteWonder) game.outcome = 'win';
-    }
-  }
-  game.outcome = evaluateWinLoss(game.world, game.outcome);
-
-  // M_MODES.10 — controlled-tile-time score integral. Track area under the
-  // territory curve for each faction; rendered in GameOverModal. Even in
-  // non-endless modes this is a useful match summary.
-  game.score.player += game.zones.player.controlled.size * delta;
-  game.score.enemy += game.zones.enemy.controlled.size * delta;
+  // Phase 6: Scoring — death, building-death, animation, wonder, win-loss, score.
+  tickScoringPhase(game, delta);
 }

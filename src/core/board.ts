@@ -337,35 +337,46 @@ function paintBeachRing(tiles: Map<string, Tile>, radius: number, _rng: Rng): vo
 // PRD-v0.4 §6.3 so a future tuner doesn't trust a wrong "% of
 // land" eyeballing.
 
+/**
+ * M_FUN.REFACTOR.PAINT-MOUNTAIN-MASSIF — split into three named phases.
+ *
+ * `paintMountainMassif` orchestrates:
+ *   1. `paintPeakRings`         — noise + centre-bias → MOUNTAIN / MOUNTAIN_PASS / HIGHLAND
+ *   2. `findIsthmusCandidates`  — snapshot MOUNTAIN keys, find narrow-neck candidates
+ *   3. `convertIsthmusToPass`   — second-pass mutation so the snapshot stays invariant
+ */
 function paintMountainMassif(
   tiles: Map<string, Tile>,
   radius: number,
   rng: Rng,
   intensity = 0.5,
 ): void {
-  // Generate a fresh noise field for the mountain mask. The map PRNG
-  // owns this rng, so different seeds give different mountain layouts;
-  // same seed reproduces.
-  const noise = createNoise2D(rng);
-  // Guard the centre-bias denominator: a radius <= safetyRing would
-  // yield negative/zero span and NaN/Infinity bias. Clamp to 1 so
-  // tiny radii degrade gracefully (mountains still place; just no
-  // centre-bias). generateBoard validates radius in [1, 48].
   const t = MOUNTAIN_TUNING;
+  paintPeakRings(tiles, radius, rng, intensity, t);
+  const candidates = findIsthmusCandidates(tiles, t.isthmusThreshold);
+  convertIsthmusToPass(tiles, candidates);
+}
+
+/**
+ * Phase 1 — stamp the three-tier elevation rings (MOUNTAIN / MOUNTAIN_PASS /
+ * HIGHLAND) using a noise + centre-bias mask.
+ *
+ * M_FUN.MAP.TOPOLOGY.STACK: peaks STACK. Thresholds are spaced (×1.0, ×0.75,
+ * ×0.55) so a peak appears as core+ring+foothill (3 tiles deep) rather than
+ * a flat cardboard cutout. User feedback 2026-05-24: "peaks should be a
+ * feature that can spawn one of max hex tiles but there should be a legitimate
+ * stack before it."
+ */
+function paintPeakRings(
+  tiles: Map<string, Tile>,
+  radius: number,
+  rng: Rng,
+  intensity: number,
+  t: typeof MOUNTAIN_TUNING,
+): void {
+  const noise = createNoise2D(rng);
+  // Guard the centre-bias denominator: tiny radii → clamp to 1.
   const span = Math.max(1, radius - t.safetyRing);
-  // M_FUN.MAP.TOPOLOGY.STACK — peaks STACK. The same noise mask now
-  // emits three tiers of elevation in concentric rings:
-  //   mask > corePeak     → MOUNTAIN     (level 5, unwalkable cap)
-  //   mask > saddleRing   → MOUNTAIN_PASS (level 4, walkable, high cost)
-  //   mask > foothillRing → HIGHLAND     (level 4, walkable, mid cost)
-  // The thresholds are spaced (×1.0, ×0.75, ×0.55) so a peak naturally
-  // appears as core+ring+foothill (3 tiles deep at the centre of any
-  // cluster) rather than a flat 1-cell cardboard cutout.
-  // User feedback 2026-05-24: "we seem to reach a certain height and
-  // then just stop versus building mountains the same way we build
-  // anything, stacking. peaks should be a feature that can spawn one
-  // of mex hex tiles but there should be a legitimate stack before
-  // it." Captured in docs/specs/130-topology-and-decision-tracks.md §1.
   const peakCutoff = 1 - intensity * t.intensityScale;
   const saddleCutoff = 1 - intensity * t.intensityScale * 1.15;
   const foothillCutoff = 1 - intensity * t.intensityScale * 1.3;
@@ -384,27 +395,21 @@ function paintMountainMassif(
       // Set walkable inline so this function is safe to call OUTSIDE
       // the GEN_TIME_PIPELINES context (e.g. a unit test that paints
       // mountains then checks pathing). runGenTimePass also calls
-      // recomputeWalkable() globally afterward, which is fine — this
-      // just removes the foot-gun of standalone-callable footprint
-      // leaving stale walkable=true on level-5 MOUNTAIN.
+      // recomputeWalkable() globally afterward — this just removes the
+      // foot-gun of leaving stale walkable=true on level-5 MOUNTAIN.
       tile.walkable = false;
     } else if (mask > saddleCutoff) {
-      // Saddle ring around the core — walkable choke point. Don't
-      // overwrite a tile that's already MOUNTAIN/MOUNTAIN_PASS from a
-      // neighbouring peak's stack.
+      // Saddle ring — walkable choke point. Don't overwrite a tile
+      // already MOUNTAIN/MOUNTAIN_PASS from a neighbouring peak's stack.
       if (tile.type !== 'MOUNTAIN' && tile.type !== 'MOUNTAIN_PASS') {
         tile.type = 'MOUNTAIN_PASS';
         tile.level = 4;
         tile.walkable = true;
       }
     } else if (mask > foothillCutoff) {
-      // Foothill — readable as elevated grass-coloured terrain that
-      // visually announces "you are approaching a peak". ONLY paint
-      // over GRASS/DESERT (the bare-land biomes). Leave FOREST alone
-      // (forests are a separate decision-track resource biome whose
-      // wood count drives early-game economy; the biome-distribution
-      // audit pins forest% as a playability floor). Also leave
-      // hydrology-placed SWAMP and any already-stacked tile alone.
+      // Foothill — ONLY paint over bare-land biomes (GRASS/DESERT).
+      // Leave FOREST (decision-track resource biome), SWAMP, and
+      // already-stacked tiles alone.
       if (tile.type === 'GRASS' || tile.type === 'DESERT') {
         tile.type = 'HIGHLAND';
         tile.level = 4;
@@ -412,32 +417,28 @@ function paintMountainMassif(
       }
     }
   }
+}
 
-  // M_FUN.MAP.PASS — isthmus detection. After the massif is
-  // stamped, find every MOUNTAIN tile whose mountain-neighbour count
-  // is at most ISTHMUS_THRESHOLD; convert to MOUNTAIN_PASS. Necks +
-  // isolated peaks fit this filter: an interior mountain has 6
-  // mountain neighbours, a hard-coast edge ~4-5, an isthmus 2-3, an
-  // isolated peak 0-1.
-  //
-  // Result: the massif gains discrete passes where units can move
-  // through at reduced speed (terrain-cost MOUNTAIN_PASS=1.7×) and
-  // Wall/Watchtower can fortify the choke (biome-flags buildable=true).
-  // Doesn't carve a hole in the massif's core (interior mountains
-  // have 6 neighbours) — only the natural narrow points.
-  const isthmusThreshold = t.isthmusThreshold;
-  // Snapshot the MOUNTAIN keys into a Set so neighbour-counts are read
-  // from the PRE-CONVERSION topology. Coderabbit reviewer found the
-  // earlier code mutated `tile.type` in the same loop that read live
-  // `n?.type === 'MOUNTAIN'` — earlier conversions to MOUNTAIN_PASS
-  // lowered later tiles' neighbour counts and cascaded extra
-  // conversions. The snapshot is the cheap O(N) fix; mutations stay
-  // in a second pass and the topology read is invariant.
+/**
+ * Phase 2 — find isthmus-candidate MOUNTAIN keys (neighbour-count ≤ threshold).
+ *
+ * M_FUN.MAP.PASS — after the massif is stamped, find every MOUNTAIN tile
+ * whose mountain-neighbour count is at most `isthmusThreshold`; these are the
+ * necks + isolated peaks that become MOUNTAIN_PASS.
+ *
+ * Snapshots the MOUNTAIN keyset so neighbour-counts are read from the
+ * PRE-CONVERSION topology — avoids cascade where earlier conversions lower
+ * later tiles' counts and carve a hole in the massif's core.
+ */
+function findIsthmusCandidates(
+  tiles: Map<string, Tile>,
+  isthmusThreshold: number,
+): string[] {
   const mountainKeySet = new Set<string>();
   for (const tile of tiles.values()) {
     if (tile.type === 'MOUNTAIN') mountainKeySet.add(getHexKey(tile.q, tile.r));
   }
-  const conversions: string[] = [];
+  const candidates: string[] = [];
   for (const key of mountainKeySet) {
     const tile = tiles.get(key);
     if (!tile) continue;
@@ -445,9 +446,17 @@ function paintMountainMassif(
     for (const nKey of hexNeighbors(tile.q, tile.r)) {
       if (mountainKeySet.has(nKey)) mountainNeighbours += 1;
     }
-    if (mountainNeighbours <= isthmusThreshold) conversions.push(key);
+    if (mountainNeighbours <= isthmusThreshold) candidates.push(key);
   }
-  for (const key of conversions) {
+  return candidates;
+}
+
+/**
+ * Phase 3 — convert isthmus candidates to MOUNTAIN_PASS (second pass, safe
+ * to mutate now that the snapshot from Phase 2 is complete).
+ */
+function convertIsthmusToPass(tiles: Map<string, Tile>, candidates: string[]): void {
+  for (const key of candidates) {
     const tile = tiles.get(key);
     if (!tile) continue;
     tile.type = 'MOUNTAIN_PASS';

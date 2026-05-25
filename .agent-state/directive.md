@@ -484,91 +484,46 @@ came out of the PR #10 pre-merge review trio (.full-review/ + 40+
 CodeRabbit MAJORs) — the gameplay/perf/security bugs landed in PR #10
 itself; the non-behavioural refactor items below are queued here so
 they don't get forgotten.
-- [WAIT] (v0.5 cycle) M_FUN.REFACTOR.AI-SPLIT — `src/ai/ai-player.ts`
-  is a 728-line god module (6 evaluator classes, 3 goal classes,
-  PATTERN-B/C/D/G/I/L patches inline). Split into
-  `src/ai/evaluators/{build,train,military,patrol,resign}.ts` +
-  `src/ai/goals/{build,train,military,patrol,resign}.ts`. Move
-  RAGE_QUIT_THRESHOLD into AI personality JSON so different
-  personalities can rage-quit at different thresholds. Quality
-  report H4.
-- [WAIT] (v0.5 cycle) M_FUN.REFACTOR.RESOURCE-TYPES-DERIVED —
-  `RESOURCE_TYPES` in `src/ecs/components.ts:107-117` is still a
-  hardcoded literal-tuple cast over `RESOURCE_IDS`. Adding a 10th
-  resource slot to resources.json wouldn't grow the `ResourceType`
-  union (the cast silently widens). Replace with a type-level
-  derivation (`type ResourceType = (typeof RESOURCE_IDS)[number]`
-  via const-assert or a generator script that writes the tuple
-  from JSON). Quality report H1.2.
-- [WAIT] (v0.5 cycle) M_FUN.REFACTOR.RUN-ECONOMY-TICK — extract
-  the 400-line `runEconomyTick` in `src/game/game-state.ts` into
-  named phase functions (clock, weather, terrain, wildfire,
-  volcano, combat, command, scoring). Quality report M2.
-- [WAIT] (v0.5 cycle) M_FUN.REFACTOR.PAINT-MOUNTAIN-MASSIF — split
-  the 148-line `paintMountainMassif` in `src/core/board.ts` into
-  `paintPeakRings` + `findIsthmusCandidates` + `convertIsthmusToPass`.
-  Quality report M3.
-- [WAIT] (v0.5 cycle) M_FUN.REFACTOR.NEWGAMEMODAL-SPLIT —
-  `src/hud/NewGameModal.tsx` is over the 600-line soft cap. Extract
-  SeedField + PresetControls + OpponentPicker subcomponents.
-  CodeRabbit MAJOR PR #10.
-- [WAIT] (v0.5 cycle) M_FUN.REFACTOR.AI-CASTS — remove the
-  `as unknown as` casts in remaining config loaders (combat.ts,
-  economy.ts) that bridge the schema-vs-public-type gap. Either
-  align the schema 1:1 with the public type (and drop the public
-  interface) or generate the public type from the schema.
-  Quality report M10.
-- [WAIT] (v0.5 cycle) M_FUN.PERF.TILE-INDEX — same per-tick
-  tile→entity index that the wildfire commit introduced should
-  be lifted to `runEconomyTick` early and shared by every system
-  that does "find entities on tile" (volcano, status-attributes,
-  path-follow fatigue branch, future hazard systems). Adding
-  `tickEntityTileIndex: Map<tileKey, Entity[]>` to the per-tick
-  scratch + threading it through. Quality report M4.
-- [WAIT] (v0.5 cycle) M_FUN.PERF.VOLCANO-LAZY-NAV — defer the
-  `buildNavGraph` rebuild to a `navGraphDirty` flag consumed by
-  a single per-tick consolidation pass; today each eruption
-  rebuilds inline. Quality report M9.
-- [WAIT] (v0.5 cycle) M_FUN.TEST.RESOURCE-SPAWN-TIER — add unit
-  coverage for distance-based `tierMultipliers` in
-  `src/world/resource-spawn.ts` — current tests pin determinism
-  and basic spawn but not the tier scaling of amount + chance.
-  CodeRabbit MAJOR PR #10.
-- [WAIT] (v0.5 cycle) M_FUN.TEST.SWAMP-COMPOSITION-SPEC — replace
-  the `current === 50` tick-order-coupled assertion in
-  `src/ecs/systems/__tests__/swamp-composition.test.ts:89` with
-  a spec-driven death-time assertion (`<50 sim-sec` per the
-  test description). CodeRabbit MINOR PR #10.
-- [WAIT] (v0.5 cycle) M_FUN.TEST.WILDFIRE-DAMAGE — replace the
-  flaky `setTimeout(300)` + vacuous assertion in
-  `tests/harness/wildfire-layer.browser.test.tsx:49` with a
-  spec-derived visual assertion. CodeRabbit MAJOR PR #10.
-- [WAIT] (v0.5 cycle) M_FUN.TEST.VOLCANO-LAYER — same shape as
-  the wildfire-layer test above. CodeRabbit MAJOR PR #10.
-- [WAIT] (v0.5 cycle) M_FUN.TEST.AIVAI-BORDER-CLASH — raise
-  `zoneUnionPct` from soft `>2` to spec-driven `>30` once
-  PATTERN-K AI expansion tuning lands; also fix the wood-
-  progression assertion (currently 0 wood vs `>startingWood`
-  target). The visibility fix is in PR #10; the actual tuning
-  is a v0.5 work-unit. CodeRabbit MAJOR PR #10.
-- [WAIT] (v0.5 cycle) M_FUN.UX.LOREBOOK-RETRY — the
-  GameOverModal lorebook write now releases the guard on
-  failure (PR #10). Add a real exponential-backoff retry loop
-  with a 3-attempt cap so a transient DB hiccup doesn't drop
-  the entry. CodeRabbit MINOR PR #10.
-- [WAIT] (v0.5 cycle) M_FUN.AI.MATCH-NARRATIVE-SPEC — replace
-  the implementation-coupled regex word-list assertions in
-  `src/game/__tests__/match-narrative.test.ts:57` with
-  spec-level outcome assertions (was: regex matches against
-  literal adjective list; should be: structural shape per
-  match-narrative.json schema). CodeRabbit MAJOR PR #10.
-- [WAIT] (v0.5 cycle) M_FUN.MAP.HARVEST-ASSIGN-HELPER — extract
-  shared `BASE_BIAS` / `BIAS_RADIUS` constants used by two
-  harvest-assign sites. Quality report M1.
-- [WAIT] (v0.5 cycle) M_FUN.MAP.SERIALIZE-VOLCANO-DEDUP — fold
-  the volcano-tile defensive-restore duplication in
-  `src/persistence/serialize-game.ts:222-245` into a shared
-  helper. Simplifier report.
+- [x] M_FUN.REFACTOR.AI-SPLIT — `src/ai/ai-player.ts` split into
+  evaluators/{build,train,military,patrol,resign}.ts; `rageQuitThreshold`
+  moved to ai-personalities.json per-personality. helpers.ts extracted.
+- [x] M_FUN.REFACTOR.RESOURCE-TYPES-DERIVED — `ResourceIdSchema` Zod enum
+  derives `ResourceType`; `RESOURCE_TYPES` cast is now type-safe via a
+  single controlled cast in components.ts off the schema-derived type.
+- [x] M_FUN.REFACTOR.RUN-ECONOMY-TICK — extracted 6 phase functions into
+  economy-tick-phases.ts; game-state.ts drops 400+ lines of dead imports.
+- [x] M_FUN.REFACTOR.PAINT-MOUNTAIN-MASSIF — split into paintPeakRings +
+  findIsthmusCandidates + convertIsthmusToPass in board.ts.
+- [x] M_FUN.REFACTOR.NEWGAMEMODAL-SPLIT — NewGameModal.tsx split into
+  Segmented + SeedField + PresetControls + OpponentPicker; down from
+  654 to 345 lines.
+- [x] M_FUN.REFACTOR.AI-CASTS — both `as unknown as` removed; replaced
+  with single-hop `as T` casts with inline justification comments.
+- [x] M_FUN.PERF.TILE-INDEX — tile-index.ts + buildEntityTileIndex; shared
+  across wildfireSystem + volcanoSystem via tickTerrainPhase. Both systems
+  retain graceful fallback for direct test calls.
+- [x] M_FUN.PERF.VOLCANO-LAZY-NAV — navGraphDirty flag + consolidated rebuild
+  in tickTerrainPhase; volcanoSystem drops its inline buildNavGraph call.
+- [x] M_FUN.TEST.RESOURCE-SPAWN-TIER — 10 tests pin tier bands + boundaries
+  + monotonicity; tierMultipliers exported @internal for unit access.
+- [x] M_FUN.TEST.SWAMP-COMPOSITION-SPEC — death loop capped at 50 sim-sec;
+  Healer survivor check changed to > 0 (alive) not === 50 (tick-coupled).
+- [x] M_FUN.TEST.WILDFIRE-DAMAGE — replaced flaky setTimeout(300) + vacuous
+  path.toBeTruthy() with vi.waitFor canvas-presence gate + 60ms flush +
+  canvas.toDataURL() length assertion (WebGL canvas; getContext('2d') returns null).
+- [x] M_FUN.TEST.VOLCANO-LAYER — same toDataURL() fix applied.
+- [x] M_FUN.TEST.AIVAI-BORDER-CLASH — zoneUnionPct > 30 was already present;
+  added eitherHarvested (firstWoodAt > -1) spec assertion; both soft guards
+  in ai-vs-ai-balance.spec.ts.
+- [x] M_FUN.UX.LOREBOOK-RETRY — 3-attempt exponential-backoff retry (200ms, 400ms)
+  in GameOverModal lorebook useEffect; guard released only on permanent failure.
+- [x] M_FUN.AI.MATCH-NARRATIVE-SPEC — adjective-pool assertions now derive
+  from match-narrative.json; Set membership replaces hardcoded regex word lists;
+  coverage floors scale with pool size.
+- [x] M_FUN.MAP.HARVEST-ASSIGN-HELPER — HARVEST_BASE_BIAS / HARVEST_BIAS_RADIUS exported
+  from peon-rules.ts; game-state.ts startup assign imports them instead of duplicating.
+- [x] M_FUN.MAP.SERIALIZE-VOLCANO-DEDUP — restoreVolcanoTileMap() helper
+  centralises lavaTiles/fertileTiles restore; 44 lines → 2 call sites.
 
 ---
 

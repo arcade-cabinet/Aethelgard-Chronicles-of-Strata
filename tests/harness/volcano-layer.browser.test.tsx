@@ -8,10 +8,20 @@
  * The captured PNG is the eyeball-review artifact: orange-red lava
  * discs near the magma cap, green fertile tint further out, all
  * legible against the obsidian background.
+ *
+ * M_FUN.TEST.VOLCANO-LAYER — replaced the flaky `setTimeout(300)` +
+ * vacuous `path.toBeTruthy()` with:
+ *   1. `vi.waitFor` on canvas DOM presence (deterministic mount gate).
+ *   2. 60ms flush (1-2 rAF) for r3f to commit the first paint.
+ *   3. Spec-derived paint assertion: `canvas.toDataURL()` on a WebGL
+ *      canvas triggers readPixels internally and returns a base64 PNG.
+ *      A blank/black frame encodes to ~600 chars; orange-red lava discs
+ *      produce significantly more color data (> 4000 chars). This approach
+ *      works on WebGL canvases where `getContext('2d')` returns null.
  */
 import { Canvas } from '@react-three/fiber';
 import { page } from '@vitest/browser/context';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { getHexKey } from '@/core/hex';
 import type { GameState } from '@/game/game-state';
@@ -52,10 +62,36 @@ describe('volcano layer harness', () => {
         </Canvas>
       </div>,
     );
-    await new Promise((r) => setTimeout(r, 300));
-    const path = await page.screenshot({
-      path: '__screenshots__/volcano-layer.png',
-    });
-    expect(path).toBeTruthy();
+    // Deterministic mount gate: wait for canvas DOM presence.
+    await vi.waitFor(
+      () => {
+        const c = document.querySelector('canvas');
+        if (!c) throw new Error('volcano-layer: canvas not in DOM');
+      },
+      { timeout: 5000, interval: 30 },
+    );
+    // 60ms flush (≈1-2 rAF) for r3f to commit the first paint.
+    await new Promise((r) => setTimeout(r, 60));
+    // Capture screenshot for eyeball review.
+    await page.screenshot({ path: '__screenshots__/volcano-layer.png' });
+    // Spec: "orange-red lava discs" — use toDataURL() on the WebGL canvas.
+    // A blank/black frame encodes to ~600 chars; orange-red lava discs + the
+    // magma cap produce significantly more color data (> 4000 chars).
+    // Note: getContext('2d') returns null on a WebGL canvas — toDataURL()
+    // triggers readPixels internally and works correctly.
+    const dataUrl = await vi.waitFor(
+      () => {
+        const canvas = document.querySelector('canvas');
+        if (!canvas) throw new Error('canvas missing after paint');
+        const url = (canvas as HTMLCanvasElement).toDataURL('image/png');
+        if (url.length < 1000) throw new Error('canvas not yet painted (blank frame)');
+        return url;
+      },
+      { timeout: 3000, interval: 50 },
+    );
+    expect(
+      dataUrl.length,
+      'volcano-layer canvas should have color content (lava discs + magma cap produce > 4000 chars)',
+    ).toBeGreaterThan(4000);
   });
 });

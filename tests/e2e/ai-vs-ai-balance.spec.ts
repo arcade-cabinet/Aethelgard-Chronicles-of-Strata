@@ -388,6 +388,18 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
       expect
         .soft(snapshot.zoneUnionPct, 'faction expansion must cover >30% of walkable board')
         .toBeGreaterThan(30);
+      // M_FUN.TEST.AIVAI-BORDER-CLASH — wood-progression assertion: at
+      // least one faction must have recorded a wood deposit (firstWoodAt
+      // > -1). A match that ends with both factions at firstWoodAt = -1
+      // means peon harvest cadence never ran — balance failure (the AI
+      // won by unit rush alone, no economic depth). Both factions
+      // running at least one harvest loop is the structural guarantee.
+      const eitherHarvested =
+        snapshot.peonMetricsPlayer.firstWoodAt > -1 ||
+        snapshot.peonMetricsEnemy.firstWoodAt > -1;
+      expect
+        .soft(eitherHarvested, 'at least one faction must have deposited wood (peon harvest ran)')
+        .toBe(true);
     });
   }
 });

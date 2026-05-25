@@ -79,6 +79,13 @@ export function wildfireSystem(
   game: GameState,
   tiles: Map<string, Tile>,
   dt: number,
+  /**
+   * M_FUN.PERF.TILE-INDEX — shared per-tick tile→entity index built by
+   * `buildEntityTileIndex` in economy-tick-phases.ts before hazard systems
+   * run. When provided, the per-tick world.query(Health, HexPosition) scan
+   * is skipped (it was already done once for the whole tick).
+   */
+  entityTileIndex?: Map<string, ReturnType<typeof game.world.query>[number][]>,
 ): WildfireTickResult {
   const extinguished: string[] = [];
   const spreadTo: string[] = [];
@@ -90,24 +97,25 @@ export function wildfireSystem(
   const burningKeys = [...game.wildfires.keys()].sort();
   const newIgnitions: Array<[string, BurnState]> = [];
 
-  // Final-report H2 + user mandate "EVERYTHING working for 0.4" —
-  // per-burn `world.query(Health, HexPosition)` was O(burns × entities).
-  // Build the tile→entities index ONCE per tick; each burn becomes
-  // an O(1) Map.get instead of an O(entities) scan. Typical mid-game:
-  // ~6 burns × ~30 entities = ~180 scans; with the index it's ~30
-  // (one full pass) + 6 Map.gets.
+  // M_FUN.PERF.TILE-INDEX — use the shared index when provided;
+  // build locally only as fallback (e.g. direct test calls without phase wiring).
   type AnyEntity = ReturnType<typeof game.world.query>[number];
-  const entitiesByTile = new Map<string, AnyEntity[]>();
-  for (const e of game.world.query(Health, HexPosition)) {
-    const pos = e.get(HexPosition);
-    if (!pos) continue;
-    const k = getHexKey(pos.q, pos.r);
-    let list = entitiesByTile.get(k);
-    if (!list) {
-      list = [];
-      entitiesByTile.set(k, list);
+  let entitiesByTile: Map<string, AnyEntity[]>;
+  if (entityTileIndex) {
+    entitiesByTile = entityTileIndex as Map<string, AnyEntity[]>;
+  } else {
+    entitiesByTile = new Map<string, AnyEntity[]>();
+    for (const e of game.world.query(Health, HexPosition)) {
+      const pos = e.get(HexPosition);
+      if (!pos) continue;
+      const k = getHexKey(pos.q, pos.r);
+      let list = entitiesByTile.get(k);
+      if (!list) {
+        list = [];
+        entitiesByTile.set(k, list);
+      }
+      list.push(e);
     }
-    list.push(e);
   }
 
   for (const key of burningKeys) {

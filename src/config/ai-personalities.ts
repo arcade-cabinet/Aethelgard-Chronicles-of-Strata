@@ -24,6 +24,15 @@ const PersonalitySchema = z.object({
   weights: WeightsSchema,
   /** Documented exploitable flaw (player learns the matchup). */
   flaw: z.string().min(1),
+  /**
+   * M_FUN.REFACTOR.AI-SPLIT — per-personality rage-quit threshold (sim-seconds).
+   * Once match-elapsed time exceeds this without spotting the enemy,
+   * the MilitaryEvaluator desirability spikes to override Build forever.
+   * Each personality has a different temperament:
+   *   the-raider (120s) — quick to rage; the-hoarder (300s) — patient.
+   * Defaults to 180 when absent.
+   */
+  rageQuitThreshold: z.number().positive().optional(),
 });
 export type Personality = z.infer<typeof PersonalitySchema>;
 

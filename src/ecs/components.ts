@@ -95,27 +95,20 @@ export const Selectable = trait({ isSelected: false });
  * `@/ecs/components` (the historic location), the symbols are
  * re-exported here as a thin pass-through.
  */
-import { RESOURCE_IDS } from '@/config/resources';
+import { RESOURCE_IDS, type ResourceType } from '@/config/resources';
 
-// The const-array tuple form — strict literal types so downstream
-// `(typeof RESOURCE_TYPES)[number]` continues to produce a literal
-// union, not `string`. The cast is safe because RESOURCE_IDS is
-// validated by Zod at module load and freezes at startup. This is
-// the ONE place in TypeScript that mirrors the JSON list; everything
-// else maps over RESOURCE_TYPES. The Zod parser fail-fasts at module
-// load if the JSON drifts from this tuple.
-export const RESOURCE_TYPES = RESOURCE_IDS as readonly [
-  'wood',
-  'stone',
-  'ore',
-  'gold',
-  'food',
-  'peat',
-  'science',
-  'mana',
-  'amber',
-];
-export type ResourceType = (typeof RESOURCE_TYPES)[number];
+// `ResourceType` is now derived from the Zod enum in `@/config/resources`
+// (see ResourceIdSchema there). Adding a 10th resource slot requires only:
+//   1. A new entry in resources.json.
+//   2. Adding the id to ResourceIdSchema in resources.ts.
+// No cast, no tuple to maintain here.
+//
+// `RESOURCE_TYPES` is kept as a runtime constant so existing call sites
+// that iterate `RESOURCE_TYPES` or do `(typeof RESOURCE_TYPES)[number]`
+// continue to compile unchanged. It is typed `ReadonlyArray<ResourceType>`
+// so the element type is still the narrow literal union.
+export const RESOURCE_TYPES: ReadonlyArray<ResourceType> = RESOURCE_IDS as ReadonlyArray<ResourceType>;
+export type { ResourceType };
 
 /**
  * A building type. `TownHall` is the attractor (start base, not built
