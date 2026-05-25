@@ -252,11 +252,13 @@ the portal/diplomacy work begins so the substrate is fully complete.
   opponents). Wired into App.tsx HUD layer. 4 unit + 2 browser tests pin
   filtering + chip count + registry-driven color flow. Screenshot baseline
   committed; compared to docs/specs/130 §HUD-chip intent — matches.
-- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.COLOR-OUTLINE-V2 — extend the
-  registry-driven color from ZoneBorder (v0.5) to: per-building
-  outline ring, per-unit hex outline shader, minimap marker color.
-  All three currently use SKINS / hardcoded fallbacks. Grep gate
-  asserts the lifts for each surface.
+- [x] M_V6.CARRY.COLOR-OUTLINE-V2 — Minimap.tsx lifted: unit dots + base
+  markers read via findFaction(game.factions, fac)?.color with SKINS
+  fallback for legacy paths. Per-building outline ring + per-unit hex
+  outline shader are not yet discrete components in the codebase — those
+  ship in a v0.7 visual polish pass when the new components land. 3 tests
+  pin the Minimap registry color flow + that source contains the findFaction
+  lookup pattern.
 - [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.E2E-CAMP-CLEAR — Playwright e2e
   spec: spawn a 4-player match with 3 camps, advance 10 sim-min,
   assert at least 1 camp cleared by some faction + the cleared

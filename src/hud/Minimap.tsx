@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { findFaction } from '@/config/factions';
 import { HEX_RADIUS } from '@/config/world';
 import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
@@ -291,22 +292,32 @@ function drawOverlay(
     const hex = e.get(HexPosition);
     if (!hex) continue;
     const { x, y } = projectAxial(hex.q, hex.r, radius);
-    // M_REGISTRY.27 — minimap.unitColor lives on the Skin slot per
-    // faction; no more `=== 'enemy' ? ...` hand-branch.
-    const fac = e.get(FactionTrait)?.faction ?? 'player';
-    ctx.fillStyle = SKINS[fac].minimap.unitColor;
+    // M_V6.CARRY.COLOR-OUTLINE-V2 — read color from runtime registry
+    // first (game.factions); fall back to SKINS for legacy 2-faction
+    // entries that still use the old hardcoded palette. The runtime
+    // FactionTrait carries any string id (player-3, barbarian-camp-1,
+    // ...); the registry has a config row per id.
+    const fac = (e.get(FactionTrait)?.faction ?? 'player') as string;
+    const regColor = findFaction(game.factions, fac)?.color;
+    ctx.fillStyle = regColor ?? SKINS[fac as 'player' | 'enemy']?.minimap?.unitColor ?? '#ffffff';
     // M_AUDIT2.UX.34 — dot drawn at 4 internal-px so the compact (96px
     // CSS) viewport keeps unit dots visible at ≥2.7 device-px instead
     // of nearly-invisible 2.06px from the prior 3 internal-px.
     ctx.fillRect(x - 2, y - 2, 4, 4);
   }
 
-  // home base + enemy base markers — colors live on each faction's
-  // Skin (M_REGISTRY.27). Adding a third tribe's base marker = ONE
-  // Skin row, no Minimap edit.
+  // home base + enemy base markers — colors via registry (M_V6.CARRY.COLOR-OUTLINE-V2)
+  // with SKINS fallback for legacy paths. Adding a player-3 base marker
+  // = ONE registry entry, no Minimap edit.
   for (const [entity, color] of [
-    [game.townHallEntity, SKINS.player.minimap.baseColor],
-    [game.enemyBaseEntity, SKINS.enemy.minimap.baseColor],
+    [
+      game.townHallEntity,
+      findFaction(game.factions, 'player')?.color ?? SKINS.player.minimap.baseColor,
+    ],
+    [
+      game.enemyBaseEntity,
+      findFaction(game.factions, 'enemy')?.color ?? SKINS.enemy.minimap.baseColor,
+    ],
   ] as const) {
     const hex = entity.get(HexPosition);
     if (!hex) continue;
