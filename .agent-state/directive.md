@@ -232,10 +232,12 @@ the portal/diplomacy work begins so the substrate is fully complete.
   overlay fallback). 5 unit tests pin: LEGACY default round-trip, 6-faction
   round-trip with all slot ids/colors preserved, v0.4 save fallback,
   tampered color rejection, > 16 faction cap rejection.
-- [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.CAMP-DISCOVERY — camp clearing
-  reward extends from +50 wood / +50 stone to +1 random Discovery
-  pulled from a deterministic pool. Discovery flag is granted via
-  ResearchState; the clearing faction gets a tech jump.
+- [x] M_V6.CARRY.CAMP-DISCOVERY — grantRandomDiscovery(world, research, prng, pool)
+  picks an un-purchased Discovery via event-stream PRNG; applies the effect; marks
+  purchased; returns id or null on empty pool. Wired into tickScoringPhase's camp-clear
+  loop alongside +50/+50 grant. Emits aethelgard:camp-discovery-granted CustomEvent
+  for HUD listeners. 5 tests pin: empty pool no-op, single grant, drained pool null,
+  PRNG determinism, integration with camp clearing.
 - [ ] [WAIT] (v0.6 cycle) M_V6.CARRY.RUINS-BIOME — when a camp is
   cleared, the tile's biome flips to a new `RUINS` decorative type
   (gameplay-irrelevant; reads as "old camp" visually). Add RUINS to

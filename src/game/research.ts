@@ -63,3 +63,50 @@ export function applyResearch(
   d.apply(world);
   return true;
 }
+
+/**
+ * M_V6.CARRY.CAMP-DISCOVERY — grant a free Discovery from a fixed pool,
+ * bypassing cost + prereq checks (a barbarian-camp clearing reward).
+ *
+ * Picks a random un-purchased Discovery from `pool` using the supplied
+ * `prng` (the game's eventRng). Applies its `apply(world)` side-effect
+ * immediately. Returns the granted id or null when every pool entry
+ * is already purchased (no-op — camp still clears, just no Discovery
+ * bonus this time).
+ *
+ * Pool defaults to ALL known Discovery ids; pass an explicit list to
+ * restrict to a "camp-reward" subset.
+ *
+ * @param world     - ECS world for the apply() effect.
+ * @param research  - Shared research state to mark purchase against.
+ * @param prng      - Event-stream PRNG (`game.eventRng`).
+ * @param pool      - Candidate ids; defaults to v0.6 DEFAULT_DISCOVERY_POOL.
+ */
+export function grantRandomDiscovery(
+  world: World,
+  research: ResearchState,
+  prng: () => number,
+  pool: readonly string[] = DEFAULT_DISCOVERY_POOL,
+): string | null {
+  // Filter to entries that exist in the registry AND aren't already owned.
+  const candidates = pool.filter(
+    (id) => discoveryById(id) !== undefined && !research.purchased.has(id as ResearchId),
+  );
+  if (candidates.length === 0) return null;
+  const idx = Math.floor(prng() * candidates.length);
+  const pick = candidates[idx] as string;
+  const d = discoveryById(pick);
+  if (!d) return null;
+  research.purchased.add(pick as ResearchId);
+  d.apply(world);
+  return pick;
+}
+
+/**
+ * Default Discovery pool drawn from for camp-clearing rewards. The pool
+ * grows as new Discoveries land in `src/config/discoveries.json`; the
+ * `discoveryById` filter in grantRandomDiscovery silently drops ids
+ * not present in the registry so this constant stays a forward-compatible
+ * superset.
+ */
+const DEFAULT_DISCOVERY_POOL: readonly string[] = ['forgedBlades', 'steelPlows'];
