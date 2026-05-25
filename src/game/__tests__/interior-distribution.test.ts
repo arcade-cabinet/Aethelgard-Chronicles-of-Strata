@@ -110,6 +110,8 @@ describe('inter-base interior carries status-bearing biomes (M_FUN.MAP.DISTRIBUT
     const swampRate = (100 * swampPasses) / swampTotal;
     expect.soft(mpRate, 'MOUNTAIN_PASS interior coverage rate').toBeGreaterThanOrEqual(40);
     expect.soft(desertRate, 'DESERT interior coverage rate').toBeGreaterThanOrEqual(50);
-    expect.soft(swampRate, 'SWAMP interior coverage rate (excluding dry-land)').toBeGreaterThanOrEqual(20);
+    expect
+      .soft(swampRate, 'SWAMP interior coverage rate (excluding dry-land)')
+      .toBeGreaterThanOrEqual(20);
   });
 });

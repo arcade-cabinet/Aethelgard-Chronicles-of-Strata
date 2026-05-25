@@ -297,18 +297,12 @@ function pickEconomy(eco: unknown): GameEconomy {
     // to all-zeros for pre-v0.5 saves (snapshot version bump not
     // needed — same migration pattern as mana/peakSupply).
     killsByZone: {
-      skirmish: safeFinite(
-        (e.killsByZone as Record<string, unknown> | undefined)?.skirmish,
-        0,
-      ),
+      skirmish: safeFinite((e.killsByZone as Record<string, unknown> | undefined)?.skirmish, 0),
       encroachment: safeFinite(
         (e.killsByZone as Record<string, unknown> | undefined)?.encroachment,
         0,
       ),
-      assault: safeFinite(
-        (e.killsByZone as Record<string, unknown> | undefined)?.assault,
-        0,
-      ),
+      assault: safeFinite((e.killsByZone as Record<string, unknown> | undefined)?.assault, 0),
     },
   };
 }

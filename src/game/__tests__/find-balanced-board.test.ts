@@ -41,9 +41,13 @@ describe('findBalancedBoard biome-variety gate', () => {
           // absent. Stone biomes (HIGHLAND/MOUNTAIN) still need to
           // exist on every map so stone nodes can spawn.
           if (mapType !== 'dry-land') {
-            expect.soft(forest, `${mapType}/${sizeName}/${seed} FOREST count`).toBeGreaterThanOrEqual(5);
+            expect
+              .soft(forest, `${mapType}/${sizeName}/${seed} FOREST count`)
+              .toBeGreaterThanOrEqual(5);
           }
-          expect.soft(stone, `${mapType}/${sizeName}/${seed} HIGHLAND+MOUNTAIN count`).toBeGreaterThanOrEqual(3);
+          expect
+            .soft(stone, `${mapType}/${sizeName}/${seed} HIGHLAND+MOUNTAIN count`)
+            .toBeGreaterThanOrEqual(3);
         });
       }
     }
