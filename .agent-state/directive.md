@@ -56,6 +56,11 @@ parking lot.
 
 ---
 
+## v0.4 PR #10 — pre-merge ACTIVE waits
+
+- [ ] [WAIT] CI green on `https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/pull/10` — Build and test, Build debug APK, Dependency review, CodeQL (actions + javascript-typescript). Pending across all checks after the v0.5-pivot directive commit; awaits external runner state.
+- [ ] [WAIT-REVIEW] CodeRabbit re-review on the new commits (portal primitive, biome-swatch readiness fix, JSON-first match-narrative + achievements, v0.5 pivot directive). The 38 prior threads were resolved in this branch's batches; the new commits since `0c738a8` need a fresh sweep.
+
 ## v0.4 PR #10 — pre-merge expansion (the user's "before you merge 0.4")
 
 The user expanded v0.4 scope after the initial AIVAI-tune pass:
