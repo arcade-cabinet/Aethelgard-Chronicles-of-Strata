@@ -278,6 +278,36 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
       // need the canvas to paint). Gate on the e2e test hook
       // (window.__game) so prod still parks on hidden.
       frameloop={visible || hasTestHook() ? 'always' : 'never'}
+      // User feedback post-v0.4 (OnePlus Open foldable unfolded —
+      // "going to a solid grey gameboard after a few seconds of
+      // play"): on mid-tier Android Adreno GPUs r3f's default
+      // settings can drop the WebGL context after a few seconds
+      // of heavy draw, and there's no automatic restore. Two fixes:
+      // (1) `powerPreference: 'high-performance'` asks the OS for
+      //     the discrete/high-perf GPU partition and reduces the
+      //     drop rate, and
+      // (2) `onCreated` wires a webglcontextlost/restored listener
+      //     that prevents the default unrecoverable behaviour and
+      //     triggers a full r3f re-render once the context comes back.
+      gl={{ powerPreference: 'high-performance', antialias: true, alpha: false }}
+      onCreated={({ gl }) => {
+        const canvas = gl.domElement;
+        const onLost = (e: Event) => {
+          // Prevent the browser default — without preventDefault the
+          // context is "permanently lost" and the canvas stays grey.
+          e.preventDefault();
+          console.warn('[GameCanvas] WebGL context LOST — awaiting restore');
+        };
+        const onRestored = () => {
+          console.info('[GameCanvas] WebGL context restored');
+          // r3f's renderer rebuilds GPU resources lazily; nudging
+          // the size resets the framebuffer + forces a redraw on
+          // the next rAF.
+          gl.setSize(window.innerWidth, window.innerHeight, false);
+        };
+        canvas.addEventListener('webglcontextlost', onLost as EventListener, false);
+        canvas.addEventListener('webglcontextrestored', onRestored, false);
+      }}
     >
       <Scene
         game={game}

@@ -1,25 +1,26 @@
 import { useEffect, useState } from 'react';
 import { type CameraProfileConfig, WORLD } from '@/config/world';
+import { getDeviceClass, getDeviceClassSync } from '@/core/device-class';
 
 /**
  * Viewport classes the game adapts its presentation to.
- * M_EXPANSION.S.63 — added 'ultraWide' for aspect ratios > 2.4:1
- * (e.g. 32:9, 21:9 super-ultrawide monitors). Camera profile picks
- * a wider FOV; HUD panels stay anchored to the centre 16:9 column so
- * peripheral edges aren't dead chrome.
- */
-/**
- * M_POLISH2.MOBILE.13 — added 'tablet' for the 600..1024px width
- * landscape range (iPad Mini, Galaxy Tab, surface portrait). Today
- * the class behaves like 'desktop' for layout (the camera profile
- * map fills the default desktop profile when no tablet-specific
- * one is provided) but consumers that want a tablet branch can
- * switch on it explicitly. Adding this class is purely additive —
- * existing switch consumers fall through to a default branch.
+ *
+ * User feedback (v0.4 post-merge — OnePlus Open foldable unfolded
+ * showed a crowded overlapping HUD because the prior implementation
+ * was lazy width-only math): pure dimension thresholds misclassify
+ * foldables, high-DPI tablets, and Android Capacitor where the CSS
+ * viewport doesn't match the device form factor. Classification now
+ * delegates to `@/core/device-class`, which uses the Capacitor
+ * Platform + Device APIs as the primary signal and falls back to
+ * `matchMedia('(pointer: coarse)')` + dimensions only as a tiebreaker.
+ *
+ * M_EXPANSION.S.63 — 'ultraWide' for aspect ratios > 2.4:1.
+ * M_POLISH2.MOBILE.13 — 'tablet' for the iPad / Galaxy Tab / foldable
+ *   unfolded range.
  */
 export type ViewportClass = 'desktop' | 'ultraWide' | 'tablet' | 'phoneLandscape' | 'phonePortrait';
 
-/** Aspect-ratio threshold above which the viewport classifies as ultraWide. */
+/** Aspect-ratio threshold above which a web viewport classifies as ultraWide. */
 const ULTRAWIDE_ASPECT = 2.4;
 
 /** The resolved presentation profile for the current viewport. */
@@ -32,63 +33,73 @@ export interface ViewportProfile {
   isPortrait: boolean;
 }
 
-/** Width below which a landscape viewport is treated as a phone. */
-const PHONE_MAX_WIDTH = 600;
-/**
- * M_POLISH2.MOBILE.13 — tablet upper bound. Landscape viewports
- * with width in [PHONE_MAX_WIDTH, TABLET_MAX_WIDTH) classify as
- * 'tablet' (iPad Mini landscape 1024×768, Galaxy Tab portrait at
- * 800×1280 — though portrait wins the portrait gate first). Above
- * 1024 falls through to 'desktop'.
- */
-const TABLET_MAX_WIDTH = 1024;
-
-/** Classify a width/height pair into a viewport class. */
-function classify(width: number, height: number): ViewportClass {
+/** Build the full profile for the current device + dimensions. */
+function profileFor(
+  width: number,
+  height: number,
+  deviceClass: ViewportClass | null,
+): ViewportProfile {
   const portrait = height > width;
-  if (portrait) return 'phonePortrait';
-  if (width < PHONE_MAX_WIDTH) return 'phoneLandscape';
-  if (width < TABLET_MAX_WIDTH) return 'tablet';
-  // M_EXPANSION.S.63 — wider than 2.4:1 → ultrawide camera profile.
-  if (width / height > ULTRAWIDE_ASPECT) return 'ultraWide';
-  return 'desktop';
-}
-
-/** Build the full profile for a width/height pair. */
-function profileFor(width: number, height: number): ViewportProfile {
-  const cls = classify(width, height);
-  // M_POLISH2.MOBILE.13 — when the camera config doesn't have a row
-  // for the new 'tablet' class yet, fall back to 'desktop' so we
-  // don't crash + the tablet renders with a reasonable default.
-  // Add WORLD.camera.tablet to config/world.json when tuning the
-  // tablet-specific FOV / pose.
+  let cls: ViewportClass;
+  if (deviceClass) {
+    // Device classification already gave us mobile/tablet/desktop.
+    // Refine the mobile case into portrait/landscape based on the
+    // current orientation; tablet+desktop keep their device class
+    // and use orientation only for camera framing.
+    if (deviceClass === 'phonePortrait' || deviceClass === 'phoneLandscape') {
+      cls = portrait ? 'phonePortrait' : 'phoneLandscape';
+    } else if (deviceClass === 'desktop' && width / Math.max(1, height) > ULTRAWIDE_ASPECT) {
+      cls = 'ultraWide';
+    } else {
+      cls = deviceClass;
+    }
+  } else {
+    // SSR / pre-Capacitor-init fallback — pure width-class heuristic.
+    // This branch only fires before getDeviceClass() resolves; useEffect
+    // immediately calls the async resolver and re-classifies.
+    if (portrait) cls = 'phonePortrait';
+    else if (width < 600) cls = 'phoneLandscape';
+    else if (width < 1024) cls = 'tablet';
+    else if (width / height > ULTRAWIDE_ASPECT) cls = 'ultraWide';
+    else cls = 'desktop';
+  }
   type CameraTable = (typeof WORLD)['camera'];
   const cameraTable = WORLD.camera as CameraTable & Record<string, CameraProfileConfig>;
   const camera = cameraTable[cls] ?? cameraTable.desktop;
-  return {
-    class: cls,
-    camera,
-    isPortrait: height > width,
-  };
+  return { class: cls, camera, isPortrait: portrait };
 }
 
 /**
- * Classify the current viewport (desktop / phone-landscape / phone-portrait)
- * and yield its presentation profile. Re-evaluates on resize and orientation
- * change so the camera and HUD adapt live. See `docs/specs/98-viewport-and-config.md`.
+ * Classify the current viewport using Capacitor device detection
+ * (when available) + orientation. Re-evaluates on resize +
+ * orientationchange. See `docs/specs/98-viewport-and-config.md`.
  */
 export function useViewport(): ViewportProfile {
-  const [profile, setProfile] = useState<ViewportProfile>(() =>
-    typeof window === 'undefined'
-      ? profileFor(1280, 800)
-      : profileFor(window.innerWidth, window.innerHeight),
-  );
+  const [profile, setProfile] = useState<ViewportProfile>(() => {
+    if (typeof window === 'undefined') return profileFor(1280, 800, 'desktop');
+    // Synchronous best-effort: getDeviceClassSync() returns either
+    // the cached real classification (warm) or a width-based guess
+    // (cold) — the async resolver below corrects it within a tick.
+    return profileFor(window.innerWidth, window.innerHeight, getDeviceClassSync());
+  });
 
   useEffect(() => {
-    const onResize = () => setProfile(profileFor(window.innerWidth, window.innerHeight));
+    let cancelled = false;
+    // 1. Resolve the proper device class once (cached after the
+    //    first call — Capacitor.getPlatform + Device.getInfo).
+    void getDeviceClass().then((dc) => {
+      if (cancelled) return;
+      setProfile(profileFor(window.innerWidth, window.innerHeight, dc));
+    });
+    // 2. Re-classify on resize + orientationchange — orientation is
+    //    the only thing that flips between phonePortrait and
+    //    phoneLandscape post-cache; the device class itself is fixed.
+    const onResize = () =>
+      setProfile(profileFor(window.innerWidth, window.innerHeight, getDeviceClassSync()));
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', onResize);
     return () => {
+      cancelled = true;
       window.removeEventListener('resize', onResize);
       window.removeEventListener('orientationchange', onResize);
     };
