@@ -24,6 +24,7 @@ import { MilitaryEvaluator } from './evaluators/military';
 import { PatrolEvaluator } from './evaluators/patrol';
 import { ResignEvaluator } from './evaluators/resign';
 import { DiplomaticEvaluator } from './evaluators/diplomatic';
+import { WonderEvaluator } from './evaluators/wonder';
 
 /** The Think brain over the AiPlayer's evaluators. */
 class AiBrain extends Think<AiPlayer> {}
@@ -65,6 +66,9 @@ export class AiPlayer extends GameEntity {
     const rageQuit = p.rageQuitThreshold ?? DEFAULT_RAGE_QUIT_THRESHOLD;
     this.brain = new AiBrain(this);
     this.brain.addEvaluator(new BuildEvaluator(p.weights.build, rageQuit));
+    // M_V9.AI.WONDER-EVALUATOR — Wonder verb slotted between Build and Train.
+    // It fires only when the faction can afford the Wonder and has no existing one.
+    this.brain.addEvaluator(new WonderEvaluator(p.wonderWeight ?? 0.5));
     // M_FUN.QA.AIVAI.TUNE — train inherits the military weight (not
     // build) since training units IS military investment. This
     // closes the Builder-vs-Builder loop where both sides built

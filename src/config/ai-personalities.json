@@ -7,6 +7,7 @@
       "description": "Hoards economy + buildings; slow to attack. Beat by rushing before they wall up.",
       "weights": { "build": 1.5, "military": 0.7, "defensive": 1.3, "patrol": 0.8 },
       "flaw": "slow-to-attack",
+      "wonderWeight": 0.8,
       "rageQuitThreshold": 240,
       "starvationThreshold": 360
     },
@@ -15,6 +16,7 @@
       "description": "Pumps military fast; harassment-first. Beat by walling chokes + outlasting.",
       "weights": { "build": 0.6, "military": 1.6, "defensive": 0.4, "patrol": 1.2 },
       "flaw": "over-extends-economy",
+      "wonderWeight": 0.2,
       "rageQuitThreshold": 120,
       "starvationThreshold": 240
     },
@@ -23,6 +25,7 @@
       "description": "Maximises resources; rarely commits military. Beat by aggressive raiding.",
       "weights": { "build": 1.0, "military": 0.6, "defensive": 1.5, "patrol": 0.5 },
       "flaw": "vulnerable-to-rush",
+      "wonderWeight": 0.7,
       "rageQuitThreshold": 300,
       "starvationThreshold": 480
     },
@@ -31,6 +34,7 @@
       "description": "Balanced playstyle; defends well; capitalises on opponent overextension.",
       "weights": { "build": 1.1, "military": 1.0, "defensive": 1.1, "patrol": 1.0 },
       "flaw": "predictable",
+      "wonderWeight": 0.5,
       "rageQuitThreshold": 180,
       "starvationThreshold": 300
     },
@@ -39,6 +43,7 @@
       "description": "Erratic; spams cheap military; rarely builds defenses. Beat with composition + outlast.",
       "weights": { "build": 0.8, "military": 2.2, "defensive": 0.1, "patrol": 1.5 },
       "flaw": "no-defensive-structures",
+      "wonderWeight": 0.3,
       "rageQuitThreshold": 90,
       "starvationThreshold": 180
     }
