@@ -84,7 +84,11 @@ const allProjects = [
   { name: 'mobile', use: { ...devices['Pixel 7'] } },
   { name: 'tablet', use: { ...devices['iPad Mini'] } },
 ];
-const projects = includeMultiview ? allProjects : [allProjects[0]!];
+// allProjects is a non-empty const literal — TS can prove the [0] access
+// is defined without a non-null assertion. Use `at(0) ?? allProjects[0]`
+// pattern via destructure to satisfy biome's noNonNullAssertion.
+const [firstProject] = allProjects;
+const projects = includeMultiview ? allProjects : firstProject ? [firstProject] : allProjects;
 
 export default defineConfig({
   testDir: './tests',
