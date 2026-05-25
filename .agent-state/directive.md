@@ -1,9 +1,11 @@
 # Continuous Work Directive — Aethelgard: Chronicles of Strata
 
-**Status:** ACTIVE — v0.5 cycle (v0.4 RELEASED 2026-05-25 as tag v0.1.4)
-**Cycle:** v0.5 — N-player + barbarian camps + per-faction asymmetric buildings + JSON-driven AI + carryover refactors
-**Owner:** Claude (autonomous agent `v0_5_grinder` working in `.claude/worktrees/`)
-**PRD:** [`docs/specs/PRD-v0.5.md`](../docs/specs/PRD-v0.5.md) (the centerpiece spec — N-player, barbarian camps, asymmetric buildings)
+**Status:** ACTIVE — v0.7 cycle (v0.5 released as v0.1.4 / PR #27; v0.6 released as v0.1.10 / PR #29)
+**Cycle:** v0.7 — substrate→player polish: wire the diplomacy / MYTH-events / portal-stones / 4X scoring substrates v0.6 shipped into player-clickable UI + N-player end-to-end correctness (GameEconomy registry lift) + visual-regression battery
+**Owner:** Claude (autonomous agent `v0_7_grinder` working on the `feat/v0.7-polish-and-integration` branch)
+**PRD:** v0.7 cycle = the "follow-ups parked for v0.7" the v0.6 grinder report named, plus reviewer-trio drain + visual-regression battery
+**v0.6 closeout:** PR #29 — portals + diplomacy + MYTH events + 4X victory + 6 v0.5 carryovers shipped
+**v0.5 closeout:** PR #27 — N-player + barbarian-camp pivot full centerpiece
 **v0.4 closeout:** [`docs/MILESTONES.md`](../docs/MILESTONES.md) v0.4 entry (released as v0.1.4 — PR #10 + #14 + #15 + #16)
 
 ## v0.5 / v0.6 CENTERPIECE — N-PLAYER + BARBARIAN-CAMP PIVOT
@@ -164,7 +166,190 @@ parking lot. See the v0.6 section below.
 
 ---
 
-## v0.6 CYCLE — depth on top of the v0.5 substrate
+## v0.7 CYCLE — substrate→player polish + N-player end-to-end correctness
+
+v0.5 + v0.6 shipped the substrates (FactionConfig registry, diplomacy
+state machine, MYTH event JSON, portal-stones biome + helpers,
+4X named victory detection, RUINS biome flip, HUD chip strip). v0.7
+spends them on the PLAYER-VISIBLE polish — wires the substrate
+primitives into clickable UI, drains the leaky abstractions (legacy
+2-faction Records still gating N-player tribute/victory), and
+formalises the visual-regression battery so the agent never ships a
+regressed pixel without the harness catching it first.
+
+### Architectural decisions for v0.7
+
+1. **GameEconomy registry shape.** The v0.5+v0.6 substrates left
+   `Record<Faction, GameEconomy>` (literal-union-keyed) intact for
+   compile-time narrowing; tribute / victory route only to legacy
+   slots. **The real bug:** N-player matches (4X mode) don't credit
+   player-3..N for tribute / victory. v0.7 lifts `GameEconomy` map
+   to a `Record<FactionId, GameEconomy>` (open string keys + a
+   helper `economyFor(game, factionId)` with sane defaults for
+   missing slots). Faction literal union STAYS — only the storage
+   widens; legacy `economy.player` / `economy.enemy` paths keep
+   working because the registry seeds both.
+
+2. **Diplomacy UI shape.** Three click surfaces (non-aggression
+   pact accept/decline, trade-swap widget, tribute demand banner)
+   each surface ONE pending state at a time per faction pair. The
+   substrate primitives (DiplomacyProposalState, performTrade,
+   acceptTribute / refuseTribute) already model the state — the UI
+   reads the pending list + renders one HUD pill per item, each
+   with its own accept/decline buttons that wire to the existing
+   helpers. NO new sim state, just a renderer.
+
+3. **MYTH event dispatchers — runtime, not JSON.** The 4 missing
+   dispatchers (meteor-strike / solar-eclipse / wildlife-migration
+   / oracle-vision) need RUNTIME effects, not config changes. Each
+   dispatches to ONE existing subsystem: meteor → wildfireSystem
+   spawn + damage tick; eclipse → zone observed radius halving for
+   60s; migration → spawn a neutral wildlife entity + +20 food on
+   clear; oracle → reveal one tile of another faction's base. The
+   harvest-festival pattern (applyHarvestFestival in v0.6) is the
+   template — pure function over GameState, called by
+   tickClockPhase from the active mythEvent.
+
+4. **Visual-regression battery.** v0.5+v0.6 added new biomes +
+   new HUD pieces with screenshot baselines locked individually.
+   v0.7 pulls all 14 landmark screenshots from
+   `.agent-state/ownership/aivai-playthrough.mjs` (if exists) +
+   the per-component baselines (`biome-*.png`,
+   `faction-color-picker-open.png`, `faction-chips-4player.png`,
+   `volcano-layer.png`, `wildfire-layer.png`, `match-summary-card.png`)
+   into a single `pnpm visual:battery` script. CI runs it on every
+   commit touching `src/render/**`, `src/world/**`, `src/hud/**`,
+   `src/ui/**`. Updates require `--update-snapshots` + a self-judge
+   pass per the contract.
+
+### Concrete v0.7 work-units (dependency-ordered)
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.REVIEW.TRIO-DRAIN — dispatch
+  comprehensive-review:full-review against `git diff origin/main`
+  to catch every accumulated finding from v0.5 + v0.6 substrate
+  work before v0.7 layer lands. Findings fold into forward
+  commits (no fix-review commits per autonomy contract).
+  Acceptance: the review artifact lives in `.full-review/*.md`,
+  each blocker is either addressed in a later v0.7 commit or
+  documented as v0.8 follow-up with rationale.
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.ECONOMY.REGISTRY — `GameEconomy`
+  storage widens to support N-player factions: introduce
+  `economyFor(game, factionId)` helper that defaults missing
+  slots from `createEconomy()`. tribute cession + victory
+  detection migrate to call `economyFor(game, id)` instead of
+  `game.economy[legacyFaction]`. Legacy `economy.player` /
+  `economy.enemy` paths preserved (still backed by the literal
+  union for compile-time narrowing on hot paths). Acceptance:
+  4-player setup gets all 4 players' wood/stone/gold credited
+  on camp clears AND on tribute cession (unit test).
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.MYTH.EFFECTS — wire the 4 missing
+  MYTH-event dispatchers. Each follows the harvest-festival
+  template (pure function over GameState, called from
+  tickClockPhase when game.mythEvents.active matches):
+  - `applyMeteorStrike(game, prng)` — picks a random walkable
+    tile, spawns a 30-damage wildfire entry, broadcasts
+    `aethelgard:meteor-strike` event for FX.
+  - `applySolarEclipse(game)` — halves zone.observed radius
+    for the eclipse duration (60s); restores on expire.
+  - `applyWildlifeMigration(game)` — spawns a neutral
+    barbarian-archetype unit on a centroid-biased tile;
+    clearing yields +20 food to clearer.
+  - `applyOracleVision(game, prng)` — picks a random faction,
+    reveals one tile of another faction's base.
+  Acceptance: each dispatcher has a unit test that fires the
+  event then asserts the expected state mutation; fireMythEvent
+  in the runtime calls the dispatcher when active matches.
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.PORTAL-STONES.TRIGGER — wire
+  random-event trigger (1-in-200 ticks once map clock > 5min)
+  that calls placePortalStones via the existing
+  findPortalStoneCandidates helper. Refresh
+  game.portalStoneCooldowns when a unit teleports via a stone
+  tile (pathFollowSystem hook). Acceptance: unit test forces
+  the random roll past the gate + asserts 2 PORTAL_STONE tiles
+  appear with reciprocal portalTo; a second tick of the same
+  faction's teleport returns null (cooldown active).
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.DIPLO.UI — three HUD pill
+  components reading the v0.6 substrate primitives:
+  - `<NonAggressionPactPill>` — reads game.diplomacyProposals
+    .pending, renders one banner per pending proposal targeting
+    the local faction with Accept + Decline buttons wired to
+    acceptProposal / rejectProposal.
+  - `<TradeSwapWidget>` — Radix dialog opened by a chip click,
+    two resource pickers (give / receive) + amount slider, calls
+    performTrade on submit; disabled when isTradeAvailable
+    returns false (with hover-explainer).
+  - `<TributeDemandBanner>` — top-of-HUD banner shown when
+    canDemandTribute fires for any cross-faction pair; Accept
+    Tribute / Refuse buttons wire to acceptTribute / refuseTribute.
+  Acceptance: each component has a browser harness with
+  screenshot baseline + DOM-shape assertions; legacy 2-faction
+  matches see no functional regression.
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.RENDER.COLOR-OUTLINE-V3 —
+  per-unit hex outline shader + building outline ring read
+  faction.color from registry. ZoneBorder (v0.5) + Minimap (v0.6)
+  already lifted. v0.7 extends to:
+  - `<UnitHexOutline>` — thin r3f ring drawn under each unit's
+    hex position; color = findFaction(game.factions, faction)?.color.
+  - `<BuildingOutlineRing>` — colored ring drawn around each
+    complete building; color from registry.
+  Acceptance: grep-gate test forbids the legacy banner-color
+  ternary in src/world/* + src/render/* (extends the v0.5
+  no-hardcoded-faction-colors gate); browser harness for each
+  component with screenshot baseline.
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.4X.SCORING — end-of-game scoring
+  screen UI: reads `game.victoryRecord` and renders a Radix
+  dialog with named outcome ("Glorious Economic Victory!"),
+  per-faction final stats (kills, buildings standing, territory %,
+  Discovery count, diplomacy ties), and the v0.6 victory kind
+  flavor text. Replaces the simple "Victory!" / "Defeat!" of
+  GameOverModal when game.mode === 'age-of-strata' AND
+  game.victoryRecord !== null. Acceptance: browser harness with
+  a stub game state for each victory kind + screenshot baseline
+  per kind (4 baselines total: military / economic / scientific
+  / diplomatic).
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.DISCOVERY-TREE.V6 — flesh out
+  src/config/discoveries.json with v0.6 tech entries that the
+  4X mode rewards: `trade-route` (gates M_V6.DIPLO.TRADE),
+  `cartography` (reveals starting region + ferryman boost),
+  `iron-tools` (Peon harvest +25%), `siege-engineering` (unlocks
+  Trebuchet at lower Barracks tier), `monumental-architecture`
+  (Wonder build cost -20%). Each declares effect dispatcher per
+  the existing pattern. Acceptance: every new Discovery is in
+  the registry + applies its effect when granted (camp clear,
+  manual research, or scientific-victory threshold check).
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.E2E.4-PLAYER-CAMP-CLEAR — true
+  Playwright e2e for camp clearing in a 4-player setup. Today
+  the harness lives in `tests/harness/barbarian-camp-clear.browser.test.ts`
+  (vitest browser mode); flesh into a Playwright spec that:
+  (a) boots the modal, picks the 4X preset (gives 6 factions),
+  (b) clicks Begin, (c) advances sim ≥10 sim-min via the test
+  hook, (d) asserts at least one camp cleared + the clearer
+  faction's economy reflects the +50/+50 reward in the live HUD.
+  Acceptance: spec runs as part of `pnpm test:e2e` (CI tier 1);
+  passes locally before push.
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.VISUAL.BATTERY — `scripts/
+  visual-battery.mjs` script + `pnpm visual:battery` package.json
+  entry that runs all per-component browser harnesses with
+  `--update-snapshots`, displays the diff side-by-side for
+  agent review, then locks the new baselines. CI runs the
+  same script in `--ci` mode (read-only, fails on drift) on
+  every commit touching `src/render/**`, `src/world/**`,
+  `src/hud/**`, `src/ui/**`. Acceptance: 14+ baseline PNGs
+  locked; a manual `tile.type = 'GRASS'` -> `tile.type = 'DESERT'`
+  edit fails the battery within 10s of edit (smoke test).
+
+---
+
+
 
 v0.5 ships the substrate (N-player + barbarians + archetypes); v0.6
 spends that on systems the user has flagged as long-running parking
