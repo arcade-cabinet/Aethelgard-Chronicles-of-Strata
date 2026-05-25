@@ -2,7 +2,7 @@ import type { World } from 'koota';
 import { COMBAT } from '@/config/combat';
 import type { BoardData } from '@/core/board';
 import { hexNeighbors } from '@/core/hex';
-import { EnemySpawner, HexPosition, type UnitType } from '@/ecs/components';
+import { EnemySpawner, FactionTrait, HexPosition, type UnitType } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import type { Difficulty } from '@/game/difficulty';
 
@@ -93,20 +93,45 @@ export function spawnSystem(
   gameElapsed: number,
   difficulty: Difficulty = 'normal',
 ): void {
-  world.query(EnemySpawner, HexPosition).updateEach(([spawner, hex]) => {
+  // M_PIVOT.BARBARIAN-CAMPS — iterate spawner entities; if the spawner
+  // also carries FactionTrait, the spawned units inherit that camp's
+  // faction id (a `barbarian-camp-1` spawner produces `barbarian-camp-1`-
+  // tagged units). The legacy enemy base entity carries FactionTrait
+  // 'enemy' so its spawned units stay 'enemy'-tagged. Tests that spawn
+  // a bare EnemySpawner + HexPosition (no FactionTrait) get the legacy
+  // `stats.faction` default (typically 'enemy' for Goblin/Orc/etc).
+  world.query(EnemySpawner, HexPosition).updateEach(([spawner, hex], entity) => {
     spawner.spawnTimer += delta;
     if (spawner.spawnTimer < spawner.spawnInterval) return;
     spawner.spawnTimer = 0;
     spawner.spawnCount += 1;
     const role = pickEnemyRole(spawner.spawnCount, gameElapsed);
+    const factionOverride = entity.get(FactionTrait)?.faction;
+    const spawnArgs = factionOverride !== undefined ? { factionOverride } : {};
     for (const nKey of hexNeighbors(hex.q, hex.r)) {
       const tile = board.tiles.get(nKey);
       if (tile?.walkable) {
-        createCharacter({ world, role, q: tile.q, r: tile.r, level: tile.level, difficulty });
+        createCharacter({
+          world,
+          role,
+          q: tile.q,
+          r: tile.r,
+          level: tile.level,
+          difficulty,
+          ...spawnArgs,
+        });
         return;
       }
     }
     // fallback: spawn on the base tile itself when no walkable neighbour exists
-    createCharacter({ world, role, q: hex.q, r: hex.r, level: hex.level, difficulty });
+    createCharacter({
+      world,
+      role,
+      q: hex.q,
+      r: hex.r,
+      level: hex.level,
+      difficulty,
+      ...spawnArgs,
+    });
   });
 }

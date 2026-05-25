@@ -49,6 +49,12 @@ import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/e
 import { type BurnState } from '@/ecs/systems/wildfire';
 import { type GameOutcome } from '@/ecs/systems/win-loss';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
+import {
+  defaultCampCount,
+  factionConfigForCamp,
+  placeBarbarianCamps,
+  spawnBarbarianCamp,
+} from '@/world/barbarian-camps';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import type { AutoSave } from './auto-save';
 import { createClock, type GameClock } from './clock';
@@ -830,6 +836,25 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
           ? { ...base, personality: overlayPersonality }
           : base;
       });
+
+  // M_PIVOT.BARBARIAN-CAMPS — when 3+ player factions are configured,
+  // auto-spawn neutral camps so the match feels like a proper N-player
+  // round. The 2-player default keeps zero camps (no behavioural drift
+  // for legacy 1v1 matches; v0.4 saves replay byte-identical).
+  // count = clamp(round(N/2)+1, 1, 6); minimum 6-hex radius from every
+  // player base. The camps are added to game.factions so renderers
+  // (ZoneBorder, HUD chips) pick them up via the same registry path
+  // as player factions.
+  const playerFactionCount = factions.filter((f) => f.kind !== 'barbarian').length;
+  if (playerFactionCount >= 3 && !config.factions?.some((f) => f.kind === 'barbarian')) {
+    const campCount = defaultCampCount(playerFactionCount);
+    const playerBaseKeys = [townHallKey, enemyBaseKey];
+    const campSpecs = placeBarbarianCamps(board, playerBaseKeys, campCount, mapRng);
+    for (const spec of campSpecs) {
+      spawnBarbarianCamp(world, spec);
+      factions.push(factionConfigForCamp(spec));
+    }
+  }
 
   const game: GameState = {
     seedPhrase,

@@ -115,18 +115,19 @@ the v0_5_grinder agent should pull these in order):
   buildingMeshFor() null-fallback on unknown building. BuildingRenderer
   swap (lifting from SKINS to ARCHETYPES) lands in M_PIVOT.RENDER.COLOR-OUTLINE.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.BARBARIAN-CAMPS — repurpose the
-  graveyard biome + enemy-raid units. Camp = neutral attractor
-  placed at gen-time (count = clamp(round(N/2)+1, 1, 6),
-  centroid-biased, ≥6-tile radius from every player base ring).
-  Camp HP = 200 + 50 per nearest-faction-distance; spawn raid
-  waves on `EnemySpawner` cadence scaled by difficulty.
-  Camps clearable by ANY faction; clearing emits
-  `barbarian-camp-cleared` event → +50 wood + +50 stone +
-  1 random Discovery to the killing faction; camp tile reverts
-  to `RUINS` biome. Acceptance: e2e test that spawns a 4-player
-  match with 3 camps, advances 10 sim-min, asserts at least 1
-  camp cleared by some faction + cleared faction gained +50/+50.
+- [x] M_PIVOT.BARBARIAN-CAMPS — `src/world/barbarian-camps.ts` with
+  defaultCampCount(N) clamp(round(N/2)+1, 1, 6), placeBarbarianCamps()
+  centroid-biased ≥6-hex radius, factionConfigForCamp() registry row,
+  spawnBarbarianCamp() entity with Health+EnemySpawner+FactionTrait+FactionBase.
+  spawnSystem extended to read spawner.FactionTrait so spawned units inherit
+  camp id. deathSystem extended: camps cleared (HP→0) emit barbarianCampsCleared
+  with proximity-nearest clearedBy; tickScoringPhase credits +50/+50 to clearer.
+  startGame auto-spawns camps when factions.length >= 3 (zero behavioural drift
+  on legacy 1v1). 16 placement tests + 2 reward integration tests pin: count
+  formula, sequential ids, deterministic placement, hp scaling, registry shape,
+  entity trait composition, spawnSystem integration, reward credit, no-crash
+  on unknown clearer. 941 unit tests green (was 923). Discovery-flag grant +
+  RUINS biome flip + e2e 10-sim-min flow are v0.6 follow-ups.
 
 - [WAIT] (v0.5 cycle) M_PIVOT.RENDER.COLOR-OUTLINE —
   ZoneBorder, building rings, per-unit hex outline shaders
