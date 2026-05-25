@@ -36,6 +36,8 @@ import { HexGridOverlay } from '@/world/HexGridOverlay';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
 import { Units } from '@/world/Units';
+import { UnitHexOutline } from '@/world/UnitHexOutline';
+import { BuildingOutlineRing } from '@/world/BuildingOutlineRing';
 import { Water } from '@/world/Water';
 import { ContestedPulse } from '@/world/ContestedPulse';
 import { ZoneBorder } from '@/world/ZoneBorder';
@@ -230,6 +232,14 @@ function Scene({
         <FactionBase game={game} faction="player" />
         <FactionBase game={game} faction="enemy" />
         <Units game={game} />
+        {/* M_V8.OUTLINE.CANVAS-MOUNT — per-faction outline rings wired
+            into the render tree. UnitHexOutline throttles at 20 Hz;
+            BuildingOutlineRing throttles at 1 Hz. Colors from
+            findFaction(game.factions, faction)?.color (registry-driven). */}
+        <group name="outlines">
+          <UnitHexOutline game={game} />
+          <BuildingOutlineRing game={game} />
+        </group>
       </Suspense>
       <CombatText game={game} />
       <ResourceText game={game} />

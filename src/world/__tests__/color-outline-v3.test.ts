@@ -33,3 +33,24 @@ describe('M_V7.RENDER.COLOR-OUTLINE-V3 — registry color flow', () => {
     }
   });
 });
+
+describe('M_V8.OUTLINE.CANVAS-MOUNT — wired into GameCanvas', () => {
+  it('GameCanvas imports UnitHexOutline', () => {
+    const path = resolve(__dirname, '../../..', 'src/render/GameCanvas.tsx');
+    const source = readFileSync(path, 'utf-8');
+    expect(source).toContain("from '@/world/UnitHexOutline'");
+  });
+
+  it('GameCanvas imports BuildingOutlineRing', () => {
+    const path = resolve(__dirname, '../../..', 'src/render/GameCanvas.tsx');
+    const source = readFileSync(path, 'utf-8');
+    expect(source).toContain("from '@/world/BuildingOutlineRing'");
+  });
+
+  it('GameCanvas renders both outline components', () => {
+    const path = resolve(__dirname, '../../..', 'src/render/GameCanvas.tsx');
+    const source = readFileSync(path, 'utf-8');
+    expect(source).toContain('<UnitHexOutline');
+    expect(source).toContain('<BuildingOutlineRing');
+  });
+});
