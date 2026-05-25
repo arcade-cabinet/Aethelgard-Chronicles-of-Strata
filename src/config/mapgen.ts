@@ -28,6 +28,7 @@ const BIOME_TYPES = [
   'MOUNTAIN',
   'VOLCANO',
   'LAVA',
+  'QUICKSAND',
 ] as const satisfies readonly BiomeType[];
 
 const BiomeTypeSchema = z.enum(BIOME_TYPES);

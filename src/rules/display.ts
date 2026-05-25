@@ -53,6 +53,9 @@ export const RESOURCE_DISPLAY: Record<ResourceType, ResourceDisplay> = {
   // M_EXPANSION.F.72 — mana display. Magenta reads as 'magic' and
   // contrasts the existing accent blue used for science.
   mana: { label: 'Mana', color: '#c084fc', domId: 'val-mana' },
+  // M_FUN.ECON.QUICKSAND — amber display. Warm gold-amber, distinct
+  // from the cooler gold currency colour.
+  amber: { label: 'Amber', color: '#f59e0b', domId: 'val-amber' },
 };
 
 /** Resolve display metadata for a resource type. */

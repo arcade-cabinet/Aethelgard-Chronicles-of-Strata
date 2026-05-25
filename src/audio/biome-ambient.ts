@@ -28,6 +28,9 @@ export const BIOME_AMBIENT: Record<BiomeType, string> = {
   MOUNTAIN: 'audio.ambient.highland',
   VOLCANO: 'audio.ambient.volcano',
   LAVA: 'audio.ambient.volcano',
+  // M_FUN.ECON.QUICKSAND — quicksand on a beach hex shares the coast
+  // ambient (waves + birds); the visual swirl carries the danger cue.
+  QUICKSAND: 'audio.ambient.coast',
 };
 
 /** Resolve the ambient track id for a biome. */

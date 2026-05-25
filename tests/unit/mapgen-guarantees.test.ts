@@ -18,7 +18,12 @@ describe('M_MAPGEN guarantees', () => {
         // ocean perimeter; assert the beach band so a regression in
         // ring painting fails this test (was only checking ocean).
         beachChecked += 1;
-        expect(tile.type).toBe('BEACH');
+        // BEACH ring or its quicksand variant — paintQuicksandSwirls
+        // converts a small % of beach tiles into the QUICKSAND
+        // 'swirl' variant (M_FUN.ECON.QUICKSAND); the ring still
+        // exists, the tile is still walkable, but a fraction of
+        // them are now amber-deposit sources.
+        expect(['BEACH', 'QUICKSAND']).toContain(tile.type);
       }
     }
     expect(oceanChecked).toBeGreaterThan(0);

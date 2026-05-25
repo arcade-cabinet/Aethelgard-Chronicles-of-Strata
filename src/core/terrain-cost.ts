@@ -45,6 +45,10 @@ export const TERRAIN_MOVE_COST: Record<BiomeType, number> = {
   // record type.
   VOLCANO: 1,
   LAVA: 1,
+  // M_FUN.ECON.QUICKSAND — walkable but slow (1.6× baseline) per
+  // mapgen.json#QUICKSAND.moveCost. A* will route AROUND it unless
+  // it's the only path; quick-cross is a deliberate choice.
+  QUICKSAND: 1.6,
 };
 
 export function moveCostFor(biome: BiomeType): number {

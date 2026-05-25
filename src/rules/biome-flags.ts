@@ -190,6 +190,18 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: null,
     decorationDensity: null,
   },
+  // M_FUN.ECON.QUICKSAND — walkable but unbuildable (you can't
+  // stake a House in shifting sand). Not habitable so the desert-
+  // blanket and similar habitable-only passes leave it alone.
+  QUICKSAND: {
+    walkable: true,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: null,
+  },
 };
 
 /** Resolve the flag tuple for a biome type. */

@@ -151,6 +151,8 @@
       "label": "Science",
       "kind": "passive",
       "icon": "🔬",
+      "abstract": true,
+      "$comment": "Abstract resource — represented by HUD pill + aura glyph above Library buildings, no world mesh.",
       "sources": [{ "kind": "passive-trickle", "rate": 0.1, "boostedBy": ["Library"] }],
       "consumers": [
         { "kind": "discovery", "scope": "all" },
@@ -162,8 +164,36 @@
       "label": "Mana",
       "kind": "passive",
       "icon": "✨",
+      "abstract": true,
+      "$comment": "Abstract resource — represented by HUD pill + sparkle aura around Wizard / Library, no world mesh.",
       "sources": [{ "kind": "passive-trickle", "rate": 0.05, "boostedBy": ["Library"] }],
       "consumers": [{ "kind": "unit", "types": ["Wizard", "Healer"] }]
+    },
+    {
+      "id": "amber",
+      "label": "Amber",
+      "kind": "harvest",
+      "icon": "🟡",
+      "$comment": "Quicksand-pit crafting reagent. Rare BEACH 'swirl' hexes painted by the generator. Yields the rarest crafting input but harvesting applies BOTH disease (the bog rot) AND fatigue (the slog through wet sand). Two separate Discoveries can mitigate ('drain-bog' for disease, 'plank-walkway' for fatigue); unlocking both makes amber harvest safe. The dual-risk design IS the late-game judgment call — commit a Healer + a Library research path for a slot that gates Renaissance-tier units.",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["QUICKSAND"],
+          "harvester": "Peon",
+          "overlayStyle": "amber-swirl",
+          "yield": 40,
+          "label": "Amber",
+          "risks": [
+            { "attribute": "disease", "strength": 0.3, "unlockedBy": "drain-bog" },
+            { "attribute": "fatigue", "strength": 0.4, "unlockedBy": "plank-walkway" }
+          ],
+          "yieldRateMul": 0.8
+        }
+      ],
+      "consumers": [
+        { "kind": "building", "types": ["Wonder"] },
+        { "kind": "unit", "types": ["Hero", "Wizard"] }
+      ]
     }
   ]
 }

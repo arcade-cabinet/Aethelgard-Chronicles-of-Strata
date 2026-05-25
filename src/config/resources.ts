@@ -39,6 +39,17 @@ const ResourceSourceSchema = z.discriminatedUnion('kind', [
      * even when the slot is identical.
      */
     overlayStyle: z.string(),
+    /**
+     * Optional asset path under public/assets/. SVG, PNG, GLTF, or
+     * GLB — the renderer picks the loader from the extension. Lets
+     * the JSON declare "this ore vein renders as
+     * public/assets/overlays/ore-vein.svg" without any code edit;
+     * mods can drop a swap-in by changing the path. Per the user's
+     * "for resources would it make sense in some cases like ore to
+     * have SVG files in public/assets that can be linked via JSON
+     * like GLTFs" framing — yes, and this is the hook.
+     */
+    asset: z.string().optional(),
     /** Starting amount of the node deposit (Peons drain it over time). */
     yield: z.number().int().positive(),
     /**
@@ -110,6 +121,17 @@ const ResourceConfigSchema = z.object({
   kind: z.enum(['harvest', 'passive']),
   /** Single-glyph emoji used in HUD pills + tooltips. */
   icon: z.string().optional(),
+  /**
+   * `true` means the resource has no concrete world referent (mana,
+   * science, etc — abstract concepts). Renderer falls back to a
+   * glyph/aura representation instead of trying to load a mesh from
+   * the source's `asset` path. Per the user's "some resources will
+   * not be something like a tree and would require... more abstract
+   * identification basically" framing — this is the abstract bit.
+   * `false` (default) means concrete: render via overlayStyle +
+   * asset path (mesh, sprite, particle).
+   */
+  abstract: z.boolean().optional(),
   sources: z.array(ResourceSourceSchema).min(1),
   consumers: z.array(ResourceConsumerSchema),
 });

@@ -191,6 +191,11 @@ function runGenTimePass(
   // bridge between islands. Decouples the gameplay surface from
   // pure landmass — large oceans stop wasting board space.
   paintShallowsRing(tiles);
+  // M_FUN.ECON.QUICKSAND — paint sparse QUICKSAND 'swirl' hexes
+  // on BEACH tiles. Source of `amber` (the rarest crafting
+  // reagent), with dual-risk harvesting per resources.json. 1-2
+  // per board on average; deterministic per seed.
+  paintQuicksandSwirls(tiles, radius, rng);
   // Recompute `walkable` after the guided-paint pass — every tile
   // now reflects its FINAL biome + level.
   for (const tile of tiles.values()) {
@@ -206,6 +211,33 @@ function runGenTimePass(
  * Deep OCEAN (no land neighbour) stays impassable. Land biomes are
  * untouched.
  */
+/**
+ * M_FUN.ECON.QUICKSAND — paint a sparse scatter of QUICKSAND 'swirl'
+ * hexes on BEACH tiles. Each BEACH tile has a ~1.5% chance per pass
+ * of becoming QUICKSAND; with the typical beach ring carrying
+ * 150-200 tiles, that yields 1-3 quicksand spots per board on
+ * average. Deterministic per map seed.
+ *
+ * The resulting QUICKSAND tile is walkable but slow (1.6× move
+ * cost), and harvesting its amber deposit applies BOTH disease
+ * and fatigue per resources.json#amber.sources[0].risks.
+ *
+ * Why BEACH and not SHALLOWS or SWAMP: a beach swirl reads as a
+ * recognisable hazard the moment a player sees it (and visually
+ * pairs with the existing wet-sand palette), without competing
+ * with the SHALLOWS aquatic-bridge mechanic or SWAMP's existing
+ * disease track.
+ */
+function paintQuicksandSwirls(tiles: Map<string, Tile>, _radius: number, rng: Rng): void {
+  const QUICKSAND_CHANCE = 0.015;
+  for (const tile of tiles.values()) {
+    if (tile.type !== 'BEACH') continue;
+    if (rng() >= QUICKSAND_CHANCE) continue;
+    tile.type = 'QUICKSAND';
+    tile.level = 1;
+  }
+}
+
 function paintShallowsRing(tiles: Map<string, Tile>): void {
   const LAND_TYPES = new Set<Tile['type']>([
     'BEACH',

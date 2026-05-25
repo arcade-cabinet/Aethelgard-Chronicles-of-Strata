@@ -27,6 +27,10 @@ export const BIOME_COLORS: Record<BiomeType, string> = {
   // LAVA — molten orange-red. High chroma so a player scanning the
   // map can't miss a fresh eruption.
   LAVA: '#dc2626',
+  // M_FUN.ECON.QUICKSAND — pale amber-yellow swirl on beach sand.
+  // Picks up the amber-deposit colour so a player scanning the map
+  // sees 'rare deposit here' before they walk onto it.
+  QUICKSAND: '#f59e0b',
 };
 
 /**
@@ -54,4 +58,5 @@ export const BIOME_COLORS_EVENING: Record<BiomeType, string> = {
   MOUNTAIN: '#52525b', // slightly warm slate
   VOLCANO: '#27272a', // basalt slightly warmer at dusk
   LAVA: '#f97316', // molten glow reads brighter against the sunset
+  QUICKSAND: '#fbbf24', // amber swirl reads warmer at dusk
 };

@@ -114,6 +114,15 @@ export const RESOURCE_PROFILES: Record<ResourceType, ResourceProfile> = {
     biomes: new Set(),
     topupAmount: 0,
   },
+  // M_FUN.ECON.QUICKSAND — amber deposit on QUICKSAND tiles.
+  // Spawn pass + risk handling per resources.json#amber.sources[0].
+  amber: {
+    meshLogicalId: 'nature.rock.crystal-large',
+    meshTint: '#f59e0b',
+    biomes: new Set(['QUICKSAND']),
+    harvestYield: 6,
+    topupAmount: 40,
+  },
 };
 
 export function resourceProfileFor(type: ResourceType): ResourceProfile {

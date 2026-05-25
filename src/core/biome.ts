@@ -38,7 +38,15 @@ export type BiomeType =
   // VOLCANO is the landmark; LAVA is the transient (paved by an
   // eruption for `lavaSeconds`, then reverts to MOUNTAIN_PASS).
   | 'VOLCANO'
-  | 'LAVA';
+  | 'LAVA'
+  // M_FUN.ECON.QUICKSAND — rare BEACH 'swirl' hex. Walkable (you can
+  // cross it on the way somewhere), but harvesting the amber deposit
+  // there applies BOTH disease and fatigue. Two Discoveries
+  // ('drain-bog' + 'plank-walkway') unlock safe harvest. Late-game
+  // gating: a single quicksand hex is the only source of `amber`,
+  // which gates Renaissance Hero/Wizard training + Wonder
+  // completion.
+  | 'QUICKSAND';
 
 /** The assigned biome of one tile. */
 export interface Biome {

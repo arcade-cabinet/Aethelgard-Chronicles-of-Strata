@@ -30,11 +30,12 @@ export const ATTRACTOR_GUARANTEE: Record<ResourceType, number> = {
   peat: 0,
   science: 0,
   // M_EXPANSION.F.72 — passive-trickle slots (science, mana) and
-  // risk-bearing slots (peat) are guaranteed 0 — the player extends
-  // into them rather than starting next to them. food gets a small
-  // guarantee so the starting kit can sustain a few units before
-  // ranging out.
+  // risk-bearing slots (peat, amber) are guaranteed 0 — the player
+  // extends into them rather than starting next to them. food gets
+  // a small guarantee so the starting kit can sustain a few units
+  // before ranging out.
   mana: 0,
+  amber: 0,
 };
 
 /** Hex radius of an attractor's resource-guarantee zone (~2-tile zone of control). */

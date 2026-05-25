@@ -113,6 +113,7 @@ export const RESOURCE_TYPES = RESOURCE_IDS as readonly [
   'peat',
   'science',
   'mana',
+  'amber',
 ];
 export type ResourceType = (typeof RESOURCE_TYPES)[number];
 

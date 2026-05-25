@@ -1,15 +1,17 @@
 # Continuous Work Directive — Aethelgard: Chronicles of Strata
 
 **Status:** ACTIVE
-**Cycle:** v0.5 "Satisfying Loop" (v0.4 RELEASED in PR #10)
+**Cycle:** v0.4 PR #10 — pre-merge expansion (user mandate: "these are all things to do before you merge 0.4")
 **Owner:** Claude
-**PRD:** [`docs/specs/PRD-v0.4.md`](../docs/specs/PRD-v0.4.md) (v0.4 archive); v0.5 brief in [`docs/specs/130-topology-and-decision-tracks.md`](../docs/specs/130-topology-and-decision-tracks.md)
+**PRD:** [`docs/specs/PRD-v0.4.md`](../docs/specs/PRD-v0.4.md) + the expansion threads in [`docs/specs/130-topology-and-decision-tracks.md`](../docs/specs/130-topology-and-decision-tracks.md)
 
-## v0.5 — Satisfying Loop (the next cycle)
+## v0.4 PR #10 — pre-merge expansion (the user's "before you merge 0.4")
 
-The user pulled together four design threads during the v0.4
-AIVAI-tune pass. v0.5 ships them. Each section maps to the
-spec doc citation; each item is a self-contained commit-unit.
+The user expanded v0.4 scope after the initial AIVAI-tune pass:
+the four design threads + the JSON-first sweep + the quicksand
+portal mechanics all land in THIS PR, not a v0.5 cycle. Each
+section maps to the spec doc citation; each item is a
+self-contained commit-unit.
 
 ### v0.5.A — Topology (PR #10 follow-up + spec §1)
 - [x] M_FUN.MAP.TOPOLOGY.STACK — paintMountainMassif now emits a

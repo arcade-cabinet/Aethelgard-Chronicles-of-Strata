@@ -19,4 +19,12 @@ describe('biome-ambient (M_FUN.AUDIO.BIOME)', () => {
       expect(ASSET_METADATA[id]).toBeDefined();
     }
   });
+
+  // M_FUN.ECON.QUICKSAND — pin the new biome's ambient route through
+  // the existing coast loop (waves + birds). Failure here means the
+  // QUICKSAND row in BIOME_AMBIENT got dropped during the JSON-first
+  // sweep + would silently play no audio when a player enters one.
+  it('QUICKSAND maps to coast ambient', () => {
+    expect(ambientForBiome('QUICKSAND')).toBe('audio.ambient.coast');
+  });
 });

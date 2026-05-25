@@ -118,6 +118,16 @@
       "moveCost": 1.0,
       "appliesAttribute": null,
       "attributeStrength": 0
+    },
+    "QUICKSAND": {
+      "$comment": "Rare BEACH-adjacent 'swirl' hex. Walkable (you can cross it), but harvesting the amber deposit applies disease + fatigue on alternating ticks. Two Discoveries mitigate.",
+      "elevation": 1,
+      "walkable": true,
+      "buildable": false,
+      "habitable": false,
+      "moveCost": 1.6,
+      "appliesAttribute": "fatigue",
+      "attributeStrength": 0.3
     }
   },
 

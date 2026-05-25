@@ -1,0 +1,16 @@
+{
+  "target": "PR #10 fix/mountain-massif-not-strip (full branch vs origin/main)",
+  "status": "in_progress",
+  "flags": {
+    "security_focus": true,
+    "performance_critical": false,
+    "strict_mode": true,
+    "framework": "ts-react-r3f-koota-vitest-playwright"
+  },
+  "current_step": 1,
+  "current_phase": 1,
+  "completed_steps": [0],
+  "files_created": ["00-scope.md"],
+  "started_at": "2026-05-25T02:50:00Z",
+  "last_updated": "2026-05-25T02:50:00Z"
+}
