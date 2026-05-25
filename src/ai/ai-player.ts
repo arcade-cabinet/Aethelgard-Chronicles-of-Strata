@@ -719,21 +719,14 @@ function randomPerimeterTile(game: GameState, faction: Faction): string | null {
   // is the determinism contract.
   const controlledSorted = [...zone.controlled].sort();
   const perim: string[] = [];
-  // Hex neighbours: 6 axial offsets — module-level constant for
-  // determinism + perf.
-  const NEIGHBORS: ReadonlyArray<[number, number]> = [
-    [1, 0],
-    [-1, 0],
-    [0, 1],
-    [0, -1],
-    [1, -1],
-    [-1, 1],
-  ];
+  // QW-10 — use the shared `hexNeighbors(q, r)` instead of a local
+  // 6-axial offset table. The canonical helper in @/core/hex already
+  // emits the same deterministic order; the prior local table was
+  // a third copy of the same data.
   for (const key of controlledSorted) {
     const tile = game.board.tiles.get(key);
     if (!tile) continue;
-    for (const [dq, dr] of NEIGHBORS) {
-      const nkey = `${tile.q + dq},${tile.r + dr}`;
+    for (const nkey of hexNeighbors(tile.q, tile.r)) {
       if (!zone.controlled.has(nkey)) {
         perim.push(key);
         break;
