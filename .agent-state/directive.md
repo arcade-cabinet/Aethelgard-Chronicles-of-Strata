@@ -105,19 +105,15 @@ the v0_5_grinder agent should pull these in order):
   symmetry already true (combat.ts queries by FactionTrait != ownFaction, no
   per-faction logic). 913 unit tests green.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.ARCHETYPES — NEW JSON registry
-  `src/config/archetypes.json` defines per-archetype MESH +
-  SFX + particle palette for every building type. Archetypes:
-  `medieval` (default — the current player kit),
-  `orc` (BlackKnight-tier visual; barbarian-camp default for
-  pure-physical camps), `undead` (graveyard-tier; barbarian
-  variant for necromancer camps), `mystic` (wizard/witch
-  tier; rare camp). Each faction config picks one archetype.
-  `BuildingRenderer` reads
-  `archetypes[faction.archetype].buildings[buildingType].mesh`
-  via a typed accessor (same shape as `assets.entry`). Acceptance:
-  swapping a faction's archetype at runtime swaps every visible
-  building mesh in-place + the SFX pool the building emits.
+- [x] M_PIVOT.ARCHETYPES — `src/config/archetypes.json` registry with 4
+  archetypes (medieval/orc/undead/mystic), each carrying the full 9-building
+  mesh + sfx cue keys + particle palette. `src/config/archetypes.ts` Zod-validates
+  at module load; exports ARCHETYPES + archetypeFor() + buildingMeshFor()
+  typed accessors. 10 unit tests pin: load+validate, 4 archetypes present,
+  full BuildingType set per archetype, positive scale + non-empty mesh ids,
+  valid hex palettes, archetypeFor() throws helpfully on unknown id,
+  buildingMeshFor() null-fallback on unknown building. BuildingRenderer
+  swap (lifting from SKINS to ARCHETYPES) lands in M_PIVOT.RENDER.COLOR-OUTLINE.
 
 - [WAIT] (v0.5 cycle) M_PIVOT.BARBARIAN-CAMPS — repurpose the
   graveyard biome + enemy-raid units. Camp = neutral attractor
