@@ -53,6 +53,7 @@ import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 import type { GameState } from './game-state';
 import { expireProposals } from './diplomacy-border';
+import { tickTributeCession } from './diplomacy-tribute';
 import { grantRandomDiscovery } from './research';
 import { buildEntityTileIndex } from './tile-index';
 
@@ -276,6 +277,11 @@ export function tickDepositPhase(game: GameState): void {
       eco.peonMetrics.firstWoodAt = game.clock.elapsed;
     }
   }
+  // M_V6.DIPLO.TRIBUTE — apply per-tick cession after deposits land so
+  // the tributary's pile reflects the harvest first, THEN cedes 10% of
+  // it. Pair-iteration is O(N^2) over factionIds; N is small (≤6 player
+  // factions for 4X) so this stays cheap. delta is the tick seconds.
+  tickTributeCession(game.diplomacy, FACTIONS, (f) => game.economy[f as Faction], 1);
 }
 
 // ---------------------------------------------------------------------------

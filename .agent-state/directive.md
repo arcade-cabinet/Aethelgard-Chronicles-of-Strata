@@ -323,10 +323,13 @@ the portal/diplomacy work begins so the substrate is fully complete.
   cooldown lifecycle, non-positive/non-finite rejection. Radix popover UI is
   follow-up polish; the swap primitives are in place.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.TRIBUTE — automatic tribute
-  demand when supply×military ratio between two factions exceeds
-  2×. Refusal flips Relation to `enemy` + adds a wave-of-attack
-  bonus to the demanding side.
+- [x] M_V6.DIPLO.TRIBUTE — src/game/diplomacy-tribute.ts: canDemandTribute
+  detects supply-ratio >= 2× threshold; acceptTribute flips to tributary +
+  records dominant; refuseTribute flips to enemy (wave-of-attack hook for
+  the dominant AI). tickTributeCession runs in tickDepositPhase per tick —
+  drains 10% of tributary wood/stone/gold and deposits in dominant. 10 tests
+  pin demand-detection, accept/refuse semantics, per-tick cession math,
+  neutral/zero-delta no-op.
 
 ### v0.6.C — MYTH events + 4X depth + parking lot
 
