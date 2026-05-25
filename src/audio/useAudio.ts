@@ -62,6 +62,19 @@ export function useAudio(game: GameState): void {
     return unregister;
   }, []);
 
+  useEffect(() => {
+    // M_V8.PORTAL-STONE.AUDIO — play a stinger when the rare portal-stones
+    // event fires. The event is dispatched from tickClockPhase when the
+    // random-event trigger succeeds (1-in-200 after 5min, at-most-once).
+    const onPortalStones = (): void => {
+      const map = SOUND_FOR_EVENT['portal-stones-placed'];
+      playSound(busesRef.current, map.bus, resolveSoundId(map));
+    };
+    if (typeof window === 'undefined') return;
+    window.addEventListener('aethelgard:portal-stones-placed', onPortalStones);
+    return () => window.removeEventListener('aethelgard:portal-stones-placed', onPortalStones);
+  }, []);
+
   useFrame(() => {
     const buses = busesRef.current;
 
