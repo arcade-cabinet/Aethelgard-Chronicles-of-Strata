@@ -18,8 +18,10 @@ describe('M_PIVOT.AI.JSON-PERSONALITIES — per-personality thresholds', () => {
         p.starvationThreshold,
         `personality "${key}" missing starvationThreshold`,
       ).toBeDefined();
-      expect(p.rageQuitThreshold!).toBeGreaterThan(0);
-      expect(p.starvationThreshold!).toBeGreaterThan(0);
+      // Narrowed by the toBeDefined() asserts above; ?? 0 then > 0
+      // avoids biome's noNonNullAssertion forbid.
+      expect(p.rageQuitThreshold ?? 0).toBeGreaterThan(0);
+      expect(p.starvationThreshold ?? 0).toBeGreaterThan(0);
     }
   });
 
