@@ -158,15 +158,19 @@ grid, every spawn rule picks it up automatically."
   tables (HEALTH_BAR_STOPS in rules/display.ts and a handful of
   smaller Records) are tracked individually as they surface in
   CodeRabbit review — they're cosmetic, not blocking v0.4 merge.
-- [ ] M_FUN.MAP.PORTAL — portal-style biomes (the user's
-  "quicksand → quicksand teleport, mountain cave → cave network"
-  design). Requires VERY careful balancing — a one-way teleport
-  shortcut shifts every map's choke-point calculus. Out of v0.4/v0.5
-  scope; tracked here as the v0.6 anchor item. Open design questions:
-  (a) deterministic destination or random-per-event-PRNG; (b) shared
-  player+enemy portal or per-faction; (c) cooldown vs unlimited use;
-  (d) AI weighting (Raider personalities should LOVE portals,
-  Builders should avoid them).
+- [x] M_FUN.MAP.PORTAL — runtime primitive shipped DISABLED.
+  Tile gains optional `portalTo` (hex key) + `portalGroupId`
+  (renderer colour-match). pathFollowSystem teleports a unit
+  that arrives on a portal tile to `portalTo`, drops queued
+  path steps, and stops movement (unit re-paths next tick).
+  Generator NOT wired in v0.4 — no mapType sets portalTo, so
+  the primitive is inert in production. Unit-test pins the
+  teleport snap + the no-portal pass-through. v0.5 generator
+  work (quicksand-pairs, mountain-cave-networks) can build on
+  this stable contract without changing path-follow again.
+  Balance questions (deterministic vs random destination,
+  per-faction vs shared, cooldown, AI weighting) tracked on
+  the v0.5 PRD when generators land.
 
 ### v0.5.F — Cleanups discovered along the way
 - [x] M_FUN.PROC.SCREENSHOT-WAIT — AIVAI balance harness now waits

@@ -90,9 +90,9 @@ export function ensureAttractorResources(
   // QW-2 — iterate the registry-driven guarantee list (anything with
   // attractorGuarantee > 0) instead of hardcoding `['wood','stone','gold']`.
   // Adding food = 2 in resources.json auto-extends the topup loop.
-  const guaranteedSlots = (RESOURCES.filter((r) => (r.attractorGuarantee ?? 0) > 0).map(
+  const guaranteedSlots = RESOURCES.filter((r) => (r.attractorGuarantee ?? 0) > 0).map(
     (r) => r.id,
-  ) as ResourceType[]);
+  ) as ResourceType[];
   for (const type of guaranteedSlots) {
     const have = countNearby(out, type, cq, cr, ATTRACTOR_RADIUS);
     const need = ATTRACTOR_GUARANTEE[type] - have;

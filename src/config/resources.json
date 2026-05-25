@@ -9,9 +9,7 @@
       "sources": [
         {
           "kind": "biome-node",
-          "biomes": [
-            "FOREST"
-          ],
+          "biomes": ["FOREST"],
           "harvester": "Peon",
           "overlayStyle": "tree-cluster",
           "yield": 100
@@ -20,15 +18,7 @@
       "consumers": [
         {
           "kind": "building",
-          "types": [
-            "House",
-            "Farm",
-            "Barracks",
-            "Watchtower",
-            "Library",
-            "Wonder",
-            "Granary"
-          ]
+          "types": ["House", "Farm", "Barracks", "Watchtower", "Library", "Wonder", "Granary"]
         },
         {
           "kind": "road",
@@ -46,9 +36,7 @@
       "sources": [
         {
           "kind": "biome-node",
-          "biomes": [
-            "HIGHLAND"
-          ],
+          "biomes": ["HIGHLAND"],
           "harvester": "Peon",
           "overlayStyle": "stone-pile",
           "yield": 80
@@ -57,14 +45,7 @@
       "consumers": [
         {
           "kind": "building",
-          "types": [
-            "Granary",
-            "Barracks",
-            "Watchtower",
-            "Wall",
-            "Wonder",
-            "Library"
-          ]
+          "types": ["Granary", "Barracks", "Watchtower", "Wall", "Wonder", "Library"]
         },
         {
           "kind": "road",
@@ -83,9 +64,7 @@
       "sources": [
         {
           "kind": "biome-node",
-          "biomes": [
-            "MOUNTAIN"
-          ],
+          "biomes": ["MOUNTAIN"],
           "harvester": "Peon",
           "overlayStyle": "ore-vein",
           "yield": 60,
@@ -102,17 +81,11 @@
       "consumers": [
         {
           "kind": "building",
-          "types": [
-            "Wonder",
-            "Watchtower"
-          ]
+          "types": ["Wonder", "Watchtower"]
         },
         {
           "kind": "unit",
-          "types": [
-            "Trebuchet",
-            "BlackKnight"
-          ]
+          "types": ["Trebuchet", "BlackKnight"]
         }
       ],
       "color": "#6b7280",
@@ -126,9 +99,7 @@
       "sources": [
         {
           "kind": "biome-node",
-          "biomes": [
-            "GRASS"
-          ],
+          "biomes": ["GRASS"],
           "harvester": "Peon",
           "overlayStyle": "gold-glint",
           "yield": 60
@@ -137,21 +108,11 @@
       "consumers": [
         {
           "kind": "building",
-          "types": [
-            "Farm",
-            "Barracks",
-            "Library",
-            "Wonder"
-          ]
+          "types": ["Farm", "Barracks", "Library", "Wonder"]
         },
         {
           "kind": "unit",
-          "types": [
-            "Footman",
-            "Wizard",
-            "Healer",
-            "Hero"
-          ]
+          "types": ["Footman", "Wizard", "Healer", "Hero"]
         }
       ],
       "color": "#fbbf24",
@@ -166,9 +127,7 @@
       "sources": [
         {
           "kind": "biome-node",
-          "biomes": [
-            "FOREST"
-          ],
+          "biomes": ["FOREST"],
           "harvester": "Peon",
           "overlayStyle": "game-trail",
           "yield": 80,
@@ -176,9 +135,7 @@
         },
         {
           "kind": "biome-node",
-          "biomes": [
-            "SHALLOWS"
-          ],
+          "biomes": ["SHALLOWS"],
           "harvester": "Peon",
           "overlayStyle": "fish-school",
           "yield": 100,
@@ -186,9 +143,7 @@
         },
         {
           "kind": "biome-node",
-          "biomes": [
-            "GRASS"
-          ],
+          "biomes": ["GRASS"],
           "harvester": "Peon",
           "overlayStyle": "berry-bush",
           "yield": 60,
@@ -197,10 +152,7 @@
         {
           "kind": "passive-trickle",
           "rate": 0.05,
-          "boostedBy": [
-            "Granary",
-            "Farm"
-          ]
+          "boostedBy": ["Granary", "Farm"]
         }
       ],
       "consumers": [
@@ -222,9 +174,7 @@
       "sources": [
         {
           "kind": "biome-node",
-          "biomes": [
-            "SWAMP"
-          ],
+          "biomes": ["SWAMP"],
           "harvester": "Peon",
           "overlayStyle": "peat-cut",
           "yield": 70,
@@ -241,10 +191,7 @@
       "consumers": [
         {
           "kind": "building",
-          "types": [
-            "Wall",
-            "Watchtower"
-          ]
+          "types": ["Wall", "Watchtower"]
         }
       ],
       "color": "#78350f",
@@ -261,9 +208,7 @@
         {
           "kind": "passive-trickle",
           "rate": 0.1,
-          "boostedBy": [
-            "Library"
-          ]
+          "boostedBy": ["Library"]
         }
       ],
       "consumers": [
@@ -273,11 +218,7 @@
         },
         {
           "kind": "unit",
-          "types": [
-            "Wizard",
-            "Healer",
-            "Hero"
-          ]
+          "types": ["Wizard", "Healer", "Hero"]
         }
       ],
       "color": "#38bdf8",
@@ -294,18 +235,13 @@
         {
           "kind": "passive-trickle",
           "rate": 0.05,
-          "boostedBy": [
-            "Library"
-          ]
+          "boostedBy": ["Library"]
         }
       ],
       "consumers": [
         {
           "kind": "unit",
-          "types": [
-            "Wizard",
-            "Healer"
-          ]
+          "types": ["Wizard", "Healer"]
         }
       ],
       "color": "#c084fc",
@@ -320,9 +256,7 @@
       "sources": [
         {
           "kind": "biome-node",
-          "biomes": [
-            "QUICKSAND"
-          ],
+          "biomes": ["QUICKSAND"],
           "harvester": "Peon",
           "overlayStyle": "amber-swirl",
           "yield": 40,
@@ -345,16 +279,11 @@
       "consumers": [
         {
           "kind": "building",
-          "types": [
-            "Wonder"
-          ]
+          "types": ["Wonder"]
         },
         {
           "kind": "unit",
-          "types": [
-            "Hero",
-            "Wizard"
-          ]
+          "types": ["Hero", "Wizard"]
         }
       ],
       "color": "#f59e0b",
