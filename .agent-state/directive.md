@@ -280,11 +280,8 @@ they don't get forgotten.
 - [x] M_FUN.TEST.AIVAI-BORDER-CLASH — zoneUnionPct > 30 was already present;
   added eitherHarvested (firstWoodAt > -1) spec assertion; both soft guards
   in ai-vs-ai-balance.spec.ts.
-- [WAIT] (v0.5 cycle) M_FUN.UX.LOREBOOK-RETRY — the
-  GameOverModal lorebook write now releases the guard on
-  failure (PR #10). Add a real exponential-backoff retry loop
-  with a 3-attempt cap so a transient DB hiccup doesn't drop
-  the entry. CodeRabbit MINOR PR #10.
+- [x] M_FUN.UX.LOREBOOK-RETRY — 3-attempt exponential-backoff retry (200ms, 400ms)
+  in GameOverModal lorebook useEffect; guard released only on permanent failure.
 - [WAIT] (v0.5 cycle) M_FUN.AI.MATCH-NARRATIVE-SPEC — replace
   the implementation-coupled regex word-list assertions in
   `src/game/__tests__/match-narrative.test.ts:57` with
