@@ -63,8 +63,14 @@ const baseE2eGlob = 'e2e/**/*.spec.ts';
 const testMatch = includeVisual ? [baseE2eGlob, 'visual/**/*.spec.ts'] : [baseE2eGlob];
 const testIgnore = includeJourney ? [] : JOURNEY_SPECS;
 
-const TEST_TIMEOUT_MS = IS_CI ? 60_000 : 45_000;
-const ACTION_TIMEOUT_MS = IS_CI ? 30_000 : 15_000;
+// CI runner is consistently 2-3× slower than local since v0.5+v0.6+v0.7
+// substrate (more entities per tick, more renderers, more ECS systems).
+// Pattern of one-off per-test bumps (PR #25, #33, #38, #40) was getting
+// tiring; lift global CI defaults instead. 180s per test + 60s per action
+// gives 3× headroom over the worst observed (tap-travel 60s wall) without
+// masking a real perf regression — a real regression would blow past 180s.
+const TEST_TIMEOUT_MS = IS_CI ? 180_000 : 45_000;
+const ACTION_TIMEOUT_MS = IS_CI ? 60_000 : 15_000;
 const NAV_TIMEOUT_MS = IS_CI ? 30_000 : 15_000;
 
 const allProjects = [
