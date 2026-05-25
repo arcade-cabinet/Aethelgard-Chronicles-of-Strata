@@ -568,6 +568,30 @@ export function createPersistence(): Persistence {
     },
 
     async recordLorebookEntry(entry: LorebookEntry): Promise<void> {
+      // Coderabbit MAJOR — mirror the read-side guards on the WRITE
+      // path so a row that would later be rejected by
+      // rowToLorebookEntry isn't silently inserted (it would become
+      // a tomb stone: persisted but unlistable). Same per-element +
+      // total-string caps as the read path.
+      const PER_STRING_CAP = 512;
+      const TOTAL_CAP = 4096;
+      if (!Array.isArray(entry.highlights)) {
+        throw new Error('persistence.recordLorebookEntry: highlights must be string[]');
+      }
+      if (!entry.highlights.every((s) => typeof s === 'string')) {
+        throw new Error('persistence.recordLorebookEntry: highlights contains non-string element');
+      }
+      if (entry.highlights.some((s) => s.length > PER_STRING_CAP)) {
+        throw new Error(
+          `persistence.recordLorebookEntry: highlight element exceeds ${PER_STRING_CAP} chars`,
+        );
+      }
+      const serialised = JSON.stringify(entry.highlights);
+      if (serialised.length > TOTAL_CAP) {
+        throw new Error(
+          `persistence.recordLorebookEntry: serialised highlights exceeds ${TOTAL_CAP} bytes`,
+        );
+      }
       const db = await openDb();
       if (!db) return;
       await db.run(
@@ -580,7 +604,7 @@ export function createPersistence(): Persistence {
           entry.outcome,
           entry.mode,
           entry.enemyPersonality,
-          JSON.stringify(entry.highlights),
+          serialised,
         ],
       );
       // Cap at LOREBOOK_MAX rows — newest-first; pruning by ended_at

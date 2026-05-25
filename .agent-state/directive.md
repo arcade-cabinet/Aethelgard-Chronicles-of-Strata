@@ -852,6 +852,21 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
 These are NOT v0.4 work but stay in the directive so the anti-stop
 hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
 
+- [ ] [WAIT-V0.5] M_FUN.FACTION.ASYMMETRIC-BUILDINGS — Per-faction
+  building registry in JSON (extends `src/config/resources.json` +
+  `src/rules/skins.ts` shape). Each faction declares its OWN
+  building list — player gets House/Farm/Barracks, enemy gets
+  Hovel/RaidPit/Warband, etc — with shared CONSUMER contracts
+  (House-equivalent gives supply, Barracks-equivalent trains
+  military, Wall-equivalent denies tile). Per the user's framing:
+  "adds WAY more scale, keeps from having to constantly go, 'i
+  have a cool building now what's the enemy equivalent?'"
+  Design questions for v0.5 PRD: (a) does the shared contract
+  live as a `buildingRole: 'supply'|'military'|'defense'|'wonder'`
+  field on each building, with the AI evaluator picking by role
+  not by name? (b) per-faction balance — symmetric power, distinct
+  silhouette + sfx + mesh? (c) how does this interact with the
+  existing skins.ts that already does mesh-only divergence?
 - [ ] [WAIT-V0.5] `M_FUN.CIV.*` — Civilian layer (citizens, refugees,
   trade routes).
 - [ ] [WAIT-V0.5] `M_FUN.MYTH.*` — Mythology (aether nodes, ruins,
