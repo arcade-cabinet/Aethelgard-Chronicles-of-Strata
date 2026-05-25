@@ -1529,7 +1529,7 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   (economy-access guard), NewGameModal.tsx (typed FactionConfig objects),
   Units.tsx (SKINS guard + colorblind guard). 1091 tests green.
 
-- [ ] M_V8.WONDER-TIMERS.N-PLAYER — `GameState.wonderTimers` type widened from
+- [x] M_V8.WONDER-TIMERS.N-PLAYER — `GameState.wonderTimers` type widened from
   `Record<Faction, number>` to `Record<string, number>`. `startGame` seeds all
   faction ids at init (`Object.fromEntries`). Wonder-countdown phase in
   economy-tick-phases.ts iterates `factionIds(game.factions)` instead of
@@ -1540,25 +1540,25 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   id, first-ai-to-zero → loss. `FactionTrait({ faction })` cast in test fixed.
   All 1091+ tests green.
 
-- [ ] M_V8.OUTLINE.CANVAS-MOUNT — Import `UnitHexOutline` + `BuildingOutlineRing`
+- [x] M_V8.OUTLINE.CANVAS-MOUNT — Import `UnitHexOutline` + `BuildingOutlineRing`
   from `@/world/UnitHexOutline` and `@/world/BuildingOutlineRing` in Canvas.tsx.
   Mount inside `<group name="outlines">` alongside the terrain/units groups.
   Pass `game` prop. No new component logic — purely wiring the v0.7 substrates
   into the render tree. 1 grep-gate test: Canvas.tsx imports both components.
 
-- [ ] M_V8.DIFFICULTY-MULTIPLIER.N-PLAYER — Find every `faction === 'enemy'`
+- [x] M_V8.DIFFICULTY-MULTIPLIER.N-PLAYER — Find every `faction === 'enemy'`
   guard in src/ai/, src/game/, src/ecs/systems/ that controls difficulty
   scaling / spawn rate / AI aggressiveness. Replace with `kind === 'ai'` lookup
   via `findFaction(game.factions, factionId)?.kind`. Adds a test: 4-player game
   with 3 AI factions all receive difficulty scaling (was: only 'enemy' did).
 
-- [ ] M_V8.PORTAL-STONE.AUDIO — `useAudio.ts` listens for the
+- [x] M_V8.PORTAL-STONE.AUDIO — `useAudio.ts` listens for the
   `'aethelgard:portal-stones-placed'` window event and plays a dedicated stinger
   (`audio.sfx.portal-stones-placed` sound id, or fallback to `combat-hit-magic`
   until the asset lands). `SOUND_FOR_EVENT` gains a `'portal-stones-placed'` entry.
   1 test: event dispatch → sound map entry exists.
 
-- [ ] M_V8.PORTAL-STONE.COOLDOWN-HOOK — In `pathFollowSystem`, the existing
+- [x] M_V8.PORTAL-STONE.COOLDOWN-HOOK — In `pathFollowSystem`, the existing
   `portalTo` teleport branch (v0.4 primitive) gains a biome check: when
   `board.get(arrivedTile)?.type === 'PORTAL_STONE'`, call
   `refreshPortalStoneCooldown(game, factionId, game.clock.elapsed)`. The substrate
