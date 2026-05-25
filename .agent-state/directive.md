@@ -527,6 +527,148 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
 
 ---
 
+## v0.9 CYCLE — CI hardening + AI depth + HUD correctness + docs + E2E round-trip
+
+**Cycle owner:** Claude (autonomous agent `v0_9_grinder` on `feat/aethelgard-initial-release`)
+**Base:** v0.1.14 (latest tag; v0.8 items were prefixed `[WAIT]` but not yet implemented —
+  v0.9 grinder drains both the v0.8 queue AND the new v0.9 items below, in dependency order)
+**Mandate:** maximize shipped features — CI correctness (visual baseline linux lock), AI depth
+  (Wonder evaluator), HUD correctness (GameOverModal N-player), docs (PRD fold-in), E2E
+  round-trip (save/load N-player), map balance (4X fair starts), audio crescendo integration,
+  plus full-cycle comprehensive review.
+
+### Architectural decisions for v0.9
+
+**Decision 1 — Visual baseline lock strategy: GitHub Actions matrix approach (not Docker).**
+  Options: (a) Docker container running the CI image locally; (b) GitHub Actions
+  `workflow_dispatch` that locks baselines on ubuntu-latest and uploads as an artifact;
+  (c) mark visual tests as "platform-skip" on non-linux (the Playwright `projects` filter).
+  **Decision: (b) — GHA workflow_dispatch + artifact upload.** Docker requires the agent
+  to install Docker Desktop, build the image, and manage layer caching — a multi-hour
+  infrastructure task with no incremental benefit. GHA already runs the exact CI image;
+  adding a `lock-baselines.yml` workflow that runs `pnpm visual:battery:ci --update` and
+  commits the PNG artifacts back via the `peaceiris/actions-gh-pages` pattern is 30 lines of
+  YAML. Outcome: `pnpm visual:battery:ci` in CI uses the GHA-locked PNGs; the main
+  `visual-battery` job flips from `continue-on-error: true` to `fail: true`.
+
+**Decision 2 — Save schema versioning for v0.9 N-player additions.**
+  Current SNAPSHOT_VERSION = 3. v0.9 adds: (a) `economyExtra` serialization (economyFor
+  helper already writes to game.economyExtra but serialize-game.ts may not persist it);
+  (b) wonder crescendo state (if we add per-faction audio state). Assessment: inspect
+  serialize-game.ts for economyExtra handling. If missing → bump to SNAPSHOT_VERSION 4
+  with a v3→v4 migration (empty `economyExtra: {}`). If present → no bump needed.
+  The WonderEvaluator adds no new GameState fields (it reads existing wonderTimers).
+  Audio crescendo state is ephemeral (re-derived on load). **Outcome: bump only if
+  economyExtra is not already serialized — verify before implementing.**
+
+**Decision 3 — AI WonderEvaluator placement in the yuka evaluator stack.**
+  Current stack (in wire order): BuildEvaluator → TrainEvaluator → MilitaryEvaluator →
+  PatrolEvaluator → ResignEvaluator. v0.8 adds DiplomaticEvaluator between Patrol and
+  Resign. WonderEvaluator is inserted BETWEEN BuildEvaluator and TrainEvaluator: it is
+  an economic-construction goal (like Build) but with the highest long-term value, so it
+  should pre-empt training when the faction has sufficient supply headroom. Desirability
+  formula: `base = personality.wonderWeight ?? 0.5; supplyRatio = usedSupply / maxSupply;
+  score = base * (1 - supplyRatio * 0.6)` — high when supply is not yet maxed out.
+  Wonder construction is gated on `monumental-architecture` Discovery flag; without it,
+  desirability = 0 (effectively disabled for AI until the tech is researched). This avoids
+  AIs spam-building Wonders before the tech tree gates them.
+
+**Decision 4 — 4X map balance: what "fair for 6 factions" means.**
+  A 6-faction map is fair when: (1) every pair of starting positions is ≥ 4 walkable-hex
+  radius apart (currently 6 but 4 works for small boards); (2) every faction has ≥ 3
+  harvestable resource nodes within 5 hexes of its base; (3) the map has a "neutral band"
+  of ≥ 8 tiles in the central region not owned by any faction's 5-hex base radius.
+  The heuristic function `scoreFactionBalance(board, factions): number` returns 0..1;
+  `findBalancedBoard` already re-rolls until a threshold is met — extend the threshold
+  check to include the 3-resource and neutral-band gates. Tag: the radius gate is already
+  implicit in `placeBarbarianCamps` (≥6-hex from each base); the resource and neutral-band
+  checks are new. Implementation: extend `scoreBoard` in `board.ts` to accept a
+  `minFactionResources` and `minNeutralBand` option; `findBalancedBoard` passes these
+  when mode is 'age-of-strata' and defaultPlayerCount ≥ 6.
+
+### v0.9 work-units (dependency-ordered)
+
+- [ ] M_V9.REVIEWER.FULL-CYCLE — dispatch `comprehensive-review:full-review` against
+  `git diff origin/main` early in cycle. Fold CRITICAL + HIGH findings into nearest
+  forward commits. Log output to `.full-review/v0.9-cycle-opening.md`. Marks `[x]` when
+  file exists + all CRITICAL findings have a resolution note.
+
+- [ ] M_V9.VISUAL.LINUX-LOCK — Add `.github/workflows/lock-baselines.yml`
+  `workflow_dispatch` job that runs `pnpm visual:battery:ci --update` on ubuntu-latest
+  (matching CI image), commits updated PNGs back to the branch via git commit + push.
+  Flip `visual-battery` job in `ci.yml` from `continue-on-error: true` → no
+  continue-on-error (hard fail on drift). Add `pnpm visual:battery:lock` script alias.
+  Acceptance: `visual:battery:ci` returns non-zero when a PNG is manually corrupted.
+
+- [ ] M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — Convert 6 v0.8 test files that use
+  source-text grep assertions (testing that source code CONTAINS a pattern) into
+  behavior assertions (testing what the code DOES). Target files identified by the v0.8
+  reviewer trio: any test using `grep`, `readFileSync`, or `source.includes()` to assert
+  implementation details. Each file: identify the public contract, rewrite assertions
+  against `import`-ed module behavior. Run `pnpm test` after each file to confirm green.
+
+- [ ] M_V9.DOCS.PRD-V0.6-V0.7-V0.8 — Write proper PRD spec docs for each shipped cycle:
+  `docs/specs/PRD-v0.6.md` (portals + diplomacy + MYTH + 4X detection),
+  `docs/specs/PRD-v0.7.md` (substrate→player polish + visual battery + discovery tree),
+  `docs/specs/PRD-v0.8.md` (N-player lift completions + AI diplomacy + outline + CI).
+  Each doc: motivation, architectural decisions (4 from that cycle), work-unit table with
+  shipped commit refs. Match the existing `docs/specs/PRD-v0.4.md` structure.
+
+- [ ] M_V9.AI.WONDER-EVALUATOR — `src/ai/evaluators/wonder.ts` ships
+  `WonderEvaluator extends GoalEvaluator<AiPlayer>` + `WonderGoal`. Evaluator reads
+  `game.wonderTimers`, `game.research` (monumental-architecture flag gate), and
+  `personality.wonderWeight` (new field in `ai-personalities.json`; defaults 0.5).
+  Desirability formula from Decision 3 above. `AiPlayer` constructor inserts between
+  `BuildEvaluator` and `TrainEvaluator`. 5 unit tests pin: evaluator scores 0 without
+  monumental-architecture, scores > 0 with it, score decreases as supply fills,
+  WonderGoal produces placeBuilding('Wonder') call, evaluator weight flows from JSON.
+
+- [ ] M_V9.HUD.WIN-LOSS-N-PLAYER — `GameOverModal` currently shows winner vs loser
+  as a 2-faction binary. For N-player: detect the `game.victoryRecord` winner (single
+  faction or coalition via tribute-ally chains), render per-faction final stats grid
+  (kills, buildings, score sum, relation badge from `game.diplomacy`). Legacy 2-faction
+  path unchanged (victoryRecord absent → use existing outcome logic). 6 browser tests
+  pin: 2-faction modal unchanged, N-player shows per-faction grid, winner row elevated,
+  relation badges rendered, tribute-ally tag appears for tributary winners.
+
+- [ ] M_V9.E2E.SAVE-LOAD-N-PLAYER — Full Playwright e2e: boot `/?ai-vs-ai=1&nplayer=4&seed=42`,
+  advance 5 sim-min via `window.__game.advanceFrames(18000)`, serialise via
+  `window.__game.save()`, reload page, restore via `window.__game.load(snapshot)`,
+  advance another 5 sim-min, assert: faction count unchanged (4), economy entries for
+  all 4 factions non-zero, building count non-decreasing from pre-save value. Proves
+  the serialize-game N-player round-trip end-to-end in a real browser. Spec ref:
+  `M_V7.CARRY.SAVE-V6-STATE` shipped SNAPSHOT_VERSION 3; this e2e proves it holds
+  under N-player load.
+
+- [ ] M_V9.AUDIO.N-PLAYER-CRESCENDO — `useAudio.ts` wonder-crescendo logic: verify it
+  actually fires for all faction ids in a 4-player match (not just 'player'/'enemy').
+  Current v0.8 test (M_V8 carry-forward) was a local reimplementation; v0.9 wires the
+  production crescendo listener to sweep `game.factions` ids. Add integration test:
+  4-player game, Wonder complete for faction 'ai-3', verify `bus.play('wonder-crescendo')`
+  fires when ai-3 timer reaches threshold (< 60s). 2 tests pin: fires for all faction
+  ids, does not fire when no faction is below threshold.
+
+- [ ] M_V9.MAPGEN.4X-BALANCE — Extend `scoreBoard` / `findBalancedBoard` with two new
+  gates from Decision 4: (a) ≥ 3 harvestable resource nodes within 5 hexes of each
+  faction base; (b) ≥ 8 neutral-band tiles in the central 30% radius. Both gates active
+  only when `playerCount ≥ 5` (4X mode threshold). `findBalancedBoard` re-rolls until
+  both pass (up to existing maxRetries). 3 unit tests pin: 6-faction balanced board
+  passes both gates, 2-faction board skips the new gates, board with no resources fails.
+
+- [ ] M_V9.PERF.N-PLAYER-PROFILE — Chrome devtools performance trace via chrome-devtools-mcp
+  against `/?ai-vs-ai=1&nplayer=6&seed=42` (6-faction 4X mode). Capture 60s of trace,
+  identify blocking tasks > 50ms in the sim tick loop. Fix the worst offender or
+  document in `.full-review/v0.9-perf.md` with owner tag and root cause. Acceptance:
+  no task > 50ms in a 10s window at 6-faction AI-vs-AI OR documented + triaged.
+
+- [ ] M_V9.PARKING-LOT — Drain any `[WAIT]` items from v0.5/v0.6/v0.7/v0.8 PARKING-LOT
+  sections still open and whose blockers are now resolved. Specifically check:
+  `M_NEXT.AIVAI.6` (player-faction AI under asymmetric seedZones), `M_POLISH3.SCENE.4`
+  (GameOverModal in headless Playwright), `M_POLISH3.HUD.1/2/3` (tablet/mobile HUD).
+  For each: verify if the v0.8 substrate resolves the blocker; if yes, implement.
+
+---
+
 
 
 v0.5 ships the substrate (N-player + barbarians + archetypes); v0.6
