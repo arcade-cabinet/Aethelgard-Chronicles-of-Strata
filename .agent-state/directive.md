@@ -588,33 +588,33 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
 
 ### v0.9 work-units (dependency-ordered)
 
-- [ ] M_V9.REVIEWER.FULL-CYCLE — dispatch `comprehensive-review:full-review` against
+- [ ] [WAIT] (v0.9 grinder) M_V9.REVIEWER.FULL-CYCLE — dispatch `comprehensive-review:full-review` against
   `git diff origin/main` early in cycle. Fold CRITICAL + HIGH findings into nearest
   forward commits. Log output to `.full-review/v0.9-cycle-opening.md`. Marks `[x]` when
   file exists + all CRITICAL findings have a resolution note.
 
-- [ ] M_V9.VISUAL.LINUX-LOCK — Add `.github/workflows/lock-baselines.yml`
+- [ ] [WAIT] (v0.9 grinder) M_V9.VISUAL.LINUX-LOCK — Add `.github/workflows/lock-baselines.yml`
   `workflow_dispatch` job that runs `pnpm visual:battery:ci --update` on ubuntu-latest
   (matching CI image), commits updated PNGs back to the branch via git commit + push.
   Flip `visual-battery` job in `ci.yml` from `continue-on-error: true` → no
   continue-on-error (hard fail on drift). Add `pnpm visual:battery:lock` script alias.
   Acceptance: `visual:battery:ci` returns non-zero when a PNG is manually corrupted.
 
-- [ ] M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — Convert 6 v0.8 test files that use
+- [ ] [WAIT] (v0.9 grinder) M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — Convert 6 v0.8 test files that use
   source-text grep assertions (testing that source code CONTAINS a pattern) into
   behavior assertions (testing what the code DOES). Target files identified by the v0.8
   reviewer trio: any test using `grep`, `readFileSync`, or `source.includes()` to assert
   implementation details. Each file: identify the public contract, rewrite assertions
   against `import`-ed module behavior. Run `pnpm test` after each file to confirm green.
 
-- [ ] M_V9.DOCS.PRD-V0.6-V0.7-V0.8 — Write proper PRD spec docs for each shipped cycle:
+- [ ] [WAIT] (v0.9 grinder) M_V9.DOCS.PRD-V0.6-V0.7-V0.8 — Write proper PRD spec docs for each shipped cycle:
   `docs/specs/PRD-v0.6.md` (portals + diplomacy + MYTH + 4X detection),
   `docs/specs/PRD-v0.7.md` (substrate→player polish + visual battery + discovery tree),
   `docs/specs/PRD-v0.8.md` (N-player lift completions + AI diplomacy + outline + CI).
   Each doc: motivation, architectural decisions (4 from that cycle), work-unit table with
   shipped commit refs. Match the existing `docs/specs/PRD-v0.4.md` structure.
 
-- [ ] M_V9.AI.WONDER-EVALUATOR — `src/ai/evaluators/wonder.ts` ships
+- [ ] [WAIT] (v0.9 grinder) M_V9.AI.WONDER-EVALUATOR — `src/ai/evaluators/wonder.ts` ships
   `WonderEvaluator extends GoalEvaluator<AiPlayer>` + `WonderGoal`. Evaluator reads
   `game.wonderTimers`, `game.research` (monumental-architecture flag gate), and
   `personality.wonderWeight` (new field in `ai-personalities.json`; defaults 0.5).
@@ -623,7 +623,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   monumental-architecture, scores > 0 with it, score decreases as supply fills,
   WonderGoal produces placeBuilding('Wonder') call, evaluator weight flows from JSON.
 
-- [ ] M_V9.HUD.WIN-LOSS-N-PLAYER — `GameOverModal` currently shows winner vs loser
+- [ ] [WAIT] (v0.9 grinder) M_V9.HUD.WIN-LOSS-N-PLAYER — `GameOverModal` currently shows winner vs loser
   as a 2-faction binary. For N-player: detect the `game.victoryRecord` winner (single
   faction or coalition via tribute-ally chains), render per-faction final stats grid
   (kills, buildings, score sum, relation badge from `game.diplomacy`). Legacy 2-faction
@@ -631,7 +631,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   pin: 2-faction modal unchanged, N-player shows per-faction grid, winner row elevated,
   relation badges rendered, tribute-ally tag appears for tributary winners.
 
-- [ ] M_V9.E2E.SAVE-LOAD-N-PLAYER — Full Playwright e2e: boot `/?ai-vs-ai=1&nplayer=4&seed=42`,
+- [ ] [WAIT] (v0.9 grinder) M_V9.E2E.SAVE-LOAD-N-PLAYER — Full Playwright e2e: boot `/?ai-vs-ai=1&nplayer=4&seed=42`,
   advance 5 sim-min via `window.__game.advanceFrames(18000)`, serialise via
   `window.__game.save()`, reload page, restore via `window.__game.load(snapshot)`,
   advance another 5 sim-min, assert: faction count unchanged (4), economy entries for
@@ -640,7 +640,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   `M_V7.CARRY.SAVE-V6-STATE` shipped SNAPSHOT_VERSION 3; this e2e proves it holds
   under N-player load.
 
-- [ ] M_V9.AUDIO.N-PLAYER-CRESCENDO — `useAudio.ts` wonder-crescendo logic: verify it
+- [ ] [WAIT] (v0.9 grinder) M_V9.AUDIO.N-PLAYER-CRESCENDO — `useAudio.ts` wonder-crescendo logic: verify it
   actually fires for all faction ids in a 4-player match (not just 'player'/'enemy').
   Current v0.8 test (M_V8 carry-forward) was a local reimplementation; v0.9 wires the
   production crescendo listener to sweep `game.factions` ids. Add integration test:
@@ -648,20 +648,20 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   fires when ai-3 timer reaches threshold (< 60s). 2 tests pin: fires for all faction
   ids, does not fire when no faction is below threshold.
 
-- [ ] M_V9.MAPGEN.4X-BALANCE — Extend `scoreBoard` / `findBalancedBoard` with two new
+- [ ] [WAIT] (v0.9 grinder) M_V9.MAPGEN.4X-BALANCE — Extend `scoreBoard` / `findBalancedBoard` with two new
   gates from Decision 4: (a) ≥ 3 harvestable resource nodes within 5 hexes of each
   faction base; (b) ≥ 8 neutral-band tiles in the central 30% radius. Both gates active
   only when `playerCount ≥ 5` (4X mode threshold). `findBalancedBoard` re-rolls until
   both pass (up to existing maxRetries). 3 unit tests pin: 6-faction balanced board
   passes both gates, 2-faction board skips the new gates, board with no resources fails.
 
-- [ ] M_V9.PERF.N-PLAYER-PROFILE — Chrome devtools performance trace via chrome-devtools-mcp
+- [ ] [WAIT] (v0.9 grinder) M_V9.PERF.N-PLAYER-PROFILE — Chrome devtools performance trace via chrome-devtools-mcp
   against `/?ai-vs-ai=1&nplayer=6&seed=42` (6-faction 4X mode). Capture 60s of trace,
   identify blocking tasks > 50ms in the sim tick loop. Fix the worst offender or
   document in `.full-review/v0.9-perf.md` with owner tag and root cause. Acceptance:
   no task > 50ms in a 10s window at 6-faction AI-vs-AI OR documented + triaged.
 
-- [ ] M_V9.PARKING-LOT — Drain any `[WAIT]` items from v0.5/v0.6/v0.7/v0.8 PARKING-LOT
+- [ ] [WAIT] (v0.9 grinder) M_V9.PARKING-LOT — Drain any `[WAIT]` items from v0.5/v0.6/v0.7/v0.8 PARKING-LOT
   sections still open and whose blockers are now resolved. Specifically check:
   `M_NEXT.AIVAI.6` (player-faction AI under asymmetric seedZones), `M_POLISH3.SCENE.4`
   (GameOverModal in headless Playwright), `M_POLISH3.HUD.1/2/3` (tablet/mobile HUD).
