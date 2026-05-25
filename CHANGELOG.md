@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.6](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.5...v0.1.6) (2026-05-25)
+
+
+### Bug Fixes
+
+* **v0.4:** camera frames the base midpoint, not the land centroid ([#20](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/20)) ([93acf95](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/93acf9586f0e6739f27f1026982b17fed10abfa0))
+
 ## [0.1.5](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.4...v0.1.5) (2026-05-25)
 
 
