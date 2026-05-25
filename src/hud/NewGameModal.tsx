@@ -393,7 +393,8 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
             >
               {Array.from({ length: nPlayer }, (_, i) => (
                 <div
-                  key={i}
+                  // biome-ignore lint/suspicious/noArrayIndexKey: slot index IS the identity — positional by design (slot 0=You, slot N=AI N), never reordered.
+                  key={`n-player-slot-${i}`}
                   style={{ display: 'flex', alignItems: 'center', gap: 8 }}
                   data-testid={`n-player-slot-${i}`}
                 >
