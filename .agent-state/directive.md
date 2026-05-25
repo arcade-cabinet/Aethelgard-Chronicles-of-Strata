@@ -694,7 +694,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   `M_V7.CARRY.SAVE-V6-STATE` shipped SNAPSHOT_VERSION 3; this e2e proves it holds
   under N-player load.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.AUDIO.N-PLAYER-CRESCENDO — `useAudio.ts` wonder-crescendo logic: verify it
+- [x] [WAIT] (v0.9 grinder) M_V9.AUDIO.N-PLAYER-CRESCENDO — `useAudio.ts` wonder-crescendo logic: verify it
   actually fires for all faction ids in a 4-player match (not just 'player'/'enemy').
   Current v0.8 test (M_V8 carry-forward) was a local reimplementation; v0.9 wires the
   production crescendo listener to sweep `game.factions` ids. Add integration test:
