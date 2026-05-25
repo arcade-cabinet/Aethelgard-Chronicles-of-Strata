@@ -205,6 +205,9 @@ export const PREF_KEYS = {
   captions: 'aethelgard.captions',
   // M_EXPANSION.U.115 — user-remappable hotkey bindings (JSON blob).
   hotkeyBindings: 'aethelgard.hotkeys',
+  // M_HUD.SHELL.6 — persisted user theme override ('dark' | 'light' | '').
+  // Empty string = follow OS preference.
+  theme: 'aethelgard.theme',
 } as const;
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
 

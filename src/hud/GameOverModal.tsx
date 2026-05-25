@@ -1,4 +1,23 @@
+/**
+ * GameOverModal — cinematic terminal-state screen (M_HUD.SHELL.5).
+ *
+ * Win → gold "Victory!" with Trophy hero. Loss → crimson "Defeat!" with
+ * Skull hero. Draw → accent "Draw!" with Scale hero. Each reveals:
+ * match nickname + highlights, mode-specific narrative (long-reign),
+ * per-faction grid (N-player) OR legacy 2-faction stat list, and a
+ * gold-gradient "Re-enter Aethelgard" CTA.
+ *
+ * Preserved verbatim from the prior implementation: the polling +
+ * setInterval + aethelgard:outcome-changed CustomEvent flip detection,
+ * the lorebook write with exponential backoff + cross-mount guard, the
+ * persistence prop, the `modal-title-win/loss/draw` classes, the
+ * `#nplayer-faction-grid`, `#long-reign-narrative`, `.nplayer-winner-row`,
+ * `.relation-badge.relation-{rel}`, `.tribute-ally-tag` test contracts,
+ * and the `data-faction-id` + `data-relation` attributes.
+ */
 import * as Dialog from '@radix-ui/react-dialog';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { RotateCcw, Scale as ScaleIcon, Skull, Trophy } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { factionIds } from '@/config/factions';
 import { Building, FactionTrait } from '@/ecs/components';
@@ -7,63 +26,34 @@ import { getRelation } from '@/game/diplomacy';
 import { economyFor } from '@/game/economy-for';
 import type { GameState } from '@/game/game-state';
 import { detectTranscriptHighlights, matchHighlights, matchNickname } from '@/game/match-narrative';
+import { cn } from '@/lib/cn';
 import type { Persistence } from '@/persistence/persistence';
 import { formatInt, formatTime } from './format';
-import { HUD_THEME } from './hud-theme';
 import { MatchSummaryCard } from './MatchSummaryCard';
-import { ModalShell } from './ModalShell';
 
-/** A win/loss stat line. */
 interface StatLine {
-  /** Label text. */
   label: string;
-  /** Value text. */
   value: string;
 }
 
-/**
- * The end-of-game modal — a Radix Dialog (so focus is trapped, `role="dialog"`
- * and `aria-modal` are set, and Escape/keyboard work). Shown when `game.outcome`
- * is 'win' or 'loss'; win uses gold "Victory!" styling, loss red "Defeat!". The
- * title element keeps the `modal-title-win` / `modal-title-loss` classes the
- * e2e tests assert against.
- */
-export function GameOverModal({
-  game,
-  persistence,
-}: {
+export interface GameOverModalProps {
   game: GameState;
-  /**
-   * Optional — when supplied, the modal records a lorebook entry
-   * the first time outcome flips to a terminal value. Tests that
-   * don't care about the lorebook can omit it (no-op).
-   */
+  /** When supplied, the modal writes one lorebook entry per terminal flip. */
   persistence?: Persistence;
-}) {
+}
+
+export function GameOverModal({ game, persistence }: GameOverModalProps) {
+  const reducedMotion = useReducedMotion() ?? false;
   const [outcome, setOutcome] = useState<GameOutcome>(game.outcome);
-  // Reviewer-fix (HIGH #3 + sec #2/#5): real cross-mount guard. A
-  // local `let cancelled` in the effect closure cannot prevent the
-  // second StrictMode mount from firing its own insert. A ref
-  // persists across mounts of the same component instance, so once
-  // we've written for this match nothing else can write again.
   const lorebookWrittenRef = useRef(false);
 
   useEffect(() => {
-    // poll game.outcome until it goes terminal, then stop — once the game has
-    // ended runEconomyTick freezes, so there is nothing further to watch.
     let raf = 0;
     const tick = () => {
       setOutcome(game.outcome);
       if (game.outcome === 'playing') raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-
-    // M_POLISH3.SCENE.4 — belt-and-suspenders: 100ms setInterval
-    // poll alongside rAF. rAF is throttled in headless / hidden
-    // tabs but setInterval continues. Stops itself once outcome
-    // is terminal. Also subscribes to an explicit CustomEvent for
-    // immediate flip on programmatic triggers (e2e harness +
-    // future multiplayer 'opponent surrendered' path).
     const interval = window.setInterval(() => {
       if (game.outcome !== 'playing') {
         setOutcome(game.outcome);
@@ -76,7 +66,6 @@ export function GameOverModal({
       setOutcome(next);
     };
     window.addEventListener('aethelgard:outcome-changed', onOutcomeChanged);
-
     return () => {
       cancelAnimationFrame(raf);
       window.clearInterval(interval);
@@ -84,17 +73,9 @@ export function GameOverModal({
     };
   }, [game]);
 
-  // M_FUN.NAR.LOREBOOK — record one entry per terminal outcome.
-  // `persistence` is optional so tests + headless harnesses can omit
-  // it. `game` is intentionally NOT in the deps array (sec #5): the
-  // closure captures the current value once at firing time; making
-  // it reactive would re-fire on every parent render and spam DB
-  // inserts. The useRef guard ensures at-most-one write per mount.
-  // M_FUN.UX.LOREBOOK-RETRY — exponential-backoff retry (3 attempts,
-  // 200 ms / 400 ms / 800 ms) so a transient DB hiccup does not
-  // permanently drop the lorebook entry. Guard stays true while
-  // attempts are in-flight; released only on permanent failure.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `game` deliberately omitted — see comment block above
+  // Lorebook write w/ exponential backoff. `game` deliberately omitted
+  // from deps — the closure captures once at firing time.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: see comment above.
   useEffect(() => {
     if (outcome === 'playing' || !persistence) return;
     if (lorebookWrittenRef.current) return;
@@ -114,16 +95,13 @@ export function GameOverModal({
       for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
         try {
           await persistence.recordLorebookEntry(entry);
-          return; // success — guard remains true, no further writes
+          return;
         } catch (err) {
-          const isLastAttempt = attempt === MAX_ATTEMPTS - 1;
-          if (isLastAttempt) {
-            // All attempts exhausted. Release the guard so a future
-            // remount (e.g. the user navigates away and back) can retry.
+          const isLast = attempt === MAX_ATTEMPTS - 1;
+          if (isLast) {
             lorebookWrittenRef.current = false;
             console.warn(`[lorebook] record failed after ${MAX_ATTEMPTS} attempts:`, err);
           } else {
-            // Exponential backoff: 200ms, 400ms before the 3rd attempt.
             await new Promise<void>((res) => setTimeout(res, 200 * 2 ** attempt));
           }
         }
@@ -132,29 +110,29 @@ export function GameOverModal({
   }, [outcome, persistence]);
 
   const isWin = outcome === 'win';
-  // M_PROCESS.REVIEW must-fix #2 — 'draw' outcome was rendering
-  // as "Defeat!" (loss styling + loss copy) because the original
-  // ternary only branched isWin true/false. M_TURNS.2 added 'draw'
-  // for turn-cap ties; surface it with neutral copy + accent
-  // styling that reads as "the match ended even".
   const isDraw = outcome === 'draw';
+  const HeroIcon = isWin ? Trophy : isDraw ? ScaleIcon : Skull;
   const titleText = isWin ? 'Victory!' : isDraw ? 'Draw!' : 'Defeat!';
-  const titleColor = isWin
-    ? HUD_THEME.color.gold
-    : isDraw
-      ? HUD_THEME.color.accent
-      : HUD_THEME.color.danger;
   const titleClass = isWin ? 'modal-title-win' : isDraw ? 'modal-title-draw' : 'modal-title-loss';
+  const titleGradient = isWin
+    ? 'linear-gradient(180deg, #fef3c7, #d4af37 45%, #b45309 78%, #7c2d12)'
+    : isDraw
+      ? 'linear-gradient(180deg, #e0f2fe, #38bdf8 55%, #0369a1)'
+      : 'linear-gradient(180deg, #fecaca, #ef4444 55%, #7f1d1d)';
+  const haloColor = isWin
+    ? 'rgba(212,175,55,0.35)'
+    : isDraw
+      ? 'rgba(56,189,248,0.30)'
+      : 'rgba(239,68,68,0.30)';
   const flavorText = isWin
     ? 'You have razed the enemy base and defended Aethelgard.'
     : isDraw
       ? 'The realms reach equilibrium. The clock runs out with neither side prevailing.'
       : 'The enemy razed your home base. Aethelgard has fallen.';
-  // M_MODES.10 — controlled-tile-time score integral; rounded to whole units.
+
+  // Legacy 2-faction stats.
   const playerScore = Math.round(game.score.player);
   const enemyScore = Math.round(game.score.enemy);
-  // M_EXPANSION.U.122 — count the player faction's surviving
-  // complete buildings at outcome-flip time. Cheap one-pass query.
   let playerBuildings = 0;
   for (const e of game.world.query(Building, FactionTrait)) {
     if (e.get(Building)?.isComplete && e.get(FactionTrait)?.faction === 'player') {
@@ -162,11 +140,9 @@ export function GameOverModal({
     }
   }
   const stats: StatLine[] = [
-    // M_AUDIT2.UX.10 — locale-formatted thousands separator.
     { label: 'Gold Earned', value: formatInt(game.economy.player.gold) },
     { label: 'Lumber Harvested', value: formatInt(game.economy.player.wood) },
     { label: 'Enemies Vanquished', value: formatInt(game.economy.player.kills) },
-    // M_EXPANSION.U.122 — buildings, peak supply, time elapsed.
     { label: 'Buildings Standing', value: formatInt(playerBuildings) },
     {
       label: 'Peak Supply',
@@ -176,13 +152,11 @@ export function GameOverModal({
     { label: 'Territory Score', value: `${playerScore} vs ${enemyScore}` },
   ];
 
-  // M_V9.HUD.WIN-LOSS-N-PLAYER — N-player per-faction stats grid.
-  // Active when ≥ 3 non-barbarian factions are present.
+  // N-player per-faction grid.
   const nonBarbarianFactions = game.factions.filter((f) => f.kind !== 'barbarian');
   const isNPlayer = nonBarbarianFactions.length > 2;
   const winnerId = game.victoryRecord?.winner ?? null;
 
-  /** Per-faction row for the N-player grid. */
   interface FactionRow {
     id: string;
     displayName: string;
@@ -196,16 +170,12 @@ export function GameOverModal({
   const factionRows: FactionRow[] = isNPlayer
     ? factionIds(nonBarbarianFactions).map((fid) => {
         const eco = economyFor(game, fid);
-        // Score: stored in game.score for legacy Faction keys; fallback to 0.
         const score =
           fid === 'player' || fid === 'enemy'
             ? Math.round((game.score as Record<string, number>)[fid] ?? 0)
             : 0;
-        // Relation vs the winner, or vs 'player' if winner unknown.
         const refId = winnerId ?? 'player';
         const rel = fid === refId ? 'winner' : getRelation(game.diplomacy, fid, refId);
-        // Tributary winner: this faction is dominant in a tributary
-        // relationship with the winner — they win via alliance chain.
         const isTributaryWinner = rel === 'tributary' && winnerId !== null && fid !== winnerId;
         return {
           id: fid,
@@ -221,188 +191,231 @@ export function GameOverModal({
 
   return (
     <Dialog.Root open={outcome !== 'playing'}>
-      {/* M_MICRO.10.1 — ModalShell + GameOverModal-specific overrides
-          (heavier overlay, larger card, terminal-state escape-block
-          via blockClose). */}
-      <ModalShell
-        contentId="game-over-modal"
-        zIndex={1000}
-        width="auto"
-        maxHeight="none"
-        blockClose
-        contentStyle={{
-          background: 'rgba(9,13,22,0.97)',
-          borderRadius: 24,
-          padding: 40,
-          textAlign: 'center',
-          maxWidth: 440,
-          fontFamily: HUD_THEME.font.body,
-        }}
-      >
-        <Dialog.Title
-          className={titleClass}
-          style={{
-            fontFamily: HUD_THEME.font.display,
-            fontSize: '2.6rem',
-            fontWeight: 800,
-            margin: '0 0 10px',
-            color: titleColor,
-          }}
-        >
-          {titleText}
-        </Dialog.Title>
-        <p style={{ color: HUD_THEME.color.muted, marginBottom: 16 }}>{flavorText}</p>
-        {/* M_FUN.NAR.CARD — procedural nickname + highlight bullets
-            in a re-usable card. Same component will surface in the
-            save-list UI (M_FUN.NAR.LOREBOOK). */}
+      <AnimatePresence>
         {outcome !== 'playing' && (
-          <div style={{ marginBottom: 18 }}>
-            <MatchSummaryCard
-              nickname={matchNickname({ seedPhrase: game.seedPhrase, outcome })}
-              highlights={(() => {
-                // M_FUN.NAR.HIGHLIGHTS — prefer transcript-derived
-                // story beats when available; fall back to the
-                // point-in-time state highlights when nothing
-                // dramatic surfaced.
-                const beats = detectTranscriptHighlights(game).map((b) => b.detail);
-                return beats.length > 0 ? beats : matchHighlights(game);
-              })()}
-            />
-          </div>
-        )}
-        {/* M_POLISH2.MODES.41b — long-reign narrative line. Sits ABOVE
-              the generic stat list and reads as a one-line summary
-              of the player's reign. */}
-        {game.mode === 'long-reign' && (
-          <div
-            id="long-reign-narrative"
-            style={{
-              padding: '12px 14px',
-              marginBottom: 18,
-              borderRadius: 10,
-              background: 'rgba(56, 189, 248, 0.08)',
-              border: `1px solid ${HUD_THEME.color.border}`,
-              color: HUD_THEME.color.gold,
-              fontFamily: HUD_THEME.font.display,
-              fontSize: '0.95rem',
-              textAlign: 'center',
-            }}
-          >
-            👑 Survived {formatTime(game.clock.elapsed)} — Endured{' '}
-            {formatInt(game.randomEvents.fired ?? 0)} escalation
-            {(game.randomEvents.fired ?? 0) === 1 ? '' : 's'} — Built {formatInt(playerBuildings)}{' '}
-            structure
-            {playerBuildings === 1 ? '' : 's'}
-          </div>
-        )}
-        {/* M_V9.HUD.WIN-LOSS-N-PLAYER — per-faction stats grid; only shown in N-player. */}
-        {isNPlayer && factionRows.length > 0 && (
-          <div id="nplayer-faction-grid" style={{ marginBottom: 18, textAlign: 'left' }}>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr auto auto auto auto',
-                gap: '4px 12px',
-                fontSize: '0.8rem',
-                color: HUD_THEME.color.muted,
-                borderBottom: '1px solid rgba(255,255,255,0.14)',
-                paddingBottom: 6,
-                marginBottom: 6,
-              }}
+          <Dialog.Portal forceMount>
+            <Dialog.Overlay asChild>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.32 }}
+                className="fixed inset-0 bg-[rgba(9,13,22,0.92)] backdrop-blur-md"
+                style={{ zIndex: 1000 }}
+              />
+            </Dialog.Overlay>
+            <Dialog.Content
+              asChild
+              onEscapeKeyDown={(e) => e.preventDefault()}
+              onPointerDownOutside={(e) => e.preventDefault()}
+              onInteractOutside={(e) => e.preventDefault()}
             >
-              <span>Faction</span>
-              <span>Kills</span>
-              <span>Score</span>
-              <span>Relation</span>
-              <span>Status</span>
-            </div>
-            {factionRows.map((row) => (
-              <div
-                key={row.id}
-                className={row.isWinner ? 'nplayer-winner-row' : undefined}
-                data-faction-id={row.id}
-                data-relation={row.relation}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr auto auto auto auto',
-                  gap: '4px 12px',
-                  padding: '6px 0',
-                  borderBottom: '1px solid rgba(255,255,255,0.05)',
-                  fontSize: '0.82rem',
-                  background: row.isWinner ? 'rgba(250,204,21,0.06)' : undefined,
-                  borderRadius: row.isWinner ? 6 : undefined,
-                }}
+              <motion.div
+                id="game-over-modal"
+                initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.94, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.36, ease: [0.16, 1, 0.3, 1] }}
+                className={cn(
+                  'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
+                  'w-[min(560px,calc(100vw-32px))] max-h-[min(90dvh,820px)] overflow-y-auto',
+                  'rounded-3xl border bg-[var(--color-panel-solid)] text-[var(--color-text-hud)]',
+                  'border-[var(--color-border-hud)] shadow-2xl',
+                )}
+                style={{ zIndex: 1001, fontFamily: 'var(--font-body)' }}
               >
-                <span style={{ color: row.isWinner ? HUD_THEME.color.gold : HUD_THEME.color.text }}>
-                  {row.displayName}
-                </span>
-                <span style={{ color: HUD_THEME.color.accent }}>{formatInt(row.kills)}</span>
-                <span style={{ color: HUD_THEME.color.accent }}>{formatInt(row.score)}</span>
-                <span
-                  className={`relation-badge relation-${row.relation}`}
-                  style={{
-                    color:
-                      row.relation === 'ally'
-                        ? HUD_THEME.color.accent
-                        : row.relation === 'enemy'
-                          ? HUD_THEME.color.danger
-                          : row.relation === 'tributary'
-                            ? HUD_THEME.color.gold
-                            : HUD_THEME.color.muted,
-                  }}
-                >
-                  {row.relation === 'winner' ? '—' : row.relation}
-                </span>
-                <span>
-                  {row.isWinner && (
-                    <span className="winner-badge" style={{ color: HUD_THEME.color.gold }}>
-                      ★
-                    </span>
+                {/* Hero zone: pulsing halo + giant icon + outcome title. */}
+                <div className="relative flex flex-col items-center pb-4 pt-10">
+                  <motion.div
+                    aria-hidden
+                    className="absolute left-1/2 top-6 h-40 w-40 -translate-x-1/2 rounded-full"
+                    style={{
+                      background: `radial-gradient(circle, ${haloColor} 0%, transparent 70%)`,
+                      filter: 'blur(8px)',
+                    }}
+                    animate={
+                      reducedMotion
+                        ? { scale: 1, opacity: 0.7 }
+                        : { scale: [1, 1.08, 1], opacity: [0.55, 0.85, 0.55] }
+                    }
+                    transition={
+                      reducedMotion
+                        ? { duration: 0 }
+                        : {
+                            duration: 3.4,
+                            repeat: Number.POSITIVE_INFINITY,
+                            ease: 'easeInOut',
+                          }
+                    }
+                  />
+                  <div
+                    className={cn(
+                      'relative z-10 flex h-20 w-20 items-center justify-center rounded-full border-2 bg-black/40',
+                      isWin && 'border-[var(--color-gold-hud)]/70',
+                      isDraw && 'border-[var(--color-accent-hud)]/70',
+                      !isWin && !isDraw && 'border-[var(--color-danger-hud)]/70',
+                    )}
+                  >
+                    <HeroIcon
+                      className={cn(
+                        'h-10 w-10',
+                        isWin && 'text-[var(--color-gold-hud)]',
+                        isDraw && 'text-[var(--color-accent-hud)]',
+                        !isWin && !isDraw && 'text-[var(--color-danger-hud)]',
+                      )}
+                      aria-hidden
+                    />
+                  </div>
+                  <Dialog.Title
+                    className={cn(
+                      titleClass,
+                      'mt-5 text-center font-display text-5xl font-extrabold tracking-[0.04em]',
+                    )}
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      backgroundImage: titleGradient,
+                      WebkitBackgroundClip: 'text',
+                      backgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      color: 'transparent',
+                      filter: `drop-shadow(0 8px 24px ${haloColor})`,
+                    }}
+                  >
+                    {titleText}
+                  </Dialog.Title>
+                  <Dialog.Description className="mt-3 max-w-[44ch] px-6 text-center text-sm italic text-[var(--color-muted-hud)]">
+                    {flavorText}
+                  </Dialog.Description>
+                </div>
+
+                <div className="space-y-5 px-7 pb-7">
+                  <MatchSummaryCard
+                    nickname={matchNickname({ seedPhrase: game.seedPhrase, outcome })}
+                    highlights={(() => {
+                      const beats = detectTranscriptHighlights(game).map((b) => b.detail);
+                      return beats.length > 0 ? beats : matchHighlights(game);
+                    })()}
+                  />
+
+                  {game.mode === 'long-reign' && (
+                    <div
+                      id="long-reign-narrative"
+                      className="rounded-xl border border-[var(--color-border-hud)] bg-[rgba(56,189,248,0.08)] px-4 py-3 text-center text-sm text-[var(--color-gold-hud)]"
+                      style={{ fontFamily: 'var(--font-display)' }}
+                    >
+                      👑 Survived {formatTime(game.clock.elapsed)} — Endured{' '}
+                      {formatInt(game.randomEvents.fired ?? 0)} escalation
+                      {(game.randomEvents.fired ?? 0) === 1 ? '' : 's'} — Built{' '}
+                      {formatInt(playerBuildings)} structure
+                      {playerBuildings === 1 ? '' : 's'}
+                    </div>
                   )}
-                  {row.isTributaryWinner && (
-                    <span className="tribute-ally-tag" style={{ color: HUD_THEME.color.gold }}>
-                      ally
-                    </span>
+
+                  {isNPlayer && factionRows.length > 0 && (
+                    <div
+                      id="nplayer-faction-grid"
+                      className="overflow-hidden rounded-xl border border-[var(--color-border-hud)] bg-black/30 text-left"
+                    >
+                      <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-3 border-b border-white/10 px-4 py-2 text-[0.72rem] uppercase tracking-[0.18em] text-[var(--color-muted-hud)]">
+                        <span>Faction</span>
+                        <span>Kills</span>
+                        <span>Score</span>
+                        <span>Relation</span>
+                        <span>Status</span>
+                      </div>
+                      <div>
+                        {factionRows.map((row) => (
+                          <div
+                            key={row.id}
+                            className={cn(
+                              'grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-x-3 border-b border-white/5 px-4 py-2 text-sm',
+                              row.isWinner && 'nplayer-winner-row bg-[rgba(212,175,55,0.08)]',
+                            )}
+                            data-faction-id={row.id}
+                            data-relation={row.relation}
+                          >
+                            <span
+                              className={cn(
+                                row.isWinner
+                                  ? 'font-semibold text-[var(--color-gold-hud)]'
+                                  : 'text-[var(--color-text-hud)]',
+                              )}
+                            >
+                              {row.displayName}
+                            </span>
+                            <span className="text-[var(--color-accent-hud)]">
+                              {formatInt(row.kills)}
+                            </span>
+                            <span className="text-[var(--color-accent-hud)]">
+                              {formatInt(row.score)}
+                            </span>
+                            <span
+                              className={cn(
+                                'relation-badge',
+                                `relation-${row.relation}`,
+                                row.relation === 'ally' && 'text-[var(--color-accent-hud)]',
+                                row.relation === 'enemy' && 'text-[var(--color-danger-hud)]',
+                                row.relation === 'tributary' && 'text-[var(--color-gold-hud)]',
+                                (row.relation === 'neutral' || row.relation === 'winner') &&
+                                  'text-[var(--color-muted-hud)]',
+                              )}
+                            >
+                              {row.relation === 'winner' ? '—' : row.relation}
+                            </span>
+                            <span className="text-right">
+                              {row.isWinner && (
+                                <span className="winner-badge text-[var(--color-gold-hud)]">★</span>
+                              )}
+                              {row.isTributaryWinner && (
+                                <span className="tribute-ally-tag text-[var(--color-gold-hud)]">
+                                  ally
+                                </span>
+                              )}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
-                </span>
-              </div>
-            ))}
-          </div>
+
+                  {!isNPlayer && (
+                    <ul className="divide-y divide-white/10 overflow-hidden rounded-xl border border-[var(--color-border-hud)] bg-black/20">
+                      {stats.map((s) => (
+                        <li
+                          key={s.label}
+                          className="flex items-center justify-between px-4 py-2.5 text-sm"
+                        >
+                          <span className="text-[var(--color-muted-hud)]">{s.label}</span>
+                          <span className="font-semibold text-[var(--color-accent-hud)]">
+                            {s.value}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => location.reload()}
+                    className={cn(
+                      'group relative mx-auto mt-2 flex w-full max-w-xs items-center justify-center gap-2',
+                      'rounded-xl border border-[#d4af37]/60 px-6 py-3.5 font-display text-base font-bold',
+                      'bg-gradient-to-b from-[#e8c660] via-[#d4af37] to-[#8b7124] text-[#1a1208]',
+                      'shadow-[0_8px_28px_rgba(212,175,55,0.35),inset_0_1px_0_rgba(255,255,255,0.35)]',
+                      'transition-all duration-150 hover:-translate-y-0.5',
+                      'hover:shadow-[0_12px_36px_rgba(212,175,55,0.5)] active:translate-y-0 active:scale-[0.97]',
+                    )}
+                    style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}
+                  >
+                    <RotateCcw className="h-4 w-4" aria-hidden />
+                    Re-enter Aethelgard
+                  </button>
+                </div>
+              </motion.div>
+            </Dialog.Content>
+          </Dialog.Portal>
         )}
-        {!isNPlayer &&
-          stats.map((s) => (
-            <div
-              key={s.label}
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '8px 0',
-                borderBottom: '1px solid rgba(255,255,255,0.08)',
-                fontSize: '0.9rem',
-              }}
-            >
-              <span>{s.label}</span>
-              <span style={{ color: HUD_THEME.color.accent }}>{s.value}</span>
-            </div>
-          ))}
-        <button
-          type="button"
-          onClick={() => location.reload()}
-          style={{
-            marginTop: 28,
-            padding: '12px 28px',
-            borderRadius: 12,
-            border: 'none',
-            background: HUD_THEME.blueGradient,
-            color: '#fff',
-            fontSize: '1.05rem',
-            fontWeight: 700,
-            cursor: 'pointer',
-          }}
-        >
-          Re-enter Aethelgard
-        </button>
-      </ModalShell>
+      </AnimatePresence>
     </Dialog.Root>
   );
 }

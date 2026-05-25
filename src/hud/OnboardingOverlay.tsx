@@ -21,7 +21,6 @@ import {
   Eye,
   FlaskConical,
   Hammer,
-  HelpCircle,
   Search,
   Shield,
   Sparkles,
@@ -111,7 +110,6 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
   const reducedMotion = useReducedMotion() ?? false;
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [showHints, setShowHints] = useState(false);
 
   const steps = factionCount > 2 ? [...STEPS, N_PLAYER_STEP] : STEPS;
   const current = steps[step] ?? steps[0];
@@ -161,33 +159,7 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
     };
   }, [persistence]);
 
-  // Keyboard navigation (only while open).
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      switch (e.key) {
-        case 'ArrowRight':
-        case 'Enter':
-        case ' ':
-          e.preventDefault();
-          next();
-          break;
-        case 'ArrowLeft':
-          e.preventDefault();
-          back();
-          break;
-        case '?':
-        case '/':
-          setShowHints((s) => !s);
-          break;
-        default:
-          break;
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [open, next, back]);
+  // M_HUD.SHELL.6 — keyboard nav retired. Onboarding is tap-only.
 
   if (!current) return null;
 
@@ -270,14 +242,7 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                         Step {step + 1} of {steps.length}
                       </span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowHints((s) => !s)}
-                      aria-label="Show keyboard shortcuts"
-                      className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--color-border-hud)] bg-black/40 text-[var(--color-muted-hud)] hover:text-[var(--color-text-hud)]"
-                    >
-                      <HelpCircle className="h-4 w-4" aria-hidden />
-                    </button>
+                    {/* M_HUD.SHELL.6 — kbd-shortcuts help button retired (mobile-first). */}
                   </div>
                 </div>
 
@@ -380,28 +345,7 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                   </div>
                 </div>
 
-                {/* Kbd hint chips popover */}
-                <AnimatePresence>
-                  {showHints && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 6 }}
-                      transition={{ duration: 0.18 }}
-                      className="absolute right-3 top-32 rounded-lg border border-[var(--color-border-hud)] bg-black/80 p-3 text-[0.7rem] text-[var(--color-muted-hud)] backdrop-blur"
-                    >
-                      <p className="mb-1 font-semibold text-[var(--color-gold-hud)]">Shortcuts</p>
-                      <ul className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
-                        <kbd>→ / Space / ↵</kbd>
-                        <span>Next</span>
-                        <kbd>←</kbd>
-                        <span>Back</span>
-                        <kbd>?</kbd>
-                        <span>This menu</span>
-                      </ul>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                {/* M_HUD.SHELL.6 — kbd hint chips retired (mobile-first). */}
               </motion.div>
             </Dialog.Content>
           </Dialog.Portal>

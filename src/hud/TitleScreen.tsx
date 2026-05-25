@@ -10,12 +10,13 @@
  * (onNewGame / onContinue? / onSettings), and the existing wiring
  * (useTitleMusic, useMutedPreference, CreditsModal, __APP_VERSION__).
  */
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { Keyboard, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Moon, Sun, Volume2, VolumeX } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useMutedPreference } from '@/audio/useMutedPreference';
 import { useTitleMusic } from '@/audio/useTitleMusic';
 import { cn } from '@/lib/cn';
+import { useTheme } from '@/lib/theme';
 import type { Persistence } from '@/persistence/persistence';
 import { CreditsModal } from './CreditsModal';
 import { TitleBackground } from './TitleBackground';
@@ -44,30 +45,22 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
   useTitleMusic();
   const reducedMotion = useReducedMotion() ?? false;
   const [muted, setMuted] = useMutedPreference(persistence);
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [showHints, setShowHints] = useState(false);
+  const [theme, setTheme] = useTheme(persistence);
   const [showCredits, setShowCredits] = useState(false);
 
-  // Keyboard shortcuts — 1/N=New, 2/C=Continue, 3/S=Settings, M=mute, ?=hints.
+  // M_HUD.SHELL.6 — keyboard shortcuts retired as primary navigation.
+  // Aethelgard ships to Android + iOS where every user TAPS. Desktop
+  // gets one convenience shortcut (Enter = primary action New Game)
+  // but the visible UI never advertises kbd as the path. All
+  // interactive surfaces are reachable + tested via aria-label + tap.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      const k = e.key.toLowerCase();
-      if (k === '1' || k === 'n' || k === 'enter') {
-        onNewGame();
-      } else if ((k === '2' || k === 'c') && onContinue) {
-        onContinue();
-      } else if (k === '3' || k === 's') {
-        onSettings();
-      } else if (k === 'm') {
-        setMuted(!muted);
-      } else if (k === '?' || k === '/') {
-        setShowHints((s) => !s);
-      }
+      if (e.key === 'Enter') onNewGame();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onNewGame, onContinue, onSettings, muted, setMuted]);
+  }, [onNewGame]);
 
   const version = typeof __APP_VERSION__ === 'undefined' ? 'dev' : (__APP_VERSION__ as string);
 
@@ -166,26 +159,9 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
           </GhostButton>
         </motion.div>
 
-        <motion.div
-          variants={ENTRY}
-          initial="hidden"
-          animate="visible"
-          custom={0.38}
-          className="hidden gap-4 text-[0.7rem] uppercase tracking-[0.25em] text-[var(--color-muted-hud)] md:flex"
-        >
-          <kbd className="rounded border border-[var(--color-border-hud)] bg-[var(--color-panel)] px-2 py-0.5">
-            ↵ New
-          </kbd>
-          <kbd className="rounded border border-[var(--color-border-hud)] bg-[var(--color-panel)] px-2 py-0.5">
-            C Continue
-          </kbd>
-          <kbd className="rounded border border-[var(--color-border-hud)] bg-[var(--color-panel)] px-2 py-0.5">
-            S Settings
-          </kbd>
-          <kbd className="rounded border border-[var(--color-border-hud)] bg-[var(--color-panel)] px-2 py-0.5">
-            M Mute
-          </kbd>
-        </motion.div>
+        {/* M_HUD.SHELL.6 — kbd-hint chips retired. Mobile-first means
+            we don't advertise keyboard nav. The single Enter shortcut
+            is a desktop convenience handled silently. */}
       </div>
 
       {/* Icon strip — bottom-right above safe area. */}
@@ -203,46 +179,14 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
           {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
         </IconButton>
         <IconButton
-          onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
-          ariaLabel="Toggle theme (placeholder)"
+          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+          ariaLabel={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
         >
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </IconButton>
-        <IconButton onClick={() => setShowHints((s) => !s)} ariaLabel="Keyboard shortcuts">
-          <Keyboard className="h-4 w-4" />
-        </IconButton>
       </div>
 
-      <AnimatePresence>
-        {showHints && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 8 }}
-            transition={{ duration: 0.18 }}
-            className="hud-interactive absolute z-20 rounded-lg border border-[var(--color-border-hud)] bg-[var(--color-panel)] p-4 text-xs text-[var(--color-text-hud)] shadow-2xl backdrop-blur"
-            style={{
-              bottom: 'calc(var(--safe-bottom) + 72px)',
-              right: 'calc(var(--safe-right) + 16px)',
-              minWidth: 220,
-            }}
-          >
-            <p className="mb-2 font-semibold text-[var(--color-gold-hud)]">Keyboard shortcuts</p>
-            <ul className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1 text-[var(--color-muted-hud)]">
-              <kbd>↵ / 1 / N</kbd>
-              <span>New Game</span>
-              <kbd>2 / C</kbd>
-              <span>Continue</span>
-              <kbd>3 / S</kbd>
-              <span>Settings</span>
-              <kbd>M</kbd>
-              <span>Mute</span>
-              <kbd>?</kbd>
-              <span>This menu</span>
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* M_HUD.SHELL.6 — keyboard hints popover retired. Mobile-first. */}
 
       {/* Footer meta row — bottom-left version + credits. */}
       <div
