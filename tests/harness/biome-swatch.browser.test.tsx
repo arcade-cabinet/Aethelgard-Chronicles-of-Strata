@@ -10,38 +10,13 @@
  * every M_FUN.* milestone PR adds at least one similar harness for
  * the feature it ships (per PRD-v0.4 §6.2).
  */
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas } from '@react-three/fiber';
 import { page } from '@vitest/browser/context';
-import { useEffect } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import type { BiomeType } from '@/core/biome';
 import { ALL_BIOMES, biomeRule } from '@/config/mapgen';
 import { BiomeSwatch } from '@/world/BiomeSwatch';
-
-/**
- * Probe that flips `window.__biomeReady = true` after the r3f gl
- * context exists + the scene has drawn at least one frame. Replaces
- * the prior `setTimeout(250)` race — Coderabbit reviewer finding
- * (MAJOR) noted that timing-based readiness is exactly the flake
- * source visual harnesses are supposed to eliminate.
- */
-function ReadyProbe() {
-  const gl = useThree((s) => s.gl);
-  useEffect(() => {
-    if (!gl) return;
-    let raf = 0;
-    // r3f renders on the next rAF; flip the flag after one paint so
-    // the screenshot capture sees the bound scene, not a black frame.
-    raf = requestAnimationFrame(() => {
-      raf = requestAnimationFrame(() => {
-        (window as unknown as { __biomeReady?: boolean }).__biomeReady = true;
-      });
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [gl]);
-  return null;
-}
 
 function HarnessScene({ biome }: { biome: BiomeType }) {
   const rule = biomeRule(biome);
@@ -51,7 +26,6 @@ function HarnessScene({ biome }: { biome: BiomeType }) {
         <ambientLight intensity={0.6} />
         <directionalLight position={[5, 8, 3]} intensity={1.2} />
         <BiomeSwatch biome={biome} elevation={Math.max(0.5, rule.elevation)} />
-        <ReadyProbe />
       </Canvas>
     </div>
   );

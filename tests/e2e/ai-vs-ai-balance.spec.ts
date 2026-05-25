@@ -86,6 +86,17 @@ interface BalanceRun {
    */
   buildMixPlayer: { economic: number; offensive: number; defensive: number; wonder: number };
   buildMixEnemy: { economic: number; offensive: number; defensive: number; wonder: number };
+  /**
+   * M_FUN.QA.AIVAI.PEON-METRICS — per-faction harvest cadence.
+   * depositPerMin = depositCount / (elapsedTurns minutes); a
+   * satisfying RTS economy targets ~6-12 deposits/min/faction. The
+   * other two columns surface the macro landmarks the player feels:
+   * how long until the first wood lands, how long until first House
+   * stands. Both -1 means the cadence loop never closed for that
+   * faction. Per docs/specs/130 §4.
+   */
+  peonMetricsPlayer: { depositsPerMin: number; firstWoodAt: number; firstHouseAt: number };
+  peonMetricsEnemy: { depositsPerMin: number; firstWoodAt: number; firstHouseAt: number };
 }
 
 interface BalanceArtifact {
@@ -161,6 +172,16 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
         killsByZone: { skirmish: number; encroachment: number; assault: number };
         buildMixPlayer: { economic: number; offensive: number; defensive: number; wonder: number };
         buildMixEnemy: { economic: number; offensive: number; defensive: number; wonder: number };
+        peonMetricsPlayer: {
+          depositCount: number;
+          firstWoodAt: number;
+          firstHouseAt: number;
+        };
+        peonMetricsEnemy: {
+          depositCount: number;
+          firstWoodAt: number;
+          firstHouseAt: number;
+        };
       } | null = null;
 
       for (chunks = 0; chunks < 60 && outcome === 'playing'; chunks++) {
@@ -175,8 +196,21 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
                   kills: number;
                   peakSupply: number;
                   killsByZone: { skirmish: number; encroachment: number; assault: number };
+                  peonMetrics: {
+                    depositCount: number;
+                    firstWoodAt: number;
+                    firstHouseAt: number;
+                  };
                 };
-                enemy: { kills: number; peakSupply: number };
+                enemy: {
+                  kills: number;
+                  peakSupply: number;
+                  peonMetrics: {
+                    depositCount: number;
+                    firstWoodAt: number;
+                    firstHouseAt: number;
+                  };
+                };
               };
               world: {
                 query: (...traits: unknown[]) => Iterable<{ get: (t: unknown) => unknown }>;
@@ -241,6 +275,17 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
           for (const k of g.zones.player.controlled) union.add(k);
           for (const k of g.zones.enemy.controlled) union.add(k);
           const zoneUnionPct = walkable > 0 ? (union.size / walkable) * 100 : 0;
+          // M_FUN.QA.AIVAI.PEON-METRICS — read the per-faction cadence
+          // block off game.economy.<faction>.peonMetrics. Defaults to
+          // the all-zero/-1 shape if the field hasn't been seeded yet
+          // (early pre-snapshot tick window).
+          const peonOf = (
+            eco: { peonMetrics?: { depositCount?: number; firstWoodAt?: number; firstHouseAt?: number } },
+          ) => ({
+            depositCount: eco.peonMetrics?.depositCount ?? 0,
+            firstWoodAt: eco.peonMetrics?.firstWoodAt ?? -1,
+            firstHouseAt: eco.peonMetrics?.firstHouseAt ?? -1,
+          });
           return {
             outcome: g.outcome,
             elapsed: g.clock.elapsed,
@@ -253,6 +298,16 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
             killsByZone: g.economy.player.killsByZone,
             buildMixPlayer: mixP,
             buildMixEnemy: mixE,
+            peonMetricsPlayer: {
+              depositCount: g.economy.player.peonMetrics.depositCount,
+              firstWoodAt: g.economy.player.peonMetrics.firstWoodAt,
+              firstHouseAt: g.economy.player.peonMetrics.firstHouseAt,
+            },
+            peonMetricsEnemy: {
+              depositCount: g.economy.enemy.peonMetrics.depositCount,
+              firstWoodAt: g.economy.enemy.peonMetrics.firstWoodAt,
+              firstHouseAt: g.economy.enemy.peonMetrics.firstHouseAt,
+            },
           };
         });
         if (!snapshot) break;
@@ -284,6 +339,22 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
           .buildMixPlayer ?? { economic: 0, offensive: 0, defensive: 0, wonder: 0 },
         buildMixEnemy: (snapshot as unknown as { buildMixEnemy?: BalanceRun['buildMixEnemy'] })
           .buildMixEnemy ?? { economic: 0, offensive: 0, defensive: 0, wonder: 0 },
+        // PEON-METRICS — depositsPerMin is derived: depositCount ÷
+        // elapsed sim-minutes. The snapshot ships raw counts +
+        // landmark timestamps; the rate calc lives here so the
+        // ledger row already carries the human-readable cadence.
+        peonMetricsPlayer: {
+          depositsPerMin:
+            elapsedTurns > 0 ? snapshot.peonMetricsPlayer.depositCount / elapsedTurns : 0,
+          firstWoodAt: snapshot.peonMetricsPlayer.firstWoodAt,
+          firstHouseAt: snapshot.peonMetricsPlayer.firstHouseAt,
+        },
+        peonMetricsEnemy: {
+          depositsPerMin:
+            elapsedTurns > 0 ? snapshot.peonMetricsEnemy.depositCount / elapsedTurns : 0,
+          firstWoodAt: snapshot.peonMetricsEnemy.firstWoodAt,
+          firstHouseAt: snapshot.peonMetricsEnemy.firstHouseAt,
+        },
       };
       appendArtifact(run);
 
