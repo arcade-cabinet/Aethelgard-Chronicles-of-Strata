@@ -322,10 +322,7 @@ function pickEconomy(eco: unknown): GameEconomy {
         (e.peonMetrics as Record<string, unknown> | undefined)?.totalRoundTripSec,
         0,
       ),
-      roundTrips: safeFinite(
-        (e.peonMetrics as Record<string, unknown> | undefined)?.roundTrips,
-        0,
-      ),
+      roundTrips: safeFinite((e.peonMetrics as Record<string, unknown> | undefined)?.roundTrips, 0),
       disruptions: safeFinite(
         (e.peonMetrics as Record<string, unknown> | undefined)?.disruptions,
         0,
