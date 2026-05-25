@@ -33,20 +33,48 @@ function pickWalkableTestTile(game: ReturnType<typeof startGame>): {
   // seed unlucky. Scanning the full board with deterministic
   // ordering (sort by q then r) is O(tiles) ~ 1000 and runs once
   // per test — cheap insurance against silent CI flake.
+  // Coderabbit fix: also require at least one adjacent walkable +
+  // zone-free neighbour, so the "defended" test can place its
+  // defender on a clean tile and the cancellation path is exercised
+  // for the right reason. Without this gate, a candidate near the
+  // map edge or fully encircled by water/zones can pass the basic
+  // walkable check but offer no defender slot, and the test fails
+  // for map-shape reasons rather than encroachment logic.
+  const neighborOffsets: Array<[number, number]> = [
+    [1, 0],
+    [-1, 0],
+    [0, 1],
+    [0, -1],
+    [1, -1],
+    [-1, 1],
+  ];
   const candidates: Array<{ q: number; r: number; key: string }> = [];
   for (const t of game.board.tiles.values()) {
     if (!t.walkable) continue;
     const key = `${t.q},${t.r}`;
-    // Reject tiles already in either faction's controlled set so the
+    // Reject tiles already in EITHER faction's controlled set so the
     // claimTile call below sets a clean baseline (no interaction with
     // the seedZonesFromAttractors radius-2 seed footprint).
     if (game.zones.player.controlled.has(key)) continue;
     if (game.zones.enemy.controlled.has(key)) continue;
+    const hasDefenderNeighbour = neighborOffsets.some(([dq, dr]) => {
+      const nkey = `${t.q + dq},${t.r + dr}`;
+      const nt = game.board.tiles.get(nkey);
+      if (!nt?.walkable) return false;
+      if (game.zones.player.controlled.has(nkey)) return false;
+      if (game.zones.enemy.controlled.has(nkey)) return false;
+      return true;
+    });
+    if (!hasDefenderNeighbour) continue;
     candidates.push({ q: t.q, r: t.r, key });
   }
   candidates.sort((a, b) => (a.q !== b.q ? a.q - b.q : a.r - b.r));
   const first = candidates[0];
-  if (!first) throw new Error('encroachment test could not find a walkable, zone-free tile');
+  if (!first) {
+    throw new Error(
+      'encroachment test could not find a walkable, zone-free tile with a valid adjacent defender slot',
+    );
+  }
   return first;
 }
 

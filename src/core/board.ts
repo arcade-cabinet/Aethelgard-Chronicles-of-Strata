@@ -340,25 +340,33 @@ function paintMountainMassif(
   // Doesn't carve a hole in the massif's core (interior mountains
   // have 6 neighbours) — only the natural narrow points.
   const isthmusThreshold = t.isthmusThreshold;
-  // Snapshot the keys to avoid iteration mutation; pass-tile creation
-  // could otherwise feed back into the same loop's neighbour count.
-  const mountainKeys: string[] = [];
+  // Snapshot the MOUNTAIN keys into a Set so neighbour-counts are read
+  // from the PRE-CONVERSION topology. Coderabbit reviewer found the
+  // earlier code mutated `tile.type` in the same loop that read live
+  // `n?.type === 'MOUNTAIN'` — earlier conversions to MOUNTAIN_PASS
+  // lowered later tiles' neighbour counts and cascaded extra
+  // conversions. The snapshot is the cheap O(N) fix; mutations stay
+  // in a second pass and the topology read is invariant.
+  const mountainKeySet = new Set<string>();
   for (const tile of tiles.values()) {
-    if (tile.type === 'MOUNTAIN') mountainKeys.push(getHexKey(tile.q, tile.r));
+    if (tile.type === 'MOUNTAIN') mountainKeySet.add(getHexKey(tile.q, tile.r));
   }
-  for (const key of mountainKeys) {
+  const conversions: string[] = [];
+  for (const key of mountainKeySet) {
     const tile = tiles.get(key);
     if (!tile) continue;
     let mountainNeighbours = 0;
     for (const nKey of hexNeighbors(tile.q, tile.r)) {
-      const n = tiles.get(nKey);
-      if (n?.type === 'MOUNTAIN') mountainNeighbours += 1;
+      if (mountainKeySet.has(nKey)) mountainNeighbours += 1;
     }
-    if (mountainNeighbours <= isthmusThreshold) {
-      tile.type = 'MOUNTAIN_PASS';
-      tile.level = 3;
-      tile.walkable = true;
-    }
+    if (mountainNeighbours <= isthmusThreshold) conversions.push(key);
+  }
+  for (const key of conversions) {
+    const tile = tiles.get(key);
+    if (!tile) continue;
+    tile.type = 'MOUNTAIN_PASS';
+    tile.level = 3;
+    tile.walkable = true;
   }
 }
 
@@ -427,6 +435,11 @@ function paintSwampPatches(tiles: Map<string, Tile>, radius: number, rng: Rng): 
   const candidates: Array<{ q: number; r: number }> = [];
   for (const tile of tiles.values()) {
     if (tile.type !== 'GRASS' && tile.type !== 'FOREST') continue;
+    // Coderabbit fix: gate on walkability + lowland level so a
+    // level-5 GRASS/FOREST (e.g. inside a mountain mask edge) cannot
+    // be flipped to SWAMP and then walkable in the post-pass recompute
+    // — that would open accidental paths around lakes.
+    if (!tile.walkable || tile.level >= 4) continue;
     if (hexDistFromCenter(tile.q, tile.r) > radius - 3) continue;
     // Adjacent to LAKE?
     for (const [dq, dr] of NEIGHBORS) {
@@ -451,7 +464,7 @@ function paintSwampPatches(tiles: Map<string, Tile>, radius: number, rng: Rng): 
     if (stamped >= 2) break;
     const [dq, dr] = n;
     const t = tiles.get(getHexKey(pick.q + dq, pick.r + dr));
-    if (t && (t.type === 'GRASS' || t.type === 'FOREST')) {
+    if (t && (t.type === 'GRASS' || t.type === 'FOREST') && t.walkable && t.level < 4) {
       t.type = 'SWAMP';
       t.level = 1;
       stamped++;
