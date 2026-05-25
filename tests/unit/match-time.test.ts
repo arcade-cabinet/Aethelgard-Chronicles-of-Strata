@@ -12,11 +12,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { GameState } from '@/game/game-state';
-import {
-  matchElapsedSeconds,
-  matchElapsedTurns,
-  RTS_SECONDS_PER_TURN,
-} from '@/game/match-time';
+import { matchElapsedSeconds, matchElapsedTurns, RTS_SECONDS_PER_TURN } from '@/game/match-time';
 
 function rtsGame(elapsed: number): GameState {
   return { clock: { elapsed }, turn: undefined } as unknown as GameState;
