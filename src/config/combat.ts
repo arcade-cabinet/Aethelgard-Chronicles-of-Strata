@@ -22,6 +22,11 @@ const CombatUnitSchema = z.enum([
   'Footman',
   'Trebuchet',
   'Wizard',
+  // M_V7.TRAIN.WIDEN-ROLES — Healer was deliberately outside the v0.4
+  // schema (zero combat stats; heal-only). v0.7 adds it so unitStatFor
+  // returns speed + faction for the spawn path even though combat
+  // stats stay absent (the optional shape handles missing hp etc).
+  'Healer',
   'Ferryman',
   'Scout',
   'Settler',

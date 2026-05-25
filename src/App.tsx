@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { ALL_PERSONALITIES } from '@/config/ai-personalities';
+import { defaultFactionColors } from '@/config/faction-palette';
+import { buildDefaultFactions } from '@/config/factions';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
@@ -17,6 +19,8 @@ import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
 import { EraProgressPill } from '@/hud/EraProgressPill';
 import { FactionChips } from '@/hud/FactionChips';
 import { MatchAgePill } from '@/hud/MatchAgePill';
+import { NonAggressionPactPill } from '@/hud/NonAggressionPactPill';
+import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
 import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { WinConditionPill } from '@/hud/WinConditionPill';
 import { ScreenshotButton } from '@/hud/ScreenshotButton';
@@ -33,6 +37,7 @@ import { WeatherIndicator } from '@/hud/WeatherIndicator';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { EndTurnButton } from '@/hud/EndTurnButton';
 import { GameOverModal } from '@/hud/GameOverModal';
+import { ScoringScreen } from '@/hud/ScoringScreen';
 import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
 import { Minimap } from '@/hud/Minimap';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
@@ -76,6 +81,17 @@ function DelayedSession({ children }: { children: React.ReactNode }) {
     };
   }, []);
   return ready ? children : <LoadingScreen />;
+}
+
+/**
+ * M_V7.E2E.4-PLAYER-CAMP-CLEAR — build an N-faction registry from
+ * a URL ?nplayer=N param. Mirrors NewGameModal's buildDefaultFactions
+ * call so the e2e flow gets the same shape as a real user-selected
+ * 4X match.
+ */
+function buildDefaultFactionsForUrl(n: number, seed: string) {
+  const colors = defaultFactionColors(n, seed);
+  return buildDefaultFactions(n, colors);
 }
 
 function SceneError() {
@@ -313,6 +329,11 @@ function GameSession({
           Hidden on legacy 2-faction matches; appears top-center when
           game.factions has 3+ non-barbarian slots. */}
       <FactionChips game={game} />
+      {/* M_V7.DIPLO.UI — non-aggression-pact resolution pills + tribute
+          demand banner. Both poll the diplomacy substrate; hidden when
+          nothing pending. */}
+      <NonAggressionPactPill game={game} />
+      <TributeDemandBanner game={game} />
       {/* M_POLISH2.MODES.42 — strata-wars only: zone-control % chip. */}
       <ZoneControlPill game={game} />
       {/* M_POLISH2.MODES.43 — age-of-strata only: era progression pill. */}
@@ -328,6 +349,9 @@ function GameSession({
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
       <GameOverModal game={game} persistence={persistence} />
+      {/* M_V7.4X.SCORING — only renders in age-of-strata mode AND when
+          game.victoryRecord is non-null. Legacy modes keep GameOverModal. */}
+      <ScoringScreen game={game} />
       {/* M_AUDIT2.UX.12 — single hidden aria-live region; the bus
           (src/hud/aria-live-bus.ts) lets any sim event announce
           accessibly without lifting state. */}
@@ -416,6 +440,14 @@ export function App() {
       rawPlayerPersonality && validPersonalities.has(rawPlayerPersonality)
         ? rawPlayerPersonality
         : undefined;
+    // M_V7.E2E.4-PLAYER-CAMP-CLEAR — optional ?nplayer=N param drives
+    // an N-player setup via the buildDefaultFactions helper. Used by
+    // the e2e camp-clearing spec to test the full barbarian-camp
+    // pipeline against a real 4-player game without the NewGameModal
+    // exposing the >2-faction picker (a v0.8 polish item).
+    const rawN = sp.get('nplayer');
+    const nplayer = rawN ? Math.min(6, Math.max(2, Number.parseInt(rawN, 10) || 2)) : 2;
+    const factions = nplayer > 2 ? buildDefaultFactionsForUrl(nplayer, seed) : undefined;
     setConfig({
       seedPhrase: seed,
       mapSize: MAP_SIZES.medium.radius,
@@ -429,6 +461,7 @@ export function App() {
       aiVsAi: true,
       ...(personality ? { enemyPersonality: personality } : {}),
       ...(playerPersonality ? { playerPersonality } : {}),
+      ...(factions ? { factions } : {}),
     });
   }, []);
 

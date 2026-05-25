@@ -120,6 +120,48 @@ export function isPortalStoneAvailable(
   return nowSeconds >= expiresAt;
 }
 
+/**
+ * M_V7.PORTAL-STONES.TRIGGER — random-event roll for the rare
+ * portal-stones placement. Per the v0.6 directive: "1 in 200 ticks
+ * once map clock > 5min places two PORTAL_STONE decorative tiles on
+ * opposite ends of the map."
+ *
+ * v0.5/v0.6 left this as just the substrate helpers; v0.7 wires the
+ * actual roll. The trigger fires AT MOST ONCE per game (placed pair
+ * stays for the rest of the match; cooldowns are per-use, separate).
+ *
+ * Returns the placed pair on a successful roll, or null when:
+ *   - map clock <= 300 seconds (5-min gate),
+ *   - random roll exceeds the 1-in-200 threshold,
+ *   - portal stones already placed (idempotent — never re-rolls),
+ *   - no candidate tile pair exists (tiny board edge case).
+ *
+ * @param board       - Live BoardData (mutated in place on success).
+ * @param prng        - Event-stream PRNG (`game.eventRng`).
+ * @param clockSecs   - Current sim-clock seconds.
+ */
+export function tickPortalStonesTrigger(
+  board: import('@/core/board').BoardData,
+  prng: () => number,
+  clockSecs: number,
+): PortalStonePair | null {
+  // Gate 1: 5-minute warmup before the roll is even possible.
+  // Strict greater than per the v0.6 directive ("> 5min").
+  if (clockSecs <= 300) return null;
+  // Gate 2: idempotency — if any PORTAL_STONE tile already exists,
+  // the trigger has already fired this match.
+  for (const tile of board.tiles.values()) {
+    if (tile.type === 'PORTAL_STONE') return null;
+  }
+  // Gate 3: 1-in-200 random roll.
+  if (prng() >= 1 / 200) return null;
+  // All gates passed — place the pair.
+  const pair = findPortalStoneCandidates(board);
+  if (!pair) return null;
+  placePortalStones(board, pair);
+  return pair;
+}
+
 /** Mark a faction as having used a portal stone — sets the cooldown expiry. */
 export function refreshPortalStoneCooldown(
   cooldowns: Map<string, number>,

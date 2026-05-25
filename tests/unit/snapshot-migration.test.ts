@@ -24,9 +24,10 @@ describe('snapshot migration framework (M_EXPANSION.S.61)', () => {
     const snap = serializeGame(original);
     // version pinned by serialize at SNAPSHOT_VERSION; migration walks
     // until current.version === SNAPSHOT_VERSION (zero iterations).
-    // SNAPSHOT_VERSION bumped to 2 in M_FUN.DYN.FIX.SAVE-GAP — added
-    // wildfires / quakeShakeRemaining / volcano blocks to GameSnapshot.
-    expect(snap.version).toBe(2);
+    // SNAPSHOT_VERSION bumped to 3 in M_V7.CARRY.SAVE-V6-STATE — added
+    // diplomacy / mythEvents / cooldowns / victoryRecord blocks to
+    // GameSnapshot. (v1→v2 was M_FUN.DYN.FIX.SAVE-GAP for terrain.)
+    expect(snap.version).toBe(3);
     const restored = deserializeGame(JSON.parse(JSON.stringify(snap)));
     expect(restored.seedPhrase).toBe('autumn-bronze-summit');
   });
@@ -62,15 +63,55 @@ describe('snapshot migration framework (M_EXPANSION.S.61)', () => {
     const synthetic = snap as unknown as Record<string, unknown>;
     // biome-ignore lint/performance/noDelete: test-only mutation of synthetic snapshot
     delete synthetic.wildfires;
-    // biome-ignore lint/performance/noDelete: test-only
     delete synthetic.quakeShakeRemaining;
-    // biome-ignore lint/performance/noDelete: test-only
     delete synthetic.volcano;
+    // v1 also predates v0.6 substrate — drop those too so the
+    // v1 → v2 → v3 chain migration is exercised end-to-end.
+    delete synthetic.diplomacy;
+    delete synthetic.diplomacyProposals;
+    delete synthetic.tradeCooldowns;
+    delete synthetic.mythEvents;
+    delete synthetic.victoryRecord;
+    delete synthetic.portalStoneCooldowns;
     const restored = deserializeGame(JSON.parse(JSON.stringify(snap)));
     expect(restored.wildfires.size).toBe(0);
     expect(restored.quakeShakeRemaining).toBe(0);
     // volcano placement is deterministic from the seed, so it may or
     // may not have a position; the only contract is that it's defined.
     expect(restored.volcano).toBeDefined();
+    // v0.6 substrate also restored to empty defaults.
+    expect(restored.diplomacy.relations.size).toBe(0);
+    expect(restored.diplomacyProposals.pending).toEqual([]);
+    expect(restored.tradeCooldowns.cooldowns.size).toBe(0);
+    expect(restored.mythEvents.lastFireSeconds).toBe(-1);
+    expect(restored.mythEvents.active).toBeNull();
+    expect(restored.victoryRecord).toBeNull();
+    expect(restored.portalStoneCooldowns.size).toBe(0);
+  });
+
+  it('v2 → v3 migration loads a pre-v0.6 save with empty v0.6 substrate state', () => {
+    // M_V7.CARRY.SAVE-V6-STATE — a v2 save predates v0.6 entirely.
+    // Migration leaves the new fields undefined; deserializeGame uses
+    // the fresh-from-startGame createDiplomacyState() / createMythEventsState()
+    // / new Map() defaults.
+    const original = startGame('autumn-bronze-summit');
+    const snap = serializeGame(original);
+    snap.version = 2 as never;
+    const synthetic = snap as unknown as Record<string, unknown>;
+    // biome-ignore lint/performance/noDelete: test-only mutation of synthetic snapshot
+    delete synthetic.diplomacy;
+    delete synthetic.diplomacyProposals;
+    delete synthetic.tradeCooldowns;
+    delete synthetic.mythEvents;
+    delete synthetic.victoryRecord;
+    delete synthetic.portalStoneCooldowns;
+    const restored = deserializeGame(JSON.parse(JSON.stringify(snap)));
+    expect(restored.diplomacy.relations.size).toBe(0);
+    expect(restored.diplomacyProposals.pending).toEqual([]);
+    expect(restored.tradeCooldowns.cooldowns.size).toBe(0);
+    expect(restored.mythEvents.lastFireSeconds).toBe(-1);
+    expect(restored.mythEvents.active).toBeNull();
+    expect(restored.victoryRecord).toBeNull();
+    expect(restored.portalStoneCooldowns.size).toBe(0);
   });
 });

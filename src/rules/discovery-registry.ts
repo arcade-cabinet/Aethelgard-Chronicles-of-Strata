@@ -23,6 +23,13 @@ function applyEffect(effect: DiscoveryEffect, world: World): void {
         h.harvestRate *= effect.factor;
       });
       break;
+    case 'flag':
+      // M_V7.DISCOVERY-TREE.V6 — flag-only Discoveries gate downstream
+      // systems by their `id` (research.purchased.has(id)). No immediate
+      // apply effect; the gate happens at the consumer's call site
+      // (e.g. trade-route gates DIPLO.TRADE, cartography gates a future
+      // reveal pass). The grant/unlock is the side effect.
+      break;
   }
 }
 

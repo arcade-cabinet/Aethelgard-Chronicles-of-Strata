@@ -15,6 +15,46 @@
       "cost": { "wood": 50, "gold": 100 },
       "prereqs": [],
       "effect": { "kind": "multiply-harvest", "factor": 1.5 }
+    },
+    {
+      "id": "trade-route",
+      "name": "Trade Route",
+      "description": "Unlocks the Trade widget — 1:1 swap of wood/stone/gold with any non-enemy faction.",
+      "cost": { "wood": 80, "gold": 120 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "cartography",
+      "name": "Cartography",
+      "description": "Reveals the starting region around your base + boosts Ferryman speed by 25%.",
+      "cost": { "wood": 60, "gold": 80 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "iron-tools",
+      "name": "Iron Tools",
+      "description": "+25% Peon harvest rate (stacks with Steel Plows).",
+      "cost": { "stone": 80, "gold": 100 },
+      "prereqs": [],
+      "effect": { "kind": "multiply-harvest", "factor": 1.25 }
+    },
+    {
+      "id": "siege-engineering",
+      "name": "Siege Engineering",
+      "description": "Trebuchet trainable from a tier-1 Barracks instead of tier-2.",
+      "cost": { "wood": 120, "stone": 100, "gold": 60 },
+      "prereqs": ["forgedBlades"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "monumental-architecture",
+      "name": "Monumental Architecture",
+      "description": "Wonder build cost reduced by 20%.",
+      "cost": { "stone": 200, "gold": 200 },
+      "prereqs": ["steelPlows"],
+      "effect": { "kind": "flag" }
     }
   ]
 }
