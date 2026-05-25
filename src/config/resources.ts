@@ -138,6 +138,14 @@ const ResourceConfigSchema = z.object({
    * neutral grey if absent. Coderabbit + simplifier reviewer QW-3.
    */
   color: z.string().optional(),
+  /**
+   * Per-attractor (TownHall) minimum guarantee: when the map gen
+   * lays the attractor's resource ring, it tops up to this count of
+   * this slot's nodes within ATTRACTOR_RADIUS. Defaults to 0 (no
+   * guaranteed nodes — extending into the slot is the player's job).
+   * Coderabbit + simplifier reviewer QW-2.
+   */
+  attractorGuarantee: z.number().int().nonnegative().optional(),
   sources: z.array(ResourceSourceSchema).min(1),
   consumers: z.array(ResourceConsumerSchema),
 });

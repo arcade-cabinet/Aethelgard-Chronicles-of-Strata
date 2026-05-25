@@ -35,7 +35,8 @@
           "style": "wood"
         }
       ],
-      "color": "#f97316"
+      "color": "#f97316",
+      "attractorGuarantee": 3
     },
     {
       "id": "stone",
@@ -70,7 +71,8 @@
           "style": "stone"
         }
       ],
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "attractorGuarantee": 2
     },
     {
       "id": "ore",
@@ -113,7 +115,8 @@
           ]
         }
       ],
-      "color": "#6b7280"
+      "color": "#6b7280",
+      "attractorGuarantee": 1
     },
     {
       "id": "gold",
@@ -151,7 +154,8 @@
           ]
         }
       ],
-      "color": "#fbbf24"
+      "color": "#fbbf24",
+      "attractorGuarantee": 1
     },
     {
       "id": "food",
@@ -206,7 +210,8 @@
           "$comment": "0.01 food/sec per supply unit (future M_FUN.ECON.UPKEEP)."
         }
       ],
-      "color": "#ef4444"
+      "color": "#ef4444",
+      "attractorGuarantee": 2
     },
     {
       "id": "peat",
@@ -242,7 +247,8 @@
           ]
         }
       ],
-      "color": "#78350f"
+      "color": "#78350f",
+      "attractorGuarantee": 0
     },
     {
       "id": "science",
@@ -274,7 +280,8 @@
           ]
         }
       ],
-      "color": "#38bdf8"
+      "color": "#38bdf8",
+      "attractorGuarantee": 0
     },
     {
       "id": "mana",
@@ -301,7 +308,8 @@
           ]
         }
       ],
-      "color": "#c084fc"
+      "color": "#c084fc",
+      "attractorGuarantee": 0
     },
     {
       "id": "amber",
@@ -349,7 +357,8 @@
           ]
         }
       ],
-      "color": "#f59e0b"
+      "color": "#f59e0b",
+      "attractorGuarantee": 0
     }
   ]
 }
