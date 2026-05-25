@@ -234,11 +234,7 @@ function Scene({
           encroached tiles (encroachment system already maintains
           zone.pulsing on the sim side). */}
       <ContestedPulse game={game} />
-      <CameraRig
-        viewport={viewport}
-        boardRadius={game.board.radius}
-        landCenter={landCenter}
-      />
+      <CameraRig viewport={viewport} boardRadius={game.board.radius} landCenter={landCenter} />
       {onCameraReady && <CameraTap onReady={onCameraReady} />}
     </>
   );

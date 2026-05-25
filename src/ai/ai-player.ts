@@ -289,8 +289,7 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     // ~0.21× — military will out-score build past 5-6 buildings
     // for any non-extreme personality.
     const builtCount = owner.game ? totalOwnedBuildings(owner.game, owner.faction) : 0;
-    const saturationMul =
-      builtCount <= 4 ? 1.0 : 1.0 / (1 + (builtCount - 4) ** 2 * 0.3);
+    const saturationMul = builtCount <= 4 ? 1.0 : 1.0 / (1 + (builtCount - 4) ** 2 * 0.3);
     return 0.7 * bias * profile.buildWeight * defensiveMul * this.personalityMul * saturationMul;
   }
 

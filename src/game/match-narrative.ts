@@ -205,10 +205,7 @@ export function matchHighlights(game: GameState): string[] {
   return lines;
 }
 
-function countCompleteBuildings(
-  game: GameState,
-  faction: 'player' | 'enemy',
-): number {
+function countCompleteBuildings(game: GameState, faction: 'player' | 'enemy'): number {
   let n = 0;
   for (const e of game.world.query(Building, FactionTrait)) {
     if (e.get(Building)?.isComplete && e.get(FactionTrait)?.faction === faction) n += 1;

@@ -18,7 +18,9 @@ import { Building, FactionTrait } from '@/ecs/components';
 import { runEconomyTick, startGame } from '@/game/game-state';
 
 describe('border-clash AIVAI economy progression (PATTERN-I)', () => {
-  it('enemy faction harvests wood from a playable biome distribution', { timeout: 60_000 }, async () => {
+  it('enemy faction harvests wood from a playable biome distribution', {
+    timeout: 60_000,
+  }, async () => {
     const startingWood = 50;
     const game = startGame({
       seedPhrase: 'balance-the-diplomat-vs-the-diplomat',
@@ -57,6 +59,8 @@ describe('border-clash AIVAI economy progression (PATTERN-I)', () => {
     // pinned: harvest, build, and a soft zone-union floor.
     expect(enemyEco.wood).toBeGreaterThan(startingWood);
     expect(enemyBuildings.length).toBeGreaterThanOrEqual(1);
-    expect.soft(zoneUnionPct, 'zone-of-control union — soft floor; PATTERN-K tunes expansion').toBeGreaterThan(2);
+    expect
+      .soft(zoneUnionPct, 'zone-of-control union — soft floor; PATTERN-K tunes expansion')
+      .toBeGreaterThan(2);
   });
 });

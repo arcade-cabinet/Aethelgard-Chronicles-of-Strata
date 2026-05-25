@@ -3,11 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import type { GameState } from '@/game/game-state';
-import {
-  detectTranscriptHighlights,
-  matchHighlights,
-  matchNickname,
-} from '@/game/match-narrative';
+import { detectTranscriptHighlights, matchHighlights, matchNickname } from '@/game/match-narrative';
 import type { Persistence } from '@/persistence/persistence';
 import { formatInt, formatTime } from './format';
 import { HUD_THEME } from './hud-theme';

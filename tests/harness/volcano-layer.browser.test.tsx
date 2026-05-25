@@ -45,10 +45,7 @@ describe('volcano layer harness', () => {
   it('renders magma cap, lava discs, and fertile tints', async () => {
     await render(
       <div style={{ width: 320, height: 320 }}>
-        <Canvas
-          camera={{ position: [0, 7, 5], fov: 50 }}
-          style={{ background: '#0f172a' }}
-        >
+        <Canvas camera={{ position: [0, 7, 5], fov: 50 }} style={{ background: '#0f172a' }}>
           <ambientLight intensity={0.45} />
           <directionalLight position={[5, 8, 3]} intensity={1.1} />
           <VolcanoLayer game={makeStubGame()} />

@@ -135,8 +135,7 @@ export function wildfireSystem(
     // post-tick population would exceed the cap, drop further
     // spread rolls this tick (the existing fires continue to burn
     // normally — only the *spread* is gated).
-    const projectedTotal = () =>
-      game.wildfires.size + newIgnitions.length;
+    const projectedTotal = () => game.wildfires.size + newIgnitions.length;
     for (const nKey of neighbourKeys) {
       if (projectedTotal() >= WILDFIRE_TUNING.maxConcurrent) break;
       if (game.wildfires.has(nKey)) continue;

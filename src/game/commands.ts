@@ -228,10 +228,7 @@ export function placeBuilding(
     if (!hex) continue;
     const dist = Math.abs(hex.q - (tileData?.q ?? 0)) + Math.abs(hex.r - (tileData?.r ?? 0));
     // Strictly prefer lower-priority state; tie-break on distance.
-    if (
-      priority < nearestPriority ||
-      (priority === nearestPriority && dist < nearestDist)
-    ) {
+    if (priority < nearestPriority || (priority === nearestPriority && dist < nearestDist)) {
       nearestPriority = priority;
       nearestDist = dist;
       nearestPeon = entity;

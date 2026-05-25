@@ -212,10 +212,7 @@ export function deserializeGame(snap: GameSnapshot): GameState {
       });
     }
   }
-  game.quakeShakeRemaining = Math.max(
-    0,
-    Math.min(60, safeFinite(snap.quakeShakeRemaining, 0)),
-  );
+  game.quakeShakeRemaining = Math.max(0, Math.min(60, safeFinite(snap.quakeShakeRemaining, 0)));
   if (snap.volcano && typeof snap.volcano === 'object') {
     const v = snap.volcano;
     game.volcano.position =
@@ -378,9 +375,7 @@ const SaveSnapshotSchema = z.object({
     difficulty: z.enum(['easy', 'normal', 'hard']),
     eventSeed: z.string().min(1).max(256),
   }),
-  world: z
-    .object({ entities: z.array(z.unknown()).max(MAX_ENTITY_COUNT) })
-    .and(_OpaqueObj),
+  world: z.object({ entities: z.array(z.unknown()).max(MAX_ENTITY_COUNT) }).and(_OpaqueObj),
   economy: z.object({ player: _OpaqueObj, enemy: _OpaqueObj }),
   clock: _OpaqueObj,
   weather: _OpaqueObj,

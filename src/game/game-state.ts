@@ -694,12 +694,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // there the enemy gets units from the EnemySpawner cadence.
   const isAiVsAi = typeof config === 'object' && config.aiVsAi;
   if (isAiVsAi) {
-    const enemyPeonSpawns = adjacentWalkableTiles(
-      board,
-      enemyBaseTile.q,
-      enemyBaseTile.r,
-      2,
-    );
+    const enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 2);
     if (enemyPeonSpawns.length === 0) enemyPeonSpawns.push(enemyBaseTile);
     for (let i = 0; i < 2; i++) {
       const spawn = enemyPeonSpawns[i] ?? enemyPeonSpawns[0]!;

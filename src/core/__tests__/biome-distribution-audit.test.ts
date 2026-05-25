@@ -19,7 +19,13 @@ const MAP_SIZES: Record<string, number> = { small: 18, medium: 28, large: 36 };
 // 5 distinct seeds per permutation — surfaces seed-class outliers
 // (the regression that originally hid for so long was visible only on
 // some seeds; a single-seed audit would have missed it).
-const SEEDS = ['alpha-bravo-charlie', 'delta-echo-foxtrot', 'golf-hotel-india', 'juliet-kilo-lima', 'mike-november-oscar'];
+const SEEDS = [
+  'alpha-bravo-charlie',
+  'delta-echo-foxtrot',
+  'golf-hotel-india',
+  'juliet-kilo-lima',
+  'mike-november-oscar',
+];
 
 interface BiomeStats {
   total: number;
@@ -33,7 +39,7 @@ interface BiomeStats {
   desert: number;
 }
 
-function statsFor(seed: string, mapType: typeof MAP_TYPES[number], radius: number): BiomeStats {
+function statsFor(seed: string, mapType: (typeof MAP_TYPES)[number], radius: number): BiomeStats {
   const board = generateBoard(seed, radius, true, mapType);
   const stats: BiomeStats = {
     total: 0,
@@ -84,7 +90,9 @@ describe('biome distribution audit (PATTERN-I — every permutation must be play
           // dry-land has NO ocean by design; all others have some water.
           // walkable% should always exceed 25% — otherwise the playable
           // area is too small for a 2-faction RTS.
-          expect.soft(s.walkable / s.total, `walkable% ${mapType}/${sizeName}/${seed}`).toBeGreaterThan(0.25);
+          expect
+            .soft(s.walkable / s.total, `walkable% ${mapType}/${sizeName}/${seed}`)
+            .toBeGreaterThan(0.25);
 
           // dry-land is designed to be DESERT-blanketed (per
           // paintDesertBlanket); it intentionally has no FOREST/GRASS.
@@ -100,10 +108,14 @@ describe('biome distribution audit (PATTERN-I — every permutation must be play
           if (mapType !== 'dry-land') {
             // FOREST >= 0.3% — 1027 tiles × 0.3% = 3 tiles, × 45% spawn
             // chance ≈ 1 wood node on small boards (the actual floor).
-            expect.soft(pct(s.forest), `FOREST% ${mapType}/${sizeName}/${seed}`).toBeGreaterThanOrEqual(0.3);
+            expect
+              .soft(pct(s.forest), `FOREST% ${mapType}/${sizeName}/${seed}`)
+              .toBeGreaterThanOrEqual(0.3);
             // GRASS >= 1% — buildable space for two faction-bases +
             // a single building each at minimum.
-            expect.soft(pct(s.grass), `GRASS% ${mapType}/${sizeName}/${seed}`).toBeGreaterThanOrEqual(1.0);
+            expect
+              .soft(pct(s.grass), `GRASS% ${mapType}/${sizeName}/${seed}`)
+              .toBeGreaterThanOrEqual(1.0);
           }
 
           // HIGHLAND + MOUNTAIN >= 0.2% — the stone biomes; ~30%
@@ -122,7 +134,12 @@ describe('biome distribution audit (PATTERN-I — every permutation must be play
           // board otherwise — just thin on stone.
           const isMnoSmall = seed === 'mike-november-oscar' && sizeName === 'small';
           if (mapType !== 'dry-land' && !isMnoSmall) {
-            expect.soft(pct(s.highland + s.mountain), `HIGHLAND+MOUNTAIN% ${mapType}/${sizeName}/${seed}`).toBeGreaterThanOrEqual(0.2);
+            expect
+              .soft(
+                pct(s.highland + s.mountain),
+                `HIGHLAND+MOUNTAIN% ${mapType}/${sizeName}/${seed}`,
+              )
+              .toBeGreaterThanOrEqual(0.2);
           }
         });
       }

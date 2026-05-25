@@ -509,11 +509,7 @@ function paintInlandLake(tiles: Map<string, Tile>, radius: number, rng: Rng): vo
  * Used by the 'archipelago' mapType (per src/config/mapgen.json).
  * Deterministic via the map PRNG.
  */
-function paintMultiIslandChannels(
-  tiles: Map<string, Tile>,
-  _radius: number,
-  rng: Rng,
-): void {
+function paintMultiIslandChannels(tiles: Map<string, Tile>, _radius: number, rng: Rng): void {
   // Three random radial-angle channels, each ~2 tiles wide. The
   // strip is defined by a perpendicular distance from a line
   // through the origin at angle θ; tiles within `width/2` of the

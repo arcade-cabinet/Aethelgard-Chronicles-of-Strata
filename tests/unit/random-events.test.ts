@@ -36,13 +36,9 @@ describe('M_EXPANSION.F.81 — random events', () => {
     expect(game.randomEvents.fired).toBeGreaterThan(20);
     // last fired kind should be one of the 5 valid events
     // (added 'wildfire' + 'quake' in M_FUN.DYN.*).
-    expect([
-      'weather-spike',
-      'raid-warning',
-      'refugee-arrival',
-      'wildfire',
-      'quake',
-    ]).toContain(game.randomEvents.lastKind);
+    expect(['weather-spike', 'raid-warning', 'refugee-arrival', 'wildfire', 'quake']).toContain(
+      game.randomEvents.lastKind,
+    );
   });
 
   it('refugee-arrival increases player wood', () => {

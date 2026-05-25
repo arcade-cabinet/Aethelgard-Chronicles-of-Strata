@@ -15,11 +15,7 @@ import { describe, expect, it } from 'vitest';
 import { VOLCANO_TUNING } from '@/config/mapgen';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey } from '@/core/hex';
-import {
-  createVolcanoState,
-  placeVolcanoLandmark,
-  volcanoSystem,
-} from '@/ecs/systems/volcano';
+import { createVolcanoState, placeVolcanoLandmark, volcanoSystem } from '@/ecs/systems/volcano';
 import type { GameState } from '@/game/game-state';
 
 function tile(q: number, r: number, type: Tile['type'], level = 3): Tile {

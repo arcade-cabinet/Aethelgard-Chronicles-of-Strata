@@ -102,8 +102,8 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
 
       await page.waitForFunction(
         () =>
-          typeof (window as unknown as { __game_advanceFrames?: unknown })
-            .__game_advanceFrames === 'function',
+          typeof (window as unknown as { __game_advanceFrames?: unknown }).__game_advanceFrames ===
+          'function',
         { timeout: 30_000 },
       );
       await page.evaluate(async () => {
@@ -246,9 +246,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
       expect.soft(elapsedTurns, 'turn count too low — instant finish').toBeGreaterThanOrEqual(2);
       expect.soft(elapsedTurns, 'turn count too high — drag').toBeLessThanOrEqual(15);
       expect.soft(snapshot.kills, 'combat must occur').toBeGreaterThan(0);
-      expect
-        .soft(snapshot.buildingsPlayer, 'player faction must build')
-        .toBeGreaterThanOrEqual(1);
+      expect.soft(snapshot.buildingsPlayer, 'player faction must build').toBeGreaterThanOrEqual(1);
       expect.soft(snapshot.buildingsEnemy, 'enemy faction must build').toBeGreaterThanOrEqual(1);
       // peakSupply > 1 proves training happened beyond the starting
       // Footman (which counts as 1 supply on its own).

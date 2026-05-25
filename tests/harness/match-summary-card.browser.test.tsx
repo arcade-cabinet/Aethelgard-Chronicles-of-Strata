@@ -45,9 +45,7 @@ describe('match summary card harness', () => {
     expect(card).not.toBeNull();
     const nickEl = document.querySelector('[data-testid="match-summary-nickname"]');
     expect(nickEl?.textContent).toBe('The Crushing Banner');
-    const bullets = document.querySelectorAll(
-      '[data-testid="match-summary-highlights"] li',
-    );
+    const bullets = document.querySelectorAll('[data-testid="match-summary-highlights"] li');
     expect(bullets.length).toBe(highlights.length);
     bullets.forEach((li, i) => {
       const expected = highlights[i];

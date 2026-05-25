@@ -167,10 +167,7 @@ function applyEvent(game: GameState, rng: Rng, kind: RandomEventKind): void {
       // Reviewer-fix (LOW #3): clamp to a sane upper bound so a
       // tampered or future-changed config can't lock the camera in
       // permanent shake.
-      game.quakeShakeRemaining = Math.min(
-        out.shakeSeconds,
-        QUAKE_TUNING.shakeSeconds * 2,
-      );
+      game.quakeShakeRemaining = Math.min(out.shakeSeconds, QUAKE_TUNING.shakeSeconds * 2);
       break;
     }
     case 'wildfire': {

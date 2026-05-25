@@ -604,10 +604,9 @@ export function createPersistence(): Persistence {
       // contract is preserved.
       const safe = Math.floor(limit);
       const cap = Number.isFinite(safe) ? Math.max(1, Math.min(500, safe)) : 50;
-      const result = await db.query(
-        `SELECT * FROM lorebook ORDER BY ended_at DESC LIMIT ?;`,
-        [cap],
-      );
+      const result = await db.query(`SELECT * FROM lorebook ORDER BY ended_at DESC LIMIT ?;`, [
+        cap,
+      ]);
       const rows = result.values ?? [];
       const out: LorebookEntry[] = [];
       for (const row of rows) {

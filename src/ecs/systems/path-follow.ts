@@ -37,12 +37,7 @@ const FORTIFY_BUILDINGS = new Set(['Wall', 'Watchtower']);
  * sits within radius 1 of (q, r). Used by pathFollowSystem to
  * suppress fatigue accrual on a garrisoned MOUNTAIN_PASS tile.
  */
-function hasFortifyAdjacent(
-  world: World,
-  faction: string,
-  q: number,
-  r: number,
-): boolean {
+function hasFortifyAdjacent(world: World, faction: string, q: number, r: number): boolean {
   for (const e of world.query(Building, HexPosition, FactionTrait)) {
     if (e.get(FactionTrait)?.faction !== faction) continue;
     const b = e.get(Building);

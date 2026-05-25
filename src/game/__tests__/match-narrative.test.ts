@@ -47,9 +47,7 @@ describe('matchNickname', () => {
 
   it('uses the defeat pool for losses', () => {
     const name = matchNickname({ seedPhrase: 'brave wild fox', outcome: 'loss' });
-    expect(name).toMatch(
-      /^The (Bitter|Doomed|Final|Lonely|Tragic|Stubborn|Cursed|Quiet) /,
-    );
+    expect(name).toMatch(/^The (Bitter|Doomed|Final|Lonely|Tragic|Stubborn|Cursed|Quiet) /);
   });
 
   it('uses the draw pool for draws (reviewer-fix CRITICAL #1)', () => {
@@ -109,23 +107,21 @@ describe('detectTranscriptHighlights (M_FUN.NAR.HIGHLIGHTS)', () => {
         enemy: { kills: 0 },
       } as never,
     });
-    expect(detectTranscriptHighlights(game).some((h) => h.kind === 'long-engagement')).toBe(
-      true,
-    );
+    expect(detectTranscriptHighlights(game).some((h) => h.kind === 'long-engagement')).toBe(true);
   });
 
   it('detects biggest-comeback when player or enemy holds a 1.5× score lead', () => {
     const playerAhead = makeStubGame({
       score: { player: 150, enemy: 50 },
     });
-    expect(
-      detectTranscriptHighlights(playerAhead).some((h) => h.kind === 'biggest-comeback'),
-    ).toBe(true);
+    expect(detectTranscriptHighlights(playerAhead).some((h) => h.kind === 'biggest-comeback')).toBe(
+      true,
+    );
     const enemyAhead = makeStubGame({
       score: { player: 50, enemy: 200 },
     });
-    expect(
-      detectTranscriptHighlights(enemyAhead).some((h) => h.kind === 'biggest-comeback'),
-    ).toBe(true);
+    expect(detectTranscriptHighlights(enemyAhead).some((h) => h.kind === 'biggest-comeback')).toBe(
+      true,
+    );
   });
 });

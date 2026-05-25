@@ -31,5 +31,7 @@ const _validated = z.record(z.string(), AssetEntrySchema).parse(metadataJson);
  * Validated asset metadata, keyed by stable logical id. Import this
  * (NOT the JSON) in any code that needs to look up an asset by id.
  */
-export const ASSET_METADATA: Record<string, AssetEntry> =
-  _validated as unknown as Record<string, AssetEntry>;
+export const ASSET_METADATA: Record<string, AssetEntry> = _validated as unknown as Record<
+  string,
+  AssetEntry
+>;

@@ -163,7 +163,14 @@ describe('wildfire', () => {
     const Health = { __health: true };
     const HexPosition = { __pos: true };
     const ent = {
-      _hp: { current: 50, max: 50, disease: 0, diseaseRecoveryTimer: 0, dehydration: 0, dehydrationRecoveryTimer: 0 },
+      _hp: {
+        current: 50,
+        max: 50,
+        disease: 0,
+        diseaseRecoveryTimer: 0,
+        dehydration: 0,
+        dehydrationRecoveryTimer: 0,
+      },
       _pos: { q: 0, r: 0, level: 0 },
       get(trait: unknown) {
         if (trait === Health) return this._hp;
