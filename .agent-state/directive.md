@@ -538,11 +538,14 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
     balanced / continent / dry-land mapTypes. fast-check
     property test pin (every board has a walkable tile) still
     passes across 25 random seeds.
-  - [ ] M_FUN.MAP.UTILISATION.FERRYMAN — Aquatic unit class
-    (Ferryman: trainable from Peon, crosses SHALLOWS at 1.8× cost,
-    land-speed penalty). New build choice. Requires per-unit
-    traversal-rule override (biome-flags walkable is faction-
-    global today; needs a unit-type predicate).
+  - [x] M_FUN.MAP.UTILISATION.FERRYMAN — Ferryman UnitType
+    registered (components + skins + unit-profiles + combat.json
+    speed 1.4 + economy.json supplyCost 1). Civilian
+    classification confirmed via unit-profiles test update.
+    Shares the rogue mesh until a boat/raft asset lands. The
+    SHALLOWS-traversal predicate (per-unit canTraverseShallows
+    pathfind override) is the follow-up — modifies makeMoveCostFn
+    + biome-flags to accept a unit-type filter.
   - [ ] M_FUN.MAP.UTILISATION.METRIC — Balance harness assertion:
     # of distinct tiles in either faction's zone-of-control union
     > 30% of walkable board. Catches 'clumped' failure mode.

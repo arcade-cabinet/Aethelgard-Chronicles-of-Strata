@@ -195,6 +195,9 @@ const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
   // Cleric/Priest GLB lands. Distinguished visually by faction-tint
   // (Healer = white/gold) when the tint pass lands.
   Healer: { tier: 'medium', meshLogicalId: 'characters.heroes.mage' },
+  // M_FUN.MAP.UTILISATION.FERRYMAN — aquatic civilian. Reuses
+  // the rogue mesh until a dedicated boat/raft asset lands.
+  Ferryman: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },
   // M_EXPANSION.A.27 — Scout uses the KayKit Rogue mesh.
   Scout: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },
   // Settler (M_MODES.6) — civilian appearance; reuse the engineer mesh.

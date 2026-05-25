@@ -10,6 +10,11 @@ export type UnitType =
    *  heal-aura that clears disease for friendly units in range
    *  and ticks HP+regen. Counter-unit for SWAMP/disease pressure. */
   | 'Healer'
+  /** M_FUN.MAP.UTILISATION.FERRYMAN — aquatic unit. Crosses
+   *  SHALLOWS at 1.8× cost; land-speed penalty (60%). Trainable
+   *  from a Peon. Opens multi-island maps to combined-arms
+   *  pressure. */
+  | 'Ferryman'
   | 'Scout'
   | 'Settler'
   | 'Hero'
