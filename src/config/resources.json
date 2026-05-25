@@ -58,9 +58,7 @@
           "harvester": "Peon",
           "overlayStyle": "ore-vein",
           "yield": 60,
-          "risks": [
-            { "attribute": "fatigue", "strength": 0.3, "unlockedBy": "reinforced-pick" }
-          ],
+          "risks": [{ "attribute": "fatigue", "strength": 0.3, "unlockedBy": "reinforced-pick" }],
           "yieldRateMul": 1.2
         }
       ],
