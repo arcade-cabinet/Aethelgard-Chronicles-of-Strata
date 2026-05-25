@@ -1,0 +1,36 @@
+{
+  "$comment": "M_V6.MYTH.EVENTS — 5 rare events with a shared >5min cooldown between any two firings. At most one active at a time. Each event's `kind` drives the runtime effect dispatch; the `displayName` + `flavorText` show in the HUD banner. Adding a 6th event = one entry here + one switch arm in the dispatcher.",
+  "minIntervalSeconds": 300,
+  "events": {
+    "solar-eclipse": {
+      "displayName": "Solar Eclipse",
+      "flavorText": "The sun darkens. Every faction's vision range halves for 60 seconds.",
+      "durationSeconds": 60,
+      "weight": 1.0
+    },
+    "meteor-strike": {
+      "displayName": "Meteor Strike",
+      "flavorText": "A meteor crashes! A random tile burns + everything on it takes 30 damage.",
+      "durationSeconds": 0,
+      "weight": 1.0
+    },
+    "wildlife-migration": {
+      "displayName": "Wildlife Migration",
+      "flavorText": "A neutral herd crosses the map. Clear it for +20 food.",
+      "durationSeconds": 90,
+      "weight": 1.0
+    },
+    "oracle-vision": {
+      "displayName": "Oracle Vision",
+      "flavorText": "A random faction glimpses another faction's base — a single-tile reveal.",
+      "durationSeconds": 0,
+      "weight": 0.8
+    },
+    "harvest-festival": {
+      "displayName": "Harvest Festival",
+      "flavorText": "Every faction gains +50 food + +20 gold from the festival markets.",
+      "durationSeconds": 0,
+      "weight": 1.0
+    }
+  }
+}

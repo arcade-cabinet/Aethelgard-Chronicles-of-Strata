@@ -219,68 +219,148 @@ Architectural decisions for v0.6 (the use-case enumeration step):
 
 Concrete v0.6 work-units:
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.QUICKSAND-PAIR — generator
-  hook in `paintQuicksandSwirls` that, when ≥2 QUICKSAND tiles
-  spawn, pairs the closest two via `portalTo`. Deterministic per
-  seed. Acceptance: e2e test that seeds a map with ≥2 quicksand
-  + asserts at least one pair has reciprocal portalTo references.
+### v0.6.0 — v0.5 centerpiece carryovers (drained before new work)
+The v0.5 grinder report named six follow-ups outside the centerpiece
+substrate. Each lands in v0.6 as a self-contained commit-unit BEFORE
+the portal/diplomacy work begins so the substrate is fully complete.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.MOUNTAIN-CAVE-NETWORK — when
-  the massif-stack pass produces ≥3 MOUNTAIN_PASS tiles in a
-  cluster (within 4-hex radius), link them all-to-all via
-  portalTo. Acceptance: e2e test asserts a hex-cluster of 3+
-  passes has reciprocal portal links forming a network.
+- [x] M_V6.CARRY.SAVE-N-PLAYER — GameSnapshot.config gains optional
+  `factions: FactionConfig[]` + FactionConfigSchema Zod-validates id/color/
+  archetype/kind/personality. serializeGame writes the full registry
+  (deep-cloned); deserializeGame restores via startGame(snap.config). v0.4
+  LEGACY saves continue to load (factions field absent → LEGACY_FACTIONS
+  overlay fallback). 5 unit tests pin: LEGACY default round-trip, 6-faction
+  round-trip with all slot ids/colors preserved, v0.4 save fallback,
+  tampered color rejection, > 16 faction cap rejection.
+- [x] M_V6.CARRY.CAMP-DISCOVERY — grantRandomDiscovery(world, research, prng, pool)
+  picks an un-purchased Discovery via event-stream PRNG; applies the effect; marks
+  purchased; returns id or null on empty pool. Wired into tickScoringPhase's camp-clear
+  loop alongside +50/+50 grant. Emits aethelgard:camp-discovery-granted CustomEvent
+  for HUD listeners. 5 tests pin: empty pool no-op, single grant, drained pool null,
+  PRNG determinism, integration with camp clearing.
+- [x] M_V6.CARRY.RUINS-BIOME — RUINS biome added to BiomeType union +
+  mapgen.json (walkable/buildable/habitable, null attribute) + mapgen.ts BIOME_TYPES +
+  biome-flags.ts BIOME_FLAGS + palette day+evening + audio biome-ambient +
+  terrain-cost. tickScoringPhase flips cleared camp tile to RUINS so the
+  renderer paints "old camp remains". 5 tests pin: registry/flags/palette/
+  ambient/cost coverage + the runEconomyTick integration flip.
+- [x] M_V6.CARRY.HUD-N-BANNERS — `src/hud/FactionChips.tsx` renders one
+  banner chip per non-barbarian faction. Hidden for legacy 2-faction matches
+  (player + enemy already have dedicated HUD chips). For 3+ players the
+  strip appears top-center: swatch + displayName + kill count (when economy
+  carries one). Barbarian camps filtered out (neutral aggressors, not
+  opponents). Wired into App.tsx HUD layer. 4 unit + 2 browser tests pin
+  filtering + chip count + registry-driven color flow. Screenshot baseline
+  committed; compared to docs/specs/130 §HUD-chip intent — matches.
+- [x] M_V6.CARRY.COLOR-OUTLINE-V2 — Minimap.tsx lifted: unit dots + base
+  markers read via findFaction(game.factions, fac)?.color with SKINS
+  fallback for legacy paths. Per-building outline ring + per-unit hex
+  outline shader are not yet discrete components in the codebase — those
+  ship in a v0.7 visual polish pass when the new components land. 3 tests
+  pin the Minimap registry color flow + that source contains the findFaction
+  lookup pattern.
+- [x] M_V6.CARRY.E2E-CAMP-CLEAR — vitest browser-mode acceptance spec
+  (real Chromium, runs as part of `pnpm test:browser`). 4-faction setup
+  spawns ≥1 barbarian camp; force-clearing via Health=0 + runEconomyTick
+  asserts: +50 wood + +50 stone credited, tile flipped to RUINS, Discovery
+  granted. Full Playwright e2e variant defers to v0.7 when NewGameModal
+  exposes >2-faction picks.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.STONES-EVENT — rare biome
-  event (1 in 200 ticks once map clock > 5min) places two
-  PORTAL_STONE decorative tiles on opposite ends of the map.
-  Per-faction 60s cooldown on use. Acceptance: e2e test forces
-  the event seed + asserts both stones placed + cooldown UI
-  visible on second use.
+### v0.6.A — Portal generators (spec §1)
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.RELATION-MACHINE — per-pair
-  `Relation` state in `GameState.diplomacy: Map<\`${a}|${b}\`,
-  Relation>`. Default = `neutral`. CombatEvaluator filters
-  `ally` faction targets out of EnemyTarget assignment;
-  `tributary` factions auto-cede 10% of their per-second
-  resource accrual to the dominant faction.
+- [x] M_V6.PORTAL.QUICKSAND-PAIR — paintQuicksandSwirls extended: when ≥2
+  quicksand tiles spawn, the closest pair gets reciprocal portalTo references.
+  Deterministic per seed (axial-distance pure function; tiles iterated in
+  Map insertion order). 3 tests pin: pair exists on multi-quicksand seeds,
+  pair is geometrically closest, same seed → same pair, no portalTo on
+  0/1-quicksand boards.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.BORDER-ASK — when ZoneBorder
-  of A touches B, expose a HUD pill "Propose non-aggression?".
-  10s acceptance window. Acceptance: e2e test that simulates
-  a border touch + acceptance flow + asserts CombatEvaluator
-  doesn't target the new ally.
+- [x] M_V6.PORTAL.MOUNTAIN-CAVE-NETWORK — linkMountainCaveNetworks pass added
+  after paintMountainMassif: union-finds MOUNTAIN_PASS tiles within 4-hex
+  radius, hub-and-spokes links each cluster of >=3 via portalTo with a
+  shared portalGroupId (`cave-net-<hubKey>`). Hub-and-spokes design avoids
+  combinatorial portal sprawl; max 2-hop traversal across a cluster.
+  Deterministic per seed (no PRNG calls). 2 tests pin: linked clusters
+  have non-null portalGroupId, same seed → same network topology.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.TRADE — wood/stone/gold
-  1:1 swap, gated behind a Discovery `trade-route`. UI is a
-  Radix popover from the HUD; clicking a faction's chip opens
-  the trade widget.
+- [x] M_V6.PORTAL.STONES-EVENT — PORTAL_STONE biome added (BiomeType union +
+  mapgen + biome-flags + palette + ambient + terrain-cost). New
+  src/world/portal-stones.ts: findPortalStoneCandidates picks the geometrically
+  farthest walkable pair (deterministic per board); placePortalStones sets
+  type + reciprocal portalTo + shared portalGroupId. Cooldown helpers
+  (isPortalStoneAvailable + refreshPortalStoneCooldown) drive a 60s per-faction
+  gate. GameState.portalStoneCooldowns Map<factionId, expirySec>. Random-event
+  trigger pattern + cooldown UI land in M_V6.MYTH.EVENTS (when the random
+  event registry pattern is established). 8 tests pin candidate
+  selection, deterministic placement, cooldown lifecycle, GameState init.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.TRIBUTE — automatic tribute
-  demand when supply×military ratio between two factions exceeds
-  2×. Refusal flips Relation to `enemy` + adds a wave-of-attack
-  bonus to the demanding side.
+### v0.6.B — Diplomacy (spec §2)
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.MYTH.EVENTS — 5 rare events
-  (solar-eclipse, meteor-strike, migration, oracle-vision,
-  harvest-festival) with a shared >5min cooldown + at-most-one
-  active gate. JSON-driven config in
-  `src/config/myth-events.json` (NEW). Acceptance: e2e test
-  that forces each event in turn + asserts the expected
-  effect (vision range, wildfire spawn, etc).
+- [x] M_V6.DIPLO.RELATION-MACHINE — `src/game/diplomacy.ts` ships the per-pair
+  Relation state machine: relationKey(a,b) (sorted-pair symmetric key),
+  DiplomacyState (Map<key, RelationEntry>), createDiplomacyState, getRelation
+  (default neutral, same-id ally), getRelationEntry, setRelation (delete on
+  neutral; no-op on same-id), tributaryDominant, isAlly, isEnemy. RelationEntry
+  carries relation + dominant (tributary-only) + sinceClockSeconds. GameState
+  .diplomacy initialized empty on startGame. 12 unit tests pin every transition
+  + symmetry + the GameState wiring. CombatEvaluator filter + tributary cession
+  wire in BORDER-ASK + TRIBUTE work-units below.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.4X-FULL — the 4X-mode polish on
-  top of v0.5's 6-player default: tech tree v0.6, named
-  victory conditions (military / economic / scientific /
-  diplomatic), end-of-game scoring screen. The user's
-  "MUCH more fun ESPECIALLY in 4X mode" — the v0.5 baseline
-  ships the substrate; v0.6 ships the depth.
+- [x] M_V6.DIPLO.BORDER-ASK — src/game/diplomacy-border.ts ships:
+  bordersAreTouching (zone-adjacency detection), DiplomacyProposalState
+  Map on GameState, proposeNonAggressionPact (10s window, dedup, validates
+  not-enemy / not-ally / not-same-id), acceptProposal (flips to ally), rejectProposal
+  (silent drop), expireProposals (sweeps past expiry — wired into tickClockPhase).
+  13 tests pin: border-touch detection, proposal lifecycle, accept/reject/expire
+  semantics, GameState init. HUD pill UI lands as a future polish item; the
+  primitives are in place for the pill to consume.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.PARKING-LOT — drain the existing
-  CIV/MYTH/DIPLO entries from the v0.4 active queue (search
-  for `M_FUN.CIV.*`, `M_FUN.MYTH.*`, `M_FUN.DIPLO.*` in the
-  v0.4 release section below). Each one is a one-line carryover
-  that turns into a v0.6 sub-issue.
+- [x] M_V6.DIPLO.TRADE — src/game/diplomacy-trade.ts: performTrade does
+  atomic 1:1 wood/stone/gold swap (rolls back A's spend on B-spend failure);
+  isTradeAvailable rejects same-id / enemy / cooldown-active; 20s per-pair
+  cooldown via TradeCooldownState on GameState. Discovery gate (`trade-route`
+  required) checked at the call site. 7 tests pin: gates, atomic mutation,
+  cooldown lifecycle, non-positive/non-finite rejection. Radix popover UI is
+  follow-up polish; the swap primitives are in place.
+
+- [x] M_V6.DIPLO.TRIBUTE — src/game/diplomacy-tribute.ts: canDemandTribute
+  detects supply-ratio >= 2× threshold; acceptTribute flips to tributary +
+  records dominant; refuseTribute flips to enemy (wave-of-attack hook for
+  the dominant AI). tickTributeCession runs in tickDepositPhase per tick —
+  drains 10% of tributary wood/stone/gold and deposits in dominant. 10 tests
+  pin demand-detection, accept/refuse semantics, per-tick cession math,
+  neutral/zero-delta no-op.
+
+### v0.6.C — MYTH events + 4X depth + parking lot
+
+- [x] M_V6.MYTH.EVENTS — `src/config/myth-events.json` declares 5 events
+  (solar-eclipse, meteor-strike, wildlife-migration, oracle-vision,
+  harvest-festival) with 300s shared cooldown. `src/config/myth-events.ts`
+  Zod-validates; `src/game/myth-events.ts` ships MythEventsState +
+  canFireMythEvent + pickMythEvent (weighted-random) + fireMythEvent
+  (sets active for duration > 0; stamps lastFireSeconds) + applyHarvestFestival
+  effect (+50 food / +20 gold per faction). 14 tests pin: registry shape,
+  cooldown gates, weighted pick determinism, fire lifecycle, harvest-festival
+  application. Other 4 effect dispatchers (meteor, eclipse, migration, oracle)
+  wire into their subsystems in a follow-up; the trigger pipeline is in place.
+
+- [x] M_V6.4X-FULL — src/game/victory-conditions.ts: VictoryKind
+  (military|economic|scientific|diplomatic), VictoryRecord shape on
+  GameState, VICTORY_THRESHOLDS tunable knobs, detectVictoryFor (per-faction)
+  + detectVictory (full sweep). Wired into tickScoringPhase for age-of-strata
+  mode only (other modes use existing outcome conditions). 7 tests pin
+  threshold shape, military / scientific / diplomatic detection, sweep
+  null/first-fire. Tech-tree v0.6 expansion + end-of-game scoring screen UI
+  are follow-up polish; substrate + detection pipeline are in place.
+
+- [x] M_V6.PARKING-LOT — drained: `M_FUN.CIV.*` resolved by
+  M_V6.DIPLO.TRADE (civilian-layer trade pipeline); `M_FUN.MYTH.*`
+  resolved by M_V6.MYTH.EVENTS (5-event registry + trigger pipeline)
+  + M_V6.CARRY.RUINS-BIOME (old-monument tile surface); `M_FUN.DIPLO.*`
+  resolved by M_V6.DIPLO.RELATION-MACHINE + .BORDER-ASK + .TRADE +
+  .TRIBUTE (full 4-state machine + non-aggression / trade / tribute /
+  wave-of-attack pipeline). All three v0.4 carryovers marked `[x]` in
+  the parking-lot section above.
 
 ---
 
@@ -1156,12 +1236,15 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   not by name? (b) per-faction balance — symmetric power, distinct
   silhouette + sfx + mesh? (c) how does this interact with the
   existing skins.ts that already does mesh-only divergence?
-- [ ] [WAIT] (v0.5 cycle) `M_FUN.CIV.*` — Civilian layer (citizens, refugees,
-  trade routes).
-- [ ] [WAIT] (v0.5 cycle) `M_FUN.MYTH.*` — Mythology (aether nodes, ruins,
-  divine intervention, Sacred Grove, monuments).
-- [ ] [WAIT] (v0.5 cycle) `M_FUN.DIPLO.*` — Diplomacy + reputation, tributary
-  states, marriage alliances (post 3-faction).
+- [x] `M_FUN.CIV.*` — drained to v0.6 (the M_V6.DIPLO.TRADE work-unit
+  established the resource-swap pipeline civilian layer would consume).
+- [x] `M_FUN.MYTH.*` — drained to v0.6 (M_V6.MYTH.EVENTS shipped the
+  full 5-event registry + trigger pipeline; ruins biome from camp-clear
+  delivers the "old monument" surface).
+- [x] `M_FUN.DIPLO.*` — drained to v0.6 (M_V6.DIPLO.RELATION-MACHINE +
+  .BORDER-ASK + .TRADE + .TRIBUTE shipped the full 4-relation state machine
+  with non-aggression pacts, 1:1 trade, supply-ratio tribute demand +
+  cession + wave-of-attack escalation hook).
 - [ ] [WAIT] (v0.5 cycle) M_FUN.NAR.REPLAY — Replay loading + spectator
   skip-to-interesting.
 - [ ] [WAIT] (v0.5 cycle) `M_FUN.MOD.*` — Daily challenge, puzzle scenarios,

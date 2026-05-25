@@ -49,6 +49,13 @@ export const TERRAIN_MOVE_COST: Record<BiomeType, number> = {
   // mapgen.json#QUICKSAND.moveCost. A* will route AROUND it unless
   // it's the only path; quick-cross is a deliberate choice.
   QUICKSAND: 1.6,
+  // M_V6.CARRY.RUINS-BIOME — cleared-camp tiles cost 1× like grass;
+  // the territory is recoverable. Decorative-only difference.
+  RUINS: 1,
+  // M_V6.PORTAL.STONES-EVENT — portal-stone tiles are walkable at
+  // baseline cost; the teleport is the gameplay surface, not the
+  // movement cost.
+  PORTAL_STONE: 1,
 };
 
 export function moveCostFor(biome: BiomeType): number {

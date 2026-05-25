@@ -52,6 +52,10 @@ import { tickAutoSave } from './auto-save';
 import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 import type { GameState } from './game-state';
+import { expireProposals } from './diplomacy-border';
+import { tickTributeCession } from './diplomacy-tribute';
+import { detectVictory } from './victory-conditions';
+import { grantRandomDiscovery } from './research';
 import { buildEntityTileIndex } from './tile-index';
 
 // ---------------------------------------------------------------------------
@@ -63,6 +67,12 @@ export function tickClockPhase(game: GameState, delta: number): void {
   advanceWeather(game.weather, game.eventRng, delta);
   tickRandomEvents(game, game.eventRng, delta);
   tickLongReignEscalation(game, game.eventRng, game.clock.elapsed);
+  // M_V6.DIPLO.BORDER-ASK — sweep expired non-aggression-pact proposals.
+  // Silent: a refused / ignored proposal just drops off the HUD; the
+  // BORDER-ASK directive's "wave-of-attack penalty on refusal" is a
+  // separate optional escalation that the HUD pill can wire on
+  // explicit reject.
+  expireProposals(game.diplomacyProposals, game.clock.elapsed);
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 }
 
@@ -268,6 +278,11 @@ export function tickDepositPhase(game: GameState): void {
       eco.peonMetrics.firstWoodAt = game.clock.elapsed;
     }
   }
+  // M_V6.DIPLO.TRIBUTE — apply per-tick cession after deposits land so
+  // the tributary's pile reflects the harvest first, THEN cedes 10% of
+  // it. Pair-iteration is O(N^2) over factionIds; N is small (≤6 player
+  // factions for 4X) so this stays cheap. delta is the tick seconds.
+  tickTributeCession(game.diplomacy, FACTIONS, (f) => game.economy[f as Faction], 1);
 }
 
 // ---------------------------------------------------------------------------
@@ -297,11 +312,10 @@ export function tickScoringPhase(game: GameState, delta: number): void {
   if (deathResult.playerHeroDied && game.outcome === 'playing') {
     game.outcome = 'loss';
   }
-  // M_PIVOT.BARBARIAN-CAMPS — credit each cleared camp's reward (+50
-  // wood + +50 stone) to the clearing faction. Discovery grant is a
-  // follow-up (requires the Discovery pool to expose a random-pick
-  // helper). The clear also marks navGraph dirty so the camp tile
-  // re-pathing reflects the destroyed entity.
+  // M_PIVOT.BARBARIAN-CAMPS + M_V6.CARRY.CAMP-DISCOVERY — credit each
+  // cleared camp's reward to the clearing faction: +50 wood + +50 stone
+  // + 1 random Discovery from the camp-reward pool. Mark navGraph dirty
+  // so the camp tile re-pathing reflects the destroyed entity.
   for (const cleared of deathResult.barbarianCampsCleared) {
     // Only the two legacy slots have GameEconomy entries today; N-player
     // economy registry comes with M_PIVOT.N-PLAYER.FACTIONS substrate
@@ -314,6 +328,24 @@ export function tickScoringPhase(game: GameState, delta: number): void {
       eco.wood += 50;
       eco.stone += 50;
     }
+    // Grant one Discovery from the pool (free — bypass cost + prereq).
+    // The grant is GLOBAL (single research state per game today); when
+    // research becomes per-faction in v0.7, scope this to clearedBy.
+    const granted = grantRandomDiscovery(game.world, game.research, game.eventRng);
+    if (granted && typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('aethelgard:camp-discovery-granted', {
+          detail: { discoveryId: granted, clearedBy: cleared.clearedBy },
+        }),
+      );
+    }
+    // M_V6.CARRY.RUINS-BIOME — flip the camp tile to RUINS so the
+    // renderer paints "old camp remains" decoration. Walkable +
+    // buildable (faction can recover the territory). NavGraph dirty
+    // bit is set below regardless.
+    const campKey = `${cleared.q},${cleared.r}`;
+    const tile = game.board.tiles.get(campKey);
+    if (tile) tile.type = 'RUINS';
     game.navGraphDirty = true;
   }
   const newNavGraph = buildingDeathSystem(game.world, game.buildSites, game.board);
@@ -376,6 +408,21 @@ export function tickScoringPhase(game: GameState, delta: number): void {
     }
   }
   game.outcome = evaluateWinLoss(game.world, game.outcome);
+  // M_V6.4X-FULL — named-victory-condition detection. Runs only in
+  // age-of-strata (4X) mode; other modes use base-destruction +
+  // long-reign / strata-wars conditions above. First-fire wins.
+  if (game.mode === 'age-of-strata' && game.victoryRecord === null) {
+    const record = detectVictory(game);
+    if (record) {
+      game.victoryRecord = record;
+      // Player wins → outcome 'win'; other-faction wins → outcome 'loss'
+      // (legacy 2-faction semantics today; N-player victory attribution
+      // wires when GameEconomy migrates to a registry-keyed map).
+      if (game.outcome === 'playing') {
+        game.outcome = record.winner === 'player' ? 'win' : 'loss';
+      }
+    }
+  }
   game.score.player += game.zones.player.controlled.size * delta;
   game.score.enemy += game.zones.enemy.controlled.size * delta;
 }

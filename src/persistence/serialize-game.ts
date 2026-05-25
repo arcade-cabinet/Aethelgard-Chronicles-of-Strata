@@ -9,6 +9,7 @@
 
 import { z } from 'zod';
 import { ECONOMY } from '@/config/economy';
+import type { FactionConfig } from '@/config/factions';
 import { type Faction, RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import type { GameClock } from '@/game/clock';
 import type { GameEconomy } from '@/game/economy';
@@ -58,6 +59,14 @@ export interface GameSnapshot {
     mapSize: number;
     difficulty: 'easy' | 'normal' | 'hard';
     eventSeed: string;
+    /**
+     * M_V6.CARRY.SAVE-N-PLAYER — N-player faction registry. v0.4/v0.5
+     * LEGACY 2-faction saves omit this; startGame defaults to
+     * LEGACY_FACTIONS overlay (byte-identical legacy replay). v0.6+
+     * saves write the user's full registry so 4X / 6-player matches
+     * round-trip exactly.
+     */
+    factions?: FactionConfig[];
   };
   world: WorldSnapshot;
   economy: Record<Faction, GameEconomy>;
@@ -111,6 +120,12 @@ export function serializeGame(game: GameState): GameSnapshot {
       mapSize: game.mapSize,
       difficulty: game.difficulty,
       eventSeed: game.eventSeed,
+      // M_V6.CARRY.SAVE-N-PLAYER — round-trip the full faction registry
+      // so 4X / 6-player matches restore identically. v0.4/v0.5 LEGACY
+      // 2-faction games also write this (it's the LEGACY_FACTIONS overlay
+      // — harmless redundancy that future-proofs the loader). Deep-clone
+      // so post-serialization mutation on game.factions can't leak.
+      factions: game.factions.map((f) => ({ ...f })),
     },
     world: serializeWorld(game.world),
     economy: {
@@ -410,6 +425,19 @@ function migrateSnapshot(snap: Record<string, unknown>): Record<string, unknown>
 // any extra keys is fine" — replaces the deprecated .passthrough().
 const _OpaqueObj = z.record(z.string(), z.unknown());
 
+// M_V6.CARRY.SAVE-N-PLAYER — per-faction registry row schema.
+// Validates the persisted FactionConfig shape so a tampered/older save
+// can't inject malformed faction ids or colors. Optional — absent on
+// v0.4/v0.5 LEGACY saves; present on v0.6+ N-player saves.
+const FactionConfigSchema = z.object({
+  id: z.string().min(1).max(64),
+  displayName: z.string().min(1).max(64),
+  kind: z.enum(['human', 'ai', 'barbarian']),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  archetype: z.enum(['medieval', 'orc', 'undead', 'mystic']),
+  personality: z.string().min(1).max(64).optional(),
+});
+
 const SaveSnapshotSchema = z.object({
   version: z.literal(SNAPSHOT_VERSION),
   config: z.object({
@@ -418,6 +446,11 @@ const SaveSnapshotSchema = z.object({
     mapSize: z.number().int().min(1).max(MAX_MAP_SIZE),
     difficulty: z.enum(['easy', 'normal', 'hard']),
     eventSeed: z.string().min(1).max(256),
+    // M_V6.CARRY.SAVE-N-PLAYER — optional N-player registry. v0.4/v0.5
+    // LEGACY saves omit this; startGame defaults to LEGACY_FACTIONS
+    // overlay. v0.6+ saves write the user's full registry so a 6-faction
+    // 4X match round-trips exactly.
+    factions: z.array(FactionConfigSchema).min(1).max(16).optional(),
   }),
   world: z.object({ entities: z.array(z.unknown()).max(MAX_ENTITY_COUNT) }).and(_OpaqueObj),
   economy: z.object({ player: _OpaqueObj, enemy: _OpaqueObj }),

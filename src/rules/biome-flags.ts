@@ -202,6 +202,30 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: null,
     decorationDensity: null,
   },
+  // M_V6.CARRY.RUINS-BIOME — set at runtime on cleared camp tiles. Walkable,
+  // buildable, habitable — gameplay treats it like GRASS so a faction can
+  // recover the territory. Visually distinct via the renderer (different
+  // decoration set; "old camp" tile palette).
+  RUINS: {
+    walkable: true,
+    buildable: true,
+    habitable: true,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: 0.2,
+  },
+  // M_V6.PORTAL.STONES-EVENT — event-placed portal pair. Walkable but
+  // NOT buildable / habitable (you can't stake a House on a portal).
+  PORTAL_STONE: {
+    walkable: true,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: null,
+  },
 };
 
 /** Resolve the flag tuple for a biome type. */
