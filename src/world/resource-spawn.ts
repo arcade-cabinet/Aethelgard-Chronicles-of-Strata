@@ -58,7 +58,8 @@ export const SAFETY_RADIUS = 3;
  * deep grove, or claim three surface trees?" without adding
  * any new building or rule code.
  */
-function tierMultipliers(
+/** @internal Exported for unit testing only. */
+export function tierMultipliers(
   q: number,
   r: number,
   boardRadius: number,
