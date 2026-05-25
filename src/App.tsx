@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { ALL_PERSONALITIES } from '@/config/ai-personalities';
+import { defaultFactionColors } from '@/config/faction-palette';
+import { buildDefaultFactions } from '@/config/factions';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
@@ -79,6 +81,17 @@ function DelayedSession({ children }: { children: React.ReactNode }) {
     };
   }, []);
   return ready ? children : <LoadingScreen />;
+}
+
+/**
+ * M_V7.E2E.4-PLAYER-CAMP-CLEAR — build an N-faction registry from
+ * a URL ?nplayer=N param. Mirrors NewGameModal's buildDefaultFactions
+ * call so the e2e flow gets the same shape as a real user-selected
+ * 4X match.
+ */
+function buildDefaultFactionsForUrl(n: number, seed: string) {
+  const colors = defaultFactionColors(n, seed);
+  return buildDefaultFactions(n, colors);
 }
 
 function SceneError() {
@@ -427,6 +440,14 @@ export function App() {
       rawPlayerPersonality && validPersonalities.has(rawPlayerPersonality)
         ? rawPlayerPersonality
         : undefined;
+    // M_V7.E2E.4-PLAYER-CAMP-CLEAR — optional ?nplayer=N param drives
+    // an N-player setup via the buildDefaultFactions helper. Used by
+    // the e2e camp-clearing spec to test the full barbarian-camp
+    // pipeline against a real 4-player game without the NewGameModal
+    // exposing the >2-faction picker (a v0.8 polish item).
+    const rawN = sp.get('nplayer');
+    const nplayer = rawN ? Math.min(6, Math.max(2, Number.parseInt(rawN, 10) || 2)) : 2;
+    const factions = nplayer > 2 ? buildDefaultFactionsForUrl(nplayer, seed) : undefined;
     setConfig({
       seedPhrase: seed,
       mapSize: MAP_SIZES.medium.radius,
@@ -440,6 +461,7 @@ export function App() {
       aiVsAi: true,
       ...(personality ? { enemyPersonality: personality } : {}),
       ...(playerPersonality ? { playerPersonality } : {}),
+      ...(factions ? { factions } : {}),
     });
   }, []);
 
