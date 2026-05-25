@@ -224,14 +224,35 @@ regressed pixel without the harness catching it first.
 
 ### Concrete v0.7 work-units (dependency-ordered)
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.REVIEW.TRIO-DRAIN — dispatch
-  comprehensive-review:full-review against `git diff origin/main`
-  to catch every accumulated finding from v0.5 + v0.6 substrate
-  work before v0.7 layer lands. Findings fold into forward
-  commits (no fix-review commits per autonomy contract).
-  Acceptance: the review artifact lives in `.full-review/*.md`,
-  each blocker is either addressed in a later v0.7 commit or
-  documented as v0.8 follow-up with rationale.
+- [x] M_V7.REVIEW.TRIO-DRAIN — comprehensive review consolidated to
+  `.full-review/v0.7-cycle-opening.md`. 2 CRITICAL (v0.6 state not
+  round-tripped through save/load; trainUnit signature only allows 4 of 9
+  PLAYER_UNIT_TYPES), 4 HIGH (tribute / camp-reward / wonderTimers
+  all gated to legacy 2-faction slots; FactionConfigSchema permits
+  duplicate ids), 5 MEDIUM (faction-cast TypeScript debt, naive
+  relationKey parse, missing SNAPSHOT_VERSION bump, missing RUINS
+  decoration palette, only 1/5 MYTH dispatchers), 4 LOW (corner
+  cases). 2 NEW work-units inserted to absorb the CRITICALs
+  (M_V7.CARRY.SAVE-V6-STATE + M_V7.TRAIN.WIDEN-ROLES); HIGH items
+  fold into the existing M_V7.ECONOMY.REGISTRY scope.
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.CARRY.SAVE-V6-STATE — bump SNAPSHOT_VERSION
+  to 3; extend `GameSnapshot` interface + `SaveSnapshotSchema` Zod
+  + serializeGame writer + deserializeGame restorer for every v0.6
+  field (`diplomacy`, `diplomacyProposals`, `tradeCooldowns`,
+  `mythEvents`, `victoryRecord`, `portalStoneCooldowns`). Add Zod
+  uniqueness refine on `config.factions`. v2 → v3 migration arm
+  initializes the new fields from `createDiplomacyState()` etc.
+  Acceptance: a 4X-mode match with brokered alliances + active
+  myth event + portal-stone cooldown → save → load round-trips
+  identical state; v0.5/v0.6 v2 saves continue to load.
+
+- [ ] [WAIT] (v0.7 cycle) M_V7.TRAIN.WIDEN-ROLES — widen `trainUnit`
+  role param to all 9 PLAYER_UNIT_TYPES (Peon/Footman/Trebuchet/
+  Wizard/Healer/Ferryman/Scout/Settler/Hero). Add UNIT_COSTS +
+  SUPPLY_COST entries for the 5 missing roles. Update
+  canTrainComplete to cover all 9. Acceptance: unit test trains
+  one of each role on both factions in a 2-faction match.
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.ECONOMY.REGISTRY — `GameEconomy`
   storage widens to support N-player factions: introduce
