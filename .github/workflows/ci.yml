@@ -116,6 +116,55 @@ jobs:
             test-results/
           retention-days: 7
 
+  visual-battery:
+    name: Visual battery (render/world/hud/ui)
+    # M_V8.CI.VISUAL-BATTERY-HOOK — run pnpm visual:battery:ci when
+    # any render, world, hud, or ui source file changes. This catches
+    # pixel regressions in the committed screenshot baselines without
+    # running on every commit. The visual-battery script was shipped in
+    # M_V7.VISUAL.BATTERY; this is purely the CI wiring.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            visual:
+              - 'src/render/**'
+              - 'src/world/**'
+              - 'src/hud/**'
+              - 'src/ui/**'
+      - name: Skip (no visual-relevant changes)
+        if: steps.filter.outputs.visual != 'true'
+        run: echo "No visual changes — skipping battery."
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        if: steps.filter.outputs.visual == 'true'
+        with: { node-version: 22 }
+      - name: Enable corepack + pnpm
+        if: steps.filter.outputs.visual == 'true'
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.0 --activate
+      - name: Install dependencies
+        if: steps.filter.outputs.visual == 'true'
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        if: steps.filter.outputs.visual == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Visual battery (fail on drift)
+        if: steps.filter.outputs.visual == 'true'
+        run: pnpm visual:battery:ci
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        if: failure() && steps.filter.outputs.visual == 'true'
+        with:
+          name: visual-drift-${{ github.run_id }}
+          path: |
+            tests/harness/__screenshots__/
+          retention-days: 7
+
   dependency-review:
     name: Dependency review (M_SEC.17)
     # Block dep changes that introduce known-vulnerable packages.
