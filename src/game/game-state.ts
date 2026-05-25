@@ -937,6 +937,13 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   if (game.outcome !== 'playing') return;
   // M_GAMEPLAY.7 — pause flag freezes the simulation; rendering continues.
   if (game.paused) return;
+  // Coderabbit MAJOR PR #10 04:56Z fix — reset the per-tick damage
+  // batch ONCE at tick start so the two combat paths (offensive-
+  // behavior + combatSystem) can both APPEND without one clobbering
+  // the other. CombatText / particle-consumers / match-narrative
+  // read it as "this tick's events" — array-reference identity is
+  // still per-tick fresh.
+  game.lastDamageEvents = [];
   // M_EXPANSION.U.111 — apply the gameSpeed multiplier (1x default,
   // 2x / 4x for fast-forward). Pure wall-clock scaling; the event PRNG
   // sees the SAME deterministic delta sequence (just delivered in
@@ -1207,7 +1214,11 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
       }
       return chokePointMultiplier(passable);
     };
-    game.lastDamageEvents = combatSystem(
+    // Coderabbit MAJOR PR #10 04:56Z — preserve offensive-behavior
+    // damage events. The earlier branch (line ~1109) APPENDS DPS
+    // events to lastDamageEvents; replacing the array here would
+    // discard them on every combat tick. Concat instead.
+    const combatEvents = combatSystem(
       game.world,
       game.eventRng,
       delta,
@@ -1215,6 +1226,7 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
       chokeFn,
       game.board.tiles,
     );
+    game.lastDamageEvents = [...game.lastDamageEvents, ...combatEvents];
   }
 
   // M_MODES.4 — endless mode: FactionBases are invulnerable. Clamp each
