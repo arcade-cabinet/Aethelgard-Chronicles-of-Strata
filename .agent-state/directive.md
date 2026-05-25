@@ -668,7 +668,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   Each doc: motivation, architectural decisions (4 from that cycle), work-unit table with
   shipped commit refs. Match the existing `docs/specs/PRD-v0.4.md` structure.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.AI.WONDER-EVALUATOR — `src/ai/evaluators/wonder.ts` ships
+- [x] [WAIT] (v0.9 grinder) M_V9.AI.WONDER-EVALUATOR — `src/ai/evaluators/wonder.ts` ships
   `WonderEvaluator extends GoalEvaluator<AiPlayer>` + `WonderGoal`. Evaluator reads
   `game.wonderTimers`, `game.research` (monumental-architecture flag gate), and
   `personality.wonderWeight` (new field in `ai-personalities.json`; defaults 0.5).
