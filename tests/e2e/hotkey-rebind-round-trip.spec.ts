@@ -3,6 +3,10 @@ import { expect, test } from '@playwright/test';
 /**
  * M_POLISH2.E2E.60 — hotkey rebinding round-trip (desktop only).
  */
+// CI runner is 2-3× slower than local on the click-through flow; default
+// 60s was tripping on CI post-v0.8 substrate work. Same pattern as
+// PR #25 / PR #33 / PR #38.
+test.setTimeout(120_000);
 test('hotkey rebind round-trip — desktop only', async ({ page, isMobile }, testInfo) => {
   test.skip(isMobile, 'M_POLISH2.E2E.60 — hotkeys are desktop-only per user mandate');
   test.skip(
