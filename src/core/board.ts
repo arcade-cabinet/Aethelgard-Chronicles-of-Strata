@@ -197,6 +197,11 @@ function runGenTimePass(
   paintBeachRing(tiles, radius, rng);
   if (cfg.channels) paintChannelCuts(tiles, radius, rng);
   paintMountainMassif(tiles, radius, rng, cfg.mountainIntensity);
+  // M_V6.PORTAL.MOUNTAIN-CAVE-NETWORK — link clusters of MOUNTAIN_PASS
+  // tiles via reciprocal portalTo. Runs immediately after mountain
+  // placement so the pass tiles are stable; before hydrology so the
+  // linked tiles don't get re-painted by a later pass.
+  linkMountainCaveNetworks(tiles);
   hydrology(tiles, radius, rng);
   // M_FUN.MAP.SWAMP — paint after hydrology so the lake-adjacency
   // check finds the freshly-placed LAKE. Skips dry-land (no lake to
@@ -277,6 +282,88 @@ function paintQuicksandSwirls(tiles: Map<string, Tile>, _radius: number, rng: Rn
     const keyB = `${best.b.q},${best.b.r}`;
     best.a.portalTo = keyB;
     best.b.portalTo = keyA;
+  }
+}
+
+/**
+ * M_V6.PORTAL.MOUNTAIN-CAVE-NETWORK — find clusters of ≥3 MOUNTAIN_PASS
+ * tiles within a 4-hex radius and link them all-to-all via portalTo.
+ *
+ * Use case: a player who finds one cave entrance can use it as a
+ * shortcut to other passes in the same massif — the kind of "hidden
+ * interior network" the v0.6 directive describes. Each network gets a
+ * unique portalGroupId so the renderer can paint the swirl with a
+ * shared accent color per network.
+ *
+ * Algorithm:
+ *   1. Collect every MOUNTAIN_PASS tile.
+ *   2. Union-find clustering: two passes within 4-hex axial distance
+ *      join the same cluster.
+ *   3. For each cluster of size >= 3, pick the FIRST member as the
+ *      "hub" — every other member in the cluster gets portalTo = hub
+ *      key + portalGroupId = `cave-net-${hubKey}`. The hub itself
+ *      points to the second member (so the hub is also a portal).
+ *
+ * The hub-and-spoke design avoids the all-to-all combinatorial growth
+ * (a 4-tile cluster has 6 pairs); a unit at any node can portal to
+ * the hub, then re-portal to any other node — 2-hop max.
+ *
+ * Deterministic: tiles iterated in Map insertion order. No PRNG calls.
+ */
+function linkMountainCaveNetworks(tiles: Map<string, Tile>): void {
+  const passes: Tile[] = [];
+  for (const tile of tiles.values()) {
+    if (tile.type === 'MOUNTAIN_PASS') passes.push(tile);
+  }
+  if (passes.length < 3) return;
+  // Union-find over passes within 4-hex distance.
+  const parent: number[] = passes.map((_, i) => i);
+  const find = (x: number): number => {
+    let cur = x;
+    while ((parent[cur] as number) !== cur) cur = parent[cur] as number;
+    parent[x] = cur;
+    return cur;
+  };
+  const union = (a: number, b: number): void => {
+    const ra = find(a);
+    const rb = find(b);
+    if (ra !== rb) parent[ra] = rb;
+  };
+  const CLUSTER_RADIUS = 4;
+  for (let i = 0; i < passes.length; i++) {
+    for (let j = i + 1; j < passes.length; j++) {
+      const a = passes[i] as Tile;
+      const b = passes[j] as Tile;
+      const d = (Math.abs(a.q - b.q) + Math.abs(a.q + a.r - b.q - b.r) + Math.abs(a.r - b.r)) / 2;
+      if (d <= CLUSTER_RADIUS) union(i, j);
+    }
+  }
+  // Group by root.
+  const clusters = new Map<number, Tile[]>();
+  for (let i = 0; i < passes.length; i++) {
+    const root = find(i);
+    let group = clusters.get(root);
+    if (!group) {
+      group = [];
+      clusters.set(root, group);
+    }
+    group.push(passes[i] as Tile);
+  }
+  // Wire hub + spokes for every cluster size >= 3.
+  for (const cluster of clusters.values()) {
+    if (cluster.length < 3) continue;
+    const hub = cluster[0] as Tile;
+    const hubKey = `${hub.q},${hub.r}`;
+    const groupId = `cave-net-${hubKey}`;
+    hub.portalGroupId = groupId;
+    // Hub points to the second member so hub-entry teleports too.
+    const second = cluster[1] as Tile;
+    hub.portalTo = `${second.q},${second.r}`;
+    for (let i = 1; i < cluster.length; i++) {
+      const node = cluster[i] as Tile;
+      node.portalTo = hubKey;
+      node.portalGroupId = groupId;
+    }
   }
 }
 

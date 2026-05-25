@@ -17,9 +17,10 @@ import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
 
 function quicksandTiles(board: ReturnType<typeof generateBoard>) {
-  const out: Array<{ q: number; r: number; portalTo?: string | null }> = [];
+  const out: Array<{ q: number; r: number; portalTo: string | null }> = [];
   for (const tile of board.tiles.values()) {
-    if (tile.type === 'QUICKSAND') out.push({ q: tile.q, r: tile.r, portalTo: tile.portalTo });
+    if (tile.type === 'QUICKSAND')
+      out.push({ q: tile.q, r: tile.r, portalTo: tile.portalTo ?? null });
   }
   return out;
 }

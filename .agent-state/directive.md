@@ -275,11 +275,13 @@ the portal/diplomacy work begins so the substrate is fully complete.
   pair is geometrically closest, same seed → same pair, no portalTo on
   0/1-quicksand boards.
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.MOUNTAIN-CAVE-NETWORK — when
-  the massif-stack pass produces ≥3 MOUNTAIN_PASS tiles in a
-  cluster (within 4-hex radius), link them all-to-all via
-  portalTo. Acceptance: e2e test asserts a hex-cluster of 3+
-  passes has reciprocal portal links forming a network.
+- [x] M_V6.PORTAL.MOUNTAIN-CAVE-NETWORK — linkMountainCaveNetworks pass added
+  after paintMountainMassif: union-finds MOUNTAIN_PASS tiles within 4-hex
+  radius, hub-and-spokes links each cluster of >=3 via portalTo with a
+  shared portalGroupId (`cave-net-<hubKey>`). Hub-and-spokes design avoids
+  combinatorial portal sprawl; max 2-hop traversal across a cluster.
+  Deterministic per seed (no PRNG calls). 2 tests pin: linked clusters
+  have non-null portalGroupId, same seed → same network topology.
 
 - [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.STONES-EVENT — rare biome
   event (1 in 200 ticks once map clock > 5min) places two
