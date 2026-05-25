@@ -78,6 +78,7 @@ export function biomeStyleFor(type: BiomeType): CrossingStyle {
   switch (type) {
     case 'OCEAN':
     case 'LAKE':
+    case 'SHALLOWS':
     case 'SWAMP':
       return 'water';
     case 'MOUNTAIN':

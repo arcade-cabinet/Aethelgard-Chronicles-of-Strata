@@ -58,6 +58,19 @@ describe('nextPeonAction (covers job-routing switch arms — M_AUDIT2.ARCH.43)',
     expect(action.kind).toBe('harvest');
   });
 
+  it('flees BEFORE honoring BUILDING short-circuit', () => {
+    // Coderabbit MAJOR PR #10 04:56Z: the BUILDING short-circuit
+    // used to run before the threatened-tile check, so a peon
+    // caught on a contested foundation kept hammering instead of
+    // running. The rule contract is flee > everything; this test
+    // pins that ordering.
+    const action = nextPeonAction(peon({ q: 3, r: 0, state: 'BUILDING', targetKey: '3,0' }), {
+      ...BASE,
+      threatenedTiles: new Set(['3,0']),
+    });
+    expect(action.kind).toBe('flee');
+  });
+
   it('returns idle when no resources exist and not carrying', () => {
     const action = nextPeonAction(peon(), { ...BASE, resources: [] });
     // idle peon with no targets → seek finds nothing → must fall back to idle

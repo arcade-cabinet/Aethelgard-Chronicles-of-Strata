@@ -7,7 +7,7 @@
  * the attribute are untouched.
  */
 import { describe, expect, it } from 'vitest';
-import { FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
+import { Building, FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
 import { createEcsWorld } from '@/ecs/world';
 import type { BoardData, Tile } from '@/core/board';
@@ -40,6 +40,7 @@ describe('statusAttributesSystem (M_FUN.ATTR)', () => {
         dehydration: 0,
         dehydrationRecoveryTimer: 0,
       }),
+      Unit({ unitType: 'Footman' }),
       FactionTrait({ faction: 'player' }),
     );
     statusAttributesSystem(world, tiles, 1);
@@ -59,6 +60,7 @@ describe('statusAttributesSystem (M_FUN.ATTR)', () => {
         dehydration: 0,
         dehydrationRecoveryTimer: 0,
       }),
+      Unit({ unitType: 'Footman' }),
       FactionTrait({ faction: 'player' }),
     );
     world.spawn(
@@ -85,10 +87,35 @@ describe('statusAttributesSystem (M_FUN.ATTR)', () => {
         dehydration: 0,
         dehydrationRecoveryTimer: 0,
       }),
+      Unit({ unitType: 'Footman' }),
       FactionTrait({ faction: 'player' }),
     );
     for (let i = 0; i < 6; i++) statusAttributesSystem(world, tiles, 1);
     expect(e.get(Health)?.disease).toBe(0);
+  });
+
+  it('buildings on SWAMP are NOT damaged by terrain ticks', () => {
+    // Coderabbit MAJOR PR #10 04:56Z: the system used to query
+    // Health+HexPosition, so a Town Hall planted on a SWAMP tile
+    // took -1 HP/tick from the disease branch. Adding Unit to the
+    // query gates the loop to mobile combatants only.
+    const world = createEcsWorld();
+    const tiles = tilesAt(0, 0, 'SWAMP');
+    const townHall = world.spawn(
+      HexPosition({ q: 0, r: 0, level: 1 }),
+      Health({
+        current: 500,
+        max: 500,
+        disease: 5,
+        diseaseRecoveryTimer: 0,
+        dehydration: 0,
+        dehydrationRecoveryTimer: 0,
+      }),
+      Building({ buildingType: 'TownHall', isComplete: true, progress: 1, tier: 1 }),
+      FactionTrait({ faction: 'player' }),
+    );
+    for (let i = 0; i < 10; i++) statusAttributesSystem(world, tiles, 1);
+    expect(townHall.get(Health)?.current).toBe(500);
   });
 
   it('off-DESERT for 3+ seconds recovers dehydration', () => {
@@ -104,6 +131,7 @@ describe('statusAttributesSystem (M_FUN.ATTR)', () => {
         dehydration: 5,
         dehydrationRecoveryTimer: 0,
       }),
+      Unit({ unitType: 'Footman' }),
       FactionTrait({ faction: 'player' }),
     );
     for (let i = 0; i < 4; i++) statusAttributesSystem(world, tiles, 1);

@@ -56,7 +56,11 @@ export function statusAttributesSystem(
     healersByFaction.set(f, list);
   }
 
-  for (const e of world.query(Health, HexPosition)) {
+  // Restrict terrain status ticks to units (coderabbit MAJOR PR #10
+  // 04:56Z): the prior `query(Health, HexPosition)` swept buildings
+  // too, so a Town Hall standing on a SWAMP tile took disease damage.
+  // Adding Unit to the query gates the loop to mobile combatants.
+  for (const e of world.query(Health, HexPosition, Unit)) {
     const h = e.get(Health);
     const pos = e.get(HexPosition);
     if (!h || !pos) continue;

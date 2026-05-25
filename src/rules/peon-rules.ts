@@ -116,18 +116,22 @@ function nearestResource(
 export function nextPeonAction(peon: PeonView, world: PeonWorld): PeonAction {
   const peonKey = getHexKey(peon.q, peon.r);
 
-  // 0. building — keep building. The build site lives in
+  // 0. flee a pulsing tile — nonviolent peons abandon contested ground
+  // FIRST (coderabbit MAJOR PR #10 04:56Z): preserves the flee-priority
+  // contract over BUILDING. A peon caught on a threatened tile must
+  // drop the hammer and run; without this ordering a builder on a
+  // contested foundation would happily get caught in melee.
+  if (world.threatenedTiles.has(peonKey)) {
+    return { kind: 'flee', fromKey: peonKey };
+  }
+
+  // 1. building — keep building when safe. The build site lives in
   // game.buildSites and buildSystem drives progress to completion.
   // Without this short-circuit, the next rule would re-seek the
   // peon and abandon the build. Returns the peon's BUILDING state
   // unchanged so jobRoutingSystem's switch leaves it alone.
   if (peon.state === 'BUILDING' && peon.targetKey) {
     return { kind: 'build', targetKey: peon.targetKey };
-  }
-
-  // 1. flee a pulsing tile — nonviolent peons abandon contested ground
-  if (world.threatenedTiles.has(peonKey)) {
-    return { kind: 'flee', fromKey: peonKey };
   }
 
   // 2. carrying → deposit or carry home

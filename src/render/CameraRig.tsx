@@ -109,10 +109,20 @@ export function CameraRig({ viewport, boardRadius, landCenter }: CameraRigProps)
       const sin = Math.sin(azimuth);
       const worldDx = detail.dx * cos + detail.dz * sin;
       const worldDz = -detail.dx * sin + detail.dz * cos;
-      t.x = Math.max(cx - panLimit, Math.min(cx + panLimit, t.x + worldDx));
-      t.z = Math.max(cz - panLimit, Math.min(cz + panLimit, t.z + worldDz));
-      camera.position.x += worldDx;
-      camera.position.z += worldDz;
+      // Clamp the target to the pan limit, then move the camera by the
+      // ACTUAL applied delta (coderabbit MAJOR PR #10 04:56Z). The
+      // prior code added the unclamped worldDx/worldDz to camera.position
+      // so once the target was clamped the camera drifted off-target,
+      // breaking the orbit-controls invariant (camera + target both
+      // bounded together).
+      const tNewX = Math.max(cx - panLimit, Math.min(cx + panLimit, t.x + worldDx));
+      const tNewZ = Math.max(cz - panLimit, Math.min(cz + panLimit, t.z + worldDz));
+      const appliedDx = tNewX - t.x;
+      const appliedDz = tNewZ - t.z;
+      t.x = tNewX;
+      t.z = tNewZ;
+      camera.position.x += appliedDx;
+      camera.position.z += appliedDz;
       controls.update();
     };
     window.addEventListener('aethelgard:pan-camera', handler);

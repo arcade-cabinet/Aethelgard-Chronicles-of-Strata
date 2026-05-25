@@ -37,8 +37,9 @@ export interface DeathSystemResult {
  * length) it is removed from the world. The timer is an ECS component, so a
  * mid-death unit survives a save/load round-trip.
  *
- * Returns: `{ enemyKills, playerHeroDied }` — the caller credits enemy kills
- * and flips game.outcome on hero permadeath (M_EXPANSION.F.96).
+ * Returns: `{ enemyKills, enemyDeathKeys, playerHeroDied }` — the caller credits
+ * enemy kills, marks tiles whose enemies just died (for kill-zone tagging via
+ * `enemyDeathKeys`), and flips game.outcome on hero permadeath (M_EXPANSION.F.96).
  */
 export function deathSystem(world: World, delta: number): DeathSystemResult {
   let enemyKills = 0;

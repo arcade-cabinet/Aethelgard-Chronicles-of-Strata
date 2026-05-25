@@ -694,7 +694,18 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // there the enemy gets units from the EnemySpawner cadence.
   const isAiVsAi = typeof config === 'object' && config.aiVsAi;
   if (isAiVsAi) {
-    const enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 2);
+    // Coderabbit MAJOR PR #10 04:56Z: when radius-2 returns empty
+    // (tight peninsulas / mountain-locked spawns), don't fall back
+    // to the blocked town-hall tile — try wider rings first. Only
+    // if even radius-5 is empty (effectively impossible on a normal
+    // map) does spawning on the base tile become the last resort.
+    let enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 2);
+    if (enemyPeonSpawns.length === 0) {
+      enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 3);
+    }
+    if (enemyPeonSpawns.length === 0) {
+      enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 5);
+    }
     if (enemyPeonSpawns.length === 0) enemyPeonSpawns.push(enemyBaseTile);
     for (let i = 0; i < 2; i++) {
       const spawn = enemyPeonSpawns[i] ?? enemyPeonSpawns[0]!;

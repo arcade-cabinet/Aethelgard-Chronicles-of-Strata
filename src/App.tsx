@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
+import { ALL_PERSONALITIES } from '@/config/ai-personalities';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
@@ -393,13 +394,23 @@ export function App() {
     const mode = (sp.get('mode') ?? 'border-clash') as NonNullable<NewGameConfig['mode']>;
     // M_FUN.AI.NAMED — also accept ?personality=the-raider for the
     // named opponent picker (URL-driven flow). Falls back to the
-    // registry default when omitted.
-    const personality = sp.get('personality') ?? undefined;
+    // registry default when omitted. Coderabbit MAJOR PR #10 04:56Z:
+    // validate against the personality registry so a garbage URL
+    // param doesn't reach setConfig and crash downstream AI setup
+    // (personalityFor would throw on unknown key).
+    const validPersonalities = new Set<string>(ALL_PERSONALITIES);
+    const rawPersonality = sp.get('personality');
+    const personality =
+      rawPersonality && validPersonalities.has(rawPersonality) ? rawPersonality : undefined;
     // M_FUN.QA.AIVAI — separate ?playerPersonality= for the AI-vs-AI
     // balance harness; falls back to ?personality= or the registry
     // default. Allows cross-matchup runs like
     // ?ai-vs-ai=1&playerPersonality=the-builder&personality=the-raider.
-    const playerPersonality = sp.get('playerPersonality') ?? undefined;
+    const rawPlayerPersonality = sp.get('playerPersonality');
+    const playerPersonality =
+      rawPlayerPersonality && validPersonalities.has(rawPlayerPersonality)
+        ? rawPlayerPersonality
+        : undefined;
     setConfig({
       seedPhrase: seed,
       mapSize: MAP_SIZES.medium.radius,
