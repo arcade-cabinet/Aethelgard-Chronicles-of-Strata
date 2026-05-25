@@ -5,6 +5,14 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.12](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.11...v0.1.12) (2026-05-25)
+
+
+### Bug Fixes
+
+* **format:** biome format src/world/Units.tsx ([#37](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/37)) ([9a3ff94](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/9a3ff941335d3f68c1930ea3bdd4c5022fc75218))
+* **test:** raise replay-determinism property-test timeout to 30s ([#33](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/33)) ([7b796d3](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/7b796d39f8466da838ce3326df136f7fa4f98f40))
+
 ## [0.1.11](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.10...v0.1.11) (2026-05-25)
 
 
