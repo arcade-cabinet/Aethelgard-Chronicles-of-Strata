@@ -77,6 +77,7 @@ import {
 import { createDiplomacyState, type DiplomacyState } from './diplomacy';
 import { createDiplomacyProposalState, type DiplomacyProposalState } from './diplomacy-border';
 import { createTradeCooldownState, type TradeCooldownState } from './diplomacy-trade';
+import { createMythEventsState, type MythEventsState } from './myth-events';
 import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 
 export type { Difficulty } from './difficulty';
@@ -260,6 +261,12 @@ export interface GameState {
    * Gated behind the `trade-route` Discovery at the call site.
    */
   tradeCooldowns: TradeCooldownState;
+  /**
+   * M_V6.MYTH.EVENTS — rare-event state. Carries the currently active
+   * event (or null) + the last-fire clock for the shared >5min cooldown
+   * gate. Effect dispatch lives in tickClockPhase.
+   */
+  mythEvents: MythEventsState;
   /** Per-faction resource totals and supply — both factions are symmetric. */
   economy: Record<Faction, GameEconomy>;
   /** The hex key of the player's home-base (Town Hall) tile. */
@@ -905,6 +912,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     diplomacy: createDiplomacyState(),
     diplomacyProposals: createDiplomacyProposalState(),
     tradeCooldowns: createTradeCooldownState(),
+    mythEvents: createMythEventsState(),
     economy,
     townHallKey,
     enemyBaseKey,

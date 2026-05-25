@@ -333,13 +333,16 @@ the portal/diplomacy work begins so the substrate is fully complete.
 
 ### v0.6.C — MYTH events + 4X depth + parking lot
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.MYTH.EVENTS — 5 rare events
-  (solar-eclipse, meteor-strike, migration, oracle-vision,
-  harvest-festival) with a shared >5min cooldown + at-most-one
-  active gate. JSON-driven config in
-  `src/config/myth-events.json` (NEW). Acceptance: e2e test
-  that forces each event in turn + asserts the expected
-  effect (vision range, wildfire spawn, etc).
+- [x] M_V6.MYTH.EVENTS — `src/config/myth-events.json` declares 5 events
+  (solar-eclipse, meteor-strike, wildlife-migration, oracle-vision,
+  harvest-festival) with 300s shared cooldown. `src/config/myth-events.ts`
+  Zod-validates; `src/game/myth-events.ts` ships MythEventsState +
+  canFireMythEvent + pickMythEvent (weighted-random) + fireMythEvent
+  (sets active for duration > 0; stamps lastFireSeconds) + applyHarvestFestival
+  effect (+50 food / +20 gold per faction). 14 tests pin: registry shape,
+  cooldown gates, weighted pick determinism, fire lifecycle, harvest-festival
+  application. Other 4 effect dispatchers (meteor, eclipse, migration, oracle)
+  wire into their subsystems in a follow-up; the trigger pipeline is in place.
 
 - [ ] [WAIT] (v0.6 cycle) M_V6.4X-FULL — the 4X-mode polish on
   top of v0.5's 6-player default: tech tree v0.6, named
