@@ -663,12 +663,11 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   no-hardcoded-faction-colors.test.ts: retained (enforcement gate, not behavior assertion).
   1131 unit tests pass after conversion.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.DOCS.PRD-V0.6-V0.7-V0.8 — Write proper PRD spec docs for each shipped cycle:
-  `docs/specs/PRD-v0.6.md` (portals + diplomacy + MYTH + 4X detection),
-  `docs/specs/PRD-v0.7.md` (substrate→player polish + visual battery + discovery tree),
-  `docs/specs/PRD-v0.8.md` (N-player lift completions + AI diplomacy + outline + CI).
-  Each doc: motivation, architectural decisions (4 from that cycle), work-unit table with
-  shipped commit refs. Match the existing `docs/specs/PRD-v0.4.md` structure.
+- [x] M_V9.DOCS.PRD-V0.6-V0.7-V0.8 — PRD spec docs written for all three cycles.
+  docs/specs/PRD-v0.6.md: portals + diplo + MYTH + 4X; 4 arch decisions; 16-row work-unit table.
+  docs/specs/PRD-v0.7.md: substrate→UI + 2 CRITICALs + visual battery; 4 arch decisions; 11-row table.
+  docs/specs/PRD-v0.8.md: N-player completions + diplo AI + picker + CI hard fail; 4 arch decisions; 13-row table.
+  All docs match PRD-v0.4.md structure (frontmatter + why + decisions + work-units + carryovers).
 
 - [x] [WAIT] (v0.9 grinder) M_V9.AI.WONDER-EVALUATOR — `src/ai/evaluators/wonder.ts` ships
   `WonderEvaluator extends GoalEvaluator<AiPlayer>` + `WonderGoal`. Evaluator reads
