@@ -6,7 +6,6 @@ import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
 import { DISCOVERIES, scaledCostFor } from '@/rules';
 import { costLabel } from './format';
-import { HudPill } from './HudPill';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -26,6 +25,15 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
   // name OR description; empty = show all).
   const [filter, setFilter] = useState('');
   const eco = game.economy.player;
+  // M_HUD.SHELL.1 — replace the inline HudPill trigger with a CustomEvent
+  // listener so SystemMenu (the universal top-right hamburger) owns the
+  // open trigger. The panel itself stays an internally-stateful Radix
+  // Dialog; only the trigger surface moves.
+  useEffect(() => {
+    const onOpen = () => setOpen(true);
+    window.addEventListener('aethelgard:open-discoveries', onOpen);
+    return () => window.removeEventListener('aethelgard:open-discoveries', onOpen);
+  }, []);
   // M_EXPANSION.AU.40 — overlay map-of-realms ambient while the
   // panel is open. The ambient slot is single — this takes
   // precedence over the crafting-hall ambient while the panel is up.
@@ -47,12 +55,6 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
   }, [open]);
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
-      <Dialog.Trigger asChild>
-        {/* M_MICRO.10.2 — HudPill picks (top, right) from its slot table. */}
-        <HudPill slot="discoveries" id="discoveries-button">
-          ⚗ Discoveries
-        </HudPill>
-      </Dialog.Trigger>
       {/* M_MICRO.10.1 — ModalShell collapses the per-dialog Overlay +
           Content styling. Only DiscoveriesPanel-specific overrides
           (font-family) come through contentStyle. */}

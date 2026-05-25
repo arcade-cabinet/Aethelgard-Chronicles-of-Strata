@@ -12,7 +12,8 @@
       "!src/static-assets.ts",
       "!.claude/worktrees",
       "!.clone",
-      "!.release-please-manifest.json"
+      "!.release-please-manifest.json",
+      "!src/styles.css"
     ]
   },
   "formatter": {

@@ -1,0 +1,58 @@
+/**
+ * Aethelgard global stylesheet — Tailwind v4 + Aethelgard HUD design tokens.
+ *
+ * The token values mirror src/hud/hud-theme.ts so inline-style components
+ * and Tailwind-utility components share a single source of truth. When the
+ * HUD palette changes, update both (or migrate the inline-style components
+ * to read the CSS variables defined below).
+ */
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@theme {
+  /* Color tokens — mirror HUD_THEME.color */
+  --color-obsidian: #090d16;
+  --color-panel: rgba(9, 13, 22, 0.88);
+  --color-panel-solid: #0f172a;
+  --color-border-hud: rgba(56, 189, 248, 0.28);
+  --color-text-hud: #f1f5f9;
+  --color-muted-hud: #a8b3c5;
+  --color-accent-hud: #38bdf8;
+  --color-gold-hud: #fbbf24;
+  --color-wood-hud: #f97316;
+  --color-stone-hud: #94a3b8;
+  --color-coin-hud: #fbbf24;
+  --color-supply-hud: #a855f7;
+  --color-friendly-hud: #4ade80;
+  --color-danger-hud: #ef4444;
+
+  /* Font tokens — mirror HUD_THEME.font */
+  --font-display: 'Metamorphous', serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  /* Z-index lanes — fixed lanes prevent stacking-context wars */
+  --z-hud-base: 10;
+  --z-hud-pill: 50;
+  --z-hud-trigger: 100;
+  --z-hud-drawer: 110;
+  --z-modal-overlay: 1000;
+  --z-modal-content: 1001;
+
+  /* Safe-area helpers — Capacitor + foldable insets */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+/* Base layer: pointer-events default for HUD wrappers so the 3D canvas
+ * underneath stays raycast-pickable. Interactive elements opt back IN
+ * with .hud-interactive or pointer-events-auto. */
+@layer base {
+  .hud-overlay {
+    pointer-events: none;
+  }
+  .hud-interactive {
+    pointer-events: auto;
+  }
+}
