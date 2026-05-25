@@ -74,6 +74,7 @@ import {
   tickScoringPhase,
   tickTerrainPhase,
 } from './economy-tick-phases';
+import { createDiplomacyState, type DiplomacyState } from './diplomacy';
 import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 
 export type { Difficulty } from './difficulty';
@@ -237,6 +238,13 @@ export interface GameState {
    * through a portal stone.
    */
   portalStoneCooldowns: Map<string, number>;
+  /**
+   * M_V6.DIPLO.RELATION-MACHINE — per-pair diplomatic relations
+   * (neutral / ally / enemy / tributary). Indexed by sorted-pair key.
+   * Default = empty (all pairs neutral). CombatEvaluator filters ally
+   * targets; tribute system reads tributary-dominant flow.
+   */
+  diplomacy: DiplomacyState;
   /** Per-faction resource totals and supply — both factions are symmetric. */
   economy: Record<Faction, GameEconomy>;
   /** The hex key of the player's home-base (Town Hall) tile. */
@@ -879,6 +887,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     playerPawn,
     factions,
     portalStoneCooldowns: new Map<string, number>(),
+    diplomacy: createDiplomacyState(),
     economy,
     townHallKey,
     enemyBaseKey,

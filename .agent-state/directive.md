@@ -296,12 +296,15 @@ the portal/diplomacy work begins so the substrate is fully complete.
 
 ### v0.6.B — Diplomacy (spec §2)
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.RELATION-MACHINE — per-pair
-  `Relation` state in `GameState.diplomacy: Map<\`${a}|${b}\`,
-  Relation>`. Default = `neutral`. CombatEvaluator filters
-  `ally` faction targets out of EnemyTarget assignment;
-  `tributary` factions auto-cede 10% of their per-second
-  resource accrual to the dominant faction.
+- [x] M_V6.DIPLO.RELATION-MACHINE — `src/game/diplomacy.ts` ships the per-pair
+  Relation state machine: relationKey(a,b) (sorted-pair symmetric key),
+  DiplomacyState (Map<key, RelationEntry>), createDiplomacyState, getRelation
+  (default neutral, same-id ally), getRelationEntry, setRelation (delete on
+  neutral; no-op on same-id), tributaryDominant, isAlly, isEnemy. RelationEntry
+  carries relation + dominant (tributary-only) + sinceClockSeconds. GameState
+  .diplomacy initialized empty on startGame. 12 unit tests pin every transition
+  + symmetry + the GameState wiring. CombatEvaluator filter + tributary cession
+  wire in BORDER-ASK + TRIBUTE work-units below.
 
 - [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.BORDER-ASK — when ZoneBorder
   of A touches B, expose a HUD pill "Propose non-aggression?".
