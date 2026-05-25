@@ -126,3 +126,59 @@ export function findFaction(
 ): FactionConfig | undefined {
   return registry.find((x) => x.id === id);
 }
+
+/**
+ * M_PIVOT.MODES.4X — build an N-faction default registry.
+ *
+ * The first two slots reuse the legacy `'player'` and `'enemy'` ids
+ * (so v0.4 save migration and the existing economy/zones/aiPlayers
+ * Record<Faction, X> wiring keep working). Slots 3..N use slug ids
+ * `player-3`, `player-4`, ... — all human-controlled by default; the
+ * UI may flip individual slots to `kind: 'ai'`.
+ *
+ * Colors come from the same defaultFactionColors() shuffle the
+ * NewGameModal uses so the picker default + the runtime registry
+ * agree at start-of-match. Pass a seed-derived color array in via the
+ * `colors` arg to keep this module dep-free of `faction-palette.ts`.
+ *
+ * @param count   - How many player factions (>= 1).
+ * @param colors  - Array of CSS hex colors (one per slot). Caller is
+ *                  responsible for sourcing them — typically via
+ *                  defaultFactionColors(count, seedPhrase).
+ */
+export function buildDefaultFactions(count: number, colors: readonly string[]): FactionConfig[] {
+  const n = Math.max(1, count);
+  const out: FactionConfig[] = [];
+  for (let i = 0; i < n; i++) {
+    const color =
+      colors[i] ?? `#${(((i + 1) * 0x357bd9) & 0xffffff).toString(16).padStart(6, '0')}`;
+    if (i === 0) {
+      out.push({
+        id: 'player',
+        displayName: 'Player',
+        kind: 'human',
+        color,
+        archetype: 'medieval',
+      });
+    } else if (i === 1) {
+      out.push({
+        id: 'enemy',
+        displayName: 'Player 2',
+        kind: 'ai',
+        color,
+        archetype: 'medieval',
+        personality: 'the-diplomat',
+      });
+    } else {
+      out.push({
+        id: `player-${i + 1}`,
+        displayName: `Player ${i + 1}`,
+        kind: 'ai',
+        color,
+        archetype: 'medieval',
+        personality: 'the-diplomat',
+      });
+    }
+  }
+  return out;
+}

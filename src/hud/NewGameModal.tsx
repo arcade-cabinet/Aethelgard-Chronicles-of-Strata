@@ -17,7 +17,7 @@ import { createEventPrng, createFreshEventSeed } from '@/core/rng';
 import { randomSeedPhrase } from '@/core/seed-phrase';
 import { DEFAULT_PERSONALITY } from '@/config/ai-personalities';
 import { defaultFactionColors } from '@/config/faction-palette';
-import { type FactionConfig, LEGACY_FACTIONS } from '@/config/factions';
+import { buildDefaultFactions, type FactionConfig, LEGACY_FACTIONS } from '@/config/factions';
 import type { Difficulty, GameMode } from '@/game/game-state';
 import { presetFor } from '@/rules';
 import type { TurnsMode } from '@/rules/mode-presets';
@@ -375,22 +375,40 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 aiVsAi,
                 // M_FUN.AI.PICKER — named opponent personality.
                 enemyPersonality,
-                // M_PIVOT.N-PLAYER.COLOR-PICKER — explicit faction
-                // registry seeded with the user's color picks. Personality
-                // overlay still runs in startGame; this only sets the
-                // banner colors so ZoneBorder + HUD chips render in the
-                // chosen accents.
-                factions: [
-                  {
-                    ...LEGACY_FACTIONS[0],
-                    color: factionColors.player,
-                  } as FactionConfig,
-                  {
-                    ...LEGACY_FACTIONS[1],
-                    color: factionColors.enemy,
-                    personality: enemyPersonality,
-                  } as FactionConfig,
-                ],
+                // M_PIVOT.N-PLAYER.COLOR-PICKER + M_PIVOT.MODES.4X —
+                // explicit faction registry. For 2-faction modes,
+                // seed the legacy player+enemy slots with the user's
+                // color picks. For 4X mode (age-of-strata, defaultPlayerCount=6),
+                // generate a 6-faction registry — the modal exposes
+                // only the first two color pickers today; remaining
+                // slots get default-shuffled palette colors and AI control.
+                factions: ((): FactionConfig[] => {
+                  const preset = presetFor(mode);
+                  if (preset.defaultPlayerCount <= 2) {
+                    return [
+                      {
+                        ...LEGACY_FACTIONS[0],
+                        color: factionColors.player,
+                      } as FactionConfig,
+                      {
+                        ...LEGACY_FACTIONS[1],
+                        color: factionColors.enemy,
+                        personality: enemyPersonality,
+                      } as FactionConfig,
+                    ];
+                  }
+                  // N-player mode: build a full registry. First two
+                  // colors come from the picker; remaining N-2 from the
+                  // seed-derived palette shuffle.
+                  const allColors = defaultFactionColors(preset.defaultPlayerCount, seedPhrase);
+                  // Override the first two with the user picks.
+                  allColors[0] = factionColors.player;
+                  allColors[1] = factionColors.enemy;
+                  const registry = buildDefaultFactions(preset.defaultPlayerCount, allColors);
+                  // Patch the enemy slot's personality with the picker's pick.
+                  if (registry[1]) registry[1] = { ...registry[1], personality: enemyPersonality };
+                  return registry;
+                })(),
               })
             }
             style={{

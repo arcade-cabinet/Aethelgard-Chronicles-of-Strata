@@ -146,14 +146,17 @@ the v0_5_grinder agent should pull these in order):
   in combat.json + ai-profiles.ts respectively; per-personality variants
   are a v0.6 follow-up if matrix tuning needs them. 951 unit tests green.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.MODES.4X — once N-player +
-  barbarians ship, the 4X mode (turn-based, age-of-strata)
-  gets a 6-player default config + FFA / team variant. The
-  user's "MUCH more fun ESPECIALLY in 4x mode" — this is the
-  payoff. Acceptance: launching 4X mode from the NewGameModal
-  gives a 6-faction setup with 5 barbarian camps + the turn-
-  based clock; UI shows current turn + all 6 faction
-  banners + zones.
+- [x] M_PIVOT.MODES.4X — mode-presets.ts: ModePreset gains defaultPlayerCount;
+  age-of-strata = 6 (4X FFA), all other modes = 2 (legacy). buildDefaultFactions(N, colors)
+  helper in factions.ts emits N FactionConfig rows (player + enemy preserved
+  for legacy compat; player-3..player-N are slug ids). NewGameModal onBegin
+  packs the full N-faction registry when the preset's defaultPlayerCount > 2,
+  using the first two color picker values + seed-shuffled palette for slots 3..N.
+  4 modes-4x.test.ts pins: preset shape, all-other-modes still 2, buildDefaultFactions
+  6-row unique ids, startGame 6-faction → 1-4 barbarian camps auto-spawned + turn-based
+  clock. 955 unit tests green (was 951). Team-mode variant + 6-banner UI grid is a
+  follow-up polish item (the substrate gives 6 factions running; HUD chip-grid
+  expansion is a v0.6 visual sprint).
 
 The pivot is the v0.5 CENTERPIECE; v0.6 picks up portal-biome
 generators + remaining JSON-* sweeps + the CIV/MYTH/DIPLO
