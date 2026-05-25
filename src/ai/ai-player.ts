@@ -15,6 +15,7 @@ import { canAfford } from '@/game/economy';
 import { matchElapsedSeconds } from '@/game/match-time';
 import { canTrain } from '@/rules/economy-rules';
 import { SKINS } from '@/rules/skins';
+import { MILITARY_ROLES } from '@/rules/unit-profiles';
 import { aiProfileFor, endgameUrgencyFor } from './ai-profiles';
 import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
 import { announceAiTaunt } from './taunt';
@@ -159,11 +160,13 @@ function ownedPeonCount(game: GameState, faction: Faction): number {
  */
 function ownedMilitaryCount(game: GameState, faction: Faction): number {
   let n = 0;
-  const MILITARY = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
+  // QW-5 — `MILITARY_ROLES` is the derived single source-of-truth in
+  // unit-profiles.ts (driven by profile.combatRole === 'military').
+  // The prior local literal silently lagged any unit-profile edit.
   for (const e of game.world.query(Unit, FactionTrait)) {
     if (e.get(FactionTrait)?.faction !== faction) continue;
     const t = e.get(Unit)?.unitType;
-    if (t && MILITARY.has(t)) n += 1;
+    if (t && MILITARY_ROLES.has(t)) n += 1;
   }
   return n;
 }
@@ -483,7 +486,12 @@ class MoveMilitaryGoal extends Goal<AiPlayer> {
   }
 }
 
-const MILITARY_TYPES = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
+// QW-6 — `MILITARY_TYPES` aliased to the derived `MILITARY_ROLES` set in
+// unit-profiles.ts so a new military unit (e.g. 'Crossbowman') flows
+// through the AI evaluators automatically. The prior local literal had
+// to be edited per-site; offensive-behavior.ts + encroachment.ts
+// already imported the derived set.
+const MILITARY_TYPES = MILITARY_ROLES;
 
 // ---------------------------------------------------------------------------
 // Train evaluator + goal — verb 2 of 3 (M_AI_DEPTH.2)
