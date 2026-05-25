@@ -469,6 +469,11 @@ export function App() {
       aiVsAi: choices.aiVsAi,
       // M_FUN.AI.PICKER — named opponent.
       enemyPersonality: choices.enemyPersonality,
+      // M_PIVOT.N-PLAYER.COLOR-PICKER — pass the explicit faction
+      // registry through to startGame so user-picked banner colors
+      // land on game.factions (consumed by ZoneBorder + HUD chips
+      // once M_PIVOT.RENDER.COLOR-OUTLINE wires them).
+      ...(choices.factions ? { factions: choices.factions } : {}),
     });
   };
 

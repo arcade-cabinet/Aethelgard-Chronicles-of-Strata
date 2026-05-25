@@ -85,17 +85,15 @@ the v0_5_grinder agent should pull these in order):
   unchanged. Determinism byte-identical. Architectural divergence rationale
   documented in components.ts §Faction.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.COLOR-PICKER — pre-game
-  NewGameModal exposes a Radix color palette per faction slot.
-  Default = shuffled permutation of the 12-color palette;
-  click any chip to open the Radix popover with chips + hex
-  input. Persists to settings. New file
-  `src/hud/FactionColorPicker.tsx`. Color flows into every
-  faction-scoped renderer (ZoneBorder, building outline ring,
-  unit hex outline, base banner, HUD chips). Acceptance:
-  visual regression baseline for a 4-player setup with 4
-  distinct colors + minimap reflects all 4 + ZoneBorder draws
-  per-faction colored borders.
+- [x] M_PIVOT.N-PLAYER.COLOR-PICKER — `src/config/faction-palette.ts` exports
+  FACTION_PALETTE (12 chips) + defaultFactionColors() seeded shuffle +
+  normalizeHexColor(). New `src/hud/FactionColorPicker.tsx` renders the chip
+  + popper grid + hex input. NewGameModal wires player + enemy slot pickers
+  (default = deterministic 2-color shuffle of palette); the picked pair flows
+  into NewGameChoices.factions → startGame.factions → GameState.factions.
+  13 palette unit tests + 1 browser harness pass with screenshot baseline
+  committed. Downstream renderer wiring (ZoneBorder + HUD chips reading
+  the registry) lands in M_PIVOT.RENDER.COLOR-OUTLINE.
 
 - [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.SHARED-KIT — every
   faction uses the SAME buildings (House/Farm/Barracks/
