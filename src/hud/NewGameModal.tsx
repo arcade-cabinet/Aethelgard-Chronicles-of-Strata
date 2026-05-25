@@ -499,8 +499,13 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                   const preset = presetFor(mode);
                   if (mode !== 'age-of-strata' && preset.defaultPlayerCount <= 2) {
                     // LEGACY_FACTIONS is a 2-element const tuple — indices 0 and 1 always exist.
-                    const lp = LEGACY_FACTIONS[0]!;
-                    const le = LEGACY_FACTIONS[1]!;
+                    // Destructure with nullish guards instead of non-null assertions
+                    // (banned by lint rule); the buildDefaultFactions fallback covers
+                    // the unreachable case where the tuple is empty.
+                    const [lp, le] = LEGACY_FACTIONS;
+                    if (!lp || !le) {
+                      return buildDefaultFactions(preset.defaultPlayerCount, nPlayerColors);
+                    }
                     const p1: FactionConfig = {
                       id: lp.id,
                       displayName: lp.displayName,
