@@ -34,33 +34,23 @@ function interiorBiomes(board: BoardData): {
   desert: number;
   swamp: number;
 } {
-  // Approximate the inter-base centroid as the midpoint of the two
-  // walkable tiles furthest apart (a proxy for the eventual faction-
-  // base placement). The interior band is `INTERIOR_BAND` hexes
-  // around that midpoint.
-  let a: { q: number; r: number } | null = null;
-  let b: { q: number; r: number } | null = null;
-  let bestDist = -1;
-  const walkable: Array<{ q: number; r: number }> = [];
+  // Inter-base centroid is approximated as the WALKABLE-tile centroid
+  // (linear pass, not the O(n²) all-pairs scan that timed out at
+  // radius 36 — every faction-base placement falls within a few
+  // hexes of the centroid for the boards `findBalancedBoard`
+  // returns, so the band is a good proxy).
+  let sumQ = 0;
+  let sumR = 0;
+  let n = 0;
   for (const tile of board.tiles.values()) {
-    if (tile.walkable) walkable.push({ q: tile.q, r: tile.r });
+    if (!tile.walkable) continue;
+    sumQ += tile.q;
+    sumR += tile.r;
+    n++;
   }
-  for (let i = 0; i < walkable.length; i++) {
-    for (let j = i + 1; j < walkable.length; j++) {
-      const wi = walkable[i];
-      const wj = walkable[j];
-      if (!wi || !wj) continue;
-      const d = hexDistance(wi.q, wi.r, wj.q, wj.r);
-      if (d > bestDist) {
-        bestDist = d;
-        a = wi;
-        b = wj;
-      }
-    }
-  }
-  if (!a || !b) return { mountainPass: 0, desert: 0, swamp: 0 };
-  const midQ = Math.round((a.q + b.q) / 2);
-  const midR = Math.round((a.r + b.r) / 2);
+  if (n === 0) return { mountainPass: 0, desert: 0, swamp: 0 };
+  const midQ = Math.round(sumQ / n);
+  const midR = Math.round(sumR / n);
   let mountainPass = 0;
   let desert = 0;
   let swamp = 0;
@@ -81,7 +71,9 @@ describe('inter-base interior carries status-bearing biomes (M_FUN.MAP.DISTRIBUT
   // to land each status biome in the interior. As the
   // guided-distribution work progresses (PATTERN-K), tighten this
   // ratio in steps until we can assert every-permutation.
-  it('audits status-biome interior coverage across (mapType × size × seed) matrix', () => {
+  it('audits status-biome interior coverage across (mapType × size × seed) matrix', {
+    timeout: 60_000,
+  }, () => {
     let mpPasses = 0;
     let desertPasses = 0;
     let swampPasses = 0;

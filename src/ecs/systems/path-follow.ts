@@ -54,6 +54,15 @@ export function pathFollowSystem(
   delta: number,
   speedMultiplier = 1,
   tiles?: BoardData['tiles'],
+  /**
+   * M_FUN.MECH.FATIGUE.TURN-MODE — current turn number for
+   * turn-based modes. When provided, units with
+   * `Combatant.restUntilTurn > currentTurn` are gated out of
+   * movement (they SKIP the turn to recover from fatigue).
+   * Omit (or pass undefined) in RTS mode — the existing
+   * continuous-decay path applies.
+   */
+  currentTurn?: number,
 ): void {
   // M_FUN.MAP.ELEV — fatigue decay. Combatant.fatigue → 0 after
   // FATIGUE_DECAY seconds out of combat (combat.ts resets the
@@ -75,6 +84,18 @@ export function pathFollowSystem(
       if (!next) {
         movement.isMoving = false;
         return;
+      }
+      // M_FUN.MECH.FATIGUE.TURN-MODE — turn-based fatigue gating.
+      // If we're in turn-based mode AND this combatant's
+      // restUntilTurn hasn't elapsed yet, skip the move step.
+      // (In RTS, currentTurn is undefined and this branch never
+      // fires — the continuous-decay path runs unchanged.)
+      if (currentTurn !== undefined) {
+        const c = entity.get(Combatant);
+        if (c && c.restUntilTurn > currentTurn) {
+          movement.isMoving = false;
+          return;
+        }
       }
       movement.isMoving = true;
       const step = parseStep(next);
@@ -113,10 +134,21 @@ export function pathFollowSystem(
                   ? hasFortifyAdjacent(world, ownFaction, step.q, step.r)
                   : false;
                 if (!protected_) {
+                  // M_FUN.MECH.FATIGUE.TURN-MODE — in turn-based
+                  // mode, set restUntilTurn so the next 1-2 turns
+                  // skip this unit's movement (proportional to the
+                  // biome's attributeStrength). RTS mode leaves
+                  // restUntilTurn at 0 and the continuous fatigue
+                  // multiplier on damage carries the cost instead.
+                  const restTurns =
+                    currentTurn !== undefined
+                      ? Math.max(1, Math.round(rule.attributeStrength * 2))
+                      : 0;
                   entity.set(Combatant, {
                     ...c,
                     fatigue: Math.min(1, c.fatigue + rule.attributeStrength),
                     fatigueDecayTimer: 0,
+                    restUntilTurn: currentTurn !== undefined ? currentTurn + restTurns : 0,
                   });
                 }
               }

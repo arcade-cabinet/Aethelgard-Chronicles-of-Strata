@@ -294,6 +294,14 @@ export const Combatant = trait({
   attackTimer: 0,
   fatigue: 0,
   fatigueDecayTimer: 0,
+  /**
+   * M_FUN.MECH.FATIGUE.TURN-MODE — turn-based fatigue gating.
+   * When `restUntilTurn > currentTurn`, the unit is RESTING and
+   * pathFollowSystem skips its movement step. Set when a unit
+   * arrives on a fatigue-applying tile (MOUNTAIN_PASS) in
+   * turn-based mode. Always 0 in RTS mode.
+   */
+  restUntilTurn: 0,
 });
 
 /**
