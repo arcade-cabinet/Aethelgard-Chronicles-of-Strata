@@ -70,10 +70,14 @@ self-contained commit-unit.
   reads (day-night cycle, particle decay, narrative match-length
   text) genuinely care about wall-clock seconds; those stay
   unchanged. Future per-mechanic adoption is a per-call decision.
-- [ ] M_FUN.MECH.FATIGUE.TURN-MODE — fatigue accumulator: in RTS
-  units idle Xs before continuing movement; in turn-based units
-  skip N turns. Currently the FATIGUE state exists but turn-mode
-  consumption is RTS-only.
+- [x] M_FUN.MECH.FATIGUE.TURN-MODE — `Combatant.restUntilTurn`
+  added. `pathFollowSystem` takes an optional `currentTurn` arg;
+  when provided, units with `restUntilTurn > currentTurn` SKIP
+  their movement step (turn-based rest). Arrival on a fatigue-
+  applying tile sets `restUntilTurn = currentTurn + round(strength
+  * 2)`. RTS mode omits the arg and the continuous-decay path
+  runs unchanged. Wired in game-state.ts to pass
+  `game.turn.turnsElapsed` only when in turn-based mode.
 
 ### v0.5.D — Peon economic metrics + AI build-mix (spec §4/§5)
 - [ ] M_FUN.QA.AIVAI.PEON-METRICS — extend balance ledger with
