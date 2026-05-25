@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.17...v0.1.18) (2026-05-25)
+
+
+### Bug Fixes
+
+* **format:** biome format multi-viewport-regression.spec.ts ([#54](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/54)) ([b116165](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/b11616529e7f6458cf106385c8923ff7d0d4b74b))
+
 ## [0.1.17](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.16...v0.1.17) (2026-05-25)
 
 
