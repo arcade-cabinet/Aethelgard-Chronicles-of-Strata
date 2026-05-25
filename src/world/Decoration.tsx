@@ -17,7 +17,7 @@ import { skinFor } from '@/rules/skins';
 // The weights are relative — they do not need to sum to 1.
 // ---------------------------------------------------------------------------
 
-interface PropEntry {
+export interface PropEntry {
   /** Logical asset id. */
   id: string;
   /** Relative spawn weight (higher = more common). */
@@ -37,11 +37,12 @@ interface PropEntry {
  * can read it; the prop pool stays here (rules-of-hooks anchors the
  * 18 useGLTF call order to DECO_IDS).
  */
-interface BiomePalette {
+export interface BiomePalette {
   props: PropEntry[];
 }
 
-const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
+/** M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — exported for unit tests. */
+export const PALETTES: Partial<Record<BiomeType, BiomePalette>> = {
   FOREST: {
     props: [
       { id: 'nature.tree.broadleaf-a', weight: 20 },

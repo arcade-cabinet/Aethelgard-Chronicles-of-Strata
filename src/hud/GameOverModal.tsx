@@ -2,6 +2,9 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useRef, useState } from 'react';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
+import { factionIds } from '@/config/factions';
+import { economyFor } from '@/game/economy-for';
+import { getRelation } from '@/game/diplomacy';
 import type { GameState } from '@/game/game-state';
 import { detectTranscriptHighlights, matchHighlights, matchNickname } from '@/game/match-narrative';
 import type { Persistence } from '@/persistence/persistence';
@@ -173,6 +176,49 @@ export function GameOverModal({
     { label: 'Territory Score', value: `${playerScore} vs ${enemyScore}` },
   ];
 
+  // M_V9.HUD.WIN-LOSS-N-PLAYER — N-player per-faction stats grid.
+  // Active when ≥ 3 non-barbarian factions are present.
+  const nonBarbarianFactions = game.factions.filter((f) => f.kind !== 'barbarian');
+  const isNPlayer = nonBarbarianFactions.length > 2;
+  const winnerId = game.victoryRecord?.winner ?? null;
+
+  /** Per-faction row for the N-player grid. */
+  interface FactionRow {
+    id: string;
+    displayName: string;
+    kills: number;
+    score: number;
+    relation: string;
+    isTributaryWinner: boolean;
+    isWinner: boolean;
+  }
+
+  const factionRows: FactionRow[] = isNPlayer
+    ? factionIds(nonBarbarianFactions).map((fid) => {
+        const eco = economyFor(game, fid);
+        // Score: stored in game.score for legacy Faction keys; fallback to 0.
+        const score =
+          fid === 'player' || fid === 'enemy'
+            ? Math.round((game.score as Record<string, number>)[fid] ?? 0)
+            : 0;
+        // Relation vs the winner, or vs 'player' if winner unknown.
+        const refId = winnerId ?? 'player';
+        const rel = fid === refId ? 'winner' : getRelation(game.diplomacy, fid, refId);
+        // Tributary winner: this faction is dominant in a tributary
+        // relationship with the winner — they win via alliance chain.
+        const isTributaryWinner = rel === 'tributary' && winnerId !== null && fid !== winnerId;
+        return {
+          id: fid,
+          displayName: nonBarbarianFactions.find((f) => f.id === fid)?.displayName ?? fid,
+          kills: eco.kills,
+          score,
+          relation: rel,
+          isTributaryWinner,
+          isWinner: fid === winnerId,
+        };
+      })
+    : [];
+
   return (
     <Dialog.Root open={outcome !== 'playing'}>
       {/* M_MICRO.10.1 — ModalShell + GameOverModal-specific overrides
@@ -249,21 +295,96 @@ export function GameOverModal({
             {playerBuildings === 1 ? '' : 's'}
           </div>
         )}
-        {stats.map((s) => (
-          <div
-            key={s.label}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              padding: '8px 0',
-              borderBottom: '1px solid rgba(255,255,255,0.08)',
-              fontSize: '0.9rem',
-            }}
-          >
-            <span>{s.label}</span>
-            <span style={{ color: HUD_THEME.color.accent }}>{s.value}</span>
+        {/* M_V9.HUD.WIN-LOSS-N-PLAYER — per-faction stats grid; only shown in N-player. */}
+        {isNPlayer && factionRows.length > 0 && (
+          <div id="nplayer-faction-grid" style={{ marginBottom: 18, textAlign: 'left' }}>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr auto auto auto auto',
+                gap: '4px 12px',
+                fontSize: '0.8rem',
+                color: HUD_THEME.color.muted,
+                borderBottom: '1px solid rgba(255,255,255,0.14)',
+                paddingBottom: 6,
+                marginBottom: 6,
+              }}
+            >
+              <span>Faction</span>
+              <span>Kills</span>
+              <span>Score</span>
+              <span>Relation</span>
+              <span>Status</span>
+            </div>
+            {factionRows.map((row) => (
+              <div
+                key={row.id}
+                className={row.isWinner ? 'nplayer-winner-row' : undefined}
+                data-faction-id={row.id}
+                data-relation={row.relation}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr auto auto auto auto',
+                  gap: '4px 12px',
+                  padding: '6px 0',
+                  borderBottom: '1px solid rgba(255,255,255,0.05)',
+                  fontSize: '0.82rem',
+                  background: row.isWinner ? 'rgba(250,204,21,0.06)' : undefined,
+                  borderRadius: row.isWinner ? 6 : undefined,
+                }}
+              >
+                <span style={{ color: row.isWinner ? HUD_THEME.color.gold : HUD_THEME.color.text }}>
+                  {row.displayName}
+                </span>
+                <span style={{ color: HUD_THEME.color.accent }}>{formatInt(row.kills)}</span>
+                <span style={{ color: HUD_THEME.color.accent }}>{formatInt(row.score)}</span>
+                <span
+                  className={`relation-badge relation-${row.relation}`}
+                  style={{
+                    color:
+                      row.relation === 'ally'
+                        ? HUD_THEME.color.accent
+                        : row.relation === 'enemy'
+                          ? HUD_THEME.color.danger
+                          : row.relation === 'tributary'
+                            ? HUD_THEME.color.gold
+                            : HUD_THEME.color.muted,
+                  }}
+                >
+                  {row.relation === 'winner' ? '—' : row.relation}
+                </span>
+                <span>
+                  {row.isWinner && (
+                    <span className="winner-badge" style={{ color: HUD_THEME.color.gold }}>
+                      ★
+                    </span>
+                  )}
+                  {row.isTributaryWinner && (
+                    <span className="tribute-ally-tag" style={{ color: HUD_THEME.color.gold }}>
+                      ally
+                    </span>
+                  )}
+                </span>
+              </div>
+            ))}
           </div>
-        ))}
+        )}
+        {!isNPlayer &&
+          stats.map((s) => (
+            <div
+              key={s.label}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '8px 0',
+                borderBottom: '1px solid rgba(255,255,255,0.08)',
+                fontSize: '0.9rem',
+              }}
+            >
+              <span>{s.label}</span>
+              <span style={{ color: HUD_THEME.color.accent }}>{s.value}</span>
+            </div>
+          ))}
         <button
           type="button"
           onClick={() => location.reload()}

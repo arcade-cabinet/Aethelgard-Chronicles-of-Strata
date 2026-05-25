@@ -36,6 +36,19 @@ import { registerUiSoundPlayer } from './ui-sound-emitter';
  * live `GameState`. Safe to call multiple times — only one instance should
  * be mounted at a time.
  */
+/**
+ * @internal — exported for unit tests only. Returns true when any faction's
+ * wonder timer is between 0 and 3 seconds (i.e., crescendo is imminent).
+ * Extracted from useAudio so the logic is testable without a React/audio context.
+ * M_V9.AUDIO.N-PLAYER-CRESCENDO — sweeps all faction ids in wonderTimers.
+ */
+export function isCrescendoImminentFromTimers(wonderTimers: Record<string, number>): boolean {
+  for (const wt of Object.values(wonderTimers)) {
+    if (typeof wt === 'number' && wt > 0 && wt < 3) return true;
+  }
+  return false;
+}
+
 export function useAudio(game: GameState): void {
   const busesRef = useRef(createAudioBuses());
   // Track the last known outcome so we only fire stingers on transitions.

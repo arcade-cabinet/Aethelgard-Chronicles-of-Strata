@@ -25,6 +25,15 @@ const PersonalitySchema = z.object({
   /** Documented exploitable flaw (player learns the matchup). */
   flaw: z.string().min(1),
   /**
+   * M_V9.AI.WONDER-EVALUATOR — per-personality Wonder desirability multiplier (0–1).
+   * The WonderEvaluator multiplies its raw score by this weight so each personality
+   * has a different appetite for building the end-game Wonder structure.
+   *   the-builder (0.8) — loves monumental construction.
+   *   the-raider  (0.2) — barely cares; prefers units.
+   * Defaults to 0.5 when absent.
+   */
+  wonderWeight: z.number().min(0).max(1).optional(),
+  /**
    * M_FUN.REFACTOR.AI-SPLIT — per-personality rage-quit threshold (sim-seconds).
    * Once match-elapsed time exceeds this without spotting the enemy,
    * the MilitaryEvaluator desirability spikes to override Build forever.

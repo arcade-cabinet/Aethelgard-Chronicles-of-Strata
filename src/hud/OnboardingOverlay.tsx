@@ -23,7 +23,8 @@ interface Step {
 // desktop-mouse-instruction body text ("RIGHT-CLICK any tile…",
 // "click-drag a rectangle…") with tap / long-press / pinch /
 // drag-pan gestures that work on every viewport.
-const STEPS: Step[] = [
+/** M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — exported for unit tests. */
+export const STEPS: Step[] = [
   {
     title: 'Welcome to Aethelgard',
     body: "You command a kingdom on a hex-tile island. The enemy commands one too. The first to raze the other's base wins. Watch your peons auto-harvest; the resources you see at the top fund your buildings.",
@@ -62,8 +63,8 @@ const STEPS: Step[] = [
   },
 ];
 
-/** N-player slide content. */
-const N_PLAYER_STEP: Step = {
+/** N-player slide content. M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — exported for unit tests. */
+export const N_PLAYER_STEP: Step = {
   title: 'Multiple factions',
   body: 'Multiple factions have joined the map. Build your economy, form alliances, and be the last faction standing. Use the diplomacy panel to propose non-aggression pacts or demand tribute from weaker rivals.',
 };
