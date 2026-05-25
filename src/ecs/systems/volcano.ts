@@ -86,7 +86,16 @@ export function placeVolcanoLandmark(board: BoardData, mapRng: Rng): string | nu
 }
 
 /** Advance the volcano cycle by `dt` seconds. */
-export function volcanoSystem(game: GameState, dt: number): void {
+export function volcanoSystem(
+  game: GameState,
+  dt: number,
+  /**
+   * M_FUN.PERF.TILE-INDEX — shared per-tick tile→entity index from
+   * economy-tick-phases.ts. When provided, lava damage uses O(lavaTiles)
+   * lookups instead of an O(entities) scan across all units.
+   */
+  entityTileIndex?: Map<string, ReturnType<typeof game.world.query>[number][]>,
+): void {
   const v = game.volcano;
   if (!v.position) return;
   const tiles = game.board.tiles;
@@ -136,20 +145,38 @@ export function volcanoSystem(game: GameState, dt: number): void {
     game.navGraph = buildNavGraph(game.board);
   }
 
-  // 4. Damage units on LAVA. Single entity walk + O(1) Set.has per
-  // entity — no per-tile world.query (the unwanted O(N × M) shape
-  // the wildfire fix targets is already absent here).
+  // 4. Damage units on LAVA.
+  // M_FUN.PERF.TILE-INDEX — when the shared index is provided, iterate
+  // lavaTiles (O(lavaTiles) × O(1) Map.get) instead of all entities
+  // (O(entities) × O(1) Set.has). Falls back to entity-walk when index
+  // is absent (direct test calls, future callers without phase wiring).
   if (v.lavaTiles.size > 0) {
-    for (const e of game.world.query(Health, HexPosition)) {
-      const pos = e.get(HexPosition);
-      if (!pos) continue;
-      if (!v.lavaTiles.has(getHexKey(pos.q, pos.r))) continue;
-      const h = e.get(Health);
-      if (!h) continue;
-      e.set(Health, {
-        ...h,
-        current: Math.max(0, h.current - VOLCANO_TUNING.damagePerSecond * dt),
-      });
+    if (entityTileIndex) {
+      for (const key of v.lavaTiles.keys()) {
+        const onTile = entityTileIndex.get(key);
+        if (!onTile) continue;
+        for (const e of onTile) {
+          const h = e.get(Health);
+          if (!h) continue;
+          e.set(Health, {
+            ...h,
+            current: Math.max(0, h.current - VOLCANO_TUNING.damagePerSecond * dt),
+          });
+        }
+      }
+    } else {
+      // Fallback: O(entities) scan + O(1) Set.has per entity.
+      for (const e of game.world.query(Health, HexPosition)) {
+        const pos = e.get(HexPosition);
+        if (!pos) continue;
+        if (!v.lavaTiles.has(getHexKey(pos.q, pos.r))) continue;
+        const h = e.get(Health);
+        if (!h) continue;
+        e.set(Health, {
+          ...h,
+          current: Math.max(0, h.current - VOLCANO_TUNING.damagePerSecond * dt),
+        });
+      }
     }
   }
 }

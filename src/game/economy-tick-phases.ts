@@ -51,6 +51,7 @@ import { tickAutoSave } from './auto-save';
 import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 import type { GameState } from './game-state';
+import { buildEntityTileIndex } from './tile-index';
 
 // ---------------------------------------------------------------------------
 // Phase 1 — Clock: advance time, weather, random events, autosave.
@@ -99,9 +100,13 @@ export function tickTerrainPhase(
   delta: number,
   turnGateOpen: boolean,
 ): void {
+  // M_FUN.PERF.TILE-INDEX — build the shared tile→entity index ONCE before
+  // all hazard systems run. wildfireSystem and volcanoSystem use it for O(1)
+  // lookups instead of separate O(entities) scans per hazard tile.
+  const entityTileIndex = buildEntityTileIndex(game.world);
   statusAttributesSystem(game.world, game.board.tiles, delta);
-  volcanoSystem(game, delta);
-  wildfireSystem(game, game.board.tiles, delta);
+  volcanoSystem(game, delta, entityTileIndex);
+  wildfireSystem(game, game.board.tiles, delta, entityTileIndex);
   if (game.quakeShakeRemaining > 0) {
     game.quakeShakeRemaining = Math.max(0, game.quakeShakeRemaining - delta);
   }
