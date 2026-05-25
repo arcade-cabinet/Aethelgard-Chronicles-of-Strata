@@ -1,3 +1,8 @@
+// M_FUN.FOUNDATION.WHY-RENDER — must run BEFORE any React import
+// elsewhere. The side-effect module patches React.createElement
+// only when import.meta.env.DEV. Production builds skip the call
+// + bundlers tree-shake the import.
+import './wdyr';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 // M_SEC.9 — self-host webfonts so the CSP can drop fonts.googleapis.com

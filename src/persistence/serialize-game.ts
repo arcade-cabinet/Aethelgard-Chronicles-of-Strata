@@ -7,8 +7,9 @@
  * mutable state needs to round-trip.
  */
 
+import { z } from 'zod';
 import { ECONOMY } from '@/config/economy';
-import type { Faction } from '@/ecs/components';
+import { type Faction, RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import type { GameClock } from '@/game/clock';
 import type { GameEconomy } from '@/game/economy';
 import { type GameState, runEconomyTick, startGame } from '@/game/game-state';
@@ -25,6 +26,27 @@ interface ZoneSnapshot {
   pulsing: Array<[string, number]>;
   /** Generation counter (M_MICRO.5.2) — defaults to 0 on resume. */
   generation?: number;
+}
+
+/**
+ * M_FUN.DYN.FIX.SAVE-GAP — wildfire / quake / volcano snapshot
+ * blocks. Stored as plain JSON-safe shapes (Maps serialized as
+ * `[string, number][]` arrays). Defaults reconstruct cleanly on
+ * v1→v2 migration (no active fires, fresh volcano cooldown).
+ */
+interface WildfireEntry {
+  key: string;
+  burnTicksRemaining: number;
+  secondsSinceTick: number;
+}
+
+interface VolcanoSnapshot {
+  position: string | null;
+  cooldown: number;
+  /** Array form of Map<tileKey, lavaSecondsRemaining>. */
+  lavaTiles: Array<[string, number]>;
+  /** Array form of Map<tileKey, fertileSecondsRemaining>. */
+  fertileTiles: Array<[string, number]>;
 }
 
 /** Full game snapshot — everything needed to resume. */
@@ -45,9 +67,20 @@ export interface GameSnapshot {
   rally: RallyState;
   zones: Record<Faction, ZoneSnapshot>;
   outcome: GameState['outcome'];
+  /** M_FUN.DYN — burning-tile registry; empty on v0.3 saves (v1→v2 migration). */
+  wildfires?: WildfireEntry[];
+  /** M_FUN.DYN — quake shake countdown in seconds; 0 on v0.3 saves. */
+  quakeShakeRemaining?: number;
+  /** M_FUN.DYN — volcano state; absent on v0.3 saves (rebuilt fresh by startGame). */
+  volcano?: VolcanoSnapshot;
 }
 
-const SNAPSHOT_VERSION = 1;
+// M_FUN.DYN.FIX.SAVE-GAP — bumped to 2 to flag presence of the
+// dynamic-terrain blocks. v1 saves load fine: the migration leaves
+// the new fields undefined; deserializeGame uses fresh defaults
+// (no active fires, fresh volcano cooldown — the same state a
+// brand-new game has at t=0).
+const SNAPSHOT_VERSION = 2;
 
 /** ZoneState → serializable form (Set+Map → arrays). */
 function zoneToSnapshot(zone: ZoneState): ZoneSnapshot {
@@ -93,6 +126,18 @@ export function serializeGame(game: GameState): GameSnapshot {
       enemy: zoneToSnapshot(game.zones.enemy),
     },
     outcome: game.outcome,
+    wildfires: Array.from(game.wildfires.entries()).map(([key, s]) => ({
+      key,
+      burnTicksRemaining: s.burnTicksRemaining,
+      secondsSinceTick: s.secondsSinceTick,
+    })),
+    quakeShakeRemaining: game.quakeShakeRemaining,
+    volcano: {
+      position: game.volcano.position,
+      cooldown: game.volcano.cooldown,
+      lavaTiles: Array.from(game.volcano.lavaTiles.entries()),
+      fertileTiles: Array.from(game.volcano.fertileTiles.entries()),
+    },
   };
 }
 
@@ -148,6 +193,58 @@ export function deserializeGame(snap: GameSnapshot): GameState {
   game.zones.player = zoneFromSnapshot(snap.zones.player);
   game.zones.enemy = zoneFromSnapshot(snap.zones.enemy);
   game.outcome = snap.outcome === 'win' || snap.outcome === 'loss' ? snap.outcome : 'playing';
+  // M_FUN.DYN.FIX.SAVE-GAP — restore dynamic-terrain state with caps.
+  if (Array.isArray(snap.wildfires)) {
+    game.wildfires.clear();
+    const MAX_WILDFIRES = 500; // generous; bigger than runtime cap
+    for (const entry of snap.wildfires.slice(0, MAX_WILDFIRES)) {
+      if (
+        !entry ||
+        typeof entry.key !== 'string' ||
+        entry.key.length > 32 ||
+        !Number.isFinite(entry.burnTicksRemaining) ||
+        !Number.isFinite(entry.secondsSinceTick)
+      )
+        continue;
+      game.wildfires.set(entry.key, {
+        burnTicksRemaining: Math.max(0, Math.floor(entry.burnTicksRemaining)),
+        secondsSinceTick: Math.max(0, entry.secondsSinceTick),
+      });
+    }
+  }
+  game.quakeShakeRemaining = Math.max(0, Math.min(60, safeFinite(snap.quakeShakeRemaining, 0)));
+  if (snap.volcano && typeof snap.volcano === 'object') {
+    const v = snap.volcano;
+    game.volcano.position =
+      typeof v.position === 'string' && v.position.length <= 32 ? v.position : null;
+    game.volcano.cooldown = Math.max(0, safeFinite(v.cooldown, 0));
+    game.volcano.lavaTiles.clear();
+    if (Array.isArray(v.lavaTiles)) {
+      for (const pair of v.lavaTiles.slice(0, 500)) {
+        if (
+          !Array.isArray(pair) ||
+          typeof pair[0] !== 'string' ||
+          pair[0].length > 32 ||
+          !Number.isFinite(pair[1])
+        )
+          continue;
+        game.volcano.lavaTiles.set(pair[0], Math.max(0, pair[1] as number));
+      }
+    }
+    game.volcano.fertileTiles.clear();
+    if (Array.isArray(v.fertileTiles)) {
+      for (const pair of v.fertileTiles.slice(0, 500)) {
+        if (
+          !Array.isArray(pair) ||
+          typeof pair[0] !== 'string' ||
+          pair[0].length > 32 ||
+          !Number.isFinite(pair[1])
+        )
+          continue;
+        game.volcano.fertileTiles.set(pair[0], Math.max(0, pair[1] as number));
+      }
+    }
+  }
   // Step 4 — run a zero-delta tick so derived caches (buildSites map,
   // selection ids) re-sync with the restored world.
   runEconomyTick(game, 0);
@@ -180,15 +277,13 @@ function safeFinite(n: unknown, fallback: number): number {
 /** Whitelisted economy keys; rejects __proto__ / constructor / unknown slots. */
 function pickEconomy(eco: unknown): GameEconomy {
   const e = (eco ?? {}) as Record<string, unknown>;
+  // Iterate RESOURCE_TYPES — any slot added to resources.json
+  // automatically migrates with a 0 default; no per-slot edit
+  // needed here. Same migration pattern as mana/peakSupply.
+  const totals = {} as Record<ResourceType, number>;
+  for (const slot of RESOURCE_TYPES) totals[slot] = safeFinite(e[slot], 0);
   return {
-    wood: safeFinite(e.wood, 0),
-    stone: safeFinite(e.stone, 0),
-    gold: safeFinite(e.gold, 0),
-    science: safeFinite(e.science, 0),
-    // M_EXPANSION.F.72 — mana slot; defaults to 0 for v0.3 saves
-    // that predate the slot (no snapshot version bump needed since
-    // safeFinite produces the same shape on missing input).
-    mana: safeFinite(e.mana, 0),
+    ...totals,
     usedSupply: safeFinite(e.usedSupply, 0),
     // M_EXPANSION.U.122 — peak supply across the match; defaults to
     // 0 for v0.3 saves that predate the slot.
@@ -196,6 +291,51 @@ function pickEconomy(eco: unknown): GameEconomy {
     // Default to the fresh-game cap, not a magic 5 (simplifier feedback).
     maxSupply: safeFinite(e.maxSupply, ECONOMY.startingResources.maxSupply),
     kills: safeFinite(e.kills, 0),
+    // M_FUN.QA.AIVAI.ZONE-BREAKDOWN — kills-by-zone slot; defaults
+    // to all-zeros for pre-v0.5 saves (snapshot version bump not
+    // needed — same migration pattern as mana/peakSupply).
+    killsByZone: {
+      skirmish: safeFinite((e.killsByZone as Record<string, unknown> | undefined)?.skirmish, 0),
+      encroachment: safeFinite(
+        (e.killsByZone as Record<string, unknown> | undefined)?.encroachment,
+        0,
+      ),
+      assault: safeFinite((e.killsByZone as Record<string, unknown> | undefined)?.assault, 0),
+    },
+    // M_FUN.QA.AIVAI.PEON-METRICS — peon cadence counters; defaults
+    // to all-zero/-1 for pre-v0.5 saves (same migration pattern as
+    // killsByZone — no snapshot version bump needed).
+    peonMetrics: {
+      depositCount: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.depositCount,
+        0,
+      ),
+      firstWoodAt: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.firstWoodAt,
+        -1,
+      ),
+      firstHouseAt: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.firstHouseAt,
+        -1,
+      ),
+      totalRoundTripSec: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.totalRoundTripSec,
+        0,
+      ),
+      roundTrips: safeFinite((e.peonMetrics as Record<string, unknown> | undefined)?.roundTrips, 0),
+      disruptions: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.disruptions,
+        0,
+      ),
+      peonIdleTicks: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.peonIdleTicks,
+        0,
+      ),
+      peonActiveTicks: safeFinite(
+        (e.peonMetrics as Record<string, unknown> | undefined)?.peonActiveTicks,
+        0,
+      ),
+    },
   };
 }
 
@@ -207,13 +347,28 @@ function pickEconomy(eco: unknown): GameEconomy {
  * `SNAPSHOT_VERSION`, applying every entry along the way. When a future
  * schema change lands, add ONE row here; existing saves carry forward.
  *
- * Today the table is empty (we're at version 1 and no migrations are
- * needed). The framework is in place so the first schema bump won't
- * brick every existing player's save.
+ * v1 → v2: M_FUN.DYN.FIX.SAVE-GAP added the wildfires +
+ * quakeShakeRemaining + volcano blocks. v1 saves migrate by
+ * filling defaults.
  */
 type SnapshotMigration = (snap: Record<string, unknown>) => Record<string, unknown>;
 const SNAPSHOT_MIGRATIONS: Record<number, SnapshotMigration> = {
-  // 1: (snap) => { ...snap, version: 2, /* new field defaults */ },
+  // v1 → v2 (M_FUN.DYN.FIX.SAVE-GAP): wildfires, quakeShakeRemaining,
+  // volcano added. v1 saves never carried these — default to empty
+  // burn registry, no shake, and an absent volcano block (the
+  // deserialize path treats undefined as "leave the startGame()
+  // defaults in place", which is correct: a v1 save predates
+  // M_FUN.DYN entirely, so its world has no fires/lava/shake state
+  // to restore).
+  1: (snap) => ({
+    ...snap,
+    version: 2,
+    wildfires: [],
+    quakeShakeRemaining: 0,
+    // volcano stays undefined so the deserialize path keeps the
+    // fresh-from-startGame placement (which may or may not have
+    // placed a volcano this seed — that's deterministic anyway).
+  }),
 };
 
 function migrateSnapshot(snap: Record<string, unknown>): Record<string, unknown> {
@@ -240,72 +395,68 @@ function migrateSnapshot(snap: Record<string, unknown>): Record<string, unknown>
  * by deserializeGame, so version-N saves auto-upgrade to current
  * SNAPSHOT_VERSION before the structural check.
  */
+/**
+ * M_FUN.FOUNDATION.ZOD-PERSIST — declarative validation of the
+ * save snapshot. Replaces the hand-rolled chain of typeof / array /
+ * length checks with a Zod schema that mirrors the GameSnapshot
+ * interface. The schema is intentionally PERMISSIVE on nested
+ * objects (clock, weather, world entity rows etc) since the
+ * deserialize path already field-by-field copies the values it
+ * trusts. The schema's job is to reject SHAPE corruption + cap
+ * the size knobs before any consumer can be NaN-poisoned.
+ */
+// z.record(string, unknown) is the v4-compatible "any object with
+// any extra keys is fine" — replaces the deprecated .passthrough().
+const _OpaqueObj = z.record(z.string(), z.unknown());
+
+const SaveSnapshotSchema = z.object({
+  version: z.literal(SNAPSHOT_VERSION),
+  config: z.object({
+    seedPhrase: z.string().min(1).max(256),
+    // M_SEC.5 — mapSize must be an integer in [1, MAX_MAP_SIZE].
+    mapSize: z.number().int().min(1).max(MAX_MAP_SIZE),
+    difficulty: z.enum(['easy', 'normal', 'hard']),
+    eventSeed: z.string().min(1).max(256),
+  }),
+  world: z.object({ entities: z.array(z.unknown()).max(MAX_ENTITY_COUNT) }).and(_OpaqueObj),
+  economy: z.object({ player: _OpaqueObj, enemy: _OpaqueObj }),
+  clock: _OpaqueObj,
+  weather: _OpaqueObj,
+  research: z.object({ purchased: z.array(z.string()) }),
+  rally: _OpaqueObj,
+  zones: z.object({ player: _OpaqueObj, enemy: _OpaqueObj }),
+  outcome: z.string(),
+  // M_FUN.DYN — optional dynamic-terrain snapshot blocks; missing
+  // on v1 saves (migration fills defaults).
+  wildfires: z.array(z.unknown()).optional(),
+  quakeShakeRemaining: z.number().optional(),
+  volcano: _OpaqueObj.optional(),
+});
+
 function validateSnapshot(snap: unknown): asserts snap is GameSnapshot {
-  if (!snap || typeof snap !== 'object') {
-    throw new Error('serialize-game: snapshot is not an object');
-  }
-  const s = snap as Record<string, unknown>;
-  if (s.version !== SNAPSHOT_VERSION) {
-    throw new Error(
-      `serialize-game: snapshot version ${String(s.version)} not supported (expected ${SNAPSHOT_VERSION})`,
-    );
-  }
-  const cfg = s.config as Record<string, unknown> | undefined;
-  if (!cfg || typeof cfg.seedPhrase !== 'string' || cfg.seedPhrase.length > 256) {
-    throw new Error('serialize-game: snapshot.config.seedPhrase missing or too long');
-  }
-  // CodeRabbit follow-up: mapSize must be an integer. Fractional
-  // values used to pass the gate and later trigger opaque errors
-  // inside board-gen indexing.
-  const mapSize = safeFinite(cfg.mapSize, 0);
-  if (!Number.isInteger(mapSize) || mapSize < 1 || mapSize > MAX_MAP_SIZE) {
-    throw new Error(`serialize-game: snapshot.config.mapSize out of bounds (got ${mapSize})`);
-  }
-  if (cfg.difficulty !== 'easy' && cfg.difficulty !== 'normal' && cfg.difficulty !== 'hard') {
-    throw new Error('serialize-game: snapshot.config.difficulty not a known tier');
-  }
-  if (typeof cfg.eventSeed !== 'string' || cfg.eventSeed.length > 256) {
-    throw new Error('serialize-game: snapshot.config.eventSeed missing or too long');
-  }
-  // Entity-count cap (M_SEC.11) — a 100k-entity snapshot would spawn
-  // 100k yuka Vehicles on the next AI tick. Reject early.
-  const world = s.world as { entities?: unknown[] } | undefined;
-  if (!world || !Array.isArray(world.entities)) {
-    throw new Error('serialize-game: snapshot.world.entities is not an array');
-  }
-  if (world.entities.length > MAX_ENTITY_COUNT) {
-    throw new Error(
-      `serialize-game: snapshot has ${world.entities.length} entities (cap ${MAX_ENTITY_COUNT})`,
-    );
-  }
-  // Shape gates for the nested overlays we Object.assign-replace.
-  const eco = s.economy as Record<string, unknown> | undefined;
-  if (!eco || typeof eco.player !== 'object' || typeof eco.enemy !== 'object') {
-    throw new Error('serialize-game: snapshot.economy.{player,enemy} missing');
-  }
-  if (!s.clock || typeof s.clock !== 'object') {
-    throw new Error('serialize-game: snapshot.clock missing');
-  }
-  if (!s.weather || typeof s.weather !== 'object') {
-    throw new Error('serialize-game: snapshot.weather missing');
-  }
-  // CodeRabbit follow-up: tighten research.purchased to actually be a
-  // string[] (was 'any object passes'). A non-array would later throw
-  // at `new Set(...)` with an opaque message instead of failing
-  // here with the explicit corruption error.
-  const research = s.research as Record<string, unknown> | undefined;
+  // Special-case the version mismatch so existing callers (migration
+  // framework + serialize-game test) keep getting the original
+  // 'snapshot version N not supported' message they grep for.
+  // migrateSnapshot rejects versions older than current with its own
+  // 'no migration from version N' message; an unknown future version
+  // (> SNAPSHOT_VERSION) falls through to here.
   if (
-    !research ||
-    !Array.isArray(research.purchased) ||
-    !research.purchased.every((id) => typeof id === 'string')
+    snap &&
+    typeof snap === 'object' &&
+    (snap as { version?: unknown }).version !== SNAPSHOT_VERSION
   ) {
-    throw new Error('serialize-game: snapshot.research.purchased must be string[]');
+    throw new Error(
+      `serialize-game: snapshot version ${String((snap as { version?: unknown }).version)} not supported (expected ${SNAPSHOT_VERSION})`,
+    );
   }
-  if (!s.rally || typeof s.rally !== 'object') {
-    throw new Error('serialize-game: snapshot.rally missing');
-  }
-  const zones = s.zones as Record<string, unknown> | undefined;
-  if (!zones || typeof zones.player !== 'object' || typeof zones.enemy !== 'object') {
-    throw new Error('serialize-game: snapshot.zones.{player,enemy} missing');
+  const result = SaveSnapshotSchema.safeParse(snap);
+  if (!result.success) {
+    // Prefix Zod issue paths with 'serialize-game:' so the message
+    // matches the CorruptSaveError boundary the App listens for.
+    const first = result.error.issues[0];
+    const path = first?.path?.join('.') ?? '(root)';
+    throw new Error(
+      `serialize-game: snapshot validation failed at ${path}: ${first?.message ?? 'unknown'}`,
+    );
   }
 }

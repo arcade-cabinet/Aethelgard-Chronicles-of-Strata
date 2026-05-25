@@ -1,5 +1,5 @@
 import type { Entity, World } from 'koota';
-import { hexDistance } from '@/core/hex';
+import { hexDistance, hexLine } from '@/core/hex';
 import type { Rng } from '@/core/rng';
 import {
   AnimationState,
@@ -37,6 +37,14 @@ export interface DamageEvent {
    * cue; CombatText surfaces "Parried!" instead of a number.
    */
   parried: boolean;
+  /**
+   * Coderabbit MAJOR PR #10 04:56Z — true when THIS hit reduced the
+   * target to ≤0 HP. Distinct from `damage > 0`, which only proves
+   * a non-zero hit landed. match-narrative's lopsided-kill heuristic
+   * needs kills, not hits, to avoid "3 burst-fire ticks on one
+   * Footman" tripping the highlight.
+   */
+  isKill: boolean;
 }
 
 /**
@@ -57,7 +65,13 @@ export interface DamageEvent {
  * the cognitively-dense block.
  */
 function resolveAttacks(
-  combatant: { attackTimer: number; attackCooldown: number; attackDamage: number },
+  combatant: {
+    attackTimer: number;
+    attackCooldown: number;
+    attackDamage: number;
+    fatigue: number;
+    fatigueDecayTimer: number;
+  },
   target: { targetId: number },
   targetEntity: Entity,
   rng: Rng,
@@ -78,7 +92,15 @@ function resolveAttacks(
   // pathological deltas.
   while (combatant.attackTimer >= combatant.attackCooldown && fired < 8) {
     combatant.attackTimer -= combatant.attackCooldown;
-    const roll = rollDamage(combatant.attackDamage, rng);
+    // M_FUN.MAP.ELEV — fatigue multiplier on outgoing damage.
+    // Range [0..1]; a unit just off a MOUNTAIN_PASS deals -50% dmg
+    // until its fatigueDecayTimer recovers (path-follow integrates
+    // fatigue accrual + decay; combat just consumes the field).
+    // Reset the decay timer on every dealt attack so an actively-
+    // fighting unit doesn't recover fatigue.
+    combatant.fatigueDecayTimer = 0;
+    const fatigueMul = Math.max(0, 1 - combatant.fatigue);
+    const roll = rollDamage(combatant.attackDamage * fatigueMul, rng);
     // M_EXPANSION.AU.46 — parry roll happens BEFORE damage is applied
     // (so a parried hit deals 0 + plays shield-deflect instead of
     // sword-clash + a number). Only meaningful for melee hits — a
@@ -102,6 +124,10 @@ function resolveAttacks(
       damageType,
       isMeleeSword,
       parried,
+      // Provisional; flipped to true in the apply-pass below for the
+      // last event that drops the target to ≤0 HP (coderabbit MAJOR
+      // — match-narrative needs kill count, not hit count).
+      isKill: false,
     });
     fired += 1;
   }
@@ -135,6 +161,16 @@ export function combatSystem(
    * combat behaves as before (no choke math).
    */
   chokeMultiplier?: (q: number, r: number) => number,
+  /**
+   * M_FUN.MAP.FOREST + M_FUN.MAP.HIGHLAND + M_FUN.MAP.AMBUSH —
+   * board tiles map for per-tile biome checks:
+   *   - HIGHLAND attacker → effective attackRange + 1
+   *   - FOREST attacker initiating combat → +20% damage (ambush)
+   *   - FOREST tile between attacker + ranged target → LoS blocked
+   * Optional; when omitted, combat behaves as before (no biome
+   * tactics — legacy test surface).
+   */
+  tiles?: import('@/core/board').BoardData['tiles'],
 ): DamageEvent[] {
   const events: DamageEvent[] = [];
   // Index entities by numeric id for target lookup. `Number(entity)` returns
@@ -164,7 +200,34 @@ export function combatSystem(
       return;
     }
     const dist = hexDistance(hex.q, hex.r, targetHex.q, targetHex.r);
-    if (dist > combatant.attackRange) return; // AI moves it into range
+    // M_FUN.MAP.HIGHLAND — ranged units on HIGHLAND gain +1 range.
+    // Read attacker's tile only when tiles map provided (legacy
+    // callers pass undefined and skip biome tactics).
+    let effectiveRange = combatant.attackRange;
+    const attackerTile = tiles?.get(`${hex.q},${hex.r}`);
+    if (tiles && attackerTile?.type === 'HIGHLAND' && combatant.attackRange > 1) {
+      effectiveRange += 1;
+    }
+    if (dist > effectiveRange) return; // AI moves it into range
+    // M_FUN.MAP.FOREST — FOREST blocks ranged LoS. For ranged
+    // attackers (attackRange > 1), if any intervening tile along
+    // the hex line is FOREST, skip the attack. Melee is unaffected.
+    if (tiles && combatant.attackRange > 1 && dist > 1) {
+      const line = hexLine(hex.q, hex.r, targetHex.q, targetHex.r);
+      // Exclude endpoints — own tile + target tile don't count as
+      // intervening cover.
+      let blocked = false;
+      for (let i = 1; i < line.length - 1; i++) {
+        const step = line[i];
+        if (!step) continue;
+        const t = tiles.get(`${step.q},${step.r}`);
+        if (t?.type === 'FOREST') {
+          blocked = true;
+          break;
+        }
+      }
+      if (blocked) return;
+    }
 
     // M_EXPANSION.AU.45 — damageType comes from the attacker's unit
     // profile (Footman=normal, Trebuchet=siege, Wizard=magic).
@@ -193,7 +256,12 @@ export function combatSystem(
     // on a choke tile takes 10% less even when attacker has high
     // ground (still nets ~1.125 net damage instead of 1.25).
     const choke = chokeMultiplier ? chokeMultiplier(targetHex.q, targetHex.r) : 1;
-    const terrainMultiplier = computeTerrainBonus(hex.level, targetHex.level) * choke;
+    // M_FUN.MAP.AMBUSH — +20% dmg when attacker initiates from FOREST.
+    // FOREST blocks ranged LoS (above) so this benefits melee
+    // attackers stepping out of cover; the asymmetry IS the ambush
+    // mechanic (defender on the bare side eats the multiplier).
+    const ambush = tiles && attackerTile?.type === 'FOREST' ? 1.2 : 1;
+    const terrainMultiplier = computeTerrainBonus(hex.level, targetHex.level) * choke * ambush;
     const fired = resolveAttacks(
       combatant,
       target,
@@ -216,12 +284,35 @@ export function combatSystem(
     }
   });
 
-  // apply accumulated damage once per target
+  // apply accumulated damage once per target — track which targets
+  // actually died this tick so we can flip isKill on the last event
+  // that hit them (match-narrative needs kill count, not hit count).
+  const killedTargetIds = new Set<number>();
   for (const [id, total] of damageByTarget) {
     const entity = byId.get(id);
     const health = entity?.get(Health);
     if (entity && health) {
-      entity.set(Health, { ...health, current: Math.max(0, health.current - total) });
+      const next = Math.max(0, health.current - total);
+      entity.set(Health, { ...health, current: next });
+      if (next <= 0 && health.current > 0) killedTargetIds.add(id);
+    }
+  }
+  // Tag isKill on the LAST event that hit each killed target (kill
+  // credit goes to the final blow).
+  if (killedTargetIds.size > 0) {
+    for (let i = events.length - 1; i >= 0; i--) {
+      const ev = events[i];
+      if (!ev) continue;
+      const tid = Number(ev.target);
+      // Skip miss/parry events (damage 0) — kill credit goes to a
+      // damaging blow only. Coderabbit MAJOR PR #10 05:46Z fix to my
+      // own prior fix: the bare reverse-scan would tag a parry as
+      // the kill if it happened to be the last event chronologically.
+      if (killedTargetIds.has(tid) && ev.damage > 0) {
+        ev.isKill = true;
+        killedTargetIds.delete(tid);
+        if (killedTargetIds.size === 0) break;
+      }
     }
   }
   return events;

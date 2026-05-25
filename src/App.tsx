@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
+import { ALL_PERSONALITIES } from '@/config/ai-personalities';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';
-import { Building, FactionTrait, Unit } from '@/ecs/components';
+import { AssignedJob, Building, FactionTrait, Health, Unit } from '@/ecs/components';
 import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
@@ -174,6 +175,21 @@ function GameSession({
         }
         return out;
       };
+      // M_FUN.QA.AIVAI — expose trait references so the AI-vs-AI
+      // balance e2e can query Building+FactionTrait directly from
+      // page.evaluate. Without this, a test would need to import
+      // src/ which Playwright doesn't bundle.
+      (
+        window as unknown as DevWindow & {
+          __game_traits?: {
+            Building: unknown;
+            FactionTrait: unknown;
+            Unit: unknown;
+            AssignedJob: unknown;
+            Health: unknown;
+          };
+        }
+      ).__game_traits = { Building, FactionTrait, Unit, AssignedJob, Health };
     }
     return g;
   }, [config, initialGame]);
@@ -306,7 +322,7 @@ function GameSession({
       <PersistAchievements game={game} persistence={persistence} />
       <ZoneLegend />
       <OnboardingOverlay persistence={persistence} />
-      <GameOverModal game={game} />
+      <GameOverModal game={game} persistence={persistence} />
       {/* M_AUDIT2.UX.12 — single hidden aria-live region; the bus
           (src/hud/aria-live-bus.ts) lets any sim event announce
           accessibly without lifting state. */}
@@ -376,6 +392,25 @@ export function App() {
     void persistence.setSetting(PREF_KEYS.onboarding, 'true');
     const seed = sp.get('seed') ?? 'aivai-default';
     const mode = (sp.get('mode') ?? 'border-clash') as NonNullable<NewGameConfig['mode']>;
+    // M_FUN.AI.NAMED — also accept ?personality=the-raider for the
+    // named opponent picker (URL-driven flow). Falls back to the
+    // registry default when omitted. Coderabbit MAJOR PR #10 04:56Z:
+    // validate against the personality registry so a garbage URL
+    // param doesn't reach setConfig and crash downstream AI setup
+    // (personalityFor would throw on unknown key).
+    const validPersonalities = new Set<string>(ALL_PERSONALITIES);
+    const rawPersonality = sp.get('personality');
+    const personality =
+      rawPersonality && validPersonalities.has(rawPersonality) ? rawPersonality : undefined;
+    // M_FUN.QA.AIVAI — separate ?playerPersonality= for the AI-vs-AI
+    // balance harness; falls back to ?personality= or the registry
+    // default. Allows cross-matchup runs like
+    // ?ai-vs-ai=1&playerPersonality=the-builder&personality=the-raider.
+    const rawPlayerPersonality = sp.get('playerPersonality');
+    const playerPersonality =
+      rawPlayerPersonality && validPersonalities.has(rawPlayerPersonality)
+        ? rawPlayerPersonality
+        : undefined;
     setConfig({
       seedPhrase: seed,
       mapSize: MAP_SIZES.medium.radius,
@@ -387,6 +422,8 @@ export function App() {
       playerColor: null,
       startingBonus: 'none',
       aiVsAi: true,
+      ...(personality ? { enemyPersonality: personality } : {}),
+      ...(playerPersonality ? { playerPersonality } : {}),
     });
   }, []);
 
@@ -430,6 +467,8 @@ export function App() {
       startingBonus: choices.startingBonus,
       // M_POLISH3.AIVAI.1 — both factions auto-play when set.
       aiVsAi: choices.aiVsAi,
+      // M_FUN.AI.PICKER — named opponent.
+      enemyPersonality: choices.enemyPersonality,
     });
   };
 

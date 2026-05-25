@@ -10,13 +10,20 @@ describe('M_MAPGEN guarantees', () => {
       const d = (Math.abs(tile.q) + Math.abs(tile.r) + Math.abs(tile.q + tile.r)) / 2;
       if (d > board.radius - 2) {
         oceanChecked += 1;
-        expect(tile.type).toBe('OCEAN');
+        // M_FUN.MAP.UTILISATION.SHALLOWS — beach-adjacent ocean
+        // tiles now paint as SHALLOWS. Either is valid 'water'.
+        expect(['OCEAN', 'SHALLOWS']).toContain(tile.type);
       } else if (d > board.radius - 4) {
         // CodeRabbit follow-up: test title claims both beach ring AND
         // ocean perimeter; assert the beach band so a regression in
         // ring painting fails this test (was only checking ocean).
         beachChecked += 1;
-        expect(tile.type).toBe('BEACH');
+        // BEACH ring or its quicksand variant — paintQuicksandSwirls
+        // converts a small % of beach tiles into the QUICKSAND
+        // 'swirl' variant (M_FUN.ECON.QUICKSAND); the ring still
+        // exists, the tile is still walkable, but a fraction of
+        // them are now amber-deposit sources.
+        expect(['BEACH', 'QUICKSAND']).toContain(tile.type);
       }
     }
     expect(oceanChecked).toBeGreaterThan(0);
@@ -25,13 +32,16 @@ describe('M_MAPGEN guarantees', () => {
 
   it('M_MAPGEN.3 — mountain spine creates funneling (≥3 MOUNTAIN tiles in central band)', () => {
     const board = generateBoard('mapgen-test-2', 18);
-    let mountainCount = 0;
+    let massifCount = 0;
     for (const tile of board.tiles.values()) {
       const d = (Math.abs(tile.q) + Math.abs(tile.r) + Math.abs(tile.q + tile.r)) / 2;
       if (d > 6) continue; // central band
-      if (tile.type === 'MOUNTAIN') mountainCount += 1;
+      // MOUNTAIN + MOUNTAIN_PASS together = the funnelling massif.
+      // M_FUN.MAP.PASS converts isthmus necks to MOUNTAIN_PASS, so
+      // a pure MOUNTAIN count understates the choke-point footprint.
+      if (tile.type === 'MOUNTAIN' || tile.type === 'MOUNTAIN_PASS') massifCount += 1;
     }
-    expect(mountainCount).toBeGreaterThanOrEqual(3);
+    expect(massifCount).toBeGreaterThanOrEqual(3);
   });
 
   it('M_MAPGEN.5 — guaranteed inland LAKE cluster (≥4 LAKE tiles)', () => {

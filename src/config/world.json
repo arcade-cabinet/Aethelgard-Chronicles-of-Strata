@@ -45,11 +45,11 @@
     "popupDrift": 1.8
   },
   "biome": {
-    "heightThresholds": [0.1, 0.25, 0.45, 0.6, 0.75, 0.88],
-    "moistureCutoffDesert": 0.45,
+    "heightThresholds": [0.08, 0.2, 0.35, 0.5, 0.65, 0.82],
+    "moistureCutoffDesert": 0.35,
     "moistureCutoffLake": 0.85,
     "noiseScale": 0.06,
-    "islandAttenuationFactor": 1.5,
+    "islandAttenuationFactor": 1.2,
     "lakeModulo": 0.1,
     "lakeModuloThreshold": 0.02
   },

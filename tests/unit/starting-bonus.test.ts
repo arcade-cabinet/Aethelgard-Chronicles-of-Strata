@@ -8,7 +8,7 @@ import { startGame } from '@/game/game-state';
  * initial GameState shape as documented.
  */
 describe('M_EXPANSION.F.84 — starting bonus picks', () => {
-  it('"none" (default) — baseline starts with 50 wood + 2 Peons + 500hp TownHall', () => {
+  it('"none" (default) — baseline starts with 50 wood + 2 Peons + 1800hp TownHall', () => {
     const game = startGame({
       seedPhrase: 'bonus-none',
       mapSize: 10,
@@ -22,11 +22,18 @@ describe('M_EXPANSION.F.84 — starting bonus picks', () => {
       if (e.get(Unit)?.unitType === 'Peon') peonCount++;
     }
     expect(peonCount).toBe(2);
+    // Coderabbit MAJOR — count + assert that we ACTUALLY visited
+    // the player TownHall. A silently-empty loop on no-match would
+    // pass the test without checking HP at all.
+    let playerBaseChecks = 0;
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase);
       if (f?.faction !== 'player') continue;
-      expect(e.get(Health)?.max).toBe(500);
+      playerBaseChecks++;
+      // PATTERN-C bump to 1500.
+      expect(e.get(Health)?.max).toBe(1800);
     }
+    expect(playerBaseChecks).toBeGreaterThan(0);
   });
 
   it('"extra-wood" — economy starts with +50 wood (100 total)', () => {
@@ -63,13 +70,20 @@ describe('M_EXPANSION.F.84 — starting bonus picks', () => {
       eventSeed: 'bonus-hp-events',
       startingBonus: 'extra-hp',
     });
+    // Coderabbit MAJOR — empty-loop silent-pass guard. Without this,
+    // a missing player FactionBase entity slips through with zero
+    // assertions and the test reports GREEN.
+    let playerHpChecks = 0;
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase);
       if (f?.faction !== 'player') continue;
+      playerHpChecks++;
       const h = e.get(Health);
-      expect(h?.max).toBe(700);
-      expect(h?.current).toBe(700);
+      // PATTERN-C: baseline raised to 1500, so extra-hp = 1700.
+      expect(h?.max).toBe(2000);
+      expect(h?.current).toBe(2000);
     }
+    expect(playerHpChecks).toBeGreaterThan(0);
   });
 
   it('enemy TownHall is never affected by the bonus', () => {
@@ -80,10 +94,17 @@ describe('M_EXPANSION.F.84 — starting bonus picks', () => {
       eventSeed: 'bonus-enemy-unchanged-events',
       startingBonus: 'extra-hp',
     });
+    let enemyHpChecks = 0;
     for (const e of game.world.query(FactionBase, Health)) {
       const f = e.get(FactionBase);
       if (f?.faction !== 'enemy') continue;
-      expect(e.get(Health)?.max).toBe(300);
+      enemyHpChecks++;
+      // M_FUN.QA.AIVAI.TUNE.PATTERN-C — bases equalised at 1500 HP
+      // so AI-vs-AI matches can't end at t=0 from a solo-Footman
+      // rush (100 sim-seconds to solo a TownHall now).
+      expect(e.get(Health)?.max).toBe(1800);
     }
+    // Coderabbit MAJOR — empty-loop silent-pass guard.
+    expect(enemyHpChecks).toBeGreaterThan(0);
   });
 });

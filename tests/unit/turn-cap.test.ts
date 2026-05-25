@@ -20,11 +20,14 @@ describe('M_TURNS.2 — turn cap victory', () => {
     });
     expect(game.turn).toBeDefined();
     if (!game.turn) throw new Error('turn missing — age-of-strata should instantiate it');
-    // Seed both sides with zones — player has more.
-    game.zones.player.controlled.add('0,0');
-    game.zones.player.controlled.add('1,0');
-    game.zones.player.controlled.add('2,0');
-    game.zones.enemy.controlled.add('5,0');
+    // M_FUN.MAP — seedZonesFromAttractors gives the enemy ~7 tiles
+    // (radius-2 hex) at start; for the win-branch assertion we need
+    // player.controlled.size > enemy.controlled.size. Clear both,
+    // then stack the deck for player explicitly.
+    game.zones.player.controlled.clear();
+    game.zones.enemy.controlled.clear();
+    for (let q = 0; q <= 5; q++) game.zones.player.controlled.add(`${q},0`);
+    game.zones.enemy.controlled.add('8,0');
     // Drive the turn timer to 0 twice to trigger the cap.
     game.turn.secondsRemaining = 0.01;
     runEconomyTick(game, 1);
@@ -44,10 +47,17 @@ describe('M_TURNS.2 — turn cap victory', () => {
       maxTurns: 2,
     });
     if (!game.turn) throw new Error('turn missing');
+    // M_FUN.MAP — seedZonesFromAttractors gives both factions a
+    // RADIUS=2 starting hex, so player.controlled.size and
+    // enemy.controlled.size both begin at ~7. Tilt the balance by
+    // removing player's seed entirely + adding extra enemy tiles
+    // so the turn-cap victor check fires the LOSS branch
+    // deterministically regardless of seed asymmetry from the new
+    // mountain-massif pass.
+    game.zones.player.controlled.clear();
     game.zones.player.controlled.add('0,0');
-    game.zones.enemy.controlled.add('5,0');
-    game.zones.enemy.controlled.add('6,0');
-    game.zones.enemy.controlled.add('7,0');
+    game.zones.enemy.controlled.clear();
+    for (let q = 3; q <= 8; q++) game.zones.enemy.controlled.add(`${q},0`);
     game.turn.secondsRemaining = 0.01;
     runEconomyTick(game, 1);
     game.turn.secondsRemaining = 0.01;

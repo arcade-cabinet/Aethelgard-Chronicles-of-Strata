@@ -23,12 +23,33 @@ describe('mapType variants (M_MODES.9)', () => {
     expect(lake).toBe(0); // dry-land mapType skips the inland-lake pass
   });
 
-  it('continent keeps the balanced layout (default behavior)', () => {
-    const board = generateBoard('maptype-continent', 18, true, 'continent');
-    // Continent uses the balanced layout — mountain spine present.
-    let mountain = 0;
-    for (const tile of board.tiles.values()) if (tile.type === 'MOUNTAIN') mountain += 1;
-    expect(mountain).toBeGreaterThanOrEqual(3);
+  it('continent has denser mountains than archipelago at the same seed (intensity contract)', () => {
+    // Coderabbit MAJOR fix: the prior `>= 3` assertion was too
+    // permissive — any board with three MOUNTAIN tiles passed,
+    // regardless of intensity. Compare the SAME seed across two
+    // mapTypes (continent intensity 0.7 vs archipelago intensity
+    // 0.25) and assert continent has materially more mountain
+    // tiles. This catches an intensity-regression where the
+    // mapgen.json `mountainIntensity` tuner gets accidentally
+    // flattened across modes.
+    const continent = generateBoard('maptype-intensity', 28, true, 'continent');
+    const archipelago = generateBoard('maptype-intensity', 28, true, 'archipelago');
+    const massif = (board: typeof continent) => {
+      let n = 0;
+      for (const tile of board.tiles.values()) {
+        if (tile.type === 'MOUNTAIN' || tile.type === 'MOUNTAIN_PASS') n += 1;
+      }
+      return n;
+    };
+    const continentMassif = massif(continent);
+    const archipelagoMassif = massif(archipelago);
+    // Floor on continent: at least 3 mountain tiles must exist for
+    // the gameplay funnel to work.
+    expect(continentMassif).toBeGreaterThanOrEqual(3);
+    // Intensity contract: continent (0.7) must produce noticeably
+    // MORE mountain than archipelago (0.25) on the same seed. 1.5×
+    // is a generous floor; the typical ratio is 2-4×.
+    expect(continentMassif).toBeGreaterThan(archipelagoMassif * 1.5);
   });
 
   it('mapType is deterministic per seed', () => {

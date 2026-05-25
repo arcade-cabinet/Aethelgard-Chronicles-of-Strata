@@ -2,7 +2,7 @@ import type { Entity, World } from 'koota';
 import { AiPlayer } from '@/ai/ai-player';
 import { BALANCE_TOLERANCE, reachableBuildableCount } from '@/core/balance-audit';
 import { type BoardData, generateBoard } from '@/core/board';
-import { getHexKey, hexDistance, hexNeighbors } from '@/core/hex';
+import { getHexKey, hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
 import { chokePointMultiplier } from '@/rules/choke-points';
 import { makeMoveCostFn } from '@/core/terrain-cost';
@@ -61,10 +61,24 @@ import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import { FACTIONS, type Faction } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
+import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
+import {
+  createVolcanoState,
+  placeVolcanoLandmark,
+  type VolcanoState,
+  volcanoSystem,
+} from '@/ecs/systems/volcano';
+import { type BurnState, wildfireSystem } from '@/ecs/systems/wildfire';
 import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
 import { spawnSystem } from '@/ecs/systems/spawn';
 import { evaluateWinLoss, type GameOutcome } from '@/ecs/systems/win-loss';
-import { behaviorsFor, ensureAttractorResources, presetFor, recomputeMaxSupply } from '@/rules';
+import {
+  behaviorsFor,
+  ensureAttractorResources,
+  presetFor,
+  recomputeMaxSupply,
+  SUPPLY_COST,
+} from '@/rules';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import type { AutoSave } from './auto-save';
 import { tickAutoSave } from './auto-save';
@@ -158,6 +172,20 @@ export interface NewGameConfig {
    * to false (normal human-controlled player).
    */
   aiVsAi?: boolean;
+  /**
+   * M_FUN.AI.NAMED — opponent personality key (the-builder,
+   * the-raider, the-hoarder, the-diplomat, the-mad-king). See
+   * src/config/ai-personalities.json. Defaults to the registry
+   * default ('the-diplomat').
+   */
+  enemyPersonality?: string;
+  /**
+   * M_FUN.QA.AIVAI — opponent personality key for the PLAYER faction
+   * in AI-vs-AI mode (no effect when aiVsAi=false; in interactive
+   * play the player's the human). Lets the AI-vs-AI balance suite
+   * run cross-personality matchups deterministically.
+   */
+  playerPersonality?: string;
 }
 
 /**
@@ -308,6 +336,27 @@ export interface GameState {
    */
   aiPlayers: Partial<Record<Faction, AiPlayer>>;
   /**
+   * M_FUN.DYN.WILDFIRE — burning-tile registry. Keyed by
+   * getHexKey(q, r). Each entry tracks remaining burn ticks +
+   * a spread-tick accumulator. Present-but-empty is the default
+   * (no fires lit). The wildfireSystem advances this; igniteWildfire
+   * adds entries; tiles extinguish either by burning out OR by
+   * water-adjacency (RIVER/LAKE/OCEAN neighbour).
+   */
+  wildfires: Map<string, BurnState>;
+  /**
+   * M_FUN.DYN.QUAKE — seconds of camera-shake remaining after the
+   * last triggered earthquake. Decremented by runEconomyTick; the
+   * render layer reads this to apply a brief shake. 0 = no shake.
+   */
+  quakeShakeRemaining: number;
+  /**
+   * M_FUN.DYN.VOLCANO — volcano landmark + eruption-cycle state.
+   * placeVolcanoLandmark may set position=null (no volcano on this
+   * board); when null, volcanoSystem is a no-op every tick.
+   */
+  volcano: VolcanoState;
+  /**
    * The PRIMARY currently-selected entity id (the first in `selectedIds` for
    * single-selection consumers like SelectionPanel). Undefined when nothing is
    * selected. Updated by `selectEntity` / `selectEntities` / `clearSelection`.
@@ -402,6 +451,44 @@ function adjacentWalkableTiles(
     if (out.length >= count) break;
     const tile = board.tiles.get(getHexKey(q + d.q, r + d.r));
     if (tile?.walkable) out.push({ q: q + d.q, r: r + d.r, level: tile.level });
+  }
+  return out;
+}
+
+/**
+ * BFS expansion of walkable tiles within `maxDepth` rings of (q,r).
+ * Coderabbit MAJOR PR #10 05:46Z — the AIVAI starter spawn previously
+ * misused `adjacentWalkableTiles(..., N)` as a radius (the 4th arg is
+ * a count of immediate neighbours, NOT a ring depth). This helper is
+ * the proper radius-aware fallback when the 6 axial neighbours of a
+ * blocked base tile are all non-walkable (peninsula / mountain-locked
+ * spawn). Returns up to `count` walkable tiles, prefers nearer rings.
+ */
+function walkableTilesByExpansion(
+  board: BoardData,
+  q: number,
+  r: number,
+  maxDepth: number,
+  count: number,
+): Array<{ q: number; r: number; level: number }> {
+  const out: Array<{ q: number; r: number; level: number }> = [];
+  const seen = new Set<string>([getHexKey(q, r)]);
+  let frontier: Array<{ q: number; r: number }> = [{ q, r }];
+  for (let depth = 0; depth < maxDepth && out.length < count; depth++) {
+    const next: Array<{ q: number; r: number }> = [];
+    for (const node of frontier) {
+      for (const key of hexNeighbors(node.q, node.r)) {
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const tile = board.tiles.get(key);
+        if (!tile) continue;
+        if (tile.walkable && out.length < count) {
+          out.push({ q: tile.q, r: tile.r, level: tile.level });
+        }
+        next.push({ q: tile.q, r: tile.r });
+      }
+    }
+    frontier = next;
   }
   return out;
 }
@@ -537,10 +624,14 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   const townHallProfile = behaviorsFor('TownHall');
   // M_EXPANSION.F.84 — apply starting bonus to TownHall HP.
   const bonusHp = config.startingBonus === 'extra-hp' ? 200 : 0;
+  // M_FUN.QA.AIVAI.TUNE.PATTERN-C — base HP raised from 500 to
+  // 1500. A 15-DPS Footman now takes 100 sim-seconds to solo a
+  // TownHall — long enough that the defending faction can muster
+  // a counter-force. Solo-rush wins drop out of the matrix.
   const townHallEntity = world.spawn(
     HexPosition({ q: center.q, r: center.r, level: center.level }),
     Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
-    Health({ current: 500 + bonusHp, max: 500 + bonusHp }),
+    Health({ current: 1800 + bonusHp, max: 1800 + bonusHp }),
     FactionTrait({ faction: 'player' }),
     FactionBase({ faction: 'player' }),
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
@@ -614,7 +705,9 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
       spawnTimer: 0,
       spawnInterval: spawnIntervalFor(difficulty) * matchLengthScale(preset.matchLength),
     }),
-    Health({ current: 300, max: 300 }),
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-C — equalised AND raised to
+    // 1500 HP. Symmetric with the player TownHall above.
+    Health({ current: 1800, max: 1800 }),
     FactionTrait({ faction: 'enemy' }),
     FactionBase({ faction: 'enemy' }),
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
@@ -629,6 +722,49 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     r: footmanSpawn.r,
     level: footmanSpawn.level,
   });
+
+  // M_FUN.QA.AIVAI.TUNE — in AI-vs-AI mode the enemy faction needs
+  // the SAME starting kit as the player so its AiPlayer has peons
+  // to assign to harvest + a Footman to seed military. Without
+  // these the enemy AiPlayer would deadlock at "need Barracks
+  // before training Footman, but need a Peon to build the
+  // Barracks". Single-player mode keeps the asymmetric start —
+  // there the enemy gets units from the EnemySpawner cadence.
+  const isAiVsAi = typeof config === 'object' && config.aiVsAi;
+  if (isAiVsAi) {
+    // Coderabbit MAJOR PR #10 05:46Z fix to my prior fix: the 4th
+    // arg of adjacentWalkableTiles is a COUNT (cap of immediate
+    // neighbours), not a radius. The earlier "wider ring" cascade
+    // never actually widened. Use walkableTilesByExpansion for a
+    // real BFS expansion up to depth 4; only if EVERY tile within
+    // 4 rings is blocked (effectively impossible on a normal map)
+    // do we fall back to the base tile.
+    let enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 2);
+    if (enemyPeonSpawns.length === 0) {
+      enemyPeonSpawns = walkableTilesByExpansion(board, enemyBaseTile.q, enemyBaseTile.r, 4, 6);
+    }
+    if (enemyPeonSpawns.length === 0) enemyPeonSpawns.push(enemyBaseTile);
+    for (let i = 0; i < 2; i++) {
+      const spawn = enemyPeonSpawns[i] ?? enemyPeonSpawns[0]!;
+      createCharacter({
+        world,
+        role: 'Peon',
+        q: spawn.q,
+        r: spawn.r,
+        level: spawn.level,
+        factionOverride: 'enemy',
+      });
+    }
+    const enemyFootmanSpawn = enemyPeonSpawns[0]!;
+    createCharacter({
+      world,
+      role: 'Footman',
+      q: enemyFootmanSpawn.q,
+      r: enemyFootmanSpawn.r,
+      level: enemyFootmanSpawn.level,
+      factionOverride: 'enemy',
+    });
+  }
 
   // Spawn resource nodes using the map PRNG (deterministic, phrase-only).
   const mapRng = createMapPrng(seedPhrase);
@@ -711,6 +847,20 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     score: { player: 0, enemy: 0 },
     // M_EXPANSION.F.71 — Infinity = no Wonder built yet for that faction.
     wonderTimers: { player: Infinity, enemy: Infinity },
+    // M_FUN.DYN.WILDFIRE — empty burning-tile registry. The wildfire
+    // system creates entries via igniteWildfire and prunes via the
+    // tick loop; default is the empty map (no fires lit at game start).
+    wildfires: new Map<string, BurnState>(),
+    // M_FUN.DYN.QUAKE — quake camera-shake countdown (0 = no shake).
+    quakeShakeRemaining: 0,
+    // M_FUN.DYN.VOLCANO — place a volcano landmark if the roll
+    // succeeds (placementChance gates it). Position-less state =
+    // no volcano on this board; the volcanoSystem no-ops then.
+    volcano: (() => {
+      const state = createVolcanoState();
+      state.position = placeVolcanoLandmark(board, mapRng);
+      return state;
+    })(),
     // M_POLISH2.MODES.42a — strata-wars 80%-for-30s win timer. Starts
     // at 0; only ticks in strata-wars mode (see runEconomyTick).
     strataWarsControlTimer: 0,
@@ -740,30 +890,61 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     // factions auto-play, no human input required.
     aiPlayers:
       typeof config === 'object' && config.aiVsAi
-        ? { enemy: new AiPlayer('enemy'), player: new AiPlayer('player') }
-        : { enemy: new AiPlayer('enemy') },
+        ? {
+            enemy: new AiPlayer('enemy', config.enemyPersonality),
+            // M_FUN.QA.AIVAI — playerPersonality lets the balance
+            // suite drive cross-personality matchups deterministically.
+            // Omitted = registry default (the-diplomat).
+            player: new AiPlayer('player', config.playerPersonality),
+          }
+        : {
+            enemy: new AiPlayer(
+              'enemy',
+              typeof config === 'object' ? config.enemyPersonality : undefined,
+            ),
+          },
     assignAllPeonsToHarvest() {
-      // find the first wood node (fallback to any node)
+      // M_FUN.QA.AIVAI.TUNE — faction-aware harvest with a base-
+      // proximity bias. Previously every peon (player + enemy) was
+      // assigned to the nearest GLOBAL node — enemy peons trekked
+      // across the map to player wood and stayed SEEKING forever.
+      // Score = distance from faction's base (primary) +
+      // 0.1 * distance from peon (tie-break) so the chosen node
+      // is anchored to the faction, not the peon's starting tile.
       const woodNodes = resourceNodes.filter((n) => n.resourceType === 'wood');
       if (woodNodes.length === 0 && resourceNodes.length === 0) return;
+      const candidates = woodNodes.length > 0 ? woodNodes : resourceNodes;
+      const anchors = {
+        player: parseHexKey(townHallKey),
+        enemy: parseHexKey(enemyBaseKey),
+      };
 
-      // query all peons with AssignedJob
-      for (const entity of world.query(Unit, AssignedJob, HexPosition)) {
+      for (const entity of world.query(Unit, AssignedJob, HexPosition, FactionTrait)) {
         const unitComp = entity.get(Unit);
         if (unitComp?.unitType !== 'Peon') continue;
         const job = entity.get(AssignedJob);
         if (!job || job.state !== 'IDLE') continue;
         const hexPos = entity.get(HexPosition);
         if (!hexPos) continue;
+        const faction = entity.get(FactionTrait)?.faction;
+        if (!faction) continue;
+        const anchor = anchors[faction];
 
-        // find the nearest resource node by hexDistance
+        // Matches nearestResource() in src/rules/peon-rules.ts —
+        // peon-distance + decaying base-bias past BIAS_RADIUS.
+        // Centralising this in one shared helper would be cleaner;
+        // for now both call sites use the same constants.
+        const BASE_BIAS = 0.5;
+        const BIAS_RADIUS = 6;
         let nearest: ResourceNodePlan | null = null;
-        let nearestDist = Number.POSITIVE_INFINITY;
-        const candidates = woodNodes.length > 0 ? woodNodes : resourceNodes;
+        let nearestScore = Number.POSITIVE_INFINITY;
         for (const node of candidates) {
-          const d = hexDistance(hexPos.q, hexPos.r, node.q, node.r);
-          if (d < nearestDist) {
-            nearestDist = d;
+          const baseDist = hexDistance(anchor.q, anchor.r, node.q, node.r);
+          const peonDist = hexDistance(hexPos.q, hexPos.r, node.q, node.r);
+          const baseBias = BASE_BIAS * Math.max(0, baseDist - BIAS_RADIUS);
+          const score = peonDist + baseBias;
+          if (score < nearestScore) {
+            nearestScore = score;
             nearest = node;
           }
         }
@@ -793,6 +974,13 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   if (game.outcome !== 'playing') return;
   // M_GAMEPLAY.7 — pause flag freezes the simulation; rendering continues.
   if (game.paused) return;
+  // Coderabbit MAJOR PR #10 04:56Z fix — reset the per-tick damage
+  // batch ONCE at tick start so the two combat paths (offensive-
+  // behavior + combatSystem) can both APPEND without one clobbering
+  // the other. CombatText / particle-consumers / match-narrative
+  // read it as "this tick's events" — array-reference identity is
+  // still per-tick fresh.
+  game.lastDamageEvents = [];
   // M_EXPANSION.U.111 — apply the gameSpeed multiplier (1x default,
   // 2x / 4x for fast-forward). Pure wall-clock scaling; the event PRNG
   // sees the SAME deterministic delta sequence (just delivered in
@@ -875,7 +1063,35 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   // move commands resolve mid-turn; the autonomous economy systems
   // below gate on turnGateOpen.
   // movement + economy — apply rain speed penalty from weather state
-  pathFollowSystem(game.world, delta, WEATHER_SPEED_MULTIPLIER[game.weather.state]);
+  pathFollowSystem(
+    game.world,
+    delta,
+    WEATHER_SPEED_MULTIPLIER[game.weather.state],
+    game.board.tiles,
+    // M_FUN.MECH.FATIGUE.TURN-MODE — pass turn number ONLY in
+    // turn-based mode so the rest-skip gate fires. RTS leaves
+    // it undefined and the continuous fatigue path runs.
+    game.turn ? game.turn.turnsElapsed : undefined,
+  );
+  // M_FUN.ATTR.DISEASE + .DEHYDRATION — tick disease HP damage,
+  // Healer-clear logic, and recovery timers. Runs every tick (not
+  // turn-gated) so disease ticks during free movement.
+  statusAttributesSystem(game.world, game.board.tiles, delta);
+  // M_FUN.DYN.VOLCANO — tick the eruption cycle BEFORE the
+  // wildfire system so any FOREST→WILDFIRE chain reactions caused
+  // by an eruption land in the same tick.
+  volcanoSystem(game, delta);
+  // M_FUN.DYN.WILDFIRE — advance any active burn fronts. Fires
+  // can ignite via random events OR via volcano eruptions;
+  // the system is a no-op when game.wildfires is empty.
+  wildfireSystem(game, game.board.tiles, delta);
+  // M_FUN.DYN.QUAKE — decay the camera-shake countdown so the HUD
+  // can render a brief shake after each quake. No system call here:
+  // the actual reshape happens inline at event-fire time via
+  // triggerQuake; this only manages the post-event shake decay.
+  if (game.quakeShakeRemaining > 0) {
+    game.quakeShakeRemaining = Math.max(0, game.quakeShakeRemaining - delta);
+  }
   // M_EXPANSION.F.97 — discoverable hidden bonus consumer. Runs
   // every tick (not turn-gated) so a player issuing a move sees
   // the bonus credit as the unit arrives, not on the next enemy
@@ -894,6 +1110,24 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     });
     harvestSystem(game.world, delta);
     buildSystem(game.world, game.buildSites, delta);
+    // M_FUN.QA.AIVAI.PEON-METRICS — credit first-House completion
+    // per faction. Cheap O(buildings) sweep ONLY while either
+    // faction still has firstHouseAt == -1; flips to a no-op once
+    // both have stamped, so steady-state cost is one branch check.
+    if (
+      game.economy.player.peonMetrics.firstHouseAt < 0 ||
+      game.economy.enemy.peonMetrics.firstHouseAt < 0
+    ) {
+      for (const e of game.world.query(Building, FactionTrait)) {
+        const b = e.get(Building);
+        const f = e.get(FactionTrait);
+        if (!b?.isComplete || b.buildingType !== 'House' || !f) continue;
+        const eco = game.economy[f.faction];
+        if (eco.peonMetrics.firstHouseAt < 0) {
+          eco.peonMetrics.firstHouseAt = game.clock.elapsed;
+        }
+      }
+    }
     // M_FEATURE.3 — passive trickle + per-Library science accumulation.
     scienceSystem(game.world, game.economy, delta);
   }
@@ -977,6 +1211,20 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
   }
   recomputeMaxSupply(game.economy.player, completeByFaction.player);
   recomputeMaxSupply(game.economy.enemy, completeByFaction.enemy);
+  // M_FUN.QA.AIVAI.TUNE — recompute usedSupply from owned units so
+  // directly-spawned (createCharacter, e.g. starting kit) units count
+  // against the cap. Without this, trainUnit's canTrainComplete
+  // check sees stale usedSupply and over-trains, OR (worse for
+  // AI-vs-AI) under-counts and the cap never tightens.
+  const supplyByFaction: Record<Faction, number> = { player: 0, enemy: 0 };
+  for (const e of game.world.query(Unit, FactionTrait)) {
+    const u = e.get(Unit);
+    const f = e.get(FactionTrait)?.faction;
+    if (!u || !f) continue;
+    supplyByFaction[f] += SUPPLY_COST[u.unitType] ?? 1;
+  }
+  game.economy.player.usedSupply = supplyByFaction.player;
+  game.economy.enemy.usedSupply = supplyByFaction.enemy;
   // M_EXPANSION.U.122 — track peak usedSupply for post-match stats.
   if (game.economy.player.usedSupply > game.economy.player.peakSupply) {
     game.economy.player.peakSupply = game.economy.player.usedSupply;
@@ -1003,7 +1251,19 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
       }
       return chokePointMultiplier(passable);
     };
-    game.lastDamageEvents = combatSystem(game.world, game.eventRng, delta, rangedAccuracy, chokeFn);
+    // Coderabbit MAJOR PR #10 04:56Z — preserve offensive-behavior
+    // damage events. The earlier branch (line ~1109) APPENDS DPS
+    // events to lastDamageEvents; replacing the array here would
+    // discard them on every combat tick. Concat instead.
+    const combatEvents = combatSystem(
+      game.world,
+      game.eventRng,
+      delta,
+      rangedAccuracy,
+      chokeFn,
+      game.board.tiles,
+    );
+    game.lastDamageEvents = [...game.lastDamageEvents, ...combatEvents];
   }
 
   // M_MODES.4 — endless mode: FactionBases are invulnerable. Clamp each
@@ -1026,11 +1286,43 @@ export function runEconomyTick(game: GameState, deltaRaw: number): void {
     depositSystem(game.world, game.economy[f], baseKeyFor(game, f), f, resourceEvents);
   }
   game.lastResourceEvents = resourceEvents;
+  // M_FUN.QA.AIVAI.PEON-METRICS — credit deposit cadence per faction.
+  // The deposit list is already faction-tagged; iterate once and bump
+  // the per-faction counter + the first-wood timestamp (RTS landmark).
+  for (const ev of resourceEvents) {
+    const eco = game.economy[ev.faction];
+    eco.peonMetrics.depositCount += 1;
+    if (ev.type === 'wood' && eco.peonMetrics.firstWoodAt < 0) {
+      eco.peonMetrics.firstWoodAt = game.clock.elapsed;
+    }
+  }
 
   // death resolution — deathSystem returns the enemies removed this tick;
   // a removed enemy is a player kill.
   const deathResult = deathSystem(game.world, delta);
   game.economy.player.kills += deathResult.enemyKills;
+  // M_FUN.QA.AIVAI.ZONE-BREAKDOWN (v0.5.B) — classify each enemy
+  // death by zone-of-control class so the balance ledger can show
+  // "this AI fights at the front" vs "only at base". Skirmish =
+  // neutral, encroachment = inside opponent's controlled zone,
+  // assault = within 3 hexes of opponent's faction base.
+  if (deathResult.enemyDeathKeys.length > 0) {
+    const enemyBaseKey = game.enemyBaseKey;
+    const { q: ebq, r: ebr } = parseHexKey(enemyBaseKey);
+    for (const key of deathResult.enemyDeathKeys) {
+      const { q, r } = parseHexKey(key);
+      const inEnemyZone = game.zones.enemy.controlled.has(key);
+      const inPlayerZone = game.zones.player.controlled.has(key);
+      const distToEnemyBase = hexDistance(q, r, ebq, ebr);
+      if (distToEnemyBase <= 3) {
+        game.economy.player.killsByZone.assault += 1;
+      } else if (inEnemyZone && !inPlayerZone) {
+        game.economy.player.killsByZone.encroachment += 1;
+      } else {
+        game.economy.player.killsByZone.skirmish += 1;
+      }
+    }
+  }
   // M_EXPANSION.F.96 — Hero permadeath. If the player's Hero died
   // this tick, flip outcome to 'loss' immediately. Outcome is
   // monotonic so a concurrent base-destruction win-loss eval won't

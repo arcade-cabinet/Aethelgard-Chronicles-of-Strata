@@ -1,17 +1,24 @@
 import { GameEntity, Goal, GoalEvaluator, Think } from 'yuka';
-import { hexNeighbors, parseHexKey } from '@/core/hex';
+import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import {
   Building,
   type BuildingType,
+  EnemyTarget,
   type Faction,
   FactionTrait,
   HexPosition,
+  Stance,
   Unit,
 } from '@/ecs/components';
 import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
+import { matchElapsedSeconds } from '@/game/match-time';
+import { canTrain } from '@/rules/economy-rules';
 import { SKINS } from '@/rules/skins';
+import { MILITARY_ROLES } from '@/rules/unit-profiles';
 import { aiProfileFor, endgameUrgencyFor } from './ai-profiles';
+import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
+import { announceAiTaunt } from './taunt';
 import { baseKeyFor, type GameState } from '@/game/game-state';
 import { canBuild, peonCap, UNIT_COSTS } from '@/rules';
 
@@ -47,18 +54,32 @@ export class AiPlayer extends GameEntity {
   /** Seconds the faction has been "starved" (M_MODES.10) — accumulates across ticks. */
   starvedFor = 0;
 
-  constructor(faction: Faction) {
+  /**
+   * M_FUN.AI.NAMED — opponent personality key (e.g. 'the-builder',
+   * 'the-raider'). Multiplies per-Evaluator desirability so each
+   * named opponent plays a distinct style. Defaults to the
+   * 'default' personality from ai-personalities.json.
+   */
+  readonly personalityKey: string;
+
+  constructor(faction: Faction, personalityKey?: string) {
     super();
     this.faction = faction;
+    this.personalityKey = personalityKey ?? DEFAULT_PERSONALITY;
+    const p = personalityFor(this.personalityKey);
     this.brain = new AiBrain(this);
-    this.brain.addEvaluator(new BuildEvaluator());
-    this.brain.addEvaluator(new TrainEvaluator());
-    this.brain.addEvaluator(new MilitaryEvaluator());
+    this.brain.addEvaluator(new BuildEvaluator(p.weights.build));
+    // M_FUN.QA.AIVAI.TUNE — train inherits the military weight (not
+    // build) since training units IS military investment. This
+    // closes the Builder-vs-Builder loop where both sides built
+    // forever without ever fielding a unit.
+    this.brain.addEvaluator(new TrainEvaluator(p.weights.military));
+    this.brain.addEvaluator(new MilitaryEvaluator(p.weights.military));
     // M_EXPANSION.S.55 — patrol verb (verb 5 of 5). Idle military
     // units circulate the zone perimeter when there's no enemy in
     // sight + no defensive trigger. Without this they stand at base
     // waiting for the next raid, which reads as inert AI.
-    this.brain.addEvaluator(new PatrolEvaluator());
+    this.brain.addEvaluator(new PatrolEvaluator(p.weights.patrol));
     this.brain.addEvaluator(new ResignEvaluator());
   }
 
@@ -77,8 +98,17 @@ export class AiPlayer extends GameEntity {
     this.elapsed += delta;
     if (this.elapsed < this.decisionInterval) return;
     this.elapsed -= this.decisionInterval;
+    const prevGoal = this.lastGoal;
     this.brain.arbitrate();
     this.brain.execute();
+    // M_FUN.AI.TAUNT — announce the AI's new goal via aria-live when
+    // it changes (enemy faction only; ally announcements would clutter
+    // the screen-reader stream). Player-faction AI in AI-vs-AI mode
+    // doesn't taunt — only the OPPONENT does.
+    if (this.faction === 'enemy' && this.lastGoal && this.lastGoal !== prevGoal) {
+      const p = personalityFor(this.personalityKey);
+      announceAiTaunt(p.displayName, this.lastGoal);
+    }
   }
 }
 
@@ -103,12 +133,40 @@ function ownedBuildingCount(game: GameState, faction: Faction, type: BuildingTyp
   return n;
 }
 
+/** Total complete buildings the faction owns. M_FUN.QA.AIVAI.TUNE saturation curve input. */
+function totalOwnedBuildings(game: GameState, faction: Faction): number {
+  let n = 0;
+  for (const e of game.world.query(Building, FactionTrait)) {
+    if (e.get(FactionTrait)?.faction !== faction) continue;
+    if (e.get(Building)?.isComplete) n += 1;
+  }
+  return n;
+}
+
 /** This faction's peon count (used vs. peonCap). */
 function ownedPeonCount(game: GameState, faction: Faction): number {
   let n = 0;
   for (const e of game.world.query(Unit, FactionTrait)) {
     if (e.get(FactionTrait)?.faction !== faction) continue;
     if (e.get(Unit)?.unitType === 'Peon') n += 1;
+  }
+  return n;
+}
+
+/**
+ * M_FUN.QA.AIVAI.TUNE — count owned military units. Used by the
+ * must-train floor in TrainEvaluator so a Builder vs Builder match
+ * doesn't loop on build-forever with zero combat.
+ */
+function ownedMilitaryCount(game: GameState, faction: Faction): number {
+  let n = 0;
+  // QW-5 — `MILITARY_ROLES` is the derived single source-of-truth in
+  // unit-profiles.ts (driven by profile.combatRole === 'military').
+  // The prior local literal silently lagged any unit-profile edit.
+  for (const e of game.world.query(Unit, FactionTrait)) {
+    if (e.get(FactionTrait)?.faction !== faction) continue;
+    const t = e.get(Unit)?.unitType;
+    if (t && MILITARY_ROLES.has(t)) n += 1;
   }
   return n;
 }
@@ -134,23 +192,66 @@ function discoveredEnemyTile(game: GameState, faction: Faction): string | null {
     // OR a tile we currently observe (the observed battlefield).
     if (myZone.has(key) || game.zones[faction].observed.has(key)) return key;
   }
+  // M_FUN.QA.AIVAI.TUNE.PATTERN-B — rage-quit fallback. If we've been
+  // playing for RAGE_QUIT_THRESHOLD sim-seconds without ever spotting
+  // an enemy through legitimate observation, target a WALKABLE
+  // neighbour of the opposing base. The base tile itself is
+  // non-walkable (CodeRabbit fix), so findPath to it would return
+  // null. The first walkable neighbour suffices — combat tick will
+  // engage the base from there once the unit arrives.
+  // PATTERN-L (v0.5.C) — match-time read goes through the turn-aware
+  // helper. In RTS this == game.clock.elapsed; in turn-based it
+  // returns turn.turnsElapsed × RTS_SECONDS_PER_TURN so the same
+  // 180s landmark maps to the same gameplay point.
+  if (matchElapsedSeconds(game) >= RAGE_QUIT_THRESHOLD) {
+    const oppBaseKey = faction === 'player' ? game.enemyBaseKey : game.townHallKey;
+    const { q: bq, r: br } = parseHexKey(oppBaseKey);
+    for (const nKey of hexNeighbors(bq, br)) {
+      const tile = game.board.tiles.get(nKey);
+      if (tile?.walkable) return nKey;
+    }
+  }
   return null;
 }
 
-/** A free walkable tile adjacent to the faction's base for placing a building. */
+/**
+ * A free walkable tile near the faction's base. Tries radius-1
+ * neighbours first (the historical behaviour); if every immediate
+ * neighbour is blocked (water/mountain/build site/opposing base),
+ * expands to radius 2 by sweeping each radius-1 neighbour's
+ * neighbours. Stops at radius 2 — going further risks the AI
+ * stamping a Farm into mid-map territory which silently moves
+ * encroachment goal posts. Reviewer-fix M_FUN.QA.AIVAI.TUNE.
+ */
 function freeBuildTile(game: GameState, faction: Faction): string | null {
-  // M_REGISTRY.14 — baseKeyFor() is the single faction → baseKey source.
   const baseKey = baseKeyFor(game, faction);
   const { q: bq, r: br } = parseHexKey(baseKey);
-  // Both faction-base tiles are off-limits (CodeRabbit HIGH-4 symmetric fix):
-  // the AI must not stamp a Farm onto the player's TownHall if its base
-  // happens to be adjacent.
+  const blocked = (key: string) =>
+    key === game.townHallKey || key === game.enemyBaseKey || game.buildSites.has(key);
+  // Radius 1 — preserve original neighbour-ordered iteration.
   for (const nKey of hexNeighbors(bq, br)) {
-    if (nKey === game.townHallKey || nKey === game.enemyBaseKey) continue;
+    if (blocked(nKey)) continue;
     const tile = game.board.tiles.get(nKey);
-    if (tile?.walkable && !game.buildSites.has(nKey)) return nKey;
+    if (tile?.walkable) return nKey;
   }
-  return null;
+  // Radius 2 fallback — neighbours-of-neighbours. Visit in stable
+  // order (sorted on the eventual hex key) so the choice is
+  // deterministic across seeds.
+  const r2: string[] = [];
+  for (const nKey of hexNeighbors(bq, br)) {
+    const { q, r } = parseHexKey(nKey);
+    for (const nnKey of hexNeighbors(q, r)) {
+      if (nnKey === baseKey) continue;
+      if (blocked(nnKey)) continue;
+      const tile = game.board.tiles.get(nnKey);
+      if (!tile?.walkable) continue;
+      // Make sure it's actually distance 2 (skip radius-1 hits).
+      if (hexDistance(tile.q, tile.r, bq, br) !== 2) continue;
+      r2.push(nnKey);
+    }
+  }
+  r2.sort();
+  return r2[0] ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -159,6 +260,14 @@ function freeBuildTile(game: GameState, faction: Faction): string | null {
 
 /** Decide what (if anything) to build next; the highest-priority unmet need wins. */
 class BuildEvaluator extends GoalEvaluator<AiPlayer> {
+  /**
+   * M_FUN.AI.NAMED — personality multiplier. Default 1.0 = neutral.
+   * the-builder=1.5 (eager to build), the-mad-king=0.4 (rarely builds).
+   */
+  constructor(private readonly personalityMul: number = 1.0) {
+    super();
+  }
+
   calculateDesirability(owner: AiPlayer): number {
     const choice = this.pickBuildable(owner);
     if (!choice) return 0;
@@ -175,7 +284,20 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     const defensiveMul = defensiveTypes.includes(choice as string)
       ? profile.defensiveBuildWeight
       : 1.0;
-    return 0.7 * bias * profile.buildWeight * defensiveMul;
+    // M_FUN.QA.AIVAI.TUNE — diminishing returns past 6 buildings.
+    // Without this a Builder personality (build weight 1.5) keeps
+    // out-scoring military forever, even after the base is fully
+    // built up — matches stall at "two factions of farms" with
+    // zero combat. Each building past the 6th halves the bias.
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-D — sharpened saturation curve.
+    // Was 1/(1+(n-6)*0.5) — too gentle (Hoarder still hit 7 b at
+    // 10 sim-min). Now: 1.0 up to 4, then 1/(1+(n-4)^2 * 0.3) so
+    // the 5th building costs ~0.77×, the 6th ~0.45×, the 7th
+    // ~0.21× — military will out-score build past 5-6 buildings
+    // for any non-extreme personality.
+    const builtCount = owner.game ? totalOwnedBuildings(owner.game, owner.faction) : 0;
+    const saturationMul = builtCount <= 4 ? 1.0 : 1.0 / (1 + (builtCount - 4) ** 2 * 0.3);
+    return 0.7 * bias * profile.buildWeight * defensiveMul * this.personalityMul * saturationMul;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -200,21 +322,36 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     // first; placement succeeds when any is buildable on the chosen tile.
     const priority: Array<Exclude<BuildingType, 'TownHall'>> = [];
     if (atCap) priority.push('House'); // immediate cap-pressure relief
+    // M_FUN.QA.AIVAI.TUNE — House first regardless of cap. Without
+    // it the AI never establishes a supply pipeline; combined with
+    // the M_FUN.QA.AIVAI.TUNE BASELINE_SUPPLY_CAP=5 this means a
+    // first House takes a faction from 5→9 supply cap, unblocking
+    // a third Footman / second Peon.
+    if (!atCap && ownedBuildingCount(game, faction, 'House') < 2) priority.push('House');
     priority.push('Farm'); // supply ceiling
     const enemySighted = discoveredEnemyTile(game, faction) !== null;
-    if (ownedBuildingCount(game, faction, 'Barracks') === 0 && enemySighted)
+    // PATTERN-N (v0.4 pre-merge) — drop the enemySighted gate on
+    // Barracks after 90 sim-seconds. The matrix run showed EVERY
+    // faction shipped Offensive=0 because peons stay near base
+    // (zoneUnionPct < 7%) → never sight enemy → never queue
+    // Barracks → never train Footman → never push to win. The
+    // ragequit pattern already exists for MilitaryEvaluator; this
+    // mirrors it for the Barracks unlock so a Footman queue can
+    // form even on hyperdefensive personalities.
+    const matchElapsedSec = matchElapsedSeconds(game);
+    const barracksReady = enemySighted || matchElapsedSec >= 90;
+    if (ownedBuildingCount(game, faction, 'Barracks') === 0 && barracksReady)
       priority.push('Barracks');
     if (atCap) priority.push('Granary'); // additional peon ceiling
     // Watchtower if enemy seen + we don't already have one (defends the
     // observed-battlefield gap).
     if (ownedBuildingCount(game, faction, 'Watchtower') === 0 && enemySighted)
       priority.push('Watchtower');
-    // Wall once we have a military presence (closes a gap in the perimeter).
-    if (
-      ownedBuildingCount(game, faction, 'Wall') < 2 &&
-      ownedBuildingCount(game, faction, 'Barracks') > 0
-    )
-      priority.push('Wall');
+    // M_FUN.QA.AIVAI.TUNE — Wall is the resource-cheap fallback
+    // (0 wood, 60 stone). Available without a Barracks so a wood-
+    // starved AI can still place SOMETHING and not loop forever
+    // on Build → null → Train.
+    if (ownedBuildingCount(game, faction, 'Wall') < 2) priority.push('Wall');
 
     const tile = freeBuildTile(game, faction);
     if (!tile) return null;
@@ -257,6 +394,10 @@ class BuildGoal extends Goal<AiPlayer> {
  * encroachment costs the AI its zone of control.
  */
 class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
+  constructor(private readonly personalityMul: number = 1.0) {
+    super();
+  }
+
   calculateDesirability(owner: AiPlayer): number {
     if (!owner.game) return 0;
     if (!firstMilitary(owner.game, owner.faction)) return 0;
@@ -273,10 +414,20 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
       owner.game.turn?.turnsElapsed,
       owner.game.turn?.maxTurns,
     );
-    const modeMul = profile.militaryWeight * urgency;
+    const modeMul = profile.militaryWeight * urgency * this.personalityMul;
     // higher score when a tile we own is pulsing — defence is urgent
     if (firstPulsingTile(owner.game, owner.faction)) return 0.85 * bias * modeMul;
-    return discoveredEnemyTile(owner.game, owner.faction) ? 0.6 * bias * modeMul : 0;
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-B — once rage-quit kicks in
+    // (game elapsed past RAGE_QUIT_THRESHOLD), Military desirability
+    // OVERRIDES Build — we've sat on builds too long, time to
+    // engage. Without this boost the Builder personality keeps
+    // out-scoring military forever even after we have a target.
+    // PATTERN-L (v0.5.C) — turn-aware match-time read; RAGE_QUIT_THRESHOLD
+    // is the module-level constant near STARVATION_THRESHOLD (single source).
+    const ragequit = matchElapsedSeconds(owner.game) >= RAGE_QUIT_THRESHOLD;
+    const hasTarget = discoveredEnemyTile(owner.game, owner.faction);
+    if (!hasTarget) return 0;
+    return ragequit ? 1.5 * bias * modeMul : 0.6 * bias * modeMul;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -299,18 +450,57 @@ function firstPulsingTile(game: GameState, faction: Faction): string | null {
 class MoveMilitaryGoal extends Goal<AiPlayer> {
   activate(): void {
     const owner = this.owner as AiPlayer;
-    const unit = firstMilitary(owner.game, owner.faction);
     const defendKey = firstPulsingTile(owner.game, owner.faction);
     const target = defendKey ?? discoveredEnemyTile(owner.game, owner.faction);
-    if (!unit || !target) {
+    if (!target) {
       this.status = Goal.STATUS.FAILED;
       return;
     }
-    const path = moveUnit(owner.game, unit, target, owner.faction);
-    this.status = path ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
-    if (path) owner.lastGoal = defendKey ? 'defend' : 'move-military';
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-B — send EVERY ready military unit
+    // (not just the first one) AND flip its stance to 'aggressive'
+    // so it pursues opportunistically en route. Previously only the
+    // first Footman moved; the rest sat at base in 'defensive'
+    // stance and never engaged anyone outside their commanded-tile
+    // engage radius. In AI-vs-AI matchups where bases are
+    // ~10 hexes apart, that's the difference between 0 kills and
+    // a finished match.
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-G follow-on — also set EnemyTarget
+    // on each military unit pointing at the OPPOSING FactionBase
+    // entity. Combat system already targets ANY Health-bearing entity
+    // referenced by EnemyTarget.targetId (it uses world.query(Health)
+    // for the byId map). Without this, Footmen arriving near the
+    // base would target nearby enemy UNITS but never the base
+    // building itself — which is the actual win condition.
+    const opposingBase =
+      owner.faction === 'player' ? owner.game.enemyBaseEntity : owner.game.townHallEntity;
+    const opposingBaseId = Number(opposingBase);
+    let any = false;
+    for (const e of owner.game.world.query(Unit, FactionTrait)) {
+      if (e.get(FactionTrait)?.faction !== owner.faction) continue;
+      const utype = e.get(Unit)?.unitType;
+      if (!utype || !MILITARY_TYPES.has(utype)) continue;
+      // Flip stance to aggressive so the unit chases targets it
+      // sees mid-route, not just sits idle at the destination.
+      if (e.has(Stance)) e.set(Stance, { mode: 'aggressive' });
+      const path = moveUnit(owner.game, e, target, owner.faction);
+      // Target the opposing base directly so combat damages it on
+      // arrival. Defensive units already in combat keep their
+      // current target via the combat tick's currentTargetAlive
+      // check; this only overrides while we're moving to attack.
+      if (e.has(EnemyTarget)) e.set(EnemyTarget, { targetId: opposingBaseId });
+      if (path) any = true;
+    }
+    this.status = any ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
+    if (any) owner.lastGoal = defendKey ? 'defend' : 'move-military';
   }
 }
+
+// QW-6 — `MILITARY_TYPES` aliased to the derived `MILITARY_ROLES` set in
+// unit-profiles.ts so a new military unit (e.g. 'Crossbowman') flows
+// through the AI evaluators automatically. The prior local literal had
+// to be edited per-site; offensive-behavior.ts + encroachment.ts
+// already imported the derived set.
+const MILITARY_TYPES = MILITARY_ROLES;
 
 // ---------------------------------------------------------------------------
 // Train evaluator + goal — verb 2 of 3 (M_AI_DEPTH.2)
@@ -323,10 +513,27 @@ class MoveMilitaryGoal extends Goal<AiPlayer> {
  *   2. Footman if a Barracks exists and the AI can afford one.
  */
 class TrainEvaluator extends GoalEvaluator<AiPlayer> {
+  /**
+   * M_FUN.QA.AIVAI.TUNE — personality bias on training. Default 1.0
+   * = neutral. Builder underweights, Raider/Mad-King overweight.
+   */
+  constructor(private readonly personalityMul: number = 1.0) {
+    super();
+  }
+
   calculateDesirability(owner: AiPlayer): number {
     const choice = this.pickTrainable(owner);
-    return choice ? 0.75 : 0; // slightly higher than build — training is the
-    // closest-loop way to convert resources into capability
+    if (!choice) return 0;
+    // M_FUN.QA.AIVAI.TUNE — must-train floor: if the faction has
+    // ZERO military units and there's an enemy on the board, training
+    // is the only path to ever scoring a kill. Override the bias
+    // ladder when this is the case so a heavy Builder never gets
+    // stuck in "build-forever" loops vs another Builder.
+    if (owner.game && choice === 'Footman') {
+      const ownMilitary = ownedMilitaryCount(owner.game, owner.faction);
+      if (ownMilitary === 0) return 1.1;
+    }
+    return 0.75 * this.personalityMul;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -340,13 +547,28 @@ class TrainEvaluator extends GoalEvaluator<AiPlayer> {
     const { game, faction } = owner;
     if (!game) return null;
     const eco = game.economy[faction];
-    // peons first — more workers → more economy
+    // peons first — more workers → more economy. PATTERN-I — also
+    // gate on supply-cap (canTrain), not just peonCap. Without the
+    // supply gate, a faction at usedSupply == maxSupply keeps
+    // returning 'Peon' (peons < peonCap is true), trainUnit fails
+    // silently because of the supply check, TrainEvaluator's 0.75
+    // desirability beats BuildEvaluator's 0.7 every cycle → AI
+    // never gets to House → never expands the supply cap → loop.
     const peons = ownedPeonCount(game, faction);
     const houses = ownedBuildingCount(game, faction, 'House');
     const granaries = ownedBuildingCount(game, faction, 'Granary');
-    if (peons < peonCap(houses, granaries) && canAfford(eco, UNIT_COSTS.Peon)) return 'Peon';
-    // footman if Barracks exists + affordable
-    if (ownedBuildingCount(game, faction, 'Barracks') > 0 && canAfford(eco, UNIT_COSTS.Footman))
+    if (
+      peons < peonCap(houses, granaries) &&
+      canAfford(eco, UNIT_COSTS.Peon) &&
+      canTrain(eco, 'Peon')
+    )
+      return 'Peon';
+    // footman if Barracks exists + affordable + within cap
+    if (
+      ownedBuildingCount(game, faction, 'Barracks') > 0 &&
+      canAfford(eco, UNIT_COSTS.Footman) &&
+      canTrain(eco, 'Footman')
+    )
       return 'Footman';
     return null;
   }
@@ -377,6 +599,15 @@ class TrainGoal extends Goal<AiPlayer> {
 const STARVATION_THRESHOLD = 300;
 
 /**
+ * Sim-seconds before the AI flips into "rage-quit" mode — its
+ * MilitaryEvaluator desirability spikes so a stuck stalemate
+ * shifts the brain toward offence. Coderabbit MAJOR PR #10
+ * 05:46Z — extracted from duplicate inline `const` at lines 202
+ * and 426; one source so a tuning change moves both call sites.
+ */
+const RAGE_QUIT_THRESHOLD = 180;
+
+/**
  * The AI surrenders when its faction is "starved" for STARVATION_THRESHOLD
  * seconds (0 controlled tiles AND economy below sustenance). Wins arbitration
  * (desirability 1.0) the moment the threshold is crossed so the brain
@@ -401,6 +632,15 @@ class ResignEvaluator extends GoalEvaluator<AiPlayer> {
   }
 
   setGoal(owner: AiPlayer): void {
+    // M_FUN.QA.AIVAI.TUNE.PATTERN-G — yuka's Think.arbitrate() will
+    // pick ANY evaluator (including ones whose calculateDesirability
+    // returned 0) when no evaluator outscored the others. That meant
+    // ResignEvaluator's setGoal was firing in border-clash mode
+    // before any other evaluator had a real reason to fire (early
+    // game, nothing to build/train/move yet). Re-gate inside
+    // setGoal so we never enqueue ResignGoal in modes that don't
+    // support starvation-resign.
+    if (!owner.game || owner.game.mode !== 'long-reign') return;
     owner.brain.clearSubgoals();
     owner.brain.addSubgoal(new ResignGoal(owner));
   }
@@ -435,6 +675,10 @@ class ResignGoal extends Goal<AiPlayer> {
  * unpredictable from the player's perspective.
  */
 class PatrolEvaluator extends GoalEvaluator<AiPlayer> {
+  constructor(private readonly personalityMul: number = 1.0) {
+    super();
+  }
+
   calculateDesirability(owner: AiPlayer): number {
     if (!owner.game) return 0;
     if (owner.game.outcome !== 'playing') return 0;
@@ -450,7 +694,7 @@ class PatrolEvaluator extends GoalEvaluator<AiPlayer> {
     const profile = aiProfileFor(owner.game.mode);
     // Low base score (0.25) — patrol is the LOWEST-priority verb,
     // beaten by every concrete need.
-    return 0.25 * profile.militaryWeight;
+    return 0.25 * profile.militaryWeight * this.personalityMul;
   }
 
   setGoal(owner: AiPlayer): void {
@@ -493,21 +737,14 @@ function randomPerimeterTile(game: GameState, faction: Faction): string | null {
   // is the determinism contract.
   const controlledSorted = [...zone.controlled].sort();
   const perim: string[] = [];
-  // Hex neighbours: 6 axial offsets — module-level constant for
-  // determinism + perf.
-  const NEIGHBORS: ReadonlyArray<[number, number]> = [
-    [1, 0],
-    [-1, 0],
-    [0, 1],
-    [0, -1],
-    [1, -1],
-    [-1, 1],
-  ];
+  // QW-10 — use the shared `hexNeighbors(q, r)` instead of a local
+  // 6-axial offset table. The canonical helper in @/core/hex already
+  // emits the same deterministic order; the prior local table was
+  // a third copy of the same data.
   for (const key of controlledSorted) {
     const tile = game.board.tiles.get(key);
     if (!tile) continue;
-    for (const [dq, dr] of NEIGHBORS) {
-      const nkey = `${tile.q + dq},${tile.r + dr}`;
+    for (const nkey of hexNeighbors(tile.q, tile.r)) {
       if (!zone.controlled.has(nkey)) {
         perim.push(key);
         break;

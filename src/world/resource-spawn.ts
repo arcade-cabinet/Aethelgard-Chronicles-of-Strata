@@ -41,6 +41,35 @@ const SPAWN_RULES: Array<{
  */
 export const SAFETY_RADIUS = 3;
 
+/**
+ * M_FUN.ECON.NODE-TIERS (v0.5.B) — node `amount` is scaled by
+ * distance from board centre to create three implicit tiers:
+ *
+ *   - surface (d > 0.66 * radius) → 0.6× amount, 1.0× chance
+ *     "quick & cheap" coastal nodes — first 60s economy boost.
+ *   - inland  (0.33 < d/radius ≤ 0.66) → 1.0× amount (baseline)
+ *     mid-game sustained harvest.
+ *   - highland (d/radius ≤ 0.33) → 1.5× amount, 0.8× chance
+ *     late-game commitment, fewer-but-bigger deposits.
+ *
+ * The same Peon harvests all three at the same rate; what
+ * changes is the round-trip economy. The tier system creates
+ * the decision track "should I extend the supply line for the
+ * deep grove, or claim three surface trees?" without adding
+ * any new building or rule code.
+ */
+function tierMultipliers(
+  q: number,
+  r: number,
+  boardRadius: number,
+): { amountMul: number; chanceMul: number } {
+  const d = hexDistance(q, r, 0, 0);
+  const ratio = boardRadius > 0 ? d / boardRadius : 0;
+  if (ratio > 0.66) return { amountMul: 0.6, chanceMul: 1.0 };
+  if (ratio > 0.33) return { amountMul: 1.0, chanceMul: 1.0 };
+  return { amountMul: 1.5, chanceMul: 0.8 };
+}
+
 export function spawnResourceNodes(
   board: BoardData,
   rng: Rng,
@@ -64,16 +93,17 @@ export function spawnResourceNodes(
       }
     }
     if (blocked) continue;
+    const tier = tierMultipliers(tile.q, tile.r, board.radius);
     for (const rule of SPAWN_RULES) {
       if (!rule.biomes.has(tile.type)) continue;
-      if (rng() < rule.chance) {
+      if (rng() < rule.chance * tier.chanceMul) {
         nodes.push({
           key,
           q: tile.q,
           r: tile.r,
           level: tile.level,
           resourceType: rule.resourceType,
-          amount: rule.amount,
+          amount: Math.round(rule.amount * tier.amountMul),
         });
         break; // one node per tile
       }

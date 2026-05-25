@@ -31,8 +31,36 @@ export function matchLengthScale(length: 'short' | 'medium' | 'long' | 'endless'
  * that passes the balance audit. Caps at MAX_BALANCE_ATTEMPTS so a
  * pathological seed doesn't hang. Falls back to the last attempted
  * board.
+ *
+ * M_FUN.MAP.TOPOLOGY.SCREENSHOTS (v0.5.A) — also re-roll on biome
+ * variety: a "balanced" board where the noise field happens to
+ * produce zero FOREST or zero MOUNTAIN/HIGHLAND is unplayable for
+ * the resource-spawn pass even if it passes the centre-edge
+ * reachability check. The biome-variety floor lets the same
+ * MAX_BALANCE_ATTEMPTS loop find a variant of the seed that has
+ * enough of each resource biome to seed wood + stone nodes.
  */
 const MAX_BALANCE_ATTEMPTS = 6;
+
+/** Per-mapType minimum tile counts for resource-bearing biomes. */
+function hasBiomeVariety(
+  board: BoardData,
+  mapType: 'balanced' | 'continent' | 'archipelago' | 'dry-land',
+): boolean {
+  // dry-land is desert-blanketed by design — FOREST is absent, only
+  // MOUNTAIN/HIGHLAND need pinning so stone nodes can spawn.
+  let forest = 0;
+  let stone = 0;
+  for (const tile of board.tiles.values()) {
+    if (tile.type === 'FOREST') forest++;
+    else if (tile.type === 'HIGHLAND' || tile.type === 'MOUNTAIN') stone++;
+  }
+  // Floors deliberately low (catches "zero of a biome" outright;
+  // tuning richer distribution belongs elsewhere).
+  if (mapType !== 'dry-land' && forest < 5) return false;
+  if (stone < 3) return false;
+  return true;
+}
 
 export function findBalancedBoard(
   seedPhrase: string,
@@ -62,7 +90,13 @@ export function findBalancedBoard(
       }
     }
     if (!centerTile || !edgeTile) continue;
-    if (isBalanced(board, centerTile, edgeTile)) return board;
+    if (!isBalanced(board, centerTile, edgeTile)) continue;
+    // PATTERN-J: also gate on biome variety so a seed that passes
+    // centre-edge reachability but has zero resource biomes (the
+    // mike-november-oscar-small problem) re-rolls instead of
+    // shipping unplayable.
+    if (!hasBiomeVariety(board, mapType)) continue;
+    return board;
   }
   return last ?? generateBoard(seedPhrase, mapSize, true, mapType);
 }

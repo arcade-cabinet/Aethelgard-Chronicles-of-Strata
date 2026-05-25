@@ -1,6 +1,7 @@
 import type { BoardData } from '@/core/board';
 import { getHexKey, hexDistance } from '@/core/hex';
 import type { Rng } from '@/core/rng';
+import { RESOURCES } from '@/config/resources';
 import type { ResourceType } from '@/ecs/components';
 import type { ResourceNodePlan } from '@/world/resource-spawn';
 import { RESOURCE_PROFILES } from './resource-profiles';
@@ -21,16 +22,17 @@ import { RESOURCE_PROFILES } from './resource-profiles';
  * Science is not biome-spawned (accumulates via science buildings + events
  * per spec 102), so its guarantee is 0.
  */
-export const ATTRACTOR_GUARANTEE: Record<ResourceType, number> = {
-  wood: 3,
-  stone: 2,
-  gold: 1,
-  science: 0,
-  // M_EXPANSION.F.72 — mana is research-tier (not biome-spawned)
-  // like science; its guarantee is 0. A future mana-crystal biome
-  // resource (M_EXPANSION.F.76 / .F.86) would lift this above 0.
-  mana: 0,
-};
+/**
+ * QW-2 (coderabbit + simplifier reviewer) — guarantee counts now
+ * derive from `src/config/resources.json#attractorGuarantee`. Adding
+ * a 6th slot picks up its starting-ring guarantee automatically.
+ * Passive-trickle slots (science, mana) and risk-bearing slots
+ * (peat, amber) default to 0; food gets a small guarantee so the
+ * starting kit can sustain a few units before ranging out.
+ */
+export const ATTRACTOR_GUARANTEE: Record<ResourceType, number> = Object.fromEntries(
+  RESOURCES.map((r) => [r.id, r.attractorGuarantee ?? 0]),
+) as Record<ResourceType, number>;
 
 /** Hex radius of an attractor's resource-guarantee zone (~2-tile zone of control). */
 export const ATTRACTOR_RADIUS = 2;
@@ -85,7 +87,13 @@ export function ensureAttractorResources(
   }
   candidates.sort((a, b) => a.key.localeCompare(b.key));
 
-  for (const type of ['wood', 'stone', 'gold'] as const) {
+  // QW-2 — iterate the registry-driven guarantee list (anything with
+  // attractorGuarantee > 0) instead of hardcoding `['wood','stone','gold']`.
+  // Adding food = 2 in resources.json auto-extends the topup loop.
+  const guaranteedSlots = RESOURCES.filter((r) => (r.attractorGuarantee ?? 0) > 0).map(
+    (r) => r.id,
+  ) as ResourceType[];
+  for (const type of guaranteedSlots) {
     const have = countNearby(out, type, cq, cr, ATTRACTOR_RADIUS);
     const need = ATTRACTOR_GUARANTEE[type] - have;
     if (need <= 0) continue;

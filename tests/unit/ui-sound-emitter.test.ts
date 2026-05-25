@@ -6,9 +6,15 @@ vi.mock('howler', () => ({
   Howler: { mute: vi.fn(), volume: vi.fn() },
 }));
 
-// Stub assets.url so the bus doesn't need a real manifest.
+// Stub assets so neither the bus URL resolution nor the sound-map
+// module-load entry validation needs the real manifest. `entry` returns
+// a synthetic AssetEntry — sound-map only checks that it doesn't throw.
 vi.mock('@/assets/assets', () => ({
-  assets: { url: (id: string) => `/assets/${id}` },
+  assets: {
+    url: (id: string) => `/assets/${id}`,
+    entry: (id: string) => ({ id, path: `assets/${id}`, category: 'audio' }),
+    idsInCategory: () => [],
+  },
 }));
 
 import { createAudioBuses, playSound } from '@/audio/buses';

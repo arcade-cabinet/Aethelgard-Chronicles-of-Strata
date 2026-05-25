@@ -1,0 +1,40 @@
+{
+  "$comment": "Match-nickname word pools — the post-match summary card stitches one adjective (chosen by outcome) + one subject into 'The <Adj> <Subject>' (e.g. 'The Glorious Storm'). Adding flavour = adding an entry here; no code edit needed. M_FUN.NAR.NICKNAME — JSON-first per the resource/era pattern.",
+  "adjectives": {
+    "victory": [
+      "Glorious",
+      "Crushing",
+      "Patient",
+      "Sudden",
+      "Inevitable",
+      "Forgotten",
+      "Hard-Won",
+      "Defiant"
+    ],
+    "defeat": ["Bitter", "Doomed", "Final", "Lonely", "Tragic", "Stubborn", "Cursed", "Quiet"],
+    "draw": [
+      "Balanced",
+      "Even-Handed",
+      "Twin",
+      "Mirrored",
+      "Stalemate",
+      "Steady",
+      "Equal",
+      "Echoed"
+    ]
+  },
+  "subjects": [
+    "Realm",
+    "Hill",
+    "Spire",
+    "Marsh",
+    "Tide",
+    "Crown",
+    "Banner",
+    "Pact",
+    "Wolf",
+    "Hearth",
+    "Reach",
+    "Storm"
+  ]
+}

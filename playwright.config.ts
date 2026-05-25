@@ -50,6 +50,7 @@ const includeJourney = process.env.JOURNEY === '1' || includeVisual;
 const JOURNEY_SPECS = [
   'e2e/journey-capture.spec.ts',
   'e2e/ai-vs-ai-playthrough.spec.ts',
+  'e2e/ai-vs-ai-balance.spec.ts',
   'e2e/per-mode-journey.spec.ts',
   'e2e/per-mode-match.spec.ts',
   'e2e/weather-journey.spec.ts',
@@ -91,7 +92,11 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     headless: IS_HEADLESS,
-    trace: 'on-first-retry',
+    // M_FUN.FOUNDATION.PW-TRACE — retain a trace on EVERY failed
+    // run (not just retry-triggered ones) so first-attempt failures
+    // are debuggable from the CI artifact alone. CI's upload-artifact
+    // step already pulls test-results/ on failure.
+    trace: 'retain-on-failure',
     actionTimeout: ACTION_TIMEOUT_MS,
     navigationTimeout: NAV_TIMEOUT_MS,
     browserName: 'chromium',

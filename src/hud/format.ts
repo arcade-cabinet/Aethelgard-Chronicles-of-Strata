@@ -1,3 +1,4 @@
+import { RESOURCES } from '@/config/resources';
 import { RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import type { ResourceCost } from '@/game/economy';
 
@@ -6,26 +7,27 @@ import type { ResourceCost } from '@/game/economy';
  * letter abbreviations (w/s/g/sci). 'sci' was the worst offender; 'w'
  * and 's' were easily confused with 'wood'/'stone' but conveyed nothing
  * to a first-time player. The glyphs read in any locale.
+ *
+ * Glyphs are sourced from `src/config/resources.json#<slot>.icon` (the
+ * JSON-first resource registry — coderabbit + simplifier reviewer
+ * recommendation QW-1). Adding a 6th slot to resources.json picks up
+ * a glyph here automatically.
  */
-const SLOT_GLYPH: Record<ResourceType, string> = {
-  wood: '🌲',
-  stone: '🪨',
-  gold: '🪙',
-  science: '🧪',
-  // M_EXPANSION.F.72 — mana glyph: sparkles read as 'magic' across
-  // every locale without color-coding (a colorblind-safe pick).
-  mana: '✨',
-};
+const FALLBACK_GLYPH = '·';
+function glyphFor(slot: ResourceType): string {
+  return RESOURCES.find((r) => r.id === slot)?.icon ?? FALLBACK_GLYPH;
+}
 
 /**
- * Compact resource-cost label — `"60🌲 40🪨"`, omitting zero/absent
- * slots. Slot-iterating; adding a 4th slot adds one row to SLOT_GLYPH.
+ * Compact resource-cost label — `"60🪵 40🪨"`, omitting zero/absent
+ * slots. Slot-iterating; adding a 6th slot adds one row to
+ * resources.json#resources[].icon — no edit here required.
  */
 export function costLabel(cost: ResourceCost): string {
   const parts: string[] = [];
   for (const slot of RESOURCE_TYPES) {
     const amt = cost[slot] ?? 0;
-    if (amt > 0) parts.push(`${amt}${SLOT_GLYPH[slot]}`);
+    if (amt > 0) parts.push(`${amt}${glyphFor(slot)}`);
   }
   return parts.join(' ') || 'free';
 }

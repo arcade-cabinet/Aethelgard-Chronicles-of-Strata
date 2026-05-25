@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { defineConfig } from 'vite';
 import staticAssetsPlugin from 'vite-static-assets-plugin';
 
@@ -51,6 +52,16 @@ export default defineConfig(({ mode }) => ({
       directory: 'public',
       outputFile: 'src/static-assets.ts',
       ignore: ['.DS_Store'],
+    }),
+    // M_FUN.FOUNDATION.BUNDLE-VIZ — rollup-plugin-visualizer.
+    // Writes a treemap to dist/bundle-stats.html on every prod
+    // build. Agent + user can see where bundle weight lives
+    // after each refactor.
+    visualizer({
+      filename: 'dist/bundle-stats.html',
+      gzipSize: true,
+      brotliSize: true,
+      open: false,
     }),
     // Dev-only CSP relaxation. The production CSP in index.html
     // forbids 'unsafe-eval', which Vite's dev HMR + esbuild's CJS

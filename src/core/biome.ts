@@ -11,16 +11,42 @@ const {
   lakeModuloThreshold,
 } = WORLD.biome;
 
-/** A biome type. OCEAN and LAKE are water; the rest are land. */
+/**
+ * A biome type. OCEAN and LAKE are water; SWAMP is shallow walkable
+ * water that applies the disease status to standing units; the rest
+ * are land. MOUNTAIN_PASS is HIGHLAND-elevation walkable terrain
+ * inside a MOUNTAIN massif that acts as the fortifiable choke point
+ * (per docs/specs/120-map-architecture.md M_FUN.MAP.PASS).
+ */
 export type BiomeType =
   | 'OCEAN'
   | 'LAKE'
+  // M_FUN.MAP.UTILISATION.SHALLOWS — shallow water around landmasses.
+  // Crossable ONLY by aquatic-skill units (Ferryman; future amphibious
+  // roles) at high move cost. Deep OCEAN remains impassable. Allows
+  // multi-island maps to feel connected without a free swim.
+  | 'SHALLOWS'
+  | 'SWAMP'
   | 'BEACH'
   | 'DESERT'
   | 'GRASS'
   | 'FOREST'
   | 'HIGHLAND'
-  | 'MOUNTAIN';
+  | 'MOUNTAIN_PASS'
+  | 'MOUNTAIN'
+  // M_FUN.DYN.VOLCANO — landmark + transient hazard biomes.
+  // VOLCANO is the landmark; LAVA is the transient (paved by an
+  // eruption for `lavaSeconds`, then reverts to MOUNTAIN_PASS).
+  | 'VOLCANO'
+  | 'LAVA'
+  // M_FUN.ECON.QUICKSAND — rare BEACH 'swirl' hex. Walkable (you can
+  // cross it on the way somewhere), but harvesting the amber deposit
+  // there applies BOTH disease and fatigue. Two Discoveries
+  // ('drain-bog' + 'plank-walkway') unlock safe harvest. Late-game
+  // gating: a single quicksand hex is the only source of `amber`,
+  // which gates Renaissance Hero/Wizard training + Wonder
+  // completion.
+  | 'QUICKSAND';
 
 /** The assigned biome of one tile. */
 export interface Biome {
@@ -52,9 +78,12 @@ export function biomeStyleFor(type: BiomeType): CrossingStyle {
   switch (type) {
     case 'OCEAN':
     case 'LAKE':
+    case 'SHALLOWS':
+    case 'SWAMP':
       return 'water';
     case 'MOUNTAIN':
       return 'mountain';
+    case 'MOUNTAIN_PASS':
     case 'HIGHLAND':
       return 'stone';
     case 'BEACH':
@@ -88,16 +117,37 @@ export function heightToLevel(rawHeight: number): number {
 
 /**
  * Assign the biome of tile (q, r). `height` and `moisture` are noise fields
- * sampled at `(q*noiseScale, r*noiseScale)`. The height is attenuated by normalized cube
- * distance from the map centre to produce an island.
+ * sampled at `(q*noiseScale, r*noiseScale)`. The height is attenuated by normalized
+ * cube distance from the map centre to produce an island.
+ *
+ * `boardRadius` is the radius the caller is actually generating; the
+ * island-attenuation curve is normalised by it so the same noise field
+ * yields the same biome distribution regardless of board size. Prior
+ * to PATTERN-I (M_FUN.QA.AIVAI.TUNE) this normalised by MAP_RADIUS
+ * (a global constant) — boards smaller than the constant got too much
+ * attenuation and ended up almost entirely water/sand, boards bigger
+ * got too little. Default to MAP_RADIUS for legacy callers.
  */
-export function assignBiome(q: number, r: number, height: Noise2D, moisture: Noise2D): Biome {
+export function assignBiome(
+  q: number,
+  r: number,
+  height: Noise2D,
+  moisture: Noise2D,
+  boardRadius: number = MAP_RADIUS,
+): Biome {
+  // Coderabbit MAJOR PR #10 05:46Z — non-positive boardRadius would
+  // make `dist` divide by zero / negative and collapse biome
+  // assignment. Fail loudly at the call site so an upstream config
+  // typo doesn't silently bake a bad map.
+  if (boardRadius <= 0) {
+    throw new Error(`assignBiome: boardRadius must be > 0, got ${boardRadius}`);
+  }
   const s = -q - r;
   const nx = q * noiseScale;
   const nz = r * noiseScale;
   let rawHeight = height(nx, nz);
   const moist = moisture(nx + 100, nz + 100);
-  const dist = Math.sqrt(q * q + r * r + s * s) / Math.sqrt(3) / MAP_RADIUS;
+  const dist = Math.sqrt(q * q + r * r + s * s) / Math.sqrt(3) / boardRadius;
   rawHeight -= dist ** 2 * islandAttenuationFactor;
 
   const level = heightToLevel(rawHeight);

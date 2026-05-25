@@ -82,3 +82,71 @@ The architecture crystallised across specs 96–102:
 | 100 | AI-as-Player (five pillars) |
 | 101 | Rules engine + peon autonomy + three-layer model |
 | 102 | Zone of Control + magnetic emitters + archetype composition algebra + damage-type × armor + Mover/Consumer + bi-signed force field |
+
+---
+
+## v0.3.0 release archive (2026-05-23 → 2026-05-24)
+
+The full directive history for everything shipped prior to v0.3.0
+lived in `.agent-state/directive.md` until 2026-05-24. Compressed
+into this section to keep the working directive scannable. Per
+git history (commits `6eba229..48da040`), the v0.3.0 → v0.4.0
+arc shipped:
+
+**M0–M6** — foundation, hex board, characters, economy, combat,
+systems, polish & ship.
+**M7** — yuka AI subpackage + Castle/Town/Graveyard kits + 3
+monster types + audio + decoration.
+**M8** — faction symmetry, command API, zone of control (replaces
+fog), rules engine, peon autonomy, yuka Think-brain AI player,
+behavior-archetype local ZoC, AI-vs-AI E2E.
+**M9.1 / .3 / .4** — UX (build menu, legend, onboarding), e2e
+player-journey suite, visual baselines, CHANGELOG, Capacitor
+sync, pre-push gate.
+**M_HARDENING / M_AUDIT / M_AUDIT2** — six review-driven rounds:
+security, code quality, simplification, performance, accessibility,
+deterministic-replay, persistence schema migration, M_SEC.* CSP
++ permissions-policy + Sigstore attestation + dependency-review.
+**M_RELEASE_FINAL** — release-please + CD GitHub Pages + signed
+APK + SBOM + first-cut tag v0.1.0.
+**M_REL / M_REGISTRY / M_ARCHETYPE / M_DATA_DRIVEN** — unified
+Thing/Skin registry, archetype composition algebra (spec 102),
+data-driven HUD strings, magnetic emitters, damage-type × armor.
+**M_GAMEPLAY** — train/multi-select/right-click-attack/flocking/
+rally/tracking-ring/building-destruction/pause-resume.
+**M_CONSTRUCTION** — progress rings + builder badges.
+**M_COMBAT_POLISH / M_AI_DEPTH / M_MOBILE / M_BALANCE /
+M_ACCESSIBILITY / M_TITLE** — combat texture, AI brain depth,
+Pixel-5a perf, playtest tuning, a11y, title polish.
+**M_AUDIO** — full event audio coverage from the 9 dedicated
+references/ packs.
+**M_EXPANSION** — 180-item v0.4 forward queue items
+M_EXPANSION.A.* / .F.* / .S.* / .T.* / .U.* / .D.* / .O.* / .AU.*
+(audit, features, systems, tests, UX, docs, ops, audio).
+**M_BRAND / M_MODES / M_TURNS** — 6-mode preset cascade,
+modes cascade + Custom Realm flag, turn-based + max-turns cap.
+**M_FEATURE / M_QUALITY / M_POLISH / M_BALANCE_2** — v0.4 cycle
+M_FEATURE.1–6 (road, Discovery cost scaling, science, Wonder,
+Trebuchet, Witch magic) + M_QUALITY.1–3 (atomic spawn,
+goblin-share rebalance, AI-vs-AI determinism smoke) +
+M_POLISH.1/2/4 (dust-puff FX, build-complete sound, sawdust
+particles) + M_BALANCE_2.1+.2 (wood-cost tightening, late-game
+escalation).
+**M_PROCESS** — review-trio dispatch discipline, worktree
+ownership, anti-stop hook patches.
+**M_POLISH3** — scene-blank root-cause (corrupted TTF files,
+NOT WebGL Context Lost), AI-vs-AI playthrough harness with .webm
+recording + transcripts, journey screenshot ledger (per-mode,
+weather, day-night, modal, selection, viewport-matrix),
+husky pre-push gate, ErrorOverlay boot install + console.warn
+capture, SuspenseProbe replacing fallback={null}, CodeRabbit
+finding sweep, GameOverModal CustomEvent + setInterval poll.
+**M_NEXT** — post-merge cleanup of deployed Pages (CSP
+'unsafe-eval' for koota), workflow refactor to standard
+ci→release→cd trio, permanent sql.js pin with dependabot ignore-
+list, app version from package.json, SVG favicon, pre-push hook
+deletion-only-skip.
+
+Full per-item detail with commit SHAs lived in directive.md until
+the 2026-05-24 compression. `git log --grep='M_[A-Z]'` reproduces
+the audit trail.

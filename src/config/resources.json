@@ -1,0 +1,333 @@
+{
+  "$comment": "Resource slot registry. The SINGLE source-of-truth for what resource slots exist in the game, where each one is accumulated FROM, what consumes it, and how it RENDERS on the tile overlay. Loaded by src/config/resources.ts. Adding a 6th slot (aether, food, oil, etc) = one entry here; the union type, all Partial<Record<ResourceType,number>> shapes, every Zod schema that validates a cost, every UI grid, every harvest rule, every tile-overlay renderer picks it up automatically. The user's archetype framing: 'consumers registered to archetypes'.",
+  "resources": [
+    {
+      "id": "wood",
+      "label": "Wood",
+      "kind": "harvest",
+      "icon": "\ud83e\udeb5",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["FOREST"],
+          "harvester": "Peon",
+          "overlayStyle": "tree-cluster",
+          "yield": 100
+        }
+      ],
+      "consumers": [
+        {
+          "kind": "building",
+          "types": ["House", "Farm", "Barracks", "Watchtower", "Library", "Wonder", "Granary"]
+        },
+        {
+          "kind": "road",
+          "style": "wood"
+        }
+      ],
+      "color": "#f97316",
+      "attractorGuarantee": 3,
+      "mesh": {
+        "logicalId": "nature.tree.pine-a"
+      },
+      "topupAmount": 100
+    },
+    {
+      "id": "stone",
+      "label": "Stone",
+      "kind": "harvest",
+      "icon": "\ud83e\udea8",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["HIGHLAND"],
+          "harvester": "Peon",
+          "overlayStyle": "stone-pile",
+          "yield": 80
+        }
+      ],
+      "consumers": [
+        {
+          "kind": "building",
+          "types": ["Granary", "Barracks", "Watchtower", "Wall", "Wonder", "Library"]
+        },
+        {
+          "kind": "road",
+          "style": "stone"
+        }
+      ],
+      "color": "#94a3b8",
+      "attractorGuarantee": 2,
+      "mesh": {
+        "logicalId": "nature.rock.large-a"
+      },
+      "topupAmount": 80
+    },
+    {
+      "id": "ore",
+      "label": "Ore",
+      "kind": "harvest",
+      "icon": "\u26cf\ufe0f",
+      "$comment": "High-elevation deposit \u2014 Peons take fatigue while harvesting. A Renaissance discovery unlocks a 'reinforced-pick' tier that removes the fatigue risk.",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["MOUNTAIN"],
+          "harvester": "Peon",
+          "overlayStyle": "ore-vein",
+          "yield": 60,
+          "risks": [
+            {
+              "attribute": "fatigue",
+              "strength": 0.3,
+              "unlockedBy": "reinforced-pick"
+            }
+          ],
+          "yieldRateMul": 1.2
+        }
+      ],
+      "consumers": [
+        {
+          "kind": "building",
+          "types": ["Wonder", "Watchtower"]
+        },
+        {
+          "kind": "unit",
+          "types": ["Trebuchet", "BlackKnight"]
+        }
+      ],
+      "color": "#6b7280",
+      "attractorGuarantee": 1,
+      "mesh": {
+        "logicalId": "nature.rock.crystal-large",
+        "tint": "#475569"
+      },
+      "topupAmount": 60
+    },
+    {
+      "id": "gold",
+      "label": "Gold",
+      "kind": "harvest",
+      "icon": "\ud83e\ude99",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["GRASS"],
+          "harvester": "Peon",
+          "overlayStyle": "gold-glint",
+          "yield": 60
+        }
+      ],
+      "consumers": [
+        {
+          "kind": "building",
+          "types": ["Farm", "Barracks", "Library", "Wonder"]
+        },
+        {
+          "kind": "unit",
+          "types": ["Footman", "Wizard", "Healer", "Hero"]
+        }
+      ],
+      "color": "#fbbf24",
+      "attractorGuarantee": 1,
+      "mesh": {
+        "logicalId": "nature.rock.large-a",
+        "tint": "#fbbf24"
+      },
+      "topupAmount": 60
+    },
+    {
+      "id": "food",
+      "label": "Food",
+      "kind": "harvest",
+      "icon": "\ud83c\udf56",
+      "$comment": "FOOD is the per-faction unit-upkeep slot. Three biome sources \u2014 FOREST (game / hunting), SHALLOWS (fish), GRASS (foraging) \u2014 each renders a different overlay style, but all yield the same food slot. Granary buildings boost passive yield.",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["FOREST"],
+          "harvester": "Peon",
+          "overlayStyle": "game-trail",
+          "yield": 80,
+          "label": "Game"
+        },
+        {
+          "kind": "biome-node",
+          "biomes": ["SHALLOWS"],
+          "harvester": "Peon",
+          "overlayStyle": "fish-school",
+          "yield": 100,
+          "label": "Fish"
+        },
+        {
+          "kind": "biome-node",
+          "biomes": ["GRASS"],
+          "harvester": "Peon",
+          "overlayStyle": "berry-bush",
+          "yield": 60,
+          "label": "Forage"
+        },
+        {
+          "kind": "passive-trickle",
+          "rate": 0.05,
+          "boostedBy": ["Granary", "Farm"]
+        }
+      ],
+      "consumers": [
+        {
+          "kind": "unit-upkeep",
+          "perUnit": 0.01,
+          "$comment": "0.01 food/sec per supply unit (future M_FUN.ECON.UPKEEP)."
+        }
+      ],
+      "color": "#ef4444",
+      "attractorGuarantee": 2,
+      "mesh": {
+        "logicalId": "nature.tree.pine-a"
+      },
+      "topupAmount": 80
+    },
+    {
+      "id": "peat",
+      "label": "Peat",
+      "kind": "harvest",
+      "icon": "\ud83d\udfeb",
+      "$comment": "Swamp-bog building material. Cheap + smoky alternative to stone for early-game walls + watchtowers. Faster harvest (1.4\u00d7 rate) but applies disease DoT to harvesting Peons. Unlock 'peat-mask' Discovery to remove the risk.",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["SWAMP"],
+          "harvester": "Peon",
+          "overlayStyle": "peat-cut",
+          "yield": 70,
+          "risks": [
+            {
+              "attribute": "disease",
+              "strength": 0.4,
+              "unlockedBy": "peat-mask"
+            }
+          ],
+          "yieldRateMul": 1.4
+        }
+      ],
+      "consumers": [
+        {
+          "kind": "building",
+          "types": ["Wall", "Watchtower"]
+        }
+      ],
+      "color": "#78350f",
+      "attractorGuarantee": 0,
+      "mesh": {
+        "logicalId": "nature.rock.large-a",
+        "tint": "#78350f"
+      },
+      "topupAmount": 70
+    },
+    {
+      "id": "science",
+      "label": "Science",
+      "kind": "passive",
+      "icon": "\ud83d\udd2c",
+      "abstract": true,
+      "$comment": "Abstract resource \u2014 represented by HUD pill + aura glyph above Library buildings, no world mesh.",
+      "sources": [
+        {
+          "kind": "passive-trickle",
+          "rate": 0.1,
+          "boostedBy": ["Library"]
+        }
+      ],
+      "consumers": [
+        {
+          "kind": "discovery",
+          "scope": "all"
+        },
+        {
+          "kind": "unit",
+          "types": ["Wizard", "Healer", "Hero"]
+        }
+      ],
+      "color": "#38bdf8",
+      "attractorGuarantee": 0,
+      "mesh": {
+        "logicalId": "nature.rock.large-a"
+      },
+      "topupAmount": 0
+    },
+    {
+      "id": "mana",
+      "label": "Mana",
+      "kind": "passive",
+      "icon": "\u2728",
+      "abstract": true,
+      "$comment": "Abstract resource \u2014 represented by HUD pill + sparkle aura around Wizard / Library, no world mesh.",
+      "sources": [
+        {
+          "kind": "passive-trickle",
+          "rate": 0.05,
+          "boostedBy": ["Library"]
+        }
+      ],
+      "consumers": [
+        {
+          "kind": "unit",
+          "types": ["Wizard", "Healer"]
+        }
+      ],
+      "color": "#c084fc",
+      "attractorGuarantee": 0,
+      "mesh": {
+        "logicalId": "nature.rock.crystal-large"
+      },
+      "topupAmount": 0
+    },
+    {
+      "id": "amber",
+      "label": "Amber",
+      "kind": "harvest",
+      "icon": "\ud83d\udfe1",
+      "$comment": "Quicksand-pit crafting reagent. Rare BEACH 'swirl' hexes painted by the generator. Yields the rarest crafting input but harvesting applies BOTH disease (the bog rot) AND fatigue (the slog through wet sand). Two separate Discoveries can mitigate ('drain-bog' for disease, 'plank-walkway' for fatigue); unlocking both makes amber harvest safe. The dual-risk design IS the late-game judgment call \u2014 commit a Healer + a Library research path for a slot that gates Renaissance-tier units.",
+      "sources": [
+        {
+          "kind": "biome-node",
+          "biomes": ["QUICKSAND"],
+          "harvester": "Peon",
+          "overlayStyle": "amber-swirl",
+          "yield": 40,
+          "label": "Amber",
+          "risks": [
+            {
+              "attribute": "disease",
+              "strength": 0.3,
+              "unlockedBy": "drain-bog"
+            },
+            {
+              "attribute": "fatigue",
+              "strength": 0.4,
+              "unlockedBy": "plank-walkway"
+            }
+          ],
+          "yieldRateMul": 0.8
+        }
+      ],
+      "consumers": [
+        {
+          "kind": "building",
+          "types": ["Wonder"]
+        },
+        {
+          "kind": "unit",
+          "types": ["Hero", "Wizard"]
+        }
+      ],
+      "color": "#f59e0b",
+      "attractorGuarantee": 0,
+      "mesh": {
+        "logicalId": "nature.rock.crystal-large",
+        "tint": "#f59e0b"
+      },
+      "topupAmount": 40
+    }
+  ]
+}

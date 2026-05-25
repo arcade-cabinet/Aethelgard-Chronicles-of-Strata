@@ -32,12 +32,12 @@ describe('UNIT_PROFILES + MILITARY_ROLES derivation', () => {
     }
   });
 
-  it('civilians cover Peon + Settler + Scout (M_EXPANSION.A.27)', () => {
+  it('civilians cover Peon + Settler + Scout + Healer + Ferryman (M_FUN.MAP.UTILISATION.FERRYMAN)', () => {
     const civilians = Object.entries(UNIT_PROFILES)
       .filter(([, p]) => p.combatRole === 'civilian')
       .map(([role]) => role)
       .sort();
-    expect(civilians).toEqual(['Peon', 'Scout', 'Settler']);
+    expect(civilians).toEqual(['Ferryman', 'Healer', 'Peon', 'Scout', 'Settler']);
   });
 
   it('every profile carries the required slot tuple', () => {

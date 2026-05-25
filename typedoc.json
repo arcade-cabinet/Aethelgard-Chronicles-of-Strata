@@ -1,0 +1,28 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": [
+    "src/core/board.ts",
+    "src/core/hex.ts",
+    "src/core/branded-ids.ts",
+    "src/ecs/components.ts",
+    "src/game/game-state.ts",
+    "src/game/commands.ts",
+    "src/persistence/persistence.ts",
+    "src/persistence/serialize-game.ts",
+    "src/ai/ai-player.ts",
+    "src/config/mapgen.ts",
+    "src/config/economy.ts",
+    "src/config/combat.ts",
+    "src/config/world.ts"
+  ],
+  "out": "docs/api",
+  "tsconfig": "tsconfig.json",
+  "excludePrivate": true,
+  "excludeInternal": false,
+  "skipErrorChecking": true,
+  "categorizeByGroup": true,
+  "navigationLinks": {
+    "PRD": "/docs/specs/PRD-v0.4.md",
+    "GitHub": "https://github.com/jonbogaty/Aethelgard-Chronicles-of-Strata"
+  }
+}

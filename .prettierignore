@@ -1,0 +1,20 @@
+# M_FUN.FOUNDATION.PRETTIER-MD — exclude generated files +
+# things Biome already owns. Prettier runs ONLY on MD + YML.
+node_modules
+dist
+android
+.vite
+coverage
+.claude
+public
+src/static-assets.ts
+tests/e2e/__data__/aivai-screens
+# Biome owns these formats:
+*.ts
+*.tsx
+*.js
+*.jsx
+*.json
+*.jsonc
+*.css
+*.html

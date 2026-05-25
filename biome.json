@@ -24,8 +24,27 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "suspicious": { "noExplicitAny": "error" },
-      "correctness": { "noUnusedVariables": "error" }
+      "suspicious": {
+        "noExplicitAny": "error",
+        "noDoubleEquals": "error",
+        "noEmptyBlockStatements": "warn",
+        "noConsole": "off"
+      },
+      "correctness": {
+        "noUnusedVariables": "error",
+        "noUnusedImports": "error",
+        "noUnusedFunctionParameters": "off"
+      },
+      "complexity": {
+        "noBannedTypes": "error",
+        "noUselessTypeConstraint": "error"
+      },
+      "style": {
+        "useConst": "error",
+        "useNodejsImportProtocol": "error",
+        "useTemplate": "off",
+        "noUselessElse": "off"
+      }
     }
   },
   "javascript": {

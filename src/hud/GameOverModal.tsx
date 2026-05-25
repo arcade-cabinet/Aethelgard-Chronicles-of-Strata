@@ -1,10 +1,13 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import type { GameState } from '@/game/game-state';
+import { detectTranscriptHighlights, matchHighlights, matchNickname } from '@/game/match-narrative';
+import type { Persistence } from '@/persistence/persistence';
 import { formatInt, formatTime } from './format';
 import { HUD_THEME } from './hud-theme';
+import { MatchSummaryCard } from './MatchSummaryCard';
 import { ModalShell } from './ModalShell';
 
 /** A win/loss stat line. */
@@ -22,8 +25,25 @@ interface StatLine {
  * title element keeps the `modal-title-win` / `modal-title-loss` classes the
  * e2e tests assert against.
  */
-export function GameOverModal({ game }: { game: GameState }) {
+export function GameOverModal({
+  game,
+  persistence,
+}: {
+  game: GameState;
+  /**
+   * Optional — when supplied, the modal records a lorebook entry
+   * the first time outcome flips to a terminal value. Tests that
+   * don't care about the lorebook can omit it (no-op).
+   */
+  persistence?: Persistence;
+}) {
   const [outcome, setOutcome] = useState<GameOutcome>(game.outcome);
+  // Reviewer-fix (HIGH #3 + sec #2/#5): real cross-mount guard. A
+  // local `let cancelled` in the effect closure cannot prevent the
+  // second StrictMode mount from firing its own insert. A ref
+  // persists across mounts of the same component instance, so once
+  // we've written for this match nothing else can write again.
+  const lorebookWrittenRef = useRef(false);
 
   useEffect(() => {
     // poll game.outcome until it goes terminal, then stop — once the game has
@@ -60,6 +80,40 @@ export function GameOverModal({ game }: { game: GameState }) {
       window.removeEventListener('aethelgard:outcome-changed', onOutcomeChanged);
     };
   }, [game]);
+
+  // M_FUN.NAR.LOREBOOK — record one entry per terminal outcome.
+  // `persistence` is optional so tests + headless harnesses can omit
+  // it. `game` is intentionally NOT in the deps array (sec #5): the
+  // closure captures the current value once at firing time; making
+  // it reactive would re-fire on every parent render and spam DB
+  // inserts. The useRef guard ensures at-most-one write per mount.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `game` deliberately omitted — see comment block above
+  useEffect(() => {
+    if (outcome === 'playing' || !persistence) return;
+    if (lorebookWrittenRef.current) return;
+    lorebookWrittenRef.current = true;
+    void (async () => {
+      try {
+        await persistence.recordLorebookEntry({
+          id: 0,
+          endedAt: new Date().toISOString(),
+          seedPhrase: game.seedPhrase,
+          nickname: matchNickname({ seedPhrase: game.seedPhrase, outcome }),
+          outcome,
+          mode: game.mode,
+          enemyPersonality: game.aiPlayers.enemy?.personalityKey ?? null,
+          highlights: matchHighlights(game),
+        });
+      } catch (err) {
+        // Coderabbit MAJOR PR #10 05:46Z — release the write-once
+        // guard on failure so the next outcome change (or a remount)
+        // can retry. Without this, a transient DB hiccup permanently
+        // drops the lorebook entry for the session.
+        lorebookWrittenRef.current = false;
+        console.warn('[lorebook] record failed:', err);
+      }
+    })();
+  }, [outcome, persistence]);
 
   const isWin = outcome === 'win';
   // M_PROCESS.REVIEW must-fix #2 — 'draw' outcome was rendering
@@ -138,7 +192,25 @@ export function GameOverModal({ game }: { game: GameState }) {
         >
           {titleText}
         </Dialog.Title>
-        <p style={{ color: HUD_THEME.color.muted, marginBottom: 24 }}>{flavorText}</p>
+        <p style={{ color: HUD_THEME.color.muted, marginBottom: 16 }}>{flavorText}</p>
+        {/* M_FUN.NAR.CARD — procedural nickname + highlight bullets
+            in a re-usable card. Same component will surface in the
+            save-list UI (M_FUN.NAR.LOREBOOK). */}
+        {outcome !== 'playing' && (
+          <div style={{ marginBottom: 18 }}>
+            <MatchSummaryCard
+              nickname={matchNickname({ seedPhrase: game.seedPhrase, outcome })}
+              highlights={(() => {
+                // M_FUN.NAR.HIGHLIGHTS — prefer transcript-derived
+                // story beats when available; fall back to the
+                // point-in-time state highlights when nothing
+                // dramatic surfaced.
+                const beats = detectTranscriptHighlights(game).map((b) => b.detail);
+                return beats.length > 0 ? beats : matchHighlights(game);
+              })()}
+            />
+          </div>
+        )}
         {/* M_POLISH2.MODES.41b — long-reign narrative line. Sits ABOVE
               the generic stat list and reads as a one-line summary
               of the player's reign. */}

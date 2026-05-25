@@ -1,8 +1,9 @@
 import { MAP_RADIUS } from '@/config/world';
+import { MOUNTAIN_TUNING, mapTypeRule } from '@/config/mapgen';
 import { biomeFlagsFor } from '@/rules/biome-flags';
 import { assignBiome, type Biome } from './biome';
 import { type Crossing, placeCrossings } from './crossings';
-import { getHexKey, hexDistance } from './hex';
+import { getHexKey, hexDistance, hexNeighbors } from './hex';
 import { createNoise2D } from './noise';
 import { createMapPrng, type Rng } from './rng';
 
@@ -30,6 +31,22 @@ export interface Tile extends Biome {
    * occasionally rolls stone or gold.
    */
   hiddenBonus?: { type: 'wood' | 'stone' | 'gold'; amount: number } | null;
+  /**
+   * M_FUN.MAP.PORTAL — primitive. When set, a unit that enters this
+   * tile is teleported to `portalTo` (also a hex key). Bidirectional
+   * (both endpoints have a portal pointing back) by convention; the
+   * runtime doesn't enforce that — a one-way portal is a valid
+   * (unbalanced) configuration. Paired endpoints get the same
+   * `portalGroupId` so the renderer can colour-match the swirl.
+   *
+   * Two designed flavours, both DISABLED by default in v0.4
+   * (mapType: balanced/continent/archipelago/dry-land all leave
+   * this field undefined). v0.5 wires generators per the user's
+   * "quicksand → quicksand teleport, mountain cave → cave network"
+   * framing once balance tuning catches up.
+   */
+  portalTo?: string | null;
+  portalGroupId?: string | null;
 }
 
 /** The full generated board. */
@@ -85,7 +102,7 @@ export function generateBoard(
     const rMin = Math.max(-radius, -q - radius);
     const rMax = Math.min(radius, -q + radius);
     for (let r = rMin; r <= rMax; r++) {
-      const biome = assignBiome(q, r, heightNoise, moistureNoise);
+      const biome = assignBiome(q, r, heightNoise, moistureNoise, radius);
       const walkable = biome.type !== 'OCEAN' && biome.type !== 'LAKE' && biome.level < 5;
       tiles.set(getHexKey(q, r), { q, r, ...biome, walkable, isCrossingLanding: false });
     }
@@ -141,21 +158,25 @@ type PaintPass = (tiles: Map<string, Tile>, radius: number, rng: Rng) => void;
  * Adding a new mapType = ONE pipeline entry. Adding a new paint pass
  * = ONE function + the right entries in pipelines that use it.
  */
-const GEN_TIME_PIPELINES: Record<GeneratedMapType, PaintPass[]> = {
-  // balanced — beach ring + central mountain spine + inland lake.
-  balanced: [paintBeachRing, paintMountainSpine, paintInlandLake],
-  // continent — same as balanced but mountain spine is thicker (handled
-  // inside paintMountainSpine via a future mapType-aware tuning).
-  continent: [paintBeachRing, paintMountainSpine, paintInlandLake],
-  // archipelago — small islands separated by channels; skip mountain spine.
-  archipelago: [paintBeachRing, paintChannelCuts, paintInlandLake],
-  // dry-land — no inland water + extensive desert + ridge-line mountains.
-  'dry-land': [paintBeachRing, paintMountainSpine, paintDesertBlanket],
+/**
+ * Hydrology pass names map to functions. Adding a new hydrology mode
+ * (e.g. 'tundraSnow' or 'volcanicFissures') = one entry here + one
+ * new paint function + one updated MapTypeRuleSchema enum value.
+ */
+const HYDROLOGY_PASSES: Record<string, PaintPass> = {
+  inlandLake: paintInlandLake,
+  desertBlanket: paintDesertBlanket,
+  multiIsland: paintMultiIslandChannels,
 };
 
 /**
  * Run the gen-time paint pipeline for `mapType` over `tiles`, then
  * recompute every tile's `walkable` flag from its final biome + level.
+ *
+ * Pipeline order: beach ring → optional channels → mountains →
+ * hydrology. Per-mapType rules load from src/config/mapgen.json via
+ * the Zod-validated loader (M_FUN.ARCH.CONFIG); adding a mapType or
+ * tuning an intensity is a config-file change, NOT a code change.
  */
 function runGenTimePass(
   tiles: Map<string, Tile>,
@@ -163,12 +184,106 @@ function runGenTimePass(
   rng: Rng,
   mapType: GeneratedMapType,
 ): void {
-  const pipeline = GEN_TIME_PIPELINES[mapType];
-  for (const pass of pipeline) pass(tiles, radius, rng);
+  const cfg = mapTypeRule(mapType);
+  if (!cfg) {
+    throw new Error(`runGenTimePass: mapType '${mapType}' has no row in mapgen.json#/mapTypes`);
+  }
+  const hydrology = HYDROLOGY_PASSES[cfg.hydrology];
+  if (!hydrology) {
+    throw new Error(
+      `runGenTimePass: unknown hydrology '${cfg.hydrology}' for mapType '${mapType}'`,
+    );
+  }
+  paintBeachRing(tiles, radius, rng);
+  if (cfg.channels) paintChannelCuts(tiles, radius, rng);
+  paintMountainMassif(tiles, radius, rng, cfg.mountainIntensity);
+  hydrology(tiles, radius, rng);
+  // M_FUN.MAP.SWAMP — paint after hydrology so the lake-adjacency
+  // check finds the freshly-placed LAKE. Skips dry-land (no lake to
+  // adjacent to → no swamp candidates).
+  paintSwampPatches(tiles, radius, rng);
+  // M_FUN.MAP.UTILISATION.SHALLOWS — convert the OCEAN ring closest
+  // to land into SHALLOWS so a future aquatic unit (Ferryman) can
+  // bridge between islands. Decouples the gameplay surface from
+  // pure landmass — large oceans stop wasting board space.
+  paintShallowsRing(tiles);
+  // M_FUN.ECON.QUICKSAND — paint sparse QUICKSAND 'swirl' hexes
+  // on BEACH tiles. Source of `amber` (the rarest crafting
+  // reagent), with dual-risk harvesting per resources.json. 1-2
+  // per board on average; deterministic per seed.
+  paintQuicksandSwirls(tiles, radius, rng);
   // Recompute `walkable` after the guided-paint pass — every tile
   // now reflects its FINAL biome + level.
   for (const tile of tiles.values()) {
     tile.walkable = biomeFlagsFor(tile.type).walkable && tile.level < 5;
+  }
+}
+
+/**
+ * M_FUN.MAP.UTILISATION.SHALLOWS — convert OCEAN tiles adjacent to
+ * any LAND tile (BEACH/GRASS/FOREST/DESERT/HIGHLAND/MOUNTAIN/etc)
+ * into SHALLOWS. This creates a 1-hex "wadeable" ring around every
+ * landmass that an aquatic unit can use to bridge between islands.
+ * Deep OCEAN (no land neighbour) stays impassable. Land biomes are
+ * untouched.
+ */
+/**
+ * M_FUN.ECON.QUICKSAND — paint a sparse scatter of QUICKSAND 'swirl'
+ * hexes on BEACH tiles. Each BEACH tile has a ~1.5% chance per pass
+ * of becoming QUICKSAND; with the typical beach ring carrying
+ * 150-200 tiles, that yields 1-3 quicksand spots per board on
+ * average. Deterministic per map seed.
+ *
+ * The resulting QUICKSAND tile is walkable but slow (1.6× move
+ * cost), and harvesting its amber deposit applies BOTH disease
+ * and fatigue per resources.json#amber.sources[0].risks.
+ *
+ * Why BEACH and not SHALLOWS or SWAMP: a beach swirl reads as a
+ * recognisable hazard the moment a player sees it (and visually
+ * pairs with the existing wet-sand palette), without competing
+ * with the SHALLOWS aquatic-bridge mechanic or SWAMP's existing
+ * disease track.
+ */
+function paintQuicksandSwirls(tiles: Map<string, Tile>, _radius: number, rng: Rng): void {
+  const QUICKSAND_CHANCE = 0.015;
+  for (const tile of tiles.values()) {
+    if (tile.type !== 'BEACH') continue;
+    if (rng() >= QUICKSAND_CHANCE) continue;
+    tile.type = 'QUICKSAND';
+    tile.level = 1;
+  }
+}
+
+function paintShallowsRing(tiles: Map<string, Tile>): void {
+  const LAND_TYPES = new Set<Tile['type']>([
+    'BEACH',
+    'GRASS',
+    'FOREST',
+    'DESERT',
+    'HIGHLAND',
+    'MOUNTAIN',
+    'MOUNTAIN_PASS',
+    'SWAMP',
+    'VOLCANO',
+  ]);
+  const newShallows: string[] = [];
+  for (const tile of tiles.values()) {
+    if (tile.type !== 'OCEAN') continue;
+    let adjacentLand = false;
+    for (const nKey of hexNeighbors(tile.q, tile.r)) {
+      const n = tiles.get(nKey);
+      if (n && LAND_TYPES.has(n.type)) {
+        adjacentLand = true;
+        break;
+      }
+    }
+    if (adjacentLand) newShallows.push(getHexKey(tile.q, tile.r));
+  }
+  for (const key of newShallows) {
+    const t = tiles.get(key);
+    if (!t) continue;
+    t.type = 'SHALLOWS';
+    t.level = 1;
   }
 }
 
@@ -192,26 +307,152 @@ function paintBeachRing(tiles: Map<string, Tile>, radius: number, _rng: Rng): vo
 }
 
 /**
- * M_MAPGEN.3 — paint a 3-tile-wide MOUNTAIN spine across the central band.
- * The band's orientation is seed-derived so different seeds get different
- * mountain orientations but every seed gets ONE. Creates the funneling
- * choke point the user called for.
+ * M_MAPGEN.3 — paint MOUNTAIN clumps that act as natural funnels +
+ * choke points. The prior implementation stamped a straight 3-axis
+ * STRIP through the entire map — including ocean — which was both
+ * ugly and useless (impassible walls in water?). User feedback
+ * 2026-05-24:
+ *   "why the fuck would you design an impassible strip on ANY [...]
+ *    mountains create natural FUNNELS and choke points if they are
+ *    an impassible strip extending through everything including
+ *    water that is just ugly and also useless"
+ *
+ * New behaviour:
+ *   - NEVER paint over OCEAN, BEACH, or LAKE (water stays water)
+ *   - Use 2D noise to generate organic massifs — a few clumps, not
+ *     a strip
+ *   - Threshold is mode-aware via `intensity` param: balanced/
+ *     continent get more mountain (chokepoint creation); archipelago
+ *     gets less; dry-land gets ridge-line density
+ *   - On RTS-style symmetric modes (balanced), bias the noise
+ *     centre-ward so SOME mountains end up between the two bases
+ *     to create the original funnel intent — but as a CLUMP, not
+ *     a line, and ONLY on land
  */
-function paintMountainSpine(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
-  // Pick an axis: 0 = horizontal band on r; 1 = diagonal on q; 2 = diagonal on s.
-  const axis = Math.floor(rng() * 3);
+// Mountain noise tuning lives in src/config/mapgen.json under
+// `mountain.*` — load via MOUNTAIN_TUNING. Centre-bias asymmetry
+// IS the funnel: at intensity=0.55, centerBias=1 → threshold 0.67 →
+// ~52% of CENTRAL land becomes mountain; perimeter tiles
+// (centerBias~=0) need n>0.96, so almost never. Documented in
+// PRD-v0.4 §6.3 so a future tuner doesn't trust a wrong "% of
+// land" eyeballing.
+
+function paintMountainMassif(
+  tiles: Map<string, Tile>,
+  radius: number,
+  rng: Rng,
+  intensity = 0.5,
+): void {
+  // Generate a fresh noise field for the mountain mask. The map PRNG
+  // owns this rng, so different seeds give different mountain layouts;
+  // same seed reproduces.
+  const noise = createNoise2D(rng);
+  // Guard the centre-bias denominator: a radius <= safetyRing would
+  // yield negative/zero span and NaN/Infinity bias. Clamp to 1 so
+  // tiny radii degrade gracefully (mountains still place; just no
+  // centre-bias). generateBoard validates radius in [1, 48].
+  const t = MOUNTAIN_TUNING;
+  const span = Math.max(1, radius - t.safetyRing);
+  // M_FUN.MAP.TOPOLOGY.STACK — peaks STACK. The same noise mask now
+  // emits three tiers of elevation in concentric rings:
+  //   mask > corePeak     → MOUNTAIN     (level 5, unwalkable cap)
+  //   mask > saddleRing   → MOUNTAIN_PASS (level 4, walkable, high cost)
+  //   mask > foothillRing → HIGHLAND     (level 4, walkable, mid cost)
+  // The thresholds are spaced (×1.0, ×0.75, ×0.55) so a peak naturally
+  // appears as core+ring+foothill (3 tiles deep at the centre of any
+  // cluster) rather than a flat 1-cell cardboard cutout.
+  // User feedback 2026-05-24: "we seem to reach a certain height and
+  // then just stop versus building mountains the same way we build
+  // anything, stacking. peaks should be a feature that can spawn one
+  // of mex hex tiles but there should be a legitimate stack before
+  // it." Captured in docs/specs/130-topology-and-decision-tracks.md §1.
+  const peakCutoff = 1 - intensity * t.intensityScale;
+  const saddleCutoff = 1 - intensity * t.intensityScale * 1.15;
+  const foothillCutoff = 1 - intensity * t.intensityScale * 1.3;
   for (const tile of tiles.values()) {
+    // Skip water + beach — mountains in water are nonsensical.
+    if (tile.type === 'OCEAN' || tile.type === 'BEACH' || tile.type === 'LAKE') continue;
     const d = hexDistFromCenter(tile.q, tile.r);
-    if (d > radius - 5) continue; // stay inside the beach ring + safety
-    let onSpine = false;
-    if (axis === 0) onSpine = Math.abs(tile.r) <= 1;
-    else if (axis === 1) onSpine = Math.abs(tile.q) <= 1;
-    else onSpine = Math.abs(tile.q + tile.r) <= 1;
-    if (!onSpine) continue;
-    // Stamp HIGHLAND for the 1-tile-wide band, with a MOUNTAIN peak every
-    // few hexes for vertical relief.
-    tile.type = 'MOUNTAIN';
-    tile.level = 5;
+    if (d > radius - t.safetyRing) continue;
+    // Centre-bias coefficient: 1.0 at centre, 0.0 at d=span.
+    const centerBias = Math.max(0, 1 - d / span);
+    const n = noise(tile.q * t.noiseFreq, tile.r * t.noiseFreq);
+    const mask = n * t.noiseWeight + centerBias * t.centerBiasWeight;
+    if (mask > peakCutoff) {
+      tile.type = 'MOUNTAIN';
+      tile.level = 5;
+      // Set walkable inline so this function is safe to call OUTSIDE
+      // the GEN_TIME_PIPELINES context (e.g. a unit test that paints
+      // mountains then checks pathing). runGenTimePass also calls
+      // recomputeWalkable() globally afterward, which is fine — this
+      // just removes the foot-gun of standalone-callable footprint
+      // leaving stale walkable=true on level-5 MOUNTAIN.
+      tile.walkable = false;
+    } else if (mask > saddleCutoff) {
+      // Saddle ring around the core — walkable choke point. Don't
+      // overwrite a tile that's already MOUNTAIN/MOUNTAIN_PASS from a
+      // neighbouring peak's stack.
+      if (tile.type !== 'MOUNTAIN' && tile.type !== 'MOUNTAIN_PASS') {
+        tile.type = 'MOUNTAIN_PASS';
+        tile.level = 4;
+        tile.walkable = true;
+      }
+    } else if (mask > foothillCutoff) {
+      // Foothill — readable as elevated grass-coloured terrain that
+      // visually announces "you are approaching a peak". ONLY paint
+      // over GRASS/DESERT (the bare-land biomes). Leave FOREST alone
+      // (forests are a separate decision-track resource biome whose
+      // wood count drives early-game economy; the biome-distribution
+      // audit pins forest% as a playability floor). Also leave
+      // hydrology-placed SWAMP and any already-stacked tile alone.
+      if (tile.type === 'GRASS' || tile.type === 'DESERT') {
+        tile.type = 'HIGHLAND';
+        tile.level = 4;
+        tile.walkable = true;
+      }
+    }
+  }
+
+  // M_FUN.MAP.PASS — isthmus detection. After the massif is
+  // stamped, find every MOUNTAIN tile whose mountain-neighbour count
+  // is at most ISTHMUS_THRESHOLD; convert to MOUNTAIN_PASS. Necks +
+  // isolated peaks fit this filter: an interior mountain has 6
+  // mountain neighbours, a hard-coast edge ~4-5, an isthmus 2-3, an
+  // isolated peak 0-1.
+  //
+  // Result: the massif gains discrete passes where units can move
+  // through at reduced speed (terrain-cost MOUNTAIN_PASS=1.7×) and
+  // Wall/Watchtower can fortify the choke (biome-flags buildable=true).
+  // Doesn't carve a hole in the massif's core (interior mountains
+  // have 6 neighbours) — only the natural narrow points.
+  const isthmusThreshold = t.isthmusThreshold;
+  // Snapshot the MOUNTAIN keys into a Set so neighbour-counts are read
+  // from the PRE-CONVERSION topology. Coderabbit reviewer found the
+  // earlier code mutated `tile.type` in the same loop that read live
+  // `n?.type === 'MOUNTAIN'` — earlier conversions to MOUNTAIN_PASS
+  // lowered later tiles' neighbour counts and cascaded extra
+  // conversions. The snapshot is the cheap O(N) fix; mutations stay
+  // in a second pass and the topology read is invariant.
+  const mountainKeySet = new Set<string>();
+  for (const tile of tiles.values()) {
+    if (tile.type === 'MOUNTAIN') mountainKeySet.add(getHexKey(tile.q, tile.r));
+  }
+  const conversions: string[] = [];
+  for (const key of mountainKeySet) {
+    const tile = tiles.get(key);
+    if (!tile) continue;
+    let mountainNeighbours = 0;
+    for (const nKey of hexNeighbors(tile.q, tile.r)) {
+      if (mountainKeySet.has(nKey)) mountainNeighbours += 1;
+    }
+    if (mountainNeighbours <= isthmusThreshold) conversions.push(key);
+  }
+  for (const key of conversions) {
+    const tile = tiles.get(key);
+    if (!tile) continue;
+    tile.type = 'MOUNTAIN_PASS';
+    tile.level = 3;
+    tile.walkable = true;
   }
 }
 
@@ -255,6 +496,68 @@ function paintDesertBlanket(tiles: Map<string, Tile>, radius: number, _rng: Rng)
  * inside the beach ring but NOT on the mountain spine. Picks a seeded
  * candidate center, stamps a 4-tile rosette.
  */
+/**
+ * M_FUN.MAP.SWAMP — paint SWAMP patches in low-elevation moist
+ * pockets. Two-axis policy: must be currently GRASS or FOREST AND
+ * adjacent to LAKE (or, on continents, near the centre at high
+ * moisture). Walkable but applies disease (M_FUN.ATTR.DISEASE) so
+ * armies need a Healer to push through (M_FUN.UNIT.HEAL).
+ *
+ * Per-mode intensity will land in mapgen.json#mapTypes once the
+ * generator strategies milestone (M_FUN.MAP.PER_MODE) splits the
+ * generator into per-mode composers. For now: ONE small patch
+ * adjacent to the inland lake, deterministic per seed.
+ */
+function paintSwampPatches(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
+  // Find LAKE-adjacent walkable tiles.
+  const NEIGHBORS = [
+    [1, 0],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [0, -1],
+    [1, -1],
+  ] as const;
+  const candidates: Array<{ q: number; r: number }> = [];
+  for (const tile of tiles.values()) {
+    if (tile.type !== 'GRASS' && tile.type !== 'FOREST') continue;
+    // Coderabbit fix: gate on walkability + lowland level so a
+    // level-5 GRASS/FOREST (e.g. inside a mountain mask edge) cannot
+    // be flipped to SWAMP and then walkable in the post-pass recompute
+    // — that would open accidental paths around lakes.
+    if (!tile.walkable || tile.level >= 4) continue;
+    if (hexDistFromCenter(tile.q, tile.r) > radius - 3) continue;
+    // Adjacent to LAKE?
+    for (const [dq, dr] of NEIGHBORS) {
+      const n = tiles.get(getHexKey(tile.q + dq, tile.r + dr));
+      if (n?.type === 'LAKE') {
+        candidates.push({ q: tile.q, r: tile.r });
+        break;
+      }
+    }
+  }
+  if (candidates.length === 0) return;
+  const pick = candidates[Math.floor(rng() * candidates.length)];
+  if (!pick) return;
+  // Stamp center + 1-2 adjacent walkable tiles as SWAMP.
+  const center = tiles.get(getHexKey(pick.q, pick.r));
+  if (!center) return;
+  center.type = 'SWAMP';
+  center.level = 1;
+  const shuffled = NEIGHBORS.map((n) => ({ n, k: rng() })).sort((a, b) => a.k - b.k);
+  let stamped = 0;
+  for (const { n } of shuffled) {
+    if (stamped >= 2) break;
+    const [dq, dr] = n;
+    const t = tiles.get(getHexKey(pick.q + dq, pick.r + dr));
+    if (t && (t.type === 'GRASS' || t.type === 'FOREST') && t.walkable && t.level < 4) {
+      t.type = 'SWAMP';
+      t.level = 1;
+      stamped++;
+    }
+  }
+}
+
 function paintInlandLake(tiles: Map<string, Tile>, radius: number, rng: Rng): void {
   // Find a candidate center: walkable, GRASS/FOREST, distance from edge ≥ 5.
   const candidates: Array<{ q: number; r: number }> = [];
@@ -289,6 +592,58 @@ function paintInlandLake(tiles: Map<string, Tile>, radius: number, rng: Rng): vo
     if (t) {
       t.type = 'LAKE';
       t.level = 0;
+    }
+  }
+}
+
+/**
+ * M_FUN.MAP.UTILISATION.ISLANDS — multi-island hydrology.
+ *
+ * Carves 2-3 OCEAN strips across the landmass at random angles so
+ * the board renders as 3-7 disconnected islands joined only by
+ * SHALLOWS (added by the later paintShallowsRing pass). Distinct
+ * geometry from inlandLake (one centre carve) and from
+ * desertBlanket (no water at all).
+ *
+ * Used by the 'archipelago' mapType (per src/config/mapgen.json).
+ * Deterministic via the map PRNG.
+ */
+function paintMultiIslandChannels(tiles: Map<string, Tile>, _radius: number, rng: Rng): void {
+  // Three random radial-angle channels, each ~2 tiles wide. The
+  // strip is defined by a perpendicular distance from a line
+  // through the origin at angle θ; tiles within `width/2` of the
+  // line get flipped to OCEAN (level 0). Channels stop short of
+  // the very centre (carve leaves a small inner island).
+  const channelCount = 2 + Math.floor(rng() * 2); // 2 or 3 channels
+  const channels: Array<{ ux: number; uy: number; width: number; gapHalf: number }> = [];
+  for (let c = 0; c < channelCount; c++) {
+    const theta = rng() * Math.PI;
+    channels.push({
+      ux: Math.cos(theta),
+      uy: Math.sin(theta),
+      width: 2.0, // total strip width in axial-unit space
+      gapHalf: 2.5, // half-size of the central gap so the centre stays land
+    });
+  }
+  for (const tile of tiles.values()) {
+    if (tile.type === 'OCEAN' || tile.type === 'BEACH') continue;
+    // Axial → cartesian-ish for distance calcs. Approximation only
+    // matters as a gradient; pointy-top hex math isn't required
+    // because we only care about which side of a line each tile is.
+    const x = tile.q;
+    const y = tile.r;
+    for (const ch of channels) {
+      // Perpendicular distance from the line through origin with
+      // direction (ux, uy): |x*uy - y*ux|.
+      const perp = Math.abs(x * ch.uy - y * ch.ux);
+      // Distance along the line (signed): x*ux + y*uy. Skip tiles
+      // inside the central gap so the carve doesn't bisect a base.
+      const along = Math.abs(x * ch.ux + y * ch.uy);
+      if (perp <= ch.width / 2 && along > ch.gapHalf) {
+        tile.type = 'OCEAN';
+        tile.level = 0;
+        break;
+      }
     }
   }
 }

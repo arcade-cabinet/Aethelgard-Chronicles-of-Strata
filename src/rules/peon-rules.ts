@@ -36,7 +36,14 @@ export type PeonAction =
   | { kind: 'carry-home' }
   | { kind: 'deposit' }
   | { kind: 'idle' }
-  | { kind: 'flee'; fromKey: string };
+  | { kind: 'flee'; fromKey: string }
+  // M_FUN.QA.AIVAI.TUNE — preserve BUILDING state across jobRouting
+  // ticks. Without this kind the routing system would re-seek a
+  // peon assigned to construct a building, never letting the build
+  // system fire. The routing system uses this as a no-op (state
+  // stays BUILDING) until buildSystem completes the structure and
+  // resets the peon to IDLE.
+  | { kind: 'build'; targetKey: string };
 
 /** The world facts the peon decision needs — all faction-scoped. */
 export interface PeonWorld {
@@ -48,14 +55,44 @@ export interface PeonWorld {
   threatenedTiles: ReadonlySet<string>;
 }
 
-/** Find the resource site nearest to (q, r). */
-function nearestResource(q: number, r: number, sites: ResourceSite[]): ResourceSite | null {
+/**
+ * Find the resource site that's the best fit for a peon, scored
+ * with a base-proximity bias that DECAYS with distance from base
+ * (M_FUN.QA.AIVAI.TUNE). The bias's job is to stop a peon from
+ * trekking across the board to a richer cluster on the opponent's
+ * side; once nearby resources are exhausted, the bias falls off
+ * and the peon will walk further afield rather than going IDLE
+ * forever.
+ *
+ * Score = distance(peonQ, peonR, node) +
+ *         BASE_BIAS * max(0, distance(baseQ, baseR, node) - BIAS_RADIUS)
+ *
+ * For nodes within BIAS_RADIUS of base: the bias term is 0 →
+ * picker effectively does plain peon-distance.
+ * For nodes outside BIAS_RADIUS: each extra hex past the bias
+ * radius adds BASE_BIAS to the score. With BASE_BIAS = 0.5 and
+ * BIAS_RADIUS = 6, a node 10 hexes from base is penalised by 2
+ * — enough to prefer a closer-to-base node, but not so much that
+ * a faction with no local resources never finds work.
+ */
+const BASE_BIAS = 0.5;
+const BIAS_RADIUS = 6;
+function nearestResource(
+  q: number,
+  r: number,
+  baseQ: number,
+  baseR: number,
+  sites: ResourceSite[],
+): ResourceSite | null {
   let best: ResourceSite | null = null;
-  let bestDist = Number.POSITIVE_INFINITY;
+  let bestScore = Number.POSITIVE_INFINITY;
   for (const site of sites) {
-    const d = hexDistance(q, r, site.q, site.r);
-    if (d < bestDist) {
-      bestDist = d;
+    const baseDist = hexDistance(baseQ, baseR, site.q, site.r);
+    const peonDist = hexDistance(q, r, site.q, site.r);
+    const baseBias = BASE_BIAS * Math.max(0, baseDist - BIAS_RADIUS);
+    const score = peonDist + baseBias;
+    if (score < bestScore) {
+      bestScore = score;
       best = site;
     }
   }
@@ -79,9 +116,22 @@ function nearestResource(q: number, r: number, sites: ResourceSite[]): ResourceS
 export function nextPeonAction(peon: PeonView, world: PeonWorld): PeonAction {
   const peonKey = getHexKey(peon.q, peon.r);
 
-  // 1. flee a pulsing tile — nonviolent peons abandon contested ground
+  // 0. flee a pulsing tile — nonviolent peons abandon contested ground
+  // FIRST (coderabbit MAJOR PR #10 04:56Z): preserves the flee-priority
+  // contract over BUILDING. A peon caught on a threatened tile must
+  // drop the hammer and run; without this ordering a builder on a
+  // contested foundation would happily get caught in melee.
   if (world.threatenedTiles.has(peonKey)) {
     return { kind: 'flee', fromKey: peonKey };
+  }
+
+  // 1. building — keep building when safe. The build site lives in
+  // game.buildSites and buildSystem drives progress to completion.
+  // Without this short-circuit, the next rule would re-seek the
+  // peon and abandon the build. Returns the peon's BUILDING state
+  // unchanged so jobRoutingSystem's switch leaves it alone.
+  if (peon.state === 'BUILDING' && peon.targetKey) {
+    return { kind: 'build', targetKey: peon.targetKey };
   }
 
   // 2. carrying → deposit or carry home
@@ -111,14 +161,41 @@ export function nextPeonAction(peon: PeonView, world: PeonWorld): PeonAction {
     return { kind: 'harvest' };
   }
 
-  // 5. idle / target-lost / still travelling → seek the nearest live resource
+  // 5. idle / target-lost / still travelling → seek a resource.
+  // M_FUN.QA.AIVAI.TUNE — score every candidate against the
+  // faction's base so a peon never commits to a node halfway across
+  // the map just because it was closest to its spawn. baseKey is
+  // already faction-scoped in PeonWorld.
+  const [bq, br] = world.baseKey.split(',').map(Number) as [number, number];
   const targetStillLive = peon.targetKey && world.resources.some((s) => s.key === peon.targetKey);
   if (peon.state === 'SEEKING' && targetStillLive) {
+    // Coderabbit MAJOR PR #10 05:46Z — respect threatened-tile
+    // avoidance even when keeping the current target. The old code
+    // would silently re-seek a contested resource tile because the
+    // existing target took priority. Switch to the best safe
+    // alternative; if there isn't one, idle (the flee path at the
+    // top of this function handles a peon already ON the threat).
+    if (world.threatenedTiles.has(peon.targetKey)) {
+      const bestSafe = nearestResource(peon.q, peon.r, bq, br, world.resources);
+      if (bestSafe && !world.threatenedTiles.has(bestSafe.key)) {
+        return { kind: 'seek', targetKey: bestSafe.key };
+      }
+      return { kind: 'idle' };
+    }
+    // Honor the current target ONLY if it's the best base-anchored
+    // pick; otherwise switch. Avoids the "enemy peon walking the
+    // length of the board" failure mode.
+    const best = nearestResource(peon.q, peon.r, bq, br, world.resources);
+    if (best && best.key === peon.targetKey) {
+      return { kind: 'seek', targetKey: peon.targetKey };
+    }
+    if (best && !world.threatenedTiles.has(best.key)) {
+      return { kind: 'seek', targetKey: best.key };
+    }
     return { kind: 'seek', targetKey: peon.targetKey };
   }
-  const nearest = nearestResource(peon.q, peon.r, world.resources);
+  const nearest = nearestResource(peon.q, peon.r, bq, br, world.resources);
   if (nearest) {
-    // avoid seeking a resource that sits on a threatened tile
     if (!world.threatenedTiles.has(nearest.key)) {
       return { kind: 'seek', targetKey: nearest.key };
     }

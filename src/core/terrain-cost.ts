@@ -16,12 +16,39 @@ import type { BiomeType } from './biome';
 export const TERRAIN_MOVE_COST: Record<BiomeType, number> = {
   OCEAN: 1, // water tiles are impassable; cost is unused
   LAKE: 1,
+  // M_FUN.MAP.UTILISATION.SHALLOWS — 1.8× cost for aquatic units
+  // that can traverse it (Ferryman). Land units never reach this
+  // cost because biome-flags marks SHALLOWS unwalkable for them.
+  SHALLOWS: 1.8,
+  // M_FUN.MAP.SWAMP — walkable but punishingly slow (1.8×). Combined
+  // with the disease DoT on traversal, swamp = "you can cross but
+  // only with a Healer + the willingness to take a long time".
+  SWAMP: 1.8,
   BEACH: 1,
   DESERT: 1,
   GRASS: 1,
   FOREST: 1.25,
   HIGHLAND: 1.5,
+  // M_FUN.MAP.PASS — the fortifiable choke. ~0.6× would imply
+  // FASTER than baseline, which is wrong; we want passes to be
+  // notably slower than HIGHLAND (1.5×) so they read as "carved
+  // path through stone" — 1.7× is the right semantic. The spec's
+  // "~0.6× speed" reference was inverted; cost is the inverse of
+  // speed, so 1.7× cost ≈ 0.6× speed. Documented to prevent the
+  // next reader from "fixing" it.
+  MOUNTAIN_PASS: 1.7,
   MOUNTAIN: 1, // impassable; cost is unused
+  // M_FUN.DYN.VOLCANO — both impassable. LAVA was originally 2.5×
+  // walkable but A* would route units across active lava (reviewer
+  // CRITICAL #2). LAVA is now hard-impassable in biome-flags;
+  // cost here is unused but defined to satisfy the exhaustive
+  // record type.
+  VOLCANO: 1,
+  LAVA: 1,
+  // M_FUN.ECON.QUICKSAND — walkable but slow (1.6× baseline) per
+  // mapgen.json#QUICKSAND.moveCost. A* will route AROUND it unless
+  // it's the only path; quick-cross is a deliberate choice.
+  QUICKSAND: 1.6,
 };
 
 export function moveCostFor(biome: BiomeType): number {

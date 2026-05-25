@@ -33,7 +33,7 @@ function peon(
   world: ReturnType<typeof createEcsWorld>,
   q: number,
   r: number,
-  state: 'IDLE' | 'SEEKING' | 'HARVESTING' | 'CARRYING',
+  state: 'IDLE' | 'SEEKING' | 'HARVESTING' | 'CARRYING' | 'BUILDING',
   targetKey = '',
 ) {
   return world.spawn(
@@ -108,6 +108,25 @@ describe('job-routing system (M8.6c — autonomous peons)', () => {
     const p = peon(world, 0, 0, 'IDLE');
     jobRoutingSystem(ctx);
     expect(p.get(AssignedJob)?.state).toBe('IDLE');
+  });
+
+  it('keeps a BUILDING peon in BUILDING state with its targetKey + clears path', () => {
+    // Coderabbit MAJOR PR #10 05:46Z — pin the jobRoutingSystem `build`
+    // arm. A peon with state=BUILDING + a targetKey should be left in
+    // BUILDING (buildSystem drives progress) and its movement path
+    // cleared so it doesn't re-walk away mid-construction.
+    const board = generateBoard('ancient-silver-forest');
+    const world = createEcsWorld();
+    const ctx = routingCtx(world, board);
+    const p = peon(world, 0, 0, 'BUILDING', '1,0');
+    // Pre-seed a stale movement path; the build arm must clear it.
+    const _e = p.get(PathQueue);
+    if (_e) p.set(PathQueue, { steps: ['2,0', '3,0'] });
+    jobRoutingSystem(ctx);
+    const job = p.get(AssignedJob);
+    expect(job?.state).toBe('BUILDING');
+    expect(job?.targetKey).toBe('1,0');
+    expect(p.get(PathQueue)?.steps).toHaveLength(0);
   });
 
   it('only routes the issuing faction — does not touch the other side', () => {

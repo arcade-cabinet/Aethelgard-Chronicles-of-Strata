@@ -183,6 +183,16 @@ tests/browser/**/__screenshots__
 .commit-msg.txt
 
 # E2E journey capture outputs (regenerate via pnpm test:e2e tests/e2e/journey-capture.spec.ts)
-artifacts/journey/
-artifacts/ai-vs-ai/
-artifacts/*.log
+artifacts/
+tests/e2e/__data__/aivai-screens/
+docs/api/
+
+
+# Agent transient workspace — full-review reports / state are local-only
+.full-review/
+.agent-state/digest.md
+.agent-state/cursor.md
+.agent-state/batch.json
+.agent-state/.indexed-sha
+.agent-state/.last-stop-sha
+.agent-state/.last-compaction

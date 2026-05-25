@@ -202,19 +202,34 @@ export function placeBuilding(
   // views (FactionBase placed, Decoration, etc) re-invalidate.
   game.buildSitesGeneration += 1;
 
-  // Assign the nearest idle peon OF THE ISSUING FACTION to build.
+  // M_FUN.QA.AIVAI.TUNE — Assign the nearest peon of the issuing
+  // faction to build. Prefer IDLE peons; fall back to SEEKING /
+  // HARVESTING / RETURNING peons (pulling a harvester off mid-cycle
+  // is fine — building is a higher-value job). Previously this
+  // required `state === 'IDLE'` exclusively; that meant a faction
+  // whose peons were all mid-harvest could place a build site but
+  // never get a builder, so the site sat at 0% forever. This bit
+  // the enemy AiPlayer particularly hard since assignAllPeonsToHarvest
+  // had moved all enemy peons to SEEKING at game start.
+  const PRIORITY_ORDER = ['IDLE', 'SEEKING', 'HARVESTING', 'RETURNING'] as const;
+  type AssignableState = (typeof PRIORITY_ORDER)[number];
   let nearestPeon: Entity | null = null;
   let nearestDist = Number.POSITIVE_INFINITY;
+  let nearestPriority: number = PRIORITY_ORDER.length; // lower is better
   const tileData = game.board.tiles.get(tileKey);
   for (const entity of game.world.query(Unit, AssignedJob, HexPosition, FactionTrait)) {
     if (entity.get(Unit)?.unitType !== 'Peon') continue;
     if (entity.get(FactionTrait)?.faction !== faction) continue;
     const job = entity.get(AssignedJob);
-    if (!job || job.state !== 'IDLE') continue;
+    if (!job) continue;
+    const priority = PRIORITY_ORDER.indexOf(job.state as AssignableState);
+    if (priority === -1) continue; // BUILDING or unknown — skip
     const hex = entity.get(HexPosition);
     if (!hex) continue;
     const dist = Math.abs(hex.q - (tileData?.q ?? 0)) + Math.abs(hex.r - (tileData?.r ?? 0));
-    if (dist < nearestDist) {
+    // Strictly prefer lower-priority state; tie-break on distance.
+    if (priority < nearestPriority || (priority === nearestPriority && dist < nearestDist)) {
+      nearestPriority = priority;
       nearestDist = dist;
       nearestPeon = entity;
     }

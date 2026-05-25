@@ -70,6 +70,33 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: null,
     decorationDensity: null,
   },
+  // M_FUN.MAP.UTILISATION.SHALLOWS — base flags treat SHALLOWS as
+  // impassable. Aquatic-skill units (Ferryman) will get an explicit
+  // override via a future per-unit traversal table that lets them
+  // path through SHALLOWS at higher move cost. Land units continue
+  // to be blocked by it (same as OCEAN).
+  SHALLOWS: {
+    walkable: false,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: 'water',
+    peakLevel: null,
+    decorationDensity: null,
+  },
+  // M_FUN.MAP.SWAMP — walkable shallow-water biome. Units traversing
+  // SWAMP gain a disease attribute that DoTs HP until they leave OR
+  // a friendly Healer is in range. NOT buildable (foundations don't
+  // hold in marshy ground), NOT habitable (no Houses/Farms).
+  SWAMP: {
+    walkable: true,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: 'water',
+    peakLevel: null,
+    decorationDensity: 0.4,
+  },
   BEACH: {
     walkable: true,
     buildable: true,
@@ -115,6 +142,19 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     peakLevel: 5,
     decorationDensity: 0.3,
   },
+  // M_FUN.MAP.PASS — walkable HIGHLAND-elevation gap inside a
+  // MOUNTAIN massif. Crosses the choke; applies a fatigue attribute
+  // on traversal (-50% damage for 5 sec). Buildable (Wall +
+  // Watchtower belong here — the fortifiable-choke contract).
+  MOUNTAIN_PASS: {
+    walkable: true,
+    buildable: true,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: 0.15,
+  },
   MOUNTAIN: {
     walkable: false,
     buildable: false,
@@ -123,6 +163,44 @@ export const BIOME_FLAGS: Record<BiomeType, BiomeFlags> = {
     cliffColor: null,
     peakLevel: 5,
     decorationDensity: 0.35,
+  },
+  // M_FUN.DYN.VOLCANO — landmark. Impassable like MOUNTAIN but
+  // visually distinct (peakLevel + custom material in render path).
+  VOLCANO: {
+    walkable: false,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: 5,
+    decorationDensity: null,
+  },
+  // M_FUN.DYN.LAVA — transient eruption tile. Reviewer-fix: LAVA
+  // is IMPASSABLE so A* will not route units through active lava.
+  // The DoT damage still applies to units who were already on the
+  // tile when it became lava (volcanoSystem handles their flight
+  // via a one-shot evacuation when a tile flips under them).
+  // Reverts to MOUNTAIN_PASS after `lavaSeconds`.
+  LAVA: {
+    walkable: false,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: null,
+  },
+  // M_FUN.ECON.QUICKSAND — walkable but unbuildable (you can't
+  // stake a House in shifting sand). Not habitable so the desert-
+  // blanket and similar habitable-only passes leave it alone.
+  QUICKSAND: {
+    walkable: true,
+    buildable: false,
+    habitable: false,
+    lushBlend: false,
+    cliffColor: null,
+    peakLevel: null,
+    decorationDensity: null,
   },
 };
 

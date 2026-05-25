@@ -6,6 +6,15 @@ export type UnitType =
   | 'Footman'
   | 'Trebuchet'
   | 'Wizard'
+  /** M_FUN.UNIT.HEAL — Healer / Cleric. No offensive; 2-hex
+   *  heal-aura that clears disease for friendly units in range
+   *  and ticks HP+regen. Counter-unit for SWAMP/disease pressure. */
+  | 'Healer'
+  /** M_FUN.MAP.UTILISATION.FERRYMAN — aquatic unit. Crosses
+   *  SHALLOWS at 1.8× cost; land-speed penalty (60%). Trainable
+   *  from a Peon. Opens multi-island maps to combined-arms
+   *  pressure. */
+  | 'Ferryman'
   | 'Scout'
   | 'Settler'
   | 'Hero'
@@ -69,21 +78,44 @@ export const Selectable = trait({ isSelected: false });
  * row + one union entry, never `if/elseif` branches.
  */
 /**
- * Resource slots. `mana` (M_EXPANSION.F.72) is the 4th non-supply
- * slot — drives Wizard training + Magic-spell SFX. The slot-iterating
- * pattern means adding mana required one union entry + one config
- * row in economy.json + one cost entry on the Wizard unit.
+ * Resource slots — derived from `src/config/resources.json` (the
+ * SINGLE source-of-truth: each slot declares its sources, consumers,
+ * label, and kind). The `RESOURCE_TYPES` array + `ResourceType`
+ * union flow from the JSON via `src/config/resources.ts`.
+ *
+ * Per the archetype principle (the user's "consumers registered to
+ * archetypes" framing): a resource is a generic slot tied
+ * magnetically to its Consumers + Sources. No JSON file, type, or
+ * schema should hand-enumerate the five names — they iterate
+ * RESOURCE_TYPES. Adding a 6th slot is ONE entry in resources.json;
+ * the union, every Partial<Record<…>>, every Zod cost schema, every
+ * HUD grid, every spawn rule picks it up automatically.
+ *
+ * For backwards-compat with code that imported these names from
+ * `@/ecs/components` (the historic location), the symbols are
+ * re-exported here as a thin pass-through.
  */
-export type ResourceType = 'wood' | 'stone' | 'gold' | 'science' | 'mana';
+import { RESOURCE_IDS } from '@/config/resources';
 
-/** The enumerable list of resource slots — iterate this, never hardcode individual slots. */
-export const RESOURCE_TYPES: readonly ResourceType[] = [
+// The const-array tuple form — strict literal types so downstream
+// `(typeof RESOURCE_TYPES)[number]` continues to produce a literal
+// union, not `string`. The cast is safe because RESOURCE_IDS is
+// validated by Zod at module load and freezes at startup. This is
+// the ONE place in TypeScript that mirrors the JSON list; everything
+// else maps over RESOURCE_TYPES. The Zod parser fail-fasts at module
+// load if the JSON drifts from this tuple.
+export const RESOURCE_TYPES = RESOURCE_IDS as readonly [
   'wood',
   'stone',
+  'ore',
   'gold',
+  'food',
+  'peat',
   'science',
   'mana',
-] as const;
+  'amber',
+];
+export type ResourceType = (typeof RESOURCE_TYPES)[number];
 
 /**
  * A building type. `TownHall` is the attractor (start base, not built
@@ -221,14 +253,55 @@ export const ConsumerBehavior = trait({
 export const Gate = trait({ faction: 'player' as Faction });
 
 /** Hit points. */
-export const Health = trait({ current: 50, max: 50 });
+/**
+ * Per-entity HP + status attributes.
+ *
+ * M_FUN.ATTR.DISEASE / .DEHYDRATION — disease and dehydration are
+ * timers in seconds. `disease > 0` ticks HP -1 per sim-second
+ * (see diseaseSystem in src/ecs/systems/status-attributes.ts);
+ * cleared by a Healer in 2-hex range OR standing on GRASS for 5+
+ * seconds (recovery via diseaseRecoveryTimer). `dehydration > 0`
+ * suppresses natural HP regen while set; cleared by leaving DESERT
+ * for 3+ seconds. Defaults 0 — no behaviour change for entities
+ * that never touch SWAMP / DESERT.
+ */
+export const Health = trait({
+  current: 50,
+  max: 50,
+  disease: 0,
+  diseaseRecoveryTimer: 0,
+  dehydration: 0,
+  dehydrationRecoveryTimer: 0,
+});
 
-/** Combat stats and the attack-cooldown timer. */
+/**
+ * Combat stats and the attack-cooldown timer.
+ *
+ * M_FUN.MAP.ELEV — `fatigue` is a 0..1 multiplier on damage dealt.
+ * 0 = normal; 1.0 = -100% (no damage). Applied when a unit crosses
+ * a MOUNTAIN_PASS tile (Combatant biome-rule attributeStrength=0.5
+ * → fatigue +0.5 = -50% dmg). Decays toward 0 over `FATIGUE_DECAY`
+ * seconds out of combat (combat.ts applies fatigue to outgoing
+ * damage via `effectiveDamage = attackDamage * (1 - fatigue)`).
+ *
+ * `fatigueDecayTimer` accumulates seconds since combat last hit;
+ * fatigue decrements once the timer exceeds the decay-rate window.
+ */
 export const Combatant = trait({
   attackDamage: 10,
   attackRange: 1,
   attackCooldown: 1,
   attackTimer: 0,
+  fatigue: 0,
+  fatigueDecayTimer: 0,
+  /**
+   * M_FUN.MECH.FATIGUE.TURN-MODE — turn-based fatigue gating.
+   * When `restUntilTurn > currentTurn`, the unit is RESTING and
+   * pathFollowSystem skips its movement step. Set when a unit
+   * arrives on a fatigue-applying tile (MOUNTAIN_PASS) in
+   * turn-based mode. Always 0 in RTS mode.
+   */
+  restUntilTurn: 0,
 });
 
 /**

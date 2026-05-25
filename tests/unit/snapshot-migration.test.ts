@@ -24,7 +24,9 @@ describe('snapshot migration framework (M_EXPANSION.S.61)', () => {
     const snap = serializeGame(original);
     // version pinned by serialize at SNAPSHOT_VERSION; migration walks
     // until current.version === SNAPSHOT_VERSION (zero iterations).
-    expect(snap.version).toBe(1);
+    // SNAPSHOT_VERSION bumped to 2 in M_FUN.DYN.FIX.SAVE-GAP — added
+    // wildfires / quakeShakeRemaining / volcano blocks to GameSnapshot.
+    expect(snap.version).toBe(2);
     const restored = deserializeGame(JSON.parse(JSON.stringify(snap)));
     expect(restored.seedPhrase).toBe('autumn-bronze-summit');
   });
@@ -39,12 +41,36 @@ describe('snapshot migration framework (M_EXPANSION.S.61)', () => {
   });
 
   it('a stale-version snapshot with NO migration throws (catch the gap before it ships)', () => {
-    // Synthesise a v0 snapshot — older than SNAPSHOT_VERSION=1 and no
+    // Synthesise a v0 snapshot — older than SNAPSHOT_VERSION=2 and no
     // migration registered for v0. This is the failure mode that
     // SNAPSHOT_MIGRATIONS must address before any schema bump ships.
     const original = startGame('autumn-bronze-summit');
     const snap = serializeGame(original);
     snap.version = 0 as never;
     expect(() => deserializeGame(JSON.parse(JSON.stringify(snap)))).toThrow(/no migration/);
+  });
+
+  it('v1 → v2 migration loads cleanly with default dynamic-terrain state', () => {
+    // Synthesise a v1 snapshot (pre-M_FUN.DYN) — the wildfires +
+    // quakeShakeRemaining + volcano fields don't exist. Migration
+    // should fill them with safe defaults so the game resumes
+    // without bricking.
+    const original = startGame('autumn-bronze-summit');
+    const snap = serializeGame(original);
+    snap.version = 1 as never;
+    // Drop the new fields a v1 save wouldn't have had.
+    const synthetic = snap as unknown as Record<string, unknown>;
+    // biome-ignore lint/performance/noDelete: test-only mutation of synthetic snapshot
+    delete synthetic.wildfires;
+    // biome-ignore lint/performance/noDelete: test-only
+    delete synthetic.quakeShakeRemaining;
+    // biome-ignore lint/performance/noDelete: test-only
+    delete synthetic.volcano;
+    const restored = deserializeGame(JSON.parse(JSON.stringify(snap)));
+    expect(restored.wildfires.size).toBe(0);
+    expect(restored.quakeShakeRemaining).toBe(0);
+    // volcano placement is deterministic from the seed, so it may or
+    // may not have a position; the only contract is that it's defined.
+    expect(restored.volcano).toBeDefined();
   });
 });

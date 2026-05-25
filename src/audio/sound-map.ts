@@ -6,6 +6,7 @@
  *
  * Source: docs/specs/80-audio.md §Event → Sound Map
  */
+import { assets } from '@/assets/assets';
 import type { AudioBuses } from './buses';
 
 /** All named game audio events. */
@@ -89,9 +90,11 @@ export function resolveSoundIdForFaction(
 export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   // Combat (M_EXPANSION.AU.45 — split per damageType so a sword
   // landing on a wall sounds different from an arrow on a peon).
-  'combat-hit': { bus: 'sfx', soundId: 'audio.sfx.hit' },
-  'combat-hit-siege': { bus: 'sfx', soundId: 'audio.sfx.hit-stone' },
-  'combat-hit-magic': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
+  // M_FUN.AUDIO.COMBAT — generic body-impact for normal damage;
+  // siege uses the heavy stone variant; magic stays on the spell SFX.
+  'combat-hit': { bus: 'sfx', soundId: 'audio.sfx.combat.hit-body' },
+  'combat-hit-siege': { bus: 'sfx', soundId: 'audio.sfx.combat.hit-heavy' },
+  'combat-hit-magic': { bus: 'sfx', soundId: 'audio.sfx.combat.magic-cast' },
   // M_POLISH.3 — sword-clash for Footman / Knight melee strikes.
   // Distinct from the generic 'combat-hit' (peon punches) and from
   // the bright 'combat-crit' metal ring.
@@ -100,7 +103,10 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   // roll succeeds (damage→0). Combat resolves the parry; this cue
   // fires from the damage path when the absorbed-edge flag is set.
   'combat-parry': { bus: 'sfx', soundId: 'audio.sfx.shield-deflect' },
-  'combat-crit': { bus: 'sfx', soundId: 'audio.sfx.hit-metal' },
+  // M_FUN.AUDIO.COMBAT — crit lands on the bright metal-impact
+  // variant from references/Impact_Hit (distinct from the dull
+  // body-impact above).
+  'combat-crit': { bus: 'sfx', soundId: 'audio.sfx.combat.hit-metal' },
   'projectile-fire': { bus: 'sfx', soundId: 'audio.sfx.hit' },
   'projectile-impact': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
   // M_EXPANSION.AU.44 — wizard spell-cast SFX (PixelLoops Fantasy
@@ -161,3 +167,25 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   victory: { bus: 'music', soundId: 'audio.stinger.victory' },
   defeat: { bus: 'sfx', soundId: 'audio.stinger.defeat' },
 };
+
+// Coderabbit MAJOR PR #10 04:56Z — typed manifest accessor enforcement.
+// The string-id soundIds in SOUND_FOR_EVENT can't be compile-time checked
+// (TypeScript can't infer the manifest's `audio.*` keys from JSON), so a
+// rename or removal would slip through the type checker and surface only
+// when an end-user hears silence (or the audio buses throw). Validating
+// every id against `assets.entry()` at module load gives fail-fast across
+// the whole table — including the new combat-hit-body / hit-heavy /
+// magic-cast / hit-metal entries the reviewer flagged.
+for (const [event, mapping] of Object.entries(SOUND_FOR_EVENT)) {
+  const ids = mapping.soundIds ?? (mapping.soundId ? [mapping.soundId] : []);
+  for (const id of ids) {
+    try {
+      assets.entry(id);
+    } catch {
+      throw new Error(
+        `SOUND_FOR_EVENT["${event}"] references unknown asset id "${id}" — ` +
+          'manifest drift or typo. Check src/config/asset-metadata.json.',
+      );
+    }
+  }
+}

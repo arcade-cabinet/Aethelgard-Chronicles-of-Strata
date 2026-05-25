@@ -20,12 +20,14 @@
     "Wonder": 5,
     "Library": 0
   },
-  "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH"],
+  "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH", "MOUNTAIN_PASS"],
   "supplyCosts": {
     "Peon": 1,
     "Footman": 2,
     "Trebuchet": 3,
     "Wizard": 2,
+    "Healer": 2,
+    "Ferryman": 1,
     "Scout": 1,
     "Settler": 4,
     "Hero": 3,
@@ -40,6 +42,7 @@
     "Footman": { "wood": 0, "stone": 0, "gold": 15 },
     "Scout": { "wood": 30, "stone": 0, "gold": 0 },
     "Wizard": { "wood": 0, "stone": 0, "gold": 20, "science": 25, "mana": 15 },
+    "Healer": { "wood": 0, "stone": 0, "gold": 10, "science": 12, "mana": 8 },
     "Hero": { "wood": 0, "stone": 0, "gold": 100, "science": 50 }
   },
   "roadCosts": {
@@ -63,7 +66,11 @@
   "harvestYield": {
     "wood": 10,
     "stone": 8,
+    "ore": 10,
     "gold": 5,
+    "food": 8,
+    "peat": 10,
+    "amber": 6,
     "science": 0,
     "mana": 0
   }

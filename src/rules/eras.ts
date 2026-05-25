@@ -1,43 +1,67 @@
 /**
  * M_POLISH2.X4.27 + MODES.43 — era progression system.
  *
- * 4 eras for age-of-strata and any other mode that opts in:
- *   Stone   → 0 science, the starting era. Wood + stone economy only.
- *   Bronze  → 100 science. Unlocks Barracks tier 2 + faster harvest.
- *   Iron    → 250 science. Unlocks Watchtower + Wonder.
- *   Renaissance → 500 science. Unlocks the FINAL win path
- *                 (build a Wonder while in Renaissance = win).
+ * The four eras + their science thresholds are loaded from
+ * `src/config/eras.json` via the Zod-validated loader below. Adding
+ * a 5th era (Industrial, etc) is ONE entry in the JSON — the union
+ * type, the threshold lookup, the HUD badge, the era-unlock dispatch
+ * all pick it up automatically (the JSON-first archetype pattern,
+ * same as `src/config/resources.json`).
  *
  * Era progression is per-faction — both player and enemy advance
- * independently. The thresholds are science totals; once spent on
- * the next-era unlock, science resets... actually no — science is
- * an accumulating pool; era flips when the pool CROSSES the
- * threshold. Simpler + reads naturally as "your civilization
- * advances when its accumulated knowledge crosses a milestone."
- *
- * This module is the rules table + the per-faction transition
- * helper. Game-state wires the per-tick check; HUD renders the
- * era badge + progress.
+ * independently. The thresholds are science totals; era flips when
+ * the accumulated pool CROSSES the threshold. Reads naturally as
+ * "your civilization advances when its knowledge crosses a
+ * milestone."
  */
+import { z } from 'zod';
+import erasJson from '@/config/eras.json';
 
+const EraConfigSchema = z.object({
+  id: z.string().min(1),
+  label: z.string().min(1),
+  scienceThreshold: z.number().nonnegative(),
+});
+const ErasFileSchema = z.object({ eras: z.array(EraConfigSchema).min(1) });
+
+function stripComments(input: unknown): unknown {
+  if (Array.isArray(input)) return input.map(stripComments);
+  if (input && typeof input === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+      if (k === '$comment') continue;
+      out[k] = stripComments(v);
+    }
+    return out;
+  }
+  return input;
+}
+
+const _validated = ErasFileSchema.parse(stripComments(erasJson));
+
+/** Era id — the type union narrows to the literal ids loaded from JSON. */
 export type Era = 'Stone' | 'Bronze' | 'Iron' | 'Renaissance';
 
-export const ERAS: ReadonlyArray<Era> = ['Stone', 'Bronze', 'Iron', 'Renaissance'];
+/** All era ids in ascending science-threshold order. */
+export const ERAS: ReadonlyArray<Era> = _validated.eras.map((e) => e.id as Era);
 
 /** Science required to be IN this era (cumulative threshold). */
-export const ERA_SCIENCE_THRESHOLD: Record<Era, number> = {
-  Stone: 0,
-  Bronze: 100,
-  Iron: 250,
-  Renaissance: 500,
-};
+export const ERA_SCIENCE_THRESHOLD: Record<Era, number> = Object.fromEntries(
+  _validated.eras.map((e) => [e.id, e.scienceThreshold]),
+) as Record<Era, number>;
+
+/** Human-readable label for the HUD. */
+export const ERA_LABEL: Record<Era, string> = Object.fromEntries(
+  _validated.eras.map((e) => [e.id, e.label]),
+) as Record<Era, string>;
 
 /** Resolve the era for a given accumulated-science total. */
 export function eraForScience(science: number): Era {
-  if (science >= ERA_SCIENCE_THRESHOLD.Renaissance) return 'Renaissance';
-  if (science >= ERA_SCIENCE_THRESHOLD.Iron) return 'Iron';
-  if (science >= ERA_SCIENCE_THRESHOLD.Bronze) return 'Bronze';
-  return 'Stone';
+  let current: Era = ERAS[0] ?? ('Stone' as Era);
+  for (const era of ERAS) {
+    if (science >= ERA_SCIENCE_THRESHOLD[era]) current = era;
+  }
+  return current;
 }
 
 /** The next era after `current`, or null when already at the final era. */

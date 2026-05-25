@@ -164,6 +164,35 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     meleeWeapon: 'none',
     parryChance: 0,
   },
+  Healer: {
+    // M_FUN.UNIT.HEAL — counter-unit for SWAMP/disease pressure.
+    // No offensive (combat systems treat damageType='normal' + zero
+    // attackDamage = no contribution). Clears friendly disease in
+    // 2-hex range via statusAttributesSystem. ~50% Wizard cost.
+    harvester: false,
+    nonCombat: true,
+    founder: false,
+    damageType: 'normal',
+    combatRole: 'civilian',
+    selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
+  },
+  Ferryman: {
+    // M_FUN.MAP.UTILISATION.FERRYMAN — aquatic civilian. The
+    // pathfind layer reads canTraverseShallows (added later) to
+    // route this unit through SHALLOWS tiles at 1.8× cost.
+    // Land-speed penalty applied via unit-stats.speed = 1.4 (vs
+    // Peon's 3.0). No offensive — combat-role 'civilian'.
+    harvester: false,
+    nonCombat: true,
+    founder: false,
+    damageType: 'normal',
+    combatRole: 'civilian',
+    selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
+  },
   Scout: {
     // M_POLISH2.RTS.22 — player non-combat reconnaissance unit. High
     // movement speed, low HP (40), no attack — reveals enemy positions but

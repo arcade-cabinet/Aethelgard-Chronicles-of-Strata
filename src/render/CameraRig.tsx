@@ -14,6 +14,12 @@ export interface CameraRigProps {
   viewport: ViewportProfile;
   /** Board radius in hex tiles — bounds how far the camera may pan. */
   boardRadius: number;
+  /**
+   * World-space centroid of the walkable land mass. The initial camera
+   * target is set here (not the axial origin) so archipelago / offset
+   * boards still frame the play area. M_FUN.QA.AIVAI.TUNE.PATTERN-H.
+   */
+  landCenter: { x: number; z: number };
 }
 
 /**
@@ -25,28 +31,33 @@ export interface CameraRigProps {
  * so the player cannot scroll off into empty ocean.
  * See `docs/specs/98-viewport-and-config.md` Part 4.
  */
-export function CameraRig({ viewport, boardRadius }: CameraRigProps) {
+export function CameraRig({ viewport, boardRadius, landCenter }: CameraRigProps) {
   const controlsRef = useRef<MapControlsHandle>(null);
   const camera = useThree((s) => s.camera);
 
   // world-space half-extent the camera target may roam within
   const panLimit = boardRadius * HEX_RADIUS * 1.7;
+  const cx = landCenter.x;
+  const cz = landCenter.z;
 
-  // apply the viewport profile's framing whenever the viewport class changes
+  // apply the viewport profile's framing whenever the viewport class
+  // OR the land centroid changes (the latter happens once per board
+  // generation; subsequent unit movement does NOT shift the centroid
+  // because it's keyed on game.board identity in GameCanvas).
   useEffect(() => {
     const { distance, pitch, fov } = viewport.camera;
     // place the camera at `distance` along a vector pitched down by `pitch`
     const horiz = Math.cos(pitch) * distance;
     const vert = Math.sin(pitch) * distance;
-    camera.position.set(0, vert, horiz);
-    camera.lookAt(0, 0, 0);
+    camera.position.set(cx, vert, cz + horiz);
+    camera.lookAt(cx, 0, cz);
     if ('fov' in camera) {
       (camera as { fov: number }).fov = fov;
       (camera as { updateProjectionMatrix: () => void }).updateProjectionMatrix();
     }
-    controlsRef.current?.target.set(0, 0, 0);
+    controlsRef.current?.target.set(cx, 0, cz);
     controlsRef.current?.update();
-  }, [viewport, camera]);
+  }, [viewport, camera, cx, cz]);
 
   // on every controls change: clamp the pan target to the board bounds, then
   // publish the camera view so the minimap can draw the current slice.
@@ -55,8 +66,18 @@ export function CameraRig({ viewport, boardRadius }: CameraRigProps) {
     if (!controls) return;
     const onChange = () => {
       const t = controls.target;
-      t.x = Math.max(-panLimit, Math.min(panLimit, t.x));
-      t.z = Math.max(-panLimit, Math.min(panLimit, t.z));
+      const prevX = t.x;
+      const prevZ = t.z;
+      // PATTERN-H — pan clamp is centred on landCenter, not the axial
+      // origin, so an offset board still pans naturally within bounds.
+      t.x = Math.max(cx - panLimit, Math.min(cx + panLimit, t.x));
+      t.z = Math.max(cz - panLimit, Math.min(cz + panLimit, t.z));
+      // Coderabbit MAJOR PR #10 05:46Z — keep camera in sync when
+      // clamp fires during drag. Without this, drag-panning past
+      // the limit snaps the target but the camera keeps drifting,
+      // breaking the camera↔target invariant orbit-controls expect.
+      camera.position.x += t.x - prevX;
+      camera.position.z += t.z - prevZ;
       cameraView.targetX = t.x;
       cameraView.targetZ = t.z;
       cameraView.distance = camera.position.distanceTo(t);
@@ -70,7 +91,7 @@ export function CameraRig({ viewport, boardRadius }: CameraRigProps) {
     };
     controls.addEventListener('change', onChange);
     return () => controls.removeEventListener('change', onChange);
-  }, [panLimit, camera]);
+  }, [panLimit, camera, cx, cz]);
 
   // M_AUDIT2.UX.31 — wire arrow-key camera pan. KeyboardShortcuts
   // dispatches a CustomEvent 'aethelgard:pan-camera' { dx, dz } per
@@ -96,15 +117,25 @@ export function CameraRig({ viewport, boardRadius }: CameraRigProps) {
       const sin = Math.sin(azimuth);
       const worldDx = detail.dx * cos + detail.dz * sin;
       const worldDz = -detail.dx * sin + detail.dz * cos;
-      t.x = Math.max(-panLimit, Math.min(panLimit, t.x + worldDx));
-      t.z = Math.max(-panLimit, Math.min(panLimit, t.z + worldDz));
-      camera.position.x += worldDx;
-      camera.position.z += worldDz;
+      // Clamp the target to the pan limit, then move the camera by the
+      // ACTUAL applied delta (coderabbit MAJOR PR #10 04:56Z). The
+      // prior code added the unclamped worldDx/worldDz to camera.position
+      // so once the target was clamped the camera drifted off-target,
+      // breaking the orbit-controls invariant (camera + target both
+      // bounded together).
+      const tNewX = Math.max(cx - panLimit, Math.min(cx + panLimit, t.x + worldDx));
+      const tNewZ = Math.max(cz - panLimit, Math.min(cz + panLimit, t.z + worldDz));
+      const appliedDx = tNewX - t.x;
+      const appliedDz = tNewZ - t.z;
+      t.x = tNewX;
+      t.z = tNewZ;
+      camera.position.x += appliedDx;
+      camera.position.z += appliedDz;
       controls.update();
     };
     window.addEventListener('aethelgard:pan-camera', handler);
     return () => window.removeEventListener('aethelgard:pan-camera', handler);
-  }, [panLimit, camera]);
+  }, [panLimit, camera, cx, cz]);
 
   return (
     <MapControls
