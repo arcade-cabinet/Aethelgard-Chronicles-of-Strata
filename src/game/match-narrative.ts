@@ -37,10 +37,13 @@ export interface MatchHighlight {
 
 export function detectTranscriptHighlights(game: GameState): MatchHighlight[] {
   const out: MatchHighlight[] = [];
-  // Lopsided kill: lastDamageEvents on the final tick had >=3 kills
-  // (damage took target to 0). Cheap heuristic without tracking
-  // historical state.
-  const lethal = game.lastDamageEvents.filter((e) => e.damage > 0).length;
+  // Lopsided kill: lastDamageEvents on the final tick had >=3 actual
+  // kills (a hit that dropped the target to 0 HP). Coderabbit MAJOR
+  // PR #10 04:56Z: the prior filter `damage > 0` counted hits, so a
+  // burst-fire spell landing 3 ticks on one Footman tripped the
+  // highlight. `isKill` is set in combat.ts apply-pass on the last
+  // event per killed target — kill credit goes to the final blow.
+  const lethal = game.lastDamageEvents.filter((e) => e.isKill).length;
   if (lethal >= 3) {
     out.push({
       kind: 'lopsided-kill',

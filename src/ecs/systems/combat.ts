@@ -37,6 +37,14 @@ export interface DamageEvent {
    * cue; CombatText surfaces "Parried!" instead of a number.
    */
   parried: boolean;
+  /**
+   * Coderabbit MAJOR PR #10 04:56Z — true when THIS hit reduced the
+   * target to ≤0 HP. Distinct from `damage > 0`, which only proves
+   * a non-zero hit landed. match-narrative's lopsided-kill heuristic
+   * needs kills, not hits, to avoid "3 burst-fire ticks on one
+   * Footman" tripping the highlight.
+   */
+  isKill: boolean;
 }
 
 /**
@@ -116,6 +124,10 @@ function resolveAttacks(
       damageType,
       isMeleeSword,
       parried,
+      // Provisional; flipped to true in the apply-pass below for the
+      // last event that drops the target to ≤0 HP (coderabbit MAJOR
+      // — match-narrative needs kill count, not hit count).
+      isKill: false,
     });
     fired += 1;
   }
@@ -272,12 +284,31 @@ export function combatSystem(
     }
   });
 
-  // apply accumulated damage once per target
+  // apply accumulated damage once per target — track which targets
+  // actually died this tick so we can flip isKill on the last event
+  // that hit them (match-narrative needs kill count, not hit count).
+  const killedTargetIds = new Set<number>();
   for (const [id, total] of damageByTarget) {
     const entity = byId.get(id);
     const health = entity?.get(Health);
     if (entity && health) {
-      entity.set(Health, { ...health, current: Math.max(0, health.current - total) });
+      const next = Math.max(0, health.current - total);
+      entity.set(Health, { ...health, current: next });
+      if (next <= 0 && health.current > 0) killedTargetIds.add(id);
+    }
+  }
+  // Tag isKill on the LAST event that hit each killed target (kill
+  // credit goes to the final blow).
+  if (killedTargetIds.size > 0) {
+    for (let i = events.length - 1; i >= 0; i--) {
+      const ev = events[i];
+      if (!ev) continue;
+      const tid = Number(ev.target);
+      if (killedTargetIds.has(tid)) {
+        ev.isKill = true;
+        killedTargetIds.delete(tid);
+        if (killedTargetIds.size === 0) break;
+      }
     }
   }
   return events;

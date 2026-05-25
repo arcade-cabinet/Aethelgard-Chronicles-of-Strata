@@ -116,6 +116,10 @@ export function offensiveBehaviorSystem(
             // and never trigger a parry from here.
             isMeleeSword: false,
             parried: false,
+            // Coderabbit MAJOR PR #10 04:56Z — flip on actual kill
+            // (post-apply HP went to 0). The trinket-dps overlay
+            // applies damage inline above, so we know immediately.
+            isKill: hp.current - applied <= 0 && hp.current > 0,
           });
         }
         // record the first picked source for projectile FX

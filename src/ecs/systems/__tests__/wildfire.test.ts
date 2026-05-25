@@ -29,8 +29,10 @@ function makeStubGame(eventRng: () => number = () => 0): GameState {
     // koota world: only used inside the entity-damage loop; pass a
     // stub with an empty query so the loop is a no-op.
     world: { query: () => [] },
-    // biome-ignore lint/suspicious/noExplicitAny: stub shape only — fields the system doesn't read are absent
-  } as any as GameState;
+    // Stub shape only — fields the system doesn't read are absent.
+    // Use Partial<GameState> + unknown bridge (no `as any` — repo
+    // src/ rule). Coderabbit MAJOR PR #10 04:56Z.
+  } as unknown as GameState;
 }
 
 function tile(q: number, r: number, type: Tile['type']): Tile {
@@ -192,8 +194,9 @@ describe('wildfire', () => {
     // For this unit test we only assert wildfireSystem doesn't throw
     // when given a non-empty world; entity damage assertions live in
     // tests/browser/wildfire-damage.browser.test.ts (future).
-    // biome-ignore lint/suspicious/noExplicitAny: stub world type
-    (game as any).world = world;
+    // Coderabbit MAJOR PR #10 04:56Z — no `as any` in src/. Use a
+    // narrow Record bridge instead.
+    (game as unknown as Record<string, unknown>).world = world;
     const tiles = new Map<string, Tile>([[getHexKey(0, 0), tile(0, 0, 'FOREST')]]);
     igniteWildfire(game, tiles, 0, 0);
     expect(() => wildfireSystem(game, tiles, WILDFIRE_TUNING.tickSeconds)).not.toThrow();

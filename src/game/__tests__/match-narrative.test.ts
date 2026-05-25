@@ -87,16 +87,32 @@ describe('detectTranscriptHighlights (M_FUN.NAR.HIGHLIGHTS)', () => {
     expect(detectTranscriptHighlights(game)).toEqual([]);
   });
 
-  it('detects a lopsided-kill burst when >= 3 lethal damage events', () => {
+  it('detects a lopsided-kill burst when >= 3 kills landed', () => {
+    // Coderabbit MAJOR PR #10 04:56Z — `isKill` is the gate now, not
+    // `damage > 0`. Stub fixtures must set isKill=true to count.
     const game = makeStubGame({
       lastDamageEvents: [
-        { damage: 50 },
-        { damage: 30 },
-        { damage: 20 },
+        { damage: 50, isKill: true },
+        { damage: 30, isKill: true },
+        { damage: 20, isKill: true },
       ] as unknown as GameState['lastDamageEvents'],
     });
     const out = detectTranscriptHighlights(game);
     expect(out.some((h) => h.kind === 'lopsided-kill')).toBe(true);
+  });
+
+  it('does NOT trip lopsided-kill on >=3 hits that did not kill', () => {
+    // The reviewer-flagged bug: 3 burst-fire ticks on ONE Footman
+    // should NOT count as a lopsided-kill — only the final blow does.
+    const game = makeStubGame({
+      lastDamageEvents: [
+        { damage: 10, isKill: false },
+        { damage: 10, isKill: false },
+        { damage: 10, isKill: false },
+      ] as unknown as GameState['lastDamageEvents'],
+    });
+    const out = detectTranscriptHighlights(game);
+    expect(out.some((h) => h.kind === 'lopsided-kill')).toBe(false);
   });
 
   it('detects a long campaign when kills/min > 1', () => {
