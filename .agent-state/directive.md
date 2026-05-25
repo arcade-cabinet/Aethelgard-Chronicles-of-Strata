@@ -268,11 +268,12 @@ the portal/diplomacy work begins so the substrate is fully complete.
 
 ### v0.6.A — Portal generators (spec §1)
 
-- [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.QUICKSAND-PAIR — generator
-  hook in `paintQuicksandSwirls` that, when ≥2 QUICKSAND tiles
-  spawn, pairs the closest two via `portalTo`. Deterministic per
-  seed. Acceptance: e2e test that seeds a map with ≥2 quicksand
-  + asserts at least one pair has reciprocal portalTo references.
+- [x] M_V6.PORTAL.QUICKSAND-PAIR — paintQuicksandSwirls extended: when ≥2
+  quicksand tiles spawn, the closest pair gets reciprocal portalTo references.
+  Deterministic per seed (axial-distance pure function; tiles iterated in
+  Map insertion order). 3 tests pin: pair exists on multi-quicksand seeds,
+  pair is geometrically closest, same seed → same pair, no portalTo on
+  0/1-quicksand boards.
 
 - [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.MOUNTAIN-CAVE-NETWORK — when
   the massif-stack pass produces ≥3 MOUNTAIN_PASS tiles in a

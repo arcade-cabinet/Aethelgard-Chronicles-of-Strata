@@ -246,11 +246,37 @@ function runGenTimePass(
  */
 function paintQuicksandSwirls(tiles: Map<string, Tile>, _radius: number, rng: Rng): void {
   const QUICKSAND_CHANCE = 0.015;
+  const placed: Tile[] = [];
   for (const tile of tiles.values()) {
     if (tile.type !== 'BEACH') continue;
     if (rng() >= QUICKSAND_CHANCE) continue;
     tile.type = 'QUICKSAND';
     tile.level = 1;
+    placed.push(tile);
+  }
+  // M_V6.PORTAL.QUICKSAND-PAIR — when 2+ QUICKSAND tiles spawn on a
+  // map, pair the closest two via reciprocal portalTo references. Each
+  // tile in the pair teleports a unit to the other; encourages the
+  // player to accept the disease/fatigue risk of crossing a QUICKSAND
+  // tile in exchange for a shortcut across the map. Deterministic per
+  // seed because `placed` is iterated in map-key order (deterministic
+  // tile insertion order) and the distance comparison is a pure function.
+  if (placed.length < 2) return;
+  let best: { a: Tile; b: Tile; d: number } | null = null;
+  for (let i = 0; i < placed.length; i++) {
+    for (let j = i + 1; j < placed.length; j++) {
+      const a = placed[i] as Tile;
+      const b = placed[j] as Tile;
+      // axial hex distance
+      const d = (Math.abs(a.q - b.q) + Math.abs(a.q + a.r - b.q - b.r) + Math.abs(a.r - b.r)) / 2;
+      if (!best || d < best.d) best = { a, b, d };
+    }
+  }
+  if (best) {
+    const keyA = `${best.a.q},${best.a.r}`;
+    const keyB = `${best.b.q},${best.b.r}`;
+    best.a.portalTo = keyB;
+    best.b.portalTo = keyA;
   }
 }
 
