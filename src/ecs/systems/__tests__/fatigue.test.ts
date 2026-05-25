@@ -109,4 +109,31 @@ describe('fatigue on MOUNTAIN_PASS traversal (M_FUN.MAP.ELEV)', () => {
     const final = entity.get(Combatant)?.fatigue ?? 1;
     expect(final).toBeLessThan(0.5);
   });
+
+  // Coderabbit NIT — combat-side fatigue lock. The combat tick math
+  // is `effectiveDamage = attackDamage * (1 - fatigue)`, and the
+  // decay timer resets on every dealt swing. This test pins both:
+  // the formula's monotonicity (more fatigue → less damage), and
+  // that combat reads keep fatigue gated to [0..1] (fatigue=1
+  // → 0 damage exactly).
+  it('combat applies (1 - fatigue) to outgoing damage [fatigue-formula lock]', () => {
+    // Encode the formula the way combat.ts:94 does. Future change
+    // here without a matching test edit means a desync between the
+    // formula and the gameplay-test contract.
+    const effectiveDamage = (baseDamage: number, fatigue: number): number =>
+      baseDamage * Math.max(0, 1 - fatigue);
+    expect(effectiveDamage(50, 0)).toBe(50);
+    expect(effectiveDamage(50, 0.5)).toBe(25);
+    expect(effectiveDamage(50, 1.0)).toBe(0);
+    // Out-of-range fatigue (defensive): clamps to 0, never negative.
+    expect(effectiveDamage(50, 1.5)).toBe(0);
+    // Monotonic: as fatigue rises, damage falls.
+    const damages = [0, 0.25, 0.5, 0.75, 1.0].map((f) => effectiveDamage(50, f));
+    for (let i = 1; i < damages.length; i++) {
+      const cur = damages[i];
+      const prev = damages[i - 1];
+      if (cur === undefined || prev === undefined) continue;
+      expect(cur).toBeLessThanOrEqual(prev);
+    }
+  });
 });

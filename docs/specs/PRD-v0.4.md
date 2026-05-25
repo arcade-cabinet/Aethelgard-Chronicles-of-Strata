@@ -286,7 +286,7 @@ Schema sketch:
 
 Pattern: `tests/harness/<feature>.browser.test.tsx` mounts the
 feature in isolation, screenshots via vitest browser, locks
-baseline. EVERY M_FUN.* milestone PR adds at least one harness
+baseline. EVERY `M_FUN.*` milestone PR adds at least one harness
 test for the feature it ships. The agent reads the PNG before
 commit; this is the visual-ownership gate the user has flagged
 repeatedly as non-negotiable.
@@ -513,7 +513,7 @@ Then release-please cuts 0.4.0; cd.yml deploys. v0.5 cycle opens.
 ## 10. Tracking
 
 This PRD is the SPEC. Execution progress is tracked in
-`.agent-state/directive.md` under M_FUN.* and M_FUN.ARCH.* item
+`.agent-state/directive.md` under `M_FUN.*` and `M_FUN.ARCH.*` item
 flips. The directive is the QUEUE, not the spec — when a queue
 item closes, the user reads THIS doc to understand what shipped,
 not the directive's audit trail.

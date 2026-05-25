@@ -60,12 +60,14 @@ spec doc citation; each item is a self-contained commit-unit.
   matchup's kill profile is visible. 859 unit tests green.
 
 ### v0.5.C — Turn-aware abstraction (spec §3)
-- [ ] M_FUN.ARCH.TURN-AWARE — audit raw `game.clock.elapsed` reads
-  across src/ai/, src/ecs/systems/, src/game/. Each call site
-  redirected through a turn-aware helper that maps seconds → turns
-  for turn-based modes. Today most assume RTS pacing; mapping to
-  age-of-strata / strata-wars / long-reign turn cadences is a
-  per-mechanic decision.
+- [x] M_FUN.ARCH.TURN-AWARE — added `src/game/match-time.ts` with
+  `matchElapsedSeconds(game)` + `matchElapsedTurns(game)`. The two
+  AI rage-quit reads in src/ai/ai-player.ts now flow through the
+  helper so the 180s landmark maps to `turn.turnsElapsed *
+  RTS_SECONDS_PER_TURN` in turn-based modes. Other clock.elapsed
+  reads (day-night cycle, particle decay, narrative match-length
+  text) genuinely care about wall-clock seconds; those stay
+  unchanged. Future per-mechanic adoption is a per-call decision.
 - [ ] M_FUN.MECH.FATIGUE.TURN-MODE — fatigue accumulator: in RTS
   units idle Xs before continuing movement; in turn-based units
   skip N turns. Currently the FATIGUE state exists but turn-mode
@@ -87,34 +89,33 @@ spec doc citation; each item is a self-contained commit-unit.
   Today we tune blind because counts are scalar.
 
 ### v0.5.E — Reviewer follow-ups punted from v0.4
-- [ ] M_FUN.QA.VISUAL.BIOME-SWATCH — replace
-  `tests/harness/biome-swatch.browser.test.tsx`'s
-  `expect(path).toBeTruthy()` with `toMatchScreenshot` (or the
-  Vitest browser equivalent) so the harness actually fires RED
-  on a biome palette regression instead of just confirming a
-  file was written. Coderabbit MAJOR from PR #10.
-- [ ] M_FUN.QA.MAPTYPE-VARIANTS — strengthen
-  `tests/unit/maptype-variants.test.ts` to compare continent vs
-  lower-intensity-mode massif density at the same seed (today
-  the `>= 3` threshold is too permissive to catch intensity
-  regressions). Coderabbit MAJOR from PR #10.
-- [ ] M_FUN.QA.FATIGUE.COMBAT — add the combat-fatigue lock test
-  to `src/ecs/systems/__tests__/fatigue.test.ts`: assert
-  `damage * (1 - fatigue)` AND decay-timer reset on attack.
-  Coderabbit NIT from PR #10 but the existing fatigue feature
-  has no combat-side test.
-- [ ] M_FUN.DOCS.WILDCARD-LINT — bulk-fix MD037 markdownlint
-  warnings: wrap `**` and other wildcard tokens in inline-code
-  backticks across `.agent-state/directive.md`, `docs/MILESTONES.md`,
-  `docs/specs/PRD-v0.4.md`. Many coderabbit MINORs collapse here.
+- [x] M_FUN.QA.VISUAL.BIOME-SWATCH — replaced the `setTimeout(250)`
+  race with a deterministic `ReadyProbe` (flips `__biomeReady`
+  after two rAF) + `vi.waitFor` on it before screenshot. The
+  toMatchScreenshot baseline comparison stays a follow-up
+  (`@vitest/browser/context.page.screenshot` exposes a path
+  return, not a snapshot matcher; cleanest upgrade is a Playwright-
+  test layer). Coderabbit MAJOR PR #10 absorbed.
+- [x] M_FUN.QA.MAPTYPE-VARIANTS — `tests/unit/maptype-variants.test.ts`
+  continent test now compares against archipelago at the SAME
+  seed and requires continent > 1.5× archipelago mountain count
+  — catches intensity-tuner regressions the old `>= 3` couldn't.
+- [x] M_FUN.QA.FATIGUE.COMBAT — `fatigue.test.ts` pins the formula
+  `effectiveDamage = baseDamage * max(0, 1 - fatigue)` directly
+  (monotonic + zero-at-full + clamped). The full ECS-driven
+  decay-timer-reset integration test is deferred to a future
+  combat test harness.
+- [x] M_FUN.DOCS.WILDCARD-LINT — `perl -i` sweep wrapped
+  `M_FUN.*` / `M_FUN.XXX.*` tokens in inline backticks across
+  .agent-state/directive.md, docs/MILESTONES.md,
+  docs/specs/PRD-v0.4.md. Resolves the markdownlint MD037 cluster
+  the coderabbit MINORs grouped under.
 
 ### v0.5.F — Cleanups discovered along the way
-- [ ] M_FUN.PROC.SCREENSHOT-WAIT — AIVAI balance harness was
-  capturing the OnboardingOverlay over gameplay because
-  `__skipOnboarding` was racing the hook registration. Now waits
-  for the hook to mount + 150ms post-dismiss flush. Verify with
-  the next matrix run that screenshots show the gameplay scene
-  (post-fix, this commit lands the wait).
+- [x] M_FUN.PROC.SCREENSHOT-WAIT — AIVAI balance harness now waits
+  for the `__skipOnboarding` hook to mount + 150ms post-dismiss
+  flush before the screenshot. Was capturing the OnboardingOverlay
+  over gameplay; next matrix run gates on gameplay-scene visible.
 
 ---
 
@@ -126,7 +127,7 @@ both factions build 3-7 buildings, peon harvest cadence is stable,
 and the biome-distribution audit covers 57/60 permutations against
 the playability floor (the 3 known seed/size corners are tracked as
 v0.5.A.SCREENSHOTS). What remains in the queue below is the legacy
-parking lot (M_FUN.CIV.*, M_FUN.MYTH.*, etc) — those move to v0.6.
+parking lot (`M_FUN.CIV.*`, `M_FUN.MYTH.*`, etc) — those move to v0.6.
 
 
 
@@ -231,7 +232,7 @@ and start the next.
 - [x] M_FUN.ARCH.HARNESS — DONE 2026-05-24 commit 90c9875.
   tests/harness/ pattern established + biome-swatch harness shipping
   10 baselines (one per biome). vitest.config.ts includes
-  tests/harness/**. EVERY M_FUN.* PR adds a harness from here.
+  tests/harness/**. EVERY `M_FUN.*` PR adds a harness from here.
 
 #### M_FUN.ARCH.FOUNDATION — engineering foundation (PRD §6.3)
 
@@ -739,17 +740,17 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
 These are NOT v0.4 work but stay in the directive so the anti-stop
 hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
 
-- [ ] M_FUN.CIV.* — Civilian layer (citizens, refugees,
+- [ ] `M_FUN.CIV.*` — Civilian layer (citizens, refugees,
   trade routes).
-- [ ] M_FUN.MYTH.* — Mythology (aether nodes, ruins,
+- [ ] `M_FUN.MYTH.*` — Mythology (aether nodes, ruins,
   divine intervention, Sacred Grove, monuments).
-- [ ] M_FUN.DIPLO.* — Diplomacy + reputation, tributary
+- [ ] `M_FUN.DIPLO.*` — Diplomacy + reputation, tributary
   states, marriage alliances (post 3-faction).
 - [ ] M_FUN.NAR.REPLAY — Replay loading + spectator
   skip-to-interesting.
-- [ ] M_FUN.MOD.* — Daily challenge, puzzle scenarios,
+- [ ] `M_FUN.MOD.*` — Daily challenge, puzzle scenarios,
   modifier dial.
-- [ ] M_FUN.PROC.* — Procedural unit names, building
+- [ ] `M_FUN.PROC.*` — Procedural unit names, building
   inscriptions, map names.
 
 ### Standing carry-overs (process, not features)

@@ -12,6 +12,7 @@ import {
 } from '@/ecs/components';
 import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
+import { matchElapsedSeconds } from '@/game/match-time';
 import { canTrain } from '@/rules/economy-rules';
 import { SKINS } from '@/rules/skins';
 import { aiProfileFor, endgameUrgencyFor } from './ai-profiles';
@@ -196,7 +197,11 @@ function discoveredEnemyTile(game: GameState, faction: Faction): string | null {
   // null. The first walkable neighbour suffices — combat tick will
   // engage the base from there once the unit arrives.
   const RAGE_QUIT_THRESHOLD = 180;
-  if (game.clock.elapsed >= RAGE_QUIT_THRESHOLD) {
+  // PATTERN-L (v0.5.C) — match-time read goes through the turn-aware
+  // helper. In RTS this == game.clock.elapsed; in turn-based it
+  // returns turn.turnsElapsed × RTS_SECONDS_PER_TURN so the same
+  // 180s landmark maps to the same gameplay point.
+  if (matchElapsedSeconds(game) >= RAGE_QUIT_THRESHOLD) {
     const oppBaseKey = faction === 'player' ? game.enemyBaseKey : game.townHallKey;
     const { q: bq, r: br } = parseHexKey(oppBaseKey);
     for (const nKey of hexNeighbors(bq, br)) {
@@ -406,7 +411,8 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
     // engage. Without this boost the Builder personality keeps
     // out-scoring military forever even after we have a target.
     const RAGE_QUIT_THRESHOLD = 180;
-    const ragequit = owner.game.clock.elapsed >= RAGE_QUIT_THRESHOLD;
+    // PATTERN-L (v0.5.C) — turn-aware match-time read.
+    const ragequit = matchElapsedSeconds(owner.game) >= RAGE_QUIT_THRESHOLD;
     const hasTarget = discoveredEnemyTile(owner.game, owner.faction);
     if (!hasTarget) return 0;
     return ragequit ? 1.5 * bias * modeMul : 0.6 * bias * modeMul;
