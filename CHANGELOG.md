@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.15...v0.1.16) (2026-05-25)
+
+
+### Features
+
+* **v0.8:** all 13 work-units shipped — N-player polish + diplo AI + portal cooldown + tutorial + reviewer drain ([#44](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/44)) ([5849f19](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/5849f193216e04d7f77d0ce26555dc26169836b8))
+
 ## [0.1.15](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.14...v0.1.15) (2026-05-25)
 
 
