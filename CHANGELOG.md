@@ -5,6 +5,18 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.5](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.4...v0.1.5) (2026-05-25)
+
+
+### Bug Fixes
+
+* **v0.4:** real device-class detection + WebGL context-lost handler + biome ignore release-please manifest ([#16](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/16)) ([03ff057](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/03ff057c7375b39de204a5f99a44956b5bfe22d0))
+
+
+### Documentation
+
+* **directive:** full v0.6 cycle PRD — portals + diplomacy + MYTH events + 4X depth ([#19](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/19)) ([cc8ec4c](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/cc8ec4c7b6fbdac164685c54e635ebe0618b2de7))
+
 ## [0.1.4](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.3...v0.1.4) (2026-05-25)
 
 
