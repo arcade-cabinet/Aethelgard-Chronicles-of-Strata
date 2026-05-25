@@ -90,52 +90,44 @@ export function detectTranscriptHighlights(game: GameState): MatchHighlight[] {
  * the post-match summary card AND saved alongside the save record
  * so future save-list UI can show match nicknames at a glance.
  */
-const ADJECTIVES_VICTORY = [
-  'Glorious',
-  'Crushing',
-  'Patient',
-  'Sudden',
-  'Inevitable',
-  'Forgotten',
-  'Hard-Won',
-  'Defiant',
-];
-const ADJECTIVES_DEFEAT = [
-  'Bitter',
-  'Doomed',
-  'Final',
-  'Lonely',
-  'Tragic',
-  'Stubborn',
-  'Cursed',
-  'Quiet',
-];
+// M_FUN.ECON.JSON-NARRATIVE — word pools sourced from
+// `src/config/match-narrative.json` (Zod-validated). Adding a new
+// adjective or subject = one JSON entry; no code edit needed.
+// The hand-typed pools were inlined in this file pre-v0.5 (see git
+// blame); the JSON-first sweep lifted them into config alongside
+// resources/eras/world.
+import matchNarrativeJson from '@/config/match-narrative.json';
+import { z } from 'zod';
+
+const MatchNarrativeSchema = z.object({
+  adjectives: z.object({
+    victory: z.array(z.string()).min(1),
+    defeat: z.array(z.string()).min(1),
+    draw: z.array(z.string()).min(1),
+  }),
+  subjects: z.array(z.string()).min(1),
+});
+
+function stripNarrativeComments(input: unknown): unknown {
+  if (Array.isArray(input)) return input.map(stripNarrativeComments);
+  if (input && typeof input === 'object') {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+      if (k === '$comment') continue;
+      out[k] = stripNarrativeComments(v);
+    }
+    return out;
+  }
+  return input;
+}
+
+const _narrative = MatchNarrativeSchema.parse(stripNarrativeComments(matchNarrativeJson));
+const ADJECTIVES_VICTORY = _narrative.adjectives.victory;
+const ADJECTIVES_DEFEAT = _narrative.adjectives.defeat;
 // Reviewer-fix (CRITICAL #1 / draw fell to defeat pool): explicit
 // pool for draws so the nickname matches the modal's "Draw!" title.
-const ADJECTIVES_DRAW = [
-  'Balanced',
-  'Even-Handed',
-  'Twin',
-  'Mirrored',
-  'Stalemate',
-  'Steady',
-  'Equal',
-  'Echoed',
-];
-const SUBJECTS = [
-  'Realm',
-  'Hill',
-  'Spire',
-  'Marsh',
-  'Tide',
-  'Crown',
-  'Banner',
-  'Pact',
-  'Wolf',
-  'Hearth',
-  'Reach',
-  'Storm',
-];
+const ADJECTIVES_DRAW = _narrative.adjectives.draw;
+const SUBJECTS = _narrative.subjects;
 
 function hash32(input: string): number {
   let h = 0x811c9dc5;
