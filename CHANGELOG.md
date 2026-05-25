@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.11](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.10...v0.1.11) (2026-05-25)
+
+
+### Features
+
+* **v0.7:** substrate→player polish + 2 CRITICAL fixes + 11 work-units shipped ([#31](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/31)) ([115a886](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/115a88662cf069b1d7675a564facab667db1c9d8))
+
 ## [0.1.10](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.9...v0.1.10) (2026-05-25)
 
 
