@@ -17,8 +17,9 @@
  * (Radix popover with accept / reject) wires the same primitives in a
  * follow-up commit if not landed within the same work-unit.
  */
-import { getHexKey, hexNeighbors } from '@/core/hex';
+
 import type { FactionId } from '@/config/factions';
+import { getHexKey, hexNeighbors } from '@/core/hex';
 import type { ZoneState } from '@/game/zone';
 import { type DiplomacyState, getRelation, setRelation } from './diplomacy';
 

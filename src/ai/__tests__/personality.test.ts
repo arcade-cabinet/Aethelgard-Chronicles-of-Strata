@@ -8,9 +8,9 @@
  */
 import { describe, expect, it } from 'vitest';
 import { AiPlayer } from '@/ai/ai-player';
+import { ALL_PERSONALITIES, personalityFor } from '@/config/ai-personalities';
 import { Building, FactionTrait } from '@/ecs/components';
 import { runEconomyTick, startGame } from '@/game/game-state';
-import { ALL_PERSONALITIES, personalityFor } from '@/config/ai-personalities';
 
 describe('M_FUN.AI.NAMED — personality biases', () => {
   it('ai-personalities.json contains 5 personalities', () => {

@@ -5,12 +5,12 @@ import type { Group } from 'three';
 import {
   AnimationState,
   AssignedJob,
+  type Faction,
   FactionTrait,
   Health,
   Transform,
   Unit,
   type UnitType,
-  type Faction,
 } from '@/ecs/components';
 import { type ClipName, clipForState } from '@/ecs/systems/animation';
 import { AnimatedCharacter } from '@/entities/AnimatedCharacter';

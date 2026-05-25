@@ -5,12 +5,8 @@
  * Split from ai-player.ts (was 728 lines). See spec 100/101/102.
  */
 import { Goal, GoalEvaluator } from 'yuka';
-import type { BuildingType } from '@/ecs/components';
-import { placeBuilding } from '@/game/commands';
+import type { AiPlayer } from '@/ai/ai-player';
 import { aiProfileFor } from '@/ai/ai-profiles';
-import { SKINS } from '@/rules/skins';
-import { canBuild, peonCap } from '@/rules';
-import { matchElapsedSeconds } from '@/game/match-time';
 import {
   discoveredEnemyTile,
   freeBuildTile,
@@ -18,7 +14,11 @@ import {
   ownedPeonCount,
   totalOwnedBuildings,
 } from '@/ai/helpers';
-import type { AiPlayer } from '@/ai/ai-player';
+import type { BuildingType } from '@/ecs/components';
+import { placeBuilding } from '@/game/commands';
+import { matchElapsedSeconds } from '@/game/match-time';
+import { canBuild, peonCap } from '@/rules';
+import { SKINS } from '@/rules/skins';
 
 export { BuildGoal };
 

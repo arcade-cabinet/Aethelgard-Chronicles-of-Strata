@@ -2,14 +2,14 @@
  * Unit tests for src/hud/minimap-zoom.ts — M_EXPANSION.U.116.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  _resetMinimapZoomForTests,
   getMinimapZoom,
+  MINIMAP_ZOOM_MAX,
+  MINIMAP_ZOOM_MIN,
   setMinimapZoom,
   subscribeMinimapZoom,
-  _resetMinimapZoomForTests,
-  MINIMAP_ZOOM_MIN,
-  MINIMAP_ZOOM_MAX,
 } from '@/hud/minimap-zoom';
 
 beforeEach(() => {

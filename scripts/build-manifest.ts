@@ -21,7 +21,7 @@
  * GLB metadata (triangle count, animation clips) comes from
  * @gltf-transform/core (already a dev dep).
  */
-import { readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { readdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { NodeIO } from '@gltf-transform/core';
 

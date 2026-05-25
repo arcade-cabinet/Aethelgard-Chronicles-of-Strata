@@ -23,10 +23,10 @@
  * to emit the reward instead of the game-over outcome flip.
  */
 import type { Entity, World } from 'koota';
-import { getHexKey, hexDistance } from '@/core/hex';
-import type { BoardData } from '@/core/board';
-import { EnemySpawner, FactionBase, FactionTrait, Health, HexPosition } from '@/ecs/components';
 import type { FactionArchetype, FactionConfig, FactionId } from '@/config/factions';
+import type { BoardData } from '@/core/board';
+import { getHexKey, hexDistance } from '@/core/hex';
+import { EnemySpawner, FactionBase, FactionTrait, Health, HexPosition } from '@/ecs/components';
 
 /**
  * A camp spec returned by `placeBarbarianCamps`. The map-gen layer

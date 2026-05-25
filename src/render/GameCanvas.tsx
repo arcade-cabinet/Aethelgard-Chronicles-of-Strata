@@ -1,21 +1,21 @@
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { type Camera, PCFSoftShadowMap } from 'three';
-import { Building, type BuildingType, HexPosition } from '@/ecs/components';
 import { axialToWorld } from '@/core/hex';
+import { Building, type BuildingType, HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { BuildingOutlineRing } from '@/world/BuildingOutlineRing';
 import { CombatText } from '@/world/CombatText';
+import { ContestedPulse } from '@/world/ContestedPulse';
 import { Crossings } from '@/world/Crossings';
 import { DeathDropLayer } from '@/world/DeathDropLayer';
 import { Decoration } from '@/world/Decoration';
 import { FactionBase } from '@/world/FactionBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
+import { HexGridOverlay } from '@/world/HexGridOverlay';
 import { Mountains } from '@/world/Mountains';
 import { ParticleEmitter } from '@/world/ParticleEmitter';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
-import { VolcanoLayer } from '@/world/VolcanoLayer';
-import { WildfireLayer } from '@/world/WildfireLayer';
-import { QuakeShake } from './QuakeShake';
 import {
   bloodSplashConsumer,
   buildCompleteConsumer,
@@ -32,17 +32,17 @@ import { ResourceText } from '@/world/ResourceText';
 import { Roads } from '@/world/Roads';
 import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
-import { HexGridOverlay } from '@/world/HexGridOverlay';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
-import { Units } from '@/world/Units';
 import { UnitHexOutline } from '@/world/UnitHexOutline';
-import { BuildingOutlineRing } from '@/world/BuildingOutlineRing';
+import { Units } from '@/world/Units';
+import { VolcanoLayer } from '@/world/VolcanoLayer';
 import { Water } from '@/world/Water';
-import { ContestedPulse } from '@/world/ContestedPulse';
+import { WildfireLayer } from '@/world/WildfireLayer';
 import { ZoneBorder } from '@/world/ZoneBorder';
 import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';
+import { QuakeShake } from './QuakeShake';
 import { SuspenseProbe } from './SuspenseProbe';
 import { useGameLoop } from './useGameLoop';
 import { useViewport, type ViewportProfile } from './useViewport';

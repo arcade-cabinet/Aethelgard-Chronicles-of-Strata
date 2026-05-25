@@ -3,13 +3,13 @@
  *
  * The helper is pure state (no DOM), so these run in the Node env.
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
+  _resetForTest,
+  computePanDelta,
   isDragging,
   startDrag,
   stopDrag,
-  computePanDelta,
-  _resetForTest,
 } from '@/world/touch-drag';
 
 beforeEach(() => {

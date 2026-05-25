@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import metadata from '@/config/asset-metadata.json' with { type: 'json' };
 import { resolveSoundId, SOUND_FOR_EVENT } from '@/audio/sound-map';
+import metadata from '@/config/asset-metadata.json' with { type: 'json' };
 
 /**
  * M_EXPANSION.T.131 — every GameAudioEvent in SOUND_FOR_EVENT must

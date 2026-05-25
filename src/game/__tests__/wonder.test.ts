@@ -9,14 +9,14 @@
  * save round-trip preserves all faction ids.
  */
 import { describe, expect, it } from 'vitest';
+import type { FactionId } from '@/config/factions';
 import {
   Building,
   type BuildingType,
-  FactionTrait,
   type Faction,
+  FactionTrait,
   HexPosition,
 } from '@/ecs/components';
-import type { FactionId } from '@/config/factions';
 import { runEconomyTick, startGame } from '@/game/game-state';
 
 function spawnCompleteWonder(game: ReturnType<typeof startGame>, faction: FactionId): void {

@@ -21,11 +21,11 @@
  *   - H-5: const enum replaced with const object (isolatedModules safe)
  */
 import { Goal, GoalEvaluator } from 'yuka';
-import { bordersAreTouching, proposeNonAggressionPact } from '@/game/diplomacy-border';
-import { canDemandTribute, acceptTribute } from '@/game/diplomacy-tribute';
-import { getRelation } from '@/game/diplomacy';
-import { economyFor } from '@/game/economy-for';
 import type { AiPlayer } from '@/ai/ai-player';
+import { getRelation } from '@/game/diplomacy';
+import { bordersAreTouching, proposeNonAggressionPact } from '@/game/diplomacy-border';
+import { acceptTribute, canDemandTribute } from '@/game/diplomacy-tribute';
+import { economyFor } from '@/game/economy-for';
 
 /** Diplomacy action identifier. */
 const DiploAction = {

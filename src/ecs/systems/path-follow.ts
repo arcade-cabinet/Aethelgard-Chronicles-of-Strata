@@ -11,6 +11,7 @@ import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 // M_MICRO.2.2 — local parseStep replaced by shared parseHexLevelKey.
 const parseStep = parseHexLevelKey;
 
+import { biomeRule } from '@/config/mapgen';
 /**
  * Advance every entity with a PathQueue toward its next tile. When an entity
  * reaches the next step it snaps to that tile, updates HexPosition (including
@@ -27,7 +28,6 @@ const parseStep = parseHexLevelKey;
  */
 import type { BoardData } from '@/core/board';
 import { Building, Combatant, FactionTrait, Health } from '@/ecs/components';
-import { biomeRule } from '@/config/mapgen';
 
 const FORTIFY_BUILDINGS = new Set(['Wall', 'Watchtower']);
 

@@ -80,6 +80,7 @@ export function detectTranscriptHighlights(game: GameState): MatchHighlight[] {
   return out;
 }
 
+import { z } from 'zod';
 /**
  * Procedural match nickname. Format: "The <Adjective> of <Subject>".
  * Adjective is picked from a small word-bank indexed by the seed
@@ -100,7 +101,6 @@ export function detectTranscriptHighlights(game: GameState): MatchHighlight[] {
 // blame); the JSON-first sweep lifted them into config alongside
 // resources/eras/world.
 import matchNarrativeJson from '@/config/match-narrative.json';
-import { z } from 'zod';
 
 const MatchNarrativeSchema = z.object({
   adjectives: z.object({

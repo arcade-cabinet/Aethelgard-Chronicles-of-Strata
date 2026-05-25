@@ -2,8 +2,8 @@
  * M_V6.4X-FULL — 4X named-victory detection pins.
  */
 import { describe, expect, it } from 'vitest';
-import { acceptTribute } from '@/game/diplomacy-tribute';
 import { setRelation } from '@/game/diplomacy';
+import { acceptTribute } from '@/game/diplomacy-tribute';
 import { startGame } from '@/game/game-state';
 import {
   detectVictory,

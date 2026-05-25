@@ -18,8 +18,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildDefaultFactions } from '@/config/factions';
 import { Health } from '@/ecs/components';
-import { economyFor } from '@/game/economy-for';
 import { createCharacter } from '@/entities/character-factory';
+import { economyFor } from '@/game/economy-for';
 import { runEconomyTick, startGame } from '@/game/game-state';
 import { spawnBarbarianCamp } from '@/world/barbarian-camps';
 

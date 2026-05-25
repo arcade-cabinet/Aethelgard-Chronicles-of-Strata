@@ -9,9 +9,9 @@
  *      exist within 5 hexes of candidate bases.
  */
 import { describe, expect, it } from 'vitest';
-import { passes4xBalanceGates } from '@/game/mapgen-helpers';
-import { generateBoard } from '@/core/board';
 import type { BoardData } from '@/core/board';
+import { generateBoard } from '@/core/board';
+import { passes4xBalanceGates } from '@/game/mapgen-helpers';
 
 /** Build a minimal BoardData with manually-specified tiles. */
 function mockBoard(

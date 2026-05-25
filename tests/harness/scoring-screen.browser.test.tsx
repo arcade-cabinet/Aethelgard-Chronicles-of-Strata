@@ -10,12 +10,12 @@ import { render } from 'vitest-browser-react';
 import { LEGACY_FACTIONS } from '@/config/factions';
 import { createDiplomacyState } from '@/game/diplomacy';
 import { createDiplomacyProposalState } from '@/game/diplomacy-border';
-import { createMythEventsState } from '@/game/myth-events';
 import { createTradeCooldownState } from '@/game/diplomacy-trade';
 import { createEconomy } from '@/game/economy';
+import { createMythEventsState } from '@/game/myth-events';
 import { createResearch } from '@/game/research';
-import { ScoringScreen } from '@/hud/ScoringScreen';
 import type { VictoryKind } from '@/game/victory-conditions';
+import { ScoringScreen } from '@/hud/ScoringScreen';
 
 function makeStubGame(kind: VictoryKind, winner = 'player'): import('@/game/game-state').GameState {
   const playerEco = createEconomy();

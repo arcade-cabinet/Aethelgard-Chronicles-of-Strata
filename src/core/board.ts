@@ -1,5 +1,5 @@
-import { MAP_RADIUS } from '@/config/world';
 import { MOUNTAIN_TUNING, mapTypeRule } from '@/config/mapgen';
+import { MAP_RADIUS } from '@/config/world';
 import { biomeFlagsFor } from '@/rules/biome-flags';
 import { assignBiome, type Biome } from './biome';
 import { type Crossing, placeCrossings } from './crossings';

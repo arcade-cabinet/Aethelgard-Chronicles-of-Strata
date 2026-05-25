@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { CylinderGeometry, Color } from 'three';
+import { Color, CylinderGeometry } from 'three';
 import type { BiomeType } from '@/core/biome';
 import { BIOME_COLORS } from './palette';
 

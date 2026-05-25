@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 // AIVAI playthrough screenshot battery — exercises a v0.4 match end-to-end
 // and captures viewport screenshots at deterministic intervals so the
 // agent (or a human reviewer) can confirm the visual state of the build
@@ -26,9 +27,9 @@
 // Output: writes PNGs to .agent-state/ownership/playthrough/<ts>/ and
 // a manifest.json with timing + URL + sha for reproducibility.
 
-import { chromium } from 'playwright';
-import { mkdir, writeFile } from 'node:fs/promises';
 import { execSync } from 'node:child_process';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { chromium } from 'playwright';
 
 const PAGES_URL =
   process.env.PAGES_URL ?? 'https://arcade-cabinet.github.io/Aethelgard-Chronicles-of-Strata/';

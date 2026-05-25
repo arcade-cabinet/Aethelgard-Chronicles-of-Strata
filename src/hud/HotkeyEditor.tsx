@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
   DEFAULT_BINDINGS,
-  type HotkeyAction,
   getBindings,
+  type HotkeyAction,
   resetBindings,
   serializeBindings,
   setBinding,

@@ -12,11 +12,10 @@ import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
 import { createEventPrng } from '@/core/rng';
 import { Health } from '@/ecs/components';
-import { startGame } from '@/game/game-state';
-import { grantRandomDiscovery, createResearch, type ResearchId } from '@/game/research';
-import { runEconomyTick } from '@/game/game-state';
-import { spawnBarbarianCamp } from '@/world/barbarian-camps';
 import { createCharacter } from '@/entities/character-factory';
+import { runEconomyTick, startGame } from '@/game/game-state';
+import { createResearch, grantRandomDiscovery, type ResearchId } from '@/game/research';
+import { spawnBarbarianCamp } from '@/world/barbarian-camps';
 
 describe('grantRandomDiscovery', () => {
   it('returns null when the pool is empty', () => {

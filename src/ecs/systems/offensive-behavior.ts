@@ -10,8 +10,8 @@ import {
   Transform,
   Unit,
 } from '@/ecs/components';
-import { type Projectile, spawnProjectile } from '@/game/projectiles';
 import type { DamageEvent } from '@/ecs/systems/combat';
+import { type Projectile, spawnProjectile } from '@/game/projectiles';
 // M_REGISTRY.17 — MILITARY set unified into UNIT_PROFILES.combatRole.
 // Was a 6-role hand-built set duplicated across 3 modules; corrected
 // by-derivation to include Trebuchet (was missing in the legacy set).

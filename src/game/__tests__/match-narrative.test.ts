@@ -11,8 +11,9 @@
  * Structure assertions: "The <adj> <subject>" where <adj> is a
  * member of the outcome's adjective pool per the JSON schema.
  */
-import matchNarrativeJson from '@/config/match-narrative.json';
+
 import { describe, expect, it } from 'vitest';
+import matchNarrativeJson from '@/config/match-narrative.json';
 import type { GameState } from '@/game/game-state';
 import { detectTranscriptHighlights, matchNickname } from '../match-narrative';
 

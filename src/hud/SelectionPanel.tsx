@@ -15,15 +15,15 @@ import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
 import { selectedEntity } from '@/game/selection';
+import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
+import type { BuildContext } from '@/world/TileInteraction';
+import { costLabel } from './format';
+import { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
 import {
   buildDisabledReason,
   researchDisabledReason,
   trainDisabledReason,
 } from './selection-panel-reasons';
-import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
-import type { BuildContext } from '@/world/TileInteraction';
-import { costLabel } from './format';
-import { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
 import { useRafLoop } from './useRafLoop';
 
 /** Buildable types derived from the BUILDING_COSTS table — NOT hardcoded. */

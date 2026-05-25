@@ -9,7 +9,7 @@
  * Adding an achievement: one row in ACHIEVEMENTS + one call site in
  * the achievement-emit point.
  */
-import { PREF_KEYS, type Persistence, safePersistenceRead } from '@/persistence/persistence';
+import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
 
 export interface AchievementDef {
   id: string;
@@ -17,12 +17,12 @@ export interface AchievementDef {
   description: string;
 }
 
+import { z } from 'zod';
 // M_FUN.ECON.JSON-ACHIEVEMENTS — registry sourced from
 // `src/config/achievements.json` via Zod. Adding a new
 // achievement = one JSON entry; the persistence layer + HUD
 // toast picks it up automatically.
 import achievementsJson from '@/config/achievements.json';
-import { z } from 'zod';
 
 const AchievementDefSchema = z.object({
   id: z.string().min(1),

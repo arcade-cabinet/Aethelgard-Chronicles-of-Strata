@@ -19,7 +19,7 @@ import { triggerQuake } from '@/ecs/systems/quake';
 import { igniteWildfire } from '@/ecs/systems/wildfire';
 import { announce } from '@/hud/aria-live-bus';
 import type { GameState } from './game-state';
-import { type WeatherState, WEATHER_PROFILES } from './weather';
+import { WEATHER_PROFILES, type WeatherState } from './weather';
 
 /** One concrete event kind. */
 export type RandomEventKind =
