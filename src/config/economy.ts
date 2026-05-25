@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { RESOURCE_IDS } from '@/config/resources';
 import type { BuildingType, ResourceType, UnitType } from '@/ecs/components';
 import type { ResourceCost } from '@/game/economy';
 import economyJson from './economy.json';
@@ -8,18 +9,20 @@ import economyJson from './economy.json';
  * `economy.json`. Replaces the bare `as EconomyConfig` cast with
  * runtime parse + fail-fast on schema drift. CI catches a typo'd
  * JSON edit at module load time.
+ *
+ * The cost + startingResources schemas BUILD from `RESOURCE_IDS`
+ * (the JSON-first resource registry from `src/config/resources.json`)
+ * rather than hand-listing slots. Adding a 6th slot to resources.json
+ * is automatically allowed here — the prior hand-listed schema
+ * silently STRIPPED unknown slots from economy.json, which is the
+ * latent bug both reviewer passes flagged. The coderabbit + simplifier
+ * reports both called this out as MR-1 / "highest-ROI JSON-first
+ * conversion remaining".
  */
 
-// ResourceCost is a Partial<Record<ResourceType, number>> in game
-// code — every key optional. Building rows specify only what they
-// cost ({wood:60} House; {stone:60} Wall etc).
-const ResourceCostSchema = z.object({
-  wood: z.number().int().nonnegative().optional(),
-  stone: z.number().int().nonnegative().optional(),
-  gold: z.number().int().nonnegative().optional(),
-  science: z.number().int().nonnegative().optional(),
-  mana: z.number().int().nonnegative().optional(),
-});
+const ResourceCostSchema = z.object(
+  Object.fromEntries(RESOURCE_IDS.map((id) => [id, z.number().int().nonnegative().optional()])),
+) as z.ZodType<ResourceCost>;
 
 const ResourceSpawnRuleSchema = z.object({
   resourceType: z.string(),
@@ -28,15 +31,9 @@ const ResourceSpawnRuleSchema = z.object({
   amount: z.number().positive(),
 });
 
-const StartingResourcesSchema = z.object({
-  wood: z.number().nonnegative(),
-  stone: z.number().nonnegative(),
-  gold: z.number().nonnegative(),
-  science: z.number().nonnegative(),
-  /** M_EXPANSION.F.72 — optional mana; defaults to 0 elsewhere. */
-  mana: z.number().nonnegative().optional(),
-  maxSupply: z.number().int().nonnegative(),
-});
+const StartingResourcesSchema = z
+  .object(Object.fromEntries(RESOURCE_IDS.map((id) => [id, z.number().nonnegative().optional()])))
+  .extend({ maxSupply: z.number().int().nonnegative() });
 
 const EconomyConfigSchema = z.object({
   buildingCosts: z.record(z.string(), ResourceCostSchema),
@@ -72,14 +69,7 @@ export interface EconomyConfig {
   buildableBiomes: string[];
   supplyCosts: Record<UnitType, number>;
   unitCosts: Record<'Peon' | 'Footman', ResourceCost>;
-  startingResources: {
-    wood: number;
-    stone: number;
-    gold: number;
-    science: number;
-    mana?: number;
-    maxSupply: number;
-  };
+  startingResources: Partial<Record<ResourceType, number>> & { maxSupply: number };
   resourceSpawn: ResourceSpawnRule[];
   harvestYield: Record<ResourceType, number>;
   roadCosts: Record<'stone' | 'wood' | 'dirt', ResourceCost>;
