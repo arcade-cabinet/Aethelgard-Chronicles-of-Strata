@@ -18,34 +18,34 @@ mode the user wants, and removes the 2-faction asymmetry ceiling.
 
 Concrete work-units (each one v0.5 commit):
 
-- [ ] M_PIVOT.N-PLAYER.FACTIONS — `Faction` becomes a registry-
+- [ ] [WAIT-V0.5] M_PIVOT.N-PLAYER.FACTIONS — `Faction` becomes a registry-
   backed id, not a `'player' | 'enemy'` literal union. NewGameConfig
   carries `factions: FactionConfig[]` (id, color, displayName,
   controller: 'human' | 'ai', personality?). GameEconomy + zones
   + AiPlayer all key by id. The 2-faction case becomes N=2.
-- [ ] M_PIVOT.N-PLAYER.COLOR-PICKER — pre-game NewGameModal exposes
+- [ ] [WAIT-V0.5] M_PIVOT.N-PLAYER.COLOR-PICKER — pre-game NewGameModal exposes
   a Radix color palette per faction slot. Default = shuffled
   permutation of an 8-color palette; click any chip to open the
   picker. Color flows into every faction-scoped renderer
   (ZoneBorder, building outline ring, unit hex outline, base
   banner, HUD chips).
-- [ ] M_PIVOT.N-PLAYER.SHARED-KIT — every faction uses the SAME
+- [ ] [WAIT-V0.5] M_PIVOT.N-PLAYER.SHARED-KIT — every faction uses the SAME
   buildings (House/Farm/Barracks/Watchtower/Wall/Wonder/Library/
   Granary), the SAME units (Peon/Footman/Scout/Wizard/Healer/
   Ferryman/Settler/Hero/Trebuchet), and the SAME Discovery tree.
   The current enemy-only types (Goblin/Orc/Vampire/Witch/
   BlackKnight) move to the BARBARIAN pool.
-- [ ] M_PIVOT.BARBARIAN-CAMPS — repurpose the graveyard biome +
+- [ ] [WAIT-V0.5] M_PIVOT.BARBARIAN-CAMPS — repurpose the graveyard biome +
   enemy-raid units. Camp = neutral attractor placed at gen-time
   (1..(N+2)/2 per map; biased toward the central interior) that
   spawns raid waves on a clock. Camps may be cleared by ANY
   faction; clearing yields a one-shot bonus. Camp AI is the
   existing raid-attack code scoped per-camp not per-faction.
-- [ ] M_PIVOT.RENDER.COLOR-OUTLINE — ZoneBorder, building rings,
+- [ ] [WAIT-V0.5] M_PIVOT.RENDER.COLOR-OUTLINE — ZoneBorder, building rings,
   per-unit hex outline shaders read from the faction's color
   config. All "blue=player / red=enemy" hardcodes go through the
   registry — same lift as the resource Records sweep.
-- [ ] M_PIVOT.MODES.4X — once N-player + barbarians ship, the 4X
+- [ ] [WAIT-V0.5] M_PIVOT.MODES.4X — once N-player + barbarians ship, the 4X
   mode (turn-based, age-of-strata) gets a 6-player default config
   + FFA / team variant. The user's "MUCH more fun ESPECIALLY in
   4x mode" — this is the payoff.

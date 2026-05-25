@@ -331,7 +331,17 @@ class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     if (!atCap && ownedBuildingCount(game, faction, 'House') < 2) priority.push('House');
     priority.push('Farm'); // supply ceiling
     const enemySighted = discoveredEnemyTile(game, faction) !== null;
-    if (ownedBuildingCount(game, faction, 'Barracks') === 0 && enemySighted)
+    // PATTERN-N (v0.4 pre-merge) — drop the enemySighted gate on
+    // Barracks after 90 sim-seconds. The matrix run showed EVERY
+    // faction shipped Offensive=0 because peons stay near base
+    // (zoneUnionPct < 7%) → never sight enemy → never queue
+    // Barracks → never train Footman → never push to win. The
+    // ragequit pattern already exists for MilitaryEvaluator; this
+    // mirrors it for the Barracks unlock so a Footman queue can
+    // form even on hyperdefensive personalities.
+    const matchElapsedSec = matchElapsedSeconds(game);
+    const barracksReady = enemySighted || matchElapsedSec >= 90;
+    if (ownedBuildingCount(game, faction, 'Barracks') === 0 && barracksReady)
       priority.push('Barracks');
     if (atCap) priority.push('Granary'); // additional peon ceiling
     // Watchtower if enemy seen + we don't already have one (defends the
