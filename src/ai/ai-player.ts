@@ -199,7 +199,6 @@ function discoveredEnemyTile(game: GameState, faction: Faction): string | null {
   // non-walkable (CodeRabbit fix), so findPath to it would return
   // null. The first walkable neighbour suffices — combat tick will
   // engage the base from there once the unit arrives.
-  const RAGE_QUIT_THRESHOLD = 180;
   // PATTERN-L (v0.5.C) — match-time read goes through the turn-aware
   // helper. In RTS this == game.clock.elapsed; in turn-based it
   // returns turn.turnsElapsed × RTS_SECONDS_PER_TURN so the same
@@ -423,8 +422,8 @@ class MilitaryEvaluator extends GoalEvaluator<AiPlayer> {
     // OVERRIDES Build — we've sat on builds too long, time to
     // engage. Without this boost the Builder personality keeps
     // out-scoring military forever even after we have a target.
-    const RAGE_QUIT_THRESHOLD = 180;
-    // PATTERN-L (v0.5.C) — turn-aware match-time read.
+    // PATTERN-L (v0.5.C) — turn-aware match-time read; RAGE_QUIT_THRESHOLD
+    // is the module-level constant near STARVATION_THRESHOLD (single source).
     const ragequit = matchElapsedSeconds(owner.game) >= RAGE_QUIT_THRESHOLD;
     const hasTarget = discoveredEnemyTile(owner.game, owner.faction);
     if (!hasTarget) return 0;
@@ -598,6 +597,15 @@ class TrainGoal extends Goal<AiPlayer> {
 
 /** Seconds of continuous starvation before the AI resigns. */
 const STARVATION_THRESHOLD = 300;
+
+/**
+ * Sim-seconds before the AI flips into "rage-quit" mode — its
+ * MilitaryEvaluator desirability spikes so a stuck stalemate
+ * shifts the brain toward offence. Coderabbit MAJOR PR #10
+ * 05:46Z — extracted from duplicate inline `const` at lines 202
+ * and 426; one source so a tuning change moves both call sites.
+ */
+const RAGE_QUIT_THRESHOLD = 180;
 
 /**
  * The AI surrenders when its faction is "starved" for STARVATION_THRESHOLD

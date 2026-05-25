@@ -135,6 +135,13 @@ export function assignBiome(
   moisture: Noise2D,
   boardRadius: number = MAP_RADIUS,
 ): Biome {
+  // Coderabbit MAJOR PR #10 05:46Z — non-positive boardRadius would
+  // make `dist` divide by zero / negative and collapse biome
+  // assignment. Fail loudly at the call site so an upstream config
+  // typo doesn't silently bake a bad map.
+  if (boardRadius <= 0) {
+    throw new Error(`assignBiome: boardRadius must be > 0, got ${boardRadius}`);
+  }
   const s = -q - r;
   const nx = q * noiseScale;
   const nz = r * noiseScale;

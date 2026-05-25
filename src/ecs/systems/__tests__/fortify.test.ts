@@ -5,6 +5,7 @@
  */
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
+import type { BoardData, Tile } from '@/core/board';
 import {
   Building,
   Combatant,
@@ -17,14 +18,15 @@ import {
 } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 
-function makeStubBoard() {
-  const tiles = new Map<
-    string,
-    { q: number; r: number; type: string; walkable: boolean; level: number }
-  >();
-  // PASS at (1, 0). Origin (0, 0) is GRASS (start tile).
-  tiles.set('0,0', { q: 0, r: 0, type: 'GRASS', walkable: true, level: 2 });
-  tiles.set('1,0', { q: 1, r: 0, type: 'MOUNTAIN_PASS', walkable: true, level: 3 });
+// Coderabbit MAJOR PR #10 05:46Z — proper Tile-typed stub so the
+// pathFollowSystem call no longer needs `as never`.
+function tile(q: number, r: number, type: Tile['type'], level: number): Tile {
+  return { q, r, type, walkable: true, level, moisture: 0.5, isCrossingLanding: false };
+}
+function makeStubBoard(): BoardData['tiles'] {
+  const tiles = new Map<string, Tile>();
+  tiles.set('0,0', tile(0, 0, 'GRASS', 2));
+  tiles.set('1,0', tile(1, 0, 'MOUNTAIN_PASS', 3));
   return tiles;
 }
 
@@ -53,7 +55,7 @@ describe('M_FUN.MAP.FORTIFY — fatigue suppression near friendly Wall/Watchtowe
     const tiles = makeStubBoard();
     const f = makeFootman(world, 'player');
     // Drain the move in one big delta so the arrival branch fires.
-    pathFollowSystem(world, 10, 1.0, tiles as never);
+    pathFollowSystem(world, 10, 1.0, tiles);
     const c = f.get(Combatant);
     expect(c?.fatigue ?? 0).toBeGreaterThan(0);
   });
@@ -68,7 +70,7 @@ describe('M_FUN.MAP.FORTIFY — fatigue suppression near friendly Wall/Watchtowe
       FactionTrait({ faction: 'player' }),
     );
     const f = makeFootman(world, 'player');
-    pathFollowSystem(world, 10, 1.0, tiles as never);
+    pathFollowSystem(world, 10, 1.0, tiles);
     const c = f.get(Combatant);
     expect(c?.fatigue ?? 0).toBe(0);
   });
@@ -82,7 +84,7 @@ describe('M_FUN.MAP.FORTIFY — fatigue suppression near friendly Wall/Watchtowe
       FactionTrait({ faction: 'enemy' }),
     );
     const f = makeFootman(world, 'player');
-    pathFollowSystem(world, 10, 1.0, tiles as never);
+    pathFollowSystem(world, 10, 1.0, tiles);
     const c = f.get(Combatant);
     expect(c?.fatigue ?? 0).toBeGreaterThan(0);
   });

@@ -84,7 +84,7 @@
       "attributeStrength": 0
     },
     "MOUNTAIN_PASS": {
-      "elevation": 3,
+      "elevation": 5,
       "walkable": true,
       "buildable": true,
       "habitable": false,
@@ -93,7 +93,7 @@
       "attributeStrength": 0.5
     },
     "MOUNTAIN": {
-      "elevation": 5,
+      "elevation": 6,
       "walkable": false,
       "buildable": false,
       "habitable": false,
@@ -102,7 +102,7 @@
       "attributeStrength": 0
     },
     "VOLCANO": {
-      "elevation": 5,
+      "elevation": 7,
       "walkable": false,
       "buildable": false,
       "habitable": false,

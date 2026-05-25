@@ -169,6 +169,19 @@ export function nextPeonAction(peon: PeonView, world: PeonWorld): PeonAction {
   const [bq, br] = world.baseKey.split(',').map(Number) as [number, number];
   const targetStillLive = peon.targetKey && world.resources.some((s) => s.key === peon.targetKey);
   if (peon.state === 'SEEKING' && targetStillLive) {
+    // Coderabbit MAJOR PR #10 05:46Z — respect threatened-tile
+    // avoidance even when keeping the current target. The old code
+    // would silently re-seek a contested resource tile because the
+    // existing target took priority. Switch to the best safe
+    // alternative; if there isn't one, idle (the flee path at the
+    // top of this function handles a peon already ON the threat).
+    if (world.threatenedTiles.has(peon.targetKey)) {
+      const bestSafe = nearestResource(peon.q, peon.r, bq, br, world.resources);
+      if (bestSafe && !world.threatenedTiles.has(bestSafe.key)) {
+        return { kind: 'seek', targetKey: bestSafe.key };
+      }
+      return { kind: 'idle' };
+    }
     // Honor the current target ONLY if it's the best base-anchored
     // pick; otherwise switch. Avoids the "enemy peon walking the
     // length of the board" failure mode.

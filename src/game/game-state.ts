@@ -456,6 +456,44 @@ function adjacentWalkableTiles(
 }
 
 /**
+ * BFS expansion of walkable tiles within `maxDepth` rings of (q,r).
+ * Coderabbit MAJOR PR #10 05:46Z — the AIVAI starter spawn previously
+ * misused `adjacentWalkableTiles(..., N)` as a radius (the 4th arg is
+ * a count of immediate neighbours, NOT a ring depth). This helper is
+ * the proper radius-aware fallback when the 6 axial neighbours of a
+ * blocked base tile are all non-walkable (peninsula / mountain-locked
+ * spawn). Returns up to `count` walkable tiles, prefers nearer rings.
+ */
+function walkableTilesByExpansion(
+  board: BoardData,
+  q: number,
+  r: number,
+  maxDepth: number,
+  count: number,
+): Array<{ q: number; r: number; level: number }> {
+  const out: Array<{ q: number; r: number; level: number }> = [];
+  const seen = new Set<string>([getHexKey(q, r)]);
+  let frontier: Array<{ q: number; r: number }> = [{ q, r }];
+  for (let depth = 0; depth < maxDepth && out.length < count; depth++) {
+    const next: Array<{ q: number; r: number }> = [];
+    for (const node of frontier) {
+      for (const key of hexNeighbors(node.q, node.r)) {
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const tile = board.tiles.get(key);
+        if (!tile) continue;
+        if (tile.walkable && out.length < count) {
+          out.push({ q: tile.q, r: tile.r, level: tile.level });
+        }
+        next.push({ q: tile.q, r: tile.r });
+      }
+    }
+    frontier = next;
+  }
+  return out;
+}
+
+/**
  * Start a new game.
  *
  * Accepts either a `NewGameConfig` object or a plain `string` seed phrase.
@@ -694,17 +732,16 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // there the enemy gets units from the EnemySpawner cadence.
   const isAiVsAi = typeof config === 'object' && config.aiVsAi;
   if (isAiVsAi) {
-    // Coderabbit MAJOR PR #10 04:56Z: when radius-2 returns empty
-    // (tight peninsulas / mountain-locked spawns), don't fall back
-    // to the blocked town-hall tile — try wider rings first. Only
-    // if even radius-5 is empty (effectively impossible on a normal
-    // map) does spawning on the base tile become the last resort.
+    // Coderabbit MAJOR PR #10 05:46Z fix to my prior fix: the 4th
+    // arg of adjacentWalkableTiles is a COUNT (cap of immediate
+    // neighbours), not a radius. The earlier "wider ring" cascade
+    // never actually widened. Use walkableTilesByExpansion for a
+    // real BFS expansion up to depth 4; only if EVERY tile within
+    // 4 rings is blocked (effectively impossible on a normal map)
+    // do we fall back to the base tile.
     let enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 2);
     if (enemyPeonSpawns.length === 0) {
-      enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 3);
-    }
-    if (enemyPeonSpawns.length === 0) {
-      enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 5);
+      enemyPeonSpawns = walkableTilesByExpansion(board, enemyBaseTile.q, enemyBaseTile.r, 4, 6);
     }
     if (enemyPeonSpawns.length === 0) enemyPeonSpawns.push(enemyBaseTile);
     for (let i = 0; i < 2; i++) {

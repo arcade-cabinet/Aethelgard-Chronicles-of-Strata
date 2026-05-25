@@ -12,6 +12,7 @@
  * MOUNTAIN/MOUNTAIN_PASS share `highland`; LAVA shares
  * `volcano`). Adding a new biome = add one row.
  */
+import { assets } from '@/assets/assets';
 import type { BiomeType } from '@/core/biome';
 
 export const BIOME_AMBIENT: Record<BiomeType, string> = {
@@ -32,6 +33,23 @@ export const BIOME_AMBIENT: Record<BiomeType, string> = {
   // ambient (waves + birds); the visual swirl carries the danger cue.
   QUICKSAND: 'audio.ambient.coast',
 };
+
+// Coderabbit MAJOR PR #10 05:46Z — typed-manifest enforcement.
+// The string IDs above can't be compile-time checked (TypeScript
+// can't infer the manifest's `audio.ambient.*` keys from JSON), so
+// a rename slips through tsc and surfaces as silent gameplay. Validate
+// every id resolves at module load — throws fast on drift, same shape
+// as the equivalent sound-map.ts guard.
+for (const [biome, id] of Object.entries(BIOME_AMBIENT)) {
+  try {
+    assets.entry(id);
+  } catch {
+    throw new Error(
+      `BIOME_AMBIENT["${biome}"] references unknown asset id "${id}" — ` +
+        'manifest drift or typo. Check src/config/asset-metadata.json.',
+    );
+  }
+}
 
 /** Resolve the ambient track id for a biome. */
 export function ambientForBiome(biome: BiomeType): string {

@@ -37,8 +37,13 @@ const BiomeAttributeSchema = z.enum(['disease', 'fatigue', 'dehydration']).nulla
 export type BiomeAttribute = z.infer<typeof BiomeAttributeSchema>;
 
 const BiomeRuleSchema = z.object({
-  /** Integer elevation tier 0–5 (matches Biome.level). */
-  elevation: z.number().int().min(0).max(5),
+  /** Integer elevation tier 0–7. 0..5 matches the runtime Biome.level
+   * floor produced by levelToType (OCEAN..MOUNTAIN); 5..7 are reserved
+   * for the stacked-massif tiers MOUNTAIN_PASS=5 / MOUNTAIN=6 / VOLCANO=7
+   * applied on top of the noise floor by the massif-stack pass. The
+   * value drives BiomeSwatch extrude height only — runtime gen uses
+   * the absolute Biome.level. Coderabbit MAJOR PR #10 05:46Z. */
+  elevation: z.number().int().min(0).max(7),
   walkable: z.boolean(),
   buildable: z.boolean(),
   habitable: z.boolean(),

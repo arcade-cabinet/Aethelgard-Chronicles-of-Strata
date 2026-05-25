@@ -66,10 +66,18 @@ export function CameraRig({ viewport, boardRadius, landCenter }: CameraRigProps)
     if (!controls) return;
     const onChange = () => {
       const t = controls.target;
+      const prevX = t.x;
+      const prevZ = t.z;
       // PATTERN-H — pan clamp is centred on landCenter, not the axial
       // origin, so an offset board still pans naturally within bounds.
       t.x = Math.max(cx - panLimit, Math.min(cx + panLimit, t.x));
       t.z = Math.max(cz - panLimit, Math.min(cz + panLimit, t.z));
+      // Coderabbit MAJOR PR #10 05:46Z — keep camera in sync when
+      // clamp fires during drag. Without this, drag-panning past
+      // the limit snaps the target but the camera keeps drifting,
+      // breaking the camera↔target invariant orbit-controls expect.
+      camera.position.x += t.x - prevX;
+      camera.position.z += t.z - prevZ;
       cameraView.targetX = t.x;
       cameraView.targetZ = t.z;
       cameraView.distance = camera.position.distanceTo(t);

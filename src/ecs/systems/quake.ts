@@ -94,18 +94,17 @@ export function triggerQuake(game: GameState, board: BoardData): QuakeResult {
     const next = FLIP_TABLE[t.type];
     if (!next) continue;
     t.type = next;
-    // Re-derive walkable from the new type's biome flags. Coderabbit
-    // MAJOR fix: if we keep the prior `t.level < 5` guard, a quake
-    // that flips MOUNTAIN (level 5) → MOUNTAIN_PASS keeps the tile
-    // unwalkable because `t.level` stays 5 (we intentionally don't
-    // change elevation to avoid a height-mesh rebuild). Lower the
-    // level to the new biome's canonical elevation so walkable
-    // resolves to true for MOUNTAIN_PASS. Other quake transitions
-    // (MOUNTAIN_PASS → MOUNTAIN) also benefit from the elevation
-    // realign.
+    // Re-derive walkable from the new type's biome flags. PR #10
+    // 05:46Z follow-up: with the corrected massif elevation contract
+    // (MOUNTAIN_PASS=5, MOUNTAIN=6, VOLCANO=7), the prior `t.level < 5`
+    // hard-floor would mis-classify MOUNTAIN_PASS as unwalkable.
+    // biomeRule.walkable is the single source of truth (PASS=true,
+    // MOUNTAIN=false). Re-align the tile elevation to the new biome's
+    // canonical tier and use rule.walkable directly — no redundant
+    // numeric guard.
     const rule = biomeRule(t.type);
     t.level = rule.elevation;
-    t.walkable = rule.walkable && t.level < 5;
+    t.walkable = rule.walkable;
     flipped.push(getHexKey(t.q, t.r));
   }
 

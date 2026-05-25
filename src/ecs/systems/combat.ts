@@ -304,7 +304,11 @@ export function combatSystem(
       const ev = events[i];
       if (!ev) continue;
       const tid = Number(ev.target);
-      if (killedTargetIds.has(tid)) {
+      // Skip miss/parry events (damage 0) — kill credit goes to a
+      // damaging blow only. Coderabbit MAJOR PR #10 05:46Z fix to my
+      // own prior fix: the bare reverse-scan would tag a parry as
+      // the kill if it happened to be the last event chronologically.
+      if (killedTargetIds.has(tid) && ev.damage > 0) {
         ev.isKill = true;
         killedTargetIds.delete(tid);
         if (killedTargetIds.size === 0) break;
