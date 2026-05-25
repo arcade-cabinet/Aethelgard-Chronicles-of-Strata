@@ -69,6 +69,9 @@ export function useAudio(game: GameState): void {
     const onPortalStones = (): void => {
       const map = SOUND_FOR_EVENT['portal-stones-placed'];
       playSound(busesRef.current, map.bus, resolveSoundId(map));
+      // CodeRabbit PR #44: fire the caption alongside the audio so the
+      // a11y captions overlay surfaces the event for deaf/mute players.
+      pushCaptionForEvent('portal-stones-placed');
     };
     if (typeof window === 'undefined') return;
     window.addEventListener('aethelgard:portal-stones-placed', onPortalStones);

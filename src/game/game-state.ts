@@ -987,16 +987,24 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
       // object is a superset — accesses by non-Faction string id return
       // the correct ZoneState. DiplomaticEvaluator uses `as Record<string, ...>`
       // at the call site to avoid the type-narrowing restriction.
-      for (const fc of config.factions ?? LEGACY_FACTIONS) {
+      // CodeRabbit PR #44: seed from RUNTIME factions (which include
+      // auto-added barbarian camps), not config.factions. config.factions
+      // may be undefined in legacy flows, and even when set it's missing
+      // the barbarian-camp-N ids the placer appends above.
+      for (const fc of factions) {
         if (!(fc.id in seeded)) (seeded as Record<string, ZoneState>)[fc.id] = createZoneState();
       }
       return seeded;
     })(),
     score: { player: 0, enemy: 0 },
     // M_V8.WONDER-TIMERS.N-PLAYER — seed all faction ids (Infinity = no Wonder yet).
-    wonderTimers: Object.fromEntries(
-      (config.factions ?? LEGACY_FACTIONS).map((f) => [f.id, Infinity]),
-    ) as Record<string, number>,
+    // CodeRabbit PR #44: use the runtime `factions` array so barbarian-camp
+    // slots get an Infinity timer too (otherwise wonder-progress lookups
+    // hit undefined for those ids).
+    wonderTimers: Object.fromEntries(factions.map((f) => [f.id, Infinity])) as Record<
+      string,
+      number
+    >,
     // M_FUN.DYN.WILDFIRE — empty burning-tile registry. The wildfire
     // system creates entries via igniteWildfire and prunes via the
     // tick loop; default is the empty map (no fires lit at game start).

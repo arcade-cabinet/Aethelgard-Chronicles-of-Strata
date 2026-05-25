@@ -94,8 +94,18 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
       ];
 
       // 1. Propose a non-aggression pact if borders touch and not yet allied or enemy.
+      // CodeRabbit PR #44: also skip if there's already a pending proposal
+      // either direction — proposeNonAggressionPact would reject it, but the
+      // evaluator would still claim feasibility and crowd out actionable goals.
       if (rel === 'neutral' && myZone && theirZone && bordersAreTouching(myZone, theirZone)) {
-        return { action: DiploAction.ProposePact, targetId: fc.id };
+        const hasPending = game.diplomacyProposals.pending.some(
+          (p) =>
+            (p.proposer === myId && p.target === fc.id) ||
+            (p.proposer === fc.id && p.target === myId),
+        );
+        if (!hasPending) {
+          return { action: DiploAction.ProposePact, targetId: fc.id };
+        }
       }
 
       // 2. Demand tribute if clearly dominant.

@@ -140,19 +140,27 @@ jobs:
       - name: Skip (no visual-relevant changes)
         if: steps.filter.outputs.visual != 'true'
         run: echo "No visual changes — skipping battery."
+      # CodeRabbit PR #44: gate Playwright install + browser run to
+      # maintainer PRs/pushes so fork PRs don't get to spin up a headless
+      # Chromium + upload artifacts on our CI budget. Matches the
+      # M_AUDIT2.SEC2.21 / M_SEC.16 fork-hardening pattern used by
+      # build-and-test above.
+      - name: Skip (fork PR — visual-battery is maintainer-only)
+        if: steps.filter.outputs.visual == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: echo "Fork PR — visual battery only runs on maintainer PRs / push:main."
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        if: steps.filter.outputs.visual == 'true'
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         with: { node-version: 22 }
       - name: Enable corepack + pnpm
-        if: steps.filter.outputs.visual == 'true'
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: |
           corepack enable
           corepack prepare pnpm@9.15.0 --activate
       - name: Install dependencies
-        if: steps.filter.outputs.visual == 'true'
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: pnpm install --frozen-lockfile
       - name: Install Playwright Chromium
-        if: steps.filter.outputs.visual == 'true'
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: pnpm exec playwright install --with-deps chromium
       - name: Visual battery (report drift; non-blocking until v0.9 cross-platform baselines)
         # Cross-platform baseline drift (Mac-locked vs Linux-CI-rendered)
@@ -162,7 +170,7 @@ jobs:
         # M_V9.VISUAL.LINUX-LOCK locks baselines from a Linux container so
         # the gate is byte-stable. Until then this job uploads the drift
         # artifact for review but does NOT block merges.
-        if: steps.filter.outputs.visual == 'true'
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         continue-on-error: true
         run: pnpm visual:battery:ci
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
