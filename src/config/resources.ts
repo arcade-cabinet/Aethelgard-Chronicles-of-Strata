@@ -132,6 +132,12 @@ const ResourceConfigSchema = z.object({
    * asset path (mesh, sprite, particle).
    */
   abstract: z.boolean().optional(),
+  /**
+   * HUD render colour (CSS hex). Drives the resource-bar pill +
+   * floating "+N <resource>" popup tint. Optional — falls back to a
+   * neutral grey if absent. Coderabbit + simplifier reviewer QW-3.
+   */
+  color: z.string().optional(),
   sources: z.array(ResourceSourceSchema).min(1),
   consumers: z.array(ResourceConsumerSchema),
 });

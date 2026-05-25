@@ -1,0 +1,22 @@
+{
+  "$comment": "Achievement registry. Each row declares id/title/description; the achievement-unlock dispatcher in src/game/achievements.ts reads this list at module load. Adding an achievement = one JSON entry; the persistence layer + HUD toast picks it up. M_FUN.ECON.JSON-ACHIEVEMENTS — JSON-first per the resource/era/narrative pattern.",
+  "achievements": [
+    { "id": "first-victory", "title": "First Victory", "description": "Win your first game." },
+    {
+      "id": "wonder-win",
+      "title": "Builder of Wonders",
+      "description": "Win by completing the Wonder countdown."
+    },
+    {
+      "id": "turtle-victory",
+      "title": "Patience",
+      "description": "Win without building a single Watchtower."
+    },
+    {
+      "id": "first-discovery",
+      "title": "Curious Mind",
+      "description": "Purchase your first Discovery."
+    },
+    { "id": "first-kill", "title": "Blooded", "description": "Defeat your first enemy unit." }
+  ]
+}
