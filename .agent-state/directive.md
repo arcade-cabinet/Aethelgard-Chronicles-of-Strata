@@ -167,7 +167,127 @@ the v0_5_grinder agent should pull these in order):
 
 The pivot is the v0.5 CENTERPIECE; v0.6 picks up portal-biome
 generators + remaining JSON-* sweeps + the CIV/MYTH/DIPLO
-parking lot. See the v0.6 directive PR for that scope.
+parking lot. See the v0.6 section below.
+
+---
+
+## v0.6 CYCLE — depth on top of the v0.5 substrate
+
+v0.5 ships the substrate (N-player + barbarians + archetypes); v0.6
+spends that on systems the user has flagged as long-running parking
+lot work — CIV-style diplomacy, MYTH-tier rare events, the portal
+generator that's been a runtime primitive since v0.4 but had no
+generator wired in. Each work-unit below assumes v0.5 has already
+shipped.
+
+Architectural decisions for v0.6 (the use-case enumeration step):
+
+1. **Portal generator triggers.** Three use cases:
+   (a) `quicksand-pair` — two QUICKSAND tiles linked, deterministic
+       per seed; encourages crossing the disease/fatigue risk in
+       exchange for a shortcut.
+   (b) `mountain-cave-network` — 3-4 MOUNTAIN_PASS tiles in a
+       cluster all link to one another, creating a hidden interior
+       network only revealed when a unit first enters.
+   (c) `portal-stones` — a rare biome event places two PORTAL_STONE
+       decorative tiles on opposite ends of the map with a 60s
+       cooldown per use, per faction.
+   All three populate `tile.portalTo` (already shipped in v0.4); the
+   generator pass is the work.
+
+2. **Diplomacy use cases.** Three:
+   (a) Border-ask — a faction whose ZoneBorder touches another's
+       can issue a non-aggression pact (10s window to accept; either
+       side may break it instantly with a wave-of-attack penalty).
+   (b) Trade — wood/stone/gold swap at 1:1 with a Discovery
+       `trade-route` unlock (later-tier).
+   (c) Tribute demand — a clearly-stronger faction (≥2× supply +
+       active military advantage) can demand tribute from a weaker
+       faction; refusal triggers an automatic wave-of-attack.
+   All three need a per-pair Relation state machine
+   (`neutral|ally|enemy|tributary`) that the existing CombatEvaluator
+   reads to skip ally targets.
+
+3. **MYTH-tier events.** Five rare random events with a >5-min
+   cooldown each, ≤1 active at a time:
+   (a) `solar-eclipse` — every faction loses vision range for 60s.
+   (b) `meteor-strike` — picks a random tile, places a small WILDFIRE
+       + 30 damage to anything on the tile.
+   (c) `migration` — neutral wildlife herd crosses the map; cleared
+       for +20 food.
+   (d) `oracle-vision` — random faction gets a one-shot reveal of
+       another faction's base location.
+   (e) `harvest-festival` — every faction gets +50 food + +20 gold.
+
+4. **Render budget.** N-player's per-faction overhead (more zone
+   tiles, more building rings, more particle consumers) is the
+   v0.6 perf risk. The v0.5.H carryover `M_FUN.PERF.TILE-INDEX`
+   becomes a hard requirement before v0.6 mass spawns land.
+
+Concrete v0.6 work-units:
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.QUICKSAND-PAIR — generator
+  hook in `paintQuicksandSwirls` that, when ≥2 QUICKSAND tiles
+  spawn, pairs the closest two via `portalTo`. Deterministic per
+  seed. Acceptance: e2e test that seeds a map with ≥2 quicksand
+  + asserts at least one pair has reciprocal portalTo references.
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.MOUNTAIN-CAVE-NETWORK — when
+  the massif-stack pass produces ≥3 MOUNTAIN_PASS tiles in a
+  cluster (within 4-hex radius), link them all-to-all via
+  portalTo. Acceptance: e2e test asserts a hex-cluster of 3+
+  passes has reciprocal portal links forming a network.
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.PORTAL.STONES-EVENT — rare biome
+  event (1 in 200 ticks once map clock > 5min) places two
+  PORTAL_STONE decorative tiles on opposite ends of the map.
+  Per-faction 60s cooldown on use. Acceptance: e2e test forces
+  the event seed + asserts both stones placed + cooldown UI
+  visible on second use.
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.RELATION-MACHINE — per-pair
+  `Relation` state in `GameState.diplomacy: Map<\`${a}|${b}\`,
+  Relation>`. Default = `neutral`. CombatEvaluator filters
+  `ally` faction targets out of EnemyTarget assignment;
+  `tributary` factions auto-cede 10% of their per-second
+  resource accrual to the dominant faction.
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.BORDER-ASK — when ZoneBorder
+  of A touches B, expose a HUD pill "Propose non-aggression?".
+  10s acceptance window. Acceptance: e2e test that simulates
+  a border touch + acceptance flow + asserts CombatEvaluator
+  doesn't target the new ally.
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.TRADE — wood/stone/gold
+  1:1 swap, gated behind a Discovery `trade-route`. UI is a
+  Radix popover from the HUD; clicking a faction's chip opens
+  the trade widget.
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.DIPLO.TRIBUTE — automatic tribute
+  demand when supply×military ratio between two factions exceeds
+  2×. Refusal flips Relation to `enemy` + adds a wave-of-attack
+  bonus to the demanding side.
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.MYTH.EVENTS — 5 rare events
+  (solar-eclipse, meteor-strike, migration, oracle-vision,
+  harvest-festival) with a shared >5min cooldown + at-most-one
+  active gate. JSON-driven config in
+  `src/config/myth-events.json` (NEW). Acceptance: e2e test
+  that forces each event in turn + asserts the expected
+  effect (vision range, wildfire spawn, etc).
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.4X-FULL — the 4X-mode polish on
+  top of v0.5's 6-player default: tech tree v0.6, named
+  victory conditions (military / economic / scientific /
+  diplomatic), end-of-game scoring screen. The user's
+  "MUCH more fun ESPECIALLY in 4X mode" — the v0.5 baseline
+  ships the substrate; v0.6 ships the depth.
+
+- [ ] [WAIT] (v0.6 cycle) M_V6.PARKING-LOT — drain the existing
+  CIV/MYTH/DIPLO entries from the v0.4 active queue (search
+  for `M_FUN.CIV.*`, `M_FUN.MYTH.*`, `M_FUN.DIPLO.*` in the
+  v0.4 release section below). Each one is a one-line carryover
+  that turns into a v0.6 sub-issue.
 
 ---
 
