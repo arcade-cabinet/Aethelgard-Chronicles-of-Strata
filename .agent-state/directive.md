@@ -18,34 +18,34 @@ mode the user wants, and removes the 2-faction asymmetry ceiling.
 
 Concrete work-units (each one v0.5 commit):
 
-- [ ] [WAIT-V0.5] M_PIVOT.N-PLAYER.FACTIONS — `Faction` becomes a registry-
+- [ ] [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.FACTIONS — `Faction` becomes a registry-
   backed id, not a `'player' | 'enemy'` literal union. NewGameConfig
   carries `factions: FactionConfig[]` (id, color, displayName,
   controller: 'human' | 'ai', personality?). GameEconomy + zones
   + AiPlayer all key by id. The 2-faction case becomes N=2.
-- [ ] [WAIT-V0.5] M_PIVOT.N-PLAYER.COLOR-PICKER — pre-game NewGameModal exposes
+- [ ] [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.COLOR-PICKER — pre-game NewGameModal exposes
   a Radix color palette per faction slot. Default = shuffled
   permutation of an 8-color palette; click any chip to open the
   picker. Color flows into every faction-scoped renderer
   (ZoneBorder, building outline ring, unit hex outline, base
   banner, HUD chips).
-- [ ] [WAIT-V0.5] M_PIVOT.N-PLAYER.SHARED-KIT — every faction uses the SAME
+- [ ] [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.SHARED-KIT — every faction uses the SAME
   buildings (House/Farm/Barracks/Watchtower/Wall/Wonder/Library/
   Granary), the SAME units (Peon/Footman/Scout/Wizard/Healer/
   Ferryman/Settler/Hero/Trebuchet), and the SAME Discovery tree.
   The current enemy-only types (Goblin/Orc/Vampire/Witch/
   BlackKnight) move to the BARBARIAN pool.
-- [ ] [WAIT-V0.5] M_PIVOT.BARBARIAN-CAMPS — repurpose the graveyard biome +
+- [ ] [WAIT] (v0.5 cycle) M_PIVOT.BARBARIAN-CAMPS — repurpose the graveyard biome +
   enemy-raid units. Camp = neutral attractor placed at gen-time
   (1..(N+2)/2 per map; biased toward the central interior) that
   spawns raid waves on a clock. Camps may be cleared by ANY
   faction; clearing yields a one-shot bonus. Camp AI is the
   existing raid-attack code scoped per-camp not per-faction.
-- [ ] [WAIT-V0.5] M_PIVOT.RENDER.COLOR-OUTLINE — ZoneBorder, building rings,
+- [ ] [WAIT] (v0.5 cycle) M_PIVOT.RENDER.COLOR-OUTLINE — ZoneBorder, building rings,
   per-unit hex outline shaders read from the faction's color
   config. All "blue=player / red=enemy" hardcodes go through the
   registry — same lift as the resource Records sweep.
-- [ ] [WAIT-V0.5] M_PIVOT.MODES.4X — once N-player + barbarians ship, the 4X
+- [ ] [WAIT] (v0.5 cycle) M_PIVOT.MODES.4X — once N-player + barbarians ship, the 4X
   mode (turn-based, age-of-strata) gets a 6-player default config
   + FFA / team variant. The user's "MUCH more fun ESPECIALLY in
   4x mode" — this is the payoff.
@@ -857,7 +857,7 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
 These are NOT v0.4 work but stay in the directive so the anti-stop
 hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
 
-- [ ] [WAIT-V0.5] M_FUN.FACTION.ASYMMETRIC-BUILDINGS — Per-faction
+- [ ] [WAIT] (v0.5 cycle) M_FUN.FACTION.ASYMMETRIC-BUILDINGS — Per-faction
   building registry in JSON (extends `src/config/resources.json` +
   `src/rules/skins.ts` shape). Each faction declares its OWN
   building list — player gets House/Farm/Barracks, enemy gets
@@ -872,46 +872,46 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   not by name? (b) per-faction balance — symmetric power, distinct
   silhouette + sfx + mesh? (c) how does this interact with the
   existing skins.ts that already does mesh-only divergence?
-- [ ] [WAIT-V0.5] `M_FUN.CIV.*` — Civilian layer (citizens, refugees,
+- [ ] [WAIT] (v0.5 cycle) `M_FUN.CIV.*` — Civilian layer (citizens, refugees,
   trade routes).
-- [ ] [WAIT-V0.5] `M_FUN.MYTH.*` — Mythology (aether nodes, ruins,
+- [ ] [WAIT] (v0.5 cycle) `M_FUN.MYTH.*` — Mythology (aether nodes, ruins,
   divine intervention, Sacred Grove, monuments).
-- [ ] [WAIT-V0.5] `M_FUN.DIPLO.*` — Diplomacy + reputation, tributary
+- [ ] [WAIT] (v0.5 cycle) `M_FUN.DIPLO.*` — Diplomacy + reputation, tributary
   states, marriage alliances (post 3-faction).
-- [ ] [WAIT-V0.5] M_FUN.NAR.REPLAY — Replay loading + spectator
+- [ ] [WAIT] (v0.5 cycle) M_FUN.NAR.REPLAY — Replay loading + spectator
   skip-to-interesting.
-- [ ] [WAIT-V0.5] `M_FUN.MOD.*` — Daily challenge, puzzle scenarios,
+- [ ] [WAIT] (v0.5 cycle) `M_FUN.MOD.*` — Daily challenge, puzzle scenarios,
   modifier dial.
-- [ ] [WAIT-V0.5] `M_FUN.PROC.*` — Procedural unit names, building
+- [ ] [WAIT] (v0.5 cycle) `M_FUN.PROC.*` — Procedural unit names, building
   inscriptions, map names.
 
 ### Standing carry-overs (process, not features)
 
-- [ ] [WAIT-CYCLE] M_PROCESS.REVIEW — Periodic review-trio
+- [ ] [WAIT] (next cycle) M_PROCESS.REVIEW — Periodic review-trio
   dispatch (code-reviewer + security-auditor + code-simplifier)
   every ~5 commits or at clean checkpoint moments.
-- [ ] [WAIT-CYCLE] M_PROCESS.WORKTREE — Lead agent owns
+- [ ] [WAIT] (next cycle) M_PROCESS.WORKTREE — Lead agent owns
   worktree close-out after parallel-agent runs (cherry-pick or
   merge; remove `.claude/worktrees/agent-*`).
-- [ ] [WAIT-DEVICE] M_HARDENING.6 — Pixel-5a perf profile + on-device
+- [ ] [WAIT] (device-pipeline) M_HARDENING.6 — Pixel-5a perf profile + on-device
   APK install. Blocked on emulator / SDK / signed-APK pipeline
   access.
 
 ### Open from prior cycles (true blockers — needs deployment-infra)
 
-- [ ] [WAIT-DEPLOY] M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer.
+- [ ] [WAIT] (deploy-infra) M_NEXT.DEPLOY.2 — Move CSP to HTTP-header layer.
   GitHub Pages doesn't allow custom response headers; needs
   Cloudflare worker / Pages migration. Deployment-infra concern.
-- [ ] [WAIT-DEPLOY] M_NEXT.DEPLOY.3 — Narrow 'unsafe-eval' via
+- [ ] [WAIT] (deploy-infra) M_NEXT.DEPLOY.3 — Narrow 'unsafe-eval' via
   SRI/nonce. Lower priority than DEPLOY.2.
-- [ ] [WAIT-CYCLE] M_NEXT.CI.3 — Sibling-project test parity audit
+- [ ] [WAIT] (next cycle) M_NEXT.CI.3 — Sibling-project test parity audit
   (xvfb / video recording / governor-test).
-- [ ] [WAIT-CYCLE] M_NEXT.CI.2 — analysis-nightly.yml for slower scans.
-- [ ] [WAIT-V0.5] M_NEXT.AIVAI.6 — Player-faction AI inert under
+- [ ] [WAIT] (next cycle) M_NEXT.CI.2 — analysis-nightly.yml for slower scans.
+- [ ] [WAIT] (v0.5 cycle) M_NEXT.AIVAI.6 — Player-faction AI inert under
   asymmetric seedZones map-gen.
-- [ ] [WAIT-V0.5] M_POLISH3.SCENE.4 — GameOverModal Dialog doesn't
+- [ ] [WAIT] (v0.5 cycle) M_POLISH3.SCENE.4 — GameOverModal Dialog doesn't
   render reliably in headless Playwright; production flow works.
-- [ ] [WAIT-V0.5] M_POLISH3.HUD.1/2/3 — Tablet HUD pill stride
+- [ ] [WAIT] (v0.5 cycle) M_POLISH3.HUD.1/2/3 — Tablet HUD pill stride
   re-audit; mobile per-mode captures; day-night phase visual
   swing.
 
