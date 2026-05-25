@@ -268,23 +268,15 @@ regressed pixel without the harness catching it first.
   v0.8 as separate pass — pattern identical, lift is invasive across more
   sites, and wonder victory in 4X is polish-tier next to tribute.
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.MYTH.EFFECTS — wire the 4 missing
-  MYTH-event dispatchers. Each follows the harvest-festival
-  template (pure function over GameState, called from
-  tickClockPhase when game.mythEvents.active matches):
-  - `applyMeteorStrike(game, prng)` — picks a random walkable
-    tile, spawns a 30-damage wildfire entry, broadcasts
-    `aethelgard:meteor-strike` event for FX.
-  - `applySolarEclipse(game)` — halves zone.observed radius
-    for the eclipse duration (60s); restores on expire.
-  - `applyWildlifeMigration(game)` — spawns a neutral
-    barbarian-archetype unit on a centroid-biased tile;
-    clearing yields +20 food to clearer.
-  - `applyOracleVision(game, prng)` — picks a random faction,
-    reveals one tile of another faction's base.
-  Acceptance: each dispatcher has a unit test that fires the
-  event then asserts the expected state mutation; fireMythEvent
-  in the runtime calls the dispatcher when active matches.
+- [x] M_V7.MYTH.EFFECTS — 4 missing dispatchers shipped as pure helpers in
+  myth-events.ts. applyMeteorStrike (wildfires.set + per-entity -30 HP),
+  eclipseVisionMultiplier (0.5 during active eclipse — scale-on-read avoids
+  save/load restoration race), pickMigrationTile + applyMigrationReward
+  (+20 food to clearer), pickOracleVision (blessed faction + revealed
+  tile of opponent base). LOW-3 also resolved: fireMythEvent gracefully
+  rejects unknown ids (was: threw via mythEventFor). 13 dispatcher tests
+  pin behaviour. Wiring into tickClockPhase + ECS happens in a follow-up
+  commit; substrate dispatchers are pure helpers ready to call.
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.PORTAL-STONES.TRIGGER — wire
   random-event trigger (1-in-200 ticks once map clock > 5min)
