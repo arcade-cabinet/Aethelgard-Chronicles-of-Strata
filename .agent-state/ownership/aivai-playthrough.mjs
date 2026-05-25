@@ -30,7 +30,8 @@ import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { execSync } from 'node:child_process';
 
-const PAGES_URL = process.env.PAGES_URL ?? 'https://arcade-cabinet.github.io/Aethelgard-Chronicles-of-Strata/';
+const PAGES_URL =
+  process.env.PAGES_URL ?? 'https://arcade-cabinet.github.io/Aethelgard-Chronicles-of-Strata/';
 const SEED = process.env.AIVAI_SEED ?? 'polish-the-builder-vs-the-raider';
 const PLAYER_PERS = process.env.PLAYER_PERSONALITY ?? 'the-builder';
 const ENEMY_PERS = process.env.ENEMY_PERSONALITY ?? 'the-raider';
@@ -88,7 +89,9 @@ if (await page.evaluate(() => typeof globalThis.__skipOnboarding === 'function')
   await page.evaluate(() => globalThis.__skipOnboarding?.());
 }
 await page.waitForFunction(
-  () => typeof globalThis.__game !== 'undefined' && typeof globalThis.__game_advanceFrames === 'function',
+  () =>
+    typeof globalThis.__game !== 'undefined' &&
+    typeof globalThis.__game_advanceFrames === 'function',
   { timeout: 30_000 },
 );
 console.log('[aivai] __game hook ready');
@@ -130,7 +133,9 @@ for (const lm of LANDMARKS) {
     };
   });
   manifest.landmarks.push({ t: lm.t, label: lm.label, file, state });
-  console.log(`[aivai] ${lm.label} t=${lm.t}s captured (clock=${state?.clockElapsed?.toFixed(1)}s outcome=${state?.outcome})`);
+  console.log(
+    `[aivai] ${lm.label} t=${lm.t}s captured (clock=${state?.clockElapsed?.toFixed(1)}s outcome=${state?.outcome})`,
+  );
   prevT = lm.t;
   if (state?.outcome && state.outcome !== 'playing') {
     console.log(`[aivai] match ended early — outcome=${state.outcome}`);
