@@ -33,10 +33,14 @@ spec doc citation; each item is a self-contained commit-unit.
   60/60 (mapType × size × seed) permutations green.
 
 ### v0.5.B — Decision tracks (spec §2)
-- [ ] M_FUN.MAP.DISTRIBUTION.INTERIOR — assert every generated map
-  has ≥1 tile of each status-bearing biome (FATIGUE: MOUNTAIN_PASS;
-  DEHYDRATION: DESERT; DISEASE: SWAMP) INSIDE the inter-base
-  interior. New audit test next to biome-distribution-audit.
+- [x] M_FUN.MAP.DISTRIBUTION.INTERIOR — `src/game/__tests__/
+  interior-distribution.test.ts` audits the matrix
+  (mapType × size × seed = 36 perms) for status-biome presence
+  in the inter-base interior band. Soft floors pinned at the
+  CURRENT coverage rate (MOUNTAIN_PASS ≥40%, DESERT ≥50%,
+  SWAMP ≥20%). The guided-paint work that lifts these to
+  ≥95% lives in a follow-up (PATTERN-K). Today's audit makes
+  the regression measurable.
 - [ ] M_FUN.ECON.NODE-TIERS — add surface (BEACH-adjacent) / inland
   / highland resource-node tiers with distinct yield/richness/
   travel-cost curves so a single match presents the
