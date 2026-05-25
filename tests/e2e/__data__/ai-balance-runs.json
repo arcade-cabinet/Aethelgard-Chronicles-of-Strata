@@ -3,6 +3,36 @@
   "recordedAt": "2026-05-24",
   "runs": [
     {
+      "player": "the-builder",
+      "enemy": "the-builder",
+      "seed": "balance-the-builder-vs-the-builder",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 0,
+      "buildingsPlayer": 5,
+      "buildingsEnemy": 0,
+      "peakSupplyPlayer": 9,
+      "peakSupplyEnemy": 5,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60,
+      "zoneUnionPct": 4.806786050895382
+    },
+    {
+      "player": "the-mad-king",
+      "enemy": "the-mad-king",
+      "seed": "balance-the-mad-king-vs-the-mad-king",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 3,
+      "buildingsPlayer": 6,
+      "buildingsEnemy": 5,
+      "peakSupplyPlayer": 18,
+      "peakSupplyEnemy": 12,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60,
+      "zoneUnionPct": 6.122448979591836
+    },
+    {
       "player": "the-diplomat",
       "enemy": "the-diplomat",
       "seed": "balance-the-diplomat-vs-the-diplomat",
@@ -15,52 +45,7 @@
       "peakSupplyEnemy": 15,
       "resolvedWithinBudget": false,
       "chunksRan": 60,
-      "zoneUnionPct": 5.33689126084056
-    },
-    {
-      "player": "the-raider",
-      "enemy": "the-raider",
-      "seed": "balance-the-raider-vs-the-raider",
-      "outcome": "playing",
-      "elapsedTurns": 10,
-      "totalKills": 0,
-      "buildingsPlayer": 5,
-      "buildingsEnemy": 3,
-      "peakSupplyPlayer": 15,
-      "peakSupplyEnemy": 12,
-      "resolvedWithinBudget": false,
-      "chunksRan": 60,
-      "zoneUnionPct": 3.7918215613382897
-    },
-    {
-      "player": "the-hoarder",
-      "enemy": "the-hoarder",
-      "seed": "balance-the-hoarder-vs-the-hoarder",
-      "outcome": "playing",
-      "elapsedTurns": 10,
-      "totalKills": 4,
-      "buildingsPlayer": 7,
-      "buildingsEnemy": 6,
-      "peakSupplyPlayer": 15,
-      "peakSupplyEnemy": 13,
-      "resolvedWithinBudget": false,
-      "chunksRan": 60,
-      "zoneUnionPct": 7.532467532467532
-    },
-    {
-      "player": "the-mad-king",
-      "enemy": "the-mad-king",
-      "seed": "balance-the-mad-king-vs-the-mad-king",
-      "outcome": "playing",
-      "elapsedTurns": 10,
-      "totalKills": 2,
-      "buildingsPlayer": 6,
-      "buildingsEnemy": 5,
-      "peakSupplyPlayer": 12,
-      "peakSupplyEnemy": 18,
-      "resolvedWithinBudget": false,
-      "chunksRan": 60,
-      "zoneUnionPct": 5.46448087431694
+      "zoneUnionPct": 4.886211512717536
     },
     {
       "player": "the-raider",
@@ -70,12 +55,42 @@
       "elapsedTurns": 10,
       "totalKills": 0,
       "buildingsPlayer": 6,
-      "buildingsEnemy": 6,
+      "buildingsEnemy": 4,
       "peakSupplyPlayer": 15,
       "peakSupplyEnemy": 15,
       "resolvedWithinBudget": false,
       "chunksRan": 60,
-      "zoneUnionPct": 5.734767025089606
+      "zoneUnionPct": 3.555150410209663
+    },
+    {
+      "player": "the-hoarder",
+      "enemy": "the-hoarder",
+      "seed": "balance-the-hoarder-vs-the-hoarder",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 0,
+      "buildingsPlayer": 2,
+      "buildingsEnemy": 6,
+      "peakSupplyPlayer": 6,
+      "peakSupplyEnemy": 15,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60,
+      "zoneUnionPct": 3.770739064856712
+    },
+    {
+      "player": "the-hoarder",
+      "enemy": "the-mad-king",
+      "seed": "balance-the-hoarder-vs-the-mad-king",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 0,
+      "buildingsPlayer": 1,
+      "buildingsEnemy": 0,
+      "peakSupplyPlayer": 6,
+      "peakSupplyEnemy": 5,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60,
+      "zoneUnionPct": 3.979125896934116
     },
     {
       "player": "the-builder",
@@ -86,11 +101,26 @@
       "totalKills": 0,
       "buildingsPlayer": 6,
       "buildingsEnemy": 4,
-      "peakSupplyPlayer": 12,
+      "peakSupplyPlayer": 9,
       "peakSupplyEnemy": 15,
       "resolvedWithinBudget": false,
       "chunksRan": 60,
-      "zoneUnionPct": 6.575520833333333
+      "zoneUnionPct": 5.894590846047157
+    },
+    {
+      "player": "the-diplomat",
+      "enemy": "the-raider",
+      "seed": "balance-the-diplomat-vs-the-raider",
+      "outcome": "playing",
+      "elapsedTurns": 10,
+      "totalKills": 3,
+      "buildingsPlayer": 1,
+      "buildingsEnemy": 5,
+      "peakSupplyPlayer": 6,
+      "peakSupplyEnemy": 21,
+      "resolvedWithinBudget": false,
+      "chunksRan": 60,
+      "zoneUnionPct": 7.125307125307126
     },
     {
       "player": "the-mad-king",
@@ -99,13 +129,13 @@
       "outcome": "playing",
       "elapsedTurns": 10,
       "totalKills": 0,
-      "buildingsPlayer": 7,
+      "buildingsPlayer": 4,
       "buildingsEnemy": 6,
-      "peakSupplyPlayer": 15,
-      "peakSupplyEnemy": 12,
+      "peakSupplyPlayer": 6,
+      "peakSupplyEnemy": 15,
       "resolvedWithinBudget": false,
       "chunksRan": 60,
-      "zoneUnionPct": 7.249584947426674
+      "zoneUnionPct": 5.121293800539084
     }
   ]
 }

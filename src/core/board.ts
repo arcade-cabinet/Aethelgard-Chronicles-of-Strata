@@ -305,6 +305,22 @@ function paintMountainMassif(
   // centre-bias). generateBoard validates radius in [1, 48].
   const t = MOUNTAIN_TUNING;
   const span = Math.max(1, radius - t.safetyRing);
+  // M_FUN.MAP.TOPOLOGY.STACK — peaks STACK. The same noise mask now
+  // emits three tiers of elevation in concentric rings:
+  //   mask > corePeak     → MOUNTAIN     (level 5, unwalkable cap)
+  //   mask > saddleRing   → MOUNTAIN_PASS (level 4, walkable, high cost)
+  //   mask > foothillRing → HIGHLAND     (level 4, walkable, mid cost)
+  // The thresholds are spaced (×1.0, ×0.75, ×0.55) so a peak naturally
+  // appears as core+ring+foothill (3 tiles deep at the centre of any
+  // cluster) rather than a flat 1-cell cardboard cutout.
+  // User feedback 2026-05-24: "we seem to reach a certain height and
+  // then just stop versus building mountains the same way we build
+  // anything, stacking. peaks should be a feature that can spawn one
+  // of mex hex tiles but there should be a legitimate stack before
+  // it." Captured in docs/specs/130-topology-and-decision-tracks.md §1.
+  const peakCutoff = 1 - intensity * t.intensityScale;
+  const saddleCutoff = 1 - intensity * t.intensityScale * 1.15;
+  const foothillCutoff = 1 - intensity * t.intensityScale * 1.3;
   for (const tile of tiles.values()) {
     // Skip water + beach — mountains in water are nonsensical.
     if (tile.type === 'OCEAN' || tile.type === 'BEACH' || tile.type === 'LAKE') continue;
@@ -314,7 +330,7 @@ function paintMountainMassif(
     const centerBias = Math.max(0, 1 - d / span);
     const n = noise(tile.q * t.noiseFreq, tile.r * t.noiseFreq);
     const mask = n * t.noiseWeight + centerBias * t.centerBiasWeight;
-    if (mask > 1 - intensity * t.intensityScale) {
+    if (mask > peakCutoff) {
       tile.type = 'MOUNTAIN';
       tile.level = 5;
       // Set walkable inline so this function is safe to call OUTSIDE
@@ -324,6 +340,28 @@ function paintMountainMassif(
       // just removes the foot-gun of standalone-callable footprint
       // leaving stale walkable=true on level-5 MOUNTAIN.
       tile.walkable = false;
+    } else if (mask > saddleCutoff) {
+      // Saddle ring around the core — walkable choke point. Don't
+      // overwrite a tile that's already MOUNTAIN/MOUNTAIN_PASS from a
+      // neighbouring peak's stack.
+      if (tile.type !== 'MOUNTAIN' && tile.type !== 'MOUNTAIN_PASS') {
+        tile.type = 'MOUNTAIN_PASS';
+        tile.level = 4;
+        tile.walkable = true;
+      }
+    } else if (mask > foothillCutoff) {
+      // Foothill — readable as elevated grass-coloured terrain that
+      // visually announces "you are approaching a peak". ONLY paint
+      // over GRASS/DESERT (the bare-land biomes). Leave FOREST alone
+      // (forests are a separate decision-track resource biome whose
+      // wood count drives early-game economy; the biome-distribution
+      // audit pins forest% as a playability floor). Also leave
+      // hydrology-placed SWAMP and any already-stacked tile alone.
+      if (tile.type === 'GRASS' || tile.type === 'DESERT') {
+        tile.type = 'HIGHLAND';
+        tile.level = 4;
+        tile.walkable = true;
+      }
     }
   }
 

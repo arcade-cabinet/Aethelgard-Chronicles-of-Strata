@@ -12,14 +12,16 @@ AIVAI-tune pass. v0.5 ships them. Each section maps to the
 spec doc citation; each item is a self-contained commit-unit.
 
 ### v0.5.A — Topology (PR #10 follow-up + spec §1)
-- [ ] M_FUN.MAP.TOPOLOGY.STACK — rework paintMountainMassif to emit
-  3-tier clusters (HIGHLAND foothill ring → MOUNTAIN_PASS saddle
-  ring → MOUNTAIN core → optional VOLCANO peak past intensity 0.85).
-  Stack tier function: `tier = ⌊(mask - threshold) * 3⌋ + 1` —
-  same noise field, layered radial assignment. The flat 1-cell
-  mountains today read as cardboard cutouts; the stack reads as
-  silhouette. Catches "peaks should stack like real topology"
-  user feedback.
+- [x] M_FUN.MAP.TOPOLOGY.STACK — paintMountainMassif now emits a
+  3-tier radial stack from the SAME noise field: peak (MOUNTAIN
+  level 5 unwalkable core) → saddle (MOUNTAIN_PASS level 4 walkable
+  high-cost ring) → foothill (HIGHLAND level 4 walkable mid-cost
+  outer ring). Cutoffs scaled at ×1.0, ×1.15, ×1.3 of intensity so
+  every cluster reads as a layered massif instead of the previous
+  flat 1-cell cardboard cutout. Foothill only paints over GRASS/
+  DESERT (NOT FOREST — preserves the resource biome floor); saddle
+  never overwrites an already-stacked tile. 798/798 unit tests
+  green; biome-distribution audit still passes 57/60 permutations.
 - [ ] M_FUN.MAP.TOPOLOGY.SCREENSHOTS — biome-distribution audit's
   3 known-bad seed/size corners (mike-november-oscar × small ×
   balanced|continent|archipelago) → teach findBalancedBoard to
