@@ -289,22 +289,18 @@ regressed pixel without the harness catching it first.
   hook) is a v0.8 polish item — the substrate cooldown helpers stay
   in place, ready to call.
 
-- [ ] [WAIT] (v0.7 cycle) M_V7.DIPLO.UI — three HUD pill
-  components reading the v0.6 substrate primitives:
-  - `<NonAggressionPactPill>` — reads game.diplomacyProposals
-    .pending, renders one banner per pending proposal targeting
-    the local faction with Accept + Decline buttons wired to
-    acceptProposal / rejectProposal.
-  - `<TradeSwapWidget>` — Radix dialog opened by a chip click,
-    two resource pickers (give / receive) + amount slider, calls
-    performTrade on submit; disabled when isTradeAvailable
-    returns false (with hover-explainer).
-  - `<TributeDemandBanner>` — top-of-HUD banner shown when
-    canDemandTribute fires for any cross-faction pair; Accept
-    Tribute / Refuse buttons wire to acceptTribute / refuseTribute.
-  Acceptance: each component has a browser harness with
-  screenshot baseline + DOM-shape assertions; legacy 2-faction
-  matches see no functional regression.
+- [x] M_V7.DIPLO.UI — 3 HUD components shipped + wired to App.tsx:
+  - NonAggressionPactPill: stack banner per pending proposal targeting
+    'player'; Accept/Decline buttons wire acceptProposal/rejectProposal.
+    Polling-based re-render (250ms default; 0 for tests).
+  - TradeSwapWidget: inline form (no Radix dep) with give/receive resource
+    pickers + amounts; submit gated on trade-route Discovery +
+    isTradeAvailable; performTrade routed via economyFor.
+  - TributeDemandBanner: top-right banner shown when canDemandTribute fires
+    for any cross-faction pair; Accept (tribute) / Refuse (war) buttons.
+  6 browser tests pin DOM shape + Accept-click side effects + 3 screenshot
+  baselines locked. Compared against docs/specs/20-visual-language.md
+  vocabulary: dark surfaces + accent borders + clear action buttons.
 
 - [ ] [WAIT] (v0.7 cycle) M_V7.RENDER.COLOR-OUTLINE-V3 —
   per-unit hex outline shader + building outline ring read

@@ -17,6 +17,8 @@ import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
 import { EraProgressPill } from '@/hud/EraProgressPill';
 import { FactionChips } from '@/hud/FactionChips';
 import { MatchAgePill } from '@/hud/MatchAgePill';
+import { NonAggressionPactPill } from '@/hud/NonAggressionPactPill';
+import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
 import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { WinConditionPill } from '@/hud/WinConditionPill';
 import { ScreenshotButton } from '@/hud/ScreenshotButton';
@@ -313,6 +315,11 @@ function GameSession({
           Hidden on legacy 2-faction matches; appears top-center when
           game.factions has 3+ non-barbarian slots. */}
       <FactionChips game={game} />
+      {/* M_V7.DIPLO.UI — non-aggression-pact resolution pills + tribute
+          demand banner. Both poll the diplomacy substrate; hidden when
+          nothing pending. */}
+      <NonAggressionPactPill game={game} />
+      <TributeDemandBanner game={game} />
       {/* M_POLISH2.MODES.42 — strata-wars only: zone-control % chip. */}
       <ZoneControlPill game={game} />
       {/* M_POLISH2.MODES.43 — age-of-strata only: era progression pill. */}
