@@ -702,7 +702,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   fires when ai-3 timer reaches threshold (< 60s). 2 tests pin: fires for all faction
   ids, does not fire when no faction is below threshold.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.MAPGEN.4X-BALANCE — Extend `scoreBoard` / `findBalancedBoard` with two new
+- [x] [WAIT] (v0.9 grinder) M_V9.MAPGEN.4X-BALANCE — Extend `scoreBoard` / `findBalancedBoard` with two new
   gates from Decision 4: (a) ≥ 3 harvestable resource nodes within 5 hexes of each
   faction base; (b) ≥ 8 neutral-band tiles in the central 30% radius. Both gates active
   only when `playerCount ≥ 5` (4X mode threshold). `findBalancedBoard` re-rolls until

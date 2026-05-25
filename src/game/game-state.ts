@@ -594,8 +594,13 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // a few suffix variants and keep the first that passes the per-faction
   // reachable-buildable-area tolerance. Falls back to the original seed
   // if no attempt balances (logged).
+  // Faction count needed by the 4X balance gate — compute from config if available.
+  // config.factions may include barbarian-camp slots; only human+AI count for 4X.
+  const earlyPlayerCount = config.factions
+    ? config.factions.filter((f) => f.kind !== 'barbarian').length
+    : 2;
   const board = preset.guidedMapGen
-    ? findBalancedBoard(seedPhrase, mapSize, preset.mapType)
+    ? findBalancedBoard(seedPhrase, mapSize, preset.mapType, earlyPlayerCount)
     : generateBoard(seedPhrase, mapSize, preset.guidedMapGen);
   // M_EXPANSION.F.97 — discoverable hidden bonuses on ~5% of
   // walkable tiles. Uses the map PRNG (createMapPrng) so the same

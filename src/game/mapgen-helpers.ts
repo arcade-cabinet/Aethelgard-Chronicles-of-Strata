@@ -4,6 +4,7 @@
  * cognitive-load threshold. Pure functions — no game-state
  * mutation; safe to import anywhere.
  */
+import { hexNeighbors, parseHexKey } from '@/core/hex';
 import { isBalanced } from '@/core/balance-audit';
 import { generateBoard } from '@/core/board';
 import type { BoardData } from '@/core/board';
@@ -62,10 +63,79 @@ function hasBiomeVariety(
   return true;
 }
 
+/** Resource-bearing biomes that can host wood / stone nodes. */
+const RESOURCE_BIOMES = new Set(['FOREST', 'HIGHLAND', 'MOUNTAIN', 'SWAMP']);
+
+/**
+ * M_V9.MAPGEN.4X-BALANCE — two additional gates active only when
+ * playerCount >= 5 (4X mode threshold):
+ *
+ *   (a) For each of the N potential base positions (the N most
+ *       spread-out walkable tiles), there must be >= 3 tiles with
+ *       a resource-bearing biome within 5 axial hexes.
+ *   (b) The central 30% radius band must have >= 8 neutral walkable
+ *       tiles (tiles not at the board's extremes; proxy for a
+ *       viable contested neutral zone).
+ *
+ * Both gates skip entirely when playerCount < 5.
+ */
+export function passes4xBalanceGates(board: BoardData, playerCount: number): boolean {
+  if (playerCount < 5) return true;
+
+  // Collect all walkable tiles sorted by distance from origin (descending —
+  // most spread-out = furthest from center first).
+  const walkable: { q: number; r: number; dist: number }[] = [];
+  for (const tile of board.tiles.values()) {
+    if (!tile.walkable) continue;
+    const dist = (Math.abs(tile.q) + Math.abs(tile.r) + Math.abs(tile.q + tile.r)) / 2;
+    walkable.push({ q: tile.q, r: tile.r, dist });
+  }
+  walkable.sort((a, b) => b.dist - a.dist);
+
+  // Gate (a): check the N candidate bases (furthest N walkable tiles).
+  const candidateBases = walkable.slice(0, playerCount);
+  for (const base of candidateBases) {
+    let resourceCount = 0;
+    // BFS up to 5 axial hexes.
+    const seen = new Set<string>();
+    const queue: Array<{ q: number; r: number; d: number }> = [{ ...base, d: 0 }];
+    while (queue.length > 0) {
+      const cur = queue.shift()!;
+      const key = `${cur.q},${cur.r}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const tile = board.tiles.get(key);
+      if (tile && RESOURCE_BIOMES.has(tile.type)) resourceCount++;
+      if (cur.d < 5) {
+        for (const nk of hexNeighbors(cur.q, cur.r)) {
+          if (!seen.has(nk)) {
+            const { q: nq, r: nr } = parseHexKey(nk);
+            queue.push({ q: nq, r: nr, d: cur.d + 1 });
+          }
+        }
+      }
+    }
+    if (resourceCount < 3) return false;
+  }
+
+  // Gate (b): count neutral walkable tiles in the central 30% radius band.
+  // "Central 30%" = dist <= 0.3 * maxDist.
+  const maxDist = walkable.length > 0 ? walkable[0]!.dist : 0;
+  const threshold = maxDist * 0.3;
+  let centralNeutral = 0;
+  for (const tile of board.tiles.values()) {
+    if (!tile.walkable) continue;
+    const dist = (Math.abs(tile.q) + Math.abs(tile.r) + Math.abs(tile.q + tile.r)) / 2;
+    if (dist <= threshold) centralNeutral++;
+  }
+  return centralNeutral >= 8;
+}
+
 export function findBalancedBoard(
   seedPhrase: string,
   mapSize: number,
   mapType: 'balanced' | 'continent' | 'archipelago' | 'dry-land',
+  playerCount = 2,
 ): BoardData {
   let last: BoardData | null = null;
   for (let attempt = 0; attempt < MAX_BALANCE_ATTEMPTS; attempt++) {
@@ -96,6 +166,8 @@ export function findBalancedBoard(
     // mike-november-oscar-small problem) re-rolls instead of
     // shipping unplayable.
     if (!hasBiomeVariety(board, mapType)) continue;
+    // M_V9.MAPGEN.4X-BALANCE — additional gates for 4X (playerCount >= 5).
+    if (!passes4xBalanceGates(board, playerCount)) continue;
     return board;
   }
   return last ?? generateBoard(seedPhrase, mapSize, true, mapType);
