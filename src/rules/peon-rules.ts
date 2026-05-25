@@ -75,8 +75,11 @@ export interface PeonWorld {
  * — enough to prefer a closer-to-base node, but not so much that
  * a faction with no local resources never finds work.
  */
-const BASE_BIAS = 0.5;
-const BIAS_RADIUS = 6;
+/** M_FUN.MAP.HARVEST-ASSIGN-HELPER — shared bias constants for peon harvest
+ * scoring (game-state.ts startup assign + nearestResource() here both use
+ * the same formula; exporting from one place ensures they stay in sync). */
+export const HARVEST_BASE_BIAS = 0.5;
+export const HARVEST_BIAS_RADIUS = 6;
 function nearestResource(
   q: number,
   r: number,
@@ -89,7 +92,7 @@ function nearestResource(
   for (const site of sites) {
     const baseDist = hexDistance(baseQ, baseR, site.q, site.r);
     const peonDist = hexDistance(q, r, site.q, site.r);
-    const baseBias = BASE_BIAS * Math.max(0, baseDist - BIAS_RADIUS);
+    const baseBias = HARVEST_BASE_BIAS * Math.max(0, baseDist - HARVEST_BIAS_RADIUS);
     const score = peonDist + baseBias;
     if (score < bestScore) {
       bestScore = score;

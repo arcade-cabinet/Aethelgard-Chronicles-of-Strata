@@ -71,6 +71,7 @@ import {
   tickScoringPhase,
   tickTerrainPhase,
 } from './economy-tick-phases';
+import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 
 export type { Difficulty } from './difficulty';
 
@@ -902,18 +903,15 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
         if (!faction) continue;
         const anchor = anchors[faction];
 
-        // Matches nearestResource() in src/rules/peon-rules.ts —
-        // peon-distance + decaying base-bias past BIAS_RADIUS.
-        // Centralising this in one shared helper would be cleaner;
-        // for now both call sites use the same constants.
-        const BASE_BIAS = 0.5;
-        const BIAS_RADIUS = 6;
+        // M_FUN.MAP.HARVEST-ASSIGN-HELPER — same formula as nearestResource()
+        // in src/rules/peon-rules.ts; constants shared via exported values so
+        // tuning one site automatically updates the other.
         let nearest: ResourceNodePlan | null = null;
         let nearestScore = Number.POSITIVE_INFINITY;
         for (const node of candidates) {
           const baseDist = hexDistance(anchor.q, anchor.r, node.q, node.r);
           const peonDist = hexDistance(hexPos.q, hexPos.r, node.q, node.r);
-          const baseBias = BASE_BIAS * Math.max(0, baseDist - BIAS_RADIUS);
+          const baseBias = HARVEST_BASE_BIAS * Math.max(0, baseDist - HARVEST_BIAS_RADIUS);
           const score = peonDist + baseBias;
           if (score < nearestScore) {
             nearestScore = score;

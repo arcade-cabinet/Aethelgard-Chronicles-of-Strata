@@ -282,12 +282,9 @@ they don't get forgotten.
   in ai-vs-ai-balance.spec.ts.
 - [x] M_FUN.UX.LOREBOOK-RETRY — 3-attempt exponential-backoff retry (200ms, 400ms)
   in GameOverModal lorebook useEffect; guard released only on permanent failure.
-- [WAIT] (v0.5 cycle) M_FUN.AI.MATCH-NARRATIVE-SPEC — replace
-  the implementation-coupled regex word-list assertions in
-  `src/game/__tests__/match-narrative.test.ts:57` with
-  spec-level outcome assertions (was: regex matches against
-  literal adjective list; should be: structural shape per
-  match-narrative.json schema). CodeRabbit MAJOR PR #10.
+- [x] M_FUN.AI.MATCH-NARRATIVE-SPEC — adjective-pool assertions now derive
+  from match-narrative.json; Set membership replaces hardcoded regex word lists;
+  coverage floors scale with pool size.
 - [WAIT] (v0.5 cycle) M_FUN.MAP.HARVEST-ASSIGN-HELPER — extract
   shared `BASE_BIAS` / `BIAS_RADIUS` constants used by two
   harvest-assign sites. Quality report M1.
