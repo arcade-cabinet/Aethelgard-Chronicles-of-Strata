@@ -23,10 +23,9 @@ const DEFAULT_TEMPLATE = (name: string, goal: string) => `${name} acts (${goal})
 
 export function announceAiTaunt(opponentName: string, goalSlug: string): void {
   // goalSlug is "verb" OR "verb:detail" (build:Farm, train:Footman).
-  const colon = goalSlug.indexOf(':');
-  const verb = colon === -1 ? goalSlug : goalSlug.slice(0, colon);
-  const detail = colon === -1 ? undefined : goalSlug.slice(colon + 1);
-  const tmpl = VERB_TEMPLATES[verb];
+  // split(':', 2) — verb is always defined; detail is undefined for verb-only.
+  const [verb, detail] = goalSlug.split(':', 2);
+  const tmpl = verb ? VERB_TEMPLATES[verb] : undefined;
   const text = tmpl ? tmpl(opponentName, detail) : DEFAULT_TEMPLATE(opponentName, goalSlug);
   announce(text);
 }

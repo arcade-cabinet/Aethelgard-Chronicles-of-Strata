@@ -294,30 +294,46 @@ function rowToSaveRecord(row: any): SaveRecord {
   };
 }
 
+// Coderabbit nit PR #10 05:46Z — single helper for the read+write
+// lorebook validation/serialization. Both paths previously duplicated
+// the same caps + array-of-string guards, risk of drift if caps move.
+const LOREBOOK_HIGHLIGHTS_PER_STRING_CAP = 512;
+const LOREBOOK_HIGHLIGHTS_TOTAL_CAP = 4096;
+
+function validateLorebookHighlights(input: unknown, ctx: 'read' | 'write'): string[] {
+  if (!Array.isArray(input) || !input.every((s): s is string => typeof s === 'string')) {
+    throw new Error(`persistence(${ctx}): lorebook.highlights must be string[]`);
+  }
+  if (input.some((s) => s.length > LOREBOOK_HIGHLIGHTS_PER_STRING_CAP)) {
+    throw new Error(
+      `persistence(${ctx}): lorebook.highlights element exceeds ${LOREBOOK_HIGHLIGHTS_PER_STRING_CAP} chars`,
+    );
+  }
+  return input;
+}
+
+function serializeLorebookHighlights(input: string[]): string {
+  const serialized = JSON.stringify(input);
+  if (serialized.length > LOREBOOK_HIGHLIGHTS_TOTAL_CAP) {
+    throw new Error(
+      `persistence: lorebook.highlights_json too large (${serialized.length} > ${LOREBOOK_HIGHLIGHTS_TOTAL_CAP})`,
+    );
+  }
+  return serialized;
+}
+
 // biome-ignore lint/suspicious/noExplicitAny: sql.js returns untyped rows; the validator below narrows.
 function rowToLorebookEntry(row: any): LorebookEntry {
   const hl = row.highlights_json as string;
   if (typeof hl !== 'string') {
     throw new Error('persistence: lorebook.highlights_json missing or non-string');
   }
-  if (hl.length > 4096) {
-    throw new Error(`persistence: lorebook.highlights_json too large (${hl.length} > 4096)`);
-  }
-  const parsed: unknown = JSON.parse(hl);
-  if (!Array.isArray(parsed) || !parsed.every((s): s is string => typeof s === 'string')) {
-    throw new Error('persistence: lorebook.highlights_json is not string[]');
-  }
-  // Reviewer-fix (sec #3): bound each individual highlight string.
-  // The outer 4096 byte cap allows a single 4000-char element to
-  // slip through; a 512 cap matches the longest sensible English
-  // highlight + leaves no room for crafted payload injection if a
-  // future UI renders these as innerHTML by mistake.
-  const PER_STRING_CAP = 512;
-  if (parsed.some((s) => s.length > PER_STRING_CAP)) {
+  if (hl.length > LOREBOOK_HIGHLIGHTS_TOTAL_CAP) {
     throw new Error(
-      `persistence: lorebook.highlights_json element exceeds ${PER_STRING_CAP} chars`,
+      `persistence: lorebook.highlights_json too large (${hl.length} > ${LOREBOOK_HIGHLIGHTS_TOTAL_CAP})`,
     );
   }
+  const parsed = validateLorebookHighlights(JSON.parse(hl), 'read');
   return {
     id: row.id as number,
     endedAt: row.ended_at as string,
@@ -560,30 +576,11 @@ export function createPersistence(): Persistence {
     },
 
     async recordLorebookEntry(entry: LorebookEntry): Promise<void> {
-      // Coderabbit MAJOR — mirror the read-side guards on the WRITE
-      // path so a row that would later be rejected by
-      // rowToLorebookEntry isn't silently inserted (it would become
-      // a tomb stone: persisted but unlistable). Same per-element +
-      // total-string caps as the read path.
-      const PER_STRING_CAP = 512;
-      const TOTAL_CAP = 4096;
-      if (!Array.isArray(entry.highlights)) {
-        throw new Error('persistence.recordLorebookEntry: highlights must be string[]');
-      }
-      if (!entry.highlights.every((s) => typeof s === 'string')) {
-        throw new Error('persistence.recordLorebookEntry: highlights contains non-string element');
-      }
-      if (entry.highlights.some((s) => s.length > PER_STRING_CAP)) {
-        throw new Error(
-          `persistence.recordLorebookEntry: highlight element exceeds ${PER_STRING_CAP} chars`,
-        );
-      }
-      const serialised = JSON.stringify(entry.highlights);
-      if (serialised.length > TOTAL_CAP) {
-        throw new Error(
-          `persistence.recordLorebookEntry: serialised highlights exceeds ${TOTAL_CAP} bytes`,
-        );
-      }
+      // Coderabbit nit PR #10 05:46Z — read+write paths now share
+      // the validate/serialize helpers near rowToLorebookEntry so
+      // a caps change moves both at once.
+      validateLorebookHighlights(entry.highlights, 'write');
+      const serialised = serializeLorebookHighlights(entry.highlights);
       const db = await openDb();
       if (!db) return;
       await db.run(

@@ -24,8 +24,15 @@ const ResourceCostSchema = z.object(
   Object.fromEntries(RESOURCE_IDS.map((id) => [id, z.number().int().nonnegative().optional()])),
 ) as z.ZodType<ResourceCost>;
 
+// Coderabbit MAJOR PR #10 05:46Z — enum-keyed resourceType so an
+// unknown / typo'd resource id in economy.json fails parse instead
+// of slipping through as a string (which would then break
+// harvestYieldFor lookups silently). RESOURCE_IDS is the single
+// source from src/config/resources.json — bool-cast the readonly
+// array to a tuple for z.enum's spread requirement.
+const ResourceIdSchema = z.enum(RESOURCE_IDS as readonly [string, ...string[]]);
 const ResourceSpawnRuleSchema = z.object({
-  resourceType: z.string(),
+  resourceType: ResourceIdSchema,
   biomes: z.array(z.string()),
   chance: z.number().min(0).max(1),
   amount: z.number().positive(),

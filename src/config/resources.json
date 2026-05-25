@@ -26,7 +26,11 @@
         }
       ],
       "color": "#f97316",
-      "attractorGuarantee": 3
+      "attractorGuarantee": 3,
+      "mesh": {
+        "logicalId": "nature.tree.pine-a"
+      },
+      "topupAmount": 100
     },
     {
       "id": "stone",
@@ -53,7 +57,11 @@
         }
       ],
       "color": "#94a3b8",
-      "attractorGuarantee": 2
+      "attractorGuarantee": 2,
+      "mesh": {
+        "logicalId": "nature.rock.large-a"
+      },
+      "topupAmount": 80
     },
     {
       "id": "ore",
@@ -89,7 +97,12 @@
         }
       ],
       "color": "#6b7280",
-      "attractorGuarantee": 1
+      "attractorGuarantee": 1,
+      "mesh": {
+        "logicalId": "nature.rock.crystal-large",
+        "tint": "#475569"
+      },
+      "topupAmount": 60
     },
     {
       "id": "gold",
@@ -116,7 +129,12 @@
         }
       ],
       "color": "#fbbf24",
-      "attractorGuarantee": 1
+      "attractorGuarantee": 1,
+      "mesh": {
+        "logicalId": "nature.rock.large-a",
+        "tint": "#fbbf24"
+      },
+      "topupAmount": 60
     },
     {
       "id": "food",
@@ -163,7 +181,11 @@
         }
       ],
       "color": "#ef4444",
-      "attractorGuarantee": 2
+      "attractorGuarantee": 2,
+      "mesh": {
+        "logicalId": "nature.tree.pine-a"
+      },
+      "topupAmount": 80
     },
     {
       "id": "peat",
@@ -195,7 +217,12 @@
         }
       ],
       "color": "#78350f",
-      "attractorGuarantee": 0
+      "attractorGuarantee": 0,
+      "mesh": {
+        "logicalId": "nature.rock.large-a",
+        "tint": "#78350f"
+      },
+      "topupAmount": 70
     },
     {
       "id": "science",
@@ -222,7 +249,11 @@
         }
       ],
       "color": "#38bdf8",
-      "attractorGuarantee": 0
+      "attractorGuarantee": 0,
+      "mesh": {
+        "logicalId": "nature.rock.large-a"
+      },
+      "topupAmount": 0
     },
     {
       "id": "mana",
@@ -245,7 +276,11 @@
         }
       ],
       "color": "#c084fc",
-      "attractorGuarantee": 0
+      "attractorGuarantee": 0,
+      "mesh": {
+        "logicalId": "nature.rock.crystal-large"
+      },
+      "topupAmount": 0
     },
     {
       "id": "amber",
@@ -287,7 +322,12 @@
         }
       ],
       "color": "#f59e0b",
-      "attractorGuarantee": 0
+      "attractorGuarantee": 0,
+      "mesh": {
+        "logicalId": "nature.rock.crystal-large",
+        "tint": "#f59e0b"
+      },
+      "topupAmount": 40
     }
   ]
 }

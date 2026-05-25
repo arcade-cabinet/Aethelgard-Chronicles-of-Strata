@@ -146,6 +146,26 @@ const ResourceConfigSchema = z.object({
    * Coderabbit + simplifier reviewer QW-2.
    */
   attractorGuarantee: z.number().int().nonnegative().optional(),
+  /**
+   * M_FUN.ECON.PROFILES — visual + spawn metadata that used to live
+   * hand-coded in src/rules/resource-profiles.ts. Moving it into the
+   * JSON-first registry collapses the double-bookkeeping the user
+   * flagged: "aren't resource profiles an anti-pattern that should
+   * be expressed in JSON?". The TS file is now a derive-from-JSON
+   * accessor.
+   */
+  mesh: z
+    .object({
+      /** Logical asset id used by ResourceNodes / spawn pass. */
+      logicalId: z.string(),
+      /** Optional tint hex applied at render. */
+      tint: z.string().optional(),
+    })
+    .optional(),
+  /** Starting amount the attractor-topup pass seeds when adding a
+   * guaranteed-near-base node of this resource (separate from
+   * sources[].yield, which is per-harvest). */
+  topupAmount: z.number().nonnegative().optional(),
   sources: z.array(ResourceSourceSchema).min(1),
   consumers: z.array(ResourceConsumerSchema),
 });

@@ -105,6 +105,11 @@ export function GameOverModal({
           highlights: matchHighlights(game),
         });
       } catch (err) {
+        // Coderabbit MAJOR PR #10 05:46Z — release the write-once
+        // guard on failure so the next outcome change (or a remount)
+        // can retry. Without this, a transient DB hiccup permanently
+        // drops the lorebook entry for the session.
+        lorebookWrittenRef.current = false;
         console.warn('[lorebook] record failed:', err);
       }
     })();

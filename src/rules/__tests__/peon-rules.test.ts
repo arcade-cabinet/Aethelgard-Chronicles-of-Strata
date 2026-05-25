@@ -58,6 +58,15 @@ describe('nextPeonAction (covers job-routing switch arms — M_AUDIT2.ARCH.43)',
     expect(action.kind).toBe('harvest');
   });
 
+  it('emits a build action for a BUILDING peon with a target', () => {
+    // Coderabbit MAJOR PR #10 05:46Z — pin nextPeonAction's `build`
+    // emission directly so the job-routing `case 'build'` arm has
+    // explicit decision-side coverage.
+    const action = nextPeonAction(peon({ state: 'BUILDING', targetKey: '4,2' }), BASE);
+    expect(action.kind).toBe('build');
+    expect(action.kind === 'build' && action.targetKey).toBe('4,2');
+  });
+
   it('flees BEFORE honoring BUILDING short-circuit', () => {
     // Coderabbit MAJOR PR #10 04:56Z: the BUILDING short-circuit
     // used to run before the threatened-tile check, so a peon
