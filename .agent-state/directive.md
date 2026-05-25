@@ -1,13 +1,65 @@
 # Continuous Work Directive — Aethelgard: Chronicles of Strata
 
-**Status:** ACTIVE — v0.8 cycle (v0.7 released as v0.1.11 / PR #31)
-**Cycle:** v0.8 — N-player lift completions (wonderTimers, cast debt, difficulty-mult) + AI diplomatic evaluator + outline canvas mount + NewGameModal N-picker + CI visual battery hook + tutorial n-player slide + perf pass
-**Owner:** Claude (autonomous agent `v0_8_grinder` on `feat/aethelgard-initial-release`)
-**PRD:** v0.8 = 4 carry-forward items from v0.7 reviewer-trio + 9 new units; target PR against main
+**Status:** ACTIVE — v0.9 cycle (v0.8 released as v0.1.16 / PR #44)
+**Cycle:** v0.9 — visual baseline cross-platform lock + AI WonderEvaluator + HUD N-player win-loss + save-load N-player e2e + 4X mapgen balance + docs cycle
+**Main-thread owner:** Claude (this session — drives the items in MAIN-THREAD ACTIVE QUEUE below)
+**v0.9 background owner:** `v0_9_grinder` agent on `.claude/worktrees/agent-7222` — drives the v0.9 CYCLE work-units near line 461
+**v0.8 closeout:** PR #44 — 13 v0.8 work-units shipped (v0.1.16)
 **v0.7 closeout:** PR #31 — substrate→player polish + 2 CRITICAL fixes + 11 work-units shipped (v0.1.11)
 **v0.6 closeout:** PR #29 — portals + diplomacy + MYTH events + 4X victory + 6 v0.5 carryovers shipped
 **v0.5 closeout:** PR #27 — N-player + barbarian-camp pivot full centerpiece
 **v0.4 closeout:** [`docs/MILESTONES.md`](../docs/MILESTONES.md) v0.4 entry (released as v0.1.4 — PR #10 + #14 + #15 + #16)
+
+## MAIN-THREAD ACTIVE QUEUE — things THIS session drives (not grinder)
+
+The grinder owns the cycle's heavy code work in its isolated worktree.
+The main thread is NOT idle just because the grinder is grinding —
+the items below are non-overlapping work the main thread drives in
+parallel: PR plumbing, release ladder ownership, audits the grinder
+shouldn't burn its context window on, and meta-work on the directive
+itself.
+
+- [ ] M_MAIN.RELEASE-LADDER — own the post-merge release ladder for
+  every PR landed: poll for release-please PR → merge → wait CD →
+  re-screenshot Pages → confirm visually shippable. Permanent
+  recurring item; never marked [x] until project release.
+- [ ] M_MAIN.DIRECTIVE-EDIT — keep the directive current. Mark
+  shipped grinder work [x] as PRs land. Add new items as they
+  surface from screenshots / playtest reports / user feedback.
+  Audit weekly for orphan [WAIT] items.
+- [ ] M_MAIN.DOCS.RELEASE-NOTES — write CHANGELOG.md entries for
+  every release tag the cron fires. release-please generates
+  conventional-commit lists but the human-facing prose ("v0.1.16
+  brings the 4X mode N-player picker + AI diplomatic evaluator
+  to playable shape") lives in the spec docs, not the auto-gen.
+- [ ] M_MAIN.PRD-DRIFT-AUDIT — walk `docs/specs/PRD-v0.4.md`
+  through PRD-v0.8.md and flag every shipped item that doesn't
+  match the PRD, every PRD item that didn't ship. Open a fixup PR
+  per drift class.
+- [ ] M_MAIN.PLAYTHROUGH-AUDIT — every cron tick where the ladder
+  is phase=5 stable, run the AIVAI screenshot battery against the
+  current live deploy. Read each PNG. If any visual drift from
+  the previous battery (compared by sha + manifest.json), flag a
+  fixup PR. The user wants this baseline-watched continuously.
+- [ ] M_MAIN.WORKTREE-CLEANUP — `.claude/worktrees/` accretes
+  stale agent worktrees as cycles complete. Run
+  `git worktree list` weekly + prune completed branches that have
+  already merged to main.
+- [ ] M_MAIN.MEMORY-WRITE — when user feedback surfaces a new
+  preference / pattern / rule, save to
+  `~/.claude/projects/-Users-jbogaty-src-arcade-cabinet-Aethelgard-Chronicles-of-Strata/memory/`
+  per the memory protocol. The recent "FIX YOUR FUCKING DIRECTIVES
+  SO YOU ACTUALLY GET EVERYTHING DONE" is exactly the kind of
+  preference that should outlive the session.
+- [ ] M_MAIN.GRINDER-WATCH — when the grinder reports a real
+  blocker (CI failed mid-PR, test that needs user knowledge),
+  dispatch a fix-PR from main thread + push the unblock so the
+  grinder can continue.
+
+These items REMAIN open between cron ticks — they're recurring not
+one-shot. They satisfy the stop-hook's "directive must have non-WAIT
+items or be RELEASED" contract while letting the main thread end
+each turn productively.
 
 ## v0.5 / v0.6 CENTERPIECE — N-PLAYER + BARBARIAN-CAMP PIVOT
 
@@ -588,17 +640,19 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
 
 ### v0.9 work-units (dependency-ordered)
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.REVIEWER.FULL-CYCLE — dispatch `comprehensive-review:full-review` against
-  `git diff origin/main` early in cycle. Fold CRITICAL + HIGH findings into nearest
-  forward commits. Log output to `.full-review/v0.9-cycle-opening.md`. Marks `[x]` when
-  file exists + all CRITICAL findings have a resolution note.
+- [x] M_V9.REVIEWER.FULL-CYCLE — full 5-phase review complete. All phases written to
+  `.full-review/` (gitignored). 3 P0 criticals fixed in commit a11b8a4:
+  CQ-1 encroachment N-player, CQ-2 evaluateWinLoss N-player, CQ-3 death.ts guards.
+  SEC-2 (zone save/load), SEC-1 (Zod schema), BP-2 (score seed), BP-3 (FactionBase type),
+  CICD-2 (verify script), CQ-8 (visual-battery filter) also fixed in same commit.
 
-- [ ] [WAIT] (v0.9 grinder) M_V9.VISUAL.LINUX-LOCK — Add `.github/workflows/lock-baselines.yml`
-  `workflow_dispatch` job that runs `pnpm visual:battery:ci --update` on ubuntu-latest
-  (matching CI image), commits updated PNGs back to the branch via git commit + push.
-  Flip `visual-battery` job in `ci.yml` from `continue-on-error: true` → no
-  continue-on-error (hard fail on drift). Add `pnpm visual:battery:lock` script alias.
-  Acceptance: `visual:battery:ci` returns non-zero when a PNG is manually corrupted.
+- [x] M_V9.VISUAL.LINUX-LOCK — `.github/workflows/lock-baselines.yml` workflow_dispatch
+  added (ubuntu-latest, `pnpm visual:battery:ci:update`, commits PNGs back via git +
+  push with optional LOCK_BASELINES_TOKEN). `visual-battery` job in `ci.yml` flipped:
+  `continue-on-error: true` removed (hard fail on drift). `visual:battery:lock` +
+  `visual:battery:ci:update` script aliases added to package.json. `--update` flag
+  added to visual-battery.mjs (skips pre-run dirty-check, exits 0 on drift for
+  lock workflow path). Commit: 837afd0.
 
 - [ ] [WAIT] (v0.9 grinder) M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — Convert 6 v0.8 test files that use
   source-text grep assertions (testing that source code CONTAINS a pattern) into
