@@ -16,6 +16,8 @@ import { availableMapSizes, MAP_SIZES, type MapSizeKey } from '@/core/map-size';
 import { createEventPrng, createFreshEventSeed } from '@/core/rng';
 import { randomSeedPhrase } from '@/core/seed-phrase';
 import { DEFAULT_PERSONALITY } from '@/config/ai-personalities';
+import { defaultFactionColors } from '@/config/faction-palette';
+import { buildDefaultFactions, type FactionConfig, LEGACY_FACTIONS } from '@/config/factions';
 import type { Difficulty, GameMode } from '@/game/game-state';
 import { presetFor } from '@/rules';
 import type { TurnsMode } from '@/rules/mode-presets';
@@ -25,6 +27,7 @@ import { PLAYER_COLORS } from './new-game-options';
 import { ModalShell } from './ModalShell';
 import { SeedField } from './SeedField';
 import { PresetControls } from './PresetControls';
+import { FactionColorPicker } from './FactionColorPicker';
 import { OpponentPicker } from './OpponentPicker';
 
 /** The choices a New Game collects. */
@@ -69,6 +72,14 @@ export interface NewGameChoices {
   aiVsAi: boolean;
   /** M_FUN.AI.PICKER — named opponent personality key. */
   enemyPersonality: string;
+  /**
+   * M_PIVOT.N-PLAYER.COLOR-PICKER — explicit faction registry. When
+   * omitted, startGame falls back to LEGACY_FACTIONS with default
+   * colors. For v0.5 this carries the two visible faction-color
+   * picks from the modal so ZoneBorder + HUD chips render with the
+   * user's chosen banner colors instead of the historical blue/red.
+   */
+  factions?: FactionConfig[];
 }
 
 // M_SIMPLIFY.7 — STARTING_BONUSES / PLAYER_COLORS / MODES /
@@ -115,6 +126,21 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   const [aiVsAi, setAiVsAi] = useState(false);
   // M_FUN.AI.PICKER — named opponent. Defaults to the registry default.
   const [enemyPersonality, setEnemyPersonality] = useState<string>(DEFAULT_PERSONALITY);
+  // M_PIVOT.N-PLAYER.COLOR-PICKER — per-faction banner colors. Default
+  // is a deterministic seed-derived shuffle of the 12-color palette so
+  // a 2-player default still gets two distinct chips. The player can
+  // re-pick via the FactionColorPicker; the chosen pair flows into
+  // NewGameChoices.factions so startGame seeds the registry with them.
+  const [factionColors, setFactionColors] = useState<{ player: string; enemy: string }>(() => {
+    const [p, e] = defaultFactionColors(2, seedPhrase);
+    // LEGACY_FACTIONS has exactly 2 entries (asserted in factions.test).
+    const legacyPlayer = LEGACY_FACTIONS[0]?.color ?? '#3b82f6';
+    const legacyEnemy = LEGACY_FACTIONS[1]?.color ?? '#ef4444';
+    return {
+      player: p ?? legacyPlayer,
+      enemy: e ?? legacyEnemy,
+    };
+  });
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
 
   // M_BRAND.3 — when the player overrides any cascaded control after
@@ -276,6 +302,39 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           setEnemyPersonality={setEnemyPersonality}
         />
 
+        {/* M_PIVOT.N-PLAYER.COLOR-PICKER — per-faction banner color
+            picker. v0.5 substrate ships two slots (player + enemy);
+            M_PIVOT.MODES.4X grows this to N slots for N-player FFA. */}
+        <div
+          data-testid="faction-colors-row"
+          style={{
+            display: 'flex',
+            gap: 16,
+            alignItems: 'center',
+            margin: '12px 0 4px',
+            fontSize: 13,
+            color: HUD_THEME.color.muted,
+          }}
+        >
+          <span style={{ flex: 0 }}>Faction colors:</span>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span>Player</span>
+            <FactionColorPicker
+              color={factionColors.player}
+              onChange={(c) => setFactionColors((prev) => ({ ...prev, player: c }))}
+              ariaLabel="Player faction color"
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <span>Enemy</span>
+            <FactionColorPicker
+              color={factionColors.enemy}
+              onChange={(c) => setFactionColors((prev) => ({ ...prev, enemy: c }))}
+              ariaLabel="Enemy faction color"
+            />
+          </div>
+        </div>
+
         {/* M_AUDIT2.UX.6 — sticky bottom Begin CTA. The above form
             sections scroll inside the flex column when the modal hits
             its maxHeight; the button stays pinned so a thumb on
@@ -316,6 +375,40 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 aiVsAi,
                 // M_FUN.AI.PICKER — named opponent personality.
                 enemyPersonality,
+                // M_PIVOT.N-PLAYER.COLOR-PICKER + M_PIVOT.MODES.4X —
+                // explicit faction registry. For 2-faction modes,
+                // seed the legacy player+enemy slots with the user's
+                // color picks. For 4X mode (age-of-strata, defaultPlayerCount=6),
+                // generate a 6-faction registry — the modal exposes
+                // only the first two color pickers today; remaining
+                // slots get default-shuffled palette colors and AI control.
+                factions: ((): FactionConfig[] => {
+                  const preset = presetFor(mode);
+                  if (preset.defaultPlayerCount <= 2) {
+                    return [
+                      {
+                        ...LEGACY_FACTIONS[0],
+                        color: factionColors.player,
+                      } as FactionConfig,
+                      {
+                        ...LEGACY_FACTIONS[1],
+                        color: factionColors.enemy,
+                        personality: enemyPersonality,
+                      } as FactionConfig,
+                    ];
+                  }
+                  // N-player mode: build a full registry. First two
+                  // colors come from the picker; remaining N-2 from the
+                  // seed-derived palette shuffle.
+                  const allColors = defaultFactionColors(preset.defaultPlayerCount, seedPhrase);
+                  // Override the first two with the user picks.
+                  allColors[0] = factionColors.player;
+                  allColors[1] = factionColors.enemy;
+                  const registry = buildDefaultFactions(preset.defaultPlayerCount, allColors);
+                  // Patch the enemy slot's personality with the picker's pick.
+                  if (registry[1]) registry[1] = { ...registry[1], personality: enemyPersonality };
+                  return registry;
+                })(),
               })
             }
             style={{

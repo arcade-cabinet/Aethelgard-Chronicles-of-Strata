@@ -1,6 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import { BufferAttribute, type BufferGeometry, type LineSegments } from 'three';
+import { findFaction } from '@/config/factions';
 import { HEX_DIRECTIONS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
 import type { Faction } from '@/ecs/components';
@@ -62,10 +63,16 @@ function FactionBorder({ game, faction }: { game: GameState; faction: Faction })
     const geo = ref.current.geometry as BufferGeometry;
     geo.setAttribute('position', new BufferAttribute(buildBorder(game, faction), 3));
   });
+  // M_PIVOT.RENDER.COLOR-OUTLINE — read color from the runtime registry
+  // (game.factions) so user-picked banner colors flow through. SKINS
+  // fallback handles the legacy case where the registry isn't yet seeded
+  // (e.g. early test paths that bypass startGame).
+  const registryColor = findFaction(game.factions, faction)?.color;
+  const color = registryColor ?? SKINS[faction].zoneBorderColor;
   return (
     <lineSegments ref={ref}>
       <bufferGeometry />
-      <lineBasicMaterial color={SKINS[faction].zoneBorderColor} linewidth={2} />
+      <lineBasicMaterial color={color} linewidth={2} />
     </lineSegments>
   );
 }

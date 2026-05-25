@@ -72,9 +72,14 @@ export interface CreateCharacterParams {
   /**
    * Override the faction the role's stats normally assign. The faction-
    * symmetric economy (M8.6a) needs ENEMY peons + footmen; the enemy AI's
-   * trainUnit command passes 'enemy' here. Undefined = use stats.faction.
+   * trainUnit command passes 'enemy' here. M_PIVOT.BARBARIAN-CAMPS widens
+   * the type to `string` so barbarian-camp spawners can pass their camp
+   * id (e.g. `barbarian-camp-1`) — the runtime FactionTrait field is
+   * typed `Faction` ('player' | 'enemy') but accepts any string at the
+   * koota trait layer; the camp id flows through unchanged. Undefined =
+   * use stats.faction.
    */
-  factionOverride?: 'player' | 'enemy';
+  factionOverride?: string;
 }
 
 /**
@@ -105,7 +110,12 @@ export function createCharacter(params: CreateCharacterParams): Entity {
     HexPosition({ q, r, level }),
     Transform({ x, y: level * TILE_HEIGHT, z, rotationY: 0 }),
     Unit({ unitType: role }),
-    FactionTrait({ faction }),
+    // M_PIVOT.BARBARIAN-CAMPS: factionOverride is `string` so camp ids
+    // (e.g. `barbarian-camp-1`) flow through. FactionTrait.faction is
+    // typed `Faction` (literal union) for compile-time narrowing on the
+    // 2-faction case; runtime accepts any string. Cast keeps the typed
+    // trait shape while letting registry-driven ids round-trip.
+    FactionTrait({ faction: faction as 'player' | 'enemy' }),
     Movement({ speed: stats.speed, isMoving: false }),
     PathQueue({ steps: [] }),
     AnimationState({ state: 'IDLE' }),

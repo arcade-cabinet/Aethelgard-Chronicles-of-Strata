@@ -3,11 +3,13 @@ import { COMBAT } from '@/config/combat';
 import {
   AnimationState,
   DeathTimer,
+  FactionBase,
   FactionTrait,
   Health,
   HexPosition,
   Unit,
 } from '@/ecs/components';
+import { hexDistance } from '@/core/hex';
 
 /** Seconds a corpse lingers (plays the death clip) before removal. */
 const DEATH_DELAY: number = COMBAT.deathDelay;
@@ -29,6 +31,22 @@ export interface DeathSystemResult {
    */
   enemyDeathKeys: string[];
   playerHeroDied: boolean;
+  /**
+   * M_PIVOT.BARBARIAN-CAMPS — camps cleared this tick. Each entry
+   * carries the camp's factionId + position + the faction id that
+   * gets the +50 wood / +50 stone / 1 random Discovery reward. The
+   * caller (economy-tick-phases) credits the reward against the
+   * winning faction's economy. v0.5 uses NEAREST-UNIT proximity as
+   * the kill-credit heuristic (proper last-damager tracking is a
+   * v0.6 plumbing pass through DamageEvent).
+   */
+  barbarianCampsCleared: Array<{
+    campFactionId: string;
+    q: number;
+    r: number;
+    /** Faction id receiving the clearing reward (nearest-unit faction). */
+    clearedBy: string;
+  }>;
 }
 
 /**
@@ -45,6 +63,52 @@ export function deathSystem(world: World, delta: number): DeathSystemResult {
   let enemyKills = 0;
   const enemyDeathKeys: string[] = [];
   let playerHeroDied = false;
+  const barbarianCampsCleared: DeathSystemResult['barbarianCampsCleared'] = [];
+
+  // M_PIVOT.BARBARIAN-CAMPS — sweep destroyed camps (FactionBase entities
+  // tagged with a barbarian-camp-* faction id at 0 HP). Each cleared camp
+  // emits the +reward to the nearest non-barbarian-camp faction's units.
+  // Camp entity is destroyed immediately (no death-anim delay — barbarian
+  // bases are buildings, not units).
+  for (const entity of world.query(FactionBase, Health, HexPosition, FactionTrait)) {
+    const health = entity.get(Health);
+    if (!health || health.current > 0) continue;
+    const factionId = entity.get(FactionTrait)?.faction as unknown as string | undefined;
+    if (!factionId?.startsWith('barbarian-camp-')) continue;
+    const hex = entity.get(HexPosition);
+    if (!hex) continue;
+    // Find the nearest non-barbarian-camp unit; that faction claims the camp.
+    let nearestFaction: string | null = null;
+    let nearestDist = Number.POSITIVE_INFINITY;
+    for (const unit of world.query(Unit, FactionTrait, HexPosition)) {
+      const f = unit.get(FactionTrait)?.faction as unknown as string | undefined;
+      if (!f || f.startsWith('barbarian-camp-')) continue;
+      const uh = unit.get(HexPosition);
+      if (!uh) continue;
+      const d = hexDistance(hex.q, hex.r, uh.q, uh.r);
+      if (d < nearestDist) {
+        nearestDist = d;
+        nearestFaction = f;
+      }
+    }
+    if (nearestFaction !== null) {
+      barbarianCampsCleared.push({
+        campFactionId: factionId,
+        q: hex.q,
+        r: hex.r,
+        clearedBy: nearestFaction,
+      });
+    }
+    entity.destroy();
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('aethelgard:barbarian-camp-cleared', {
+          detail: { campFactionId: factionId, q: hex.q, r: hex.r, clearedBy: nearestFaction },
+        }),
+      );
+    }
+  }
+
   for (const entity of world.query(Unit, Health, AnimationState)) {
     const health = entity.get(Health);
     if (!health || health.current > 0) continue;
@@ -98,5 +162,5 @@ export function deathSystem(world: World, delta: number): DeathSystemResult {
       entity.set(DeathTimer, { elapsed });
     }
   }
-  return { enemyKills, enemyDeathKeys, playerHeroDied };
+  return { enemyKills, enemyDeathKeys, playerHeroDied, barbarianCampsCleared };
 }

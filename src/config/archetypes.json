@@ -1,0 +1,145 @@
+{
+  "$comment": "M_PIVOT.ARCHETYPES — per-faction MESH + SFX + particle palette. The CONTRACT (supply/military role, build cost, HP, supply granted) is SHARED across archetypes; the MESH + palette varies per faction's archetype pick. medieval is the default (the current player kit). Adding a 5th archetype (e.g. cybernetic) is one entry here + one row in archetype-tests.",
+  "archetypes": {
+    "medieval": {
+      "displayName": "Medieval",
+      "buildings": {
+        "TownHall": {
+          "meshLogicalId": "structures.rts.town-center.first-age.l1",
+          "scale": 0.12,
+          "yOffset": 0.05
+        },
+        "Farm": { "meshLogicalId": "structures.farm", "scale": 0.65, "yOffset": 0 },
+        "House": { "meshLogicalId": "structures.house", "scale": 0.7, "yOffset": 0 },
+        "Granary": { "meshLogicalId": "structures.granary", "scale": 0.7, "yOffset": 0 },
+        "Barracks": {
+          "meshLogicalId": "structures.rts.barracks.first-age.l1",
+          "scale": 0.1,
+          "yOffset": 0
+        },
+        "Watchtower": {
+          "meshLogicalId": "structures.rts.tower-house.first-age",
+          "scale": 0.12,
+          "yOffset": 0
+        },
+        "Wall": { "meshLogicalId": "structures.rts.wall.first-age", "scale": 0.1, "yOffset": 0 },
+        "Wonder": { "meshLogicalId": "structures.wonder-keep", "scale": 1.2, "yOffset": 0 },
+        "Library": { "meshLogicalId": "structures.library", "scale": 0.7, "yOffset": 0 }
+      },
+      "sfx": {
+        "build": "ui.confirm",
+        "completed": "ui.confirm",
+        "destroyed": "combat.bone-shatter"
+      },
+      "particlePalette": {
+        "dust": "#cbd5e1",
+        "ember": "#f59e0b",
+        "smoke": "#94a3b8"
+      }
+    },
+    "orc": {
+      "displayName": "Orc",
+      "buildings": {
+        "TownHall": {
+          "meshLogicalId": "structures.rts.town-center.first-age.l1",
+          "scale": 0.12,
+          "yOffset": 0.05
+        },
+        "Farm": { "meshLogicalId": "structures.farm", "scale": 0.65, "yOffset": 0 },
+        "House": { "meshLogicalId": "structures.house", "scale": 0.7, "yOffset": 0 },
+        "Granary": { "meshLogicalId": "structures.granary", "scale": 0.7, "yOffset": 0 },
+        "Barracks": {
+          "meshLogicalId": "structures.rts.barracks.first-age.l1",
+          "scale": 0.1,
+          "yOffset": 0
+        },
+        "Watchtower": {
+          "meshLogicalId": "structures.rts.tower-house.first-age",
+          "scale": 0.12,
+          "yOffset": 0
+        },
+        "Wall": { "meshLogicalId": "structures.rts.wall.first-age", "scale": 0.1, "yOffset": 0 },
+        "Wonder": { "meshLogicalId": "structures.wonder-keep", "scale": 1.2, "yOffset": 0 },
+        "Library": { "meshLogicalId": "structures.library", "scale": 0.7, "yOffset": 0 }
+      },
+      "sfx": {
+        "build": "ui.confirm",
+        "completed": "ui.confirm",
+        "destroyed": "combat.bone-shatter"
+      },
+      "particlePalette": {
+        "dust": "#84cc16",
+        "ember": "#f97316",
+        "smoke": "#65a30d"
+      }
+    },
+    "undead": {
+      "displayName": "Undead",
+      "buildings": {
+        "TownHall": { "meshLogicalId": "structures.crypt", "scale": 1.5, "yOffset": 0.15 },
+        "Farm": { "meshLogicalId": "structures.farm", "scale": 0.65, "yOffset": 0 },
+        "House": { "meshLogicalId": "structures.house", "scale": 0.7, "yOffset": 0 },
+        "Granary": { "meshLogicalId": "structures.granary", "scale": 0.7, "yOffset": 0 },
+        "Barracks": {
+          "meshLogicalId": "structures.rts.barracks.first-age.l1",
+          "scale": 0.1,
+          "yOffset": 0
+        },
+        "Watchtower": {
+          "meshLogicalId": "structures.rts.tower-house.first-age",
+          "scale": 0.12,
+          "yOffset": 0
+        },
+        "Wall": { "meshLogicalId": "structures.rts.wall.first-age", "scale": 0.1, "yOffset": 0 },
+        "Wonder": { "meshLogicalId": "structures.wonder-keep", "scale": 1.2, "yOffset": 0 },
+        "Library": { "meshLogicalId": "structures.library", "scale": 0.7, "yOffset": 0 }
+      },
+      "sfx": {
+        "build": "ui.confirm",
+        "completed": "ui.confirm",
+        "destroyed": "combat.bone-shatter"
+      },
+      "particlePalette": {
+        "dust": "#1e293b",
+        "ember": "#a855f7",
+        "smoke": "#475569"
+      }
+    },
+    "mystic": {
+      "displayName": "Mystic",
+      "buildings": {
+        "TownHall": {
+          "meshLogicalId": "structures.rts.town-center.first-age.l1",
+          "scale": 0.12,
+          "yOffset": 0.05
+        },
+        "Farm": { "meshLogicalId": "structures.farm", "scale": 0.65, "yOffset": 0 },
+        "House": { "meshLogicalId": "structures.house", "scale": 0.7, "yOffset": 0 },
+        "Granary": { "meshLogicalId": "structures.granary", "scale": 0.7, "yOffset": 0 },
+        "Barracks": {
+          "meshLogicalId": "structures.rts.barracks.first-age.l1",
+          "scale": 0.1,
+          "yOffset": 0
+        },
+        "Watchtower": {
+          "meshLogicalId": "structures.rts.tower-house.first-age",
+          "scale": 0.12,
+          "yOffset": 0
+        },
+        "Wall": { "meshLogicalId": "structures.rts.wall.first-age", "scale": 0.1, "yOffset": 0 },
+        "Wonder": { "meshLogicalId": "structures.wonder-keep", "scale": 1.2, "yOffset": 0 },
+        "Library": { "meshLogicalId": "structures.library", "scale": 0.7, "yOffset": 0 }
+      },
+      "sfx": {
+        "build": "ui.confirm",
+        "completed": "ui.confirm",
+        "destroyed": "combat.bone-shatter"
+      },
+      "particlePalette": {
+        "dust": "#a78bfa",
+        "ember": "#22d3ee",
+        "smoke": "#7c3aed"
+      }
+    }
+  }
+}

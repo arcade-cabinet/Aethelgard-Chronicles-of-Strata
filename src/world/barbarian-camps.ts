@@ -1,0 +1,197 @@
+/**
+ * M_PIVOT.BARBARIAN-CAMPS — neutral aggressor camps placed at game-gen.
+ *
+ * Architectural decisions enumerated in the v0.5 directive:
+ *   5. Placement: clamp(round(N/2)+1, 1, 6) camps, centroid-biased,
+ *      ≥6-tile radius from every player base ring.
+ *   6. Clearing: HP → 0 emits `barbarian-camp-cleared` event, +50 wood
+ *      + +50 stone + 1 random Discovery to the killing faction, tile
+ *      becomes RUINS (decorative).
+ *
+ * Use cases this module covers:
+ *   1. Map-gen placement — `placeBarbarianCamps(board, playerBaseKeys,
+ *      campCount, prng)` returns ordered camp specs.
+ *   2. ECS spawn — `spawnBarbarianCamp(world, spec)` creates a camp
+ *      entity with EnemySpawner + FactionTrait + HexPosition + Health
+ *      so the existing spawn pipeline drives raid waves.
+ *   3. Registry sync — each spawned camp gets a matching FactionConfig
+ *      pushed onto `game.factions` so the runtime knows the camp's
+ *      banner color + archetype.
+ *
+ * Clearing rewards land in deathSystem (M_PIVOT.BARBARIAN-CAMPS.CLEAR)
+ * which already detects FactionBase deaths; camps are special-cased
+ * to emit the reward instead of the game-over outcome flip.
+ */
+import type { Entity, World } from 'koota';
+import { getHexKey, hexDistance } from '@/core/hex';
+import type { BoardData } from '@/core/board';
+import { EnemySpawner, FactionBase, FactionTrait, Health, HexPosition } from '@/ecs/components';
+import type { FactionArchetype, FactionConfig, FactionId } from '@/config/factions';
+
+/**
+ * A camp spec returned by `placeBarbarianCamps`. The map-gen layer
+ * decides where + how many; the ECS spawn layer turns each spec into a
+ * concrete entity. Keeping the spec a plain object (no Entity ref) lets
+ * the map-gen pass run pure + deterministic.
+ */
+export interface BarbarianCampSpec {
+  /** Stable faction id for this camp (e.g. `barbarian-camp-1`). */
+  factionId: FactionId;
+  /** Hex axial position. */
+  q: number;
+  /** Hex axial position. */
+  r: number;
+  /** Hex level (height tier for stacked terrain). */
+  level: number;
+  /** Camp HP — `200 + 50 * nearestPlayerDistance` per directive. */
+  hp: number;
+  /** Visual archetype for the camp's spawned units + base mesh. */
+  archetype: FactionArchetype;
+}
+
+/** Default camp count formula per the directive: clamp(round(N/2)+1, 1, 6). */
+export function defaultCampCount(playerFactionCount: number): number {
+  const n = Math.max(1, playerFactionCount);
+  const target = Math.round(n / 2) + 1;
+  return Math.max(1, Math.min(6, target));
+}
+
+/**
+ * Pick camp tile positions. Centroid-biased — preferring walkable tiles
+ * close to the centroid of all walkable LAND tiles, but with a minimum
+ * 6-tile separation from every player base. The PRNG ordering is the
+ * only stochastic input; given the same board + base keys + count, the
+ * result is byte-identical.
+ *
+ * @param board           - The generated board (tile map + walkable bits)
+ * @param playerBaseKeys  - Hex keys of every player faction's base
+ * @param campCount       - How many camps to place (clamped 0..N)
+ * @param prng            - Map-PRNG (`Math.random` is banned in world/)
+ * @returns Ordered camp specs (id `barbarian-camp-1`, `-2`, ... in
+ *          placement order). May return fewer than `campCount` if the
+ *          board lacks suitable tiles (very small / very dense maps).
+ */
+export function placeBarbarianCamps(
+  board: BoardData,
+  playerBaseKeys: readonly string[],
+  campCount: number,
+  prng: () => number,
+): BarbarianCampSpec[] {
+  if (campCount <= 0) return [];
+
+  // Compute walkable-land centroid for the bias.
+  const walkable: Array<{ q: number; r: number; level: number; key: string }> = [];
+  let sumQ = 0;
+  let sumR = 0;
+  for (const tile of board.tiles.values()) {
+    if (!tile.walkable) continue;
+    walkable.push({
+      q: tile.q,
+      r: tile.r,
+      level: tile.level,
+      key: getHexKey(tile.q, tile.r),
+    });
+    sumQ += tile.q;
+    sumR += tile.r;
+  }
+  if (walkable.length === 0) return [];
+  const cQ = sumQ / walkable.length;
+  const cR = sumR / walkable.length;
+
+  // Parse player base positions for the min-distance check.
+  const basePositions: Array<{ q: number; r: number }> = [];
+  for (const key of playerBaseKeys) {
+    const tile = board.tiles.get(key);
+    if (tile) basePositions.push({ q: tile.q, r: tile.r });
+  }
+
+  const MIN_BASE_RADIUS = 6;
+
+  // Score every candidate: distFromCentroid (lower = better) + tiny
+  // PRNG jitter so ties resolve deterministically per-seed.
+  const candidates = walkable
+    .filter((t) => {
+      for (const b of basePositions) {
+        if (hexDistance(t.q, t.r, b.q, b.r) < MIN_BASE_RADIUS) return false;
+      }
+      return true;
+    })
+    .map((t) => ({
+      tile: t,
+      score: hexDistance(t.q, t.r, Math.round(cQ), Math.round(cR)) + prng() * 0.001,
+    }))
+    .sort((a, b) => a.score - b.score);
+
+  // Greedy-pick — keep camps at least MIN_BASE_RADIUS apart from each other too.
+  const picks: BarbarianCampSpec[] = [];
+  for (const cand of candidates) {
+    if (picks.length >= campCount) break;
+    let okay = true;
+    for (const p of picks) {
+      if (hexDistance(cand.tile.q, cand.tile.r, p.q, p.r) < MIN_BASE_RADIUS) {
+        okay = false;
+        break;
+      }
+    }
+    if (!okay) continue;
+    const nearestBaseDist =
+      basePositions.length === 0
+        ? MIN_BASE_RADIUS
+        : Math.min(...basePositions.map((b) => hexDistance(cand.tile.q, cand.tile.r, b.q, b.r)));
+    picks.push({
+      factionId: `barbarian-camp-${picks.length + 1}`,
+      q: cand.tile.q,
+      r: cand.tile.r,
+      level: cand.tile.level,
+      hp: 200 + 50 * nearestBaseDist,
+      // v0.5 substrate: every camp starts as 'orc' archetype. v0.6
+      // diversifies (undead in graveyard biomes, mystic in highland).
+      archetype: 'orc',
+    });
+  }
+  return picks;
+}
+
+/**
+ * Convert a `BarbarianCampSpec` into a `FactionConfig` registry row.
+ * Color is derived from the camp index (deterministic per-game without
+ * touching the player palette). Archetype carries over from the spec.
+ */
+export function factionConfigForCamp(spec: BarbarianCampSpec): FactionConfig {
+  // Greys/browns — visually distinct from player palette, signals
+  // "neutral aggressor" rather than a player faction. Index off
+  // the trailing camp number so cycling through is deterministic.
+  const CAMP_COLORS = ['#78716c', '#5f5b56', '#8b7355', '#6b5f48', '#9b8b6c', '#4b4339'];
+  const idx = Number.parseInt(spec.factionId.replace('barbarian-camp-', ''), 10) - 1;
+  const color = CAMP_COLORS[idx % CAMP_COLORS.length] ?? CAMP_COLORS[0]!;
+  return {
+    id: spec.factionId,
+    displayName: `Barbarian Camp ${idx + 1}`,
+    kind: 'barbarian',
+    color,
+    archetype: spec.archetype,
+  };
+}
+
+/**
+ * Spawn one barbarian-camp entity. Carries the camp's FactionTrait so
+ * spawnSystem (already iterating EnemySpawner + HexPosition) generates
+ * units tagged with this camp's id. Health makes the camp itself
+ * clearable by any faction.
+ *
+ * The FactionBase trait marks this as a "base" for the death-detection
+ * + camera-framing systems; camp-specific clearing logic in deathSystem
+ * checks `FactionTrait.faction.startsWith('barbarian-camp-')`.
+ */
+export function spawnBarbarianCamp(world: World, spec: BarbarianCampSpec): Entity {
+  return world.spawn(
+    HexPosition({ q: spec.q, r: spec.r, level: spec.level }),
+    Health({ current: spec.hp, max: spec.hp }),
+    EnemySpawner({ spawnTimer: 0, spawnInterval: 60, spawnCount: 0 }),
+    // Cast: FactionTrait.faction is typed Faction (literal union) for
+    // compile-time narrowing on the legacy 2-faction case; runtime
+    // accepts any string. Camp ids live in the registry, not the union.
+    FactionTrait({ faction: spec.factionId as 'player' | 'enemy' }),
+    FactionBase(),
+  );
+}

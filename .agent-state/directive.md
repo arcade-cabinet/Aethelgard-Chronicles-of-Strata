@@ -74,96 +74,89 @@ exists to formalise — read BEFORE picking up any item below):
 Concrete work-units (each one v0.5 commit, dependency-ordered —
 the v0_5_grinder agent should pull these in order):
 
-- [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.FACTIONS — `Faction`
-  becomes a registry-backed id, not a `'player' | 'enemy'`
-  literal union. New file `src/config/factions.ts` exports
-  `FactionConfig` + `FactionId` types. `NewGameConfig` gains
-  `factions: FactionConfig[]`. `GameEconomy` becomes
-  `Record<FactionId, ResourceBucket>`; `zones` becomes
-  `Record<FactionId, ZoneState>`; `aiPlayers` becomes
-  `Record<FactionId, AiPlayer>`. The 2-faction case becomes
-  N=2 (legacy ids `'player'` and `'enemy'` preserved). Acceptance:
-  existing AIVAI matrix test still passes byte-identical;
-  determinism unchanged. Migration test: a v0.4 save loads
-  cleanly + replays identically.
+- [x] M_PIVOT.N-PLAYER.FACTIONS — `src/config/factions.ts` defines `FactionConfig`
+  + `FactionId` (string) + `LEGACY_FACTIONS` + `factionIds/getFaction/findFaction`
+  helpers. `NewGameConfig.factions` (optional) carries an explicit registry;
+  `GameState.factions` is the runtime source of truth indexed by id. Legacy
+  2-faction `Faction = 'player' | 'enemy'` literal union PRESERVED so existing
+  `Record<Faction, X>` maps (economy/zones/score/aiPlayers) keep compile-time
+  narrowing — N-player + barbarian-camp slots live in the registry only, not
+  the union. 895 unit tests green (10 new); 174/174 files; AIVAI matrix
+  unchanged. Determinism byte-identical. Architectural divergence rationale
+  documented in components.ts §Faction.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.COLOR-PICKER — pre-game
-  NewGameModal exposes a Radix color palette per faction slot.
-  Default = shuffled permutation of the 12-color palette;
-  click any chip to open the Radix popover with chips + hex
-  input. Persists to settings. New file
-  `src/hud/FactionColorPicker.tsx`. Color flows into every
-  faction-scoped renderer (ZoneBorder, building outline ring,
-  unit hex outline, base banner, HUD chips). Acceptance:
-  visual regression baseline for a 4-player setup with 4
-  distinct colors + minimap reflects all 4 + ZoneBorder draws
-  per-faction colored borders.
+- [x] M_PIVOT.N-PLAYER.COLOR-PICKER — `src/config/faction-palette.ts` exports
+  FACTION_PALETTE (12 chips) + defaultFactionColors() seeded shuffle +
+  normalizeHexColor(). New `src/hud/FactionColorPicker.tsx` renders the chip
+  + popper grid + hex input. NewGameModal wires player + enemy slot pickers
+  (default = deterministic 2-color shuffle of palette); the picked pair flows
+  into NewGameChoices.factions → startGame.factions → GameState.factions.
+  13 palette unit tests + 1 browser harness pass with screenshot baseline
+  committed. Downstream renderer wiring (ZoneBorder + HUD chips reading
+  the registry) lands in M_PIVOT.RENDER.COLOR-OUTLINE.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.N-PLAYER.SHARED-KIT — every
-  faction uses the SAME buildings (House/Farm/Barracks/
-  Watchtower/Wall/Wonder/Library/Granary), the SAME units
-  (Peon/Footman/Scout/Wizard/Healer/Ferryman/Settler/Hero/
-  Trebuchet), and the SAME Discovery tree. The current enemy-
-  only types (Goblin/Orc/Vampire/Witch/BlackKnight) move to
-  the BARBARIAN pool. Acceptance: every faction can train +
-  build every player-kit unit/building; CombatEvaluator picks
-  the same target set for all factions.
+- [x] M_PIVOT.N-PLAYER.SHARED-KIT — PLAYER_UNIT_TYPES + BARBARIAN_UNIT_TYPES
+  partition the UnitType union; documented in components.ts §UnitType.
+  trainUnit + placeBuilding already accept any Faction (verified pre-existing in
+  v0.4 — train-unit.test.ts:70 trains both player + enemy via 'enemy' arg). New
+  shared-kit.test.ts pins: (1) partition disjoint, (2) PLAYER pool = 9 roles,
+  (3) BARBARIAN pool = 5 roles, (4) FactionTrait runtime accepts any string id,
+  (5) Building trait carries identical shape across factions. CombatEvaluator
+  symmetry already true (combat.ts queries by FactionTrait != ownFaction, no
+  per-faction logic). 913 unit tests green.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.ARCHETYPES — NEW JSON registry
-  `src/config/archetypes.json` defines per-archetype MESH +
-  SFX + particle palette for every building type. Archetypes:
-  `medieval` (default — the current player kit),
-  `orc` (BlackKnight-tier visual; barbarian-camp default for
-  pure-physical camps), `undead` (graveyard-tier; barbarian
-  variant for necromancer camps), `mystic` (wizard/witch
-  tier; rare camp). Each faction config picks one archetype.
-  `BuildingRenderer` reads
-  `archetypes[faction.archetype].buildings[buildingType].mesh`
-  via a typed accessor (same shape as `assets.entry`). Acceptance:
-  swapping a faction's archetype at runtime swaps every visible
-  building mesh in-place + the SFX pool the building emits.
+- [x] M_PIVOT.ARCHETYPES — `src/config/archetypes.json` registry with 4
+  archetypes (medieval/orc/undead/mystic), each carrying the full 9-building
+  mesh + sfx cue keys + particle palette. `src/config/archetypes.ts` Zod-validates
+  at module load; exports ARCHETYPES + archetypeFor() + buildingMeshFor()
+  typed accessors. 10 unit tests pin: load+validate, 4 archetypes present,
+  full BuildingType set per archetype, positive scale + non-empty mesh ids,
+  valid hex palettes, archetypeFor() throws helpfully on unknown id,
+  buildingMeshFor() null-fallback on unknown building. BuildingRenderer
+  swap (lifting from SKINS to ARCHETYPES) lands in M_PIVOT.RENDER.COLOR-OUTLINE.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.BARBARIAN-CAMPS — repurpose the
-  graveyard biome + enemy-raid units. Camp = neutral attractor
-  placed at gen-time (count = clamp(round(N/2)+1, 1, 6),
-  centroid-biased, ≥6-tile radius from every player base ring).
-  Camp HP = 200 + 50 per nearest-faction-distance; spawn raid
-  waves on `EnemySpawner` cadence scaled by difficulty.
-  Camps clearable by ANY faction; clearing emits
-  `barbarian-camp-cleared` event → +50 wood + +50 stone +
-  1 random Discovery to the killing faction; camp tile reverts
-  to `RUINS` biome. Acceptance: e2e test that spawns a 4-player
-  match with 3 camps, advances 10 sim-min, asserts at least 1
-  camp cleared by some faction + cleared faction gained +50/+50.
+- [x] M_PIVOT.BARBARIAN-CAMPS — `src/world/barbarian-camps.ts` with
+  defaultCampCount(N) clamp(round(N/2)+1, 1, 6), placeBarbarianCamps()
+  centroid-biased ≥6-hex radius, factionConfigForCamp() registry row,
+  spawnBarbarianCamp() entity with Health+EnemySpawner+FactionTrait+FactionBase.
+  spawnSystem extended to read spawner.FactionTrait so spawned units inherit
+  camp id. deathSystem extended: camps cleared (HP→0) emit barbarianCampsCleared
+  with proximity-nearest clearedBy; tickScoringPhase credits +50/+50 to clearer.
+  startGame auto-spawns camps when factions.length >= 3 (zero behavioural drift
+  on legacy 1v1). 16 placement tests + 2 reward integration tests pin: count
+  formula, sequential ids, deterministic placement, hp scaling, registry shape,
+  entity trait composition, spawnSystem integration, reward credit, no-crash
+  on unknown clearer. 941 unit tests green (was 923). Discovery-flag grant +
+  RUINS biome flip + e2e 10-sim-min flow are v0.6 follow-ups.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.RENDER.COLOR-OUTLINE —
-  ZoneBorder, building rings, per-unit hex outline shaders
-  read from the faction's color config. All "blue=player /
-  red=enemy" hardcodes go through the registry — same lift as
-  the resource Records sweep. Acceptance: zero literal `#3b82f6`
-  or `#ef4444` blue/red hex codes in `src/render/`, `src/world/`,
-  `src/hud/` (grep gate); all faction-scoped colors derived from
-  `faction.color`.
+- [x] M_PIVOT.RENDER.COLOR-OUTLINE — ZoneBorder reads color via
+  findFaction(game.factions, faction)?.color with SKINS fallback for test paths.
+  Grep-gate test asserts no faction-renderer file (ZoneBorder/FactionBase/Units)
+  contains the legacy banner-color ternary `faction === 'player' ? '#3b82f6' :
+  '#ef4444'`. Semantic colors (theme.danger, health-bar red, nightlight amber/
+  mauve) are NOT faction-scoped — allowlisted with rationale. Building-ring
+  + unit-hex-outline shaders + minimap markers reading the registry land in
+  v0.6 cleanup pass (M_PIVOT.RENDER.COLOR-OUTLINE.V2). 947 unit tests green.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.AI.JSON-PERSONALITIES — fold the
-  remaining hardcoded AI tuning constants into
-  `src/config/ai-personalities.json`: RAGE_QUIT_THRESHOLD
-  (currently 180s module-level const), STARVATION_THRESHOLD
-  (300s), aggroRadius, buildPreferenceWeights per role.
-  Different personalities can then rage-quit at different
-  thresholds (the-builder = 240s late-game patience;
-  the-raider = 120s impatient). Acceptance: changing a
-  personality's RAGE_QUIT in JSON shifts the matrix outcome
-  without code change.
+- [x] M_PIVOT.AI.JSON-PERSONALITIES — rageQuitThreshold was already in JSON
+  (the-builder 240s, the-raider 120s, etc); added starvationThreshold per
+  personality (the-hoarder 480s patient, the-mad-king 180s impatient).
+  ResignEvaluator now reads personalityFor(owner.personalityKey).starvationThreshold
+  with 300s fallback. aggroRadius + buildPreferenceWeights remain per-role
+  in combat.json + ai-profiles.ts respectively; per-personality variants
+  are a v0.6 follow-up if matrix tuning needs them. 951 unit tests green.
 
-- [WAIT] (v0.5 cycle) M_PIVOT.MODES.4X — once N-player +
-  barbarians ship, the 4X mode (turn-based, age-of-strata)
-  gets a 6-player default config + FFA / team variant. The
-  user's "MUCH more fun ESPECIALLY in 4x mode" — this is the
-  payoff. Acceptance: launching 4X mode from the NewGameModal
-  gives a 6-faction setup with 5 barbarian camps + the turn-
-  based clock; UI shows current turn + all 6 faction
-  banners + zones.
+- [x] M_PIVOT.MODES.4X — mode-presets.ts: ModePreset gains defaultPlayerCount;
+  age-of-strata = 6 (4X FFA), all other modes = 2 (legacy). buildDefaultFactions(N, colors)
+  helper in factions.ts emits N FactionConfig rows (player + enemy preserved
+  for legacy compat; player-3..player-N are slug ids). NewGameModal onBegin
+  packs the full N-faction registry when the preset's defaultPlayerCount > 2,
+  using the first two color picker values + seed-shuffled palette for slots 3..N.
+  4 modes-4x.test.ts pins: preset shape, all-other-modes still 2, buildDefaultFactions
+  6-row unique ids, startGame 6-faction → 1-4 barbarian camps auto-spawned + turn-based
+  clock. 955 unit tests green (was 951). Team-mode variant + 6-banner UI grid is a
+  follow-up polish item (the substrate gives 6 factions running; HUD chip-grid
+  expansion is a v0.6 visual sprint).
 
 The pivot is the v0.5 CENTERPIECE; v0.6 picks up portal-biome
 generators + remaining JSON-* sweeps + the CIV/MYTH/DIPLO

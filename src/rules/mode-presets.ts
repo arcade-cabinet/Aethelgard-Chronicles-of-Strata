@@ -39,6 +39,15 @@ export interface ModePreset {
    * score; tie → draw.
    */
   maxTurns: number | null;
+  /**
+   * M_PIVOT.MODES.4X — default count of PLAYER factions for this mode.
+   * The legacy 2-faction modes (border-clash, frontier-raid, long-reign,
+   * strata-wars, coexistence) keep `2`. Age-of-strata (the 4X mode)
+   * defaults to `6` — a six-player FFA + 4 barbarian camps. The
+   * NewGameModal can override this; barbarian-camp auto-spawn picks
+   * up the actual count via game.factions.length.
+   */
+  defaultPlayerCount: number;
 }
 
 /**
@@ -61,6 +70,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: false,
     maxTurns: null,
+    defaultPlayerCount: 2,
   },
   // frontier-raid → dry-land: badlands feel, dense mountain
   //   ridge-lines force multiple short chokes; rush military meta.
@@ -72,6 +82,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: false,
     maxTurns: null,
+    defaultPlayerCount: 2,
   },
   // long-reign → continent: larger landmass, denser mountains,
   //   multiple redundant chokes — attrition match.
@@ -83,6 +94,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: true,
     maxTurns: null,
+    defaultPlayerCount: 2,
   },
   // strata-wars → continent: layered chokes around central
   //   contested zone; longer match.
@@ -94,6 +106,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: false,
     maxTurns: null,
+    defaultPlayerCount: 2,
   },
   // age-of-strata → archipelago: 4X exploration; many islands +
   //   channels-as-funnels reward scouting + naval/settler play.
@@ -108,6 +121,10 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     // (Civ standard) — long enough for tech progression, short
     // enough that a session fits in one sitting.
     maxTurns: 60,
+    // M_PIVOT.MODES.4X — 4X mode defaults to 6-player FFA. The
+    // barbarian-camp auto-spawn in startGame picks up the factions
+    // count + creates clamp(round(6/2)+1, 1, 6) = 4 camps.
+    defaultPlayerCount: 6,
   },
   // M_EXPANSION.F.100 — Coexistence: no win condition. Sparse
   //   mountains (archipelago) keep the sandbox permissive;
@@ -123,6 +140,7 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     guidedMapGen: true,
     invulnerableBases: true,
     maxTurns: null,
+    defaultPlayerCount: 2,
   },
 };
 

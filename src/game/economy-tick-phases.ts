@@ -297,6 +297,25 @@ export function tickScoringPhase(game: GameState, delta: number): void {
   if (deathResult.playerHeroDied && game.outcome === 'playing') {
     game.outcome = 'loss';
   }
+  // M_PIVOT.BARBARIAN-CAMPS — credit each cleared camp's reward (+50
+  // wood + +50 stone) to the clearing faction. Discovery grant is a
+  // follow-up (requires the Discovery pool to expose a random-pick
+  // helper). The clear also marks navGraph dirty so the camp tile
+  // re-pathing reflects the destroyed entity.
+  for (const cleared of deathResult.barbarianCampsCleared) {
+    // Only the two legacy slots have GameEconomy entries today; N-player
+    // economy registry comes with M_PIVOT.N-PLAYER.FACTIONS substrate
+    // when GameEconomy migrates from Record<Faction, …> to a Map<FactionId>.
+    // Until then, route the reward to the 'player' or 'enemy' slot
+    // when the clearedBy id matches; otherwise log and skip (the camp
+    // is still destroyed — the gameplay effect lands).
+    if (cleared.clearedBy === 'player' || cleared.clearedBy === 'enemy') {
+      const eco = game.economy[cleared.clearedBy];
+      eco.wood += 50;
+      eco.stone += 50;
+    }
+    game.navGraphDirty = true;
+  }
   const newNavGraph = buildingDeathSystem(game.world, game.buildSites, game.board);
   if (newNavGraph) {
     game.navGraph = newNavGraph;

@@ -1,6 +1,19 @@
 import { trait } from 'koota';
 
-/** A unit class. Source: docs/specs/50-ecs-model.md. */
+/** A unit class. Source: docs/specs/50-ecs-model.md.
+ *
+ * M_PIVOT.N-PLAYER.SHARED-KIT: the union mixes two pools —
+ *   1. PLAYER kit (Peon/Footman/Trebuchet/Wizard/Healer/Ferryman/
+ *      Scout/Settler/Hero) — every player faction can train any of
+ *      these via the standard buildings. Symmetric across all factions.
+ *   2. BARBARIAN pool (Goblin/Orc/Vampire/BlackKnight/Witch) — the
+ *      legacy enemy-only raid roster; M_PIVOT.BARBARIAN-CAMPS moves
+ *      these to neutral aggressor camps spawned at gen-time. No
+ *      PLAYER faction trains these; they exist only as camp output.
+ * The single-union shape persists so existing systems (combat,
+ * pathing, deposit, scoring) treat both pools identically — only
+ * the spawn source differs.
+ */
 export type UnitType =
   | 'Peon'
   | 'Footman'
@@ -24,7 +37,65 @@ export type UnitType =
   | 'BlackKnight'
   | 'Witch';
 
-/** Faction ownership for targeting and AI. */
+/**
+ * M_PIVOT.N-PLAYER.SHARED-KIT — the PLAYER unit pool. Every player
+ * faction (id `player`, `enemy`, `player-3`, ...) can train any of
+ * these via the appropriate building; symmetric across all factions.
+ *
+ * The SAME `Unit.unitType` field carries both player and barbarian
+ * roles — the discriminator is `FactionTrait.faction` (a player-kit
+ * faction id implies a PLAYER unit; a barbarian-camp faction id
+ * implies a BARBARIAN unit, regardless of UnitType value).
+ */
+export const PLAYER_UNIT_TYPES: readonly UnitType[] = [
+  'Peon',
+  'Footman',
+  'Trebuchet',
+  'Wizard',
+  'Healer',
+  'Ferryman',
+  'Scout',
+  'Settler',
+  'Hero',
+] as const;
+
+/**
+ * M_PIVOT.N-PLAYER.SHARED-KIT — the BARBARIAN unit pool. These types
+ * spawn only from EnemySpawner entities (legacy v0.4) or from
+ * barbarian-camp spawners (M_PIVOT.BARBARIAN-CAMPS, v0.5). No PLAYER
+ * faction trains these via `trainUnit`. Repurposed as the neutral
+ * aggressor roster: clearing a camp removes its spawner.
+ */
+export const BARBARIAN_UNIT_TYPES: readonly UnitType[] = [
+  'Goblin',
+  'Orc',
+  'Vampire',
+  'BlackKnight',
+  'Witch',
+] as const;
+
+/**
+ * Faction ownership for targeting and AI. M_PIVOT.N-PLAYER.FACTIONS:
+ * the v0.4 literal union `'player' | 'enemy'` is preserved here for
+ * the two PLAYABLE faction slots — every existing `Record<Faction, X>`
+ * map (economy / zones / score / aiPlayers) keeps its compile-time
+ * narrowing. The N-player + barbarian-camp registry lives in a
+ * PARALLEL space:
+ *
+ *   `src/config/factions.ts` — `FactionConfig` + `FactionId` (string)
+ *   `GameState.factions`     — runtime registry, indexed by FactionId
+ *
+ * Barbarian camps and additional player slots (player-3, player-4,
+ * etc) get FactionId values like `barbarian-camp-1`, `player-3`. They
+ * do NOT join the `Faction` literal union — they live in the registry
+ * + carry FactionTrait with the matching FactionId string. Renderers
+ * read color / archetype from the registry; the legacy 2-faction tick
+ * loops still iterate `FACTIONS` here.
+ *
+ * Acceptance for the M_PIVOT.N-PLAYER.FACTIONS substrate work-unit:
+ * "the 2-faction case still passes byte-identical, determinism
+ * unchanged" — preserved precisely by keeping this union intact.
+ */
 export type Faction = 'player' | 'enemy';
 
 /**
@@ -32,8 +103,11 @@ export type Faction = 'player' | 'enemy';
  * the single iteration target for any per-faction loop (science
  * trickle, deposit pump, job routing, AI tick). Every literal
  * player+enemy hand-unrolled pair across the codebase should iterate
- * this constant instead. A future Necromancer tribe extends the
- * Faction union AND this constant in one place; the loops auto-extend.
+ * this constant instead.
+ *
+ * For N-player code paths (barbarian camps, 3+ players) iterate
+ * `factionIds(game.factions)` from `src/config/factions.ts` — that
+ * registry is the runtime source of truth for non-legacy slots.
  */
 export const FACTIONS: readonly Faction[] = ['player', 'enemy'] as const;
 
