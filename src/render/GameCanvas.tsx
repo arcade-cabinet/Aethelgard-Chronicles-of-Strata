@@ -147,13 +147,32 @@ function Scene({
     [game.resourceNodes],
   );
 
-  // M_FUN.QA.AIVAI.TUNE.PATTERN-H — initial camera target = centroid of
-  // walkable LAND tiles, not the axial origin (0,0,0). When archipelago
-  // hydrology carves OCEAN strips the surviving land mass can be offset
-  // from origin; aiming the camera at origin frames empty water with
-  // the actual play area off-screen. Sample every Nth tile to keep the
-  // memo cheap on huge boards; centroid is stable to within a tile.
+  // M_FUN.QA.AIVAI.TUNE.PATTERN-H — initial camera target.
+  //
+  // User feedback post-v0.4 (AIVAI screenshot battery, 14 landmarks
+  // through 10 sim-min): the prior implementation centred on the
+  // centroid of walkable LAND tiles, which on continental maps with a
+  // big central massif lands INSIDE the mountain — the bases (which
+  // sit on the perimeter where land starts) and ALL gameplay action
+  // happen off-screen. The user watches a beautiful empty map for the
+  // whole match.
+  //
+  // Fix: prefer the MIDPOINT of player base + enemy base. That's
+  // where the two factions actually meet — for border-clash mode it's
+  // the optimal framing; for single-player it sits between the home
+  // base and the threat. Falls back to the land centroid when either
+  // base entity hasn't been spawned yet (asymmetric / early single-
+  // player init), then to the axial origin as last resort.
   const landCenter = useMemo<{ x: number; z: number }>(() => {
+    // 1. Try the base-pair midpoint first.
+    const pBase = game.board.tiles.get(game.townHallKey);
+    const eBase = game.board.tiles.get(game.enemyBaseKey);
+    if (pBase && eBase) {
+      const p = axialToWorld(pBase.q, pBase.r);
+      const e = axialToWorld(eBase.q, eBase.r);
+      return { x: (p.x + e.x) / 2, z: (p.z + e.z) / 2 };
+    }
+    // 2. Fallback — land centroid (the prior PATTERN-H implementation).
     let sx = 0;
     let sz = 0;
     let n = 0;
@@ -165,7 +184,7 @@ function Scene({
       n++;
     }
     return n > 0 ? { x: sx / n, z: sz / n } : { x: 0, z: 0 };
-  }, [game.board]);
+  }, [game.board, game.townHallKey, game.enemyBaseKey]);
 
   return (
     <>
