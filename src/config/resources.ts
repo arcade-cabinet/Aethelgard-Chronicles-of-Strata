@@ -197,8 +197,39 @@ const _validated = ResourcesConfigSchema.parse(stripComments(resourcesJson));
 /** The full ordered resource registry. */
 export const RESOURCES: ReadonlyArray<ResourceConfig> = _validated.resources;
 
-/** Resource ids as a const tuple — drives the `ResourceType` union. */
-export const RESOURCE_IDS = RESOURCES.map((r) => r.id) as readonly string[];
+/**
+ * Resource ids — a runtime array derived from the validated JSON.
+ * Typed as `readonly string[]` at runtime (Zod parse loses literal
+ * types). The exported `ResourceType` union is the compile-time
+ * contract; adding a new id to resources.json + the ResourceIdSchema
+ * below auto-grows it without touching any other file.
+ */
+export const RESOURCE_IDS: ReadonlyArray<string> = RESOURCES.map((r) => r.id);
+
+/**
+ * The compile-time union of all valid resource ids.
+ * Derived from the Zod id enum so every new slot in resources.json
+ * that is also listed in `ResourceIdSchema` automatically expands
+ * `ResourceType` — no cast, no tuple to maintain.
+ *
+ * HOW TO ADD A NEW RESOURCE:
+ *   1. Add the entry to `resources.json`.
+ *   2. Add the id string to `ResourceIdSchema` below.
+ *   That is all. Every `Partial<Record<ResourceType, …>>`, every HUD
+ *   grid, every Zod cost schema, every spawn rule picks it up.
+ */
+const ResourceIdSchema = z.enum([
+  'wood',
+  'stone',
+  'ore',
+  'gold',
+  'food',
+  'peat',
+  'science',
+  'mana',
+  'amber',
+]);
+export type ResourceType = z.infer<typeof ResourceIdSchema>;
 
 /** Resolve the source list for a given resource id. */
 export function sourcesFor(id: string): ReadonlyArray<ResourceSource> {
