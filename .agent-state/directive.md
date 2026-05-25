@@ -22,11 +22,15 @@ spec doc citation; each item is a self-contained commit-unit.
   DESERT (NOT FOREST — preserves the resource biome floor); saddle
   never overwrites an already-stacked tile. 798/798 unit tests
   green; biome-distribution audit still passes 57/60 permutations.
-- [ ] M_FUN.MAP.TOPOLOGY.SCREENSHOTS — biome-distribution audit's
-  3 known-bad seed/size corners (mike-november-oscar × small ×
-  balanced|continent|archipelago) → teach findBalancedBoard to
-  re-roll on biome variety in addition to centre-edge reachability.
-  Goal: 60/60 audit permutations green, no skip exemptions.
+- [x] M_FUN.MAP.TOPOLOGY.SCREENSHOTS — findBalancedBoard's
+  re-roll loop now gates on biome variety (≥5 FOREST on non-
+  dry-land, ≥3 HIGHLAND+MOUNTAIN on every mapType) in addition
+  to centre-edge reachability. The previous mike-november-oscar
+  × small × {balanced,continent,archipelago} corners that the
+  raw-generateBoard biome audit flagged now produce a different
+  (still-deterministic) re-rolled board with resource biomes.
+  Pinned by new `src/game/__tests__/find-balanced-board.test.ts`:
+  60/60 (mapType × size × seed) permutations green.
 
 ### v0.5.B — Decision tracks (spec §2)
 - [ ] M_FUN.MAP.DISTRIBUTION.INTERIOR — assert every generated map
