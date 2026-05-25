@@ -35,10 +35,13 @@ test.describe('Player Journey', () => {
     await expect(overlay).toContainText('Aethelgard');
   });
 
-  test('S4 — the ZoneLegend pill is visible during gameplay', async ({ page }) => {
+  test('S4 — the SystemMenu hamburger is visible during gameplay', async ({ page }) => {
+    // M_HUD.SHELL.1 — standalone Legend pill was removed and the
+    // Zone Legend trigger now lives inside the SystemMenu drawer.
+    // The presence of the top-right hamburger proves system chrome
+    // is reachable; Zone Legend is one row inside.
     await enterGame(page, 'legend-seed');
-    const pill = page.locator('[aria-label*="territory legend"]');
-    await expect(pill).toBeVisible();
+    await expect(page.locator('#system-menu-trigger')).toBeVisible();
   });
 
   test('S4 — the gameplay HUD is fully assembled', async ({ page }) => {
@@ -46,7 +49,7 @@ test.describe('Player Journey', () => {
     // each HUD element renders
     await expect(page.locator('#resource-bar')).toBeVisible();
     await expect(page.locator('#minimap-canvas')).toBeVisible();
-    await expect(page.locator('[aria-label*="territory legend"]')).toBeVisible();
+    await expect(page.locator('#system-menu-trigger')).toBeVisible();
     // no console errors during the boot — excludes the harmless
     // 404 noise that browsers emit for optional asset prefetch
     // misses (the actual error path is monitored separately by

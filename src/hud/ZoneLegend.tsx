@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useViewport } from '@/render/useViewport';
 import { HUD_THEME } from './hud-theme';
 
@@ -64,75 +64,53 @@ const ROWS: LegendRow[] = [
 export function ZoneLegend() {
   const [open, setOpen] = useState(false);
   // M_AUDIT2.UX.38 — ResourceBar shrinks on portrait, so the legend
-  // pill can move closer to the top edge. Avoid the prior 2-px overlap.
+  // panel docks closer to the top edge there.
   const viewport = useViewport();
   const topPx = viewport.isPortrait ? 60 : 80;
+  // M_HUD.SHELL.1 — toggled by the universal SystemMenu (top-right
+  // hamburger) via CustomEvent. The standalone "Legend" pill that used
+  // to live bottom-left was contributing to the top-bar overcrowding;
+  // moving the trigger into the system drawer reclaims that slot.
+  useEffect(() => {
+    const onToggle = () => setOpen((o) => !o);
+    window.addEventListener('aethelgard:toggle-legend', onToggle);
+    return () => window.removeEventListener('aethelgard:toggle-legend', onToggle);
+  }, []);
+  if (!open) return null;
   return (
     <div
       style={{
         position: 'absolute',
         left: 16,
         top: topPx,
-        // wrapper must NOT block canvas raycasts — only the interactive
-        // children below opt back into pointer events.
         pointerEvents: 'none',
         fontFamily: HUD_THEME.font.body,
         color: HUD_THEME.color.text,
       }}
     >
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
+      <div
+        id="zone-legend"
         style={{
-          padding: '4px 10px',
-          borderRadius: 999,
+          padding: '10px 12px',
+          borderRadius: HUD_THEME.radius,
           background: HUD_THEME.color.panel,
           border: `1px solid ${HUD_THEME.color.border}`,
-          color: HUD_THEME.color.accent,
-          fontSize: '0.7rem',
-          fontWeight: 700,
-          cursor: 'pointer',
+          display: 'grid',
+          gridTemplateColumns: '24px auto',
+          rowGap: 6,
+          columnGap: 8,
+          fontSize: '0.72rem',
+          minWidth: 220,
           pointerEvents: 'auto',
         }}
-        aria-expanded={open}
-        // M_AUDIT2.UX.2 — describe the action verb based on state.
-        aria-label={open ? 'Close territory legend' : 'Open territory legend'}
       >
-        {open ? (
-          <>
-            <span aria-hidden="true">×</span> <span>Legend</span>
-          </>
-        ) : (
-          <>
-            <span aria-hidden="true">?</span> <span>Legend</span>
-          </>
-        )}
-      </button>
-      {open && (
-        <div
-          id="zone-legend"
-          style={{
-            marginTop: 6,
-            padding: '10px 12px',
-            borderRadius: HUD_THEME.radius,
-            background: HUD_THEME.color.panel,
-            border: `1px solid ${HUD_THEME.color.border}`,
-            display: 'grid',
-            gridTemplateColumns: '24px auto',
-            rowGap: 6,
-            columnGap: 8,
-            fontSize: '0.72rem',
-            minWidth: 220,
-          }}
-        >
-          {ROWS.map((row) => (
-            <div key={row.label} style={{ display: 'contents' }}>
-              <div style={{ display: 'flex', alignItems: 'center' }}>{row.swatch}</div>
-              <div>{row.label}</div>
-            </div>
-          ))}
-        </div>
-      )}
+        {ROWS.map((row) => (
+          <div key={row.label} style={{ display: 'contents' }}>
+            <div style={{ display: 'flex', alignItems: 'center' }}>{row.swatch}</div>
+            <div>{row.label}</div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

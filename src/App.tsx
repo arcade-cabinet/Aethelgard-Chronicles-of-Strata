@@ -15,7 +15,7 @@ import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
-import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
+import { SystemMenu } from '@/hud/SystemMenu';
 import { EraProgressPill } from '@/hud/EraProgressPill';
 import { FactionChips } from '@/hud/FactionChips';
 import { MatchAgePill } from '@/hud/MatchAgePill';
@@ -43,12 +43,11 @@ import { Minimap } from '@/hud/Minimap';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
 import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
 import { PauseControl } from '@/hud/PauseControl';
-import { ResignButton } from '@/hud/ResignButton';
 import { ResourceBar } from '@/hud/ResourceBar';
 import { SelectionPanel } from '@/hud/SelectionPanel';
 import { SelectionRect } from '@/hud/SelectionRect';
 import { SettingsModal } from '@/hud/SettingsModal';
-import { SoundToggle } from '@/hud/SoundToggle';
+import { useMutedPreference } from '@/audio/useMutedPreference';
 import { TitleScreen } from '@/hud/TitleScreen';
 import { ZoneLegend } from '@/hud/ZoneLegend';
 import { createPersistence, PREF_KEYS } from '@/persistence/persistence';
@@ -233,6 +232,10 @@ function GameSession({
   }, [config, initialGame]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const viewport = useViewport();
+  // M_HUD.SHELL.1 — universal mute hook; mirrors the persisted setting
+  // across SystemMenu (the new drawer toggle) and any other surface
+  // that wants to display or flip it.
+  const [soundMuted, setSoundMuted] = useMutedPreference(persistence);
 
   // M_EXPANSION.U.118 — keyboard shortcut bridge. KeyboardShortcuts
   // dispatches a 'aethelgard:trigger-build' CustomEvent for direct
@@ -298,11 +301,20 @@ function GameSession({
         }
       />
       <SelectionRect game={game} getCamera={getCamera} />
-      {/* M_POLISH2.B.2 — portrait suppresses the SoundToggle pill; the
-            master mute is reachable via Settings (in the system menu)
-            and the new MobileSpeedPausePill already owns the top-
-            right slot the SoundToggle used to live in. */}
-      {viewport.class !== 'phonePortrait' && <SoundToggle persistence={persistence} />}
+      {/* M_HUD.SHELL.1 — universal SystemMenu (top-right hamburger
+            + slide-in drawer). Replaces the per-viewport scatter of
+            ResignButton + MobileSystemMenu + SoundToggle pills that
+            on N-player viewports (foldable, tablet) collided with the
+            resource bar + faction chips into an overcrowded top bar.
+            Mounts on every viewport class. Owns Settings, Discoveries,
+            Legend, Sound, Resign — each forwarded to the respective
+            owner via prop/callback or CustomEvent. */}
+      <SystemMenu
+        game={game}
+        onSettings={() => onOpenSettings?.()}
+        soundMuted={soundMuted}
+        onToggleSound={setSoundMuted}
+      />
       {/* M_POLISH2.B.1 — visible touch-reachable build button.
             Dispatches the open-build-menu event the App listener now
             handles. Mobile-first but useful on desktop too. */}
@@ -321,16 +333,6 @@ function GameSession({
           <PauseControl game={game} />
           <SpeedControl game={game} />
         </>
-      )}
-      {/* M_POLISH2.MOBILE.15 — Resign + Settings collapse into a
-            single top-left hamburger on portrait phones. ResignButton
-            stays mounted on desktop/landscape as its own pill;
-            Settings is accessible from the title screen on every
-            viewport AND from this menu on portrait. */}
-      {viewport.class === 'phonePortrait' ? (
-        <MobileSystemMenu game={game} onSettings={() => onOpenSettings?.()} />
-      ) : (
-        <ResignButton game={game} />
       )}
       <EndTurnButton game={game} />
       <DiscoveriesPanel game={game} />

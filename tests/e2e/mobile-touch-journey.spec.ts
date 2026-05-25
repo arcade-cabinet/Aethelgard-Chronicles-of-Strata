@@ -53,11 +53,12 @@ test('mobile touch journey — every player action reachable via tap', async ({
   });
   expect(selectedId).not.toBeUndefined();
 
-  // MobileSystemMenu hamburger at top-left.
-  await expect(page.locator('#mobile-system-menu-trigger')).toBeVisible();
-  await page.locator('#mobile-system-menu-trigger').tap();
+  // M_HUD.SHELL.1 — universal SystemMenu hamburger at top-right
+  // (replaces the prior top-left MobileSystemMenu on portrait phones).
+  await expect(page.locator('#system-menu-trigger')).toBeVisible();
+  await page.locator('#system-menu-trigger').tap();
   await page.waitForTimeout(300);
-  const settingsItem = page.locator('#mobile-system-menu-settings');
+  const settingsItem = page.locator('[data-testid="system-menu-settings"]');
   if (await settingsItem.count()) {
     await expect(settingsItem).toBeVisible();
   }
