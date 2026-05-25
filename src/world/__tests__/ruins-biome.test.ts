@@ -47,6 +47,17 @@ describe('M_V6.CARRY.RUINS-BIOME — registry + flag coverage', () => {
     expect(BIOME_AMBIENT.RUINS).toBe('audio.ambient.grass');
     expect(moveCostFor('RUINS')).toBe(1);
   });
+
+  it('RUINS decoration palette exists with rock + stump scatter props (M_V8.PARKING-LOT.V06)', async () => {
+    // Grep-gate: Decoration.tsx must have a RUINS entry in PALETTES with
+    // the desolate-wasteland scatter set shipped in the parking-lot drain.
+    const { readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const src = readFileSync(resolve(__dirname, '../Decoration.tsx'), 'utf-8');
+    expect(src).toContain('RUINS: {');
+    expect(src).toContain("'nature.rock.td-rocks'");
+    expect(src).toContain("'nature.stump-a'");
+  });
 });
 
 describe('camp clearing flips tile biome to RUINS', () => {
@@ -66,26 +77,28 @@ describe('camp clearing flips tile biome to RUINS', () => {
       break;
     }
     expect(campTile).not.toBeNull();
+    if (!campTile) throw new Error('campTile required');
+    const ct = campTile;
     const camp = spawnBarbarianCamp(game.world, {
       factionId: 'barbarian-camp-1',
-      q: campTile!.q,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: ct.q,
+      r: ct.r,
+      level: ct.level,
       hp: 50,
       archetype: 'orc',
     });
     createCharacter({
       world: game.world,
       role: 'Footman',
-      q: campTile!.q + 1,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: ct.q + 1,
+      r: ct.r,
+      level: ct.level,
       factionOverride: 'player',
     });
     camp.set(Health, { current: 0, max: 50 });
     runEconomyTick(game, 1);
 
-    const tileAfter = game.board.tiles.get(campTile!.key);
+    const tileAfter = game.board.tiles.get(ct.key);
     expect(tileAfter?.type).toBe('RUINS');
     expect(tileAfter?.walkable).toBe(true);
   });

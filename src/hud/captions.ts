@@ -54,6 +54,8 @@ export const CAPTIONS_FOR_EVENT: Record<GameAudioEvent, string> = {
   'research-purchased': '📜 Research complete',
   victory: '🎉 Victory!',
   defeat: '💀 Defeat',
+  // M_V8.PORTAL-STONE.AUDIO
+  'portal-stones-placed': '🌀 Portal stones appear',
 };
 
 /** A single live caption entry. */

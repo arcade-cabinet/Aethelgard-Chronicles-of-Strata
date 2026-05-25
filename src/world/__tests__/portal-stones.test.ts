@@ -66,12 +66,12 @@ describe('placePortalStones', () => {
     const { tileA, tileB } = placePortalStones(board, pair);
     expect(tileA).not.toBeNull();
     expect(tileB).not.toBeNull();
-    expect(tileA!.type).toBe('PORTAL_STONE');
-    expect(tileB!.type).toBe('PORTAL_STONE');
-    expect(tileA!.portalTo).toBe(pair.keyB);
-    expect(tileB!.portalTo).toBe(pair.keyA);
-    expect(tileA!.portalGroupId).toBe(pair.portalGroupId);
-    expect(tileB!.portalGroupId).toBe(pair.portalGroupId);
+    expect(tileA?.type).toBe('PORTAL_STONE');
+    expect(tileB?.type).toBe('PORTAL_STONE');
+    expect(tileA?.portalTo).toBe(pair.keyB);
+    expect(tileB?.portalTo).toBe(pair.keyA);
+    expect(tileA?.portalGroupId).toBe(pair.portalGroupId);
+    expect(tileB?.portalGroupId).toBe(pair.portalGroupId);
   });
 });
 

@@ -76,11 +76,13 @@ describe('M_V7.ECONOMY.REGISTRY — camp clear credits N-player slot', () => {
       break;
     }
     expect(campTile).not.toBeNull();
+    if (!campTile) throw new Error('campTile required');
+    const ct = campTile;
     const camp = spawnBarbarianCamp(game.world, {
       factionId: 'barbarian-camp-99',
-      q: campTile!.q,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: ct.q,
+      r: ct.r,
+      level: ct.level,
       hp: 30,
       archetype: 'orc',
     });
@@ -88,9 +90,9 @@ describe('M_V7.ECONOMY.REGISTRY — camp clear credits N-player slot', () => {
     createCharacter({
       world: game.world,
       role: 'Footman',
-      q: campTile!.q + 1,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: ct.q + 1,
+      r: ct.r,
+      level: ct.level,
       factionOverride: 'player-3',
     });
     // Capture starting player-3 wood/stone (lazy-created = 50 / 20).

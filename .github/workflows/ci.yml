@@ -116,6 +116,71 @@ jobs:
             test-results/
           retention-days: 7
 
+  visual-battery:
+    name: Visual battery (render/world/hud/ui)
+    # M_V8.CI.VISUAL-BATTERY-HOOK — run pnpm visual:battery:ci when
+    # any render, world, hud, or ui source file changes. This catches
+    # pixel regressions in the committed screenshot baselines without
+    # running on every commit. The visual-battery script was shipped in
+    # M_V7.VISUAL.BATTERY; this is purely the CI wiring.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: filter
+        with:
+          filters: |
+            visual:
+              - 'src/render/**'
+              - 'src/world/**'
+              - 'src/hud/**'
+              - 'src/ui/**'
+      - name: Skip (no visual-relevant changes)
+        if: steps.filter.outputs.visual != 'true'
+        run: echo "No visual changes — skipping battery."
+      # CodeRabbit PR #44: gate Playwright install + browser run to
+      # maintainer PRs/pushes so fork PRs don't get to spin up a headless
+      # Chromium + upload artifacts on our CI budget. Matches the
+      # M_AUDIT2.SEC2.21 / M_SEC.16 fork-hardening pattern used by
+      # build-and-test above.
+      - name: Skip (fork PR — visual-battery is maintainer-only)
+        if: steps.filter.outputs.visual == 'true' && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+        run: echo "Fork PR — visual battery only runs on maintainer PRs / push:main."
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        with: { node-version: 22 }
+      - name: Enable corepack + pnpm
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        run: |
+          corepack enable
+          corepack prepare pnpm@9.15.0 --activate
+      - name: Install dependencies
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Visual battery (report drift; non-blocking until v0.9 cross-platform baselines)
+        # Cross-platform baseline drift (Mac-locked vs Linux-CI-rendered)
+        # is a known issue from v0.8 ship-time — fonts subpixel-rounding,
+        # GPU driver differences in Chromium headless yield non-byte-identical
+        # PNGs even when the visual is equivalent. v0.9 directive item
+        # M_V9.VISUAL.LINUX-LOCK locks baselines from a Linux container so
+        # the gate is byte-stable. Until then this job uploads the drift
+        # artifact for review but does NOT block merges.
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        continue-on-error: true
+        run: pnpm visual:battery:ci
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
+        if: failure() && steps.filter.outputs.visual == 'true'
+        with:
+          name: visual-drift-${{ github.run_id }}
+          path: |
+            tests/harness/__screenshots__/
+          retention-days: 7
+
   dependency-review:
     name: Dependency review (M_SEC.17)
     # Block dep changes that introduce known-vulnerable packages.

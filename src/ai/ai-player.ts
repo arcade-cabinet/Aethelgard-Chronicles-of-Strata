@@ -23,6 +23,7 @@ import { TrainEvaluator } from './evaluators/train';
 import { MilitaryEvaluator } from './evaluators/military';
 import { PatrolEvaluator } from './evaluators/patrol';
 import { ResignEvaluator } from './evaluators/resign';
+import { DiplomaticEvaluator } from './evaluators/diplomatic';
 
 /** The Think brain over the AiPlayer's evaluators. */
 class AiBrain extends Think<AiPlayer> {}
@@ -74,6 +75,11 @@ export class AiPlayer extends GameEntity {
     // units circulate the zone perimeter when there's no enemy in
     // sight + no defensive trigger.
     this.brain.addEvaluator(new PatrolEvaluator(p.weights.patrol, rageQuit));
+    // M_V8.AI.DIPLO-EVALUATOR — diplomacy verb: propose pacts, demand
+    // tribute, accept tribute when clearly weaker. Priority: below
+    // Military (combat wins over diplomacy), above Patrol (diplomacy
+    // over idle patrol). Weight: 0.4 × personalityMul.
+    this.brain.addEvaluator(new DiplomaticEvaluator(p.weights.patrol));
     this.brain.addEvaluator(new ResignEvaluator());
   }
 

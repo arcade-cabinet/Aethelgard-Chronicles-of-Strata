@@ -226,7 +226,7 @@ function erupt(game: GameState, volcanoTile: Tile): void {
       for (const nKey of hexNeighbors(pos.q, pos.r)) {
         if (lavaSet.has(nKey)) continue;
         const nt = tiles.get(nKey);
-        if (!nt || !nt.walkable) continue;
+        if (!nt?.walkable) continue;
         e.set(HexPosition, { q: nt.q, r: nt.r, level: nt.level });
         break;
       }

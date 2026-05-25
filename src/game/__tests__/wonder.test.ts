@@ -76,8 +76,8 @@ describe('Wonder timers — N-player (M_V8.WONDER-TIMERS.N-PLAYER)', () => {
     const game = startGame('autumn-bronze-summit');
     expect('player' in game.wonderTimers).toBe(true);
     expect('enemy' in game.wonderTimers).toBe(true);
-    expect(game.wonderTimers['player']).toBe(Infinity);
-    expect(game.wonderTimers['enemy']).toBe(Infinity);
+    expect(game.wonderTimers.player).toBe(Infinity);
+    expect(game.wonderTimers.enemy).toBe(Infinity);
   });
 
   it('startGame with 4 factions seeds all 4 ids in wonderTimers', () => {
@@ -111,7 +111,7 @@ describe('Wonder timers — N-player (M_V8.WONDER-TIMERS.N-PLAYER)', () => {
     runEconomyTick(game, 10);
     expect(game.wonderTimers['ai-3']).toBeLessThan(300);
     // Other factions without a wonder remain Infinity.
-    expect(game.wonderTimers['player']).toBe(Infinity);
+    expect(game.wonderTimers.player).toBe(Infinity);
     expect(game.wonderTimers['ai-2']).toBe(Infinity);
   });
 

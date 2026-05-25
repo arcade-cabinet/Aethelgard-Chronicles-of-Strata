@@ -79,6 +79,15 @@ export function pathFollowSystem(
    * continuous-decay path applies.
    */
   _currentTurn?: number,
+  /**
+   * M_V8.PORTAL-STONE.COOLDOWN-HOOK — called when a unit teleports
+   * through a PORTAL_STONE tile. Caller (economy-tick-phases) wires
+   * this to refreshPortalStoneCooldown so the 60s per-faction gate
+   * updates. The caller captures clock.elapsed in the closure.
+   * Kept as a callback to avoid circular imports between
+   * ecs/systems/ and game-state.
+   */
+  onPortalStoneArrival?: (factionId: string) => void,
 ): void {
   const currentTurn = _currentTurn;
   // M_FUN.MAP.FORTIFY — build the per-faction fortified-tile index
@@ -157,6 +166,14 @@ export function pathFollowSystem(
             transform.y = destLevel * TILE_HEIGHT;
             path.steps = [];
             movement.isMoving = false;
+            // M_V8.PORTAL-STONE.COOLDOWN-HOOK — update the 60s per-faction
+            // cooldown when the portal tile is a PORTAL_STONE biome.
+            // Other portal types (quicksand-pair, mountain-cave-network) use
+            // no cooldown — only PORTAL_STONE gates by faction.
+            if (onPortalStoneArrival && arriveTile.type === 'PORTAL_STONE') {
+              const factionId = entity.get(FactionTrait)?.faction;
+              if (factionId) onPortalStoneArrival(factionId);
+            }
             return;
           }
         }

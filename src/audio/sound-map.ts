@@ -43,7 +43,9 @@ export type GameAudioEvent =
   | 'ui-panel-open'
   | 'research-purchased'
   | 'victory'
-  | 'defeat';
+  | 'defeat'
+  /** M_V8.PORTAL-STONE.AUDIO — fired when the rare portal-stones-placed event triggers. */
+  | 'portal-stones-placed';
 
 /** A resolved bus + asset id pair for a sound event.
  * M_EXPANSION.AU.35 — `soundIds` (plural) declares a variant pool;
@@ -166,6 +168,9 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   'critical-alarm': { bus: 'ui', soundId: 'audio.sfx.ui-confirm' },
   victory: { bus: 'music', soundId: 'audio.stinger.victory' },
   defeat: { bus: 'sfx', soundId: 'audio.stinger.defeat' },
+  // M_V8.PORTAL-STONE.AUDIO — mystical stinger when portal stones appear on the map.
+  // Uses magic-impact as the placeholder until a dedicated portal SFX asset lands.
+  'portal-stones-placed': { bus: 'sfx', soundId: 'audio.sfx.magic-impact' },
 };
 
 // Coderabbit MAJOR PR #10 04:56Z — typed manifest accessor enforcement.

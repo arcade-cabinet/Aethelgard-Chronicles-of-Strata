@@ -129,8 +129,8 @@ describe('pickOracleVision', () => {
     const baseKeyOf = (id: string) => (id === 'enemy' ? '5,-3' : '0,0');
     const result = pickOracleVision(['player', 'enemy'], baseKeyOf, () => 0);
     expect(result).not.toBeNull();
-    expect(result!.blessedFaction).toBe('player');
-    expect(result!.revealedTileKey).toBe('5,-3'); // enemy's base
+    expect(result?.blessedFaction).toBe('player');
+    expect(result?.revealedTileKey).toBe('5,-3'); // enemy's base
   });
   it('returns null when target faction has no base key', () => {
     const baseKeyOf = (_id: string) => null;

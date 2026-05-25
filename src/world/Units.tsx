@@ -108,8 +108,25 @@ export function Units({ game }: { game: GameState }) {
       if (faction === 'player' && game.playerColor) tint = game.playerColor;
       // faction-narrow: SKINS is Record<Faction,Skin>; skip N-player factions (native tint).
       else if (faction && faction in SKINS) tint = SKINS[faction as Faction].characterTint ?? null;
-      // resolveFactionTint takes FactionId (string) — no cast needed.
-      if (faction && isColorblindMode()) tint = resolveFactionTint(faction, game.playerColor);
+      // CodeRabbit PR #44: N-player factions ('player-3' etc) aren't in
+      // SKINS, so they fell through to null and ignored the user's color
+      // picker. Look up their configured banner color from game.factions.
+      // Skip barbarian-camp-* — those keep their archetype's native palette.
+      // (Cast through string — Faction type narrows after the SKINS lookup.)
+      const factionStr = faction as unknown as string | undefined;
+      if (
+        tint === null &&
+        factionStr &&
+        factionStr !== 'player' &&
+        factionStr !== 'enemy' &&
+        !factionStr.startsWith('barbarian-camp-')
+      ) {
+        const fc = game.factions.find((f) => f.id === factionStr);
+        if (fc?.color) tint = fc.color;
+      }
+      // resolveFactionTint only covers legacy 'player'/'enemy' — skip for N-player factions.
+      if (faction && isColorblindMode() && (faction === 'player' || faction === 'enemy'))
+        tint = resolveFactionTint(faction, game.playerColor);
       current.push({ id: Number(e), entity: e, role, tint });
     }
     // re-render the unit list only when the membership actually changes

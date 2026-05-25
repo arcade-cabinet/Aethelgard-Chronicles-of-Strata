@@ -141,6 +141,17 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       enemy: e ?? legacyEnemy,
     };
   });
+  // M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — N-player count (2-6) for
+  // age-of-strata mode. Defaults to the preset's defaultPlayerCount.
+  // Shown only when mode === 'age-of-strata'.
+  const [nPlayer, setNPlayer] = useState<number>(
+    () => presetFor('age-of-strata').defaultPlayerCount,
+  );
+  // Per-slot colors for all N factions when in N-player mode.
+  // Slot 0 = player banner, slot 1 = first AI, etc.
+  const [nPlayerColors, setNPlayerColors] = useState<string[]>(() =>
+    defaultFactionColors(presetFor('age-of-strata').defaultPlayerCount, seedPhrase),
+  );
   const [sizeKeys, setSizeKeys] = useState<MapSizeKey[]>(['small', 'medium', 'large']);
 
   // M_BRAND.3 — when the player overrides any cascaded control after
@@ -173,7 +184,18 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     setTurnsModeState(preset.turnsMode);
     setMaxTurnsState(preset.maxTurns);
     setPresetModified(false);
-  }, [mode]);
+    // M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — reset N-player count and
+    // colors to the preset default when switching modes.
+    // NOTE: seedPhrase is intentionally NOT in the dep array here —
+    // including it would re-seed colors on every seed-phrase keystroke,
+    // silently discarding any per-slot customizations the user made.
+    // The initial color seed uses the seedPhrase at the moment of mode
+    // switch; subsequent slot edits are handled by the slider's onChange.
+    const n = preset.defaultPlayerCount;
+    setNPlayer(n);
+    setNPlayerColors(defaultFactionColors(n, seedPhrase));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, seedPhrase]);
 
   // Override wrappers that flip the "Custom Realm" marker (M_BRAND.3).
   const setMapSizeOverride = (next: MapSizeKey) => {
@@ -302,38 +324,132 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
           setEnemyPersonality={setEnemyPersonality}
         />
 
+        {/* M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — N-player slider + per-slot
+            color pickers. Shown only in age-of-strata (4X) mode.
+            Legacy 2-faction modes continue using the simple player+enemy
+            color-picker row below the N-player block. */}
+        {mode === 'age-of-strata' && (
+          <div
+            data-testid="n-player-picker"
+            style={{
+              margin: '12px 0 4px',
+              fontSize: 13,
+              color: HUD_THEME.color.muted,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                marginBottom: 10,
+              }}
+            >
+              <label
+                htmlFor="n-player-slider"
+                style={{ flexShrink: 0, color: HUD_THEME.color.muted }}
+              >
+                Players:
+              </label>
+              <input
+                id="n-player-slider"
+                type="range"
+                min={2}
+                max={6}
+                step={1}
+                value={nPlayer}
+                data-testid="n-player-slider"
+                onChange={(e) => {
+                  const n = Number(e.target.value);
+                  setNPlayer(n);
+                  // Extend or trim the color array to match the new count.
+                  setNPlayerColors((prev) => {
+                    const extra = defaultFactionColors(n, seedPhrase);
+                    const merged = Array.from(
+                      { length: n },
+                      (_, i) => prev[i] ?? extra[i] ?? '#888',
+                    );
+                    return merged;
+                  });
+                }}
+                style={{ flex: 1 }}
+              />
+              <span
+                data-testid="n-player-count"
+                style={{
+                  minWidth: 14,
+                  textAlign: 'right',
+                  color: HUD_THEME.color.gold,
+                  fontFamily: HUD_THEME.font.display,
+                }}
+              >
+                {nPlayer}
+              </span>
+            </div>
+            {/* Per-slot color rows */}
+            <div
+              data-testid="n-player-color-slots"
+              style={{ display: 'flex', flexDirection: 'column', gap: 6 }}
+            >
+              {Array.from({ length: nPlayer }, (_, i) => (
+                <div
+                  // biome-ignore lint/suspicious/noArrayIndexKey: slot index IS the identity — positional by design (slot 0=You, slot N=AI N), never reordered.
+                  key={`n-player-slot-${i}`}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8 }}
+                  data-testid={`n-player-slot-${i}`}
+                >
+                  <span style={{ width: 80, flexShrink: 0 }}>{i === 0 ? 'You' : `AI ${i}`}</span>
+                  <FactionColorPicker
+                    color={nPlayerColors[i] ?? '#888888'}
+                    onChange={(c) =>
+                      setNPlayerColors((prev) => {
+                        const next = [...prev];
+                        next[i] = c;
+                        return next;
+                      })
+                    }
+                    ariaLabel={`Faction ${i + 1} color`}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* M_PIVOT.N-PLAYER.COLOR-PICKER — per-faction banner color
             picker. v0.5 substrate ships two slots (player + enemy);
-            M_PIVOT.MODES.4X grows this to N slots for N-player FFA. */}
-        <div
-          data-testid="faction-colors-row"
-          style={{
-            display: 'flex',
-            gap: 16,
-            alignItems: 'center',
-            margin: '12px 0 4px',
-            fontSize: 13,
-            color: HUD_THEME.color.muted,
-          }}
-        >
-          <span style={{ flex: 0 }}>Faction colors:</span>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span>Player</span>
-            <FactionColorPicker
-              color={factionColors.player}
-              onChange={(c) => setFactionColors((prev) => ({ ...prev, player: c }))}
-              ariaLabel="Player faction color"
-            />
+            Hidden for age-of-strata (the N-player picker above takes over). */}
+        {mode !== 'age-of-strata' && (
+          <div
+            data-testid="faction-colors-row"
+            style={{
+              display: 'flex',
+              gap: 16,
+              alignItems: 'center',
+              margin: '12px 0 4px',
+              fontSize: 13,
+              color: HUD_THEME.color.muted,
+            }}
+          >
+            <span style={{ flex: 0 }}>Faction colors:</span>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <span>Player</span>
+              <FactionColorPicker
+                color={factionColors.player}
+                onChange={(c) => setFactionColors((prev) => ({ ...prev, player: c }))}
+                ariaLabel="Player faction color"
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <span>Enemy</span>
+              <FactionColorPicker
+                color={factionColors.enemy}
+                onChange={(c) => setFactionColors((prev) => ({ ...prev, enemy: c }))}
+                ariaLabel="Enemy faction color"
+              />
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <span>Enemy</span>
-            <FactionColorPicker
-              color={factionColors.enemy}
-              onChange={(c) => setFactionColors((prev) => ({ ...prev, enemy: c }))}
-              ariaLabel="Enemy faction color"
-            />
-          </div>
-        </div>
+        )}
 
         {/* M_AUDIT2.UX.6 — sticky bottom Begin CTA. The above form
             sections scroll inside the flex column when the modal hits
@@ -375,37 +491,43 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 aiVsAi,
                 // M_FUN.AI.PICKER — named opponent personality.
                 enemyPersonality,
-                // M_PIVOT.N-PLAYER.COLOR-PICKER + M_PIVOT.MODES.4X —
+                // M_PIVOT.N-PLAYER.COLOR-PICKER + M_V8.NEWGAMEMODAL.N-PLAYER-PICKER —
                 // explicit faction registry. For 2-faction modes,
                 // seed the legacy player+enemy slots with the user's
-                // color picks. For 4X mode (age-of-strata, defaultPlayerCount=6),
-                // generate a 6-faction registry — the modal exposes
-                // only the first two color pickers today; remaining
-                // slots get default-shuffled palette colors and AI control.
+                // color picks. For age-of-strata (N-player FFA),
+                // use nPlayer + nPlayerColors from the slider+per-slot UI.
                 factions: ((): FactionConfig[] => {
                   const preset = presetFor(mode);
-                  if (preset.defaultPlayerCount <= 2) {
-                    return [
-                      {
-                        ...LEGACY_FACTIONS[0],
-                        color: factionColors.player,
-                      } as FactionConfig,
-                      {
-                        ...LEGACY_FACTIONS[1],
-                        color: factionColors.enemy,
-                        personality: enemyPersonality,
-                      } as FactionConfig,
-                    ];
+                  if (mode !== 'age-of-strata' && preset.defaultPlayerCount <= 2) {
+                    // LEGACY_FACTIONS is a 2-element const tuple — indices 0 and 1 always exist.
+                    // Destructure with nullish guards instead of non-null assertions
+                    // (banned by lint rule); the buildDefaultFactions fallback covers
+                    // the unreachable case where the tuple is empty.
+                    const [lp, le] = LEGACY_FACTIONS;
+                    if (!lp || !le) {
+                      return buildDefaultFactions(preset.defaultPlayerCount, nPlayerColors);
+                    }
+                    const p1: FactionConfig = {
+                      id: lp.id,
+                      displayName: lp.displayName,
+                      kind: lp.kind,
+                      archetype: lp.archetype,
+                      color: factionColors.player,
+                    };
+                    const p2: FactionConfig = {
+                      id: le.id,
+                      displayName: le.displayName,
+                      kind: le.kind,
+                      archetype: le.archetype,
+                      color: factionColors.enemy,
+                      personality: enemyPersonality,
+                    };
+                    return [p1, p2];
                   }
-                  // N-player mode: build a full registry. First two
-                  // colors come from the picker; remaining N-2 from the
-                  // seed-derived palette shuffle.
-                  const allColors = defaultFactionColors(preset.defaultPlayerCount, seedPhrase);
-                  // Override the first two with the user picks.
-                  allColors[0] = factionColors.player;
-                  allColors[1] = factionColors.enemy;
-                  const registry = buildDefaultFactions(preset.defaultPlayerCount, allColors);
-                  // Patch the enemy slot's personality with the picker's pick.
+                  // N-player mode (age-of-strata): use the slider count and
+                  // per-slot colors the user configured.
+                  const registry = buildDefaultFactions(nPlayer, nPlayerColors);
+                  // Patch the first AI slot's personality with the picker's pick.
                   if (registry[1]) registry[1] = { ...registry[1], personality: enemyPersonality };
                   return registry;
                 })(),

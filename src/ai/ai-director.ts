@@ -65,8 +65,10 @@ export class AiDirector {
     const candidates = gatherPlayerTargets(world);
 
     // --- GATHER ACTIVE ENEMY ENTITIES ----------------------------------------
+    // M_V8.DIFFICULTY-MULTIPLIER.N-PLAYER — include all non-player factions
+    // (ai-2, ai-3, barbarian-camp-*, etc.) so N-player AI units get steering.
     const enemies = world.query(FactionTrait, EnemyTarget, HexPosition, PathQueue).filter((e) => {
-      return e.get(FactionTrait)?.faction === 'enemy';
+      return e.get(FactionTrait)?.faction !== 'player';
     });
 
     // Remove stale Vehicles (enemies that died / were removed from the world).

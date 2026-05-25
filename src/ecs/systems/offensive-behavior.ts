@@ -3,7 +3,6 @@ import { axialToWorld, hexDistance } from '@/core/hex';
 import type { Rng } from '@/core/rng';
 import {
   Building,
-  type Faction,
   FactionTrait,
   Health,
   HexPosition,
@@ -54,7 +53,7 @@ export function offensiveBehaviorSystem(
     e: Entity;
     q: number;
     r: number;
-    faction: Faction;
+    faction: string;
     radius: number;
     dps: number;
     damageType: string;

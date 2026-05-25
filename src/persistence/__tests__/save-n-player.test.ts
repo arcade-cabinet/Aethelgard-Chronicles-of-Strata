@@ -88,7 +88,7 @@ describe('M_V6.CARRY.SAVE-N-PLAYER — round-trip registry', () => {
     // LEGACY fallback kicks in — startGame defaults to LEGACY_FACTIONS overlay.
     expect(restored.factions).toHaveLength(2);
     expect(restored.factions[0]?.id).toBe('player');
-    expect(restored.factions[0]?.color).toBe(LEGACY_FACTIONS[0]!.color);
+    expect(restored.factions[0]?.color).toBe(LEGACY_FACTIONS[0]?.color);
   });
 
   it('rejects a tampered registry (invalid color hex)', () => {
@@ -101,7 +101,7 @@ describe('M_V6.CARRY.SAVE-N-PLAYER — round-trip registry', () => {
     const snap = serializeGame(game);
     const tampered = JSON.parse(JSON.stringify(snap)) as GameSnapshot;
     // Inject an invalid color into the first faction.
-    (tampered.config.factions![0] as FactionConfig).color = 'not-a-color';
+    (tampered.config.factions?.[0] as FactionConfig).color = 'not-a-color';
     expect(() => deserializeGame(tampered)).toThrow();
   });
 

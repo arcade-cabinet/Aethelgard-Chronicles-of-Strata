@@ -22,7 +22,6 @@ import {
   Health,
   Unit,
 } from '@/ecs/components';
-import { factionIds } from '@/config/factions';
 import { aiSystem } from '@/ecs/systems/ai';
 import { animationSystem } from '@/ecs/systems/animation';
 import { buildSystem } from '@/ecs/systems/build';
@@ -54,12 +53,13 @@ import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 import type { GameState } from './game-state';
 import { expireProposals } from './diplomacy-border';
-import { tickPortalStonesTrigger } from '@/world/portal-stones';
+import { tickPortalStonesTrigger, refreshPortalStoneCooldown } from '@/world/portal-stones';
 import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
 import { detectVictory } from './victory-conditions';
 import { grantRandomDiscovery } from './research';
 import { buildEntityTileIndex } from './tile-index';
+import { factionIds } from '@/config/factions';
 
 // ---------------------------------------------------------------------------
 // Phase 1 — Clock: advance time, weather, random events, autosave.
@@ -104,12 +104,17 @@ export function tickCommandPhase(game: GameState, delta: number, turnGateOpen: b
     stanceBehaviorSystem(game.world, game.navGraph, makeMoveCostFn(game.board.tiles));
   }
   // M_TURNS.1 — pathFollow ALWAYS ticks so issued move commands resolve.
+  // M_V8.PORTAL-STONE.COOLDOWN-HOOK — closure captures game.portalStoneCooldowns
+  // + game.clock.elapsed so the callback can update the per-faction expiry.
   pathFollowSystem(
     game.world,
     delta,
     WEATHER_SPEED_MULTIPLIER[game.weather.state],
     game.board.tiles,
     game.turn ? game.turn.turnsElapsed : undefined,
+    (factionId: string) => {
+      refreshPortalStoneCooldown(game.portalStoneCooldowns, factionId, game.clock.elapsed);
+    },
   );
 }
 
@@ -225,13 +230,10 @@ export function tickCombatPhase(
     for (const e of game.world.query(Building, FactionTrait)) {
       const b = e.get(Building);
       const faction = e.get(FactionTrait)?.faction;
-      // Guard: completeByFaction is keyed by the legacy Faction literal; skip
-      // N-player faction ids (they use economyFor which bypasses this Record).
+      // faction-narrow: completeByFaction is Record<Faction,X>; skip N-player factions.
       if (b?.isComplete && faction && faction in completeByFaction) {
-        const bucket = (
-          completeByFaction as Record<string, Array<{ type: BuildingType; tier: number }>>
-        )[faction];
-        bucket?.push({ type: b.buildingType, tier: b.tier ?? 1 });
+        const bucket = completeByFaction[faction as Faction];
+        bucket.push({ type: b.buildingType, tier: b.tier ?? 1 });
       }
     }
     recomputeMaxSupply(game.economy.player, completeByFaction.player);
@@ -240,11 +242,9 @@ export function tickCombatPhase(
     for (const e of game.world.query(Unit, FactionTrait)) {
       const u = e.get(Unit);
       const f = e.get(FactionTrait)?.faction;
-      // Guard: skip N-player factions not in the legacy Record.
+      // faction-narrow: supplyByFaction is Record<Faction,number>; skip N-player factions.
       if (!u || !f || !(f in supplyByFaction)) continue;
-      const cost = SUPPLY_COST[u.unitType] ?? 1;
-      (supplyByFaction as Record<string, number>)[f] =
-        ((supplyByFaction as Record<string, number>)[f] ?? 0) + cost;
+      supplyByFaction[f as Faction] += SUPPLY_COST[u.unitType] ?? 1;
     }
     game.economy.player.usedSupply = supplyByFaction.player;
     game.economy.enemy.usedSupply = supplyByFaction.enemy;
@@ -383,9 +383,7 @@ export function tickScoringPhase(game: GameState, delta: number): void {
     game.buildSitesGeneration += 1;
   }
   animationSystem(game.world);
-  // Wonder countdown — M_V8.WONDER-TIMERS.N-PLAYER: iterate game.factions
-  // (all registered ids) instead of the closed FACTIONS literal union so
-  // 4X mode tracks all N players. Classic mode: player-id=0 wins, any AI wins = loss.
+  // Wonder countdown — M_V8.WONDER-TIMERS.N-PLAYER: iterate all faction ids.
   const WONDER_COUNTDOWN_SECONDS = 300;
   for (const factionId of factionIds(game.factions)) {
     let hasCompleteWonder = false;
@@ -405,16 +403,17 @@ export function tickScoringPhase(game: GameState, delta: number): void {
     }
     game.wonderTimers[factionId] = Math.max(0, (game.wonderTimers[factionId] ?? 0) - delta);
   }
+  // Outcome: human faction timer hits 0 → win; any AI faction timer hits 0 → loss.
+  // First-to-zero wins (handles N-player: first AI wonder beats human faction).
   if (game.outcome === 'playing') {
-    // Classic 2-faction: player wins when player-timer=0, loses when enemy-timer=0.
-    // 4X (age-of-strata): first faction (any kind) to hit 0 wins via detectVictory
-    // below; here we just handle the legacy 2-faction classic path.
-    const humanFaction = game.factions.find((f) => f.kind === 'human');
-    const aiFactions = game.factions.filter((f) => f.kind === 'ai');
-    if (humanFaction && (game.wonderTimers[humanFaction.id] ?? Infinity) === 0) {
-      game.outcome = 'win';
-    } else if (aiFactions.some((f) => (game.wonderTimers[f.id] ?? Infinity) === 0)) {
-      game.outcome = 'loss';
+    for (const fc of game.factions) {
+      if ((game.wonderTimers[fc.id] ?? Infinity) !== 0) continue;
+      if (fc.kind === 'human') {
+        game.outcome = 'win';
+      } else {
+        game.outcome = 'loss';
+      }
+      break; // first-to-zero wins
     }
   }
   // Age-of-strata Renaissance+Wonder instant win

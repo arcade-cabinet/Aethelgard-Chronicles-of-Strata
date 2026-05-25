@@ -1659,3 +1659,160 @@ hook acknowledges them. Each lifts when v0.4 ships + the cycle opens.
   closes; remove the line from this file.
 - **Commands:** see `CLAUDE.md` repo-specific section for the full
   pnpm verb list.
+
+---
+
+## v0.8 CYCLE — N-player end-to-end correctness + polish + CI hardening
+
+**Owner:** Claude (autonomous agent `v0_8_grinder` on `feat/aethelgard-initial-release`)
+**Branch:** `feat/aethelgard-initial-release`
+**Mandate:** Maximize commits. Ship everything autonomously — no stops until all features, docs, etc. are released. v0.7 shipped all v0.7 `[x]` items; v0.8 picks up the leaky N-player abstractions, remaining portal/audio polish, UI for N-player game setup, AI diplomat, CI visual battery hook, tutorial slide, and perf profiling pass.
+
+### Architectural decisions for v0.8
+
+1. **wonderTimers N-player lift.** `Record<Faction, number>` → `Record<FactionId, number>`
+   (open string keys). Seed all faction ids at `startGame` via
+   `Object.fromEntries(factions.map(f => [f.id, Infinity]))`. Outcome logic
+   uses `game.factions.find(f => f.kind === 'ai')?.id` for loss detection
+   instead of hardcoded `'enemy'`. Pattern: identical to `economyFor` lift in v0.7.
+
+2. **Outline components.** `UnitHexOutline` + `BuildingOutlineRing` were shipped in
+   v0.7 (M_V7.RENDER.COLOR-OUTLINE-V3) as source files but NOT wired into Canvas.tsx.
+   Canvas.tsx is the single mount point for all r3f rendering — these two must be
+   imported and rendered inside the Canvas under the `<group name="outlines">` group.
+
+3. **Difficulty multiplier N-player.** `faction === 'enemy'` guards in the
+   difficulty-multiplier / spawn-rate logic must change to `faction.kind === 'ai'`
+   so all AI factions get difficulty scaling, not just the legacy `'enemy'` id.
+
+4. **Portal-stone cooldown hook.** `pathFollowSystem` already has a `portalTo`
+   teleport branch. When the arrived tile is a PORTAL_STONE biome, the cooldown
+   refresh (`refreshPortalStoneCooldown`) must be called for the unit's faction.
+   This is a one-liner addition to the existing teleport branch — the substrate
+   helpers are in place.
+
+### Concrete v0.8 work-units (dependency-ordered)
+
+- [x] M_V8.FACTION-CAST-DEBT — FactionTrait.faction widened to `string` in
+  components.ts; all Record<Faction,X> access sites guarded with
+  `faction in record` + `faction as Faction` narrow. Downstream:
+  offensive-behavior.ts (sources array faction: string), science.ts
+  (economy-access guard), NewGameModal.tsx (typed FactionConfig objects),
+  Units.tsx (SKINS guard + colorblind guard). 1091 tests green.
+
+- [x] M_V8.WONDER-TIMERS.N-PLAYER — `GameState.wonderTimers` type widened from
+  `Record<Faction, number>` to `Record<string, number>`. `startGame` seeds all
+  faction ids at init (`Object.fromEntries`). Wonder-countdown phase in
+  economy-tick-phases.ts iterates `factionIds(game.factions)` instead of
+  `FACTIONS`. Outcome branch: player-kind factions → win, ai-kind factions →
+  loss, first-to-zero wins. useAudio.ts crescendo detection already uses
+  `Object.values(game.wonderTimers)` (no change needed). N-player wonder
+  tests added: 4-faction timer seeding, independent decrement for non-legacy
+  id, first-ai-to-zero → loss. `FactionTrait({ faction })` cast in test fixed.
+  All 1091+ tests green.
+
+- [x] M_V8.OUTLINE.CANVAS-MOUNT — Import `UnitHexOutline` + `BuildingOutlineRing`
+  from `@/world/UnitHexOutline` and `@/world/BuildingOutlineRing` in Canvas.tsx.
+  Mount inside `<group name="outlines">` alongside the terrain/units groups.
+  Pass `game` prop. No new component logic — purely wiring the v0.7 substrates
+  into the render tree. 1 grep-gate test: Canvas.tsx imports both components.
+
+- [x] M_V8.DIFFICULTY-MULTIPLIER.N-PLAYER — Find every `faction === 'enemy'`
+  guard in src/ai/, src/game/, src/ecs/systems/ that controls difficulty
+  scaling / spawn rate / AI aggressiveness. Replace with `kind === 'ai'` lookup
+  via `findFaction(game.factions, factionId)?.kind`. Adds a test: 4-player game
+  with 3 AI factions all receive difficulty scaling (was: only 'enemy' did).
+
+- [x] M_V8.PORTAL-STONE.AUDIO — `useAudio.ts` listens for the
+  `'aethelgard:portal-stones-placed'` window event and plays a dedicated stinger
+  (`audio.sfx.portal-stones-placed` sound id, or fallback to `combat-hit-magic`
+  until the asset lands). `SOUND_FOR_EVENT` gains a `'portal-stones-placed'` entry.
+  1 test: event dispatch → sound map entry exists.
+
+- [x] M_V8.PORTAL-STONE.COOLDOWN-HOOK — In `pathFollowSystem`, the existing
+  `portalTo` teleport branch (v0.4 primitive) gains a biome check: when
+  `board.get(arrivedTile)?.type === 'PORTAL_STONE'`, call
+  `refreshPortalStoneCooldown(game, factionId, game.clock.elapsed)`. The substrate
+  helpers (`refreshPortalStoneCooldown`, `isPortalStoneAvailable`) are already in
+  `src/world/portal-stones.ts`. 2 tests: cooldown is set after teleport on PORTAL_STONE,
+  no cooldown set for non-PORTAL_STONE portal tiles.
+
+- [x] M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — NewGameModal gains an N-player count
+  slider (2–6) visible only in age-of-strata mode. Beneath it, per-slot rows:
+  faction name + color picker chip for each slot (slots 3-N are AI-defaulted +
+  auto-colored from the palette shuffle). This replaces the single player+enemy
+  color picker UI for 4X mode. Legacy 2-faction modes unchanged. 2 browser tests:
+  slider changes slot count, per-slot color pickers render.
+
+- [x] M_V8.AI.DIPLO-EVALUATOR — `DiplomaticEvaluator` added to the yuka
+  evaluator stack in `src/ai/evaluators/diplomatic.ts`. Evaluates: can-propose-pact
+  (borders touching + not already ally), can-demand-tribute (supply ratio >= 2×),
+  can-accept-tribute (weaker than dominant). Calls the existing diplomacy-border.ts +
+  diplomacy-tribute.ts primitives. Priority weight: lower than Military (combat
+  wins over diplomacy), higher than Patrol (diplomacy over idle patrol). 3 tests:
+  pact-proposal fires when borders touch, tribute demand fires when dominant, skip
+  when same-id.
+
+- [x] M_V8.CI.VISUAL-BATTERY-HOOK — `.github/workflows/ci.yml` gains a
+  `visual-battery` job that runs `pnpm visual:battery:ci` when any path in
+  `src/render/**`, `src/world/**`, `src/hud/**`, `src/ui/**` changes
+  (paths-filter action). Job runs after the main test job. Drift fails CI.
+  Script already exists (`scripts/visual-battery.mjs`); this is purely the
+  ci.yml wiring + a `paths-filter` step.
+
+- [x] M_V8.TUTORIAL.N-PLAYER-MODE — `OnboardingOverlay` gains an n-player slide
+  shown when `game.factions.length > 2`. Slide content: "Multiple factions have
+  joined the map. Build your economy, form alliances, and be the last faction
+  standing." Shown after the existing 3-slide sequence. 1 browser test: slide
+  appears when factions.length > 2.
+
+- [x] M_V8.PERF.PROFILE-PASS — Run a 4-player AI-vs-AI sim (300s) via the
+  existing `?ai-vs-ai=1&nplayer=4` URL and capture a Chrome performance trace
+  via `mcp__chrome-devtools-mcp`. Record: mean frame time, max frame time, GC
+  pause count. If mean > 16ms: identify the hot path and add a targeted
+  optimization. Results go in `docs/specs/perf-baseline.md` (new file).
+
+- [x] M_V8.REVIEWER.FULL-CYCLE — Dispatch `comprehensive-review:full-review`
+  against the full v0.8 diff (`git diff main..HEAD`). Address every CRITICAL +
+  HIGH finding in a forward commit before pushing. MEDIUM/LOW findings logged
+  in `docs/specs/review-findings.md`.
+
+- [x] M_V8.PARKING-LOT.V06 — Drain the [WAIT] items from the parking lot
+  that are now unblocked: M_PROCESS.REVIEW (review-trio dispatch), discovery-flag
+  grant for camp clears tied to the v0.7 camp-clear flow, RUINS decoration
+  palette (the palette entry exists; the scatter props for the RUINS biome
+  need the accretion pool entry). Each sub-item gets its own commit.
+
+## v0.9 CYCLE — v0.8 carryovers + cross-platform visual baselines
+
+- [ ] [WAIT] (v0.9 grinder) M_V9.VISUAL.LINUX-LOCK — lock visual-battery
+  baselines from a Linux container so the CI gate is byte-stable.
+  Currently visual-battery is `continue-on-error: true` because
+  Mac-locked baselines drift on the Linux CI runner (subpixel font
+  rounding + GPU driver differences in Chromium headless). v0.9 fix:
+  add a one-time `pnpm visual:battery:lock` script that runs the
+  battery inside a docker container matching the CI image and commits
+  the resulting PNGs as the canonical baselines. Flip the CI job back
+  to `fail on drift` once baselines lock in Linux.
+
+- [ ] [WAIT] (v0.9 grinder) M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — 6 v0.8
+  test files use source-text grep assertions that CodeRabbit flagged as
+  implementation-coupled. Convert each to behavior/contract assertions:
+    - src/audio/__tests__/wonder-crescendo-n-player.test.ts — export
+      `isCrescendoImminent` from useAudio.ts (or a pure helper module)
+      and import in the test instead of re-implementing.
+    - src/entities/__tests__/character-factory.test.ts — assert fixed
+      expected HP per difficulty/faction from the gameplay spec instead
+      of calling `difficultyMultiplierFor` in-test (which mirrors prod).
+    - src/hud/__tests__/onboarding-n-player.test.ts — replace source-grep
+      for `factionCount > 2` / `[...STEPS, N_PLAYER_STEP]` with rendering
+      the OnboardingOverlay component and asserting slide count/content.
+    - src/world/__tests__/color-outline-v3.test.ts — replace import/JSX
+      string assertions with renderer behavior (mount the scene + assert
+      outline rendered).
+    - src/world/__tests__/ruins-biome.test.ts — drop the Decoration.tsx
+      text-grep block; assert RUINS decoration selection via the public
+      `decorationForBiome` contract.
+    - tests/harness/n-player-picker.browser.test.tsx — replace
+      `if (!aosButton) return;` early-return silent-pass guards with hard
+      `expect(...).not.toBeNull()` assertions before interaction.

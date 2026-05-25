@@ -68,6 +68,11 @@ function MenuButton({
  * Settings. Continue is shown only when an auto-save exists. Matches poc2's
  * `#launcher` branding.
  */
+// Stable no-op for the Continue button when no save exists. Defining it at
+// module scope (not inline) avoids the noEmptyBlockStatements rule + lets
+// React's referential-equality memos skip re-render on each TitleScreen mount.
+const noopContinue = (): void => undefined;
+
 export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenProps) {
   useTitleMusic();
   // M_AUDIT2.UX.1 — respect prefers-reduced-motion: skip the
@@ -138,7 +143,7 @@ export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenPr
         <MenuButton
           id="menu-continue"
           label="Continue"
-          onClick={onContinue ?? (() => {})}
+          onClick={onContinue ?? noopContinue}
           {...(onContinue
             ? {}
             : { disabled: true, disabledReason: 'No saved game yet — start a New Game' })}

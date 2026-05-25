@@ -31,7 +31,9 @@ describe('M_PIVOT.AI.JSON-PERSONALITIES — per-personality thresholds', () => {
     // the-hoarder is patient; the-mad-king folds quickly. Diff must be
     // > 200s to count as a meaningful difference (otherwise the AI
     // tuner is wasting a knob).
-    expect(hoarder.starvationThreshold!).toBeGreaterThan((madKing.starvationThreshold ?? 0) + 200);
+    expect(hoarder.starvationThreshold ?? 0).toBeGreaterThan(
+      (madKing.starvationThreshold ?? 0) + 200,
+    );
   });
 
   it('the rage-quit + starvation tolerances correlate per personality temperament', () => {
@@ -39,8 +41,8 @@ describe('M_PIVOT.AI.JSON-PERSONALITIES — per-personality thresholds', () => {
     // The-mad-king is impatient (low both).
     const builder = personalityFor('the-builder');
     const madKing = personalityFor('the-mad-king');
-    expect(builder.rageQuitThreshold!).toBeGreaterThan(madKing.rageQuitThreshold!);
-    expect(builder.starvationThreshold!).toBeGreaterThan(madKing.starvationThreshold!);
+    expect(builder.rageQuitThreshold ?? 0).toBeGreaterThan(madKing.rageQuitThreshold ?? 0);
+    expect(builder.starvationThreshold ?? 0).toBeGreaterThan(madKing.starvationThreshold ?? 0);
   });
 
   it('default personality is the-diplomat (balanced)', () => {

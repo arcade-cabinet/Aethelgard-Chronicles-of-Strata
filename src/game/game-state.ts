@@ -17,11 +17,11 @@ import {
   Unit,
 } from '@/ecs/components';
 import { resetAiDirector } from '@/ecs/systems/ai';
-import { type DamageEvent } from '@/ecs/systems/combat';
-import { type ResourceDepositEvent } from '@/ecs/systems/deposit';
+import type { DamageEvent } from '@/ecs/systems/combat';
+import type { ResourceDepositEvent } from '@/ecs/systems/deposit';
 import { createEcsWorld } from '@/ecs/world';
 import { createCharacter } from '@/entities/character-factory';
-import { type Projectile } from './projectiles';
+import type { Projectile } from './projectiles';
 
 /**
  * Monotonic counter for projectile React keys — shared across all games.
@@ -44,10 +44,10 @@ import { spawnIntervalFor } from '@/config/combat';
 import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/factions';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
-import { type Faction } from '@/ecs/components';
+import type { Faction } from '@/ecs/components';
 import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/ecs/systems/volcano';
-import { type BurnState } from '@/ecs/systems/wildfire';
-import { type GameOutcome } from '@/ecs/systems/win-loss';
+import type { BurnState } from '@/ecs/systems/wildfire';
+import type { GameOutcome } from '@/ecs/systems/win-loss';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
 import {
   defaultCampCount,
@@ -343,14 +343,13 @@ export interface GameState {
    * until a completed Wonder triggers a wonder-win; Infinity = no
    * Wonder built yet. The first faction to reach 0 wins (or, if the
    * other faction destroys it mid-countdown, the timer resets).
-   *
-   * M_V8.WONDER-TIMERS.N-PLAYER — widened from Record<Faction, number>
-   * to Record<FactionId, number> so 4X mode tracks all N factions.
-   * Legacy 'player'/'enemy' keys seeded at startGame; extra faction
-   * ids seeded from game.factions at init time. tickScoringPhase
-   * iterates game.factions instead of the closed FACTIONS constant.
    */
-  wonderTimers: Record<FactionId, number>;
+  /**
+   * M_V8.WONDER-TIMERS.N-PLAYER — widened to Record<FactionId, number>
+   * so all N factions can have wonder countdowns, not just 'player'/'enemy'.
+   * Seeded with Infinity for every faction id at startGame.
+   */
+  wonderTimers: Record<string, number>;
   /**
    * M_POLISH2.MODES.42a — strata-wars zone-control win timer.
    * Seconds the player has held ≥ 80% of controlled tiles. When
@@ -807,7 +806,10 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     }
     if (enemyPeonSpawns.length === 0) enemyPeonSpawns.push(enemyBaseTile);
     for (let i = 0; i < 2; i++) {
-      const spawn = enemyPeonSpawns[i] ?? enemyPeonSpawns[0]!;
+      // enemyPeonSpawns guaranteed non-empty by the push above —
+      // `?? enemyBaseTile` is the type-safe alternative to the
+      // banned `enemyPeonSpawns[0]!` fallback.
+      const spawn = enemyPeonSpawns[i] ?? enemyPeonSpawns[0] ?? enemyBaseTile;
       createCharacter({
         world,
         role: 'Peon',
@@ -817,7 +819,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
         factionOverride: 'enemy',
       });
     }
-    const enemyFootmanSpawn = enemyPeonSpawns[0]!;
+    const enemyFootmanSpawn = enemyPeonSpawns[0] ?? enemyBaseTile;
     createCharacter({
       world,
       role: 'Footman',
@@ -966,16 +968,43 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     randomEvents: createRandomEventsState(),
     research: createResearch(),
     rally: createRally(),
-    zones: seedZonesFromAttractors({ player: createZoneState(), enemy: createZoneState() }, board, {
-      player: center,
-      enemy: enemyBaseTile,
-    }),
+    zones: (() => {
+      // M_V8.REVIEWER.FULL-CYCLE (H-2) — seed zone states for all factions,
+      // not just the legacy 'player'/'enemy' pair. N-player faction ids get
+      // empty zones (no starting territory, expanded by the game loop).
+      // seedZonesFromAttractors populates player+enemy tiles; extra slots
+      // start empty so DiplomaticEvaluator can index game.zones by any id.
+      const baseZones: Record<Faction, ZoneState> = {
+        player: createZoneState(),
+        enemy: createZoneState(),
+      };
+      const seeded = seedZonesFromAttractors(baseZones, board, {
+        player: center,
+        enemy: enemyBaseTile,
+      });
+      // Attach extra N-player slots as plain string-keyed entries.
+      // The field type is Record<Faction, ZoneState> but the runtime
+      // object is a superset — accesses by non-Faction string id return
+      // the correct ZoneState. DiplomaticEvaluator uses `as Record<string, ...>`
+      // at the call site to avoid the type-narrowing restriction.
+      // CodeRabbit PR #44: seed from RUNTIME factions (which include
+      // auto-added barbarian camps), not config.factions. config.factions
+      // may be undefined in legacy flows, and even when set it's missing
+      // the barbarian-camp-N ids the placer appends above.
+      for (const fc of factions) {
+        if (!(fc.id in seeded)) (seeded as Record<string, ZoneState>)[fc.id] = createZoneState();
+      }
+      return seeded;
+    })(),
     score: { player: 0, enemy: 0 },
-    // M_EXPANSION.F.71 / M_V8.WONDER-TIMERS.N-PLAYER — seed all faction ids
-    // including legacy 'player'/'enemy' plus any extra N-player ids.
-    wonderTimers: Object.fromEntries(
-      (config.factions ?? LEGACY_FACTIONS).map((f) => [f.id, Infinity]),
-    ) as Record<string, number>,
+    // M_V8.WONDER-TIMERS.N-PLAYER — seed all faction ids (Infinity = no Wonder yet).
+    // CodeRabbit PR #44: use the runtime `factions` array so barbarian-camp
+    // slots get an Infinity timer too (otherwise wonder-progress lookups
+    // hit undefined for those ids).
+    wonderTimers: Object.fromEntries(factions.map((f) => [f.id, Infinity])) as Record<
+      string,
+      number
+    >,
     // M_FUN.DYN.WILDFIRE — empty burning-tile registry. The wildfire
     // system creates entries via igniteWildfire and prunes via the
     // tick loop; default is the empty map (no fires lit at game start).

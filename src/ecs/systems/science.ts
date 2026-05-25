@@ -39,6 +39,8 @@ export function scienceSystem(
     const rate = e.get(ScienceProducer)?.rate ?? 0;
     const faction = e.get(FactionTrait)?.faction;
     if (!faction || rate <= 0) continue;
-    addResource(economy[faction], 'science', rate * delta);
+    // faction-narrow: economy is Record<Faction,GameEconomy>; skip N-player factions.
+    if (!(faction in economy)) continue;
+    addResource(economy[faction as Faction], 'science', rate * delta);
   }
 }

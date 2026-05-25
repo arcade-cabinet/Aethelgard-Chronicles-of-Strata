@@ -39,11 +39,12 @@ describe('M_PIVOT.BARBARIAN-CAMPS — clearing reward', () => {
       break;
     }
     expect(campTile).not.toBeNull();
+    if (!campTile) throw new Error('campTile required');
     const camp = spawnBarbarianCamp(game.world, {
       factionId: 'barbarian-camp-1',
-      q: campTile!.q,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: campTile.q,
+      r: campTile.r,
+      level: campTile.level,
       hp: 50,
       archetype: 'orc',
     });
@@ -53,9 +54,9 @@ describe('M_PIVOT.BARBARIAN-CAMPS — clearing reward', () => {
     createCharacter({
       world: game.world,
       role: 'Footman',
-      q: campTile!.q + 1,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: campTile.q + 1,
+      r: campTile.r,
+      level: campTile.level,
       factionOverride: 'player',
     });
 
@@ -102,11 +103,12 @@ describe('M_PIVOT.BARBARIAN-CAMPS — clearing reward', () => {
       }
     }
     expect(campTile).not.toBeNull();
+    if (!campTile) throw new Error('campTile required');
     const camp = spawnBarbarianCamp(game.world, {
       factionId: 'barbarian-camp-1',
-      q: campTile!.q,
-      r: campTile!.r,
-      level: campTile!.level,
+      q: campTile.q,
+      r: campTile.r,
+      level: campTile.level,
       hp: 50,
       archetype: 'orc',
     });
