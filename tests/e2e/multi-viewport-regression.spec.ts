@@ -121,4 +121,3 @@ test.describe('multi-viewport regression', () => {
     });
   });
 });
-
