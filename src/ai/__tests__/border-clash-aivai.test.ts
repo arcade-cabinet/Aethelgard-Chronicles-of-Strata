@@ -18,7 +18,7 @@ import { Building, FactionTrait } from '@/ecs/components';
 import { runEconomyTick, startGame } from '@/game/game-state';
 
 describe('border-clash AIVAI economy progression (PATTERN-I)', () => {
-  it('enemy faction harvests wood from a playable biome distribution', { timeout: 60_000 }, () => {
+  it('enemy faction harvests wood from a playable biome distribution', { timeout: 60_000 }, async () => {
     const startingWood = 50;
     const game = startGame({
       seedPhrase: 'balance-the-diplomat-vs-the-diplomat',
@@ -50,17 +50,13 @@ describe('border-clash AIVAI economy progression (PATTERN-I)', () => {
     for (const k of game.zones.enemy.controlled) union.add(k);
     const zoneUnionPct = walkable > 0 ? (union.size / walkable) * 100 : 0;
 
-    // The PATTERN-I biome-distribution fix is verified by this axis
-    // passing: with the dist-normalisation bug (boardRadius vs MAP_RADIUS)
-    // + heightThresholds + attenuation + moistureCutoff tunes, the
-    // bad-luck `balance-the-diplomat-vs-the-diplomat` seed now produces
-    // enough FOREST tiles for the enemy peon to find + harvest wood
-    // (previously: 0 forest → 0 wood nodes → enemy economy stuck).
+    // PATTERN-I — biome dist + canTrain supply gate fixes mean the
+    // enemy now (a) actually has wood nodes to harvest and (b) trains
+    // peons within supply cap → Train evaluator yields the brain to
+    // Build → Houses get placed → supply cap expands. Three axes
+    // pinned: harvest, build, and a soft zone-union floor.
     expect(enemyEco.wood).toBeGreaterThan(startingWood);
-    // Soft assertions for the next pass — the BuildEvaluator stall +
-    // sub-30% zone expansion are tracked under directive item
-    // M_FUN.QA.AIVAI.TUNE.PATTERN-I (open) but do NOT gate this commit.
-    expect.soft(enemyBuildings.length, 'enemy BuildEvaluator should place ≥1 building [PATTERN-I follow-up]').toBeGreaterThanOrEqual(0);
-    expect.soft(zoneUnionPct, 'zone-of-control union should cover >5% of walkable board [PATTERN-I follow-up]').toBeGreaterThan(0);
+    expect(enemyBuildings.length).toBeGreaterThanOrEqual(1);
+    expect.soft(zoneUnionPct, 'zone-of-control union — soft floor; PATTERN-K tunes expansion').toBeGreaterThan(2);
   });
 });

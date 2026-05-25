@@ -530,17 +530,21 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
   `landCenter` memo from walkable-tile centroid; CameraRig uses
   it as the initial lookAt + the centre of the pan-clamp box.
 
-- [ ] M_FUN.QA.AIVAI.TUNE.PATTERN-I — METRIC gate exposed catastrophic
-  enemy-AI stall in border-clash: post-PATTERN-G ledger snapshot
-  shows ALL 10 matchups outcome=playing (no resolution in 10 sim-
-  minutes), most with `buildingsEnemy: 0`, `totalKills: 0`, and
-  `zoneUnionPct` in the 3-8% range (gate threshold is 30%). Player
-  faction builds 1-4 buildings; enemy faction builds NOTHING. The
-  mode-gating of ResignEvaluator (PATTERN-G) was too aggressive
-  and silenced ALL evaluators because every other evaluator was
-  ALSO checking `game.mode === 'long-reign'` somewhere upstream OR
-  the enemy isn't getting an AIPlayer at all in border-clash. Root-
-  cause then fix.
+- [x] M_FUN.QA.AIVAI.TUNE.PATTERN-I — root cause was TWO bugs in
+  one symptom: (1) `assignBiome` normalised distance by global
+  `MAP_RADIUS` constant (20), not the actual `boardRadius` being
+  generated → seeds + sizes outside that magic 20 produced near-
+  zero FOREST tiles → no wood nodes → enemy economy stuck before
+  any decision could fire; (2) `TrainEvaluator.pickTrainable`
+  checked `peons < peonCap` but NOT supply-cap (canTrain), so a
+  faction at supply ceiling kept returning 'Peon' as the train
+  pick, trainUnit failed silently on supply, Train's 0.75 base
+  desirability beat Build's 0.7 → infinite "try to train, fail,
+  repeat" loop. Added the canTrain gate; biome dist also
+  retuned (heightThresholds + attenuation 1.5→1.2 +
+  moistureCutoffDesert 0.45→0.35). Test
+  `src/ai/__tests__/border-clash-aivai.test.ts` pins enemy
+  harvest + ≥1 build + non-zero zone% in 300s of border-clash.
 
 - [x] M_FUN.MAP.UTILISATION (PRD §5.3) — full-board utilisation
   is a v0.4 release goal. Sub-items:

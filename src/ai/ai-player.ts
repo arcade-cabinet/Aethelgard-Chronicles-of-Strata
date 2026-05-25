@@ -12,6 +12,7 @@ import {
 } from '@/ecs/components';
 import { moveUnit, placeBuilding, resign, trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
+import { canTrain } from '@/rules/economy-rules';
 import { SKINS } from '@/rules/skins';
 import { aiProfileFor, endgameUrgencyFor } from './ai-profiles';
 import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
@@ -524,13 +525,28 @@ class TrainEvaluator extends GoalEvaluator<AiPlayer> {
     const { game, faction } = owner;
     if (!game) return null;
     const eco = game.economy[faction];
-    // peons first — more workers → more economy
+    // peons first — more workers → more economy. PATTERN-I — also
+    // gate on supply-cap (canTrain), not just peonCap. Without the
+    // supply gate, a faction at usedSupply == maxSupply keeps
+    // returning 'Peon' (peons < peonCap is true), trainUnit fails
+    // silently because of the supply check, TrainEvaluator's 0.75
+    // desirability beats BuildEvaluator's 0.7 every cycle → AI
+    // never gets to House → never expands the supply cap → loop.
     const peons = ownedPeonCount(game, faction);
     const houses = ownedBuildingCount(game, faction, 'House');
     const granaries = ownedBuildingCount(game, faction, 'Granary');
-    if (peons < peonCap(houses, granaries) && canAfford(eco, UNIT_COSTS.Peon)) return 'Peon';
-    // footman if Barracks exists + affordable
-    if (ownedBuildingCount(game, faction, 'Barracks') > 0 && canAfford(eco, UNIT_COSTS.Footman))
+    if (
+      peons < peonCap(houses, granaries) &&
+      canAfford(eco, UNIT_COSTS.Peon) &&
+      canTrain(eco, 'Peon')
+    )
+      return 'Peon';
+    // footman if Barracks exists + affordable + within cap
+    if (
+      ownedBuildingCount(game, faction, 'Barracks') > 0 &&
+      canAfford(eco, UNIT_COSTS.Footman) &&
+      canTrain(eco, 'Footman')
+    )
       return 'Footman';
     return null;
   }
