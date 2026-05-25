@@ -6,10 +6,20 @@
  * for eyeball review against the design intent: bright orange
  * pulsing discs at hex positions, no flicker that would fail an
  * a11y motion-reduction audit.
+ *
+ * M_FUN.TEST.WILDFIRE-DAMAGE — replaced the flaky `setTimeout(300)` +
+ * vacuous `path.toBeTruthy()` with:
+ *   1. `vi.waitFor` on canvas DOM presence (deterministic mount gate).
+ *   2. 60ms flush (1-2 rAF) for r3f to commit the first paint.
+ *   3. Spec-derived paint assertion: `canvas.toDataURL()` on a WebGL
+ *      canvas triggers readPixels internally and returns a base64 PNG.
+ *      A blank/black frame encodes to ~600 chars; orange discs produce
+ *      significantly more color data (> 4000 chars). This approach works
+ *      on WebGL canvases where `getContext('2d')` returns null.
  */
 import { Canvas } from '@react-three/fiber';
 import { page } from '@vitest/browser/context';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { WILDFIRE_TUNING } from '@/config/mapgen';
 import { getHexKey } from '@/core/hex';
@@ -39,12 +49,36 @@ describe('wildfire layer harness', () => {
         </Canvas>
       </div>,
     );
-    // Wait for r3f mount + a couple of frames so the pulse animation
-    // settles into a representative pose for the baseline.
-    await new Promise((r) => setTimeout(r, 300));
-    const path = await page.screenshot({
-      path: '__screenshots__/wildfire-layer.png',
-    });
-    expect(path).toBeTruthy();
+    // Deterministic mount gate: wait for canvas DOM presence.
+    await vi.waitFor(
+      () => {
+        const c = document.querySelector('canvas');
+        if (!c) throw new Error('wildfire-layer: canvas not in DOM');
+      },
+      { timeout: 5000, interval: 30 },
+    );
+    // 60ms flush (≈1-2 rAF) for r3f to commit the first paint.
+    await new Promise((r) => setTimeout(r, 60));
+    // Capture screenshot for eyeball review.
+    await page.screenshot({ path: '__screenshots__/wildfire-layer.png' });
+    // Spec: "bright orange pulsing discs" — use toDataURL() on the WebGL
+    // canvas. A blank/black frame encodes to ~600 chars; orange discs
+    // produce significantly more color data (> 4000 chars).
+    // Note: getContext('2d') returns null on a WebGL canvas — toDataURL()
+    // triggers readPixels internally and works correctly.
+    const dataUrl = await vi.waitFor(
+      () => {
+        const canvas = document.querySelector('canvas');
+        if (!canvas) throw new Error('canvas missing after paint');
+        const url = (canvas as HTMLCanvasElement).toDataURL('image/png');
+        if (url.length < 1000) throw new Error('canvas not yet painted (blank frame)');
+        return url;
+      },
+      { timeout: 3000, interval: 50 },
+    );
+    expect(
+      dataUrl.length,
+      'wildfire-layer canvas should have color content (orange discs produce > 4000 chars)',
+    ).toBeGreaterThan(4000);
   });
 });
