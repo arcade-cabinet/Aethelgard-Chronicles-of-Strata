@@ -6,6 +6,7 @@
  *
  * Source: docs/specs/80-audio.md §Event → Sound Map
  */
+import { assets } from '@/assets/assets';
 import type { AudioBuses } from './buses';
 
 /** All named game audio events. */
@@ -166,3 +167,25 @@ export const SOUND_FOR_EVENT: Record<GameAudioEvent, SoundMapping> = {
   victory: { bus: 'music', soundId: 'audio.stinger.victory' },
   defeat: { bus: 'sfx', soundId: 'audio.stinger.defeat' },
 };
+
+// Coderabbit MAJOR PR #10 04:56Z — typed manifest accessor enforcement.
+// The string-id soundIds in SOUND_FOR_EVENT can't be compile-time checked
+// (TypeScript can't infer the manifest's `audio.*` keys from JSON), so a
+// rename or removal would slip through the type checker and surface only
+// when an end-user hears silence (or the audio buses throw). Validating
+// every id against `assets.entry()` at module load gives fail-fast across
+// the whole table — including the new combat-hit-body / hit-heavy /
+// magic-cast / hit-metal entries the reviewer flagged.
+for (const [event, mapping] of Object.entries(SOUND_FOR_EVENT)) {
+  const ids = mapping.soundIds ?? (mapping.soundId ? [mapping.soundId] : []);
+  for (const id of ids) {
+    try {
+      assets.entry(id);
+    } catch {
+      throw new Error(
+        `SOUND_FOR_EVENT["${event}"] references unknown asset id "${id}" — ` +
+          'manifest drift or typo. Check src/config/asset-metadata.json.',
+      );
+    }
+  }
+}

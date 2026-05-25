@@ -31,10 +31,17 @@ const WorldConfigSchema = z.object({
     huge: z.number().int().positive(),
   }),
   dayLength: z.number().positive(),
-  weather: z.object({
-    minInterval: z.number().nonnegative(),
-    maxInterval: z.number().nonnegative(),
-  }),
+  // Coderabbit MAJOR PR #10 04:56Z: validate min ≤ max relationally —
+  // without this a config typo like {min:120, max:60} parses fine but
+  // crashes the weather scheduler downstream.
+  weather: z
+    .object({
+      minInterval: z.number().nonnegative(),
+      maxInterval: z.number().nonnegative(),
+    })
+    .refine((v) => v.minInterval <= v.maxInterval, {
+      message: 'weather.minInterval must be ≤ weather.maxInterval',
+    }),
   sim: z.object({
     fixedDt: z.number().positive(),
     maxStepsPerFrame: z.number().int().positive(),
@@ -66,14 +73,21 @@ const WorldConfigSchema = z.object({
     persistence: z.number().positive(),
     lacunarity: z.number().positive(),
   }),
-  camera: z.object({
-    minZoom: z.number().positive(),
-    maxZoom: z.number().positive(),
-    desktop: CameraProfileSchema,
-    ultraWide: CameraProfileSchema,
-    phoneLandscape: CameraProfileSchema,
-    phonePortrait: CameraProfileSchema,
-  }),
+  camera: z
+    .object({
+      minZoom: z.number().positive(),
+      maxZoom: z.number().positive(),
+      desktop: CameraProfileSchema,
+      ultraWide: CameraProfileSchema,
+      phoneLandscape: CameraProfileSchema,
+      phonePortrait: CameraProfileSchema,
+    })
+    // Same relational guard as weather above — without this a swapped
+    // pair (e.g. minZoom>maxZoom) parses cleanly then makes MapControls
+    // ignore the clamp silently.
+    .refine((v) => v.minZoom <= v.maxZoom, {
+      message: 'camera.minZoom must be ≤ camera.maxZoom',
+    }),
 });
 
 /** One axial neighbour direction. */

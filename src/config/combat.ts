@@ -11,6 +11,27 @@ import combatJson from './combat.json';
 
 const FactionSchema = z.enum(['player', 'enemy']);
 const DifficultySchema = z.enum(['easy', 'normal', 'hard']);
+// Coderabbit MAJOR PR #10 04:56Z: keying the unit-stats record by
+// z.string() lets combat.json silently omit a unit role. Switch to a
+// z.enum keyed exactly by the units combat.json is contracted to
+// carry (13 roles — excludes Healer, which is profile-only with no
+// combat stats per src/rules/unit-profiles.ts). Zod 4 enforces
+// completeness on enum-keyed records, so missing roles fail parse.
+const CombatUnitSchema = z.enum([
+  'Peon',
+  'Footman',
+  'Trebuchet',
+  'Wizard',
+  'Ferryman',
+  'Scout',
+  'Settler',
+  'Hero',
+  'Goblin',
+  'Orc',
+  'Vampire',
+  'BlackKnight',
+  'Witch',
+]);
 
 const UnitStatSchema = z.object({
   speed: z.number().positive(),
@@ -25,7 +46,7 @@ const UnitStatSchema = z.object({
 });
 
 const CombatConfigSchema = z.object({
-  unitStats: z.record(z.string(), UnitStatSchema),
+  unitStats: z.record(CombatUnitSchema, UnitStatSchema),
   difficultyMultiplier: z.record(DifficultySchema, z.number().positive()),
   damage: z.object({
     critChance: z.number().min(0).max(1),
@@ -116,6 +137,12 @@ export interface CombatConfig {
 }
 
 /** The validated combat tuning. Import this — never `combat.json` directly. */
+// The schema's `unitStats` is keyed by the 13-role CombatUnitSchema, while
+// the public `CombatConfig.unitStats` is `Record<UnitType, UnitStat>` (14 roles
+// including the profile-only Healer). The cast is a narrow upgrade: every key
+// the schema yields IS a valid UnitType, the missing Healer is intentional
+// (Healer carries zero combat stats — `unitStatFor('Healer')` is documented
+// undefined-on-purpose and gated by the `as UnitStat` accessor below).
 const _validated = CombatConfigSchema.parse(combatJson);
 export const COMBAT: CombatConfig = _validated as unknown as CombatConfig;
 
