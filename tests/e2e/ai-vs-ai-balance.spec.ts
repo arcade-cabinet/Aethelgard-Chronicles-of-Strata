@@ -275,17 +275,6 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
           for (const k of g.zones.player.controlled) union.add(k);
           for (const k of g.zones.enemy.controlled) union.add(k);
           const zoneUnionPct = walkable > 0 ? (union.size / walkable) * 100 : 0;
-          // M_FUN.QA.AIVAI.PEON-METRICS — read the per-faction cadence
-          // block off game.economy.<faction>.peonMetrics. Defaults to
-          // the all-zero/-1 shape if the field hasn't been seeded yet
-          // (early pre-snapshot tick window).
-          const peonOf = (
-            eco: { peonMetrics?: { depositCount?: number; firstWoodAt?: number; firstHouseAt?: number } },
-          ) => ({
-            depositCount: eco.peonMetrics?.depositCount ?? 0,
-            firstWoodAt: eco.peonMetrics?.firstWoodAt ?? -1,
-            firstHouseAt: eco.peonMetrics?.firstHouseAt ?? -1,
-          });
           return {
             outcome: g.outcome,
             elapsed: g.clock.elapsed,

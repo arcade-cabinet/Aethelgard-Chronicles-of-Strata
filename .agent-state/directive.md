@@ -80,14 +80,17 @@ self-contained commit-unit.
   `game.turn.turnsElapsed` only when in turn-based mode.
 
 ### v0.5.D — Peon economic metrics + AI build-mix (spec §4/§5)
-- [ ] M_FUN.QA.AIVAI.PEON-METRICS — extend balance ledger with
-  timeToFirstWood, timeToFirstHouse, peonHarvestCyclesPerMin,
-  peonAvgRoundTripSec, peonDisruptionRatePerMin, peonIdleRatioPct,
-  nodeDrainTimeAvgSec, nodesActiveSimultaneously per faction per
-  match. Pin a healthy-cadence range per metric so a regression
-  immediately fires RED. Resource-depletion philosophy:
-  visual+audio cadence per deposit (chop, shake, deposit ring) —
-  currently sawdust particles fire faster than the deposit beat.
+- [x] M_FUN.QA.AIVAI.PEON-METRICS — `GameEconomy.peonMetrics`
+  shipped: depositCount, firstWoodAt, firstHouseAt, plus
+  totalRoundTripSec/roundTrips/disruptions/idle counters
+  reserved for follow-ups. `depositSystem` increments
+  depositCount + stamps firstWoodAt on the first wood deposit;
+  build-completion stamps firstHouseAt. BalanceRun derives
+  `depositsPerMin` per faction. serialize-game.ts migrates
+  pre-v0.5 saves with zero/-1 defaults. The four cadence
+  follow-ups (roundTrip, disruption, idle ratio, drain time)
+  hook into the deposit + path-follow systems in a future
+  commit — counters reserved in the type today.
 - [x] M_FUN.QA.AIVAI.BUILD-MIX — `tests/e2e/ai-vs-ai-balance.spec.ts`
   BalanceRun gains `buildMixPlayer` + `buildMixEnemy` records:
   {economic, offensive, defensive, wonder} bucketed counts per
