@@ -11,12 +11,12 @@
  * Default is 0.5 (the-diplomat baseline).
  */
 import { Goal, GoalEvaluator } from 'yuka';
-import { placeBuilding } from '@/game/commands';
-import { economyFor } from '@/game/economy-for';
-import { canAfford } from '@/game/economy';
-import { BUILDING_COSTS } from '@/rules';
-import { freeBuildTile, ownedBuildingCount } from '@/ai/helpers';
 import type { AiPlayer } from '@/ai/ai-player';
+import { freeBuildTile, ownedBuildingCount } from '@/ai/helpers';
+import { placeBuilding } from '@/game/commands';
+import { canAfford } from '@/game/economy';
+import { economyFor } from '@/game/economy-for';
+import { BUILDING_COSTS } from '@/rules';
 
 export { WonderGoal };
 

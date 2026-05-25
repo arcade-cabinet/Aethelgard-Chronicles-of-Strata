@@ -6,7 +6,10 @@
  * - FOREST on hex line: blocks ranged LoS
  * - FOREST attacker: +20% damage initiating combat
  */
+
+import seedrandom from 'seedrandom';
 import { describe, expect, it } from 'vitest';
+import type { BoardData, Tile } from '@/core/board';
 import {
   AnimationState,
   Combatant,
@@ -18,8 +21,6 @@ import {
 } from '@/ecs/components';
 import { combatSystem } from '@/ecs/systems/combat';
 import { createEcsWorld } from '@/ecs/world';
-import type { BoardData, Tile } from '@/core/board';
-import seedrandom from 'seedrandom';
 
 function tile(q: number, r: number, type: Tile['type'], level = 2): Tile {
   return { q, r, type, level, moisture: 0.5, walkable: true, isCrossingLanding: false };

@@ -17,8 +17,8 @@ import { startGame } from '@/game/game-state';
 import {
   findPortalStoneCandidates,
   isPortalStoneAvailable,
-  placePortalStones,
   PORTAL_STONE_COOLDOWN_SECONDS,
+  placePortalStones,
   refreshPortalStoneCooldown,
 } from '@/world/portal-stones';
 

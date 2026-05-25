@@ -1,6 +1,6 @@
 import { useAnimations, useGLTF } from '@react-three/drei';
 import { useEffect, useMemo, useRef } from 'react';
-import { Color, type AnimationClip, type Group, type Mesh, type MeshStandardMaterial } from 'three';
+import { type AnimationClip, Color, type Group, type Mesh, type MeshStandardMaterial } from 'three';
 import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { assets } from '@/assets/assets';
 import type { UnitType } from '@/ecs/components';

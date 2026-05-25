@@ -18,7 +18,10 @@
   --color-text-hud: #f1f5f9;
   --color-muted-hud: #a8b3c5;
   --color-accent-hud: #38bdf8;
-  --color-gold-hud: #fbbf24;
+  /* M_HUD.SHELL.2 — gold deepened from #fbbf24 (sun yellow) to
+   * #d4af37 (antique gold), matching the cinematic AAA-fantasy
+   * direction the new TitleScreen + system chrome adopt. */
+  --color-gold-hud: #d4af37;
   --color-wood-hud: #f97316;
   --color-stone-hud: #94a3b8;
   --color-coin-hud: #fbbf24;

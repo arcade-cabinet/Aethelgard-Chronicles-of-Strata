@@ -11,11 +11,11 @@
  * each scenario.
  */
 import { describe, expect, it } from 'vitest';
-import { DiplomaticEvaluator } from '@/ai/evaluators/diplomatic';
 import { AiPlayer } from '@/ai/ai-player';
+import { DiplomaticEvaluator } from '@/ai/evaluators/diplomatic';
+import { buildDefaultFactions } from '@/config/factions';
 import { startGame } from '@/game/game-state';
 import { createZoneState, type ZoneState } from '@/game/zone';
-import { buildDefaultFactions } from '@/config/factions';
 
 /** Build a minimal ZoneState with a given set of controlled tile keys. */
 function makeZone(keys: string[]): ZoneState {

@@ -30,10 +30,10 @@
 import { VOLCANO_TUNING } from '@/config/mapgen';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey, hexDistance, hexNeighbors } from '@/core/hex';
-import { biomeFlagsFor } from '@/rules/biome-flags';
 import type { Rng } from '@/core/rng';
 import { Health, HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
+import { biomeFlagsFor } from '@/rules/biome-flags';
 import { igniteWildfire } from './wildfire';
 
 /** Per-volcano runtime state. */

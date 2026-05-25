@@ -11,6 +11,7 @@
  * of throwing.
  */
 import { describe, expect, it } from 'vitest';
+import { createEconomy } from '@/game/economy';
 import {
   applyMeteorStrike,
   applyMigrationReward,
@@ -20,7 +21,6 @@ import {
   pickMigrationTile,
   pickOracleVision,
 } from '@/game/myth-events';
-import { createEconomy } from '@/game/economy';
 
 describe('fireMythEvent — unknown id guard (LOW-3)', () => {
   it('returns null on unknown id without throwing', () => {

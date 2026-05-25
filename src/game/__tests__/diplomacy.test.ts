@@ -13,7 +13,6 @@
  *   9. GameState.diplomacy starts empty.
  */
 import { describe, expect, it } from 'vitest';
-import { startGame } from '@/game/game-state';
 import {
   createDiplomacyState,
   getRelation,
@@ -24,6 +23,7 @@ import {
   setRelation,
   tributaryDominant,
 } from '@/game/diplomacy';
+import { startGame } from '@/game/game-state';
 
 describe('relationKey symmetry', () => {
   it('key(a,b) === key(b,a)', () => {

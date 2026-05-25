@@ -13,10 +13,10 @@
 import { describe, expect, it } from 'vitest';
 import { BIOME_AMBIENT } from '@/audio/biome-ambient';
 import { biomeRule } from '@/config/mapgen';
+import { moveCostFor } from '@/core/terrain-cost';
 import { Health } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import { runEconomyTick, startGame } from '@/game/game-state';
-import { moveCostFor } from '@/core/terrain-cost';
 import { biomeFlagsFor } from '@/rules/biome-flags';
 import { spawnBarbarianCamp } from '@/world/barbarian-camps';
 import { BIOME_COLORS, BIOME_COLORS_EVENING } from '@/world/palette';

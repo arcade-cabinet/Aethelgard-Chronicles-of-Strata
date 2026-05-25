@@ -12,23 +12,23 @@
  */
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useRef, useState } from 'react';
-import { availableMapSizes, MAP_SIZES, type MapSizeKey } from '@/core/map-size';
-import { createEventPrng, createFreshEventSeed } from '@/core/rng';
-import { randomSeedPhrase } from '@/core/seed-phrase';
 import { DEFAULT_PERSONALITY } from '@/config/ai-personalities';
 import { defaultFactionColors } from '@/config/faction-palette';
 import { buildDefaultFactions, type FactionConfig, LEGACY_FACTIONS } from '@/config/factions';
+import { availableMapSizes, MAP_SIZES, type MapSizeKey } from '@/core/map-size';
+import { createEventPrng, createFreshEventSeed } from '@/core/rng';
+import { randomSeedPhrase } from '@/core/seed-phrase';
 import type { Difficulty, GameMode } from '@/game/game-state';
 import { presetFor } from '@/rules';
 import type { TurnsMode } from '@/rules/mode-presets';
+import { FactionColorPicker } from './FactionColorPicker';
 import { HUD_THEME } from './hud-theme';
 import { MapPreview } from './MapPreview';
-import { PLAYER_COLORS } from './new-game-options';
 import { ModalShell } from './ModalShell';
-import { SeedField } from './SeedField';
-import { PresetControls } from './PresetControls';
-import { FactionColorPicker } from './FactionColorPicker';
+import { PLAYER_COLORS } from './new-game-options';
 import { OpponentPicker } from './OpponentPicker';
+import { PresetControls } from './PresetControls';
+import { SeedField } from './SeedField';
 
 /** The choices a New Game collects. */
 export interface NewGameChoices {

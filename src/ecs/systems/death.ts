@@ -1,5 +1,6 @@
 import type { World } from 'koota';
 import { COMBAT } from '@/config/combat';
+import { hexDistance } from '@/core/hex';
 import {
   AnimationState,
   DeathTimer,
@@ -9,7 +10,6 @@ import {
   HexPosition,
   Unit,
 } from '@/ecs/components';
-import { hexDistance } from '@/core/hex';
 
 /** Seconds a corpse lingers (plays the death clip) before removal. */
 const DEATH_DELAY: number = COMBAT.deathDelay;

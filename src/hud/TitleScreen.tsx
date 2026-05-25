@@ -1,193 +1,378 @@
-import { motion, useReducedMotion } from 'framer-motion';
-import { useState } from 'react';
+/**
+ * TitleScreen — the launcher (M_HUD.SHELL.2).
+ *
+ * Adopted from the 21st.dev cinematic reference: PBR shader hero
+ * (TitleBackground) behind a centred wordmark + 3-button action
+ * stack + bottom icon strip + keyboard-shortcut popover + footer
+ * meta row. Aethelgard-specific: preserves the test contract
+ * (#title-screen, #title-heading, #menu-new-game, #menu-continue,
+ * #menu-settings, #title-credits, #title-footer), the prop signature
+ * (onNewGame / onContinue? / onSettings), and the existing wiring
+ * (useTitleMusic, useMutedPreference, CreditsModal, __APP_VERSION__).
+ */
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { Keyboard, Moon, Sun, Volume2, VolumeX } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useMutedPreference } from '@/audio/useMutedPreference';
 import { useTitleMusic } from '@/audio/useTitleMusic';
+import { cn } from '@/lib/cn';
+import type { Persistence } from '@/persistence/persistence';
 import { CreditsModal } from './CreditsModal';
-import { HUD_THEME } from './hud-theme';
 import { TitleBackground } from './TitleBackground';
 
-/** Props for the title screen. */
 export interface TitleScreenProps {
   /** Open the New Game modal. */
   onNewGame: () => void;
-  /** Resume the most recent auto-save. Absent when no save exists. */
+  /** Resume the most recent auto-save. Absent → Continue is disabled. */
   onContinue?: () => void;
   /** Open the Settings modal. */
   onSettings: () => void;
+  /** Persistence facade — drives the mute toggle. */
+  persistence: Persistence;
 }
 
-/** A title-screen menu button. */
-function MenuButton({
-  id,
-  label,
-  onClick,
-  primary,
-  disabled,
-  disabledReason,
-}: {
+const ENTRY = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (delay: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.55, delay, ease: [0.16, 1, 0.3, 1] as const },
+  }),
+};
+
+export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: TitleScreenProps) {
+  useTitleMusic();
+  const reducedMotion = useReducedMotion() ?? false;
+  const [muted, setMuted] = useMutedPreference(persistence);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [showHints, setShowHints] = useState(false);
+  const [showCredits, setShowCredits] = useState(false);
+
+  // Keyboard shortcuts — 1/N=New, 2/C=Continue, 3/S=Settings, M=mute, ?=hints.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      const k = e.key.toLowerCase();
+      if (k === '1' || k === 'n' || k === 'enter') {
+        onNewGame();
+      } else if ((k === '2' || k === 'c') && onContinue) {
+        onContinue();
+      } else if (k === '3' || k === 's') {
+        onSettings();
+      } else if (k === 'm') {
+        setMuted(!muted);
+      } else if (k === '?' || k === '/') {
+        setShowHints((s) => !s);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onNewGame, onContinue, onSettings, muted, setMuted]);
+
+  const version = typeof __APP_VERSION__ === 'undefined' ? 'dev' : (__APP_VERSION__ as string);
+
+  return (
+    <main
+      id="title-screen"
+      aria-label="Aethelgard main menu"
+      className="hud-interactive relative h-dvh w-screen overflow-hidden text-[var(--color-text-hud)] font-body"
+      style={{ fontFamily: 'var(--font-body)' }}
+    >
+      <TitleBackground reducedMotion={reducedMotion} />
+
+      {/* Centre stage — wordmark + tagline + action stack. Uses a
+       * column flex so the eyebrow / wordmark / tagline / hook stay
+       * tightly grouped while the action stack docks below. */}
+      <div className="relative z-10 flex h-full flex-col items-center justify-center gap-10 px-6 py-12">
+        <motion.div
+          variants={ENTRY}
+          initial="hidden"
+          animate="visible"
+          custom={0}
+          className="text-center"
+        >
+          <p className="text-xs uppercase tracking-[0.5em] text-[var(--color-muted-hud)]">
+            Chronicles of
+          </p>
+        </motion.div>
+
+        <motion.div variants={ENTRY} initial="hidden" animate="visible" custom={0.08}>
+          <motion.h1
+            id="title-heading"
+            animate={reducedMotion ? { y: 0 } : { y: [0, -8, 0] }}
+            transition={
+              reducedMotion
+                ? { duration: 0 }
+                : { duration: 6.4, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }
+            }
+            className={cn(
+              'text-center font-display',
+              'text-[clamp(3rem,8vw,6.5rem)] leading-[0.95]',
+              'tracking-[0.18em]',
+            )}
+            style={{
+              fontFamily: 'var(--font-display)',
+              backgroundImage:
+                'linear-gradient(180deg, #fef3c7 0%, #d4af37 45%, #b45309 78%, #7c2d12 100%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              color: 'transparent',
+              filter: 'drop-shadow(0 12px 32px rgba(212,175,55,0.28))',
+            }}
+          >
+            Aethelgard
+          </motion.h1>
+        </motion.div>
+
+        <motion.div
+          variants={ENTRY}
+          initial="hidden"
+          animate="visible"
+          custom={0.18}
+          className="text-center"
+        >
+          <p
+            className="text-base uppercase tracking-[0.4em] text-[var(--color-accent-hud)]"
+            aria-hidden="true"
+          >
+            Chronicles of Strata
+          </p>
+          <p className="mt-3 max-w-xl text-sm italic text-[var(--color-muted-hud)]">
+            Command the hex. Shape the era. Outlast the tribes.
+          </p>
+        </motion.div>
+
+        <motion.div
+          variants={ENTRY}
+          initial="hidden"
+          animate="visible"
+          custom={0.28}
+          className="flex w-full max-w-sm flex-col gap-3"
+        >
+          <PrimaryButton id="menu-new-game" onClick={onNewGame}>
+            New Game
+          </PrimaryButton>
+          <SecondaryButton
+            id="menu-continue"
+            onClick={onContinue ?? (() => undefined)}
+            disabled={!onContinue}
+            disabledReason="No saved game yet — start a New Game"
+          >
+            Continue
+          </SecondaryButton>
+          <GhostButton id="menu-settings" onClick={onSettings}>
+            Settings
+          </GhostButton>
+        </motion.div>
+
+        <motion.div
+          variants={ENTRY}
+          initial="hidden"
+          animate="visible"
+          custom={0.38}
+          className="hidden gap-4 text-[0.7rem] uppercase tracking-[0.25em] text-[var(--color-muted-hud)] md:flex"
+        >
+          <kbd className="rounded border border-[var(--color-border-hud)] bg-[var(--color-panel)] px-2 py-0.5">
+            ↵ New
+          </kbd>
+          <kbd className="rounded border border-[var(--color-border-hud)] bg-[var(--color-panel)] px-2 py-0.5">
+            C Continue
+          </kbd>
+          <kbd className="rounded border border-[var(--color-border-hud)] bg-[var(--color-panel)] px-2 py-0.5">
+            S Settings
+          </kbd>
+          <kbd className="rounded border border-[var(--color-border-hud)] bg-[var(--color-panel)] px-2 py-0.5">
+            M Mute
+          </kbd>
+        </motion.div>
+      </div>
+
+      {/* Icon strip — bottom-right above safe area. */}
+      <div
+        className="hud-interactive absolute z-20 flex gap-2"
+        style={{
+          bottom: 'calc(var(--safe-bottom) + 16px)',
+          right: 'calc(var(--safe-right) + 16px)',
+        }}
+      >
+        <IconButton
+          onClick={() => setMuted(!muted)}
+          ariaLabel={muted ? 'Unmute audio' : 'Mute audio'}
+        >
+          {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+        </IconButton>
+        <IconButton
+          onClick={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+          ariaLabel="Toggle theme (placeholder)"
+        >
+          {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+        </IconButton>
+        <IconButton onClick={() => setShowHints((s) => !s)} ariaLabel="Keyboard shortcuts">
+          <Keyboard className="h-4 w-4" />
+        </IconButton>
+      </div>
+
+      <AnimatePresence>
+        {showHints && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 8 }}
+            transition={{ duration: 0.18 }}
+            className="hud-interactive absolute z-20 rounded-lg border border-[var(--color-border-hud)] bg-[var(--color-panel)] p-4 text-xs text-[var(--color-text-hud)] shadow-2xl backdrop-blur"
+            style={{
+              bottom: 'calc(var(--safe-bottom) + 72px)',
+              right: 'calc(var(--safe-right) + 16px)',
+              minWidth: 220,
+            }}
+          >
+            <p className="mb-2 font-semibold text-[var(--color-gold-hud)]">Keyboard shortcuts</p>
+            <ul className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1 text-[var(--color-muted-hud)]">
+              <kbd>↵ / 1 / N</kbd>
+              <span>New Game</span>
+              <kbd>2 / C</kbd>
+              <span>Continue</span>
+              <kbd>3 / S</kbd>
+              <span>Settings</span>
+              <kbd>M</kbd>
+              <span>Mute</span>
+              <kbd>?</kbd>
+              <span>This menu</span>
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Footer meta row — bottom-left version + credits. */}
+      <div
+        id="title-footer"
+        className="hud-interactive absolute z-20 flex items-center gap-3 text-[0.62rem] uppercase tracking-[0.18em] text-[var(--color-muted-hud)]"
+        style={{
+          bottom: 'calc(var(--safe-bottom) + 12px)',
+          left: 'calc(var(--safe-left) + 16px)',
+        }}
+      >
+        <span>v{version}</span>
+        <span className="opacity-50">·</span>
+        <span>r3f · koota · yuka</span>
+        <span className="opacity-50">·</span>
+        <button
+          type="button"
+          id="title-credits"
+          onClick={() => setShowCredits(true)}
+          className="text-[var(--color-accent-hud)] underline-offset-2 hover:underline"
+        >
+          Credits
+        </button>
+      </div>
+
+      <CreditsModal open={showCredits} onOpenChange={setShowCredits} />
+    </main>
+  );
+}
+
+// --------------- button primitives ---------------
+
+interface ButtonBaseProps {
   id: string;
-  label: string;
   onClick: () => void;
-  primary?: boolean;
+  children: React.ReactNode;
   disabled?: boolean;
-  /** M_AUDIT2.UX.20 — when disabled, the title attribute explains why. */
   disabledReason?: string;
-}) {
+}
+
+function PrimaryButton({ id, onClick, children }: ButtonBaseProps) {
+  return (
+    <button
+      type="button"
+      id={id}
+      onClick={onClick}
+      className={cn(
+        'group relative overflow-hidden rounded-xl px-6 py-4 font-display text-lg',
+        'border border-[#d4af37]/60',
+        'bg-gradient-to-b from-[#e8c660] via-[#d4af37] to-[#8b7124]',
+        'text-[#1a1208] shadow-[0_8px_32px_rgba(212,175,55,0.35),inset_0_1px_0_rgba(255,255,255,0.35)]',
+        'transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(212,175,55,0.5),inset_0_1px_0_rgba(255,255,255,0.4)]',
+        'active:translate-y-0 active:scale-[0.97]',
+      )}
+      style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
+    >
+      <span className="relative z-10">{children}</span>
+      <span className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+    </button>
+  );
+}
+
+function SecondaryButton({ id, onClick, children, disabled, disabledReason }: ButtonBaseProps) {
   return (
     <button
       type="button"
       id={id}
       onClick={onClick}
       disabled={disabled}
-      title={disabled ? disabledReason : undefined}
       aria-disabled={disabled}
-      style={{
-        width: 260,
-        padding: '14px',
-        borderRadius: 12,
-        border: primary ? 'none' : `1px solid ${HUD_THEME.color.border}`,
-        background: disabled
-          ? 'rgba(255,255,255,0.04)'
-          : primary
-            ? HUD_THEME.blueGradient
-            : 'rgba(9,13,22,0.88)',
-        color: disabled ? HUD_THEME.color.muted : primary ? '#fff' : HUD_THEME.color.text,
-        fontFamily: HUD_THEME.font.display,
-        fontSize: '1.05rem',
-        cursor: disabled ? 'default' : 'pointer',
-        boxShadow: primary ? '0 4px 20px rgba(56,189,248,0.3)' : 'none',
-      }}
+      title={disabled ? disabledReason : undefined}
+      className={cn(
+        'group relative overflow-hidden rounded-xl border px-6 py-4 font-display text-base',
+        'bg-gradient-to-b from-[#1a2230] to-[#0b1018]',
+        'transition-all duration-150',
+        disabled
+          ? 'cursor-default border-white/10 text-[var(--color-muted-hud)] opacity-60'
+          : 'border-[var(--color-gold-hud)]/40 text-[var(--color-gold-hud)] shadow-[0_4px_16px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(212,175,55,0.08)] hover:-translate-y-0.5 hover:border-[var(--color-gold-hud)]/70 active:translate-y-0 active:scale-[0.97]',
+      )}
+      style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
     >
-      {label}
+      <span className="relative z-10">{children}</span>
+      {!disabled && (
+        <span className="absolute inset-0 bg-gradient-to-t from-[var(--color-gold-hud)]/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+      )}
     </button>
   );
 }
 
-/**
- * The title screen — the branded landing page. "Aethelgard" in a gold-gradient
- * Metamorphous heading over "Chronicles of Strata", with New Game / Continue /
- * Settings. Continue is shown only when an auto-save exists. Matches poc2's
- * `#launcher` branding.
- */
-// Stable no-op for the Continue button when no save exists. Defining it at
-// module scope (not inline) avoids the noEmptyBlockStatements rule + lets
-// React's referential-equality memos skip re-render on each TitleScreen mount.
-const noopContinue = (): void => undefined;
-
-export function TitleScreen({ onNewGame, onContinue, onSettings }: TitleScreenProps) {
-  useTitleMusic();
-  // M_AUDIT2.UX.1 — respect prefers-reduced-motion: skip the
-  // infinite bob (vestibular-disorder users); keep static layout.
-  const reducedMotion = useReducedMotion();
-  // M_AUDIT2.SEC2.34 — Credits modal state.
-  const [showCredits, setShowCredits] = useState(false);
+function GhostButton({ id, onClick, children }: ButtonBaseProps) {
   return (
-    <div
-      id="title-screen"
-      style={{
-        position: 'absolute',
-        inset: 0,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background:
-          'radial-gradient(circle at center, rgba(17,24,39,0.5) 0%, rgba(3,7,18,0.95) 100%)',
-        color: HUD_THEME.color.text,
-        fontFamily: HUD_THEME.font.body,
-        padding: 20,
-      }}
+    <button
+      type="button"
+      id={id}
+      onClick={onClick}
+      className={cn(
+        'rounded-xl border border-[var(--color-accent-hud)]/40 bg-[var(--color-panel)] px-6 py-3 font-display text-base',
+        'text-[var(--color-accent-hud)] transition-all duration-150',
+        'hover:border-[var(--color-accent-hud)]/70 hover:bg-[var(--color-panel-solid)]/80',
+        'active:scale-[0.97]',
+      )}
+      style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
     >
-      <TitleBackground />
-      <motion.div
-        style={{ textAlign: 'center', marginBottom: 50 }}
-        // M_AUDIT2.UX.1 — `animate={false}` disables motion entirely
-        // when the user prefers reduced motion.
-        animate={reducedMotion ? false : { y: [0, -12, 0] }}
-        transition={
-          reducedMotion
-            ? { duration: 0 }
-            : { duration: 6, repeat: Number.POSITIVE_INFINITY, ease: 'easeInOut' }
-        }
-      >
-        <h1
-          id="title-heading"
-          style={{
-            fontFamily: HUD_THEME.font.display,
-            fontSize: '3.6rem',
-            margin: 0,
-            background: HUD_THEME.goldGradient,
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: 2,
-          }}
-        >
-          Aethelgard
-        </h1>
-        <p
-          style={{
-            fontFamily: HUD_THEME.font.body,
-            fontSize: '0.95rem',
-            letterSpacing: 4,
-            color: HUD_THEME.color.accent,
-            textTransform: 'uppercase',
-            marginTop: 10,
-            fontWeight: 600,
-          }}
-        >
-          Chronicles of Strata
-        </p>
-      </motion.div>
+      {children}
+    </button>
+  );
+}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <MenuButton id="menu-new-game" label="New Game" onClick={onNewGame} primary />
-        <MenuButton
-          id="menu-continue"
-          label="Continue"
-          onClick={onContinue ?? noopContinue}
-          {...(onContinue
-            ? {}
-            : { disabled: true, disabledReason: 'No saved game yet — start a New Game' })}
-        />
-        <MenuButton id="menu-settings" label="Settings" onClick={onSettings} />
-      </div>
-
-      {/* M_TITLE.3 — version + license row (commercial release).
-          M_AUDIT2.SEC2.34 — Credits is now a real modal listing every
-          bundled asset pack + library; the inline "CC-BY" string was
-          inaccurate (every asset is actually CC0 / royalty-free). */}
-      <div
-        id="title-footer"
-        style={{
-          position: 'absolute',
-          bottom: 12,
-          left: 0,
-          right: 0,
-          textAlign: 'center',
-          fontSize: '0.62rem',
-          color: HUD_THEME.color.muted,
-          letterSpacing: 0.6,
-        }}
-      >
-        v{typeof __APP_VERSION__ === 'undefined' ? 'dev' : __APP_VERSION__} · built with r3f · koota
-        · yuka ·{' '}
-        <button
-          type="button"
-          id="title-credits"
-          onClick={() => setShowCredits(true)}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: HUD_THEME.color.accent,
-            textDecoration: 'underline',
-            cursor: 'pointer',
-            font: 'inherit',
-            padding: 0,
-          }}
-        >
-          Credits
-        </button>
-      </div>
-      <CreditsModal open={showCredits} onOpenChange={setShowCredits} />
-    </div>
+function IconButton({
+  onClick,
+  ariaLabel,
+  children,
+}: {
+  onClick: () => void;
+  ariaLabel: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className={cn(
+        'flex h-10 w-10 items-center justify-center rounded-lg',
+        'border border-[var(--color-border-hud)] bg-[var(--color-panel)] text-[var(--color-gold-hud)]',
+        'shadow-md backdrop-blur transition-colors',
+        'hover:border-[var(--color-gold-hud)]/60 hover:text-[var(--color-text-hud)]',
+        'active:scale-95',
+      )}
+    >
+      {children}
+    </button>
   );
 }

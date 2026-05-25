@@ -9,6 +9,8 @@
  *   clock → command → terrain → combat → deposit → scoring
  */
 
+import { aiVisionRadiusFor } from '@/config/combat';
+import { factionIds } from '@/config/factions';
 import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { buildNavGraph } from '@/core/pathfinding';
 import { makeMoveCostFn } from '@/core/terrain-cost';
@@ -42,24 +44,22 @@ import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
 import { volcanoSystem } from '@/ecs/systems/volcano';
 import { wildfireSystem } from '@/ecs/systems/wildfire';
 import { evaluateWinLoss } from '@/ecs/systems/win-loss';
-import { aiVisionRadiusFor } from '@/config/combat';
-import { chokePointMultiplier } from '@/rules/choke-points';
 import { presetFor, recomputeMaxSupply, SUPPLY_COST } from '@/rules';
-import { advanceProjectiles } from './projectiles';
-import { advanceClock, cyclePhase } from './clock';
-import { advanceWeather, WEATHER_PROFILES, WEATHER_SPEED_MULTIPLIER } from './weather';
+import { chokePointMultiplier } from '@/rules/choke-points';
+import { refreshPortalStoneCooldown, tickPortalStonesTrigger } from '@/world/portal-stones';
 import { tickAutoSave } from './auto-save';
-import { tickLongReignEscalation, tickRandomEvents } from './random-events';
-import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
-import type { GameState } from './game-state';
+import { advanceClock, cyclePhase } from './clock';
 import { expireProposals } from './diplomacy-border';
-import { tickPortalStonesTrigger, refreshPortalStoneCooldown } from '@/world/portal-stones';
 import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
-import { detectVictory } from './victory-conditions';
+import type { GameState } from './game-state';
+import { advanceProjectiles } from './projectiles';
+import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { grantRandomDiscovery } from './research';
 import { buildEntityTileIndex } from './tile-index';
-import { factionIds } from '@/config/factions';
+import { detectVictory } from './victory-conditions';
+import { advanceWeather, WEATHER_PROFILES, WEATHER_SPEED_MULTIPLIER } from './weather';
+import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 
 // ---------------------------------------------------------------------------
 // Phase 1 — Clock: advance time, weather, random events, autosave.

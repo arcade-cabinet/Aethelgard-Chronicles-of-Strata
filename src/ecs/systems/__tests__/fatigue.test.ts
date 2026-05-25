@@ -8,10 +8,10 @@
  * deals 0 dmg.
  */
 import { describe, expect, it } from 'vitest';
-import { createEcsWorld } from '@/ecs/world';
+import type { BoardData, Tile } from '@/core/board';
 import { Combatant, HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
-import type { BoardData, Tile } from '@/core/board';
+import { createEcsWorld } from '@/ecs/world';
 
 /** Minimal tiles map carrying just the test tile. */
 function makeTiles(tile: Tile): BoardData['tiles'] {

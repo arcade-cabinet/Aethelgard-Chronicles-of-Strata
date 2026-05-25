@@ -14,8 +14,8 @@ import { Canvas } from '@react-three/fiber';
 import { page } from '@vitest/browser/context';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import type { BiomeType } from '@/core/biome';
 import { ALL_BIOMES, biomeRule } from '@/config/mapgen';
+import type { BiomeType } from '@/core/biome';
 import { BiomeSwatch } from '@/world/BiomeSwatch';
 
 function HarnessScene({ biome }: { biome: BiomeType }) {

@@ -1,54 +1,54 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
+import { useMutedPreference } from '@/audio/useMutedPreference';
 import { ALL_PERSONALITIES } from '@/config/ai-personalities';
 import { defaultFactionColors } from '@/config/faction-palette';
 import { buildDefaultFactions } from '@/config/factions';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
-import { createAutoSave } from '@/game/auto-save';
 import { AssignedJob, Building, FactionTrait, Health, Unit } from '@/ecs/components';
+import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
-import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
-import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { BuildMenuButton } from '@/hud/BuildMenuButton';
-import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
-import { SystemMenu } from '@/hud/SystemMenu';
-import { EraProgressPill } from '@/hud/EraProgressPill';
-import { FactionChips } from '@/hud/FactionChips';
-import { MatchAgePill } from '@/hud/MatchAgePill';
-import { NonAggressionPactPill } from '@/hud/NonAggressionPactPill';
-import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
-import { RaidPressurePill } from '@/hud/RaidPressurePill';
-import { WinConditionPill } from '@/hud/WinConditionPill';
-import { ScreenshotButton } from '@/hud/ScreenshotButton';
-import { ZoneFlipPulse } from '@/hud/ZoneFlipPulse';
-import { ZoneControlPill } from '@/hud/ZoneControlPill';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
+import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { CriticalWarning } from '@/hud/CriticalWarning';
-import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
-import { LoadingScreen } from '@/hud/LoadingScreen';
-import { PersistAchievements } from '@/hud/PersistAchievements';
-import { ScoreBar } from '@/hud/ScoreBar';
-import { SpeedControl } from '@/hud/SpeedControl';
-import { WeatherIndicator } from '@/hud/WeatherIndicator';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { EndTurnButton } from '@/hud/EndTurnButton';
+import { EraProgressPill } from '@/hud/EraProgressPill';
+import { ErrorOverlay } from '@/hud/ErrorOverlay';
+import { FactionChips } from '@/hud/FactionChips';
 import { GameOverModal } from '@/hud/GameOverModal';
-import { ScoringScreen } from '@/hud/ScoringScreen';
+import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
 import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
+import { LoadingScreen } from '@/hud/LoadingScreen';
+import { MatchAgePill } from '@/hud/MatchAgePill';
 import { Minimap } from '@/hud/Minimap';
+import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
+import { NonAggressionPactPill } from '@/hud/NonAggressionPactPill';
 import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
 import { PauseControl } from '@/hud/PauseControl';
+import { PersistAchievements } from '@/hud/PersistAchievements';
+import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { ResourceBar } from '@/hud/ResourceBar';
+import { ScoreBar } from '@/hud/ScoreBar';
+import { ScoringScreen } from '@/hud/ScoringScreen';
+import { ScreenshotButton } from '@/hud/ScreenshotButton';
 import { SelectionPanel } from '@/hud/SelectionPanel';
 import { SelectionRect } from '@/hud/SelectionRect';
 import { SettingsModal } from '@/hud/SettingsModal';
-import { useMutedPreference } from '@/audio/useMutedPreference';
+import { SpeedControl } from '@/hud/SpeedControl';
+import { SystemMenu } from '@/hud/SystemMenu';
 import { TitleScreen } from '@/hud/TitleScreen';
+import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
+import { WeatherIndicator } from '@/hud/WeatherIndicator';
+import { WinConditionPill } from '@/hud/WinConditionPill';
+import { ZoneControlPill } from '@/hud/ZoneControlPill';
+import { ZoneFlipPulse } from '@/hud/ZoneFlipPulse';
 import { ZoneLegend } from '@/hud/ZoneLegend';
 import { createPersistence, PREF_KEYS } from '@/persistence/persistence';
 import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
@@ -590,6 +590,7 @@ export function App() {
         </div>
       )}
       <TitleScreen
+        persistence={persistence}
         onNewGame={() => setShowNewGame(true)}
         onSettings={() => setShowSettings(true)}
         {...(hasSave

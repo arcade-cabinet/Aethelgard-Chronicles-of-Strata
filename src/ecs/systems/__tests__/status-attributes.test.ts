@@ -7,10 +7,10 @@
  * the attribute are untouched.
  */
 import { describe, expect, it } from 'vitest';
+import type { BoardData, Tile } from '@/core/board';
 import { Building, FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
 import { createEcsWorld } from '@/ecs/world';
-import type { BoardData, Tile } from '@/core/board';
 
 function tilesAt(q: number, r: number, type: Tile['type']): BoardData['tiles'] {
   const m = new Map<string, Tile>();

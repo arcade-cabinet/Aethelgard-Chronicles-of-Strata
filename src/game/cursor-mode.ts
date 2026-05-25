@@ -19,8 +19,9 @@
  * No DOM side-effects here — the caller drives document.body.style.cursor
  * via useEffect so the cleanup path is handled by the React lifecycle.
  */
-import { FactionTrait, HexPosition, Selectable, Unit } from '@/ecs/components';
+
 import { getHexKey } from '@/core/hex';
+import { FactionTrait, HexPosition, Selectable, Unit } from '@/ecs/components';
 import { MILITARY_ROLES } from '@/rules/unit-profiles';
 import type { GameState } from './game-state';
 

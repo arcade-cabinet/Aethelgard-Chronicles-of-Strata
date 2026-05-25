@@ -13,7 +13,7 @@
  */
 import * as Dialog from '@radix-ui/react-dialog';
 import { findFaction } from '@/config/factions';
-import { FactionTrait, Building } from '@/ecs/components';
+import { Building, FactionTrait } from '@/ecs/components';
 import { economyFor } from '@/game/economy-for';
 import type { GameState } from '@/game/game-state';
 import type { VictoryKind } from '@/game/victory-conditions';

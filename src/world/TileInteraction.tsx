@@ -3,9 +3,6 @@ import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexKey, hexNeighbors } from '@/core/hex';
 import { Building, FactionTrait, Selectable, Unit } from '@/ecs/components';
-import { cameraView } from '@/render/camera-view';
-import { computePanDelta, isDragging, startDrag, stopDrag } from './touch-drag';
-import { isTap } from './touch-tap-threshold';
 import {
   findSelectableAtTile,
   moveUnit,
@@ -13,12 +10,15 @@ import {
   planMoveOrder,
   setRally,
 } from '@/game/commands';
-import type { GameState } from '@/game/game-state';
 import { getCursorMode } from '@/game/cursor-mode';
+import type { GameState } from '@/game/game-state';
 import { selectEntity, selectedEntities } from '@/game/selection';
 import { HUD_THEME } from '@/hud/hud-theme';
-import { PathLine } from './PathLine';
+import { cameraView } from '@/render/camera-view';
 import { hexGridVisibility } from './HexGridOverlay';
+import { PathLine } from './PathLine';
+import { computePanDelta, isDragging, startDrag, stopDrag } from './touch-drag';
+import { isTap } from './touch-tap-threshold';
 
 /**
  * M_EXPANSION.U.109 — SVG sword cursor as an inline data: URL.

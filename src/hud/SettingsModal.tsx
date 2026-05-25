@@ -1,6 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
 import { type AudioBuses, getBusVolume, setBusVolume, setMuted } from '@/audio/buses';
+import { MUTE_PREF_KEY } from '@/audio/useMutedPreference';
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
 import { isColorblindMode, setColorblindMode } from '@/rules/colorblind';
 import { isCaptionsEnabled, setCaptionsEnabled } from './captions';
@@ -8,7 +9,6 @@ import { HotkeyEditor } from './HotkeyEditor';
 import { loadBindings } from './hotkey-bindings';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
-import { MUTE_PREF_KEY } from '@/audio/useMutedPreference';
 
 // M_EXPANSION.U.112 — bus → (preference key, label) mapping.
 const BUS_ROWS: ReadonlyArray<{

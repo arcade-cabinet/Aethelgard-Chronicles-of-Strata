@@ -4,10 +4,11 @@
  * cognitive-load threshold. Pure functions — no game-state
  * mutation; safe to import anywhere.
  */
-import { hexNeighbors, parseHexKey } from '@/core/hex';
+
 import { isBalanced } from '@/core/balance-audit';
-import { generateBoard } from '@/core/board';
 import type { BoardData } from '@/core/board';
+import { generateBoard } from '@/core/board';
+import { hexNeighbors, parseHexKey } from '@/core/hex';
 
 /**
  * Match-length scaling for spawn cadence (M_MODES.5). Slower matches

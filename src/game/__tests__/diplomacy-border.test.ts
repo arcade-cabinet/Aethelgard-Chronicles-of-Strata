@@ -13,8 +13,6 @@
  *   9. GameState starts with empty proposals.
  */
 import { describe, expect, it } from 'vitest';
-import { createZoneState } from '@/game/zone';
-import { startGame } from '@/game/game-state';
 import { createDiplomacyState, getRelation, setRelation } from '@/game/diplomacy';
 import {
   acceptProposal,
@@ -26,6 +24,8 @@ import {
   proposeNonAggressionPact,
   rejectProposal,
 } from '@/game/diplomacy-border';
+import { startGame } from '@/game/game-state';
+import { createZoneState } from '@/game/zone';
 
 describe('bordersAreTouching', () => {
   it('returns true when two zones share an edge', () => {

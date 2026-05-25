@@ -13,7 +13,7 @@
  * Barbarian camps are intentionally NOT rendered as chips — they're
  * neutral aggressors, not opponents on the score board.
  */
-import { findFaction, type FactionConfig } from '@/config/factions';
+import { type FactionConfig, findFaction } from '@/config/factions';
 import type { GameState } from '@/game/game-state';
 import { formatInt } from './format';
 import { HUD_THEME } from './hud-theme';

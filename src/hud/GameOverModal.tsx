@@ -1,10 +1,10 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useEffect, useRef, useState } from 'react';
+import { factionIds } from '@/config/factions';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
-import { factionIds } from '@/config/factions';
-import { economyFor } from '@/game/economy-for';
 import { getRelation } from '@/game/diplomacy';
+import { economyFor } from '@/game/economy-for';
 import type { GameState } from '@/game/game-state';
 import { detectTranscriptHighlights, matchHighlights, matchNickname } from '@/game/match-narrative';
 import type { Persistence } from '@/persistence/persistence';

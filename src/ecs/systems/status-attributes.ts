@@ -23,8 +23,8 @@
  */
 import type { World } from 'koota';
 import type { BoardData } from '@/core/board';
-import { FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 import { hexDistance } from '@/core/hex';
+import { FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 
 /** Recovery thresholds (seconds). */
 const DISEASE_RECOVERY = 5;

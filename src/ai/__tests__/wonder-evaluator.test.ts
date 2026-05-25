@@ -9,10 +9,10 @@
  *   5. wonderWeight from ai-personalities.json flows through.
  */
 import { describe, expect, it } from 'vitest';
-import { WonderEvaluator } from '@/ai/evaluators/wonder';
 import { AiPlayer } from '@/ai/ai-player';
-import { startGame } from '@/game/game-state';
+import { WonderEvaluator } from '@/ai/evaluators/wonder';
 import { placeBuilding } from '@/game/commands';
+import { startGame } from '@/game/game-state';
 
 function makeAi(personalityKey?: string): { ai: AiPlayer; game: ReturnType<typeof startGame> } {
   const game = startGame({
