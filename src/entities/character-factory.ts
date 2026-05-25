@@ -156,8 +156,10 @@ export function createCharacter(params: CreateCharacterParams): Entity {
         `Check src/config/combat.json + src/rules/unit-profiles.ts.`,
     );
   }
-  // Apply difficulty multiplier to enemy roles only. Player roles unaffected.
-  const mult = stats.faction === 'enemy' ? difficultyMultiplierFor(difficulty) : 1.0;
+  // M_V8.DIFFICULTY-MULTIPLIER.N-PLAYER — apply difficulty multiplier to all
+  // non-player factions (ai-2, ai-3, barbarian-camp-*, etc.), not just the
+  // legacy 'enemy' id. 'player' is the only faction that should scale at 1.0.
+  const mult = faction !== 'player' ? difficultyMultiplierFor(difficulty) : 1.0;
   const scaledHp = Math.round(hp * mult);
   const scaledDamage = Math.round(attackDamage * mult);
   return world.spawn(
