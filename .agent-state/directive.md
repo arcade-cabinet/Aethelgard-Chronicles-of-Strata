@@ -546,9 +546,12 @@ evidence. The matrix passing GREEN is the v0.4 release gate.
     SHALLOWS-traversal predicate (per-unit canTraverseShallows
     pathfind override) is the follow-up — modifies makeMoveCostFn
     + biome-flags to accept a unit-type filter.
-  - [ ] M_FUN.MAP.UTILISATION.METRIC — Balance harness assertion:
-    # of distinct tiles in either faction's zone-of-control union
-    > 30% of walkable board. Catches 'clumped' failure mode.
+  - [x] M_FUN.MAP.UTILISATION.METRIC — Balance harness assertion:
+    `zoneUnionPct = (player.controlled ∪ enemy.controlled) /
+    walkableTileCount * 100` captured per run, expect.soft `> 30%`.
+    Stored on BalanceRun for ledger trend tracking + visible in
+    aivai-runs.json. Catches 'clumped' failure mode where AIs
+    huddle around their bases.
 
 - [x] M_FUN.QA.AIVAI.VISUAL — every balance-harness run captures a
   final-frame screenshot to tests/e2e/__data__/aivai-screens/

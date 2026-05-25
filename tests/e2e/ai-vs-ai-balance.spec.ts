@@ -65,6 +65,8 @@ interface BalanceRun {
   peakSupplyEnemy: number;
   resolvedWithinBudget: boolean;
   chunksRan: number;
+  /** % of walkable board claimed by either faction (M_FUN.MAP.UTILISATION.METRIC). */
+  zoneUnionPct: number;
 }
 
 interface BalanceArtifact {
@@ -123,6 +125,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
         buildingsEnemy: number;
         peakPlayer: number;
         peakEnemy: number;
+        zoneUnionPct: number; // M_FUN.MAP.UTILISATION.METRIC
       } | null = null;
 
       for (chunks = 0; chunks < 60 && outcome === 'playing'; chunks++) {
@@ -139,6 +142,11 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
               world: {
                 query: (...traits: unknown[]) => Iterable<{ get: (t: unknown) => unknown }>;
               };
+              zones: {
+                player: { controlled: Set<string> };
+                enemy: { controlled: Set<string> };
+              };
+              board: { tiles: Map<string, { walkable: boolean }> };
             };
             // koota traits exposed by the existing test hooks
             __game_traits?: {
@@ -163,6 +171,16 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
               else if (ft?.faction === 'enemy') be++;
             }
           }
+          // M_FUN.MAP.UTILISATION.METRIC — % of walkable tiles claimed
+          // by EITHER faction's zone-of-control. Catches the 'clumped'
+          // failure mode where both factions huddle around their bases
+          // and never expand across the board.
+          let walkable = 0;
+          for (const t of g.board.tiles.values()) if (t.walkable) walkable++;
+          const union = new Set<string>();
+          for (const k of g.zones.player.controlled) union.add(k);
+          for (const k of g.zones.enemy.controlled) union.add(k);
+          const zoneUnionPct = walkable > 0 ? (union.size / walkable) * 100 : 0;
           return {
             outcome: g.outcome,
             elapsed: g.clock.elapsed,
@@ -171,6 +189,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
             buildingsEnemy: be,
             peakPlayer: g.economy.player.peakSupply,
             peakEnemy: g.economy.enemy.peakSupply,
+            zoneUnionPct,
           };
         });
         if (!snapshot) break;
@@ -196,6 +215,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
         peakSupplyEnemy: snapshot.peakEnemy,
         resolvedWithinBudget,
         chunksRan: chunks,
+        zoneUnionPct: snapshot.zoneUnionPct,
       };
       appendArtifact(run);
 
@@ -234,6 +254,14 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
       // Footman (which counts as 1 supply on its own).
       const peakAny = Math.max(snapshot.peakPlayer, snapshot.peakEnemy);
       expect.soft(peakAny, 'at least one faction must train units').toBeGreaterThan(1);
+      // M_FUN.MAP.UTILISATION.METRIC — both factions combined must
+      // claim >30% of the walkable board's tiles by match end. If the
+      // union is tiny, both AIs huddled around their bases and never
+      // expanded — that's the 'clumped' failure mode the user called
+      // out (huge wasted oceans, no use of the full board).
+      expect
+        .soft(snapshot.zoneUnionPct, 'faction expansion must cover >30% of walkable board')
+        .toBeGreaterThan(30);
     });
   }
 });
