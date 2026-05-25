@@ -28,25 +28,41 @@ const parseStep = parseHexLevelKey;
 import type { BoardData } from '@/core/board';
 import { Building, Combatant, FactionTrait, Health } from '@/ecs/components';
 import { biomeRule } from '@/config/mapgen';
-import { hexDistance } from '@/core/hex';
 
 const FORTIFY_BUILDINGS = new Set(['Wall', 'Watchtower']);
 
 /**
- * M_FUN.MAP.FORTIFY — true if a same-faction Wall or Watchtower
- * sits within radius 1 of (q, r). Used by pathFollowSystem to
- * suppress fatigue accrual on a garrisoned MOUNTAIN_PASS tile.
+ * M_FUN.MAP.FORTIFY — per-faction set of tile keys covered by a
+ * same-faction Wall or Watchtower's radius-1 fortification zone.
+ * Built ONCE per pathFollowSystem tick instead of per arrival
+ * (coderabbit MAJOR PR #10 — was a full world.query() per moving
+ * unit; now it's one O(buildings + 7) sweep per tick consumed by
+ * `fortifiedTilesByFaction.has(stepKey)` look-ups).
  */
-function hasFortifyAdjacent(world: World, faction: string, q: number, r: number): boolean {
+type FortifiedTilesByFaction = Map<string, Set<string>>;
+function buildFortifiedTileIndex(world: World): FortifiedTilesByFaction {
+  const out: FortifiedTilesByFaction = new Map();
   for (const e of world.query(Building, HexPosition, FactionTrait)) {
-    if (e.get(FactionTrait)?.faction !== faction) continue;
     const b = e.get(Building);
     if (!b?.isComplete || !FORTIFY_BUILDINGS.has(b.buildingType)) continue;
     const p = e.get(HexPosition);
-    if (!p) continue;
-    if (hexDistance(p.q, p.r, q, r) <= 1) return true;
+    const faction = e.get(FactionTrait)?.faction;
+    if (!p || !faction) continue;
+    let set = out.get(faction);
+    if (!set) {
+      set = new Set();
+      out.set(faction, set);
+    }
+    // Building's own tile + 6 axial neighbours = 7 keys per building.
+    set.add(`${p.q},${p.r}`);
+    set.add(`${p.q + 1},${p.r}`);
+    set.add(`${p.q - 1},${p.r}`);
+    set.add(`${p.q},${p.r + 1}`);
+    set.add(`${p.q},${p.r - 1}`);
+    set.add(`${p.q + 1},${p.r - 1}`);
+    set.add(`${p.q - 1},${p.r + 1}`);
   }
-  return false;
+  return out;
 }
 
 export function pathFollowSystem(
@@ -65,6 +81,10 @@ export function pathFollowSystem(
   _currentTurn?: number,
 ): void {
   const currentTurn = _currentTurn;
+  // M_FUN.MAP.FORTIFY — build the per-faction fortified-tile index
+  // ONCE per tick. Read by the per-arrival fatigue branch via
+  // O(1) Set.has() instead of the prior per-arrival world.query.
+  const fortifiedTilesByFaction = buildFortifiedTileIndex(world);
   // M_FUN.MAP.ELEV — fatigue decay. Combatant.fatigue → 0 after
   // FATIGUE_DECAY seconds out of combat (combat.ts resets the
   // fatigueDecayTimer on every dealt hit). Decay runs even without
@@ -156,7 +176,7 @@ export function pathFollowSystem(
                 // without the -50% damage debuff.
                 const ownFaction = entity.get(FactionTrait)?.faction;
                 const protected_ = ownFaction
-                  ? hasFortifyAdjacent(world, ownFaction, step.q, step.r)
+                  ? (fortifiedTilesByFaction.get(ownFaction)?.has(`${step.q},${step.r}`) ?? false)
                   : false;
                 if (!protected_) {
                   // M_FUN.MECH.FATIGUE.TURN-MODE — in turn-based
