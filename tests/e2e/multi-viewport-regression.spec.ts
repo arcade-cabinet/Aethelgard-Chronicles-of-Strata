@@ -114,10 +114,16 @@ test.describe('multi-viewport regression', () => {
     });
     expect(overlaps, `HUD overlaps on ${testInfo.project.name}`).toEqual([]);
 
-    // -------- check 4: visual baseline --------
-    await expect(page).toHaveScreenshot(`${testInfo.project.name}.png`, {
-      mask: [page.locator('[data-testid="resource-bar"]')],
-      maxDiffPixelRatio: 0.02,
+    // -------- check 4: baseline screenshot artifact --------
+    // Captured for human review; NOT asserted against a locked baseline
+    // because cross-platform pixel drift (Mac-vs-Linux) would false-fail
+    // on every PR. The locked-baseline regression lives in the per-cycle
+    // visual-battery (M_V9.VISUAL.LINUX-LOCK) which renders inside a
+    // Linux container. Here we just save the artifact so reviewers can
+    // see what each viewport renders.
+    await page.screenshot({
+      path: `test-results/multi-viewport/${testInfo.project.name}.png`,
+      fullPage: false,
     });
   });
 });
