@@ -20,7 +20,7 @@ function makeStubGame(overrides: Partial<GameState> = {}): GameState {
     },
     score: { player: 0, enemy: 0 },
     ...overrides,
-  } as any as GameState;
+  } as unknown as GameState;
 }
 
 describe('matchNickname', () => {
@@ -90,13 +90,12 @@ describe('detectTranscriptHighlights (M_FUN.NAR.HIGHLIGHTS)', () => {
   });
 
   it('detects a lopsided-kill burst when >= 3 lethal damage events', () => {
-    // biome-ignore lint/suspicious/noExplicitAny: minimal stub
     const game = makeStubGame({
       lastDamageEvents: [
         { damage: 50 },
         { damage: 30 },
         { damage: 20 },
-      ] as any,
+      ] as unknown as GameState['lastDamageEvents'],
     });
     const out = detectTranscriptHighlights(game);
     expect(out.some((h) => h.kind === 'lopsided-kill')).toBe(true);
