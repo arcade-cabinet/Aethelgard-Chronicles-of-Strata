@@ -154,9 +154,7 @@ if (!rootEl) throw new Error('Root element #root not found');
 // (scripts/capture-aethelgard-fixtures.mjs) so screen captures don't
 // need to drive the full title → new-game → onboarding → play flow.
 const fixture =
-  typeof window !== 'undefined'
-    ? new URLSearchParams(window.location.search).get('fixture')
-    : null;
+  typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('fixture') : null;
 
 if (fixture) {
   void import('./test/FixtureApp').then((mod) => {

@@ -23,12 +23,7 @@ export interface HeroBannerProps {
   height?: string;
 }
 
-export function HeroBanner({
-  icon: Icon,
-  caption,
-  className,
-  height = '6rem',
-}: HeroBannerProps) {
+export function HeroBanner({ icon: Icon, caption, className, height = '6rem' }: HeroBannerProps) {
   const reducedMotion = useReducedMotion() ?? false;
   return (
     <div className={cn('relative overflow-hidden', className)} style={{ height }}>

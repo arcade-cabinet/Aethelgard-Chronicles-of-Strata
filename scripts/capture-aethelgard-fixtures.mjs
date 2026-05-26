@@ -97,14 +97,10 @@ async function startServer() {
     return null;
   }
   console.log('[fixtures] starting vite on port', PORT);
-  const child = spawn(
-    'pnpm',
-    ['exec', 'vite', '--host', HOST, '--port', String(PORT)],
-    {
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, NODE_ENV: 'development' },
-    },
-  );
+  const child = spawn('pnpm', ['exec', 'vite', '--host', HOST, '--port', String(PORT)], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, NODE_ENV: 'development' },
+  });
   let stderr = '';
   child.stderr?.on('data', (chunk) => {
     stderr += chunk.toString();

@@ -203,10 +203,7 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                   fontFamily: 'var(--font-body)',
                 }}
               >
-                <HeroBanner
-                  icon={StepIcon}
-                  caption={`Step ${step + 1} of ${steps.length}`}
-                />
+                <HeroBanner icon={StepIcon} caption={`Step ${step + 1} of ${steps.length}`} />
 
                 <div className="px-6 pb-1 pt-4">
                   <StepProgressDots total={steps.length} current={step} />
@@ -269,11 +266,7 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                       id="onboarding-next"
                       aria-label={isLast ? 'Begin Realm — start the match' : 'Next tutorial step'}
                       onClick={next}
-                      icon={
-                        isLast ? (
-                          <Swords className="h-4 w-4" aria-hidden />
-                        ) : undefined
-                      }
+                      icon={isLast ? <Swords className="h-4 w-4" aria-hidden /> : undefined}
                       className={cn(
                         'px-5 py-2.5 text-sm',
                         isLast && !reducedMotion && 'animate-pulse',

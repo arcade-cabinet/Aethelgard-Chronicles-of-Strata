@@ -57,12 +57,8 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
   // visible UI never advertises kbd as a path; this is a silent
   // convenience.
   const viewport = useViewport();
-  const desktopShortcutsEnabled =
-    viewport.class === 'desktop' || viewport.class === 'ultraWide';
-  useDesktopShortcuts(
-    [{ key: 'enter', onMatch: onNewGame }],
-    desktopShortcutsEnabled,
-  );
+  const desktopShortcutsEnabled = viewport.class === 'desktop' || viewport.class === 'ultraWide';
+  useDesktopShortcuts([{ key: 'enter', onMatch: onNewGame }], desktopShortcutsEnabled);
 
   const version = typeof __APP_VERSION__ === 'undefined' ? 'dev' : (__APP_VERSION__ as string);
 
@@ -150,9 +146,7 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
           <SecondaryButton
             id="menu-continue"
             ariaLabel={
-              onContinue
-                ? 'Continue the most recent auto-save'
-                : 'Continue (no saved game yet)'
+              onContinue ? 'Continue the most recent auto-save' : 'Continue (no saved game yet)'
             }
             onClick={onContinue ?? (() => undefined)}
             disabled={!onContinue}
@@ -160,11 +154,7 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
           >
             Continue
           </SecondaryButton>
-          <GhostButton
-            id="menu-settings"
-            ariaLabel="Open game settings"
-            onClick={onSettings}
-          >
+          <GhostButton id="menu-settings" ariaLabel="Open game settings" onClick={onSettings}>
             Settings
           </GhostButton>
         </motion.div>

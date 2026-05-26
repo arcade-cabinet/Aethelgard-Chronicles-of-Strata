@@ -20,6 +20,7 @@
  *   system-menu      → SystemMenu drawer open
  */
 import { useEffect, useState } from 'react';
+import { startGame } from '@/game/game-state';
 import { CreditsModal } from '@/hud/CreditsModal';
 import { GameOverModal } from '@/hud/GameOverModal';
 import { NewGameModal } from '@/hud/NewGameModal';
@@ -27,7 +28,6 @@ import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
 import { SettingsModal } from '@/hud/SettingsModal';
 import { SystemMenu } from '@/hud/SystemMenu';
 import { TitleScreen } from '@/hud/TitleScreen';
-import { startGame } from '@/game/game-state';
 import { createPersistence } from '@/persistence/persistence';
 
 const persistence = createPersistence();
@@ -82,11 +82,7 @@ export function FixtureApp({ fixture }: FixtureAppProps) {
       return (
         <>
           <DimBackdrop label="New Game Setup" />
-          <NewGameModal
-            open
-            onOpenChange={() => undefined}
-            onBegin={() => undefined}
-          />
+          <NewGameModal open onOpenChange={() => undefined} onBegin={() => undefined} />
         </>
       );
 
