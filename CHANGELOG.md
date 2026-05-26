@@ -513,3 +513,4 @@ five archetype traits (Attractor / Offensive / Defensive / Mover / Consumer) +
 a bi-signed magnetic force field + a pairwise composition algebra + a
 damage-type × armor table. Units and buildings share the same archetype
 universe — adding a new entity is a new TABLE ROW, not a new code path.
+
