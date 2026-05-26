@@ -26,7 +26,9 @@ test('hotkey rebind round-trip — desktop only', async ({ page, isMobile }, tes
   await page.getByRole('button', { name: /^Done$/ }).click();
 
   await page.locator('#menu-new-game').click();
-  const begin = page.getByRole('button', { name: /^Begin$/i });
+  // M_HUD.SHELL.3 — Begin button label changed from "Begin" to "Begin Match"
+  // when NewGameModal got the cinematic Forge Your Realm treatment.
+  const begin = page.locator('#begin-game');
   if (await begin.count()) await begin.click();
   await expect(page.locator('canvas:not(#minimap-canvas)')).toBeVisible();
 
