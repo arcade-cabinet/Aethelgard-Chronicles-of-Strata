@@ -457,9 +457,14 @@ following sub-items previously closed-with-defers are re-opened.
       when ANY player peon is selected ("Take peons (N)" in
       mixed cases). Mixed peon+military selection now surfaces
       BOTH verb sets — no more all-or-nothing intersection.
-- [ ] M_V11.SEL.ALL-OF-TYPE.BIOME — biome-scoped "Select All Peons
+- [x] M_V11.SEL.ALL-OF-TYPE.BIOME — biome-scoped "Select All Peons
       of [biome X]" variant. Plumbs biome into the all-of-type
-      walker via game.board.tiles lookup.
+      walker via game.board.tiles lookup. Implemented as
+      selectAllPeonsOfBiome in SelectionPanel — reads the
+      primary's tile biome, walks all peons, filters to those
+      on the same biome. Cap 50. Button "Select peons on this
+      biome" rendered below the "Select all Peons" button when
+      a Peon is selected. data-testid=select-all-peons-biome.
 - [ ] M_V11.PROCMESH.WALL-VARIANTS — gate + corner variants for
       the procedural Wall (drops the dead M_EXPANSION.A.3 + .A.6
       GLB overrides in FactionBase.GlbStructureMesh). Removes the
@@ -553,9 +558,16 @@ between "PR open" and "merge".
       ~6Hz exp-smooth. Investigate: is the listener mounted at
       dispatch time? Is the cameraRef ready? Add a __camera_focus
       promise the test can await.
-- [ ] M_V11.POLISH.A11Y-SWEEP — `@axe-core/playwright` against
+- [x] M_V11.POLISH.A11Y-SWEEP — `@axe-core/playwright` against
       every HUD route. Address each violation (contrast, missing
-      ARIA, focus-trap, etc.) before merge.
+      ARIA, focus-trap, etc.) before merge. Extended
+      tests/browser/axe-a11y.browser.test.tsx with the
+      SelectionPanel surface (the biggest v0.11 addition: multi-
+      summary strip + formation chips + select-all buttons +
+      biome-scoped selector + per-class verb submenus). 4/4 axe
+      tests pass — 0 wcag2a / wcag2aa / best-practice violations
+      across GameOverModal-win, GameOverModal-loss, NewGameModal,
+      SelectionPanel-with-TownHall.
 - [ ] M_V11.POLISH.MOBILE-MAESTRO — full `.maestro/*.yaml` battery
       against the actual Android APK + iOS IPA. Verify every
       tap-path resolves. No flakes.

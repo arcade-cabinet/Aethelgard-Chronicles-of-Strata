@@ -8,6 +8,7 @@ import {
   FactionTrait,
   type FormationId,
   Health,
+  HexPosition,
   PeonAutonomy,
   Stack,
   Stance,
@@ -519,6 +520,42 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
     emitUiSound(matches.length > 0 ? 'ui-button-click' : 'ui-error');
   };
 
+  /** M_V11.SEL.ALL-OF-TYPE.BIOME — biome-scoped peon selector.
+   *  Picks the primary's tile biome from game.board.tiles, then
+   *  selects every same-faction peon currently standing on the
+   *  same biome. Cap at 50. */
+  const selectAllPeonsOfBiome = (faction: string) => {
+    const primary = selectedEntity(game);
+    if (!primary) {
+      emitUiSound('ui-error');
+      return;
+    }
+    const primaryHex = primary.get(HexPosition);
+    if (!primaryHex) {
+      emitUiSound('ui-error');
+      return;
+    }
+    const primaryTile = game.board.tiles.get(`${primaryHex.q},${primaryHex.r}`);
+    if (!primaryTile) {
+      emitUiSound('ui-error');
+      return;
+    }
+    const targetBiome = primaryTile.type;
+    const matches: Array<import('koota').Entity> = [];
+    for (const e of game.world.query(Unit, FactionTrait, HexPosition)) {
+      if (e.get(FactionTrait)?.faction !== faction) continue;
+      if (e.get(Unit)?.unitType !== 'Peon') continue;
+      const hex = e.get(HexPosition);
+      if (!hex) continue;
+      const tile = game.board.tiles.get(`${hex.q},${hex.r}`);
+      if (tile?.type !== targetBiome) continue;
+      matches.push(e);
+      if (matches.length >= 50) break;
+    }
+    if (matches.length > 0) selectEntities(game, matches);
+    emitUiSound(matches.length > 0 ? 'ui-button-click' : 'ui-error');
+  };
+
   return (
     // M_AUDIT2.UX.9 — Tooltip.Provider scoped here so the HudButton
     // disabledReason tooltips render. delayDuration=300 matches the
@@ -631,28 +668,55 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                   const u = entity?.get(Unit);
                   const f = entity?.get(FactionTrait)?.faction;
                   if (!u || !f) return null;
+                  const isPeon = u.unitType === 'Peon';
                   return (
-                    <button
-                      type="button"
-                      onClick={() => selectAllOfType(f, u.unitType)}
-                      data-testid={`select-all-${u.unitType.toLowerCase()}`}
-                      aria-label={`Select all ${u.unitType}s`}
-                      style={{
-                        marginTop: 8,
-                        padding: '6px 10px',
-                        minHeight: 32,
-                        borderRadius: 6,
-                        border: `1px solid ${HUD_THEME.color.border}`,
-                        background: 'rgba(255,255,255,0.04)',
-                        color: HUD_THEME.color.accent,
-                        fontFamily: HUD_THEME.font.body,
-                        fontSize: '0.72rem',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Select all {u.unitType}s
-                    </button>
+                    <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <button
+                        type="button"
+                        onClick={() => selectAllOfType(f, u.unitType)}
+                        data-testid={`select-all-${u.unitType.toLowerCase()}`}
+                        aria-label={`Select all ${u.unitType}s`}
+                        style={{
+                          padding: '6px 10px',
+                          minHeight: 32,
+                          borderRadius: 6,
+                          border: `1px solid ${HUD_THEME.color.border}`,
+                          background: 'rgba(255,255,255,0.04)',
+                          color: HUD_THEME.color.accent,
+                          fontFamily: HUD_THEME.font.body,
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Select all {u.unitType}s
+                      </button>
+                      {/* M_V11.SEL.ALL-OF-TYPE.BIOME — biome-scoped
+                          peon selector. Only renders for Peon
+                          selections. */}
+                      {isPeon && (
+                        <button
+                          type="button"
+                          onClick={() => selectAllPeonsOfBiome(f)}
+                          data-testid="select-all-peons-biome"
+                          aria-label="Select all peons on this biome"
+                          style={{
+                            padding: '6px 10px',
+                            minHeight: 32,
+                            borderRadius: 6,
+                            border: `1px solid ${HUD_THEME.color.border}`,
+                            background: 'rgba(255,255,255,0.04)',
+                            color: HUD_THEME.color.accent,
+                            fontFamily: HUD_THEME.font.body,
+                            fontSize: '0.72rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Select peons on this biome
+                        </button>
+                      )}
+                    </div>
                   );
                 })()
               : null}
