@@ -100,7 +100,12 @@ jobs:
             exit 1
           fi
       - name: E2E tests
-        timeout-minutes: 8
+        # M_GAME.BUG.10 CI bump: v0.10 added per-tick walkable-step
+        # guard + roam-radius filter + stack-substrate queries. Total
+        # e2e battery wall-clock rose from ~6m to ~8.5m on GitHub
+        # runners. 12m is a safe ceiling without masking a real perf
+        # regression (which would 2-3× the e2e runtime).
+        timeout-minutes: 12
         run: pnpm test:e2e
       # M_SEC.16 — skip artifact upload on fork PRs. Fork PRs run
       # against attacker-controlled code; uploading playwright-report/
