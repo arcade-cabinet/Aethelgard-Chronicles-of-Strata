@@ -196,4 +196,29 @@ describe('procmesh buildings — faction-cross palette shift', () => {
       page.screenshot({ path: `${baselineDir}/procmesh-building-enemy-wonder.png` }),
     ).resolves.toBeTruthy();
   });
+  // M_V11.POLISH.PROCMESH-FACTION-CROSS — every building × enemy palette
+  // so a reviewer can scan the full set for necropolis-read regressions.
+  for (const [name, Component, camera] of [
+    ['barracks', Barracks, [2.2, 2.0, 2.2]],
+    ['wall', Wall, [1.8, 1.5, 1.8]],
+    ['watchtower', Watchtower, [1.8, 2.0, 1.8]],
+    ['farm', Farm, [2.2, 2.0, 2.2]],
+    ['house', House, [2.2, 2.0, 2.2]],
+    ['granary', Granary, [2.2, 2.0, 2.2]],
+    ['library', Library, [2.4, 2.0, 2.4]],
+  ] as Array<[string, typeof Barracks, [number, number, number]]>) {
+    it(`${name} — enemy (necropolis palette)`, async () => {
+      render(
+        <Stage cameraPos={camera}>
+          <FactionMaterialsProvider faction="enemy">
+            <Component />
+          </FactionMaterialsProvider>
+        </Stage>,
+      );
+      await settle();
+      await expect(
+        page.screenshot({ path: `${baselineDir}/procmesh-building-enemy-${name}.png` }),
+      ).resolves.toBeTruthy();
+    });
+  }
 });

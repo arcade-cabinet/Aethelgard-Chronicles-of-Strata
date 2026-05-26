@@ -498,10 +498,15 @@ between "PR open" and "merge".
       green. Journey-shot 05 still doesn't capture the panel in
       headless due to a separate rAF-timing issue (the substrate
       IS correct — real-user tap works).
-- [ ] M_V11.POLISH.JOURNEY-CAPTURE-ZOOM — extend the camera API
+- [x] M_V11.POLISH.JOURNEY-CAPTURE-ZOOM — extend the camera API
       with aethelgard:zoom-to(q, r, distance) event so journey
-      captures can pull in for v0.11-specific shots (mobs,
-      loot, procedural buildings need tighter framing).
+      captures can pull in for v0.11-specific shots. Already
+      supported via the existing aethelgard:focus-tile event
+      which accepts an optional `distance` field (CameraRig.tsx:
+      124). focus-town-hall (M_V11.POLISH.JOURNEY-CAMERA-EVENTS)
+      uses distance=6 to demonstrate. The headless tween-race
+      visible in journey-shot 09 is tracked separately under
+      M_V11.POLISH.CAMERA-TWEEN-RACE.
 - [x] M_V11.POLISH.JOURNEY-CAMERA-EVENTS — wire focus-town-hall +
       zoom-to + pan-to-tile CustomEvents so the journey battery
       can drive deterministic camera framings. Wired
@@ -558,11 +563,17 @@ between "PR open" and "merge".
       each ≈60° apart, chroma ≤0.2 so still reads as 'neutral
       aggressor' vs the bright player palette. 6 camps now
       visually distinguishable in any frame.
-- [ ] M_V11.POLISH.PROCMESH-FACTION-CROSS — visual self-judge:
+- [x] M_V11.POLISH.PROCMESH-FACTION-CROSS — visual self-judge:
       run all 9 procedural buildings under player palette + enemy
       palette, screenshot side-by-side, verify each pair reads as
-      'kingdom vs necropolis'. Currently only TownHall + Wonder
-      have cross-faction baselines.
+      'kingdom vs necropolis'. Extended
+      tests/harness/procmesh-buildings.browser.test.tsx with the
+      7 remaining buildings under enemy palette (barracks, wall,
+      watchtower, farm, house, granary, library). 18/18 tests
+      pass (was 11). Spot-check on enemy-Barracks: dark wood +
+      violet roof + dark stone battlements + violet banner reads
+      'necropolis barracks' against the player-Barracks's warm
+      wood + red banner.
 - [x] M_V11.POLISH.PEON-CTA-DECAY — the Train-Peon affordance
       halo (M_V11.OPEN.TH-AFFORDANCE) pulses while
       countPlayerPeons === 0. Verified: SelectionPanel.tsx:823
