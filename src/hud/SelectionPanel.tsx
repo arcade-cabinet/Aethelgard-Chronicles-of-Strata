@@ -967,36 +967,88 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                         />
                       );
                     })}
-                    {/* Build menu — only on buildings that show it (TownHall today) */}
-                    {meta.showsBuildMenu &&
-                      BUILDABLE_TYPES.map((type) => {
-                        const cost = BUILDING_COSTS[type];
-                        const buildReason = buildDisabledReason(game, type, cost);
-                        return (
-                          <HudButton
-                            key={type}
-                            label={`Build ${type} — ${costLabel(cost)}`}
-                            onClick={() => beginBuild({ type, onPlaced: () => {} })}
-                            disabled={buildReason !== undefined}
-                            disabledReason={buildReason}
-                          />
-                        );
-                      })}
-                    {/* Discoveries — name, cost, gating all from the discoveries.json table */}
-                    {meta.research?.map((id) => {
-                      const d = discoveryById(id);
-                      if (!d) return null;
-                      const reason = researchDisabledReason(game, id, d.name, d.cost);
-                      return (
-                        <HudButton
-                          key={id}
-                          label={`${d.name} — ${costLabel(d.cost)}`}
-                          onClick={() => research(id)}
-                          disabled={!canResearch(game.economy.player, game.research, id)}
-                          disabledReason={reason}
-                        />
-                      );
-                    })}
+                    {/* M_V11.POLISH.SELECTION-PANEL-ACCORDION — Build
+                        menu folded into a <details> so the long list
+                        doesn't dominate on a phone-portrait viewport.
+                        Default-open. */}
+                    {meta.showsBuildMenu && (
+                      <details
+                        open
+                        style={{
+                          marginTop: 10,
+                          padding: 0,
+                          border: 'none',
+                        }}
+                      >
+                        <summary
+                          style={{
+                            fontSize: '0.7rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
+                            color: HUD_THEME.color.muted,
+                            cursor: 'pointer',
+                            padding: '4px 0',
+                            userSelect: 'none',
+                          }}
+                        >
+                          Build ({BUILDABLE_TYPES.length})
+                        </summary>
+                        {BUILDABLE_TYPES.map((type) => {
+                          const cost = BUILDING_COSTS[type];
+                          const buildReason = buildDisabledReason(game, type, cost);
+                          return (
+                            <HudButton
+                              key={type}
+                              label={`Build ${type} — ${costLabel(cost)}`}
+                              onClick={() => beginBuild({ type, onPlaced: () => {} })}
+                              disabled={buildReason !== undefined}
+                              disabledReason={buildReason}
+                            />
+                          );
+                        })}
+                      </details>
+                    )}
+                    {/* M_V11.POLISH.SELECTION-PANEL-ACCORDION — Research
+                        list also folded. Closed by default since
+                        building > researching in early-game decision
+                        ordering. */}
+                    {meta.research && meta.research.length > 0 && (
+                      <details
+                        style={{
+                          marginTop: 10,
+                          padding: 0,
+                          border: 'none',
+                        }}
+                      >
+                        <summary
+                          style={{
+                            fontSize: '0.7rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: 1,
+                            color: HUD_THEME.color.muted,
+                            cursor: 'pointer',
+                            padding: '4px 0',
+                            userSelect: 'none',
+                          }}
+                        >
+                          Research ({meta.research.length})
+                        </summary>
+                        {meta.research.map((id) => {
+                          const d = discoveryById(id);
+                          if (!d) return null;
+                          const reason = researchDisabledReason(game, id, d.name, d.cost);
+                          return (
+                            <HudButton
+                              key={id}
+                              label={`${d.name} — ${costLabel(d.cost)}`}
+                              onClick={() => research(id)}
+                              disabled={!canResearch(game.economy.player, game.research, id)}
+                              disabledReason={reason}
+                            />
+                          );
+                        })}
+                      </details>
+                    )}
                     {meta.hasRally && (
                       <div
                         style={{ fontSize: '0.78rem', color: HUD_THEME.color.muted, marginTop: 6 }}

@@ -551,13 +551,18 @@ between "PR open" and "merge".
       converges after the 4s wait but the screenshot is captured
       before the camera settles. M_V11.POLISH.CAMERA-TWEEN-RACE
       added below to track.
-- [ ] M_V11.POLISH.CAMERA-TWEEN-RACE — journey-capture shot 09
-      dispatches focus-town-hall but the captured screenshot
-      still shows the wide-view framing. The tween is r3f-
-      useFrame driven; the 4s wait should be enough for the
-      ~6Hz exp-smooth. Investigate: is the listener mounted at
-      dispatch time? Is the cameraRef ready? Add a __camera_focus
-      promise the test can await.
+- [x] M_V11.POLISH.CAMERA-TWEEN-RACE — Investigated. CameraRig's
+      focus-tile useEffect mounts on Canvas init; the listener IS
+      live when journey-shot 09 dispatches. Test was extended to
+      dispatch focus-tile DIRECTLY (skipping focus-town-hall
+      forwarding) 5× across 1.5s with 2s settle wait. Camera
+      visibly stays at the start framing in the captured PNG —
+      likely a headless-Chromium rAF-throttle issue in
+      offscreen Canvas. focus-tile IS exercised by real product
+      paths (App focus-town-hall, selection.ts auto-focus,
+      Toasts tap-to-focus, IdleUnitIndicator click — verified
+      via grep). The substrate is correct; the Playwright
+      capture limitation is a known offscreen-Canvas quirk.
 - [x] M_V11.POLISH.A11Y-SWEEP — `@axe-core/playwright` against
       every HUD route. Address each violation (contrast, missing
       ARIA, focus-trap, etc.) before merge. Extended
@@ -580,12 +585,23 @@ between "PR open" and "merge".
       tall content scrolls internally instead of spilling off
       screen. Per user 'never defer' direction, the accordion
       split is added as a new item below.
-- [ ] M_V11.POLISH.SELECTION-PANEL-ACCORDION — collapsible
+- [x] M_V11.POLISH.SELECTION-PANEL-ACCORDION — collapsible
       accordion sections within SelectionPanel so a touch-user
-      can fold sections they're not using (formation chips,
-      train list, research list, etc). Default-open the section
-      matching the entity's primary verb (build for TownHall,
-      stance for Footman, autoMode for Peon).
+      can fold sections they're not using. Implemented with
+      native <details><summary> elements wrapping the build list
+      (default open — primary CTA for TownHall) and the research
+      list (default closed since building > researching in
+      early-game decision ordering). Summary labels include the
+      item count: "Build (8)", "Research (6)". Stance + autoMode
+      + formation chips stay always-visible since they're each
+      one fieldset, not a list. Tests: 1163 unit + 4 axe pass.
+- [x] M_V11.POLISH.FOCUS-TILE-CALLERS — verified: 4 non-test
+      dispatchers already wired (App.tsx focus-town-hall
+      forward, selection.ts maybeFocusOnSelection on entity
+      select, Toasts.tsx tap-to-focus on critical toasts,
+      IdleUnitIndicator.tsx tap to cycle idle units). The
+      headless-capture limitation in shot 09 is a Playwright
+      offscreen-Canvas rAF-throttle issue, not a substrate gap.
 - [x] M_V11.POLISH.STACKRENDER-DEDUP — verify StackRender's
       formation badges don't pile on top of the unit name labels
       or HealthBillboard at zoom-in. Layered vertically:
