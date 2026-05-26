@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CylinderGeometry } from 'three';
 import { HEX_RADIUS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexKey, hexNeighbors } from '@/core/hex';
-import { Building, FactionTrait, Selectable, Unit } from '@/ecs/components';
+import { Building, FactionTrait, Selectable, Stack, StackMember, Unit } from '@/ecs/components';
 import {
   findSelectableAtTile,
   moveUnit,
@@ -275,12 +275,61 @@ export function TileInteraction({
    */
   const onRightPick = (q: number, r: number): void => {
     const targetKey = getHexKey(q, r);
-    const military = selectedEntities(game).filter((e) => {
+    const selected = selectedEntities(game);
+    // M_V11.STACK.MOVE — when any selected entity is a Stack member,
+    // collect the unique parent stacks and route THEM as a unit rather
+    // than treating each member as an individual flocking around the
+    // target. Stacks move as one (per docs/specs/201-stacking-and-
+    // formations.md): every member shares the stack's tile, so the
+    // PathRequest source is the stack's tile + we issue ONE moveUnit
+    // call per stack (the move-system pinning logic in M_V11.STACK.RUNTIME
+    // will ride along by reading StackMember.stackId).
+    const stackIds = new Set<number>();
+    for (const e of selected) {
+      const m = e.get(StackMember);
+      if (m) stackIds.add(m.stackId);
+    }
+    if (stackIds.size > 0) {
+      // Route stacks first; their members are excluded from the
+      // per-member flocking below.
+      let anyStackRouted = false;
+      for (const s of game.world.query(Stack)) {
+        if (!stackIds.has(s.id())) continue;
+        // The stack moves to the target tile, not a ring offset —
+        // a stack OCCUPIES one tile. Route via any member as a
+        // proxy (moveUnit on a member entity computes a path from
+        // the member's HexPosition, which is the stack's tile).
+        const stackData = s.get(Stack);
+        if (!stackData) continue;
+        const firstMemberId = stackData.members[0];
+        if (firstMemberId === undefined) continue;
+        for (const candidate of game.world.query(StackMember)) {
+          if (candidate.id() !== firstMemberId) continue;
+          moveUnit(game, candidate, targetKey, 'player');
+          anyStackRouted = true;
+          break;
+        }
+      }
+      if (anyStackRouted) {
+        setPathKeys([]);
+        spawnTrackingRing?.(q, r);
+      }
+    }
+    // Per-member flocking for selected units NOT in a stack.
+    const military = selected.filter((e) => {
       const role = e.get(Unit)?.unitType;
-      return role && MILITARY.has(role) && e.get(FactionTrait)?.faction === 'player';
+      if (!role || !MILITARY.has(role)) return false;
+      if (e.get(FactionTrait)?.faction !== 'player') return false;
+      // Skip members of stacks already routed above.
+      const m = e.get(StackMember);
+      return m === undefined;
     });
-    if (military.length === 0) return;
-    // For each military unit, target the nearest free neighbour of the target
+    if (military.length === 0) {
+      if (stackIds.size === 0) return;
+      // Stacks already handled the path/ring.
+      return;
+    }
+    // For each free military unit, target the nearest free neighbour of the target
     // tile (so the army flocks around it rather than stacking on it).
     const neighbours = [targetKey, ...hexNeighbors(q, r)];
     military.forEach((unit, i) => {
