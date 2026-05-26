@@ -199,9 +199,16 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       used for normal moves), so members snap into formation
       over ~12 frames (≈200ms at 60Hz). Members already on the
       stack tile get no path queue (no-op).
-- [ ] M_V11.STACK.COMBAT — OffensiveBehavior routes damage to
-      Stack.combinedHp via damageStack when target is a Stack.
-      Stack-vs-stack simultaneous tick.
+- [x] M_V11.STACK.COMBAT — offensiveBehaviorSystem routes per-tick
+      damage to `damageStack(stack, applied)` when the target has
+      a StackMember trait. Stack-vs-stack ticks simultaneously
+      (each side's damage write hits the OTHER stack's combinedHp
+      in the same tick). Falls through to individual Health-set
+      when the stack ref is stale (dissolved this tick). Narrow
+      `{ world } as unknown as GameState` cast avoids plumbing
+      the full GameState through every combat-system signature.
+      Combat damage on standalone units (no StackMember) is
+      unchanged.
 - [ ] M_V11.STACK.RENDER — src/world/StackRender.tsx: formation
       badge SVG + member-mesh clustering per formation visual.
       UnitHexOutline thicker ring for stacks.
