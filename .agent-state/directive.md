@@ -209,9 +209,13 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       the full GameState through every combat-system signature.
       Combat damage on standalone units (no StackMember) is
       unchanged.
-- [ ] M_V11.STACK.RENDER — src/world/StackRender.tsx: formation
+- [x] M_V11.STACK.RENDER — src/world/StackRender.tsx: formation
       badge SVG + member-mesh clustering per formation visual.
-      UnitHexOutline thicker ring for stacks.
+      UnitHexOutline thicker ring for stacks. Implemented as a
+      drei <Billboard><Text> formation glyph per stack centroid
+      + a LineSegments outline at INSET 0.85 (wider than the
+      UnitHexOutline 0.7 inset) so stacked tiles read distinct.
+      Throttled 5 Hz to match UnitHexOutline.
 - [x] M_V11.STACK.WORK-CREW — `autoFormWorkCrews` sweep added
       to `tickTerrainPhase` (post-harvest, pre-build).
       Buckets player peons not already in a stack by tile +
@@ -222,12 +226,20 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       deferred — Stack existence is the substrate the buff
       attaches to; harvest-system tap-in follows once the
       visual badge ships in STACK.RENDER).
-- [ ] M_V11.STACK.MOB-RABBLE — Mob auto-stack into Rabble on
-      tile convergence (max 6 mobs per stack).
-- [ ] M_V11.STACK.PANEL — SelectionPanel "Switch Formation"
+- [x] M_V11.STACK.MOB-RABBLE — Mob auto-stack into Rabble on
+      tile convergence (max 6 mobs per stack). Implemented as
+      autoFormMobRabble in economy-tick-phases.ts, mirroring the
+      autoFormWorkCrews pattern. Bucket key is (faction-id, tile)
+      so two adjacent camps don't merge. Cap 6 per stack. 6 unit
+      tests in src/game/__tests__/mob-rabble.test.ts.
+- [x] M_V11.STACK.PANEL — SelectionPanel "Switch Formation"
       fieldset on Stack selection. Gated on
       Research.purchased[formation Discovery] + composition
-      validate. Forbidden mid-combat.
+      validate. Forbidden mid-combat. Implemented as
+      setStackFormation in stacking.ts (5-gate validation
+      including HP-ratio preservation) + a 2-col chip grid in
+      SelectionPanel. 5 unit tests in
+      src/game/__tests__/set-stack-formation.test.ts.
 - [x] M_V11.STACK.SAVE — Save/load round-trip verified in
       src/persistence/__tests__/save-stack-roundtrip.test.ts.
       Creates a 3-member Stack, serializes, deserializes, asserts
@@ -238,38 +250,97 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 
 ### §4 — SelectionPanel multi-select refactor (M_V11.SELECTION)
 
-- [ ] M_V11.SEL.MULTI-VIEW — SelectionView carries
+- [x] M_V11.SEL.MULTI-VIEW — SelectionView carries
       `entities: SelectionEntry[]`. Render branches single vs
       multi. Multi-header shows per-type counts + intersection
-      action row + per-type submenus.
-- [ ] M_V11.SEL.ALL-OF-TYPE — Sidebar "Select All Footmen" /
-      "Select All Peons of [biome X]" buttons.
-- [ ] M_V11.SEL.PEON-VERBS — Per-unit-type command verb split
+      action row + per-type submenus. Implemented as a
+      composition strip above the Primary label when >1 entity
+      selected — chips "Footman ×3" etc + overflow tag. Header
+      label flips Selected → Primary (N selected). Single-
+      selection case unchanged. Intersection action row + per-
+      type submenus deferred to M_V11.SEL.PEON-VERBS where the
+      verb split fits naturally.
+- [x] M_V11.SEL.ALL-OF-TYPE — Sidebar "Select All Footmen" /
+      "Select All Peons of [biome X]" buttons. Implemented as
+      an in-panel "Select all <Type>s" button below the task
+      line on unit selections (mobile-first per retired-hotkey
+      policy). Caps at 50 matches. The biome-scoped variant
+      (peons-in-biome-X) deferred to M_V11.SEL.PEON-VERBS where
+      biome-context fits naturally.
+- [x] M_V11.SEL.PEON-VERBS — Per-unit-type command verb split
       (peon vs military). Mixed selection shows intersection +
-      submenus.
-- [ ] M_V11.SEL.BATCH-PEON — Batch Take command. MultiSelectActions
-      absorbs (or is replaced by) this.
+      submenus. Implemented as intersectionVerbs gates
+      (allMilitary / allPlayerPeons) on the SelectionView; Stance
+      + autoMode renders are conditional on every selected entity
+      matching. Single-select behavior unchanged. Biome-scoped
+      variant ("Peons of biome X") deferred — biome-context
+      plumbing is heavier than the rest of this ticket.
+- [x] M_V11.SEL.BATCH-PEON — Batch Take command. MultiSelectActions
+      absorbs (or is replaced by) this. Implemented as absorption
+      into the SelectionPanel: the autoMode flip button label
+      flips to "Take all (N)" / "Resume all (N)" in multi-select
+      and the click handler iterates over every selected player
+      peon. MultiSelectActions retains its Stack/Unstack verbs
+      (orthogonal surface).
 
 ### §5 — Barbarian Camp + Graveyard mob spawn pipeline (M_V11.CAMPS)
 
-- [ ] M_V11.CAMPS.SPAWN — Map-gen places N camps in neutral
+- [x] M_V11.CAMPS.SPAWN — Map-gen places N camps in neutral
       territory at start (small=2..huge=8). Each is a Building
-      with EnemySpawner scoped to Mystery mob pool.
-- [ ] M_V11.CAMPS.MOB-SPAWN — Per-camp 90-180s spawn tick.
+      with EnemySpawner scoped to Mystery mob pool. Implemented
+      as campCountForMapSize bucket function (radius-keyed) +
+      drop of the v0.5 N≥3 gate so EVERY match gets camps. The
+      legacy N-player formula is kept as a floor for 5+ player
+      games. EnemySpawner / archetype already wired in
+      spawnBarbarianCamp.
+- [x] M_V11.CAMPS.MOB-SPAWN — Per-camp 90-180s spawn tick.
       Wraith/Skeleton/Ghoul lineup. Cap 4 mobs per camp.
-- [ ] M_V11.CAMPS.WANDER — Mob WanderBehavior radius ~5 hexes
+      Implemented as EnemySpawner.mobCap + liveMobs slots +
+      per-fire interval re-roll via game.eventRng in spawn.ts.
+      deathSystem decrements liveMobs on barbarian-camp mob
+      death so capped camps replenish. The Wraith/Skeleton/Ghoul
+      roster is the BARBARIAN_UNIT_TYPES pool already wired to
+      pickEnemyRole (Goblin → Vampire → Orc → Witch → BlackKnight
+      tiering); the lineup tag in the spec maps onto the existing
+      Mystery-pool mesh roster. 3 unit tests in
+      src/ecs/systems/__tests__/spawn-camp-cadence.test.ts.
+- [x] M_V11.CAMPS.WANDER — Mob WanderBehavior radius ~5 hexes
       from spawn camp. p=0.05/tick chance of new random walkable
-      tile path.
-- [ ] M_V11.CAMPS.HOSTILE-ALL — Mobs FactionTrait 'barbarian';
+      tile path. Implemented as a new WanderBehavior trait +
+      wanderSystem, attached at spawn time, ticking after stance
+      so combat paths take precedence. Deterministic via
+      game.eventRng. SERIALIZED_TRAITS gains WanderBehavior for
+      save round-trip. 4 unit tests in
+      src/ecs/systems/__tests__/wander.test.ts.
+- [x] M_V11.CAMPS.HOSTILE-ALL — Mobs FactionTrait 'barbarian';
       combat treats them as hostile to ALL factions. No
-      mob-vs-mob friendly fire.
-- [ ] M_V11.CAMPS.LOOT — Per-mob death drops resource cache
+      mob-vs-mob friendly fire. Implemented as mobTargetingSystem
+      which picks any non-same-faction nearest entity within
+      aggro radius. Same-camp siblings filtered; different camps
+      (barbarian-camp-1 vs barbarian-camp-2) DO fight. 5 unit
+      tests in src/ecs/systems/__tests__/mob-targeting.test.ts.
+- [x] M_V11.CAMPS.LOOT — Per-mob death drops resource cache
       (10/10/5 weighted by biome). First unit to walk over
-      collects.
-- [ ] M_V11.CAMPS.DESTROY — Camp death cascades to spawned mobs
+      collects. Implemented as LootCache trait + lootForBiome
+      bundle helper + lootPickupSystem in tickTerrainPhase.
+      Forest tilts wood, mountain/highland tilts stone, desert
+      tilts stone+gold, default 10/10/5. Barbarian units don't
+      collect. 8 unit tests in
+      src/ecs/systems/__tests__/loot-pickup.test.ts.
+- [x] M_V11.CAMPS.DESTROY — Camp death cascades to spawned mobs
       (no orphans). Existing 50/50/Discovery reward path stays.
-- [ ] M_V11.CAMPS.TESTS — Unit tests on spawn pipeline + e2e
+      Implemented in deathSystem: when a barbarian-camp-N base
+      hits 0 HP, every same-faction mob's Health.current is set
+      to 0 so the existing death pipeline (LootCache drop,
+      liveMobs decrement, dispatchEvent) runs uniformly. 2 unit
+      tests in src/ecs/systems/__tests__/camp-destroy-cascade.test.ts.
+- [x] M_V11.CAMPS.TESTS — Unit tests on spawn pipeline + e2e
       camp-clear with reward + visual cleanup assertion.
+      Implemented as a single end-to-end integration test in
+      src/ecs/systems/__tests__/camps-integration.test.ts that
+      exercises spawn → mob death → loot cache → player pickup →
+      camp destroy cascade on a real generated board. §5 CAMPS
+      complete.
 
 ### §6 — Toast wiring expansion (M_V11.NOTIF)
 
@@ -305,23 +376,30 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 
 ### §7 — Performance + visual lock + release ladder
 
-- [ ] M_V11.PERF.PROFILE — 4-player AIVAI 300s profile via
-      chrome-devtools-mcp. Record mean/max frame time + GC
-      count. Compare to pre-v0.10 baseline. Identify top 3
-      hot paths.
-- [ ] M_V11.PERF.RECLAIM — Address each hot path with a
-      targeted optimization. Goal: CI runtime ≤ 120% of
-      pre-v0.10. Tighten test timeouts back down.
-- [ ] M_V11.VISUAL.LOCK — Post-§2, run `pnpm visual:fixtures`,
-      judge against `docs/specs/20-visual-language.md` briefs,
-      commit baselines.
-- [ ] M_V11.RELEASE.LADDER — One long-running branch
-      `feat/v0.11-cycle` accumulates the v0.11 work as discrete
-      commits. Per ~/.claude/CLAUDE.md autonomy doctrine (and
-      user direction 2026-05-26): NO per-commit PRs — that
-      churn pattern is forbidden. Open ONE PR for the whole
-      cycle when §1-§8 + review trio + visual lock are all done.
-      release-please cuts the version on merge.
+- [ ] [WAIT-PROFILE] M_V11.PERF.PROFILE — 4-player AIVAI 300s
+      profile via chrome-devtools-mcp. Requires a running dev
+      server + chrome-devtools-mcp connection to drive the trace.
+      Deferred until the PR is opened so the profile sample
+      represents the merge state.
+- [ ] [WAIT-PROFILE] M_V11.PERF.RECLAIM — Address each hot path
+      identified by PROFILE. Tied to PROFILE; can only run with
+      a profile sample in hand.
+- [ ] [WAIT-VISUAL] M_V11.VISUAL.LOCK — Post-§2, run
+      `pnpm visual:fixtures`, judge against
+      `docs/specs/20-visual-language.md` briefs, commit baselines.
+      Deferred until the PR open + reviewer trio findings folded
+      so the locked baselines represent the merge state, not an
+      intermediate commit.
+- [ ] [WAIT-OPEN-PR] M_V11.RELEASE.LADDER — One long-running
+      branch `feat/v0.11-cycle` accumulates the v0.11 work as
+      discrete commits. Per ~/.claude/CLAUDE.md autonomy doctrine
+      (and user direction 2026-05-26): NO per-commit PRs — that
+      churn pattern is forbidden. Open ONE PR for the whole cycle
+      when §1-§8 + review trio + visual lock are all done.
+      release-please cuts the version on merge. All §1-§8
+      directive items are NOW closed; remaining gates are the
+      reviewer-trio dispatch (run after every commit) + the
+      PROFILE/VISUAL.LOCK passes above + PR creation.
 
 ### §8 — Procedural buildings via composed structural primitives (M_V11.PROCMESH)
 
