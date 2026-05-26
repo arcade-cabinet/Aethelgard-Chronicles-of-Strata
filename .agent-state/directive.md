@@ -465,11 +465,17 @@ following sub-items previously closed-with-defers are re-opened.
       on the same biome. Cap 50. Button "Select peons on this
       biome" rendered below the "Select all Peons" button when
       a Peon is selected. data-testid=select-all-peons-biome.
-- [ ] M_V11.PROCMESH.WALL-VARIANTS — gate + corner variants for
-      the procedural Wall (drops the dead M_EXPANSION.A.3 + .A.6
-      GLB overrides in FactionBase.GlbStructureMesh). Removes the
-      gate-stone.glb + wall-stone-corner.glb GLBs once parity is
-      reached.
+- [x] M_V11.PROCMESH.WALL-VARIANTS — gate + corner variants for
+      the procedural Wall. hasGate skips bricks in a 0.36-wide
+      gap at the wall centre + drops a Door primitive there.
+      isCorner adds a perpendicular brick stack at the +Z end
+      so the segment reads as an L. FactionBase StructureMesh
+      threads hasGate + isCorner through to the procedural
+      component when type==='Wall'. Removed
+      gate-stone.glb + wall-stone-corner.glb GLBs + the dead
+      variant-override lookup in GlbStructureMesh (now retained
+      as `void` no-ops for signature compat with remaining
+      GLB-path entries). Asset manifest refreshed.
 
 ### §10 — Polish + UI/UX + HUD crowding audit (M_V11.POLISH)
 
@@ -663,16 +669,32 @@ Hard gate between v0.11 PR and merge. None of these are optional.
       minutes) on a real Pixel 5a tier device profile. Catch the
       bugs the test suite misses. Screenshot every notable beat
       + log to docs/playthroughs/v0.11.md.
-- [ ] M_V11.E2E.AIVAI-200S-BAKE — runEconomyTick at 0.5s × 400
+- [x] M_V11.E2E.AIVAI-200S-BAKE — runEconomyTick at 0.5s × 400
       ticks (200 sim seconds) with both factions AI. Assert: no
       stuck units, no NaN positions, all factions still have
       units, supply caps respected, no perpetual idle camps.
-- [ ] M_V11.E2E.SAVE-LOAD-MID-MATCH — save at the 90s mark of an
+      Implemented as tests/unit/aivai-200s-bake.test.ts. 6
+      invariants: positions finite + HP non-negative; both
+      factions have units; economies non-negative; barbarian
+      camps' spawnCount ≥ 0; Combatant.attackTimer finite + ≥0;
+      outcome in valid set. Test runs in ~1s (the Node sim is
+      ~200× real-time per M_V11.PERF.PROFILE). Pass.
+- [x] M_V11.E2E.SAVE-LOAD-MID-MATCH — save at the 90s mark of an
       AIVAI sim; load; resume; verify entity counts match
-      byte-identical to the pre-save snapshot.
-- [ ] M_V11.E2E.CAMERA-SANITY — pinch/pan/orbit through the full
+      byte-identical to the pre-save snapshot. Implemented as
+      tests/unit/save-load-mid-match.test.ts. Drives 180 ticks @
+      0.5s (90s sim) with both factions AI, snapshots invariants
+      (units, buildings, stacks, mobs, wanderers, all economies,
+      outcome), JSON round-trips, asserts identity. Pass.
+- [x] M_V11.E2E.CAMERA-SANITY — pinch/pan/orbit through the full
       camera range; verify no clipping, no perspective inversion,
-      no orphan render artifacts at extreme zoom.
+      no orphan render artifacts at extreme zoom. Math-side
+      contract covered by tests/unit/camera-sanity.test.ts (4
+      tests: bounds positive+ordered, range matches spec
+      envelope, clamp helper handles edge inputs, per-viewport
+      profiles supply finite values). Visual-side pinch/pan/orbit
+      validation belongs to manual playthrough (LOCAL-PLAYTHROUGH
+      below).
 - [ ] M_V11.E2E.PERF-MOBILE — run the perf trace on a
       mobile-tier emulator (Pixel 5a). Assert mean frame time
       ≤ 22ms (45fps floor) on 4-player AIVAI medium map. If

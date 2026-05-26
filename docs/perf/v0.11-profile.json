@@ -2,14 +2,8 @@
   "cycle": "v0.11",
   "capturedAt": "2026-05-26T17:44:34.488Z",
   "config": {
-    "factions": [
-      "player",
-      "enemy"
-    ],
-    "aiPlayers": [
-      "player",
-      "enemy"
-    ],
+    "factions": ["player", "enemy"],
+    "aiPlayers": ["player", "enemy"],
     "mapSize": 12,
     "simSeconds": 300,
     "tickDt": 0.1,

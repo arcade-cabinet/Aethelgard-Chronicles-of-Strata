@@ -79,9 +79,15 @@ function StructureMesh({
   // per-faction palette through; primitives consume via context.
   if (model.proceduralComponent) {
     const Component = model.proceduralComponent;
+    // M_V11.POLISH.PROCMESH.WALL-VARIANTS — Wall variants accept
+    // hasGate + isCorner. Other proc components ignore these
+    // (their type signature only declares `position` but JS
+    // ignores extra props).
+    const extraProps =
+      type === 'Wall' ? { hasGate, isCorner } : {};
     return (
       <group position={[x, y + model.yOffset, z]} scale={effectiveScale}>
-        <Component position={[0, 0, 0]} />
+        <Component position={[0, 0, 0]} {...extraProps} />
       </group>
     );
   }
@@ -123,12 +129,16 @@ function GlbStructureMesh({
   isCorner: boolean;
   defaultLogicalId: string;
 }) {
-  const logicalId = hasGate
-    ? 'structures.gate-stone'
-    : isCorner && type === 'Wall' && faction === 'player'
-      ? 'structures.wall-stone-corner'
-      : defaultLogicalId;
-  const glb = useGLTF(assets.url(logicalId));
+  // M_V11.POLISH.PROCMESH.WALL-VARIANTS — gate + corner variants
+  // are now driven by procedural Wall (hasGate/isCorner props
+  // threaded through the proc path). Reference parameters retained
+  // for signature compatibility with any remaining GLB-path
+  // building entries (Graveyard Kit / horde camps).
+  void hasGate;
+  void isCorner;
+  void type;
+  void faction;
+  const glb = useGLTF(assets.url(defaultLogicalId));
   return (
     <group position={[x, y, z]} scale={scale}>
       <Clone object={glb.scene} />

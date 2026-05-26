@@ -139,12 +139,10 @@ export type StaticAssetPath =
   'assets/structures/banner-faction.glb' |
   'assets/structures/crypt.glb' |
   'assets/structures/fountain.glb' |
-  'assets/structures/gate-stone.glb' |
   'assets/structures/iron-fence-column.glb' |
   'assets/structures/iron-fence.glb' |
   'assets/structures/portal-crypt.glb' |
   'assets/structures/portal-fence.glb' |
-  'assets/structures/wall-stone-corner.glb' |
   'favicon.svg' |
   'privacy.html' |
   'privacy.md' |
@@ -339,12 +337,10 @@ const assets = new Set<string>([
   'assets/structures/banner-faction.glb',
   'assets/structures/crypt.glb',
   'assets/structures/fountain.glb',
-  'assets/structures/gate-stone.glb',
   'assets/structures/iron-fence-column.glb',
   'assets/structures/iron-fence.glb',
   'assets/structures/portal-crypt.glb',
   'assets/structures/portal-fence.glb',
-  'assets/structures/wall-stone-corner.glb',
   'favicon.svg',
   'privacy.html',
   'privacy.md',

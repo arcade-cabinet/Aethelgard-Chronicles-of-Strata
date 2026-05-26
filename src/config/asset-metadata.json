@@ -595,7 +595,14 @@
     "path": "assets/characters/rigs/large-general.glb",
     "category": "characters",
     "kind": "glb",
-    "animations": ["Death_A", "Death_A_Pose", "Hit_A", "Idle_A", "Idle_B", "T-Pose"],
+    "animations": [
+      "Death_A",
+      "Death_A_Pose",
+      "Hit_A",
+      "Idle_A",
+      "Idle_B",
+      "T-Pose"
+    ],
     "pack": "KayKit Adventurers + Mystery",
     "triangles": 9148
   },
@@ -604,7 +611,11 @@
     "path": "assets/characters/rigs/large-movement.glb",
     "category": "characters",
     "kind": "glb",
-    "animations": ["Running_A", "T-Pose", "Walking_A"],
+    "animations": [
+      "Running_A",
+      "T-Pose",
+      "Walking_A"
+    ],
     "pack": "KayKit Adventurers + Mystery",
     "triangles": 9148
   },
@@ -1121,15 +1132,6 @@
     "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
     "triangles": 4
   },
-  "structures.gate-stone": {
-    "id": "structures.gate-stone",
-    "path": "assets/structures/gate-stone.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 146
-  },
   "structures.iron-fence-column": {
     "id": "structures.iron-fence-column",
     "path": "assets/structures/iron-fence-column.glb",
@@ -1164,14 +1166,5 @@
     "animations": [],
     "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
     "triangles": 432
-  },
-  "structures.wall-stone-corner": {
-    "id": "structures.wall-stone-corner",
-    "path": "assets/structures/wall-stone-corner.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 168
   }
 }
