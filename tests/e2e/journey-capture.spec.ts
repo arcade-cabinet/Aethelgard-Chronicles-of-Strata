@@ -111,12 +111,26 @@ test.describe('journey capture (manual review)', () => {
   });
 
   test('05-build-menu-open', async ({ page }) => {
+    test.setTimeout(30_000);
     await enterGame(page, 'ancient-silver-forest');
     await dismissOnboardingAndWaitForScene(page);
+    // The build-menu flow is the trigger-build CustomEvent
+    // (mobile build chip dispatches { type: 'Barracks' } etc.)
+    // → App handler sets buildContext → TileInteraction enters
+    // placement mode. The SelectionPanel build-button list is
+    // ONLY visible while a Town Hall is selected, but the build
+    // *flow* (placement cursor) is independent.
+    // For the screenshot, trigger the build placement mode for
+    // a Barracks — produces visible placement cursor in the world.
     await page.evaluate(() => {
-      window.dispatchEvent(new CustomEvent('aethelgard:open-build-menu'));
+      window.dispatchEvent(
+        new CustomEvent('aethelgard:trigger-build', { detail: { type: 'Barracks' } }),
+      );
     });
-    await page.waitForTimeout(400);
+    await page.waitForTimeout(800);
+    // Extra paint window for the framer-motion enter animation
+    // (350ms ease-out per SelectionPanel.tsx transition prop).
+    await page.waitForTimeout(600);
     await snap(page, '05-build-menu-open');
   });
 

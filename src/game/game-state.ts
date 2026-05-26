@@ -14,6 +14,7 @@ import {
   Health,
   HexPosition,
   ResourceTrait,
+  Selectable,
   Unit,
 } from '@/ecs/components';
 import { resetAiDirector } from '@/ecs/systems/ai';
@@ -628,6 +629,13 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     Health({ current: 1800 + bonusHp, max: 1800 + bonusHp }),
     FactionTrait({ faction: 'player' }),
     FactionBase({ faction: 'player' }),
+    // M_V11.POLISH.BUILD-MENU-CTA — Town Hall must be tap-selectable
+    // so the player can open the build menu by tapping it (and so
+    // the open-build-menu CustomEvent's auto-select finds an entity
+    // with the Selectable trait). Was missing pre-v0.11; visible
+    // via the journey-shot 05 build-menu-open capture failing to
+    // surface the SelectionPanel.
+    Selectable({ isSelected: false }),
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
   );
 
@@ -704,6 +712,9 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     Health({ current: 1800, max: 1800 }),
     FactionTrait({ faction: 'enemy' }),
     FactionBase({ faction: 'enemy' }),
+    // M_V11.POLISH.BUILD-MENU-CTA — enemy base also gets Selectable
+    // so a player can tap it to inspect.
+    Selectable({ isSelected: false }),
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
   );
 

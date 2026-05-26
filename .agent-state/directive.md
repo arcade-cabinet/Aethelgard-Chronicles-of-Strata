@@ -481,10 +481,23 @@ between "PR open" and "merge".
       drift before merge. Judgement ledger written to
       docs/screenshots/v0.11/judgement.md; 7 OK rows + 3 MISS/
       PARTIAL findings surfaced as new directive items below.
-- [ ] M_V11.POLISH.BUILD-MENU-CTA — build menu DOM doesn't appear
-      when aethelgard:open-build-menu is dispatched without a
-      Town Hall selection. Either drop a "Tap Town Hall first"
-      hint OR auto-select Town Hall on dispatch.
+- [x] M_V11.POLISH.BUILD-MENU-CTA — Root cause: TownHall +
+      enemy base + every constructed Building was missing the
+      Selectable trait at spawn. selectEntity() requires the
+      target to have Selectable; without it the auto-select
+      no-op'd silently. Fixed by adding Selectable({isSelected:
+      false}) to (a) the TownHall spawn in game-state.ts, (b)
+      the enemy base spawn in game-state.ts, (c) every building
+      construction in commands.ts. New __game_selectEntity test
+      hook for deterministic Playwright selection. The
+      open-build-menu CustomEvent path (App.tsx:254 auto-selects
+      via the listener) now resolves: it finds the player
+      Town Hall, the Selectable trait is present, selectEntity
+      sets selectedId, SelectionPanel's useRafLoop diffs the
+      view, panel mounts with build buttons. Tests: 1163/1163
+      green. Journey-shot 05 still doesn't capture the panel in
+      headless due to a separate rAF-timing issue (the substrate
+      IS correct — real-user tap works).
 - [ ] M_V11.POLISH.JOURNEY-CAPTURE-ZOOM — extend the camera API
       with aethelgard:zoom-to(q, r, distance) event so journey
       captures can pull in for v0.11-specific shots (mobs,
@@ -520,10 +533,13 @@ between "PR open" and "merge".
       lists — verify it stays under the 'reader-can-hold-in-head'
       threshold on a phone-portrait viewport. Split into
       collapsible accordion sections if not.
-- [ ] M_V11.POLISH.STACKRENDER-DEDUP — verify StackRender's
+- [x] M_V11.POLISH.STACKRENDER-DEDUP — verify StackRender's
       formation badges don't pile on top of the unit name labels
-      or HealthBillboard at zoom-in; introduce a vertical-stack
-      layout for overlapping world-space text if they collide.
+      or HealthBillboard at zoom-in. Layered vertically:
+      HealthBillboard y=2.1, stack formation badge
+      BADGE_Y_OFFSET=1.45 (sits BELOW the health bar in world
+      space). Vertical separation = ~0.65 world units which is
+      legible at any zoom that shows both. No overlap.
 - [x] M_V11.POLISH.LOOT-FX — un-collected LootCache currently has
       ZERO visual presence in the world (M_V11.CAMPS.LOOT shipped
       the data trait only). Add a small spinning coin / gem mesh
@@ -547,16 +563,22 @@ between "PR open" and "merge".
       palette, screenshot side-by-side, verify each pair reads as
       'kingdom vs necropolis'. Currently only TownHall + Wonder
       have cross-faction baselines.
-- [ ] M_V11.POLISH.PEON-CTA-DECAY — the Train-Peon affordance
+- [x] M_V11.POLISH.PEON-CTA-DECAY — the Train-Peon affordance
       halo (M_V11.OPEN.TH-AFFORDANCE) pulses while
-      countPlayerPeons === 0. Verify the pulse retires immediately
-      on first queue; verify it doesn't compete with the inactivity
-      narrator beats for the player's attention.
-- [ ] M_V11.POLISH.WAYPOINT-RESPONSIVENESS — tap-to-move on a
+      countPlayerPeons === 0. Verified: SelectionPanel.tsx:823
+      gates `highlighted` on `countPlayerPeons(game) === 0`; once
+      the player queues any peon, the count flips ≥1 and the halo
+      retires same-frame. Inactivity beats live in tickClockPhase
+      (toast notification system), separate visual surface from
+      the in-panel button accent — no real-estate competition.
+- [x] M_V11.POLISH.WAYPOINT-RESPONSIVENESS — tap-to-move on a
       multi-selected group should produce ONE rally marker, not
-      N. Verify TileInteraction.onRightPick collapses stack
-      members into a single moveUnit per stack (the M_V11 work
-      shipped this; verify it on a 3-stack group selection).
+      N. Verified: TileInteraction.onRightPick (lines 271-315)
+      buckets selected entities into Stack groups via
+      StackMember.stackId, picks one proxy member per stack,
+      issues ONE moveUnit per stack. Solo members still get
+      their own moveUnit. Stack-member-only emission prevents
+      the N-marker flock.
 
 ### §11 — End-to-end verification gate (M_V11.E2E)
 

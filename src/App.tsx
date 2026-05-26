@@ -174,6 +174,22 @@ function GameSession({
           new CustomEvent('aethelgard:outcome-changed', { detail: { outcome } }),
         );
       };
+      // M_V11.POLISH.BUILD-MENU-CTA — direct selectEntity hook so
+      // Playwright tests can deterministically select an entity
+      // (the open-build-menu CustomEvent + useEffect listener
+      // mount race is hard to win in headless).
+      (
+        window as unknown as DevWindow & {
+          __game_selectEntity?: (entityId: number) => void;
+        }
+      ).__game_selectEntity = (entityId) => {
+        for (const e of g.world.query(FactionTrait)) {
+          if (Number(e) === entityId) {
+            selectEntity(g, e);
+            return;
+          }
+        }
+      };
       (window as unknown as DevWindow).__game_findPlayerEntities = (kind) => {
         const MILITARY_TYPES = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
         const out: number[] = [];

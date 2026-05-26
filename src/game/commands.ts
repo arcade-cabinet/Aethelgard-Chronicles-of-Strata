@@ -193,6 +193,11 @@ export function placeBuilding(
     HexPosition({ q: tile?.q ?? 0, r: tile?.r ?? 0, level }),
     Building({ buildingType: type, isComplete: false, progress: 0 }),
     FactionTrait({ faction }),
+    // M_V11.POLISH.BUILD-MENU-CTA — every built building is tappable
+    // so the player can select it (and so the build-menu CTA's
+    // auto-select path can find it). Existing buildings (TownHall,
+    // enemy base) get Selectable at spawn in game-state.ts.
+    Selectable({ isSelected: false }),
     ...(behaviors.offensive ? [OffensiveBehavior(behaviors.offensive)] : []),
     ...(behaviors.defensive ? [DefensiveBehavior(behaviors.defensive)] : []),
     ...(behaviors.attractor ? [AttractorBehavior(behaviors.attractor)] : []),
