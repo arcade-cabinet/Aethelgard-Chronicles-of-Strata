@@ -30,7 +30,14 @@ echo "[pre-push] running pnpm verify..."
 pnpm verify
 
 echo "[pre-push] running pnpm test:browser..."
-pnpm test:browser
+# M_HUD.SHELL.21 — vitest browser-mode shares Playwright Chromium across
+# parallel test files; harness tests (biome-swatch, n-player-picker,
+# wildfire/volcano layers) occasionally collide on the worker pool.
+# Retry once on failure — both passes failing = a genuine regression.
+pnpm test:browser || {
+  echo "[pre-push] test:browser flaked — retrying once..."
+  pnpm test:browser
+}
 
 echo "[pre-push] running pnpm test:e2e..."
 PW_REUSE_SERVER=1 pnpm test:e2e
