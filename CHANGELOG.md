@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.23](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.22...v0.1.23) (2026-05-26)
+
+
+### Features
+
+* **hud:** Enemy-at-the-gates critical toast (M_V11.NOTIF.ENEMY-AT-TH) ([#77](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/77)) ([a429991](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/a429991a315e12c6926c4522546519c8789374c1))
+
 ## [0.1.22](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.21...v0.1.22) (2026-05-26)
 
 
