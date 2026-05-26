@@ -32,8 +32,8 @@ describe('M_V6.CARRY.COLOR-OUTLINE-V2 — Minimap reads from registry', () => {
       difficulty: 'normal',
       eventSeed: 'evt',
       factions: [
-        { ...LEGACY_FACTIONS[0]!, color: '#10b981' },
-        { ...LEGACY_FACTIONS[1]!, color: '#f59e0b' },
+        { ...(LEGACY_FACTIONS[0] as (typeof LEGACY_FACTIONS)[number]), color: '#10b981' },
+        { ...(LEGACY_FACTIONS[1] as (typeof LEGACY_FACTIONS)[number]), color: '#f59e0b' },
       ],
     });
     expect(findFaction(game.factions, 'player')?.color).toBe('#10b981');

@@ -29,6 +29,7 @@ function HarnessScene() {
           <meshStandardMaterial color="#475569" />
         </mesh>
         <Suspense fallback={null}>
+          {/* biome-ignore lint/a11y/useValidAriaRole: 'role' is a game-domain prop on AnimatedCharacter (unit role), not an ARIA role attribute */}
           <AnimatedCharacter role="Footman" clip="Idle_A" />
         </Suspense>
       </Canvas>
@@ -42,6 +43,8 @@ describe('unit-vs-hex harness (M_GAME.SCALE.GLB-MEASURE.1)', () => {
     // Wait a short beat for the GLB suspense fallback to resolve and
     // the canvas to paint before snapshotting.
     await new Promise((r) => setTimeout(r, 700));
-    await expect(page.screenshot({ path: 'tests/harness/__screenshots__/unit-vs-hex-knight.png' })).resolves.toBeTruthy();
+    await expect(
+      page.screenshot({ path: 'tests/harness/__screenshots__/unit-vs-hex-knight.png' }),
+    ).resolves.toBeTruthy();
   });
 });

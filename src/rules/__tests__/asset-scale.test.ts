@@ -33,7 +33,11 @@ describe('asset-scale (M_GAME.SCALE.GLB-MEASURE.1)', () => {
   });
 
   it('character scales target ~0.95 world-unit height (BBOX.sizeY × scale)', () => {
-    const ids = ['characters.heroes.knight', 'characters.heroes.engineer', 'characters.enemies.orc'];
+    const ids = [
+      'characters.heroes.knight',
+      'characters.heroes.engineer',
+      'characters.enemies.orc',
+    ];
     for (const id of ids) {
       const entry = measuredEntry(id);
       expect(entry, id).toBeDefined();
