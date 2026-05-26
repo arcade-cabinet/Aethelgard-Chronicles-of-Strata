@@ -55,7 +55,7 @@
 
 ### v0.10.F — LORE foundation (new track — Aethelgard has none yet)
 
-- [ ] M_LORE.0 — Establish the lore canon. Draft `docs/lore/00-canon.md` with: the realm of Aethelgard's geography (continental hex-island archipelago), the strata themselves (the magical sedimentary layers that name the game), the founding myths (why factions fight), the eras (border-clash / frontier-raid / long-reign / strata-wars / age-of-strata / coexistence map to in-fiction periods), the bestiary (peons / footmen / siege / barbarian camps / mythic events all have lore origins).
+- [x] M_LORE.0 — `docs/lore/00-canon.md` shipped: 7 sections covering the world (hex archipelago + The Strata), the 6 eras mapped to the 6 game modes, the 4 faction archetypes with origin + disposition, the bestiary (peons through Wonders) with in-fiction reasoning, the MYTH events as "the strata speaking", the Renaissance ascendancy win-condition fiction, and the player as Chronicler-King (which explains the procedural nickname pattern in GameOverModal). Cross-references list the four follow-up docs M_LORE.1-4 will fill.
 - [ ] M_LORE.1 — Faction lore: each FactionConfig.archetype (medieval/orc/undead/mystic) gets a one-page background in `docs/lore/factions/<archetype>.md` — origin, motivations, signature units, diplomacy disposition. Hooks into the existing AI personality system.
 - [ ] M_LORE.2 — Biome lore: each tile biome (grass/forest/highland/mountain/desert/beach/ocean/swamp/ruins/lava/quicksand/volcano) gets a paragraph in `docs/lore/biomes.md` tying its mechanics to its in-fiction nature.
 - [ ] M_LORE.3 — MYTH events lore: the existing MYTH events JSON registry gets a lore companion explaining what each event MEANS in-world.
