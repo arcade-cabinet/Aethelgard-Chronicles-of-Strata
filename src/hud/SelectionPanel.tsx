@@ -18,7 +18,7 @@ import { doResearch, setPeonAutoMode, setStance, trainUnit } from '@/game/comman
 import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
-import { selectedEntity } from '@/game/selection';
+import { selectedEntities, selectedEntity } from '@/game/selection';
 import { setStackFormation } from '@/game/stacking';
 import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
 import { FORMATIONS } from '@/world/formations';
@@ -103,6 +103,32 @@ interface SelectionView {
    *  or null when the selection is not a Stack. Drives the "Switch
    *  Formation" fieldset render. */
   formationId: FormationId | null;
+  /** M_V11.SEL.MULTI-VIEW — when >1 entity is selected, a per-type
+   *  breakdown (Footman ×3, Peon ×2, etc.). null in the single-
+   *  selection case so the header collapses cleanly. */
+  multi: {
+    total: number;
+    typeCounts: Array<{ type: string; count: number }>;
+  } | null;
+}
+
+/** Summarize a multi-entity selection into per-type counts. */
+function buildMultiSummary(
+  entities: ReadonlyArray<{
+    get: (...args: never[]) => unknown;
+  }>,
+): NonNullable<SelectionView['multi']> {
+  const counts = new Map<string, number>();
+  for (const e of entities as ReadonlyArray<import('koota').Entity>) {
+    const u = e.get(Unit);
+    const b = e.get(Building);
+    const label = u?.unitType ?? b?.buildingType ?? 'Other';
+    counts.set(label, (counts.get(label) ?? 0) + 1);
+  }
+  const typeCounts = Array.from(counts.entries())
+    .map(([type, count]) => ({ type, count }))
+    .sort((a, b) => b.count - a.count || a.type.localeCompare(b.type));
+  return { total: entities.length, typeCounts };
 }
 
 /** Build a display view from the selected entity. */
@@ -113,6 +139,13 @@ function viewOf(game: GameState): SelectionView | null {
   const factionId = factionTrait?.faction ?? 'player';
   const factionColor =
     game.factions.find((f) => f.id === factionId)?.color ?? HUD_THEME.color.friendly;
+  // M_V11.SEL.MULTI-VIEW — when >1 entity is selected, summarize the
+  // composition. Counts both Units (by unitType) AND Buildings (by
+  // buildingType) so a mixed click+drag selection still tells the
+  // player what they have. Sorted by count desc + name asc for
+  // stable display.
+  const all = selectedEntities(game);
+  const multi = all.length > 1 ? buildMultiSummary(all) : null;
   const building = entity.get(Building);
   if (building) {
     const meta = displayFor(building.buildingType);
@@ -127,6 +160,7 @@ function viewOf(game: GameState): SelectionView | null {
       factionColor,
       peonAutoMode: null,
       formationId: null,
+      multi,
     };
   }
   // M_V11.STACK.PANEL — Stack entity selection (the formation badge
@@ -145,6 +179,7 @@ function viewOf(game: GameState): SelectionView | null {
       factionColor,
       peonAutoMode: null,
       formationId: stack.formationId,
+      multi,
     };
   }
   const unit = entity.get(Unit);
@@ -165,6 +200,7 @@ function viewOf(game: GameState): SelectionView | null {
       factionColor,
       peonAutoMode,
       formationId: null,
+      multi,
     };
   }
   return {
@@ -175,6 +211,7 @@ function viewOf(game: GameState): SelectionView | null {
     factionColor,
     peonAutoMode: null,
     formationId: null,
+    multi,
   };
 }
 
@@ -317,7 +354,13 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
         next.buildingType === prev.buildingType &&
         next.stance === prev.stance &&
         next.peonAutoMode === prev.peonAutoMode &&
-        next.formationId === prev.formationId
+        next.formationId === prev.formationId &&
+        // Cheap multi diff: total + first-row signature. Misses
+        // a rare same-total-different-mix transition; that's
+        // acceptable for a 60Hz throttled HUD diff.
+        (next.multi?.total ?? 0) === (prev.multi?.total ?? 0) &&
+        (next.multi?.typeCounts[0]?.type ?? '') === (prev.multi?.typeCounts[0]?.type ?? '') &&
+        (next.multi?.typeCounts[0]?.count ?? 0) === (prev.multi?.typeCounts[0]?.count ?? 0)
       ) {
         return prev;
       }
@@ -396,6 +439,50 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               paddingLeft: 14,
             }}
           >
+            {/* M_V11.SEL.MULTI-VIEW — composition strip when >1 entity
+                is selected. Shows up to 4 type chips ("Footman ×3")
+                + an overflow count for the rest. */}
+            {view.multi && (
+              <div
+                data-testid="selection-multi-summary"
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: 4,
+                  marginBottom: 8,
+                }}
+                aria-label={`${view.multi.total} units selected`}
+              >
+                {view.multi.typeCounts.slice(0, 4).map((row) => (
+                  <span
+                    key={row.type}
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      background: 'rgba(56,189,248,0.18)',
+                      color: HUD_THEME.color.accent,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {row.type} ×{row.count}
+                  </span>
+                ))}
+                {view.multi.typeCounts.length > 4 && (
+                  <span
+                    style={{
+                      fontSize: '0.7rem',
+                      padding: '2px 6px',
+                      borderRadius: 4,
+                      background: 'rgba(255,255,255,0.05)',
+                      color: HUD_THEME.color.muted,
+                    }}
+                  >
+                    +{view.multi.typeCounts.length - 4} more
+                  </span>
+                )}
+              </div>
+            )}
             <div
               style={{
                 fontSize: '0.78rem',
@@ -404,7 +491,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                 color: HUD_THEME.color.muted,
               }}
             >
-              Selected
+              {view.multi ? `Primary (${view.multi.total} selected)` : 'Selected'}
             </div>
             <div style={{ fontSize: '1.05rem', fontWeight: 800, color: HUD_THEME.color.friendly }}>
               {view.name}
