@@ -19,15 +19,15 @@ import { runEconomyTick, startGame } from '@/game/game-state';
 
 describe('border-clash AIVAI economy progression (PATTERN-I)', () => {
   it('enemy faction harvests wood from a playable biome distribution', {
-    // 120s — local M-series runs the 18000-frame sim in ~18s; CI
-    // GitHub-hosted runners are 2-3× slower (~50s for the same
-    // workload). Post-v0.5.H refactors (runEconomyTick split + lazy
-    // navGraph + per-tick tile-entity index) pushed the CI runtime
-    // close to the prior 60s wall and tripped a flaky timeout on the
-    // c8ad51c merge. 120s gives 2.4× headroom over the worst CI run
-    // observed without masking a real perf regression — a real
-    // regression would blow past 120s, not nibble at 60s.
-    timeout: 120_000,
+    // 240s — local M-series runs the 18000-frame sim in ~63s post
+    // v0.10 sim additions (BUG.10 roam-radius filter, walkable step
+    // guard, stack substrate query in damageStack). CI runner
+    // observed at 166s on run 26437337183 — within 2.6× of local,
+    // matching the documented GitHub-runner slowdown. The previous
+    // 120s ceiling was set pre-v0.10; bumping to 240s gives 1.4×
+    // headroom over the worst observed CI run while still catching
+    // a real perf regression (which would 3-4× the runtime).
+    timeout: 240_000,
   }, async () => {
     const startingWood = 50;
     const game = startGame({
