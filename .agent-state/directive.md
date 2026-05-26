@@ -135,9 +135,14 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       startingResources updated to wood 80 / stone 60 / gold 0
       (was 50/20/20). 2 peons (~30 wood each) queueable on
       tick 0; defensive Wall (~20 stone) immediately droppable.
-- [ ] M_V11.OPEN.TH-AFFORDANCE — Town Hall "Queue Peon" build
-      button halo. Defer to follow-up; needs HudButton + halo
-      primitive wiring + first-peon-detector flag.
+- [x] M_V11.OPEN.TH-AFFORDANCE — HudButton extended with
+      `highlighted` + `highlightColor` props that render a
+      faction-coloured pulsing halo (1.8s loop via CSS keyframes
+      in src/hud/th-affordance.css). SelectionPanel wires the
+      flag for Town Hall "Train Peon" while
+      `countPlayerPeons(game) === 0` AND the player can afford
+      the cost. Once any peon exists, the pulse retires
+      automatically. data-highlighted attribute exposed for tests.
 - [ ] [WAIT-FOCUS] M_V11.OPEN.AI-SYMMETRY — AI scheduler first-
       tick auto-queues 2 peons. AIVAI test gets a test-only seed
       meanwhile; real AI scheduler hook lands in a focused
