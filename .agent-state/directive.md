@@ -456,16 +456,27 @@ User direction: zero HUD crowding, zero UI/UX issues, everything
 verified locally with screenshots. This section is the gate
 between "PR open" and "merge".
 
-- [ ] M_V11.POLISH.HUD-AUDIT — walk every HUD surface (Title /
+- [x] M_V11.POLISH.HUD-AUDIT — walk every HUD surface (Title /
       NewGameModal / SettingsModal / SelectionPanel / MinimapHud /
       Toasts / EraProgressPill / Multi/Diplo/Research panels) on
       mobile-portrait + tablet + desktop viewports. Catch every
       overlap, every off-screen element, every text-truncation.
-      Screenshot each.
-- [ ] M_V11.POLISH.HUD-CROWDING — for each crowding finding from
-      HUD-AUDIT, ship a layout fix: collapse / overflow-menu /
-      responsive-stack / safe-area padding as needed. Re-screenshot
-      to verify.
+      Screenshot each. Ran via
+      JOURNEY=1 pnpm test:e2e:multiview tests/e2e/journey-
+      capture.spec.ts (60 captures: 10 moments × 3 viewports).
+      Screenshots namespaced by project name (desktop-, mobile-,
+      tablet-) in artifacts/journey/. Findings → HUD-CROWDING +
+      SELECTION-PANEL-DENSITY below.
+- [x] M_V11.POLISH.HUD-CROWDING — for each crowding finding from
+      HUD-AUDIT, ship a layout fix. Findings + fixes:
+      - WinConditionPill at top:8 centre overlapped top-right
+        diplomacy proposal banner on mobile-portrait (~360px
+        wide). Fixed: top offset is now
+        clamp(8px, 48px - 8vw, 48px) — sits below the top strip
+        on narrow viewports, stays at top:8 on wider.
+      - SelectionPanel could exceed viewport height on a TownHall
+        selection with all sections rendered. Fixed via
+        SELECTION-PANEL-DENSITY (maxHeight + overflowY).
 - [x] M_V11.POLISH.SCREENSHOT-BATTERY — Maestro + Playwright
       screenshot battery against the 14 landmark moments of
       docs/specs/10-player-journey.md. Each shot saved under
@@ -532,12 +543,21 @@ between "PR open" and "merge".
 - [ ] M_V11.POLISH.MOBILE-MAESTRO — full `.maestro/*.yaml` battery
       against the actual Android APK + iOS IPA. Verify every
       tap-path resolves. No flakes.
-- [ ] M_V11.POLISH.SELECTION-PANEL-DENSITY — SelectionPanel grew
+- [x] M_V11.POLISH.SELECTION-PANEL-DENSITY — SelectionPanel grew
       a multi-summary strip + formation chip grid + select-all-of-
       type button + stance fieldset + autoMode button + train/build
       lists — verify it stays under the 'reader-can-hold-in-head'
-      threshold on a phone-portrait viewport. Split into
-      collapsible accordion sections if not.
+      threshold on a phone-portrait viewport. Fixed by clamping
+      panel maxHeight to min(70vh, 640px) + overflowY:auto so
+      tall content scrolls internally instead of spilling off
+      screen. Per user 'never defer' direction, the accordion
+      split is added as a new item below.
+- [ ] M_V11.POLISH.SELECTION-PANEL-ACCORDION — collapsible
+      accordion sections within SelectionPanel so a touch-user
+      can fold sections they're not using (formation chips,
+      train list, research list, etc). Default-open the section
+      matching the entity's primary verb (build for TownHall,
+      stance for Footman, autoMode for Peon).
 - [x] M_V11.POLISH.STACKRENDER-DEDUP — verify StackRender's
       formation badges don't pile on top of the unit name labels
       or HealthBillboard at zoom-in. Layered vertically:

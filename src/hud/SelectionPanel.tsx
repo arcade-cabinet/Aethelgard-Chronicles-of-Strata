@@ -494,6 +494,14 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               // the friendly green when no faction info is available.
               borderLeft: `4px solid ${view.factionColor}`,
               paddingLeft: 14,
+              // M_V11.POLISH.SELECTION-PANEL-DENSITY — clamp the panel
+              // height to 70% of viewport so it doesn't spill off-screen
+              // on a phone-portrait when a TownHall selection surfaces
+              // the train/build/research lists below the formation +
+              // stance + autoMode + select-all chips. Internal scroll
+              // keeps every action reachable.
+              maxHeight: 'min(70vh, 640px)',
+              overflowY: 'auto',
             }}
           >
             {/* M_V11.SEL.MULTI-VIEW — composition strip when >1 entity
