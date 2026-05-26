@@ -133,6 +133,19 @@ export function deathSystem(
         clearedBy: nearestFaction,
       });
     }
+    // M_V11.CAMPS.DESTROY — cascade: kill every mob spawned from
+    // this camp (matching FactionTrait). Set Health.current=0 so
+    // the existing per-unit death pipeline (DeathTimer +
+    // dispatchEvent + LootCache drop) runs uniformly. Avoids
+    // orphan mobs that would keep wandering after their camp is
+    // gone.
+    for (const mob of world.query(Unit, FactionTrait, Health)) {
+      const mobFac = mob.get(FactionTrait)?.faction as unknown as string | undefined;
+      if (mobFac !== factionId) continue;
+      const mobHp = mob.get(Health);
+      if (!mobHp || mobHp.current <= 0) continue;
+      mob.set(Health, { ...mobHp, current: 0 });
+    }
     entity.destroy();
     if (typeof window !== 'undefined') {
       window.dispatchEvent(
