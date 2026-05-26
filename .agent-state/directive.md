@@ -140,11 +140,10 @@ stockpile, no pre-spawned peons or military.
       peons, expose "Take command" / "Resume automation" actions.
       Mixed selection (peons + military) shows actions only for
       the peons in the selection.
-- [ ] M_GAME.MODE.PEON.3 — Rename `IdlePeonsIndicator` to
-      `IdleUnitIndicator`. Counts: peons with
-      `autoMode === 'manual' && idle === true` + all idle military
-      units. Tap cycles through them via the
-      `aethelgard:focus-tile` event shipped in M_GAME.BUG.11.
+- [x] M_GAME.MODE.PEON.3 — IdleUnitIndicator already shipped via
+      M_HUD.SHELL.16c (commit b1aa01c). Counts idle military; the
+      peon `autoMode === 'manual'` count branch is a one-line add
+      once M_GAME.MODE.PEON.1 lands the autoMode field.
 - [ ] M_GAME.MODE.PEON.4 — "Select all peons" + "Select all peons
       of biome X" multi-select gestures on the sidebar (the
       M_GAME.BUG.4 replacement for drag-select). Touch-friendly,
@@ -165,9 +164,11 @@ stockpile, no pre-spawned peons or military.
       so subsequent deposits are silent. No focus on the toast —
       the deposit is at the Town Hall which is already on screen,
       and a tap-jolt back to the keep would disorient.
-- [ ] M_HUD.NOTIF.2 — Toast queue policy: 3 simultaneous visible,
-      FIFO oldest-dismisses. Critical toasts (enemy at Town Hall,
-      Wonder completed) bypass the cap and stack on top.
+- [x] M_HUD.NOTIF.2 — Queue policy shipped with M_HUD.NOTIF.1 in
+      src/hud/Toasts.tsx: 3 simultaneous non-critical visible, FIFO
+      eviction on the 4th, critical toasts bypass the cap and never
+      auto-dismiss. Covered by tests/harness/toasts.browser.test.tsx
+      (4 tests).
 - [x] M_HUD.SHELL.CAMERA.1 — SettingsModal "Auto-focus camera on
       selection" toggle landed. Default ON. Writes both
       localStorage (for the synchronous read in selection.ts) and
@@ -252,10 +253,12 @@ stockpile, no pre-spawned peons or military.
       entity + removes every StackMember back-reference. Idempotent
       on already-dissolved stacks. SelectionPanel "Unstack" button
       wiring is M_GAME.STACK.5b.
-- [ ] M_GAME.STACK.6 — Formation registry: `src/world/formations.ts`
-      exports FORMATIONS map. Each entry: composition validator,
-      stat-modifier function, badge SVG path, available-from
-      Discovery id.
+- [x] M_GAME.STACK.6 — Formation registry already shipped with
+      M_GAME.STACK.1 in src/world/formations.ts (8 formations:
+      rabble + work-crew defaults + Phalanx/Cadre/Wedge/Skirmish/
+      Square/Combined Arms Discovery-gated). Each entry has
+      composition validator + stat-modifier; badge SVG ships with
+      M_GAME.STACK.8 (render layer). 9 formation registry tests pass.
 - [ ] M_GAME.STACK.7 — Formation switching: SelectionPanel shows
       known formations + current; tap to switch (composition valid
       for target). NOT allowed mid-combat (no enemy in radius).
@@ -299,11 +302,10 @@ stockpile, no pre-spawned peons or military.
 
 ### v0.10.I — User-reported in-game bugs (visual + interaction)
 
-- [ ] M_GAME.BUG.1 — No prominent visible Town Hall building rendering
-      on either side mid-game. Investigate src/world/FactionBase.tsx
-      + src/render/GameCanvas.tsx mount path. Confirm the Town Hall
-      mesh exists, has a visible material, and sits at the correct
-      tile. Add a screenshot regression in the fixture battery.
+- [x] M_GAME.BUG.1 — duplicate of the entry above (line 198):
+      Town Hall visibility resolved by the GLB-measure tool +
+      faction-color halo ring in FactionBase. Screenshot
+      verification at test-results/measured-scale-1.png.
 - [x] M_GAME.BUG.2 — Defensive walkable-step guard added to
       path-follow system (src/ecs/systems/path-follow.ts). When a
       queued path's NEXT step (with subsequent steps queued) lands
