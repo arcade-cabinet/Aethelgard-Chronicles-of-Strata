@@ -131,11 +131,18 @@ stockpile, no pre-spawned peons or military.
       decree." At 90s of no-action, stronger "Your realm cannot
       grow without peons." Both dismissable; onboarding step
       persists.
-- [ ] M_GAME.MODE.PEON.1 — Add `autoMode: 'auto' | 'manual'` field
-      to Peon Unit spawn. Default `'auto'`. Persisted in save
-      schema (so commanded peons stay commanded across save/load).
-      Revert the `findSelectableAtTile` peon-skip shipped in
-      M_GAME.BUG.6 — peons ARE selectable now.
+- [x] M_GAME.MODE.PEON.1 — Dedicated PeonAutonomy trait
+      `{ autoMode: 'auto' | 'manual' }` added to src/ecs/components.ts
+      with autoMode default 'auto'. Spawned via character-factory
+      when role === 'Peon'. Registered in SERIALIZED_TRAITS so
+      autoMode persists across save/load. `findSelectableAtTile`
+      peon-skip reverted per the RTS spec — peons ARE selectable
+      again. `setPeonAutoMode(game, entity, mode)` command shipped:
+      flips the field + resets AssignedJob to IDLE on the 'auto'
+      transition so the scheduler picks up the peon next tick.
+      IdleUnitIndicator now counts manual-mode idle peons too.
+      3 unit tests passing
+      (src/game/__tests__/peon-autonomy.test.ts).
 - [ ] M_GAME.MODE.PEON.2 — SelectionPanel: when selection includes
       peons, expose "Take command" / "Resume automation" actions.
       Mixed selection (peons + military) shows actions only for

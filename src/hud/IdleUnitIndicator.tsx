@@ -21,7 +21,7 @@
  * reset to the closest-to-camera idle unit.
  */
 import { useRef, useState } from 'react';
-import { AssignedJob, FactionTrait, HexPosition, Unit } from '@/ecs/components';
+import { AssignedJob, FactionTrait, HexPosition, PeonAutonomy, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { HUD_THEME } from './hud-theme';
 import './idle-peons-indicator.css';
@@ -41,11 +41,15 @@ function snapshotIdle(game: GameState): IdleEntry[] {
     if (e.get(AssignedJob)?.state !== 'IDLE') continue;
     const unitType = e.get(Unit)?.unitType;
     if (!unitType) continue;
-    // Peons: only count when in manual auto-mode. The autoMode field
-    // is not yet on Unit (M_GAME.MODE.PEON.1 ships it). Today this
-    // path effectively skips ALL peons — which is the correct
-    // "skirmish-default" behavior per the RTS spec.
-    if (unitType === 'Peon') continue;
+    // Peons: only count when in manual autoMode. PeonAutonomy
+    // (M_GAME.MODE.PEON.1) lands the field; auto-mode peons are
+    // never "idle" by definition (the auto-scheduler always
+    // re-tasks them); manual-mode peons that just finished a task
+    // surface here so the player can give them a new order.
+    if (unitType === 'Peon') {
+      const auto = e.get(PeonAutonomy);
+      if (!auto || auto.autoMode === 'auto') continue;
+    }
     const hex = e.get(HexPosition);
     if (!hex) continue;
     list.push({ q: hex.q, r: hex.r, unitType });

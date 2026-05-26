@@ -16,6 +16,7 @@ import {
   Movement,
   OffensiveBehavior,
   PathQueue,
+  PeonAutonomy,
   Selectable,
   Stance,
   Transform,
@@ -131,6 +132,12 @@ export function createCharacter(params: CreateCharacterParams): Entity {
       civilian.push(Harvester({ harvestRate: 1, harvestTimer: 0 }));
       civilian.push(Carrier({ carryType: 'none', amount: 0 }));
       civilian.push(AssignedJob({ state: 'IDLE', targetKey: '' }));
+      // M_GAME.MODE.PEON.1 — Peons (the only harvester role today)
+      // get PeonAutonomy. Defaults to 'auto' per the RTS spec; the
+      // player flips to 'manual' via SelectionPanel "Take command".
+      if (role === 'Peon') {
+        civilian.push(PeonAutonomy({ autoMode: 'auto' }));
+      }
     } else if (profile.founder) {
       // Founder carries an AssignedJob for the founding state machine
       // routed by the foundBase command verb (commands.ts).

@@ -441,6 +441,23 @@ export const Stance = trait({ mode: 'defensive' as StanceMode });
 export const CommandedTile = trait({ q: 0, r: 0 });
 
 // ---------------------------------------------------------------------------
+// M_GAME.MODE.PEON.1 — Peon autonomy mode
+// ---------------------------------------------------------------------------
+
+/**
+ * Per docs/specs/200-genre-commitment.md: peons spawn in `'auto'` mode
+ * (the auto scheduler re-tasks them whenever they go idle); the player
+ * can flip them to `'manual'` mode via the SelectionPanel "Take command"
+ * action, at which point they obey player commands + surface in the
+ * IdleUnitIndicator count when idle.
+ *
+ * Only Peon-type units carry this trait. Spawn applies it automatically
+ * (default 'auto'); manual flip is the player command's responsibility.
+ */
+export type PeonAutoMode = 'auto' | 'manual';
+export const PeonAutonomy = trait({ autoMode: 'auto' as PeonAutoMode });
+
+// ---------------------------------------------------------------------------
 // M_GAME.STACK.1 — Stack components (per docs/specs/201-stacking-and-formations.md)
 // ---------------------------------------------------------------------------
 
@@ -560,4 +577,7 @@ export const SERIALIZED_TRAITS: ReadonlyArray<{ name: string; traitObj: any }> =
   // resumes with all formations and member back-references intact.
   { name: 'Stack', traitObj: Stack },
   { name: 'StackMember', traitObj: StackMember },
+  // M_GAME.MODE.PEON.1 — peon autoMode persists across save/load so
+  // a player's commanded peon stays commanded after a reload.
+  { name: 'PeonAutonomy', traitObj: PeonAutonomy },
 ];
