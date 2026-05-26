@@ -7,6 +7,41 @@ import type { UnitType } from '@/ecs/components';
 import type { ClipName } from '@/ecs/systems/animation';
 import { characterMeshId, rigAnimationIds, rigForRole } from './rig';
 
+/**
+ * M_GAME.SCALE.UNIT.1 — base scale every animated character mesh is
+ * multiplied by before rendering. KayKit Adventurers + Mystery GLBs
+ * ship at human-meter scale (~1.7 world units tall) but Aethelgard's
+ * hex tile is HEX_RADIUS=1 wide. At native scale a unit covers the
+ * full tile + spills onto neighbors, breaking the "the unit OCCUPIES
+ * one hex" reading the gameplay depends on. 0.55 brings a Knight to
+ * ~0.95 world units tall — visually "fits its tile" with a small
+ * silhouette gap above. Per-role nudge below for variation.
+ *
+ * User direction 2026-05-25: "units seem REALLY big like they need
+ * to be scaled down relative to hex tile size."
+ */
+const BASE_UNIT_SCALE = 0.55;
+
+/**
+ * Per-role scale nudge multiplied into BASE_UNIT_SCALE. Heroes
+ * (Knight, Mage) read slightly larger than peons; Orcs read larger
+ * than Goblins for the silhouette hierarchy.
+ */
+const ROLE_SCALE_MULTIPLIER: Record<string, number> = {
+  Peon: 0.85,
+  Builder: 0.85,
+  Footman: 1.0,
+  Archer: 0.95,
+  Knight: 1.1,
+  Mage: 1.0,
+  Healer: 0.95,
+  Pikeman: 1.05,
+  Goblin: 0.85,
+  Orc: 1.15,
+  Wraith: 1.0,
+  Skeleton: 0.9,
+};
+
 /** Props for an animated KayKit character. */
 export interface AnimatedCharacterProps {
   /** Unit role — selects the mesh GLB and the rig tier. */
@@ -107,8 +142,10 @@ export function AnimatedCharacter({
     };
   }, [actions, clip, fade]);
 
+  const scaleFactor = BASE_UNIT_SCALE * (ROLE_SCALE_MULTIPLIER[role] ?? 1);
+
   return (
-    <group ref={group}>
+    <group ref={group} scale={scaleFactor}>
       <primitive object={scene} />
     </group>
   );
