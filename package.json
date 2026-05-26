@@ -45,6 +45,7 @@
     "test:maestro:nplayer": "maestro test .maestro/nplayer-setup.yaml",
     "test:maestro:gameover": "maestro test .maestro/game-over.yaml",
     "assets:manifest": "tsx scripts/build-manifest.ts",
+    "assets:measure": "node scripts/measure-glbs.mjs",
     "cap": "cap",
     "cap:sync": "pnpm build && cap sync",
     "cap:run:android": "cap run android",

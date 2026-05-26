@@ -150,16 +150,31 @@ stockpile, no pre-spawned peons or military.
       "Auto-focus on selection" toggle (default ON). When OFF,
       tap-selecting a unit doesn't move the camera; the auto-focus
       tween still fires for explicit toast/sidebar invocations.
-- [ ] M_GAME.SCALE.UNIT.1 — Unit / building scale audit. User
-      observation 2026-05-25: "units seem REALLY big like they
-      need to be scaled down relative to hex tile size and
-      buildings potentially scaled up." Add an isolated
-      tests/harness/unit-vs-hex.html harness rendering each unit
-      archetype on a single hex tile + a single complete building
-      on a tile; screenshot both and adjust scale constants in
-      src/entities/* + src/world/FactionBase.tsx so unit silhouette
-      reads as "occupies a tile" not "covers two tiles" and
-      buildings read as "occupies their footprint" not "miniature."
+- [x] M_GAME.SCALE.UNIT.1 — Unit / building scale audit. User
+      observation 2026-05-25: "units seem REALLY big" + "buildings
+      potentially scaled up." Initial scale tweaks were rejected
+      as guesses — superseded by M_GAME.SCALE.GLB-MEASURE.1 below
+      which derives scales from actual bbox measurements.
+- [x] M_GAME.SCALE.GLB-MEASURE.1 — Build-time GLB measurement
+      tool (`pnpm assets:measure` → scripts/measure-glbs.mjs)
+      walks every GLB under public/assets, computes source bbox
+      via gltf-transform, categorizes (character/building/wall/
+      wonder/prop) by path conventions, derives hex-tile-tuned
+      scale + yOffset, writes to src/rules/glb-metadata.json.
+      src/rules/asset-scale.ts exposes measuredScale(id) +
+      measuredYOffset(id) consumers; SKINS structure entries +
+      AnimatedCharacter both read from JSON. 112 GLBs measured
+      on first run. Per user direction 2026-05-25: "you need
+      build time balancing tooling that can go through and scan
+      all GLBs and add actual hex tile tuned scale information."
+      Memory: scale-by-measurement-not-guess.
+- [x] M_GAME.BUG.1 — Town Hall now reads as the dominant silhouette
+      of the player base: (a) measured scale via GLB-MEASURE.1
+      replaces the misleading 0.12 hardcode (town-center mesh
+      source size is 1.26×1.24, so the right scale is ~0.87),
+      and (b) a faction-coloured halo ring under the Town Hall in
+      FactionBase makes it locatable from any camera distance
+      regardless of biome / mesh silhouette.
 
 ### v0.10.K — Stacking + Formations + Barbarian Camps + Faction Encircle Coloring
 
