@@ -53,9 +53,25 @@
 
 - [x] M_HUD.SHELL.15 — `src/hud/desktop-keyboard/` opt-in subpackage. Exports `useDesktopShortcuts(shortcuts, enabled)` hook + `DesktopShortcut` type. TitleScreen migrated as first consumer — viewport-gated (`viewport.class === 'desktop' || 'ultraWide'`) so mobile/foldable/tablet never see the kbd shortcut. The previous "strip" became a clean extraction; future OnboardingOverlay arrow-key nav + SystemMenu kbd shortcuts can re-adopt the same hook.
 
+### v0.10.F — LORE foundation (new track — Aethelgard has none yet)
+
+- [ ] M_LORE.0 — Establish the lore canon. Draft `docs/lore/00-canon.md` with: the realm of Aethelgard's geography (continental hex-island archipelago), the strata themselves (the magical sedimentary layers that name the game), the founding myths (why factions fight), the eras (border-clash / frontier-raid / long-reign / strata-wars / age-of-strata / coexistence map to in-fiction periods), the bestiary (peons / footmen / siege / barbarian camps / mythic events all have lore origins).
+- [ ] M_LORE.1 — Faction lore: each FactionConfig.archetype (medieval/orc/undead/mystic) gets a one-page background in `docs/lore/factions/<archetype>.md` — origin, motivations, signature units, diplomacy disposition. Hooks into the existing AI personality system.
+- [ ] M_LORE.2 — Biome lore: each tile biome (grass/forest/highland/mountain/desert/beach/ocean/swamp/ruins/lava/quicksand/volcano) gets a paragraph in `docs/lore/biomes.md` tying its mechanics to its in-fiction nature.
+- [ ] M_LORE.3 — MYTH events lore: the existing MYTH events JSON registry gets a lore companion explaining what each event MEANS in-world.
+- [ ] M_LORE.4 — Discoveries lore: each Discovery in the registry gets a one-line in-fiction description (besides its mechanical effect) so the DiscoveriesPanel reads like a tome, not a tech tree spreadsheet.
+
+### v0.10.G — Promo & marketing prompt library (new track)
+
+- [x] M_PROMO.0 — `docs/prompts/intro-video.md` shipped. ~1480-char master prompt + 9 engine variants (Sora 2 / Veo 3 chained / Kling 2.x / Seedance 1.0 Pro / Runway Gen-4 / Pika 2.x / Luma Ray2 / Hailuo 02 / Vidu Q1) — each tuned to its recommended length, aspect ratio, motion vocabulary, and prompt-token limit. Plus a 9:16 short-form supplement + 5 cross-engine continuity notes (seed locking, no-HUD-in-prompt, 24fps shutter, palette re-mention, no franchise names).
+- [ ] M_PROMO.1 — `docs/prompts/key-art.md` for still-image generation (Midjourney v7 / SDXL / FLUX / Imagen 3 / Gemini Imagen). Wordmark + hex map + faction banners.
+- [ ] M_PROMO.2 — `docs/prompts/biome-thumbs.md` — one prompt per biome for tile-thumbnail generation that matches the in-game low-poly aesthetic.
+- [ ] M_PROMO.3 — `docs/prompts/social-clips.md` — short-form (vertical, 9:16, 6-15s) video prompts for TikTok / Reels / Shorts gameplay clips.
+
 ### v0.10.E — Player journey continuation (per-page Magic + token sweep)
 
-- [ ] M_HUD.SHELL.16 — SelectionPanel: in-game touch+drag command surface. Touch-friendly icons, faction-colored selection ring, build-menu CTA on the right.
+- [x] M_HUD.SHELL.16 — SelectionPanel touch-friendly pass: HudButton gains aria-label (uses the visible label, includes disabled reason when gated), data-testid (slugified from label so Maestro can target by build-type or stance), minHeight 44px + padding 12px so phone-portrait touch targets hit the platform-recommended size. Full Magic rewrite of the panel layout (faction-colored selection ring / icon-first row / build-menu CTA on the right) deferred as M_HUD.SHELL.16b — substrate is now tap-safe.
+- [ ] M_HUD.SHELL.16b — SelectionPanel full Magic rewrite: faction-colored selection ring around the focused unit/building, lucide-iconified action rows, sticky build-menu CTA on the right rail, mobile bottom-shelf collapse on phone-portrait.
 - [ ] M_HUD.SHELL.17 — DiscoveriesPanel: research-tree dialog with tier sections, status pips, lucide icons per discovery archetype.
 - [ ] M_HUD.SHELL.18 — SettingsModal: stacked sections (Audio buses / Display / Hotkeys [desktop-only] / Accessibility / About) with the new SectionCard primitive.
 - [ ] M_HUD.SHELL.19 — ScoringScreen: 4X mode terminal with per-category scoring (military / economic / scientific / diplomatic) + a winner reveal.

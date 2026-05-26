@@ -123,12 +123,18 @@ function HudButton({
       disabled={disabled}
       title={disabled ? disabledReason : undefined}
       aria-disabled={disabled}
+      aria-label={disabled && disabledReason ? `${label} (${disabledReason})` : label}
       aria-describedby={disabled && disabledReason ? `${label}-reason` : undefined}
+      data-testid={`hud-button-${label.replace(/\s+/g, '-').toLowerCase()}`}
       style={{
         display: 'block',
         width: '100%',
         marginTop: 6,
-        padding: '8px 10px',
+        // M_HUD.SHELL.16 — touch-friendly: min 44×44 with padding ≥ 12px
+        // so finger taps don't accidentally hit an adjacent button on
+        // a phone-portrait viewport.
+        minHeight: 44,
+        padding: '12px 12px',
         borderRadius: 8,
         border: `1px solid ${HUD_THEME.color.border}`,
         background: disabled ? 'rgba(255,255,255,0.04)' : 'rgba(56,189,248,0.14)',
