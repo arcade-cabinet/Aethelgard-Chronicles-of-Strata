@@ -419,6 +419,24 @@ export const WanderBehavior = trait({
   pickChance: 0.05,
 });
 
+/**
+ * M_V11.CAMPS.LOOT — resource cache dropped on a tile by a dying mob.
+ *
+ * First non-barbarian unit to occupy the cache's HexPosition tile
+ * collects it and the cache entity is destroyed. The pickup grants
+ * the unit's faction wood/stone/gold per the per-biome weight from
+ * docs/specs/202-camps-and-mobs.md (default: 10 wood, 10 stone,
+ * 5 gold; tundra/desert biomes shift toward stone).
+ *
+ * Caches live as koota entities so they survive save/load — a
+ * partially looted map keeps its un-collected drops.
+ */
+export const LootCache = trait({
+  wood: 0,
+  stone: 0,
+  gold: 0,
+});
+
 /** The entity an enemy is currently hunting. `targetId` is -1 when none. */
 export const EnemyTarget = trait({ targetId: -1 });
 
@@ -614,4 +632,6 @@ export const SERIALIZED_TRAITS: ReadonlyArray<{ name: string; traitObj: any }> =
   // M_V11.CAMPS.WANDER — barbarian-camp mob's wander anchor + radius
   // persists across save/load so a reloaded mob keeps its leash.
   { name: 'WanderBehavior', traitObj: WanderBehavior },
+  // M_V11.CAMPS.LOOT — un-collected resource caches survive save/load.
+  { name: 'LootCache', traitObj: LootCache },
 ];

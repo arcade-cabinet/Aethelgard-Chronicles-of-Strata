@@ -1,4 +1,5 @@
 import type { World } from 'koota';
+import type { BoardData } from '@/core/board';
 import { COMBAT } from '@/config/combat';
 import { hexDistance } from '@/core/hex';
 import {
@@ -9,6 +10,7 @@ import {
   FactionTrait,
   Health,
   HexPosition,
+  LootCache,
   Unit,
 } from '@/ecs/components';
 
@@ -60,7 +62,38 @@ export interface DeathSystemResult {
  * enemy kills, marks tiles whose enemies just died (for kill-zone tagging via
  * `enemyDeathKeys`), and flips game.outcome on hero permadeath (M_EXPANSION.F.96).
  */
-export function deathSystem(world: World, delta: number): DeathSystemResult {
+/**
+ * M_V11.CAMPS.LOOT — biome-weighted loot bundle. Default is the
+ * spec's baseline 10/10/5; FOREST tips toward wood, MOUNTAIN /
+ * DESERT toward stone. The function is exported for unit testing.
+ */
+export function lootForBiome(biome: string | undefined): {
+  wood: number;
+  stone: number;
+  gold: number;
+} {
+  switch (biome) {
+    case 'FOREST':
+      return { wood: 15, stone: 5, gold: 5 };
+    case 'MOUNTAIN':
+    case 'MOUNTAIN_PASS':
+    case 'HIGHLAND':
+      return { wood: 5, stone: 15, gold: 5 };
+    case 'DESERT':
+      return { wood: 5, stone: 10, gold: 10 };
+    default:
+      return { wood: 10, stone: 10, gold: 5 };
+  }
+}
+
+export function deathSystem(
+  world: World,
+  delta: number,
+  /** Optional board — when supplied, barbarian-camp mob deaths drop
+   *  a biome-weighted LootCache on their tile. Without the board the
+   *  drop is skipped (legacy callers + tests). */
+  board?: BoardData,
+): DeathSystemResult {
   let enemyKills = 0;
   const enemyDeathKeys: string[] = [];
   let playerHeroDied = false;
@@ -173,6 +206,19 @@ export function deathSystem(world: World, delta: number): DeathSystemResult {
             camp.set(EnemySpawner, { ...spawner, liveMobs: Math.max(0, spawner.liveMobs - 1) });
           }
           break;
+        }
+        // M_V11.CAMPS.LOOT — drop a biome-weighted resource cache on
+        // the death tile. First non-barbarian unit to occupy the tile
+        // collects (handled by lootPickupSystem).
+        if (board) {
+          const deathHex = entity.get(HexPosition);
+          if (deathHex) {
+            const tile = board.tiles.get(`${deathHex.q},${deathHex.r}`);
+            const drop = lootForBiome(tile?.type);
+            const cache = world.spawn(HexPosition, LootCache);
+            cache.set(HexPosition, { q: deathHex.q, r: deathHex.r, level: deathHex.level });
+            cache.set(LootCache, drop);
+          }
         }
       }
       entity.destroy();

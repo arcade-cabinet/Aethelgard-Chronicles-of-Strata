@@ -44,6 +44,7 @@ import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { scienceSystem } from '@/ecs/systems/science';
 import { spawnSystem } from '@/ecs/systems/spawn';
+import { lootPickupSystem } from '@/ecs/systems/loot-pickup';
 import { mobTargetingSystem } from '@/ecs/systems/mob-targeting';
 import { stanceBehaviorSystem } from '@/ecs/systems/stance-behavior';
 import { wanderSystem } from '@/ecs/systems/wander';
@@ -381,6 +382,11 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
     // on tile convergence (cap 6 per stack). Cheap parallel sweep
     // mirroring the work-crew form pass.
     autoFormMobRabble(game);
+    // M_V11.CAMPS.LOOT — un-collected resource caches from dead
+    // mobs are scooped up by the first non-barbarian unit on the
+    // cache tile. Runs after harvest/build so within-tick movement
+    // is already settled.
+    lootPickupSystem(game);
     buildSystem(game.world, game.buildSites, delta);
     // Credit first-House completion per faction (cheap O(buildings) sweep).
     if (
@@ -582,7 +588,7 @@ export function tickDepositPhase(game: GameState): void {
 //            win-loss evaluation, score integral.
 // ---------------------------------------------------------------------------
 export function tickScoringPhase(game: GameState, delta: number): void {
-  const deathResult = deathSystem(game.world, delta);
+  const deathResult = deathSystem(game.world, delta, game.board);
   game.economy.player.kills += deathResult.enemyKills;
   if (deathResult.enemyDeathKeys.length > 0) {
     const enemyBaseKey = game.enemyBaseKey;
