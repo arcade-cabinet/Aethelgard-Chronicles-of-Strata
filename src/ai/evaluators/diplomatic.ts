@@ -24,7 +24,7 @@ import { Goal, GoalEvaluator } from 'yuka';
 import type { AiPlayer } from '@/ai/ai-player';
 import { getRelation } from '@/game/diplomacy';
 import { bordersAreTouching, proposeNonAggressionPact } from '@/game/diplomacy-border';
-import { acceptTribute, canDemandTribute } from '@/game/diplomacy-tribute';
+import { acceptTribute, canDemandTribute, hasHadContact } from '@/game/diplomacy-tribute';
 import { economyFor } from '@/game/economy-for';
 
 /** Diplomacy action identifier. */
@@ -108,10 +108,14 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
         }
       }
 
-      // 2. Demand tribute if clearly dominant.
+      // 2. Demand tribute if clearly dominant. Gated by has-had-contact
+      // (M_V11.EVENTS.RTS-TRIGGERED): a faction cannot demand tribute
+      // from one it hasn't yet met. Lore — the messenger has to know
+      // where to ride.
+      const contact = () => hasHadContact(game.diplomacy, myId, fc.id);
       if (rel === 'neutral' || rel === 'ally') {
         const theirEco = economyFor(game, fc.id);
-        if (canDemandTribute(myEco, theirEco)) {
+        if (canDemandTribute(myEco, theirEco, contact)) {
           return { action: DiploAction.DemandTribute, targetId: fc.id };
         }
       }
@@ -119,7 +123,7 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
       // 3. Accept tribute if clearly weaker (avoid conflict with the dominant).
       if (rel === 'neutral') {
         const theirEco = economyFor(game, fc.id);
-        if (canDemandTribute(theirEco, myEco)) {
+        if (canDemandTribute(theirEco, myEco, contact)) {
           return { action: DiploAction.AcceptTribute, targetId: fc.id };
         }
       }
