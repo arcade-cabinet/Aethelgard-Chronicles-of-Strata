@@ -16,6 +16,9 @@ import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 import '@fontsource/inter/800.css';
 import '@fontsource/inter/900.css';
+// Tailwind v4 + Aethelgard design tokens. After @fontsource imports so
+// font tokens reference the @font-face rules already registered.
+import './styles.css';
 import { installErrorOverlayHooks } from '@/hud/ErrorOverlay';
 import { reportError } from '@/lib/telemetry';
 import { validateWorldFonts } from '@/world/world-text-font';

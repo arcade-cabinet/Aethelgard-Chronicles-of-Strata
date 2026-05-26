@@ -469,7 +469,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
 
 ### v0.8 work-units (dependency-ordered)
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.WONDER-TIMERS.N-PLAYER — `wonderTimers: Record<Faction, number>` widened to
+- [x] (shipped in PR #44 / v0.1.16) M_V8.WONDER-TIMERS.N-PLAYER — `wonderTimers: Record<Faction, number>` widened to
   `Record<FactionId, number>`. `startGame` seeds both legacy keys plus all `game.factions` ids.
   `tickScoringPhase` wonder-loop replaces hardcoded `.player`/`.enemy` checks with a
   `game.factions`-sweep: for each non-barbarian faction, decrement timer, check ≤0 for victory.
@@ -480,7 +480,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   pin: legacy 2-faction timer unchanged, player-3 timer decrements, 4X first-to-zero wins,
   save round-trip preserves all ids.
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.FACTION-CAST-DEBT — Eliminate `as 'player' | 'enemy'` bridge casts in:
+- [x] (shipped in PR #44 / v0.1.16) M_V8.FACTION-CAST-DEBT — Eliminate `as 'player' | 'enemy'` bridge casts in:
   (1) `barbarian-camps.ts:194` — `FactionTrait({ faction: spec.factionId as 'player' | 'enemy' })`;
   (2) `game-state.ts:996` — `active: 'player' as Faction`;
   (3) `NewGameModal.tsx:392,397` — `} as FactionConfig`. Strategy per site: (1) widen
@@ -493,7 +493,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   pin: barbarian camp entity has `FactionTrait.faction === campId`, FactionId-typed field compiles
   without cast, NewGameModal submit produces validly-typed config.
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.OUTLINE.CANVAS-MOUNT — `UnitHexOutline` + `BuildingOutlineRing` imported and mounted
+- [x] (shipped in PR #44 / v0.1.16) M_V8.OUTLINE.CANVAS-MOUNT — `UnitHexOutline` + `BuildingOutlineRing` imported and mounted
   inside `src/render/Canvas.tsx` (or the appropriate scene root). They accept `game: GameState`
   which is already available in that scope. Throttle params: `updateHz={5}` for units, `updateHz={1}`
   for buildings (matching the substrate spec). Screenshot via Playwright one-shot against the dev
@@ -504,7 +504,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   judge comparison named in commit body: "compared against spec §20 faction-color palette —
   unit outlines match registered color, ring at 1 Hz throttle".
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.DIFFICULTY-MULTIPLIER.N-PLAYER — `spawnIntervalFor(difficulty)` and
+- [x] (shipped in PR #44 / v0.1.16) M_V8.DIFFICULTY-MULTIPLIER.N-PLAYER — `spawnIntervalFor(difficulty)` and
   `difficultyMultiplier` are applied at the AI-vs-AI boundary but gated only to the legacy
   `'enemy'` faction check. Replace the `faction === 'enemy'` guard with a registry lookup:
   `findFaction(game.factions, faction)?.kind === 'ai'`. Affects at minimum: `encroachmentSystem`
@@ -512,21 +512,21 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   difficulty multiplier applies to a faction with id `'ai-3'` and kind `'ai'`, and does NOT apply
   to `'player'` human kind.
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.PORTAL-STONE.AUDIO — `useAudio.ts` (or `sound-map.ts`): add a bespoke
+- [x] (shipped in PR #44 / v0.1.16) M_V8.PORTAL-STONE.AUDIO — `useAudio.ts` (or `sound-map.ts`): add a bespoke
   `aethelgard:portal-stones-placed` window event listener that triggers a dedicated ambient stinger
   distinct from LAVA/VOLCANO. If a PORTAL_STONE biome-ambient key is missing from the audio bus,
   add it to `src/audio/sound-map.ts` (key: `portal-stone-placed`) mapped to an existing OGG file
   (e.g. `assets/audio/sfx/portal_whoosh.ogg` or nearest available). 2 tests pin: sound-map
   contains `portal-stone-placed` key, window event fires the stinger (spy on bus.play).
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.PORTAL-STONE.COOLDOWN-HOOK — `pathFollowSystem`: on each step arrival, if the arrived
+- [x] (shipped in PR #44 / v0.1.16) M_V8.PORTAL-STONE.COOLDOWN-HOOK — `pathFollowSystem`: on each step arrival, if the arrived
   tile is `PORTAL_STONE` and the entity's faction's cooldown has expired (via
   `isPortalStoneAvailable(game.portalStoneCooldowns, factionId, nowSeconds)`), call
   `refreshPortalStoneCooldown(game.portalStoneCooldowns, factionId, nowSeconds)` and emit
   `aethelgard:portal-stone-used` CustomEvent. Cooldown helpers already exist in `portal-stones.ts`.
   2 tests pin: cooldown refreshed on PORTAL_STONE step arrival, no-op when cooldown active.
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — Replace the two-slot (player + enemy) color-picker
+- [x] (shipped in PR #44 / v0.1.16) M_V8.NEWGAMEMODAL.N-PLAYER-PICKER — Replace the two-slot (player + enemy) color-picker
   layout with the N-slider + per-slot row design from Decision 2. Slider range 2–6, default 2.
   Each row: slot index label, FactionColorPicker chip, personality card grid subset (same 5 cards,
   one selected per row). Submit builds `factions[]` from rows → `setConfig`. Legacy URL
@@ -536,7 +536,7 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   Visual self-judge: "compared against Stardew Valley menu readability — rows legible at 320px
   mobile width".
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.AI.DIPLO-EVALUATOR — `src/ai/evaluators/diplomatic.ts` ships
+- [x] (shipped in PR #44 / v0.1.16) M_V8.AI.DIPLO-EVALUATOR — `src/ai/evaluators/diplomatic.ts` ships
   `DiplomaticEvaluator extends GoalEvaluator<AiPlayer>` + `DiplomacyGoal`. Evaluator uses
   `game.diplomacy`, `getRelation`, `proposeNonAggressionPact`, `acceptProposal`, `tributeDominant`
   from existing diplomacy modules. `ai-personalities.json` gains `"diplomacy": 0.0..1.0` weight
@@ -546,33 +546,33 @@ diff (grep `archetype` in the diff, update only matching `*-archetype-*.png` bas
   0.1, builder offers tribute when ≥1.5× supply, goal class produces acceptProposal call when
   proposal pending, evaluator weight flows from JSON personality.
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.CI.VISUAL-BATTERY-HOOK — `.github/workflows/ci.yml` gains a new job
+- [x] (shipped in PR #44 / v0.1.16) M_V8.CI.VISUAL-BATTERY-HOOK — `.github/workflows/ci.yml` gains a new job
   `visual-battery` that runs when the diff touches `src/render/**`, `src/world/**`, `src/hud/**`,
   `src/ui/**`. Job: install deps → `pnpm visual:battery:ci`. Conditional via
   `paths-filter` action (dorny/paths-filter@v3). Job must not block the main `test` job (parallel).
   If `visual:battery:ci` exits non-zero (drift detected), CI fails. 1 CI spec test pins: the
   `visual-battery` job is present in ci.yml and references `pnpm visual:battery:ci`.
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.TUTORIAL.N-PLAYER-MODE — `OnboardingOverlay.tsx`: detect when `game.factions.length > 2`
+- [x] (shipped in PR #44 / v0.1.16) M_V8.TUTORIAL.N-PLAYER-MODE — `OnboardingOverlay.tsx`: detect when `game.factions.length > 2`
   and inject one additional slide after the existing "claim territory" slide:
   "**Multiple Factions** — You're playing with {N} factions. Diplomacy, tribute, and barbarian camps
   all scale with faction count. Forge alliances or play every faction against each other." Slide
   index guard: in 2-faction mode the slide is not rendered (no index shift for existing slides).
   2 browser tests pin: slide appears in 4-faction game, slide absent in 2-faction game.
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.PERF.PROFILE-PASS — Chrome performance trace via chrome-devtools-mcp (or Playwright
+- [x] (shipped in PR #44 / v0.1.16) M_V8.PERF.PROFILE-PASS — Chrome performance trace via chrome-devtools-mcp (or Playwright
   `tracing.start/stop`) against the dev server with `?ai-vs-ai=1&nplayer=4&seed=42`. Capture trace,
   identify any blocking tasks > 50ms in the sim tick loop. If found: fix root cause (common
   suspects: `world.query()` inside hot loops, unthrottled outline renders, full-board zone sweeps).
   Document findings in `.full-review/v0.8-perf.md`. Acceptance: no task > 50ms in a 10s window at
   4-player AI-vs-AI, OR documented + triaged with owner.
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.REVIEWER.FULL-CYCLE — dispatch `comprehensive-review:full-review` against
+- [x] (shipped in PR #44 / v0.1.16) M_V8.REVIEWER.FULL-CYCLE — dispatch `comprehensive-review:full-review` against
   `git diff origin/main` early in cycle (after first 3 commits). Fold CRITICAL + HIGH findings into
   the nearest forward commit. Log review output to `.full-review/v0.8-cycle-opening.md`. This item
   marks `[x]` when the review file exists + all CRITICAL findings have a resolution note.
 
-- [ ] [WAIT] (v0.8 grinder) M_V8.PARKING-LOT.V06 — drain any `[WAIT]` items from the v0.5/v0.6 parking lot that are
+- [x] (shipped in PR #44 / v0.1.16) M_V8.PARKING-LOT.V06 — drain any `[WAIT]` items from the v0.5/v0.6 parking lot that are
   now unblocked. Specifically: `M_FUN.FACTION.ASYMMETRIC-BUILDINGS` (per-faction building meshes
   via archetype registry — archetype JSON already ships, mesh loader is the remaining step).
   Check each `[WAIT]` item's blocker tag; if the blocker is resolved, implement and mark `[x]`.
