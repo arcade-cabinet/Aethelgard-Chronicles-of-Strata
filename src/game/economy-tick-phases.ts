@@ -301,6 +301,33 @@ export function tickDepositPhase(game: GameState): void {
     if (ev.type === 'wood' && eco.peonMetrics.firstWoodAt < 0) {
       eco.peonMetrics.firstWoodAt = game.clock.elapsed;
     }
+    // M_HUD.NOTIF.PEON.1 — first deposit per resource type per
+    // session for the PLAYER faction fires a Chronicler-voice
+    // toast. After the first, every subsequent deposit is silent
+    // (the floating "+N" text already exists for the per-deposit
+    // beat). Dedup id keyed by resource so it never re-fires.
+    if (typeof window !== 'undefined' && ev.faction === 'player') {
+      const firstForType =
+        (ev.type === 'wood' && eco.peonMetrics.firstWoodAt === game.clock.elapsed) ||
+        (ev.type !== 'wood' && !game.peonFirstHarvestToastedTypes?.has(ev.type));
+      if (firstForType) {
+        if (!game.peonFirstHarvestToastedTypes) game.peonFirstHarvestToastedTypes = new Set();
+        game.peonFirstHarvestToastedTypes.add(ev.type);
+        window.dispatchEvent(
+          new CustomEvent('aethelgard:toast', {
+            detail: {
+              id: `first-harvest-${ev.type}`,
+              tone: 'info',
+              title: `Your peons have begun harvesting ${ev.type}`,
+              description: `The realm's ${ev.type} reserves are now growing.`,
+              // No focus — the deposit is at the Town Hall (already
+              // on screen) and the player's attention should stay
+              // wherever they are, not jolt back to the keep.
+            },
+          }),
+        );
+      }
+    }
   }
   // M_V6.DIPLO.TRIBUTE — apply per-tick cession after deposits land so
   // the tributary's pile reflects the harvest first, THEN cedes 10% of

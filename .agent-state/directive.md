@@ -157,10 +157,14 @@ stockpile, no pre-spawned peons or military.
       to Town Hall / Take command / Resume automation. Military
       get Attack-move / Patrol / Hold position / Fall back. Mixed
       shows the intersection.
-- [ ] M_HUD.NOTIF.PEON.1 — First-peon-task-per-resource narrator
-      toast: when the first peon picks up wood/stone/gold for the
-      session, surface "Your peons have begun harvesting [resource]."
-      Cap at one per resource type per match.
+- [x] M_HUD.NOTIF.PEON.1 — First-deposit-per-resource narrator
+      toast wired in economy-tick-phases.ts tickDepositPhase. The
+      PLAYER faction's first wood/stone/gold deposit fires an
+      info-tone toast "Your peons have begun harvesting [resource]";
+      tracked via a new GameState.peonFirstHarvestToastedTypes Set
+      so subsequent deposits are silent. No focus on the toast —
+      the deposit is at the Town Hall which is already on screen,
+      and a tap-jolt back to the keep would disorient.
 - [ ] M_HUD.NOTIF.2 — Toast queue policy: 3 simultaneous visible,
       FIFO oldest-dismisses. Critical toasts (enemy at Town Hall,
       Wonder completed) bypass the cap and stack on top.

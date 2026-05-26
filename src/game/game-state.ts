@@ -451,6 +451,13 @@ export interface GameState {
    */
   lastResourceEvents: ResourceDepositEvent[];
   /**
+   * M_HUD.NOTIF.PEON.1 — set of resource types for which the player
+   * has already received the "first harvest" narrator toast this
+   * session. Prevents the toast from re-firing on every wood
+   * deposit. Optional because pre-v0.10 saves don't carry it.
+   */
+  peonFirstHarvestToastedTypes?: Set<string>;
+  /**
    * Auto-save timer. Attached by the App layer (which owns the persistence
    * facade); when present, `runEconomyTick` advances it. Absent in tests and
    * headless sims that do not persist.
