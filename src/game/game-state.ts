@@ -78,7 +78,6 @@ import { createMythEventsState, type MythEventsState } from './myth-events';
 import { createRally, type RallyState } from './rally';
 import { createRandomEventsState, type RandomEventsState } from './random-events';
 import { createResearch, type ResearchState } from './research';
-import type { VictoryRecord } from './victory-conditions';
 import { createWeather, type Weather } from './weather';
 import { createZoneState, seedZonesFromAttractors, type ZoneState } from './zone';
 
@@ -98,14 +97,15 @@ export interface NewGameConfig {
   eventSeed: string;
   /**
    * Game mode preset (M_MODES.1 + M_BRAND.1). Drives default
-   * mapSize / matchLength / turnsMode / mapType / win-condition
-   * rules. Defaults to 'border-clash' when omitted.
+   * mapSize / matchLength / mapType / win-condition rules.
+   * Defaults to 'border-clash' when omitted.
    *   border-clash:   balanced 2-base RTS — the M_MAPGEN guided gen.
    *   frontier-raid:  pure-noise asymmetric map, fast.
    *   long-reign:     TownHalls invulnerable; resign/starve only.
    *   strata-wars:    continent map, longer match, scaled tech tree.
-   *   age-of-strata:  4X turn-based — eXplore/eXpand/eXploit/eXterminate.
    *   coexistence:    no-win builder sandbox.
+   * Per docs/specs/200-genre-commitment.md (RTS commitment):
+   * 'age-of-strata' (4X turn-based) was stripped in v0.11.
    */
   mode?: GameMode;
   /**
@@ -186,7 +186,6 @@ export type GameMode =
   | 'frontier-raid'
   | 'long-reign'
   | 'strata-wars'
-  | 'age-of-strata'
   | 'coexistence';
 
 /** The live state of one play session. */
@@ -269,14 +268,6 @@ export interface GameState {
    * gate. Effect dispatch lives in tickClockPhase.
    */
   mythEvents: MythEventsState;
-  /**
-   * M_V6.4X-FULL — recorded victory condition + winner when the match
-   * ends via a named 4X-mode condition (military / economic / scientific /
-   * diplomatic). null when no condition has fired yet. The end-of-game
-   * scoring screen reads this to render the named outcome ("Glorious
-   * Economic Victory!" etc).
-   */
-  victoryRecord: VictoryRecord | null;
   /** Per-faction resource totals and supply — both factions are symmetric. */
   economy: Record<Faction, GameEconomy>;
   /**
@@ -955,7 +946,6 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     diplomacyProposals: createDiplomacyProposalState(),
     tradeCooldowns: createTradeCooldownState(),
     mythEvents: createMythEventsState(),
-    victoryRecord: null,
     economy,
     // M_V7.ECONOMY.REGISTRY — empty Map; economyFor() lazy-creates
     // entries when a non-legacy factionId is first looked up.

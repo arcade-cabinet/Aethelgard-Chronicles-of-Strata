@@ -17,8 +17,6 @@ import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
-import { EndTurnButton } from '@/hud/EndTurnButton';
-import { EraProgressPill } from '@/hud/EraProgressPill';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { FactionChips } from '@/hud/FactionChips';
 import { GameOverModal } from '@/hud/GameOverModal';
@@ -37,7 +35,6 @@ import { PersistAchievements } from '@/hud/PersistAchievements';
 import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { ResourceBar } from '@/hud/ResourceBar';
 import { ScoreBar } from '@/hud/ScoreBar';
-import { ScoringScreen } from '@/hud/ScoringScreen';
 import { ScreenshotButton } from '@/hud/ScreenshotButton';
 import { SelectionPanel } from '@/hud/SelectionPanel';
 import { SettingsModal } from '@/hud/SettingsModal';
@@ -346,7 +343,6 @@ function GameSession({
           <SpeedControl game={game} />
         </>
       )}
-      <EndTurnButton game={game} />
       <DiscoveriesPanel game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
@@ -371,8 +367,6 @@ function GameSession({
       <TributeDemandBanner game={game} />
       {/* M_POLISH2.MODES.42 — strata-wars only: zone-control % chip. */}
       <ZoneControlPill game={game} />
-      {/* M_POLISH2.MODES.43 — age-of-strata only: era progression pill. */}
-      <EraProgressPill game={game} />
       {/* M_POLISH2.MODES.42b — strata-wars only: tile-flip red-pulse. */}
       <ZoneFlipPulse game={game} />
       {/* M_POLISH2.MODES.44b — coexistence only: screenshot the realm. */}
@@ -386,9 +380,8 @@ function GameSession({
           appends the N-player slide when 3+ factions are in the match. */}
       <OnboardingOverlay persistence={persistence} factionCount={game.factions.length} />
       <GameOverModal game={game} persistence={persistence} />
-      {/* M_V7.4X.SCORING — only renders in age-of-strata mode AND when
-          game.victoryRecord is non-null. Legacy modes keep GameOverModal. */}
-      <ScoringScreen game={game} />
+      {/* M_V11.PURGE — ScoringScreen was 4X-only (age-of-strata
+          named-victory panel). RTS modes use GameOverModal. */}
       {/* M_AUDIT2.UX.12 — single hidden aria-live region; the bus
           (src/hud/aria-live-bus.ts) lets any sim event announce
           accessibly without lifting state. */}

@@ -108,24 +108,6 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     maxTurns: null,
     defaultPlayerCount: 2,
   },
-  // age-of-strata → archipelago: 4X exploration; many islands +
-  //   channels-as-funnels reward scouting + naval/settler play.
-  'age-of-strata': {
-    mapSize: 'huge',
-    matchLength: 'long',
-    turnsMode: 'turn-based',
-    mapType: 'archipelago',
-    guidedMapGen: true,
-    invulnerableBases: false,
-    // M_TURNS.2 — 60 turns is the 4X-genre canonical match length
-    // (Civ standard) — long enough for tech progression, short
-    // enough that a session fits in one sitting.
-    maxTurns: 60,
-    // M_PIVOT.MODES.4X — 4X mode defaults to 6-player FFA. The
-    // barbarian-camp auto-spawn in startGame picks up the factions
-    // count + creates clamp(round(6/2)+1, 1, 6) = 4 camps.
-    defaultPlayerCount: 6,
-  },
   // M_EXPANSION.F.100 — Coexistence: no win condition. Sparse
   //   mountains (archipelago) keep the sandbox permissive;
   //   invulnerableBases prevents either base from dying;

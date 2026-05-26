@@ -76,7 +76,7 @@ export function Toasts() {
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<ToastSpec>).detail;
-      if (!detail || !detail.title) return;
+      if (!detail?.title) return;
       setQueue((prev) => {
         const next = [...prev];
         // Dedup by id if supplied — replace in-place.

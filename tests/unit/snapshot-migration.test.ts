@@ -85,7 +85,7 @@ describe('snapshot migration framework (M_EXPANSION.S.61)', () => {
     expect(restored.tradeCooldowns.cooldowns.size).toBe(0);
     expect(restored.mythEvents.lastFireSeconds).toBe(-1);
     expect(restored.mythEvents.active).toBeNull();
-    expect(restored.victoryRecord).toBeNull();
+    // M_V11.PURGE — victoryRecord field gone (was 4X-only).
     expect(restored.portalStoneCooldowns.size).toBe(0);
   });
 
@@ -111,7 +111,7 @@ describe('snapshot migration framework (M_EXPANSION.S.61)', () => {
     expect(restored.tradeCooldowns.cooldowns.size).toBe(0);
     expect(restored.mythEvents.lastFireSeconds).toBe(-1);
     expect(restored.mythEvents.active).toBeNull();
-    expect(restored.victoryRecord).toBeNull();
+    // M_V11.PURGE — victoryRecord field gone (was 4X-only).
     expect(restored.portalStoneCooldowns.size).toBe(0);
   });
 });

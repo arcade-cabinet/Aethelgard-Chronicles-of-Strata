@@ -100,25 +100,9 @@ describe('M_V7.CARRY.SAVE-V6-STATE — v0.6 substrate round-trip', () => {
     expect(restored.mythEvents.active?.expiresAtSeconds).toBe(560);
   });
 
-  it('victoryRecord round-trips when non-null; null stays null', () => {
-    const game = fresh();
-    // Non-null first.
-    game.victoryRecord = {
-      kind: 'economic',
-      winner: 'player-3',
-      detectedAtSeconds: 900,
-    };
-    const snap = serializeGame(game);
-    expect(snap.victoryRecord?.kind).toBe('economic');
-    const restored = deserializeGame(JSON.parse(JSON.stringify(snap)));
-    expect(restored.victoryRecord?.kind).toBe('economic');
-    expect(restored.victoryRecord?.winner).toBe('player-3');
-    expect(restored.victoryRecord?.detectedAtSeconds).toBe(900);
-    // Null branch — same game, reset to null, re-serialize.
-    game.victoryRecord = null;
-    const snap2 = serializeGame(game);
-    expect(snap2.victoryRecord).toBeNull();
-  });
+  // M_V11.PURGE — victoryRecord round-trip test deleted (the
+  // field was 4X-only). Other v6-state round-trips below still
+  // cover the substrate.
 
   it('FactionConfigSchema rejects duplicate faction ids (HIGH-4)', () => {
     const game = fresh();
