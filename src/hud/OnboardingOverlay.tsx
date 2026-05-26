@@ -242,6 +242,8 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                 <div className="flex items-center justify-between gap-3 border-t border-[var(--color-border)] px-6 py-4">
                   <button
                     type="button"
+                    aria-label="Skip the tutorial"
+                    data-testid="onboarding-skip"
                     onClick={markSeen}
                     className="rounded-md px-3 py-2 text-xs text-[var(--color-on-surface-muted)] hover:bg-white/5 hover:text-[var(--color-on-surface)]"
                   >

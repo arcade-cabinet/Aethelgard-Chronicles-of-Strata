@@ -148,13 +148,22 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
           </TreasureButton>
           <SecondaryButton
             id="menu-continue"
+            ariaLabel={
+              onContinue
+                ? 'Continue the most recent auto-save'
+                : 'Continue (no saved game yet)'
+            }
             onClick={onContinue ?? (() => undefined)}
             disabled={!onContinue}
             disabledReason="No saved game yet — start a New Game"
           >
             Continue
           </SecondaryButton>
-          <GhostButton id="menu-settings" onClick={onSettings}>
+          <GhostButton
+            id="menu-settings"
+            ariaLabel="Open game settings"
+            onClick={onSettings}
+          >
             Settings
           </GhostButton>
         </motion.div>
@@ -204,6 +213,8 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
         <button
           type="button"
           id="title-credits"
+          aria-label="Open credits"
+          data-testid="title-credits"
           onClick={() => setShowCredits(true)}
           className="text-[var(--color-accent)] underline-offset-2 hover:underline"
         >
@@ -220,17 +231,27 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
 
 interface ButtonBaseProps {
   id: string;
+  /** Required for screen-reader + Maestro reachability. */
+  ariaLabel: string;
   onClick: () => void;
   children: React.ReactNode;
   disabled?: boolean;
   disabledReason?: string;
 }
 
-function SecondaryButton({ id, onClick, children, disabled, disabledReason }: ButtonBaseProps) {
+function SecondaryButton({
+  id,
+  ariaLabel,
+  onClick,
+  children,
+  disabled,
+  disabledReason,
+}: ButtonBaseProps) {
   return (
     <button
       type="button"
       id={id}
+      aria-label={ariaLabel}
       onClick={onClick}
       disabled={disabled}
       aria-disabled={disabled}
@@ -253,11 +274,12 @@ function SecondaryButton({ id, onClick, children, disabled, disabledReason }: Bu
   );
 }
 
-function GhostButton({ id, onClick, children }: ButtonBaseProps) {
+function GhostButton({ id, ariaLabel, onClick, children }: ButtonBaseProps) {
   return (
     <button
       type="button"
       id={id}
+      aria-label={ariaLabel}
       onClick={onClick}
       className={cn(
         'rounded-xl border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-6 py-3 font-display text-base',
