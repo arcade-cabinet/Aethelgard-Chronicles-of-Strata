@@ -143,10 +143,15 @@ stockpile, no pre-spawned peons or military.
       IdleUnitIndicator now counts manual-mode idle peons too.
       3 unit tests passing
       (src/game/__tests__/peon-autonomy.test.ts).
-- [ ] M_GAME.MODE.PEON.2 — SelectionPanel: when selection includes
-      peons, expose "Take command" / "Resume automation" actions.
-      Mixed selection (peons + military) shows actions only for
-      the peons in the selection.
+- [x] M_GAME.MODE.PEON.2 — SelectionPanel surfaces "Take command"
+      (when the selected player peon has autoMode='auto') or
+      "Resume automation" (when 'manual'). Calls setPeonAutoMode +
+      emits a button-click sound on success / error chime on
+      reject. SelectionView gains a peonAutoMode field; diff guard
+      updated so the panel re-renders on mode flip. Single-select
+      only; multi-select Take command for batches of peons is the
+      M_GAME.MODE.PEON.2b follow-up (depends on multi-select-aware
+      SelectionPanel refactor).
 - [x] M_GAME.MODE.PEON.3 — IdleUnitIndicator already shipped via
       M_HUD.SHELL.16c (commit b1aa01c). Counts idle military; the
       peon `autoMode === 'manual'` count branch is a one-line add

@@ -7,11 +7,12 @@ import {
   type BuildingType,
   FactionTrait,
   Health,
+  PeonAutonomy,
   Stance,
   type StanceMode,
   Unit,
 } from '@/ecs/components';
-import { doResearch, setStance, trainUnit } from '@/game/commands';
+import { doResearch, setPeonAutoMode, setStance, trainUnit } from '@/game/commands';
 import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
@@ -71,6 +72,12 @@ interface SelectionView {
   stance: StanceMode | null;
   /** M_HUD.SHELL.16b — selected faction's banner colour for left-rail accent. */
   factionColor: string;
+  /**
+   * M_GAME.MODE.PEON.2 — autoMode of the selected peon, or null for
+   * non-peon / non-player selections. Drives the Take command /
+   * Resume automation button on the SelectionPanel.
+   */
+  peonAutoMode: 'auto' | 'manual' | null;
 }
 
 /** Build a display view from the selected entity. */
@@ -93,6 +100,7 @@ function viewOf(game: GameState): SelectionView | null {
       buildingType: building.buildingType,
       stance: null,
       factionColor,
+      peonAutoMode: null,
     };
   }
   const unit = entity.get(Unit);
@@ -101,15 +109,27 @@ function viewOf(game: GameState): SelectionView | null {
     const hp = health ? ` — ${health.current}/${health.max} HP` : '';
     // M_POLISH2.RTS.16 — expose stance for military unit types.
     const stanceTrait = MILITARY_UNIT_TYPES.has(unit.unitType) ? entity.get(Stance) : null;
+    // M_GAME.MODE.PEON.2 — surface peon autoMode for the player's
+    // peons only (enemy peons are not commandable).
+    const isPlayerPeon = unit.unitType === 'Peon' && factionId === 'player';
+    const peonAutoMode = isPlayerPeon ? (entity.get(PeonAutonomy)?.autoMode ?? null) : null;
     return {
       name: unit.unitType,
       task: `Ready${hp}`,
       buildingType: null,
       stance: stanceTrait?.mode ?? null,
       factionColor,
+      peonAutoMode,
     };
   }
-  return { name: 'Unknown', task: '', buildingType: null, stance: null, factionColor };
+  return {
+    name: 'Unknown',
+    task: '',
+    buildingType: null,
+    stance: null,
+    factionColor,
+    peonAutoMode: null,
+  };
 }
 
 /**
@@ -226,7 +246,8 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
         next.name === prev.name &&
         next.task === prev.task &&
         next.buildingType === prev.buildingType &&
-        next.stance === prev.stance
+        next.stance === prev.stance &&
+        next.peonAutoMode === prev.peonAutoMode
       ) {
         return prev;
       }
@@ -365,6 +386,24 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                     );
                   })}
                 </fieldset>
+              </div>
+            )}
+
+            {/* M_GAME.MODE.PEON.2 — peon autonomy action. When the
+                selected entity is a player peon, expose Take command
+                (if currently auto) or Resume automation (if manual). */}
+            {view.peonAutoMode !== null && (
+              <div style={{ marginTop: 10 }}>
+                <HudButton
+                  label={view.peonAutoMode === 'auto' ? 'Take command' : 'Resume automation'}
+                  onClick={() => {
+                    const entity = selectedEntity(game);
+                    if (!entity) return;
+                    const nextMode = view.peonAutoMode === 'auto' ? 'manual' : 'auto';
+                    const ok = setPeonAutoMode(game, entity, nextMode);
+                    emitUiSound(ok ? 'ui-button-click' : 'ui-error');
+                  }}
+                />
               </div>
             )}
 
