@@ -201,7 +201,9 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
                       <li key={row.id}>
                         <button
                           type="button"
+                          id={`system-menu-${row.id}`}
                           data-testid={`system-menu-${row.id}`}
+                          aria-label={row.label}
                           onClick={row.onSelect}
                           className={cn(
                             'hud-interactive flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors',

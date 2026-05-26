@@ -1,9 +1,11 @@
 ---
-# nplayer-setup.yaml — Aethelgard v0.10 N-player FFA setup flow.
+# nplayer-setup.yaml — Aethelgard v0.11 player-setup flow.
 #
-# Boots to launcher, opens Forge Your Realm, picks Age of Strata mode,
-# drives the N-player slider, verifies per-slot color rows render,
-# then begins the match. Pins the v0.5+ N-player picker contract.
+# Per M_V11.PURGE, the N-player FFA picker + age-of-strata mode
+# were stripped (RTS commitment). v0.11 ships ONLY 2-faction RTS
+# modes. This flow now drives the simpler player setup: launcher
+# → Forge Your Realm → faction-colors-row picker → Begin Match
+# → onboarding overlay.
 appId: com.arcadecabinet.aethelgard
 ---
 - launchApp
@@ -12,29 +14,17 @@ appId: com.arcadecabinet.aethelgard
 - assertVisible:
     text: "Forge Your Realm"
 
-# Pick Age of Strata mode in the Mode section.
-- tapOn:
-    text: "Age of Strata"
+# The Players section uses a faction-colors-row to pick the
+# player + enemy banner colors (replaces the prior N-player slider).
 - assertVisible:
-    id: "n-player-picker"
-- assertVisible:
-    id: "n-player-slider"
-- assertVisible:
-    id: "n-player-count"
-- assertVisible:
-    id: "n-player-color-slots"
+    id: "faction-colors-row"
 
-# Each default slot must render.
+# Confirm Begin Match CTA is reachable.
 - assertVisible:
-    id: "n-player-slot-0"
-- assertVisible:
-    id: "n-player-slot-1"
-
-# Begin Match.
-- tapOn:
     id: "begin-game"
 - tapOn:
-    text: "Skip tutorial"
-    optional: true
+    id: "begin-game"
+
+# Onboarding overlay should appear over the freshly-started game.
 - assertVisible:
-    id: "system-menu-trigger"
+    id: "onboarding-overlay"
