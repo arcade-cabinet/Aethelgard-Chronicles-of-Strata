@@ -83,21 +83,11 @@
   --duration-default: 240ms;
   --duration-slow: 360ms;
 
-  /* ─── LEGACY ALIASES — keep -hud names alive for the migration. ─── */
-  --color-obsidian: var(--color-bg);
-  --color-panel: var(--color-surface);
-  --color-panel-solid: var(--color-surface-solid);
-  --color-border-hud: var(--color-border);
-  --color-text-hud: var(--color-on-surface);
-  --color-muted-hud: var(--color-on-surface-muted);
-  --color-accent-hud: var(--color-accent);
-  --color-gold-hud: var(--color-treasure);
-  --color-wood-hud: var(--color-wood);
-  --color-stone-hud: var(--color-stone);
-  --color-coin-hud: var(--color-coin);
-  --color-supply-hud: var(--color-supply);
-  --color-friendly-hud: var(--color-friendly);
-  --color-danger-hud: var(--color-danger);
+  /* (M_HUD.SHELL.7) Legacy aliases removed — all five Tailwind-utility
+   * HUD pages migrated to semantic names. The legacy TypeScript constant
+   * HUD_THEME.color.* in src/hud/hud-theme.ts still uses raw hex (it's
+   * consumed by inline-style components outside the Tailwind migration
+   * scope) and remains the source for those surfaces. */
 }
 
 /* ─────────────────────────────────────────────────────────────────────

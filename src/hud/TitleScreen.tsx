@@ -68,7 +68,7 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
     <main
       id="title-screen"
       aria-label="Aethelgard main menu"
-      className="hud-interactive relative h-dvh w-screen overflow-hidden text-[var(--color-text-hud)] font-body"
+      className="hud-interactive relative h-dvh w-screen overflow-hidden text-[var(--color-on-surface)] font-body"
       style={{ fontFamily: 'var(--font-body)' }}
     >
       <TitleBackground reducedMotion={reducedMotion} />
@@ -84,7 +84,7 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
           custom={0}
           className="text-center"
         >
-          <p className="text-xs uppercase tracking-[0.5em] text-[var(--color-muted-hud)]">
+          <p className="text-xs uppercase tracking-[0.5em] text-[var(--color-on-surface-muted)]">
             Chronicles of
           </p>
         </motion.div>
@@ -126,12 +126,12 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
           className="text-center"
         >
           <p
-            className="text-base uppercase tracking-[0.4em] text-[var(--color-accent-hud)]"
+            className="text-base uppercase tracking-[0.4em] text-[var(--color-accent)]"
             aria-hidden="true"
           >
             Chronicles of Strata
           </p>
-          <p className="mt-3 max-w-xl text-sm italic text-[var(--color-muted-hud)]">
+          <p className="mt-3 max-w-xl text-sm italic text-[var(--color-on-surface-muted)]">
             Command the hex. Shape the era. Outlast the tribes.
           </p>
         </motion.div>
@@ -191,7 +191,7 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
       {/* Footer meta row — bottom-left version + credits. */}
       <div
         id="title-footer"
-        className="hud-interactive absolute z-20 flex items-center gap-3 text-[0.62rem] uppercase tracking-[0.18em] text-[var(--color-muted-hud)]"
+        className="hud-interactive absolute z-20 flex items-center gap-3 text-[0.62rem] uppercase tracking-[0.18em] text-[var(--color-on-surface-muted)]"
         style={{
           bottom: 'calc(var(--safe-bottom) + 12px)',
           left: 'calc(var(--safe-left) + 16px)',
@@ -205,7 +205,7 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
           type="button"
           id="title-credits"
           onClick={() => setShowCredits(true)}
-          className="text-[var(--color-accent-hud)] underline-offset-2 hover:underline"
+          className="text-[var(--color-accent)] underline-offset-2 hover:underline"
         >
           Credits
         </button>
@@ -262,14 +262,14 @@ function SecondaryButton({ id, onClick, children, disabled, disabledReason }: Bu
         'bg-gradient-to-b from-[#1a2230] to-[#0b1018]',
         'transition-all duration-150',
         disabled
-          ? 'cursor-default border-white/10 text-[var(--color-muted-hud)] opacity-60'
-          : 'border-[var(--color-gold-hud)]/40 text-[var(--color-gold-hud)] shadow-[0_4px_16px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(212,175,55,0.08)] hover:-translate-y-0.5 hover:border-[var(--color-gold-hud)]/70 active:translate-y-0 active:scale-[0.97]',
+          ? 'cursor-default border-white/10 text-[var(--color-on-surface-muted)] opacity-60'
+          : 'border-[var(--color-treasure)]/40 text-[var(--color-treasure)] shadow-[0_4px_16px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(212,175,55,0.08)] hover:-translate-y-0.5 hover:border-[var(--color-treasure)]/70 active:translate-y-0 active:scale-[0.97]',
       )}
       style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
     >
       <span className="relative z-10">{children}</span>
       {!disabled && (
-        <span className="absolute inset-0 bg-gradient-to-t from-[var(--color-gold-hud)]/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+        <span className="absolute inset-0 bg-gradient-to-t from-[var(--color-treasure)]/10 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
       )}
     </button>
   );
@@ -282,9 +282,9 @@ function GhostButton({ id, onClick, children }: ButtonBaseProps) {
       id={id}
       onClick={onClick}
       className={cn(
-        'rounded-xl border border-[var(--color-accent-hud)]/40 bg-[var(--color-panel)] px-6 py-3 font-display text-base',
-        'text-[var(--color-accent-hud)] transition-all duration-150',
-        'hover:border-[var(--color-accent-hud)]/70 hover:bg-[var(--color-panel-solid)]/80',
+        'rounded-xl border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-6 py-3 font-display text-base',
+        'text-[var(--color-accent)] transition-all duration-150',
+        'hover:border-[var(--color-accent)]/70 hover:bg-[var(--color-surface-solid)]/80',
         'active:scale-[0.97]',
       )}
       style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
@@ -310,9 +310,9 @@ function IconButton({
       aria-label={ariaLabel}
       className={cn(
         'flex h-10 w-10 items-center justify-center rounded-lg',
-        'border border-[var(--color-border-hud)] bg-[var(--color-panel)] text-[var(--color-gold-hud)]',
+        'border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-treasure)]',
         'shadow-md backdrop-blur transition-colors',
-        'hover:border-[var(--color-gold-hud)]/60 hover:text-[var(--color-text-hud)]',
+        'hover:border-[var(--color-treasure)]/60 hover:text-[var(--color-on-surface)]',
         'active:scale-95',
       )}
     >

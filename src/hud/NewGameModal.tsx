@@ -79,22 +79,22 @@ function SectionCard({
       transition={{ duration: 0.32, delay, ease: [0.16, 1, 0.3, 1] }}
       className={cn(
         'rounded-2xl border bg-[rgba(15,23,42,0.55)] backdrop-blur',
-        'border-[var(--color-border-hud)]',
+        'border-[var(--color-border)]',
         'shadow-[0_6px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(56,189,248,0.06)]',
       )}
     >
-      <header className="flex items-baseline justify-between gap-3 border-b border-[var(--color-border-hud)] px-5 pb-3 pt-4">
+      <header className="flex items-baseline justify-between gap-3 border-b border-[var(--color-border)] px-5 pb-3 pt-4">
         <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-[var(--color-gold-hud)]" aria-hidden />
+          <Icon className="h-4 w-4 text-[var(--color-treasure)]" aria-hidden />
           <h3
-            className="font-display text-base font-semibold tracking-[0.08em] text-[var(--color-gold-hud)]"
+            className="font-display text-base font-semibold tracking-[0.08em] text-[var(--color-treasure)]"
             style={{ fontFamily: 'var(--font-display)' }}
           >
             {title}
           </h3>
         </div>
         {caption && (
-          <p className="hidden text-xs italic text-[var(--color-muted-hud)] sm:block">{caption}</p>
+          <p className="hidden text-xs italic text-[var(--color-on-surface-muted)] sm:block">{caption}</p>
         )}
       </header>
       <div className="px-5 py-4">{children}</div>
@@ -274,8 +274,8 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                 className={cn(
                   'fixed left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col',
                   'w-[min(760px,calc(100vw-32px))] max-h-[min(88dvh,860px)] overflow-hidden',
-                  'rounded-3xl border bg-[var(--color-panel-solid)] text-[var(--color-text-hud)]',
-                  'border-[var(--color-border-hud)] shadow-2xl',
+                  'rounded-3xl border bg-[var(--color-surface-solid)] text-[var(--color-on-surface)]',
+                  'border-[var(--color-border)] shadow-2xl',
                 )}
                 style={{
                   zIndex: 'var(--z-modal-content)',
@@ -283,15 +283,15 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                   fontFamily: 'var(--font-body)',
                 }}
               >
-                <header className="flex items-start justify-between gap-4 border-b border-[var(--color-border-hud)] px-7 pb-4 pt-6">
+                <header className="flex items-start justify-between gap-4 border-b border-[var(--color-border)] px-7 pb-4 pt-6">
                   <div>
                     <Dialog.Title
-                      className="font-display text-2xl font-bold tracking-[0.06em] text-[var(--color-gold-hud)]"
+                      className="font-display text-2xl font-bold tracking-[0.06em] text-[var(--color-treasure)]"
                       style={{ fontFamily: 'var(--font-display)' }}
                     >
                       Forge Your Realm
                     </Dialog.Title>
-                    <Dialog.Description className="mt-1 text-xs italic text-[var(--color-muted-hud)]">
+                    <Dialog.Description className="mt-1 text-xs italic text-[var(--color-on-surface-muted)]">
                       Configure the world before you set foot upon it.
                     </Dialog.Description>
                   </div>
@@ -299,7 +299,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                     {presetModified && (
                       <span
                         data-testid="preset-modified-indicator"
-                        className="flex items-center gap-1 rounded-full border border-[var(--color-accent-hud)]/40 bg-[var(--color-accent-hud)]/10 px-2 py-0.5 text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-accent-hud)]"
+                        className="flex items-center gap-1 rounded-full border border-[var(--color-accent)]/40 bg-[var(--color-accent)]/10 px-2 py-0.5 text-[0.65rem] uppercase tracking-[0.18em] text-[var(--color-accent)]"
                       >
                         <Sparkles className="h-3 w-3" aria-hidden /> Custom realm
                       </span>
@@ -308,7 +308,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                       <button
                         type="button"
                         aria-label="Close New Game setup"
-                        className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--color-muted-hud)] hover:bg-white/5 hover:text-[var(--color-text-hud)]"
+                        className="flex h-8 w-8 items-center justify-center rounded-md text-[var(--color-on-surface-muted)] hover:bg-white/5 hover:text-[var(--color-on-surface)]"
                       >
                         <X className="h-4 w-4" aria-hidden />
                       </button>
@@ -331,7 +331,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                           setSeedPhrase={setSeedPhrase}
                           eventRng={eventRng}
                         />
-                        <div className="flex items-center justify-center rounded-xl border border-[var(--color-border-hud)] bg-black/30 p-2">
+                        <div className="flex items-center justify-center rounded-xl border border-[var(--color-border)] bg-black/30 p-2">
                           <MapPreview
                             seedPhrase={seedPhrase.trim() || 'preview'}
                             mapRadius={MAP_SIZES[mapSize].radius}
@@ -395,7 +395,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                           <div className="flex items-center gap-4">
                             <label
                               htmlFor="n-player-slider"
-                              className="shrink-0 text-sm text-[var(--color-muted-hud)]"
+                              className="shrink-0 text-sm text-[var(--color-on-surface-muted)]"
                             >
                               Count
                             </label>
@@ -418,11 +418,11 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                                   );
                                 });
                               }}
-                              className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-[var(--color-border-hud)] accent-[var(--color-gold-hud)]"
+                              className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-[var(--color-border)] accent-[var(--color-treasure)]"
                             />
                             <span
                               data-testid="n-player-count"
-                              className="min-w-[2ch] text-right font-display text-2xl text-[var(--color-gold-hud)]"
+                              className="min-w-[2ch] text-right font-display text-2xl text-[var(--color-treasure)]"
                               style={{ fontFamily: 'var(--font-display)' }}
                             >
                               {nPlayer}
@@ -452,16 +452,16 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                                         : { opacity: 0, x: -8, height: 0 }
                                     }
                                     transition={{ duration: 0.18 }}
-                                    className="flex items-center gap-3 rounded-lg border border-[var(--color-border-hud)] bg-black/20 px-3 py-2"
+                                    className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-black/20 px-3 py-2"
                                   >
                                     {isYou ? (
                                       <Crown
-                                        className="h-4 w-4 text-[var(--color-gold-hud)]"
+                                        className="h-4 w-4 text-[var(--color-treasure)]"
                                         aria-hidden
                                       />
                                     ) : (
                                       <Bot
-                                        className="h-4 w-4 text-[var(--color-muted-hud)]"
+                                        className="h-4 w-4 text-[var(--color-on-surface-muted)]"
                                         aria-hidden
                                       />
                                     )}
@@ -498,14 +498,14 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                       >
                         <div
                           data-testid="faction-colors-row"
-                          className="flex flex-wrap items-center gap-6 text-sm text-[var(--color-muted-hud)]"
+                          className="flex flex-wrap items-center gap-6 text-sm text-[var(--color-on-surface-muted)]"
                         >
                           <div className="flex items-center gap-2">
                             <Crown
-                              className="h-4 w-4 text-[var(--color-gold-hud)]"
+                              className="h-4 w-4 text-[var(--color-treasure)]"
                               aria-hidden
                             />
-                            <span className="w-14 text-sm text-[var(--color-text-hud)]">
+                            <span className="w-14 text-sm text-[var(--color-on-surface)]">
                               Player
                             </span>
                             <FactionColorPicker
@@ -518,10 +518,10 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                           </div>
                           <div className="flex items-center gap-2">
                             <Bot
-                              className="h-4 w-4 text-[var(--color-danger-hud)]"
+                              className="h-4 w-4 text-[var(--color-danger)]"
                               aria-hidden
                             />
-                            <span className="w-14 text-sm text-[var(--color-text-hud)]">
+                            <span className="w-14 text-sm text-[var(--color-on-surface)]">
                               Enemy
                             </span>
                             <FactionColorPicker
@@ -538,12 +538,12 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                   </div>
                 </div>
 
-                <footer className="sticky bottom-0 border-t border-[var(--color-border-hud)] bg-[var(--color-panel-solid)]/95 px-6 py-4 backdrop-blur">
-                  <div className="mb-3 flex flex-wrap gap-1.5 text-[0.7rem] text-[var(--color-muted-hud)]">
+                <footer className="sticky bottom-0 border-t border-[var(--color-border)] bg-[var(--color-surface-solid)]/95 px-6 py-4 backdrop-blur">
+                  <div className="mb-3 flex flex-wrap gap-1.5 text-[0.7rem] text-[var(--color-on-surface-muted)]">
                     {readout.map(({ label, icon: Icon }) => (
                       <span
                         key={label}
-                        className="flex items-center gap-1 rounded-full border border-[var(--color-border-hud)] bg-black/30 px-2 py-0.5"
+                        className="flex items-center gap-1 rounded-full border border-[var(--color-border)] bg-black/30 px-2 py-0.5"
                       >
                         <Icon className="h-3 w-3" aria-hidden />
                         <span className="font-mono">{label}</span>

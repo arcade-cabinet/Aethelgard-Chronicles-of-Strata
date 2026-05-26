@@ -193,8 +193,8 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                 className={cn(
                   'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
                   'w-[min(560px,calc(100vw-32px))] max-h-[min(88dvh,720px)] overflow-hidden',
-                  'rounded-3xl border bg-[var(--color-panel-solid)] text-[var(--color-text-hud)]',
-                  'border-[var(--color-border-hud)] shadow-2xl',
+                  'rounded-3xl border bg-[var(--color-surface-solid)] text-[var(--color-on-surface)]',
+                  'border-[var(--color-border)] shadow-2xl',
                 )}
                 style={{
                   zIndex: 901,
@@ -232,13 +232,13 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                       <div
                         className={cn(
                           'flex h-12 w-12 items-center justify-center rounded-xl',
-                          'border border-[var(--color-gold-hud)]/50 bg-black/40 shadow-lg',
-                          'text-[var(--color-gold-hud)]',
+                          'border border-[var(--color-treasure)]/50 bg-black/40 shadow-lg',
+                          'text-[var(--color-treasure)]',
                         )}
                       >
                         <StepIcon className="h-6 w-6" aria-hidden />
                       </div>
-                      <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted-hud)]">
+                      <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-on-surface-muted)]">
                         Step {step + 1} of {steps.length}
                       </span>
                     </div>
@@ -255,8 +255,8 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                       aria-label={`Step ${i + 1} of ${steps.length}`}
                       className={cn(
                         'h-1.5 flex-1 rounded-full transition-colors',
-                        i < step && 'bg-[var(--color-muted-hud)]/60',
-                        i === step && 'bg-[var(--color-gold-hud)]',
+                        i < step && 'bg-[var(--color-on-surface-muted)]/60',
+                        i === step && 'bg-[var(--color-treasure)]',
                         i > step && 'bg-white/8',
                       )}
                     />
@@ -274,14 +274,14 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                       transition={{ duration: 0.24 }}
                     >
                       <Dialog.Title
-                        className="font-display text-2xl font-bold tracking-[0.04em] text-[var(--color-gold-hud)]"
+                        className="font-display text-2xl font-bold tracking-[0.04em] text-[var(--color-treasure)]"
                         style={{ fontFamily: 'var(--font-display)' }}
                       >
                         {current.title}
                       </Dialog.Title>
-                      <div className="mt-1 h-px w-12 bg-[var(--color-gold-hud)]/60" />
+                      <div className="mt-1 h-px w-12 bg-[var(--color-treasure)]/60" />
                       <Dialog.Description asChild>
-                        <p className="mt-4 text-sm leading-relaxed text-[var(--color-text-hud)]/90">
+                        <p className="mt-4 text-sm leading-relaxed text-[var(--color-on-surface)]/90">
                           {current.body}
                         </p>
                       </Dialog.Description>
@@ -290,11 +290,11 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                 </div>
 
                 {/* Action row */}
-                <div className="flex items-center justify-between gap-3 border-t border-[var(--color-border-hud)] px-6 py-4">
+                <div className="flex items-center justify-between gap-3 border-t border-[var(--color-border)] px-6 py-4">
                   <button
                     type="button"
                     onClick={markSeen}
-                    className="rounded-md px-3 py-2 text-xs text-[var(--color-muted-hud)] hover:bg-white/5 hover:text-[var(--color-text-hud)]"
+                    className="rounded-md px-3 py-2 text-xs text-[var(--color-on-surface-muted)] hover:bg-white/5 hover:text-[var(--color-on-surface)]"
                   >
                     Skip tutorial
                   </button>
@@ -306,10 +306,10 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                       aria-label="Previous step"
                       className={cn(
                         'flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
-                        'border-[var(--color-border-hud)] bg-black/30 text-[var(--color-muted-hud)]',
+                        'border-[var(--color-border)] bg-black/30 text-[var(--color-on-surface-muted)]',
                         step === 0
                           ? 'cursor-not-allowed opacity-40'
-                          : 'hover:border-[var(--color-accent-hud)]/60 hover:text-[var(--color-text-hud)]',
+                          : 'hover:border-[var(--color-accent)]/60 hover:text-[var(--color-on-surface)]',
                       )}
                     >
                       <ChevronLeft className="h-4 w-4" aria-hidden />

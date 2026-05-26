@@ -219,8 +219,8 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                 className={cn(
                   'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
                   'w-[min(560px,calc(100vw-32px))] max-h-[min(90dvh,820px)] overflow-y-auto',
-                  'rounded-3xl border bg-[var(--color-panel-solid)] text-[var(--color-text-hud)]',
-                  'border-[var(--color-border-hud)] shadow-2xl',
+                  'rounded-3xl border bg-[var(--color-surface-solid)] text-[var(--color-on-surface)]',
+                  'border-[var(--color-border)] shadow-2xl',
                 )}
                 style={{ zIndex: 1001, fontFamily: 'var(--font-body)' }}
               >
@@ -251,17 +251,17 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                   <div
                     className={cn(
                       'relative z-10 flex h-20 w-20 items-center justify-center rounded-full border-2 bg-black/40',
-                      isWin && 'border-[var(--color-gold-hud)]/70',
-                      isDraw && 'border-[var(--color-accent-hud)]/70',
-                      !isWin && !isDraw && 'border-[var(--color-danger-hud)]/70',
+                      isWin && 'border-[var(--color-treasure)]/70',
+                      isDraw && 'border-[var(--color-accent)]/70',
+                      !isWin && !isDraw && 'border-[var(--color-danger)]/70',
                     )}
                   >
                     <HeroIcon
                       className={cn(
                         'h-10 w-10',
-                        isWin && 'text-[var(--color-gold-hud)]',
-                        isDraw && 'text-[var(--color-accent-hud)]',
-                        !isWin && !isDraw && 'text-[var(--color-danger-hud)]',
+                        isWin && 'text-[var(--color-treasure)]',
+                        isDraw && 'text-[var(--color-accent)]',
+                        !isWin && !isDraw && 'text-[var(--color-danger)]',
                       )}
                       aria-hidden
                     />
@@ -283,7 +283,7 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                   >
                     {titleText}
                   </Dialog.Title>
-                  <Dialog.Description className="mt-3 max-w-[44ch] px-6 text-center text-sm italic text-[var(--color-muted-hud)]">
+                  <Dialog.Description className="mt-3 max-w-[44ch] px-6 text-center text-sm italic text-[var(--color-on-surface-muted)]">
                     {flavorText}
                   </Dialog.Description>
                 </div>
@@ -300,7 +300,7 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                   {game.mode === 'long-reign' && (
                     <div
                       id="long-reign-narrative"
-                      className="rounded-xl border border-[var(--color-border-hud)] bg-[rgba(56,189,248,0.08)] px-4 py-3 text-center text-sm text-[var(--color-gold-hud)]"
+                      className="rounded-xl border border-[var(--color-border)] bg-[rgba(56,189,248,0.08)] px-4 py-3 text-center text-sm text-[var(--color-treasure)]"
                       style={{ fontFamily: 'var(--font-display)' }}
                     >
                       👑 Survived {formatTime(game.clock.elapsed)} — Endured{' '}
@@ -314,9 +314,9 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                   {isNPlayer && factionRows.length > 0 && (
                     <div
                       id="nplayer-faction-grid"
-                      className="overflow-hidden rounded-xl border border-[var(--color-border-hud)] bg-black/30 text-left"
+                      className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-black/30 text-left"
                     >
-                      <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-3 border-b border-white/10 px-4 py-2 text-[0.72rem] uppercase tracking-[0.18em] text-[var(--color-muted-hud)]">
+                      <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-x-3 border-b border-white/10 px-4 py-2 text-[0.72rem] uppercase tracking-[0.18em] text-[var(--color-on-surface-muted)]">
                         <span>Faction</span>
                         <span>Kills</span>
                         <span>Score</span>
@@ -337,37 +337,37 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                             <span
                               className={cn(
                                 row.isWinner
-                                  ? 'font-semibold text-[var(--color-gold-hud)]'
-                                  : 'text-[var(--color-text-hud)]',
+                                  ? 'font-semibold text-[var(--color-treasure)]'
+                                  : 'text-[var(--color-on-surface)]',
                               )}
                             >
                               {row.displayName}
                             </span>
-                            <span className="text-[var(--color-accent-hud)]">
+                            <span className="text-[var(--color-accent)]">
                               {formatInt(row.kills)}
                             </span>
-                            <span className="text-[var(--color-accent-hud)]">
+                            <span className="text-[var(--color-accent)]">
                               {formatInt(row.score)}
                             </span>
                             <span
                               className={cn(
                                 'relation-badge',
                                 `relation-${row.relation}`,
-                                row.relation === 'ally' && 'text-[var(--color-accent-hud)]',
-                                row.relation === 'enemy' && 'text-[var(--color-danger-hud)]',
-                                row.relation === 'tributary' && 'text-[var(--color-gold-hud)]',
+                                row.relation === 'ally' && 'text-[var(--color-accent)]',
+                                row.relation === 'enemy' && 'text-[var(--color-danger)]',
+                                row.relation === 'tributary' && 'text-[var(--color-treasure)]',
                                 (row.relation === 'neutral' || row.relation === 'winner') &&
-                                  'text-[var(--color-muted-hud)]',
+                                  'text-[var(--color-on-surface-muted)]',
                               )}
                             >
                               {row.relation === 'winner' ? '—' : row.relation}
                             </span>
                             <span className="text-right">
                               {row.isWinner && (
-                                <span className="winner-badge text-[var(--color-gold-hud)]">★</span>
+                                <span className="winner-badge text-[var(--color-treasure)]">★</span>
                               )}
                               {row.isTributaryWinner && (
-                                <span className="tribute-ally-tag text-[var(--color-gold-hud)]">
+                                <span className="tribute-ally-tag text-[var(--color-treasure)]">
                                   ally
                                 </span>
                               )}
@@ -379,14 +379,14 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                   )}
 
                   {!isNPlayer && (
-                    <ul className="divide-y divide-white/10 overflow-hidden rounded-xl border border-[var(--color-border-hud)] bg-black/20">
+                    <ul className="divide-y divide-white/10 overflow-hidden rounded-xl border border-[var(--color-border)] bg-black/20">
                       {stats.map((s) => (
                         <li
                           key={s.label}
                           className="flex items-center justify-between px-4 py-2.5 text-sm"
                         >
-                          <span className="text-[var(--color-muted-hud)]">{s.label}</span>
-                          <span className="font-semibold text-[var(--color-accent-hud)]">
+                          <span className="text-[var(--color-on-surface-muted)]">{s.label}</span>
+                          <span className="font-semibold text-[var(--color-accent)]">
                             {s.value}
                           </span>
                         </li>
