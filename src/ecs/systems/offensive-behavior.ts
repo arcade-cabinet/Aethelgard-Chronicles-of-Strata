@@ -7,11 +7,15 @@ import {
   Health,
   HexPosition,
   OffensiveBehavior,
+  Stack,
+  StackMember,
   Transform,
   Unit,
 } from '@/ecs/components';
 import type { DamageEvent } from '@/ecs/systems/combat';
+import type { GameState } from '@/game/game-state';
 import { type Projectile, spawnProjectile } from '@/game/projectiles';
+import { damageStack } from '@/game/stacking';
 // M_REGISTRY.17 — MILITARY set unified into UNIT_PROFILES.combatRole.
 // Was a 6-role hand-built set duplicated across 3 modules; corrected
 // by-derivation to include Trebuchet (was missing in the legacy set).
@@ -97,10 +101,39 @@ export function offensiveBehaviorSystem(
         // like combat.ts does so the canonical store receives the
         // damage. Surfaced by the new test (offensive-behavior.test.ts).
         const applied = s.dps * delta;
-        target.set(Health, {
-          ...hp,
-          current: Math.max(0, hp.current - applied),
-        });
+        // M_V11.STACK.COMBAT — when the target is a Stack member,
+        // route the damage to the Stack's combinedHp via damageStack
+        // (which handles proportional member kills + auto-dissolve).
+        // The individual member's Health is left untouched; the
+        // stack is the authoritative damage container while the
+        // member is pinned to a cohort.
+        const sm = target.get(StackMember);
+        if (sm) {
+          let routed = false;
+          for (const stackEntity of world.query(Stack)) {
+            if (stackEntity.id() !== sm.stackId) continue;
+            // damageStack only reads from game.world; the rest of
+            // GameState is unused on this path. Cast over the
+            // narrow shape so we don't have to plumb a full GameState
+            // ref through every combat system signature.
+            damageStack({ world } as unknown as GameState, stackEntity, applied);
+            routed = true;
+            break;
+          }
+          if (!routed) {
+            // Stack ref stale (dissolved this tick) — fall through
+            // to individual damage so the unit isn't immortal.
+            target.set(Health, {
+              ...hp,
+              current: Math.max(0, hp.current - applied),
+            });
+          }
+        } else {
+          target.set(Health, {
+            ...hp,
+            current: Math.max(0, hp.current - applied),
+          });
+        }
         // M_EXPANSION.U.101 — push a DamageEvent so CombatText shows
         // a floating number above the target. Round to int — fractional
         // dps* delta reads as noisy. Skip 0-ish.
