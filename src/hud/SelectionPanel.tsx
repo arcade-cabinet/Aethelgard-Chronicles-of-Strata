@@ -5,25 +5,27 @@ import { emitUiSound } from '@/audio/ui-sound-emitter';
 import {
   Building,
   type BuildingType,
+  FactionTrait,
   Health,
+  PeonAutonomy,
   Stance,
   type StanceMode,
   Unit,
 } from '@/ecs/components';
-import { doResearch, setStance, trainUnit } from '@/game/commands';
+import { doResearch, setPeonAutoMode, setStance, trainUnit } from '@/game/commands';
 import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
 import { selectedEntity } from '@/game/selection';
+import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
+import type { BuildContext } from '@/world/TileInteraction';
+import { costLabel } from './format';
+import { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
 import {
   buildDisabledReason,
   researchDisabledReason,
   trainDisabledReason,
 } from './selection-panel-reasons';
-import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
-import type { BuildContext } from '@/world/TileInteraction';
-import { costLabel } from './format';
-import { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
 import { useRafLoop } from './useRafLoop';
 
 /** Buildable types derived from the BUILDING_COSTS table — NOT hardcoded. */
@@ -68,19 +70,38 @@ interface SelectionView {
   buildingType: BuildingType | null;
   /** Current stance of the selected military unit, or null for non-military. */
   stance: StanceMode | null;
+  /** M_HUD.SHELL.16b — selected faction's banner colour for left-rail accent. */
+  factionColor: string;
+  /**
+   * M_GAME.MODE.PEON.2 — autoMode of the selected peon, or null for
+   * non-peon / non-player selections. Drives the Take command /
+   * Resume automation button on the SelectionPanel.
+   */
+  peonAutoMode: 'auto' | 'manual' | null;
 }
 
 /** Build a display view from the selected entity. */
 function viewOf(game: GameState): SelectionView | null {
   const entity = selectedEntity(game);
   if (!entity) return null;
+  const factionTrait = entity.get(FactionTrait);
+  const factionId = factionTrait?.faction ?? 'player';
+  const factionColor =
+    game.factions.find((f) => f.id === factionId)?.color ?? HUD_THEME.color.friendly;
   const building = entity.get(Building);
   if (building) {
     const meta = displayFor(building.buildingType);
     const task = building.isComplete
       ? 'Operational'
       : `Constructing — ${Math.round(building.progress * 100)}%`;
-    return { name: meta.name, task, buildingType: building.buildingType, stance: null };
+    return {
+      name: meta.name,
+      task,
+      buildingType: building.buildingType,
+      stance: null,
+      factionColor,
+      peonAutoMode: null,
+    };
   }
   const unit = entity.get(Unit);
   if (unit) {
@@ -88,14 +109,27 @@ function viewOf(game: GameState): SelectionView | null {
     const hp = health ? ` — ${health.current}/${health.max} HP` : '';
     // M_POLISH2.RTS.16 — expose stance for military unit types.
     const stanceTrait = MILITARY_UNIT_TYPES.has(unit.unitType) ? entity.get(Stance) : null;
+    // M_GAME.MODE.PEON.2 — surface peon autoMode for the player's
+    // peons only (enemy peons are not commandable).
+    const isPlayerPeon = unit.unitType === 'Peon' && factionId === 'player';
+    const peonAutoMode = isPlayerPeon ? (entity.get(PeonAutonomy)?.autoMode ?? null) : null;
     return {
       name: unit.unitType,
       task: `Ready${hp}`,
       buildingType: null,
       stance: stanceTrait?.mode ?? null,
+      factionColor,
+      peonAutoMode,
     };
   }
-  return { name: 'Unknown', task: '', buildingType: null, stance: null };
+  return {
+    name: 'Unknown',
+    task: '',
+    buildingType: null,
+    stance: null,
+    factionColor,
+    peonAutoMode: null,
+  };
 }
 
 /**
@@ -123,12 +157,18 @@ function HudButton({
       disabled={disabled}
       title={disabled ? disabledReason : undefined}
       aria-disabled={disabled}
+      aria-label={disabled && disabledReason ? `${label} (${disabledReason})` : label}
       aria-describedby={disabled && disabledReason ? `${label}-reason` : undefined}
+      data-testid={`hud-button-${label.replace(/\s+/g, '-').toLowerCase()}`}
       style={{
         display: 'block',
         width: '100%',
         marginTop: 6,
-        padding: '8px 10px',
+        // M_HUD.SHELL.16 — touch-friendly: min 44×44 with padding ≥ 12px
+        // so finger taps don't accidentally hit an adjacent button on
+        // a phone-portrait viewport.
+        minHeight: 44,
+        padding: '12px 12px',
         borderRadius: 8,
         border: `1px solid ${HUD_THEME.color.border}`,
         background: disabled ? 'rgba(255,255,255,0.04)' : 'rgba(56,189,248,0.14)',
@@ -206,7 +246,8 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
         next.name === prev.name &&
         next.task === prev.task &&
         next.buildingType === prev.buildingType &&
-        next.stance === prev.stance
+        next.stance === prev.stance &&
+        next.peonAutoMode === prev.peonAutoMode
       ) {
         return prev;
       }
@@ -268,11 +309,13 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               position: 'absolute',
               left: 16,
               bottom: 16,
-              // M_AUDIT2.UX.19 — clamp() so labels like "Build Watchtower
-              // — 60w 40s" stop truncating at the old 200px floor; still
-              // capped to avoid pushing the minimap on portrait viewports.
               width: 'clamp(220px, 22vw, 280px)',
               padding: '14px 16px',
+              // M_HUD.SHELL.16b — selected-faction-colour left-rail accent
+              // makes whose unit/building this is glanceable. Falls back to
+              // the friendly green when no faction info is available.
+              borderLeft: `4px solid ${view.factionColor}`,
+              paddingLeft: 14,
             }}
           >
             <div
@@ -343,6 +386,24 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                     );
                   })}
                 </fieldset>
+              </div>
+            )}
+
+            {/* M_GAME.MODE.PEON.2 — peon autonomy action. When the
+                selected entity is a player peon, expose Take command
+                (if currently auto) or Resume automation (if manual). */}
+            {view.peonAutoMode !== null && (
+              <div style={{ marginTop: 10 }}>
+                <HudButton
+                  label={view.peonAutoMode === 'auto' ? 'Take command' : 'Resume automation'}
+                  onClick={() => {
+                    const entity = selectedEntity(game);
+                    if (!entity) return;
+                    const nextMode = view.peonAutoMode === 'auto' ? 'manual' : 'auto';
+                    const ok = setPeonAutoMode(game, entity, nextMode);
+                    emitUiSound(ok ? 'ui-button-click' : 'ui-error');
+                  }}
+                />
               </div>
             )}
 

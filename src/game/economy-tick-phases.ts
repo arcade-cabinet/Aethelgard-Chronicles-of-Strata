@@ -9,6 +9,8 @@
  *   clock → command → terrain → combat → deposit → scoring
  */
 
+import { aiVisionRadiusFor } from '@/config/combat';
+import { factionIds } from '@/config/factions';
 import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { buildNavGraph } from '@/core/pathfinding';
 import { makeMoveCostFn } from '@/core/terrain-cost';
@@ -42,24 +44,22 @@ import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
 import { volcanoSystem } from '@/ecs/systems/volcano';
 import { wildfireSystem } from '@/ecs/systems/wildfire';
 import { evaluateWinLoss } from '@/ecs/systems/win-loss';
-import { aiVisionRadiusFor } from '@/config/combat';
-import { chokePointMultiplier } from '@/rules/choke-points';
 import { presetFor, recomputeMaxSupply, SUPPLY_COST } from '@/rules';
-import { advanceProjectiles } from './projectiles';
-import { advanceClock, cyclePhase } from './clock';
-import { advanceWeather, WEATHER_PROFILES, WEATHER_SPEED_MULTIPLIER } from './weather';
+import { chokePointMultiplier } from '@/rules/choke-points';
+import { refreshPortalStoneCooldown, tickPortalStonesTrigger } from '@/world/portal-stones';
 import { tickAutoSave } from './auto-save';
-import { tickLongReignEscalation, tickRandomEvents } from './random-events';
-import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
-import type { GameState } from './game-state';
+import { advanceClock, cyclePhase } from './clock';
 import { expireProposals } from './diplomacy-border';
-import { tickPortalStonesTrigger, refreshPortalStoneCooldown } from '@/world/portal-stones';
 import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
-import { detectVictory } from './victory-conditions';
+import type { GameState } from './game-state';
+import { advanceProjectiles } from './projectiles';
+import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { grantRandomDiscovery } from './research';
 import { buildEntityTileIndex } from './tile-index';
-import { factionIds } from '@/config/factions';
+import { detectVictory } from './victory-conditions';
+import { advanceWeather, WEATHER_PROFILES, WEATHER_SPEED_MULTIPLIER } from './weather';
+import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
 
 // ---------------------------------------------------------------------------
 // Phase 1 — Clock: advance time, weather, random events, autosave.
@@ -143,6 +143,17 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
       graph: game.navGraph,
       baseKeys: { player: game.townHallKey, enemy: game.enemyBaseKey },
       zones: game.zones,
+      // M_GAME.BUG.10 — phase-1 distance gate: auto-mode peons can
+      // roam at most this far from base. Starts at 14 hex (enough
+      // to reach resources on small + medium maps without sending
+      // peons across the realm) and grows ~+1 hex per 20s, soft-
+      // capping at 60 hex (whole-map coverage by ~15 minutes).
+      // The minimum value 14 was chosen so the AIVAI economy test
+      // (which expects the enemy faction to harvest within a 60s
+      // sim window on a 24-hex board) still passes — drops the
+      // "peons cross map immediately" failure mode while keeping
+      // the autonomous behavior viable.
+      maxRoamRadius: Math.min(60, 14 + Math.floor(game.clock.elapsed / 20)),
     });
     harvestSystem(game.world, delta);
     buildSystem(game.world, game.buildSites, delta);
@@ -301,6 +312,33 @@ export function tickDepositPhase(game: GameState): void {
     if (ev.type === 'wood' && eco.peonMetrics.firstWoodAt < 0) {
       eco.peonMetrics.firstWoodAt = game.clock.elapsed;
     }
+    // M_HUD.NOTIF.PEON.1 — first deposit per resource type per
+    // session for the PLAYER faction fires a Chronicler-voice
+    // toast. After the first, every subsequent deposit is silent
+    // (the floating "+N" text already exists for the per-deposit
+    // beat). Dedup id keyed by resource so it never re-fires.
+    if (typeof window !== 'undefined' && ev.faction === 'player') {
+      const firstForType =
+        (ev.type === 'wood' && eco.peonMetrics.firstWoodAt === game.clock.elapsed) ||
+        (ev.type !== 'wood' && !game.peonFirstHarvestToastedTypes?.has(ev.type));
+      if (firstForType) {
+        if (!game.peonFirstHarvestToastedTypes) game.peonFirstHarvestToastedTypes = new Set();
+        game.peonFirstHarvestToastedTypes.add(ev.type);
+        window.dispatchEvent(
+          new CustomEvent('aethelgard:toast', {
+            detail: {
+              id: `first-harvest-${ev.type}`,
+              tone: 'info',
+              title: `Your peons have begun harvesting ${ev.type}`,
+              description: `The realm's ${ev.type} reserves are now growing.`,
+              // No focus — the deposit is at the Town Hall (already
+              // on screen) and the player's attention should stay
+              // wherever they are, not jolt back to the keep.
+            },
+          }),
+        );
+      }
+    }
   }
   // M_V6.DIPLO.TRIBUTE — apply per-tick cession after deposits land so
   // the tributary's pile reflects the harvest first, THEN cedes 10% of
@@ -368,6 +406,29 @@ export function tickScoringPhase(game: GameState, delta: number): void {
         }),
       );
     }
+    // M_HUD.NOTIF.WIRING.1 + M_GAME.CAMP.3 — surface the camp clear
+    // as a tap-to-focus toast so the player can zoom to the loot
+    // tile and pick up the wood/stone reward visually. The toast
+    // fires for every clearing (both player + AI) — the player's
+    // wood/stone bumped silently before this. Critical-tone for
+    // human clearings, info-tone for AI clearings.
+    if (typeof window !== 'undefined') {
+      const clearerFaction = game.factions.find((f) => f.id === cleared.clearedBy);
+      const isHuman = clearerFaction?.kind === 'human';
+      window.dispatchEvent(
+        new CustomEvent('aethelgard:toast', {
+          detail: {
+            id: `camp-cleared-${cleared.q}-${cleared.r}`,
+            tone: isHuman ? 'success' : 'info',
+            title: isHuman ? 'Barbarian camp cleared' : 'Enemy cleared a camp',
+            description: isHuman
+              ? `+50 wood, +50 stone${granted ? ' + a Discovery' : ''}.`
+              : `An enemy faction claimed the spoils.`,
+            focus: { q: cleared.q, r: cleared.r },
+          },
+        }),
+      );
+    }
     // M_V6.CARRY.RUINS-BIOME — flip the camp tile to RUINS so the
     // renderer paints "old camp remains" decoration. Walkable +
     // buildable (faction can recover the territory). NavGraph dirty
@@ -400,6 +461,25 @@ export function tickScoringPhase(game: GameState, delta: number): void {
     }
     if (game.wonderTimers[factionId] === Infinity) {
       game.wonderTimers[factionId] = WONDER_COUNTDOWN_SECONDS;
+      // M_HUD.NOTIF.WIRING.1 — Wonder completion crosses the Infinity →
+      // countdown boundary exactly once per wonder. Fire a critical
+      // toast so the player can never miss "the enemy just started
+      // their wonder timer" or "your wonder is now ticking."
+      if (typeof window !== 'undefined') {
+        const isPlayer = game.factions.find((f) => f.id === factionId)?.kind === 'human';
+        window.dispatchEvent(
+          new CustomEvent('aethelgard:toast', {
+            detail: {
+              id: `wonder-started-${factionId}`,
+              tone: 'critical',
+              title: isPlayer ? 'Your Wonder rises' : 'Enemy Wonder rises',
+              description: isPlayer
+                ? `Hold for ${WONDER_COUNTDOWN_SECONDS}s to win the realm.`
+                : `Destroy it within ${WONDER_COUNTDOWN_SECONDS}s or the realm is lost.`,
+            },
+          }),
+        );
+      }
     }
     game.wonderTimers[factionId] = Math.max(0, (game.wonderTimers[factionId] ?? 0) - delta);
   }

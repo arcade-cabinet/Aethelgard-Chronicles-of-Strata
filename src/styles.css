@@ -1,36 +1,118 @@
 /**
- * Aethelgard global stylesheet — Tailwind v4 + Aethelgard HUD design tokens.
+ * Aethelgard design language (M_HUD.SHELL.6).
  *
- * The token values mirror src/hud/hud-theme.ts so inline-style components
- * and Tailwind-utility components share a single source of truth. When the
- * HUD palette changes, update both (or migrate the inline-style components
- * to read the CSS variables defined below).
+ * Two themes — DARK (default, the launched obsidian-and-gold variant) and
+ * LIGHT (parchment-and-ink, inverse of dark). Switched by toggling
+ * `<html data-theme="light">` via `useTheme()`. Every component reads
+ * SEMANTIC tokens (--color-surface, --color-on-surface-muted, --color-accent,
+ * --color-treasure, etc.) — never the raw hex tokens directly — so the
+ * theme flip cascades through the entire HUD without per-component code.
+ *
+ * Raw-token aliases at the bottom keep the legacy --color-obsidian /
+ * --color-gold-hud / --color-accent-hud names alive for the in-flight
+ * migration; new code uses semantic names only.
  */
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@theme {
-  /* Color tokens — mirror HUD_THEME.color */
-  --color-obsidian: #090d16;
-  --color-panel: rgba(9, 13, 22, 0.88);
-  --color-panel-solid: #0f172a;
-  --color-border-hud: rgba(56, 189, 248, 0.28);
-  --color-text-hud: #f1f5f9;
-  --color-muted-hud: #a8b3c5;
-  --color-accent-hud: #38bdf8;
-  --color-gold-hud: #fbbf24;
-  --color-wood-hud: #f97316;
-  --color-stone-hud: #94a3b8;
-  --color-coin-hud: #fbbf24;
-  --color-supply-hud: #a855f7;
-  --color-friendly-hud: #4ade80;
-  --color-danger-hud: #ef4444;
+/* ─────────────────────────────────────────────────────────────────────
+ * THEME TOKENS — DARK (default)
+ * Obsidian, gold, accent-blue palette. Cinematic, AAA-fantasy.
+ * ────────────────────────────────────────────────────────────────── */
 
-  /* Font tokens — mirror HUD_THEME.font */
+@theme {
+  /* Semantic surfaces — what code SHOULD reference. */
+  --color-bg: #050608;
+  --color-surface: rgba(9, 13, 22, 0.88);
+  --color-surface-solid: #0f172a;
+  --color-surface-elevated: #1a2230;
+  --color-surface-inset: rgba(0, 0, 0, 0.3);
+
+  /* Text on those surfaces. */
+  --color-on-surface: #f1f5f9;
+  --color-on-surface-muted: #a8b3c5;
+  --color-on-surface-subtle: rgba(168, 179, 197, 0.6);
+
+  /* Lines, dividers, borders. */
+  --color-divider: rgba(255, 255, 255, 0.08);
+  --color-border: rgba(56, 189, 248, 0.28);
+  --color-border-strong: rgba(56, 189, 248, 0.5);
+
+  /* Brand accents. */
+  --color-accent: #38bdf8;
+  --color-accent-strong: #0284c7;
+  --color-accent-soft: rgba(56, 189, 248, 0.12);
+  --color-treasure: #d4af37;
+  --color-treasure-strong: #b45309;
+  --color-treasure-soft: rgba(212, 175, 55, 0.12);
+
+  /* Game-status semantics. */
+  --color-friendly: #4ade80;
+  --color-danger: #ef4444;
+  --color-warning: #f97316;
+
+  /* Signature gradients — named so components reference one place. */
+  --gradient-treasure-wordmark: linear-gradient(
+    180deg,
+    #fef3c7 0%,
+    #d4af37 45%,
+    #b45309 78%,
+    #7c2d12 100%
+  );
+  --gradient-treasure-button: linear-gradient(
+    180deg,
+    #e8c660 0%,
+    #d4af37 50%,
+    #8b7124 100%
+  );
+  --gradient-victory-title: linear-gradient(
+    180deg,
+    #fef3c7 0%,
+    #d4af37 45%,
+    #b45309 78%,
+    #7c2d12 100%
+  );
+  --gradient-defeat-title: linear-gradient(
+    180deg,
+    #fecaca 0%,
+    #ef4444 55%,
+    #7f1d1d 100%
+  );
+  --gradient-draw-title: linear-gradient(
+    180deg,
+    #e0f2fe 0%,
+    #38bdf8 55%,
+    #0369a1 100%
+  );
+  --halo-treasure-radial: radial-gradient(
+    circle,
+    rgba(212, 175, 55, 0.35) 0%,
+    transparent 70%
+  );
+  --halo-danger-radial: radial-gradient(
+    circle,
+    rgba(239, 68, 68, 0.30) 0%,
+    transparent 70%
+  );
+  --halo-accent-radial: radial-gradient(
+    circle,
+    rgba(56, 189, 248, 0.30) 0%,
+    transparent 70%
+  );
+
+  /* Resource semantics (game-domain). */
+  --color-wood: #f97316;
+  --color-stone: #94a3b8;
+  --color-coin: #d4af37;
+  --color-supply: #a855f7;
+
+  /* Typography. */
   --font-display: 'Metamorphous', serif;
   --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* Z-index lanes — fixed lanes prevent stacking-context wars */
+  /* z-lanes — fixed lanes prevent stacking-context wars. */
+  --z-canvas: 0;
   --z-hud-base: 10;
   --z-hud-pill: 50;
   --z-hud-trigger: 100;
@@ -38,21 +120,223 @@
   --z-modal-overlay: 1000;
   --z-modal-content: 1001;
 
-  /* Safe-area helpers — Capacitor + foldable insets */
+  /* Safe-area insets — Capacitor + foldable + iOS notch. */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Motion primitives. */
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 140ms;
+  --duration-default: 240ms;
+  --duration-slow: 360ms;
+
+  /* (M_HUD.SHELL.7) Legacy aliases removed — all five Tailwind-utility
+   * HUD pages migrated to semantic names. The legacy TypeScript constant
+   * HUD_THEME.color.* in src/hud/hud-theme.ts still uses raw hex (it's
+   * consumed by inline-style components outside the Tailwind migration
+   * scope) and remains the source for those surfaces. */
 }
 
-/* Base layer: pointer-events default for HUD wrappers so the 3D canvas
- * underneath stays raycast-pickable. Interactive elements opt back IN
- * with .hud-interactive or pointer-events-auto. */
+/* ─────────────────────────────────────────────────────────────────────
+ * THEME TOKENS — LIGHT (parchment + ink + copper)
+ * Inverse of dark. Parchment background, ink-on-paper text, antique
+ * copper as the "treasure" accent (gold doesn't read on cream), and a
+ * deep harbor-blue accent.
+ * ────────────────────────────────────────────────────────────────── */
+
+[data-theme='light'] {
+  --color-bg: #f3eccf;
+  --color-surface: rgba(247, 240, 220, 0.96);
+  --color-surface-solid: #fbf6e4;
+  --color-surface-elevated: #fffbe8;
+  --color-surface-inset: rgba(0, 0, 0, 0.06);
+
+  --color-on-surface: #1c160a;
+  --color-on-surface-muted: #6b5d3e;
+  --color-on-surface-subtle: rgba(107, 93, 62, 0.5);
+
+  --color-divider: rgba(28, 22, 10, 0.12);
+  --color-border: rgba(28, 22, 10, 0.28);
+  --color-border-strong: rgba(28, 22, 10, 0.5);
+
+  --color-accent: #0369a1;
+  --color-accent-strong: #075985;
+  --color-accent-soft: rgba(3, 105, 161, 0.12);
+  --color-treasure: #b45309;
+  --color-treasure-strong: #7c2d12;
+  --color-treasure-soft: rgba(180, 83, 9, 0.12);
+
+  --color-friendly: #15803d;
+  --color-danger: #b91c1c;
+  --color-warning: #c2410c;
+
+  --color-wood: #92400e;
+  --color-stone: #44403c;
+  --color-coin: #b45309;
+  --color-supply: #6d28d9;
+
+  /* Light-theme signature gradients: parchment + copper + ink. */
+  --gradient-treasure-wordmark: linear-gradient(
+    180deg,
+    #fef3c7 0%,
+    #b45309 50%,
+    #7c2d12 100%
+  );
+  --gradient-treasure-button: linear-gradient(
+    180deg,
+    #fde68a 0%,
+    #b45309 55%,
+    #7c2d12 100%
+  );
+  --gradient-victory-title: linear-gradient(
+    180deg,
+    #fef3c7 0%,
+    #b45309 50%,
+    #7c2d12 100%
+  );
+  --gradient-defeat-title: linear-gradient(
+    180deg,
+    #b91c1c 0%,
+    #7f1d1d 100%
+  );
+  --gradient-draw-title: linear-gradient(
+    180deg,
+    #0369a1 0%,
+    #075985 100%
+  );
+  --halo-treasure-radial: radial-gradient(
+    circle,
+    rgba(180, 83, 9, 0.28) 0%,
+    transparent 70%
+  );
+  --halo-danger-radial: radial-gradient(
+    circle,
+    rgba(185, 28, 28, 0.25) 0%,
+    transparent 70%
+  );
+  --halo-accent-radial: radial-gradient(
+    circle,
+    rgba(3, 105, 161, 0.25) 0%,
+    transparent 70%
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Base layer
+ * ────────────────────────────────────────────────────────────────── */
+
 @layer base {
+  html {
+    background: var(--color-bg);
+    color: var(--color-on-surface);
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-on-surface);
+  }
+  /* HUD wrappers pass through pointer events; interactive children opt back in. */
   .hud-overlay {
     pointer-events: none;
   }
   .hud-interactive {
     pointer-events: auto;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+ * Component primitive utilities — distilled from the Magic explorations.
+ * Class-form so any component can opt in without re-implementing.
+ * ────────────────────────────────────────────────────────────────── */
+
+@layer components {
+  /* THE primary CTA — gold gradient pill with glow, hover lift, active press.
+   * Used on TitleScreen New Game, NewGameModal Begin, OnboardingOverlay
+   * Begin Realm, GameOverModal Re-enter. */
+  .btn-treasure {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.5rem;
+    border-radius: 0.875rem;
+    border: 1px solid var(--color-treasure);
+    background: var(--gradient-treasure-button);
+    color: #1a1208;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    box-shadow:
+      0 8px 28px rgba(212, 175, 55, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    transition: all var(--duration-fast) ease;
+    cursor: pointer;
+  }
+  .btn-treasure:hover {
+    transform: translateY(-1px);
+    box-shadow:
+      0 12px 36px rgba(212, 175, 55, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+  .btn-treasure:active {
+    transform: translateY(0);
+    scale: 0.98;
+  }
+  .btn-treasure:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none;
+  }
+
+  /* Ghost icon button — bordered, panel bg, hover lift to text color.
+   * Used in SystemMenu drawer, modals' close X, TitleScreen icon strip. */
+  .btn-ghost-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.5rem;
+    width: 2.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-on-surface-muted);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    transition: color var(--duration-fast) ease, border-color var(--duration-fast) ease;
+    cursor: pointer;
+  }
+  .btn-ghost-icon:hover {
+    color: var(--color-on-surface);
+    border-color: var(--color-treasure);
+  }
+  .btn-ghost-icon:active {
+    scale: 0.95;
+  }
+
+  /* Section card — bordered, headed, accent-soft background. */
+  .surface-card {
+    border-radius: 1rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    backdrop-filter: blur(8px);
+    box-shadow:
+      0 6px 24px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(56, 189, 248, 0.06);
+  }
+
+  /* Kbd chip — small monospace label inside a bordered pill. */
+  .kbd-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.4rem;
+    height: 1.25rem;
+    border-radius: 0.25rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-on-surface-muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
   }
 }

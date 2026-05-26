@@ -1,10 +1,10 @@
 import { Billboard, Text } from '@react-three/drei';
-import { WORLD_TEXT_FONT } from '@/world/world-text-font';
 import { useFrame } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 import { Transform } from '@/ecs/components';
 import type { DamageEvent } from '@/ecs/systems/combat';
 import type { GameState } from '@/game/game-state';
+import { WORLD_TEXT_FONT } from '@/world/world-text-font';
 
 /** Seconds a damage popup floats before it is removed. */
 const POPUP_LIFETIME = 1.6;

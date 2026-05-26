@@ -16,12 +16,14 @@ jobs:
   build-and-test:
     name: Build and test
     runs-on: ubuntu-latest
-    # Hard cap. Anything past 15min is a hang or unintended scope creep,
+    # Hard cap. Anything past 20min is a hang or unintended scope creep,
     # not a legitimate run. The full local suite (verify + browser + e2e
-    # smoke) completes in ~3min on dev hardware; the runner adds ~1min
-    # for setup. 15min gives generous headroom while killing infinite
-    # loops fast enough to learn from.
-    timeout-minutes: 15
+    # smoke) completes in ~3min on dev hardware; the runner adds ~1-2min
+    # for setup. Post-v0.10 the e2e step alone can take 8-10min on CI
+    # (per the M_GAME.BUG.10 bump to 12m step timeout). 20min gives
+    # generous headroom while killing infinite loops fast enough to
+    # learn from.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -100,7 +102,12 @@ jobs:
             exit 1
           fi
       - name: E2E tests
-        timeout-minutes: 8
+        # M_GAME.BUG.10 CI bump: v0.10 added per-tick walkable-step
+        # guard + roam-radius filter + stack-substrate queries. Total
+        # e2e battery wall-clock rose from ~6m to ~8.5m on GitHub
+        # runners. 12m is a safe ceiling without masking a real perf
+        # regression (which would 2-3× the e2e runtime).
+        timeout-minutes: 12
         run: pnpm test:e2e
       # M_SEC.16 — skip artifact upload on fork PRs. Fork PRs run
       # against attacker-controlled code; uploading playwright-report/

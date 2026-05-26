@@ -81,6 +81,12 @@ export default defineConfig({
             'tests/harness/**/*.browser.test.{ts,tsx}',
           ],
           setupFiles: ['tests/browser/setup-sqlite.ts'],
+          // M_HUD.SHELL.21 — serialize browser tests. The shared
+          // Playwright Chromium pool flakes under parallel load
+          // (biome-swatch + n-player-picker + wildfire-layer collide
+          // and time out). Serialization adds ~20s to the suite but
+          // eliminates the flakes that were blocking the push gate.
+          fileParallelism: false,
           browser: {
             enabled: true,
             provider: playwright(),

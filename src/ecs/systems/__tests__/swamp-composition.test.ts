@@ -16,10 +16,10 @@
  * statusAttributesSystem in a loop, asserts survivor counts.
  */
 import { describe, expect, it } from 'vitest';
+import type { BoardData, Tile } from '@/core/board';
 import { FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
 import { createEcsWorld } from '@/ecs/world';
-import type { BoardData, Tile } from '@/core/board';
 
 function swampMap(): BoardData['tiles'] {
   const tiles = new Map<string, Tile>();

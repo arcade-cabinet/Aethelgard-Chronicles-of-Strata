@@ -5,7 +5,7 @@
  * Split from ai-player.ts. See M_EXPANSION.S.55.
  */
 import { Goal, GoalEvaluator } from 'yuka';
-import { moveUnit } from '@/game/commands';
+import type { AiPlayer } from '@/ai/ai-player';
 import { aiProfileFor } from '@/ai/ai-profiles';
 import {
   discoveredEnemyTile,
@@ -13,7 +13,7 @@ import {
   firstPulsingTile,
   randomPerimeterTile,
 } from '@/ai/helpers';
-import type { AiPlayer } from '@/ai/ai-player';
+import { moveUnit } from '@/game/commands';
 
 export { PatrolGoal };
 

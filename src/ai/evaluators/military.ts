@@ -5,14 +5,14 @@
  * Split from ai-player.ts. See spec 100/101/102 + M_AI_DEPTH.3.
  */
 import { Goal, GoalEvaluator } from 'yuka';
+import type { AiPlayer } from '@/ai/ai-player';
+import { aiProfileFor, endgameUrgencyFor } from '@/ai/ai-profiles';
+import { discoveredEnemyTile, firstMilitary, firstPulsingTile } from '@/ai/helpers';
 import { EnemyTarget, FactionTrait, Stance, Unit } from '@/ecs/components';
 import { moveUnit } from '@/game/commands';
-import { aiProfileFor, endgameUrgencyFor } from '@/ai/ai-profiles';
-import { SKINS } from '@/rules/skins';
 import { matchElapsedSeconds } from '@/game/match-time';
+import { SKINS } from '@/rules/skins';
 import { MILITARY_ROLES } from '@/rules/unit-profiles';
-import { discoveredEnemyTile, firstMilitary, firstPulsingTile } from '@/ai/helpers';
-import type { AiPlayer } from '@/ai/ai-player';
 
 export { MoveMilitaryGoal };
 

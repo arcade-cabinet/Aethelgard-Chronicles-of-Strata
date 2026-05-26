@@ -1,6 +1,6 @@
 import type { World } from 'koota';
 import type { BoardData } from '@/core/board';
-import { getHexKey, hexNeighbors, parseHexKey } from '@/core/hex';
+import { getHexKey, hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { findPath, type NavGraph } from '@/core/pathfinding';
 import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
@@ -52,6 +52,13 @@ export interface PeonRoutingContext {
   baseKeys: Record<Faction, string>;
   /** Each faction's zone — claimed tiles grow as peons exploit resources. */
   zones: Record<Faction, ZoneState>;
+  /**
+   * M_GAME.BUG.10 — max hex-distance from base for auto-mode peon
+   * resource picking. Phase-1 stays tight; late-game expands by
+   * the caller raising the value with game age. Undefined = no
+   * limit (pre-v0.10 behavior, kept for legacy tests).
+   */
+  maxRoamRadius?: number;
 }
 
 /**
@@ -62,7 +69,7 @@ export interface PeonRoutingContext {
  * (spec 102) — peon exploitation is how territory grows.
  */
 export function jobRoutingSystem(ctx: PeonRoutingContext): void {
-  const { world, board, graph, baseKeys, zones } = ctx;
+  const { world, board, graph, baseKeys, zones, maxRoamRadius } = ctx;
   // M_POLISH2.RTS.24a — peons prefer cheap (grass/beach/desert)
   // routes over FOREST (1.25×) / HIGHLAND (1.5×).
   const costOf = makeMoveCostFn(board.tiles);
@@ -85,6 +92,25 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
     enemy: new Set(zones.enemy.pulsing.keys()),
   };
 
+  // M_GAME.BUG.10 — pre-filter resources per faction by roam radius
+  // ONCE per tick (not per peon). For N peons × R resources this
+  // drops the per-tick work from O(N×R) to O(R), restoring the
+  // pre-v0.10 AIVAI sim throughput.
+  const resourcesByFaction: Record<Faction, ResourceSite[]> =
+    maxRoamRadius === undefined
+      ? { player: allResources, enemy: allResources }
+      : (() => {
+          const out: Record<Faction, ResourceSite[]> = { player: [], enemy: [] };
+          for (const faction of ['player', 'enemy'] as const) {
+            const baseKey = baseKeys[faction];
+            const [bq, br] = baseKey.split(',').map(Number) as [number, number];
+            out[faction] = allResources.filter(
+              (s) => hexDistance(bq, br, s.q, s.r) <= maxRoamRadius,
+            );
+          }
+          return out;
+        })();
+
   world
     .query(Unit, AssignedJob, HexPosition, PathQueue, Carrier, FactionTrait)
     .updateEach(([unit, job, hex, path, carrier], e) => {
@@ -101,7 +127,9 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
         carrying: carrier.carryType !== 'none',
       };
       const action = nextPeonAction(view, {
-        resources: allResources,
+        // M_GAME.BUG.10 — use the per-faction pre-filtered list so
+        // the radius gate is enforced without per-peon work.
+        resources: resourcesByFaction[faction],
         baseKey: baseKeys[faction],
         // pulsing tiles on the faction's own zone are under encroachment —
         // peons flee them (spec 102, wired by the encroachmentSystem)

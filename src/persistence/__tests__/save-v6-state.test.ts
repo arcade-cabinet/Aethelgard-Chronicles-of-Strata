@@ -19,11 +19,11 @@
  *      key) is silently dropped (no crash).
  */
 import { describe, expect, it } from 'vitest';
-import { acceptTribute } from '@/game/diplomacy-tribute';
 import { setRelation } from '@/game/diplomacy';
 import { proposeNonAggressionPact } from '@/game/diplomacy-border';
-import { fireMythEvent } from '@/game/myth-events';
+import { acceptTribute } from '@/game/diplomacy-tribute';
 import { startGame } from '@/game/game-state';
+import { fireMythEvent } from '@/game/myth-events';
 import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
 
 function fresh(): ReturnType<typeof startGame> {

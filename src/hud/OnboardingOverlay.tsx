@@ -1,28 +1,46 @@
+/**
+ * OnboardingOverlay — cinematic first-run tutorial (M_HUD.SHELL.4).
+ *
+ * Full-page overlay on top of the live game canvas. Steps through 9
+ * teaching cards (10 when ≥3 factions). Each card has a hero gradient
+ * strip with a lucide step-icon, a step counter, gold Metamorphous
+ * title, Inter body, Skip / Back / Next action row, kbd hint chips.
+ *
+ * Reads + writes the `onboarding` Preferences flag so it only fires
+ * once. Exposes `window.__skipOnboarding` for e2e + dev.
+ *
+ * Step content is preserved verbatim — the test suite greps the
+ * STEPS + N_PLAYER_STEP exports.
+ */
 import * as Dialog from '@radix-ui/react-dialog';
-import { useEffect, useState } from 'react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import {
+  ChevronLeft,
+  ChevronRight,
+  Crown,
+  Eye,
+  FlaskConical,
+  Hammer,
+  Search,
+  Shield,
+  Sparkles,
+  Swords,
+  User2,
+  Users,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { cn } from '@/lib/cn';
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
-import { HUD_THEME } from './hud-theme';
-import { ModalShell } from './ModalShell';
+import { HeroBanner, StepProgressDots, TreasureButton } from './primitives';
 
-/** Preferences key that marks the tutorial as seen. */
-// M_SEC.33 — Preferences keys are namespaced via the PREF_KEYS enum.
 const ONBOARDING_KEY = PREF_KEYS.onboarding;
 
-/** One step of the tutorial — a heading + a one-paragraph teaching. */
+/** One step of the tutorial — heading + one-paragraph teaching. */
 interface Step {
   title: string;
   body: string;
 }
 
-// M_AUDIT2.UX.21 — extended from 4 → 9 steps. The original four
-// covered the core loop but skipped right-click move orders,
-// drag-select, pause/keyboard shortcuts, the resource legend, and
-// per-mode win conditions. New players were running into all of
-// these blind.
-// M_POLISH2.MOBILE.12a — touch-first copy. Replaces the
-// desktop-mouse-instruction body text ("RIGHT-CLICK any tile…",
-// "click-drag a rectangle…") with tap / long-press / pinch /
-// drag-pan gestures that work on every viewport.
 /** M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — exported for unit tests. */
 export const STEPS: Step[] = [
   {
@@ -69,32 +87,55 @@ export const N_PLAYER_STEP: Step = {
   body: 'Multiple factions have joined the map. Build your economy, form alliances, and be the last faction standing. Use the diplomacy panel to propose non-aggression pacts or demand tribute from weaker rivals.',
 };
 
-/**
- * First-run tutorial overlay (M9.1c). Radix Dialog (modal, escape-blocked
- * until acknowledged) explaining the core loop in 4 short steps. Skippable
- * up-front; either way, a Preferences flag (`onboardingSeen`) ensures it
- * shows ONLY ONCE. Driven entirely by the persistence facade — no game state.
- *
- * M_V8.TUTORIAL.N-PLAYER-MODE — when `factionCount > 2`, appends a
- * dedicated N-player slide after the main sequence.
- */
-export function OnboardingOverlay({
-  persistence,
-  factionCount = 2,
-}: {
+/** One icon per step — lucide. */
+const STEP_ICONS = [
+  Sparkles,
+  Eye,
+  User2,
+  Hammer,
+  Swords,
+  Shield,
+  Search,
+  FlaskConical,
+  Crown,
+  Users,
+] as const;
+
+export interface OnboardingOverlayProps {
   persistence: Persistence;
-  /** M_V8.TUTORIAL.N-PLAYER-MODE — number of active factions. */
+  /** M_V8.TUTORIAL.N-PLAYER-MODE — append the N-player slide when > 2. */
   factionCount?: number;
-}) {
+}
+
+export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingOverlayProps) {
+  const reducedMotion = useReducedMotion() ?? false;
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
 
+  const steps = factionCount > 2 ? [...STEPS, N_PLAYER_STEP] : STEPS;
+  const current = steps[step] ?? steps[0];
+  const isLast = step + 1 >= steps.length;
+  const StepIcon = STEP_ICONS[Math.min(step, STEP_ICONS.length - 1)] ?? Sparkles;
+
+  const markSeen = useCallback(() => {
+    setOpen(false);
+    persistence.setSetting(ONBOARDING_KEY, 'true').catch((err) => {
+      console.warn('[OnboardingOverlay] setSetting failed:', err);
+    });
+  }, [persistence]);
+
+  const next = useCallback(() => {
+    if (step + 1 >= steps.length) markSeen();
+    else setStep(step + 1);
+  }, [step, steps.length, markSeen]);
+
+  const back = useCallback(() => {
+    if (step > 0) setStep(step - 1);
+  }, [step]);
+
+  // First-mount: should we open?
   useEffect(() => {
     let cancelled = false;
-    // M_MICRO.B.1 — safer fallback: show the overlay if the read fails
-    // (the player sees onboarding once vs. never). safePersistenceRead
-    // owns the try/catch; this call site just describes the parse +
-    // fallback intent.
     void safePersistenceRead(
       persistence,
       ONBOARDING_KEY,
@@ -109,10 +150,7 @@ export function OnboardingOverlay({
     };
   }, [persistence]);
 
-  // M_POLISH3.SCENE.3 — e2e/dev hook to dismiss the onboarding overlay
-  // without 9 click-throughs. Tests + journey-capture screenshots need
-  // a clean canvas; this is the documented way to bypass the tutorial.
-  // Sets the persistence flag too so subsequent reloads don't re-show.
+  // M_POLISH3.SCENE.3 — e2e/dev hook to dismiss without 9 clicks.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     type DevWindow = Window & { __skipOnboarding?: () => Promise<void> };
@@ -122,106 +160,136 @@ export function OnboardingOverlay({
     };
   }, [persistence]);
 
-  const markSeen = () => {
-    setOpen(false);
-    persistence.setSetting(ONBOARDING_KEY, 'true').catch((err) => {
-      // Persistence write failed — the overlay will show again next session.
-      // Acceptable degradation; the player can dismiss it again.
-      console.warn('[OnboardingOverlay] setSetting failed:', err);
-    });
-  };
+  // M_HUD.SHELL.6 — keyboard nav retired. Onboarding is tap-only.
 
-  // M_V8.TUTORIAL.N-PLAYER-MODE — append the N-player slide for 3+
-  // faction matches, shown after the existing sequence.
-  const steps = factionCount > 2 ? [...STEPS, N_PLAYER_STEP] : STEPS;
-
-  const next = () => {
-    if (step + 1 >= steps.length) markSeen();
-    else setStep(step + 1);
-  };
-
-  const current = steps[step] ?? steps[0];
   if (!current) return null;
 
   return (
     <Dialog.Root open={open}>
-      {/* M_MICRO.10.1 — onboarding is a tutorial that the player must
-          step through; blockClose=true so accidental click-outside
-          doesn't skip it. */}
-      <ModalShell
-        contentId="onboarding-overlay"
-        zIndex={900}
-        width="auto"
-        maxHeight="none"
-        blockClose
-        contentStyle={{
-          borderRadius: 18,
-          padding: 28,
-          maxWidth: 420,
-          fontFamily: HUD_THEME.font.body,
-        }}
-      >
-        <Dialog.Title
-          style={{
-            fontFamily: HUD_THEME.font.display,
-            fontSize: '1.4rem',
-            fontWeight: 700,
-            color: HUD_THEME.color.gold,
-            margin: '0 0 10px',
-          }}
-        >
-          {current.title}
-        </Dialog.Title>
-        <p style={{ fontSize: '0.86rem', lineHeight: 1.5, color: HUD_THEME.color.muted }}>
-          {current.body}
-        </p>
-        <div
-          style={{
-            marginTop: 18,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}
-        >
-          <span style={{ color: HUD_THEME.color.muted, fontSize: '0.78rem' }}>
-            {step + 1} / {steps.length}
-          </span>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              type="button"
-              onClick={markSeen}
-              style={{
-                padding: '6px 12px',
-                borderRadius: 8,
-                border: `1px solid ${HUD_THEME.color.border}`,
-                background: 'transparent',
-                color: HUD_THEME.color.muted,
-                fontSize: '0.78rem',
-                cursor: 'pointer',
-              }}
+      <AnimatePresence>
+        {open && (
+          <Dialog.Portal forceMount>
+            <Dialog.Overlay asChild>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22 }}
+                className="fixed inset-0 bg-[rgba(9,13,22,0.78)] backdrop-blur-md"
+                style={{ zIndex: 900 }}
+              />
+            </Dialog.Overlay>
+            <Dialog.Content
+              asChild
+              onEscapeKeyDown={(e) => e.preventDefault()}
+              onPointerDownOutside={(e) => e.preventDefault()}
+              onInteractOutside={(e) => e.preventDefault()}
             >
-              Skip
-            </button>
-            <button
-              id="onboarding-next"
-              type="button"
-              onClick={next}
-              style={{
-                padding: '6px 16px',
-                borderRadius: 8,
-                border: 'none',
-                background: HUD_THEME.blueGradient,
-                color: '#fff',
-                fontSize: '0.84rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              {step + 1 >= steps.length ? 'Begin' : 'Next'}
-            </button>
-          </div>
-        </div>
-      </ModalShell>
+              <motion.div
+                id="onboarding-overlay"
+                initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: 12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                className={cn(
+                  'fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2',
+                  'w-[min(560px,calc(100vw-32px))] max-h-[min(88dvh,720px)] overflow-hidden',
+                  'rounded-3xl border bg-[var(--color-surface-solid)] text-[var(--color-on-surface)]',
+                  'border-[var(--color-border)] shadow-2xl',
+                )}
+                style={{
+                  zIndex: 901,
+                  paddingTop: 'var(--safe-top)',
+                  fontFamily: 'var(--font-body)',
+                }}
+              >
+                <HeroBanner icon={StepIcon} caption={`Step ${step + 1} of ${steps.length}`} />
+
+                <div className="px-6 pb-1 pt-4">
+                  <StepProgressDots total={steps.length} current={step} />
+                </div>
+
+                {/* Card body with cross-fade step transition */}
+                <div className="px-6 pb-6 pt-2">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={`step-${step}`}
+                      initial={reducedMotion ? { opacity: 0 } : { opacity: 0, x: 16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -16 }}
+                      transition={{ duration: 0.24 }}
+                    >
+                      <Dialog.Title
+                        className="font-display text-2xl font-bold tracking-[0.04em] text-[var(--color-treasure)]"
+                        style={{ fontFamily: 'var(--font-display)' }}
+                      >
+                        {current.title}
+                      </Dialog.Title>
+                      <div className="mt-1 h-px w-12 bg-[var(--color-treasure)]/60" />
+                      <Dialog.Description asChild>
+                        <p className="mt-4 text-sm leading-relaxed text-[var(--color-on-surface)]/90">
+                          {current.body}
+                        </p>
+                      </Dialog.Description>
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+
+                {/* Action row */}
+                <div className="flex items-center justify-between gap-3 border-t border-[var(--color-border)] px-6 py-4">
+                  <button
+                    type="button"
+                    aria-label="Skip the tutorial"
+                    data-testid="onboarding-skip"
+                    onClick={markSeen}
+                    className="rounded-md px-3 py-2 text-xs text-[var(--color-on-surface-muted)] hover:bg-white/5 hover:text-[var(--color-on-surface)]"
+                  >
+                    Skip tutorial
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={back}
+                      disabled={step === 0}
+                      aria-label="Previous step"
+                      className={cn(
+                        'flex h-9 w-9 items-center justify-center rounded-lg border transition-colors',
+                        'border-[var(--color-border)] bg-black/30 text-[var(--color-on-surface-muted)]',
+                        step === 0
+                          ? 'cursor-not-allowed opacity-40'
+                          : 'hover:border-[var(--color-accent)]/60 hover:text-[var(--color-on-surface)]',
+                      )}
+                    >
+                      <ChevronLeft className="h-4 w-4" aria-hidden />
+                    </button>
+                    <TreasureButton
+                      id="onboarding-next"
+                      aria-label={isLast ? 'Begin Realm — start the match' : 'Next tutorial step'}
+                      onClick={next}
+                      icon={isLast ? <Swords className="h-4 w-4" aria-hidden /> : undefined}
+                      className={cn(
+                        'px-5 py-2.5 text-sm',
+                        isLast && !reducedMotion && 'animate-pulse',
+                      )}
+                    >
+                      {isLast ? (
+                        'Begin Realm'
+                      ) : (
+                        <span className="flex items-center gap-2">
+                          Next
+                          <ChevronRight className="h-4 w-4" aria-hidden />
+                        </span>
+                      )}
+                    </TreasureButton>
+                  </div>
+                </div>
+
+                {/* M_HUD.SHELL.6 — kbd hint chips retired (mobile-first). */}
+              </motion.div>
+            </Dialog.Content>
+          </Dialog.Portal>
+        )}
+      </AnimatePresence>
     </Dialog.Root>
   );
 }

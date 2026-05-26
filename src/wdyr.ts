@@ -13,8 +13,9 @@
  * (e.g. the game-state object identity changing every tick re-
  * rendering the entire HUD even when nothing relevant changed).
  */
-import React from 'react';
+
 import whyDidYouRender from '@welldone-software/why-did-you-render';
+import React from 'react';
 
 if (import.meta.env.DEV) {
   whyDidYouRender(React, {

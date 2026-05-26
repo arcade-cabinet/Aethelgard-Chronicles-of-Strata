@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { UNIT_PROFILES } from '@/rules/unit-profiles';
-import { UNIT_COSTS, type TrainableUnit } from '@/rules/economy-rules';
-import { BASE_UNIT_VISION_RADIUS } from '@/game/zone';
 import type { UnitType } from '@/ecs/components';
+import { BASE_UNIT_VISION_RADIUS } from '@/game/zone';
+import { type TrainableUnit, UNIT_COSTS } from '@/rules/economy-rules';
+import { UNIT_PROFILES } from '@/rules/unit-profiles';
 
 /**
  * M_POLISH2.RTS.22 — Scout unit contract tests.

@@ -12,9 +12,10 @@
  * Substrate ships the detectors + the record shape; the scoring-screen
  * UI is a follow-up render polish item.
  */
+
+import type { World } from 'koota';
 import type { FactionId } from '@/config/factions';
 import { Building, FactionTrait } from '@/ecs/components';
-import type { World } from 'koota';
 import type { GameState } from './game-state';
 
 /** The four named v0.6 4X-mode victory conditions. */

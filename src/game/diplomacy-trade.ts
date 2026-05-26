@@ -11,9 +11,8 @@
  */
 import type { FactionId } from '@/config/factions';
 import type { Faction } from '@/ecs/components';
+import { type DiplomacyState, getRelation, relationKey } from './diplomacy';
 import { addResource, type GameEconomy, spend } from './economy';
-import { type DiplomacyState, getRelation } from './diplomacy';
-import { relationKey } from './diplomacy';
 
 /** Tradeable resource slots (wood/stone/gold per directive). */
 export type TradeResource = 'wood' | 'stone' | 'gold';

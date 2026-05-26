@@ -24,14 +24,18 @@ export const HUD_THEME = {
     muted: '#a8b3c5',
     /** Accent blue. */
     accent: '#38bdf8',
-    /** Gold — headings, victory. */
-    gold: '#fbbf24',
+    /** Gold — headings, victory. M_HUD.SHELL.7b — antique-gold #d4af37
+     * to match the semantic --color-treasure token used by the new
+     * Tailwind HUD pages (TitleScreen wordmark, TreasureButton, etc).
+     * Was #fbbf24 (sun-yellow) which read garishly next to the new
+     * deeper-treasure palette. */
+    gold: '#d4af37',
     /** Wood resource. */
     wood: '#f97316',
     /** Stone resource. */
     stone: '#94a3b8',
-    /** Gold resource. */
-    coin: '#fbbf24',
+    /** Gold resource. M_HUD.SHELL.7b — same antique-gold alignment. */
+    coin: '#d4af37',
     /** Supply. */
     supply: '#a855f7',
     /** Friendly / positive. */

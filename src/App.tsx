@@ -1,54 +1,55 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
+import { useMutedPreference } from '@/audio/useMutedPreference';
 import { ALL_PERSONALITIES } from '@/config/ai-personalities';
 import { defaultFactionColors } from '@/config/faction-palette';
 import { buildDefaultFactions } from '@/config/factions';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
-import { createAutoSave } from '@/game/auto-save';
 import { AssignedJob, Building, FactionTrait, Health, Unit } from '@/ecs/components';
+import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
 import { AchievementWatcher } from '@/hud/AchievementWatcher';
 import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
-import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
-import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { BuildMenuButton } from '@/hud/BuildMenuButton';
-import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
-import { SystemMenu } from '@/hud/SystemMenu';
-import { EraProgressPill } from '@/hud/EraProgressPill';
-import { FactionChips } from '@/hud/FactionChips';
-import { MatchAgePill } from '@/hud/MatchAgePill';
-import { NonAggressionPactPill } from '@/hud/NonAggressionPactPill';
-import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
-import { RaidPressurePill } from '@/hud/RaidPressurePill';
-import { WinConditionPill } from '@/hud/WinConditionPill';
-import { ScreenshotButton } from '@/hud/ScreenshotButton';
-import { ZoneFlipPulse } from '@/hud/ZoneFlipPulse';
-import { ZoneControlPill } from '@/hud/ZoneControlPill';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
+import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { CriticalWarning } from '@/hud/CriticalWarning';
-import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
-import { LoadingScreen } from '@/hud/LoadingScreen';
-import { PersistAchievements } from '@/hud/PersistAchievements';
-import { ScoreBar } from '@/hud/ScoreBar';
-import { SpeedControl } from '@/hud/SpeedControl';
-import { WeatherIndicator } from '@/hud/WeatherIndicator';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { EndTurnButton } from '@/hud/EndTurnButton';
+import { EraProgressPill } from '@/hud/EraProgressPill';
+import { ErrorOverlay } from '@/hud/ErrorOverlay';
+import { FactionChips } from '@/hud/FactionChips';
 import { GameOverModal } from '@/hud/GameOverModal';
-import { ScoringScreen } from '@/hud/ScoringScreen';
+import { IdleUnitIndicator } from '@/hud/IdleUnitIndicator';
+import { MultiSelectActions } from '@/hud/MultiSelectActions';
 import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
+import { LoadingScreen } from '@/hud/LoadingScreen';
+import { MatchAgePill } from '@/hud/MatchAgePill';
 import { Minimap } from '@/hud/Minimap';
+import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
+import { NonAggressionPactPill } from '@/hud/NonAggressionPactPill';
 import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
 import { PauseControl } from '@/hud/PauseControl';
+import { PersistAchievements } from '@/hud/PersistAchievements';
+import { RaidPressurePill } from '@/hud/RaidPressurePill';
 import { ResourceBar } from '@/hud/ResourceBar';
+import { ScoreBar } from '@/hud/ScoreBar';
+import { ScoringScreen } from '@/hud/ScoringScreen';
+import { ScreenshotButton } from '@/hud/ScreenshotButton';
 import { SelectionPanel } from '@/hud/SelectionPanel';
-import { SelectionRect } from '@/hud/SelectionRect';
 import { SettingsModal } from '@/hud/SettingsModal';
-import { useMutedPreference } from '@/audio/useMutedPreference';
+import { Toasts } from '@/hud/Toasts';
+import { SpeedControl } from '@/hud/SpeedControl';
+import { SystemMenu } from '@/hud/SystemMenu';
 import { TitleScreen } from '@/hud/TitleScreen';
+import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
+import { WeatherIndicator } from '@/hud/WeatherIndicator';
+import { WinConditionPill } from '@/hud/WinConditionPill';
+import { ZoneControlPill } from '@/hud/ZoneControlPill';
+import { ZoneFlipPulse } from '@/hud/ZoneFlipPulse';
 import { ZoneLegend } from '@/hud/ZoneLegend';
 import { createPersistence, PREF_KEYS } from '@/persistence/persistence';
 import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
@@ -270,9 +271,10 @@ function GameSession({
       window.removeEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
     };
   }, [game]);
-  // r3f camera ref for HUD overlays that project world → screen (SelectionRect).
+  // r3f camera ref retained even though SelectionRect no longer
+  // consumes it (M_GAME.BUG.3) — future HUD overlays that project
+  // world→screen will plug back into the ref.
   const cameraRef = useRef<Camera | null>(null);
-  const getCamera = useCallback(() => cameraRef.current, []);
 
   return (
     <div id="app-shell" data-viewport={viewport.class} style={{ position: 'absolute', inset: 0 }}>
@@ -300,7 +302,17 @@ function GameSession({
           setBuildContext({ type: ctx.type, onPlaced: () => setBuildContext(null) })
         }
       />
-      <SelectionRect game={game} getCamera={getCamera} />
+      {/* M_GAME.STACK.2b — multi-select Stack/Unstack actions. Floats
+          next to the SelectionPanel; visible only when 2+ units are
+          selected (or any selected unit is already in a Stack). */}
+      <MultiSelectActions game={game} />
+      {/* M_GAME.BUG.3 — desktop blue drag-select rectangle retired.
+          Selection is tap-only now. Multi-select via tap-and-hold-then-
+          drag (per OnboardingOverlay's "Commanding military" step) is
+          handled inside TileInteraction. SelectionRect.tsx remains in
+          the tree as a subpackage for desktop opt-in (decompose, don't
+          strip) but no longer mounts in the main App. */}
+      {/* <SelectionRect game={game} getCamera={getCamera} /> */}
       {/* M_HUD.SHELL.1 — universal SystemMenu (top-right hamburger
             + slide-in drawer). Replaces the per-viewport scatter of
             ResignButton + MobileSystemMenu + SoundToggle pills that
@@ -365,7 +377,7 @@ function GameSession({
       <ZoneFlipPulse game={game} />
       {/* M_POLISH2.MODES.44b — coexistence only: screenshot the realm. */}
       <ScreenshotButton game={game} />
-      <IdlePeonsIndicator game={game} />
+      <IdleUnitIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
       <PersistAchievements game={game} persistence={persistence} />
@@ -381,6 +393,10 @@ function GameSession({
           (src/hud/aria-live-bus.ts) lets any sim event announce
           accessibly without lifting state. */}
       <AriaLiveRegion />
+      {/* M_HUD.NOTIF.1 — Aethelgard toast bus. Mounted once at the
+          App root; any code can dispatch `aethelgard:toast` to surface
+          a tap-to-focus toast in the top-center stack. */}
+      <Toasts />
       {/* M_EXPANSION.U.114 — visible captions band for deaf accessibility.
           Renders nothing when captions are off OR when no live captions
           are queued, so the overlay is zero-cost for hearing players. */}
@@ -590,6 +606,7 @@ export function App() {
         </div>
       )}
       <TitleScreen
+        persistence={persistence}
         onNewGame={() => setShowNewGame(true)}
         onSettings={() => setShowSettings(true)}
         {...(hasSave

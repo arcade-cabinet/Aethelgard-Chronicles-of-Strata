@@ -1,6 +1,7 @@
 /** M_EXPANSION.U.117 — Touch-target hex grid overlay. Shows hex edges on long-press. */
-import { useEffect, useMemo, useRef } from 'react';
+
 import { useFrame } from '@react-three/fiber';
+import { useEffect, useMemo, useRef } from 'react';
 import { BufferAttribute, BufferGeometry, type LineSegments } from 'three';
 import { TILE_HEIGHT } from '@/config/world';
 import type { BoardData } from '@/core/board';

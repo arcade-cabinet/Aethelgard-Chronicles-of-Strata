@@ -8,10 +8,10 @@
  * AiPlayer's BuildEvaluator returns > 0 (has zone + economy + a free tile).
  */
 import { describe, expect, it } from 'vitest';
-import { buildDefaultFactions } from '@/config/factions';
-import { startGame } from '@/game/game-state';
 import { AiPlayer } from '@/ai/ai-player';
 import { BuildEvaluator } from '@/ai/evaluators/build';
+import { buildDefaultFactions } from '@/config/factions';
+import { startGame } from '@/game/game-state';
 
 describe('M_NEXT.AIVAI.6 — player-faction AI active under N-player zones', () => {
   it('player-faction AiPlayer.brain arbitrates without returning null goal', () => {

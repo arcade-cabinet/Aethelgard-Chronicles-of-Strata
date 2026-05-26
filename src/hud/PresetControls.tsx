@@ -7,10 +7,10 @@ import type { MapSizeKey } from '@/core/map-size';
 import { MAP_SIZES } from '@/core/map-size';
 import type { Difficulty, GameMode } from '@/game/game-state';
 import type { TurnsMode } from '@/rules/mode-presets';
-import { DIFFICULTIES, MODES, PLAYER_COLORS, STARTING_BONUSES } from './new-game-options';
-import { Segmented } from './Segmented';
 import { HUD_THEME } from './hud-theme';
 import type { NewGameChoices } from './NewGameModal';
+import { DIFFICULTIES, MODES, PLAYER_COLORS, STARTING_BONUSES } from './new-game-options';
+import { Segmented } from './Segmented';
 
 export interface PresetControlsProps {
   mode: GameMode;

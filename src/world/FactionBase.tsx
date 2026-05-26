@@ -242,6 +242,21 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
 
   return (
     <group name={`${faction}-base`}>
+      {/* M_GAME.BUG.1 — faction-color halo ring under the Town Hall
+          so the player can LOCATE their capital at a glance from any
+          camera distance, regardless of mesh silhouette + map
+          biome. The ring is rendered just above ground level (y+0.02)
+          to avoid z-fighting with terrain. Pulses gently by reading
+          the day/night phase indirectly (no extra subscriptions —
+          the constant radius + faction tint is enough at this scale). */}
+      <mesh
+        position={[basePos.x, basePos.y + 0.02, basePos.z]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        renderOrder={1}
+      >
+        <ringGeometry args={[1.0, 1.35, 36]} />
+        <meshBasicMaterial color={skin.zoneBorderColor} transparent opacity={0.6} />
+      </mesh>
       {/* Central base mesh — TownHall (player) / crypt (enemy). */}
       <StructureMesh
         faction={faction}

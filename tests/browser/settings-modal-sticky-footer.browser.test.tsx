@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { createPersistence } from '@/persistence/persistence';
 import { SettingsModal } from '@/hud/SettingsModal';
+import { createPersistence } from '@/persistence/persistence';
 
 /**
  * M_POLISH2.MOBILE.7 — settings modal one-handed reachability.

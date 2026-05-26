@@ -13,8 +13,30 @@
  */
 import type { Entity } from 'koota';
 import { unpackEntity } from 'koota';
-import { Selectable } from '@/ecs/components';
+import { HexPosition, Selectable } from '@/ecs/components';
 import type { GameState } from './game-state';
+
+/**
+ * M_GAME.BUG.7b + M_HUD.SHELL.CAMERA.1 — when "auto-focus on
+ * selection" is enabled (default ON), dispatch the focus-tile
+ * event so the CameraRig M_GAME.BUG.11 tween centers the view
+ * on the newly-selected entity. Reads the preference from
+ * localStorage directly to avoid a Persistence dep here.
+ */
+function maybeFocusOnSelection(entity: Entity): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const raw = window.localStorage?.getItem('aethelgard.camera.autoFocus');
+    if (raw === '0') return; // explicit opt-out
+  } catch {
+    // localStorage may throw on Safari private mode; default to ON.
+  }
+  const pos = entity.get(HexPosition);
+  if (!pos) return;
+  window.dispatchEvent(
+    new CustomEvent('aethelgard:focus-tile', { detail: { q: pos.q, r: pos.r } }),
+  );
+}
 
 /**
  * Select `entity`: sets its `Selectable.isSelected = true` and clears the
@@ -33,6 +55,7 @@ export function selectEntity(game: GameState, entity: Entity): void {
   entity.set(Selectable, { isSelected: true });
   game.selectedId = entityId;
   game.selectedIds = [entityId];
+  maybeFocusOnSelection(entity);
 }
 
 /**

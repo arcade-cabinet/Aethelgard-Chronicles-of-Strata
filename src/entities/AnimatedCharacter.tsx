@@ -1,11 +1,36 @@
 import { useAnimations, useGLTF } from '@react-three/drei';
 import { useEffect, useMemo, useRef } from 'react';
-import { Color, type AnimationClip, type Group, type Mesh, type MeshStandardMaterial } from 'three';
+import { type AnimationClip, Color, type Group, type Mesh, type MeshStandardMaterial } from 'three';
 import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { assets } from '@/assets/assets';
 import type { UnitType } from '@/ecs/components';
 import type { ClipName } from '@/ecs/systems/animation';
+import { measuredScale } from '@/rules/asset-scale';
 import { characterMeshId, rigAnimationIds, rigForRole } from './rig';
+
+/**
+ * M_GAME.SCALE.GLB-MEASURE.1 — per-role silhouette weight, multiplied
+ * into the measured-from-bbox scale read from glb-metadata.json. The
+ * measurement tool already normalizes every character mesh to
+ * TARGET_UNIT_HEIGHT (~0.95 world units), so this multiplier ONLY
+ * encodes silhouette hierarchy — Knights stand a touch taller than
+ * Peons, Orcs a touch taller than Goblins, etc. Values stay close to
+ * 1.0; large multipliers would defeat the measurement.
+ */
+const ROLE_SILHOUETTE_WEIGHT: Record<string, number> = {
+  Peon: 0.9,
+  Builder: 0.9,
+  Footman: 1.0,
+  Archer: 0.95,
+  Knight: 1.08,
+  Mage: 1.0,
+  Healer: 0.95,
+  Pikeman: 1.05,
+  Goblin: 0.9,
+  Orc: 1.12,
+  Wraith: 1.0,
+  Skeleton: 0.92,
+};
 
 /** Props for an animated KayKit character. */
 export interface AnimatedCharacterProps {
@@ -107,8 +132,11 @@ export function AnimatedCharacter({
     };
   }, [actions, clip, fade]);
 
+  const baseScale = measuredScale(characterMeshId(role), 1);
+  const scaleFactor = baseScale * (ROLE_SILHOUETTE_WEIGHT[role] ?? 1);
+
   return (
-    <group ref={group}>
+    <group ref={group} scale={scaleFactor}>
       <primitive object={scene} />
     </group>
   );

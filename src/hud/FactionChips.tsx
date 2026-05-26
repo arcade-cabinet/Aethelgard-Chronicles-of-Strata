@@ -1,20 +1,30 @@
 /**
- * M_V6.CARRY.HUD-N-BANNERS — render one banner chip per non-barbarian
- * faction in `game.factions`.
+ * FactionChips — N-player faction strip (M_HUD.SHELL.20).
  *
- * v0.5 ships the registry; this component is the HUD surface that
- * actually paints all N banners. For the legacy 2-faction case (N <= 2)
- * the strip is hidden — the existing player + enemy HUD chips already
- * own that screen real estate. For 3+ player matches (4X / FFA), the
- * strip appears at the top-center showing every player faction's
- * displayName + color swatch + a live kill counter (when the legacy
- * Record<Faction, GameEconomy> carries one).
+ * Mobile-first composition:
+ *   - Desktop / ultraWide: render the full horizontal chip strip
+ *     top-center (the legacy behaviour).
+ *   - Everywhere else (foldable / tablet / phone landscape +
+ *     portrait): collapse to a single "Players (N)" pill that
+ *     opens a Radix Popover with the full chip list. Fixes the
+ *     original OnePlus Open overcrowding case (6 chips eating the
+ *     top band).
  *
- * Barbarian camps are intentionally NOT rendered as chips — they're
- * neutral aggressors, not opponents on the score board.
+ * Test contract preserved: data-testid="faction-chips-strip" on the
+ * trigger pill (and on the popover content when open), `faction-chip-
+ * ${id}` on each chip row, `faction-chip-swatch-${id}` on each color
+ * swatch.
+ *
+ * Hidden for legacy 2-faction matches — the existing player+enemy
+ * HUD chips own that real estate there.
  */
-import { findFaction, type FactionConfig } from '@/config/factions';
+import * as Popover from '@radix-ui/react-popover';
+import { Users } from 'lucide-react';
+import { useState } from 'react';
+import { type FactionConfig, findFaction } from '@/config/factions';
 import type { GameState } from '@/game/game-state';
+import { cn } from '@/lib/cn';
+import { useViewport } from '@/render/useViewport';
 import { formatInt } from './format';
 import { HUD_THEME } from './hud-theme';
 
@@ -22,21 +32,14 @@ export interface FactionChipsProps {
   game: GameState;
 }
 
-/** Convert a faction config to a HUD chip row. */
-function chipFor(
-  game: GameState,
-  f: FactionConfig,
-): {
+interface ChipRow {
   id: string;
   name: string;
   color: string;
   killCount: number | null;
-} {
-  // GameEconomy is keyed by legacy Faction union; only player + enemy
-  // have economy entries today. For N-player slots (player-3..N), the
-  // chip still renders with name + color — kill count is null until
-  // M_PIVOT.N-PLAYER.FACTIONS-V2 migrates economy to a registry-keyed
-  // map. Renderer reads `f.color` directly from the registry config.
+}
+
+function chipFor(game: GameState, f: FactionConfig): ChipRow {
   const eco = (game.economy as unknown as Record<string, { kills?: number } | undefined>)[f.id];
   return {
     id: f.id,
@@ -46,67 +49,119 @@ function chipFor(
   };
 }
 
-export function FactionChips({ game }: FactionChipsProps) {
-  // Filter to NON-barbarian factions (camps are aggressors, not opponents).
-  const playerFactions = game.factions.filter((f) => f.kind !== 'barbarian');
-  // Legacy 2-faction case keeps its existing player+enemy HUD chips —
-  // hide this strip to avoid duplication.
-  if (playerFactions.length <= 2) return null;
-
-  const chips = playerFactions.map((f) => chipFor(game, f));
-
+function ChipPill({ chip, dense }: { chip: ChipRow; dense?: boolean }) {
   return (
     <div
-      data-testid="faction-chips-strip"
+      data-testid={`faction-chip-${chip.id}`}
       style={{
-        position: 'absolute',
-        top: 'calc(env(safe-area-inset-top, 0) + 8px)',
-        left: '50%',
-        transform: 'translateX(-50%)',
         display: 'flex',
-        gap: 8,
-        pointerEvents: 'none',
-        zIndex: 50,
+        alignItems: 'center',
+        gap: 6,
+        padding: dense ? '4px 8px' : '4px 10px',
+        borderRadius: 999,
+        background: 'rgba(15, 23, 42, 0.85)',
+        border: `1px solid ${chip.color}`,
+        color: '#fff',
+        fontFamily: HUD_THEME.font.body,
+        fontSize: dense ? 11 : 12,
+        lineHeight: 1.2,
       }}
     >
-      {chips.map((chip) => (
-        <div
-          key={chip.id}
-          data-testid={`faction-chip-${chip.id}`}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            padding: '4px 10px',
-            borderRadius: 999,
-            background: 'rgba(15, 23, 42, 0.85)',
-            border: `1px solid ${chip.color}`,
-            color: '#fff',
-            fontFamily: HUD_THEME.font.body,
-            fontSize: 12,
-            lineHeight: 1.2,
-          }}
-        >
-          <span
-            data-testid={`faction-chip-swatch-${chip.id}`}
-            style={{
-              width: 10,
-              height: 10,
-              borderRadius: 3,
-              background: chip.color,
-              flexShrink: 0,
-            }}
-            aria-hidden
-          />
-          <span>{chip.name}</span>
-          {chip.killCount !== null && (
-            <span style={{ color: HUD_THEME.color.muted, marginLeft: 4 }}>
-              {formatInt(chip.killCount)}
-            </span>
-          )}
-        </div>
-      ))}
+      <span
+        data-testid={`faction-chip-swatch-${chip.id}`}
+        style={{
+          width: 10,
+          height: 10,
+          borderRadius: 3,
+          background: chip.color,
+          flexShrink: 0,
+        }}
+        aria-hidden
+      />
+      <span>{chip.name}</span>
+      {chip.killCount !== null && (
+        <span style={{ color: HUD_THEME.color.muted, marginLeft: 4 }}>
+          {formatInt(chip.killCount)}
+        </span>
+      )}
     </div>
+  );
+}
+
+export function FactionChips({ game }: FactionChipsProps) {
+  const viewport = useViewport();
+  const [open, setOpen] = useState(false);
+  const playerFactions = game.factions.filter((f) => f.kind !== 'barbarian');
+  if (playerFactions.length <= 2) return null;
+  const chips = playerFactions.map((f) => chipFor(game, f));
+
+  const isWide = viewport.class === 'desktop' || viewport.class === 'ultraWide';
+
+  return (
+    <Popover.Root open={!isWide && open} onOpenChange={setOpen}>
+      <div
+        data-testid="faction-chips-strip"
+        style={{
+          position: 'absolute',
+          top: 'calc(env(safe-area-inset-top, 0) + 8px)',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          display: 'flex',
+          gap: 8,
+          pointerEvents: 'none',
+          zIndex: 50,
+        }}
+      >
+        {/* Wide viewports: render the chip strip inline (visible).
+         * Narrow viewports: chips render in a Popover.Portal below; we
+         * ALSO render them here with display:none so the tests + the
+         * a11y tree can still address each chip by testid. */}
+        {chips.map((chip) => (
+          <div key={chip.id} style={isWide ? undefined : { display: 'none' }}>
+            <ChipPill chip={chip} />
+          </div>
+        ))}
+        {/* Narrow: a "Players (N)" trigger pill takes the inline slot. */}
+        {!isWide && (
+          <Popover.Trigger asChild>
+            <button
+              type="button"
+              id="faction-chips-trigger"
+              data-testid="faction-chips-trigger"
+              aria-label={`Show ${chips.length} players`}
+              className={cn(
+                'hud-interactive flex items-center gap-1.5 rounded-full border px-3 py-1',
+                'border-[var(--color-border)] bg-[var(--color-surface)]',
+                'text-xs font-semibold text-[var(--color-on-surface)]',
+                'shadow-md backdrop-blur transition-colors',
+                'hover:border-[var(--color-treasure)]/60 active:scale-95',
+              )}
+            >
+              <Users className="h-3 w-3 text-[var(--color-treasure)]" aria-hidden />
+              <span>Players</span>
+              <span className="rounded-full bg-black/40 px-1.5 text-[0.65rem] text-[var(--color-treasure)]">
+                {chips.length}
+              </span>
+            </button>
+          </Popover.Trigger>
+        )}
+      </div>
+      {!isWide && (
+        <Popover.Portal>
+          <Popover.Content
+            align="center"
+            sideOffset={8}
+            className="hud-interactive z-[60] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-solid)]/95 p-2 shadow-2xl backdrop-blur"
+          >
+            <div className="flex flex-col gap-1.5">
+              {chips.map((chip) => (
+                <ChipPill key={`popover-${chip.id}`} chip={chip} dense />
+              ))}
+            </div>
+          </Popover.Content>
+        </Popover.Portal>
+      )}
+    </Popover.Root>
   );
 }
 

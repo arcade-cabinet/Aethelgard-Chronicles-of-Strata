@@ -5,7 +5,39 @@ import { canAfford } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
 import { DISCOVERIES, scaledCostFor } from '@/rules';
+
+// M_HUD.SHELL.17 / M_LORE.4 — Chronicler's-voice flavour per Discovery
+// id, sourced from docs/lore/discoveries.md. Shown italic below the
+// mechanical description so the panel reads like a tome of strata-
+// answers rather than a tech-tree spreadsheet.
+const DISCOVERY_FLAVOR: Record<string, string> = {
+  forgedBlades: 'The Ember answered with an edge.',
+  steelPlows: 'We asked the Verdant; it lent us the season.',
+  'trade-route': 'The strata held the road through the winter; the wagons did not stray.',
+  cartography: 'The Mythic showed us the realm whole, for one cold afternoon.',
+  'iron-tools': 'The seam yielded; we shod our chisels in iron, and the mountain was kinder.',
+  'siege-engineering':
+    'We asked the wall its name; it answered; we wrote the answer on a stone, and the stone broke the wall.',
+  'monumental-architecture':
+    'The strata answered as one — yes, remember this. We laid the cornerstone before sunset.',
+  // M_GAME.DISCOVERY.FORMATION.1+2 — Chronicler's voice for the 6
+  // formation Discoveries, sourced from docs/lore/discoveries.md.
+  // Gemini PR #65: prevents the panel from rendering a bare cost +
+  // mechanical line for these entries.
+  'formation-phalanx':
+    'And when the spears were planted as one, the bronze beneath the realm shifted, and the line became wall.',
+  'formation-cadre': 'The cadre is not three swords. It is one sword that wears three faces.',
+  'formation-wedge':
+    'The wedge does not arrive. The wedge is what was already there, only the enemy did not yet know.',
+  'formation-skirmish-line':
+    'The skirmish line is not a line of archers. It is the SHAPE the arrows make in flight.',
+  'formation-square':
+    'The square is the realm in miniature. It does not advance. It cannot retreat. It survives, and that is enough.',
+  'formation-combined-arms':
+    'And the Chronicler-King saw that the spear was not the answer, and the bow was not the answer, and the wedge was not the answer. The answer was all three, spoken in the same breath.',
+};
 import { costLabel } from './format';
+import { emitToast } from './Toasts';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -168,6 +200,21 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
                 >
                   {d.description}
                 </div>
+                {DISCOVERY_FLAVOR[d.id] && (
+                  <div
+                    data-testid={`discovery-flavor-${d.id}`}
+                    style={{
+                      fontSize: '0.74rem',
+                      fontStyle: 'italic',
+                      color: HUD_THEME.color.gold,
+                      marginTop: 4,
+                      opacity: 0.85,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    “{DISCOVERY_FLAVOR[d.id]}”
+                  </div>
+                )}
                 {/* M_AUDIT2.UX.17 — prereq tree row. Lists each prereq
                     with its own status (✓ met, ✗ missing) so the
                     player sees the dependency at a glance. Empty for
@@ -214,7 +261,17 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
               <button
                 type="button"
                 disabled={!available}
-                onClick={() => doResearch(game, d.id as ResearchId)}
+                onClick={() => {
+                  const ok = doResearch(game, d.id as ResearchId);
+                  if (ok) {
+                    emitToast({
+                      id: `discovery-${d.id}`,
+                      tone: 'success',
+                      title: 'Discovery unlocked',
+                      description: d.name,
+                    });
+                  }
+                }}
                 style={{
                   padding: '6px 14px',
                   borderRadius: 8,

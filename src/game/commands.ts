@@ -18,6 +18,7 @@ import {
   type MoverMaterial,
   OffensiveBehavior,
   PathQueue,
+  PeonAutonomy,
   ScienceProducer,
   Selectable,
   Stance,
@@ -36,7 +37,7 @@ import {
   type TrainableUnit,
   UNIT_COSTS,
 } from '@/rules';
-import { spend, type ResourceCost } from './economy';
+import { type ResourceCost, spend } from './economy';
 import { baseKeyFor, type GameState } from './game-state';
 import { setRallyPoint } from './rally';
 import { applyResearch, type ResearchId } from './research';
@@ -637,11 +638,53 @@ export function doResearch(game: GameState, id: ResearchId, faction: Faction = '
 // Selection helpers for TileInteraction
 // ---------------------------------------------------------------------------
 
-/** Find an entity on `tileKey` that has Selectable (a unit or building). */
+/** Find an entity on `tileKey` that has Selectable (a unit or building).
+ *
+ * M_GAME.BUG.6 — peons are AUTONOMOUS and non-interactable. Taps on a
+ * peon's tile fall through to building / tile interaction; only
+ * military units + buildings respond. The peon's information is
+ * irrelevant to the player (they auto-harvest, never wait for orders),
+ * so making them clickable was misleading. */
+/**
+ * M_GAME.MODE.PEON.2 — flip the autonomy mode of a peon entity. No-op
+ * if the entity isn't a peon or lacks the PeonAutonomy trait
+ * (e.g. an enemy peon shouldn't be commandable by the player). Called
+ * from SelectionPanel's "Take command" / "Resume automation" buttons.
+ *
+ * Side effect: when flipping back to 'auto', the peon's AssignedJob
+ * is reset to IDLE so the auto-scheduler picks it up on the next
+ * tick. When flipping to 'manual', the AssignedJob is left as-is —
+ * the player can immediately issue a Harvest/Build command which
+ * will override the current task.
+ */
+export function setPeonAutoMode(
+  _game: GameState,
+  entity: Entity,
+  mode: 'auto' | 'manual',
+): boolean {
+  const unit = entity.get(Unit);
+  if (unit?.unitType !== 'Peon') return false;
+  if (!entity.has(PeonAutonomy)) return false;
+  entity.set(PeonAutonomy, { autoMode: mode });
+  if (mode === 'auto') {
+    const job = entity.get(AssignedJob);
+    if (job) entity.set(AssignedJob, { ...job, state: 'IDLE', targetKey: '' });
+  }
+  return true;
+}
+
 export function findSelectableAtTile(game: GameState, tileKey: string): Entity | undefined {
   for (const entity of game.world.query(Selectable, HexPosition)) {
     const hex = entity.get(HexPosition);
-    if (hex && getHexKey(hex.q, hex.r) === tileKey) return entity;
+    if (!hex || getHexKey(hex.q, hex.r) !== tileKey) continue;
+    // M_GAME.MODE.PEON.1 — peons ARE selectable now. The v0.1.20
+    // hard skip-peons rule is reverted per
+    // docs/specs/200-genre-commitment.md: the player needs to be
+    // able to tap a peon to take command of it (flip autoMode →
+    // 'manual') or to inspect what it's harvesting. The
+    // SelectionPanel decides what verbs to expose based on the
+    // peon's PeonAutonomy.autoMode.
+    return entity;
   }
   return undefined;
 }

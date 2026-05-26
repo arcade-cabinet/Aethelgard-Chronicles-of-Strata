@@ -5,12 +5,12 @@
  * Split from ai-player.ts. See spec 100/101/102 + M_AI_DEPTH.2.
  */
 import { Goal, GoalEvaluator } from 'yuka';
+import type { AiPlayer } from '@/ai/ai-player';
+import { ownedBuildingCount, ownedMilitaryCount, ownedPeonCount } from '@/ai/helpers';
 import { trainUnit } from '@/game/commands';
 import { canAfford } from '@/game/economy';
+import { peonCap, UNIT_COSTS } from '@/rules';
 import { canTrain } from '@/rules/economy-rules';
-import { UNIT_COSTS, peonCap } from '@/rules';
-import { ownedBuildingCount, ownedMilitaryCount, ownedPeonCount } from '@/ai/helpers';
-import type { AiPlayer } from '@/ai/ai-player';
 
 export { TrainGoal };
 

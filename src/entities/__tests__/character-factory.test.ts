@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { TILE_HEIGHT } from '@/config/world';
 import { difficultyMultiplierFor } from '@/config/combat';
+import { TILE_HEIGHT } from '@/config/world';
 import {
   AnimationState,
   FactionTrait,

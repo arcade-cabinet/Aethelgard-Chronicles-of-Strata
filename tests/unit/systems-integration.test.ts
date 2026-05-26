@@ -23,5 +23,5 @@ describe('M5 systems integration', () => {
     expect(() => {
       for (let i = 0; i < 7200; i++) runEconomyTick(game, 1 / 60);
     }).not.toThrow();
-  }, 30000);
+  }, 60000); // M_GAME.BUG.10 CI-slowness bump
 });

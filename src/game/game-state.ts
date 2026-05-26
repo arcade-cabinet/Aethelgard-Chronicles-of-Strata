@@ -29,6 +29,7 @@ import type { Projectile } from './projectiles';
  * (M_FUN.REFACTOR.RUN-ECONOMY-TICK phase extraction).
  */
 export const PROJECTILE_ID_REF = { current: 0 };
+
 // M_EXPANSION.D.171 — mapgen helpers (matchLengthScale,
 // findBalancedBoard) moved to a sibling (./mapgen-helpers.ts) so
 // this file stays under the 600-line cognitive-load threshold. The
@@ -49,6 +50,7 @@ import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/e
 import type { BurnState } from '@/ecs/systems/wildfire';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
+import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 import {
   defaultCampCount,
   factionConfigForCamp,
@@ -58,28 +60,27 @@ import {
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
 import type { AutoSave } from './auto-save';
 import { createClock, type GameClock } from './clock';
-import { findBalancedBoard, matchLengthScale } from './mapgen-helpers';
 import type { Difficulty } from './difficulty';
+import { createDiplomacyState, type DiplomacyState } from './diplomacy';
+import { createDiplomacyProposalState, type DiplomacyProposalState } from './diplomacy-border';
+import { createTradeCooldownState, type TradeCooldownState } from './diplomacy-trade';
 import { createEconomy, type GameEconomy } from './economy';
-import { createRally, type RallyState } from './rally';
-import { createResearch, type ResearchState } from './research';
-import { createWeather, type Weather } from './weather';
-import { createRandomEventsState, type RandomEventsState } from './random-events';
-import { createZoneState, seedZonesFromAttractors, type ZoneState } from './zone';
 import {
   tickClockPhase,
-  tickCommandPhase,
   tickCombatPhase,
+  tickCommandPhase,
   tickDepositPhase,
   tickScoringPhase,
   tickTerrainPhase,
 } from './economy-tick-phases';
-import { createDiplomacyState, type DiplomacyState } from './diplomacy';
-import { createDiplomacyProposalState, type DiplomacyProposalState } from './diplomacy-border';
-import { createTradeCooldownState, type TradeCooldownState } from './diplomacy-trade';
+import { findBalancedBoard, matchLengthScale } from './mapgen-helpers';
 import { createMythEventsState, type MythEventsState } from './myth-events';
+import { createRally, type RallyState } from './rally';
+import { createRandomEventsState, type RandomEventsState } from './random-events';
+import { createResearch, type ResearchState } from './research';
 import type { VictoryRecord } from './victory-conditions';
-import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
+import { createWeather, type Weather } from './weather';
+import { createZoneState, seedZonesFromAttractors, type ZoneState } from './zone';
 
 export type { Difficulty } from './difficulty';
 
@@ -449,6 +450,13 @@ export interface GameState {
    * array-reference identity (same pattern as `lastDamageEvents`).
    */
   lastResourceEvents: ResourceDepositEvent[];
+  /**
+   * M_HUD.NOTIF.PEON.1 — set of resource types for which the player
+   * has already received the "first harvest" narrator toast this
+   * session. Prevents the toast from re-firing on every wood
+   * deposit. Optional because pre-v0.10 saves don't carry it.
+   */
+  peonFirstHarvestToastedTypes?: Set<string>;
   /**
    * Auto-save timer. Attached by the App layer (which owns the persistence
    * facade); when present, `runEconomyTick` advances it. Absent in tests and

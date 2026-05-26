@@ -15,6 +15,7 @@
  */
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
+import type { NavGraph } from '@/core/pathfinding';
 import {
   Combatant,
   CommandedTile,
@@ -28,7 +29,6 @@ import {
   Unit,
 } from '@/ecs/components';
 import { stanceBehaviorSystem } from '@/ecs/systems/stance-behavior';
-import type { NavGraph } from '@/core/pathfinding';
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -33,6 +33,11 @@ game described in `references/conversation.md`.
 - **Verify (pre-commit):** `pnpm verify` (check + lint + format + test)
 - **Capacitor:** `pnpm cap:sync` after `capacitor.config.ts` or `android/` change
 - **Asset ingest:** `pnpm assets:ingest` — curates `references/` → `public/assets/`
+- **Maestro (mobile e2e):** `pnpm test:maestro` (smoke) / `pnpm test:maestro:all`
+  (full battery). Aethelgard ships to Android + iOS — Maestro flows run against the
+  actual installed APK/IPA and exercise tap paths (NEVER kbd). Modeled on
+  `../mean-streets/.maestro/`. See `.maestro/*.yaml` for the flow battery. Every
+  interactive HUD surface MUST carry an `id=` selector + `aria-label`.
 
 ## Renderer
 

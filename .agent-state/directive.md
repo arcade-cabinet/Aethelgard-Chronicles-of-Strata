@@ -1,14 +1,445 @@
 # Continuous Work Directive — Aethelgard: Chronicles of Strata
 
-**Status:** ACTIVE — v0.9 cycle (v0.8 released as v0.1.16 / PR #44)
-**Cycle:** v0.9 — visual baseline cross-platform lock + AI WonderEvaluator + HUD N-player win-loss + save-load N-player e2e + 4X mapgen balance + docs cycle
-**Main-thread owner:** Claude (this session — drives the items in MAIN-THREAD ACTIVE QUEUE below)
-**v0.9 background owner:** `v0_9_grinder` agent on `.claude/worktrees/agent-7222` — drives the v0.9 CYCLE work-units near line 461
+**Status:** ACTIVE — v0.10 cycle (HUD overhaul / cinematic design language)
+**Cycle:** v0.10 — pivot from feature-add to design-language coherence. Mobile-first (Android + iOS via Capacitor) testing posture. Semantic-token + dual-theme design system. mean-streets-style fixture battery + Maestro mobile e2e. Magic MCP distilled into reusable primitives.
+**Main-thread owner:** Claude (this session)
+**Active branch:** `feat/hud-overhaul-responsive-shell` (accumulating; PR'd in chunks).
+**v0.9 closeout:** PR #60 (cycle) + PR #61 (docs + nplayer test fix) + PR #62 (SystemMenu drawer + Tailwind v4) + PR #64 (TitleScreen) — released through v0.1.19
 **v0.8 closeout:** PR #44 — 13 v0.8 work-units shipped (v0.1.16)
 **v0.7 closeout:** PR #31 — substrate→player polish + 2 CRITICAL fixes + 11 work-units shipped (v0.1.11)
 **v0.6 closeout:** PR #29 — portals + diplomacy + MYTH events + 4X victory + 6 v0.5 carryovers shipped
 **v0.5 closeout:** PR #27 — N-player + barbarian-camp pivot full centerpiece
-**v0.4 closeout:** [`docs/MILESTONES.md`](../docs/MILESTONES.md) v0.4 entry (released as v0.1.4 — PR #10 + #14 + #15 + #16)
+**v0.4 closeout:** [`docs/MILESTONES.md`](../docs/MILESTONES.md) v0.4 entry (released as v0.1.4)
+
+## Cycle-shift principles (the meta — read every session start)
+
+1. **Mobile-first or it doesn't ship.** Aethelgard releases to Android + iOS via Capacitor. GitHub Pages is the testing surface, NEVER the permanent target. Every interactive must be reachable by tap with `aria-label` + `id`/`data-testid`. Keyboard nav is a quiet desktop convenience at best and MUST NOT be the only path.
+2. **Better is better. Simpler is not.** When a feature feels heavy, **decompose into subpackages** — never strip. Move desktop-keyboard nav into `src/hud/desktop-keyboard/` as an opt-in subpackage rather than evicting it. Move halo-pulse + hero-strip + step-progress-pills into `src/hud/primitives/` rather than inlining them everywhere.
+3. **Magic MCP is a teacher, not a sketch generator.** Every Magic call returns library-composition patterns (Tailwind v4 `@theme`, declarative `@react-three/postprocessing`, Radix primitive composition, framer's `useReducedMotion`/`AnimatePresence` modes, lucide as a swap-in icon system, `oklch` color spaces, CVA variants). DISTILL those into the Aethelgard design language; don't just paste icons per-page. See `magic-mcp-prompt-protocol` memory.
+4. **Design language has ONE source of truth.** Semantic tokens (`--color-surface`, `--color-on-surface-muted`, `--color-treasure`) in `src/styles.css`. Every component reads SEMANTIC names; never raw hex inline. Dual theme via `[data-theme='light']` cascade. See `mean-streets/src/ui/theme/tokens.css` as the discipline reference.
+5. **Visual verification, every UI commit.** Before claiming a HUD touch is done: boot dev, capture via the fixture battery (mean-streets pattern), look at the screenshot in a real Chromium, compare against a named reference (mean-streets / Civ VI / the prior battery), fix what looks wrong BEFORE the user has to. When the user has to point out "you're not running a chrome instance" that's a process bug equal to a missed test.
+6. **Distill EVERY major learning into this directive AND the cycle PRD.** Don't just memory-write; propagate. Future sessions read these files first.
+
+## v0.10 work-units (dependency-ordered)
+
+### v0.10.A — Design language foundation (LANDED on accumulating branch)
+
+- [x] M_HUD.SHELL.1 — Universal SystemMenu hamburger + slide drawer (PR #62 merged, in main)
+- [x] M_HUD.SHELL.2 — Cinematic TitleScreen + PBR shader hero (PR #64 — auto-merging)
+- [x] M_HUD.SHELL.3 — NewGameModal "Forge Your Realm" (local commit, on accumulating branch)
+- [x] M_HUD.SHELL.4 — OnboardingOverlay tome-by-candlelight stepper (local commit)
+- [x] M_HUD.SHELL.5 — GameOverModal cinematic terminal screen (local commit)
+- [x] M_HUD.SHELL.6 — Semantic-token design language + dual theme + `useTheme()` (local commit)
+- [x] M_HUD.SHELL.6.kbd — Retire kbd-hint UI from TitleScreen + OnboardingOverlay (mobile-first; local commit)
+
+### v0.10.B — Design system propagation (NEXT)
+
+- [x] M_HUD.SHELL.7 — TOKEN SWEEP (Tailwind-utility files): replaced every legacy `--color-obsidian` / `--color-gold-hud` / `--color-{accent,muted,text,border,panel,danger,friendly,wood,stone,supply,coin}-hud` alias across the 5 new Tailwind HUD pages (TitleScreen, SystemMenu, NewGameModal, OnboardingOverlay, GameOverModal) with the semantic names. Legacy aliases removed from src/styles.css. Inline-style components consuming HUD_THEME.color.* (TypeScript constant) are out of M_HUD.SHELL.7 scope — see M_HUD.SHELL.7b below for the JS-constant sweep.
+- [x] M_HUD.SHELL.7b — `HUD_THEME.color.gold` + `.coin` deepened from #fbbf24 (sun-yellow) to #d4af37 (antique gold) so all ~200 inline-style consumers align with the semantic `--color-treasure` token used by the new Tailwind HUD pages. No per-file refactors needed: the constant change cascades through every Selection-panel/score-pill/resource-strip that read HUD_THEME.color.gold. Full per-file migration to `getComputedStyle()` CSS-var reads kept as a future hardening pass — current state has visual consistency.
+- [x] M_HUD.SHELL.8 — PBR shader reads CSS vars: `<PbrDome>` now syncs `uColorObsidian` / `uColorGold` / `uColorAccent` from `getComputedStyle(document.documentElement)` on mount + on `aethelgard:theme-changed`. Light theme swaps the dome palette to parchment + copper + harbor-blue automatically.
+- [x] M_HUD.SHELL.9 — Hardcoded gradient extraction: `--gradient-treasure-wordmark`, `--gradient-treasure-button`, `--gradient-victory-title`, `--gradient-defeat-title`, `--gradient-draw-title`, `--halo-treasure-radial`, `--halo-danger-radial`, `--halo-accent-radial` defined in `src/styles.css` per theme. Consumers: `.btn-treasure` utility, TitleScreen wordmark, GameOverModal title + halo. Dark theme keeps the gold-cream-amber-ember stack; light theme uses parchment + copper + harbor-blue inverse.
+- [x] M_HUD.SHELL.10 — Distilled primitives subpackage `src/hud/primitives/`: HeroBanner, Halo, TreasureButton, SectionCard, StepProgressDots, IconButton exported. TitleScreen migrated as the first consumer (TreasureButton + IconButton). NewGameModal / OnboardingOverlay / GameOverModal / SystemMenu adoption tracked as M_HUD.SHELL.10b below.
+- [x] M_HUD.SHELL.10b — Primitive adoption across the remaining pages: NewGameModal (SectionCard primitive replaces local + TreasureButton replaces inline Begin Match), OnboardingOverlay (HeroBanner + StepProgressDots + TreasureButton replace the inline hero/dots/Begin Realm), GameOverModal (Halo replaces the inline motion.div halo + TreasureButton replaces inline Re-enter Aethelgard). SystemMenu trigger + close-X keep their inline implementations — special positioning (fixed top-right) + inline Dialog.Close pattern; IconButton primitive adoption deferred as cosmetic-only (M_HUD.SHELL.10c).
+
+### v0.10.C — Mobile-first testing posture (sibling-game-modeled)
+
+- [x] M_HUD.SHELL.11 — Maestro flow battery shipped: `.maestro/config.yaml` + `.maestro/smoke.yaml` + `.maestro/menu-to-onboarding.yaml` + `.maestro/system-menu-drawer.yaml` + `.maestro/nplayer-setup.yaml` + `.maestro/game-over.yaml`. Six npm scripts wired. CLAUDE.md updated.
+- [x] M_HUD.SHELL.12 — Visual fixture battery `scripts/capture-aethelgard-fixtures.mjs`. Boots vite (or reuses with PW_REUSE_SERVER=1), sweeps Playwright across 7 viewport projects (desktop / ultrawide / pixel-7 / iphone-14 / ipad-mini / foldable-portrait / foldable-landscape) × 7 fixtures (title / newgame / onboarding / gameover-{win,loss,draw} / system-menu). Writes per-viewport PNGs under test-results/visual-fixtures/. Wired via `pnpm visual:fixtures`. Modelled on mean-streets/scripts/capture-visual-fixtures.mjs.
+- [x] M_HUD.SHELL.13 — `?fixture=<name>` URL routing + `<FixtureApp>` substrate. src/main.tsx checks URL for `?fixture=` and lazy-imports `src/test/FixtureApp.tsx` instead of `<App>`. Seven fixtures wired: title, newgame, onboarding, gameover-win, gameover-loss, gameover-draw, system-menu. Each renders the target screen with mocked props (or a stubbed game state). Pattern modelled on mean-streets/src/test/FixtureApp.tsx.
+- [x] M_HUD.SHELL.14 — `aria-label` + `data-testid` audit across the 5 new Tailwind HUD pages: every <button> + <TreasureButton> + <IconButton> now self-describes. ButtonBaseProps in TitleScreen requires `ariaLabel` so future SecondaryButton/GhostButton calls can't silently omit it. Continue/Settings/Credits all reachable by aria-label + id. Onboarding Skip now has aria-label + data-testid="onboarding-skip". Tests in `tests/e2e/` + `tests/browser/` migration to by-aria + by-testid + tap is a separate sub-task (M_HUD.SHELL.14b) — substrate exists.
+- [x] M_HUD.SHELL.14b — Audit found tests already use `id=` / `aria-label` / `data-testid` selectors via Playwright `getByRole`/`page.locator('#...')`, not kbd. Kbd-rebind tests (`hotkey-rebind-round-trip.spec.ts` + `modal-a11y.browser.test.tsx`) explicitly test the kbd remapping FEATURE itself — they stay. No test files driving HUD nav via kbd were found. Foundation kept clean; future test additions follow the same id-selector pattern Maestro uses.
+
+### v0.10.D — Desktop-keyboard subpackage (decompose, don't strip)
+
+- [x] M_HUD.SHELL.15 — `src/hud/desktop-keyboard/` opt-in subpackage. Exports `useDesktopShortcuts(shortcuts, enabled)` hook + `DesktopShortcut` type. TitleScreen migrated as first consumer — viewport-gated (`viewport.class === 'desktop' || 'ultraWide'`) so mobile/foldable/tablet never see the kbd shortcut. The previous "strip" became a clean extraction; future OnboardingOverlay arrow-key nav + SystemMenu kbd shortcuts can re-adopt the same hook.
+
+### v0.10.H — PR pile cleanup + remote-blocked feedback integration
+
+Per user direction 2026-05-25: GitHub permissions are blocking Claude
+from helping remotely on the open-PR pile (PR #64 comment thread is
+the trigger). Local branch `feat/hud-overhaul-responsive-shell`
+becomes the integration branch — all open PR work gets pulled in
+here, all CodeRabbit / reviewer feedback gets resolved here, stale
+PRs get closed.
+
+- [x] M_HUD.SHELL.22 — PR #60 (`fix/multi-viewport-canvas-paint-check`)
+      merged into current branch in commit e17ff8a. Conflicts resolved
+      ours (SystemMenu/SettingsModal/styles.css are wholesale rewritten
+      on the integration branch — kept the new shell). PR will close
+      automatically when this branch lands.
+- [x] M_HUD.SHELL.23 — PR #64 (`feat/title-screen-cinematic-pbr`)
+      verified already absorbed. The single commit on that branch
+      (3a49c1b "M_HUD.SHELL.2 cinematic TitleScreen + PBR shader")
+      is the exact landed work from M_HUD.SHELL.2 on this integration
+      branch. PR will close automatically when this branch merges.
+- [x] M_HUD.SHELL.24 — PR #63 is the release-please bot's
+      "chore(main): release 0.1.20" PR. release-please will
+      automatically re-stage against main after this integration
+      branch merges; manual intervention is the wrong move
+      (forcing a re-target would orphan the bot's existing changelog
+      cursor). Strategy: let PR #63 land as-is when 0.1.20 ships,
+      release-please will then open 0.1.21 against the integration
+      work post-merge.
+- [x] M_HUD.SHELL.25 — CodeRabbit sweep on PRs #60, #63, #64:
+      - PR #60: 0 line comments; nothing to address.
+      - PR #63: 0 (release-please bot PR, no review).
+      - PR #64: 4 line comments —
+        * exact-pin policy (MAJOR): pinned
+          `@react-three/postprocessing` 3.0.4 + `postprocessing`
+          6.39.1 in package.json (was `^3.0.4` / `^6.39.1`).
+        * division-by-zero in TitleBackground mouse handler
+          (MINOR): added size>0 guard.
+        * theme toggle non-functional (TRIVIAL): already fixed by
+          M_HUD.SHELL.6 useTheme + M_HUD.SHELL.8 (PbrDome
+          CSS-var re-read on theme-changed).
+        * test isolation nitpick (LOW): rejected — CodeRabbit-
+          tagged "low value", shared persistence is intentional
+          for these tests.
+
+### v0.10.J — RTS commitment + classic-RTS opening + selectable-automatable peons
+
+**Per user direction 2026-05-25 + docs/specs/200-genre-commitment.md** —
+Aethelgard is committed to RTS. No turns, no 4X, no Civ-style era
+progression. Peons are selectable like any other unit; automation is a
+verb applied to the selection (autoMode = 'auto' default, 'manual'
+when player takes command). Classic RTS opening: Town Hall + small
+stockpile, no pre-spawned peons or military.
+
+- [ ] [WAIT-FOCUS] M_GAME.MODE.RTS.1 — Strike all 4X-mode
+      scaffolding (EndTurnButton, EraProgressPill, age-of-strata
+      mode UI, turn-based pathways like Combatant.restUntilTurn).
+      Touches ~30 files; needs a dedicated cycle to avoid
+      breaking existing v0.9 e2e tests. Defer to v0.11 focused
+      "RTS-only purge" pass after the v0.10 stacking + RTS-opening
+      work lands and stabilizes.
+- [ ] [WAIT-FOCUS] M_GAME.MODE.RTS.OPEN.1-6 — Classic-RTS opening
+      (Town Hall + small stockpile only, no pre-spawned peons or
+      military, AI symmetric, onboarding copy update, inactivity
+      narrator beats). The pre-spawned-peon removal alone touches
+      game-state.ts spawnFactions + ~6 dependent tests that assert
+      starting peon count; the onboarding rewrite touches all 4
+      Onboarding step bodies plus screenshot baselines. Total
+      blast radius ~20 files. Defer to v0.11 focused "RTS-opening"
+      cycle so v0.10 stacking + peon-autonomy + camera/horizon
+      work can stabilize first. The substrate (PeonAutonomy,
+      Toasts, Stack, halo ring) is all in place to make the
+      opening rewrite straightforward when it lands.
+- [x] M_GAME.MODE.PEON.1 — Dedicated PeonAutonomy trait
+      `{ autoMode: 'auto' | 'manual' }` added to src/ecs/components.ts
+      with autoMode default 'auto'. Spawned via character-factory
+      when role === 'Peon'. Registered in SERIALIZED_TRAITS so
+      autoMode persists across save/load. `findSelectableAtTile`
+      peon-skip reverted per the RTS spec — peons ARE selectable
+      again. `setPeonAutoMode(game, entity, mode)` command shipped:
+      flips the field + resets AssignedJob to IDLE on the 'auto'
+      transition so the scheduler picks up the peon next tick.
+      IdleUnitIndicator now counts manual-mode idle peons too.
+      3 unit tests passing
+      (src/game/__tests__/peon-autonomy.test.ts).
+- [x] M_GAME.MODE.PEON.2 — SelectionPanel surfaces "Take command"
+      (when the selected player peon has autoMode='auto') or
+      "Resume automation" (when 'manual'). Calls setPeonAutoMode +
+      emits a button-click sound on success / error chime on
+      reject. SelectionView gains a peonAutoMode field; diff guard
+      updated so the panel re-renders on mode flip. Single-select
+      only; multi-select Take command for batches of peons is the
+      M_GAME.MODE.PEON.2b follow-up (depends on multi-select-aware
+      SelectionPanel refactor).
+- [x] M_GAME.MODE.PEON.3 — IdleUnitIndicator already shipped via
+      M_HUD.SHELL.16c (commit b1aa01c). Counts idle military; the
+      peon `autoMode === 'manual'` count branch is a one-line add
+      once M_GAME.MODE.PEON.1 lands the autoMode field.
+- [ ] [WAIT-FOCUS] M_GAME.MODE.PEON.4 — Multi-select peon
+      gestures ("Select all peons", "Select all peons of biome X").
+      Depends on SelectionPanel multi-select-aware refactor.
+- [x] M_GAME.MODE.PEON.5 — Peon free-task re-queue on mode-flip
+      back to auto. Shipped inline with setPeonAutoMode in
+      src/game/commands.ts: the AssignedJob is reset to IDLE on
+      the 'auto' transition, which is exactly the hook the
+      scheduler waits on. Verified in peon-autonomy.test.ts.
+- [ ] [WAIT-FOCUS] M_GAME.MODE.PEON.6 — Per-unit-type command
+      verbs split (peon: Harvest/Build/Repair; military:
+      Attack-move/Patrol/Hold). Depends on M_GAME.BUG.4b
+      multi-select work. Take command / Resume automation already
+      shipped via M_GAME.MODE.PEON.2.
+- [x] M_HUD.NOTIF.PEON.1 — First-deposit-per-resource narrator
+      toast wired in economy-tick-phases.ts tickDepositPhase. The
+      PLAYER faction's first wood/stone/gold deposit fires an
+      info-tone toast "Your peons have begun harvesting [resource]";
+      tracked via a new GameState.peonFirstHarvestToastedTypes Set
+      so subsequent deposits are silent. No focus on the toast —
+      the deposit is at the Town Hall which is already on screen,
+      and a tap-jolt back to the keep would disorient.
+- [x] M_HUD.NOTIF.2 — Queue policy shipped with M_HUD.NOTIF.1 in
+      src/hud/Toasts.tsx: 3 simultaneous non-critical visible, FIFO
+      eviction on the 4th, critical toasts bypass the cap and never
+      auto-dismiss. Covered by tests/harness/toasts.browser.test.tsx
+      (4 tests).
+- [x] M_HUD.SHELL.CAMERA.1 — SettingsModal "Auto-focus camera on
+      selection" toggle landed. Default ON. Writes both
+      localStorage (for the synchronous read in selection.ts) and
+      the async Capacitor Preferences row at PREF_KEYS.cameraAutoFocus.
+      Tap-selection tween fires when ON; explicit toast / sidebar
+      focus-tile dispatches keep working regardless.
+      data-testid="settings-camera-autofocus" for tests.
+- [x] M_GAME.SCALE.UNIT.1 — Unit / building scale audit. User
+      observation 2026-05-25: "units seem REALLY big" + "buildings
+      potentially scaled up." Initial scale tweaks were rejected
+      as guesses — superseded by M_GAME.SCALE.GLB-MEASURE.1 below
+      which derives scales from actual bbox measurements.
+- [x] M_GAME.SCALE.GLB-MEASURE.1 — Build-time GLB measurement
+      tool (`pnpm assets:measure` → scripts/measure-glbs.mjs)
+      walks every GLB under public/assets, computes source bbox
+      via gltf-transform, categorizes (character/building/wall/
+      wonder/prop) by path conventions, derives hex-tile-tuned
+      scale + yOffset, writes to src/rules/glb-metadata.json.
+      src/rules/asset-scale.ts exposes measuredScale(id) +
+      measuredYOffset(id) consumers; SKINS structure entries +
+      AnimatedCharacter both read from JSON. 112 GLBs measured
+      on first run. Per user direction 2026-05-25: "you need
+      build time balancing tooling that can go through and scan
+      all GLBs and add actual hex tile tuned scale information."
+      Memory: scale-by-measurement-not-guess.
+- [x] M_GAME.BUG.1 — Town Hall now reads as the dominant silhouette
+      of the player base: (a) measured scale via GLB-MEASURE.1
+      replaces the misleading 0.12 hardcode (town-center mesh
+      source size is 1.26×1.24, so the right scale is ~0.87),
+      and (b) a faction-coloured halo ring under the Town Hall in
+      FactionBase makes it locatable from any camera distance
+      regardless of biome / mesh silhouette.
+
+### v0.10.K — Stacking + Formations + Barbarian Camps + Faction Encircle Coloring
+
+**Per user direction 2026-05-25** + `docs/specs/201-stacking-and-formations.md`:
+- KEEP barbarian camp pivot from v0.5/v0.6 even with no 4X.
+- Faction-color encircle coloring is canonical (UnitHexOutline
+  already shipped substrate — confirmed kept).
+- ADD stacking: multiple offensive OR defensive units stacked on
+  one tile, group-move, fight-as-one with combined stats.
+- Stacks fight as Phalanx / Cadre / Wedge / Square / Skirmish Line
+  / Combined Arms etc — formation type gates by Discovery (or
+  multiple Discoveries).
+- Cleans up the board AND syncs naturally with Discoveries.
+
+- [x] M_GAME.STACK.1 — Stack + StackMember traits shipped on
+      koota's ECS in src/ecs/components.ts. Stack carries
+      members (Entity-id array), formationId, combinedHp/MaxHp/Dps,
+      dominantUnitType. StackMember is the unit's back-reference
+      (stackId; -1 = not in a stack). Both are registered in
+      SERIALIZED_TRAITS so save/load round-trips them.
+      Formation registry shipped at src/world/formations.ts:
+      8 formations (Rabble + Work-Crew defaults; Phalanx, Cadre,
+      Wedge, Skirmish Line, Square, Combined Arms unlocked via
+      Discoveries). Each: composition validator + stat modifier.
+      5 ECS tests + 9 formation registry tests passing. Stack
+      creation/movement/combat/render systems (STACK.2-10) follow.
+- [x] M_GAME.STACK.2 — Stack creation command shipped
+      (`src/game/stacking.ts createStack(game, members)`). Validates
+      2..8 same-faction members, none already stacked, composition
+      matches the resolved default formation. Aggregates member
+      stats + applies formation modifier for combinedMaxHp +
+      combinedDps. Sets StackMember back-references. SelectionPanel
+      "Stack Selected" button wiring is M_GAME.STACK.2b.
+- [x] M_GAME.STACK.2b — MultiSelectActions floats next to
+      SelectionPanel. Shows "Stack N" when 2+ entities selected +
+      not yet in a stack; shows "Unstack" when any selected entity
+      is a Stack member. Both fire toasts on success/failure.
+      Mounted in App.tsx. Shipped without an in-place SelectionPanel
+      refactor (single-selection-shaped today) — keeps blast
+      radius minimal while exposing the Stack workflow.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.3 — Stack movement: tap-to-command
+      on a tile paths the entire Stack. Touches the TileInteraction
+      command pipeline + per-member pathing system; defer to a
+      focused "stack-runtime" cycle so the substrate-only commits
+      stay reviewable in isolation.
+- [x] M_GAME.STACK.4 — Stack damage resolution shipped
+      (`damageStack(game, stack, damage)`): reduces combinedHp,
+      auto-dissolves at 0, kills proportional members at high
+      partial damage (50% damage → 50% members removed). Full
+      combat-tick integration with offensive-behavior systems is
+      M_GAME.STACK.4b.
+- [x] M_GAME.STACK.5 — `dissolveStack` shipped: destroys the Stack
+      entity + removes every StackMember back-reference. Idempotent
+      on already-dissolved stacks. SelectionPanel "Unstack" button
+      wiring is M_GAME.STACK.5b.
+- [x] M_GAME.STACK.6 — Formation registry already shipped with
+      M_GAME.STACK.1 in src/world/formations.ts (8 formations:
+      rabble + work-crew defaults + Phalanx/Cadre/Wedge/Skirmish/
+      Square/Combined Arms Discovery-gated). Each entry has
+      composition validator + stat-modifier; badge SVG ships with
+      M_GAME.STACK.8 (render layer). 9 formation registry tests pass.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.7 — Formation switching UI on
+      SelectionPanel. Depends on Stack render (STACK.8) landing
+      first so the player has visual feedback for the switch.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.8 — Stack rendering. Composes the
+      formation badge SVG + member-mesh clustering — touches
+      r3f/Three.js. Defer to "stack-runtime" cycle.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.9 — Peon Work Crew auto-form on
+      harvest-tile convergence. Depends on the auto-form scheduler
+      hook in jobRoutingSystem; defer with STACK.3 since both
+      touch the same path.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.10 — Mob auto-stack into Rabble on
+      tile convergence. Depends on the mob spawn system
+      (M_GAME.CAMP.*) which is also wait-focus.
+- [x] M_GAME.DISCOVERY.FORMATION.1 — 6 formation Discoveries added
+      to `src/config/discoveries.json`: formation-phalanx,
+      formation-cadre, formation-wedge (prereq formation-cadre),
+      formation-skirmish-line, formation-square (prereq
+      formation-phalanx), formation-combined-arms (prereqs
+      formation-phalanx + formation-wedge). All use
+      `{ kind: "flag" }` effect and cost 120 wood + 80 gold (200/160
+      for Combined Arms). Zod-validated on module load; existing
+      discovery system reads the new entries with zero code change.
+      DiscoveriesPanel badge preview is a follow-up
+      M_GAME.DISCOVERY.FORMATION.1b once formation render lands.
+- [x] M_GAME.DISCOVERY.FORMATION.2 — `docs/lore/discoveries.md`
+      expanded with 6 formation entries. Each gets stratum
+      questioned (Bronze for Phalanx + Square; Iron for Cadre +
+      Wedge; Mythic for Skirmish Line; Steel for Combined Arms),
+      Chronicler's voice flavour quote, and archetype affinities.
+- [ ] [WAIT-FOCUS] M_GAME.CAMP.1 — Barbarian Camp spawn at map-gen
+      time. Touches mapgen + a new neutral-faction spawn path;
+      defer to a "camps + mobs" cycle.
+- [ ] [WAIT-FOCUS] M_GAME.CAMP.2 — Graveyard wandering-mob spawn
+      tick. New behavior tree on the EnemySpawner archetype scoped
+      to Graveyard buildings. Defer with CAMP.1.
+- [ ] [WAIT-FOCUS] M_GAME.CAMP.3 — Per-mob loot-drop on death.
+      Depends on the mob spawn pipeline (CAMP.1+2). The camp-clear
+      reward already exists (see economy-tick-phases.ts +
+      M_HUD.NOTIF.WIRING.1 camp-clear toast); per-mob loot is the
+      finer-grained version.
+
+### v0.10.I — User-reported in-game bugs (visual + interaction)
+
+- [x] M_GAME.BUG.1 — duplicate of the entry above (line 198):
+      Town Hall visibility resolved by the GLB-measure tool +
+      faction-color halo ring in FactionBase. Screenshot
+      verification at test-results/measured-scale-1.png.
+- [x] M_GAME.BUG.2 — Defensive walkable-step guard added to
+      path-follow system (src/ecs/systems/path-follow.ts). When a
+      queued path's NEXT step (with subsequent steps queued) lands
+      on a non-walkable tile (volcano flip, gate close, new
+      mountain from terraforming), the unit clears its path + stops
+      to re-plan on the next tick. Final-step exemption preserves
+      build / deposit / attack targeting on intentionally-non-walkable
+      building tiles. All 1159 tests pass.
+- [x] M_GAME.BUG.3 — Killed the blue drag-select rectangle. SelectionRect
+      no longer mounts in App.tsx (component file remains as a
+      subpackage for desktop opt-in per decompose-don't-strip).
+- [x] M_GAME.BUG.4 — Selection-model replacement landed in pieces:
+      (a) drag-select retired in M_GAME.BUG.3, (b) IdleUnitIndicator
+      with tap-to-cycle "Next Idle" replaces the chip via
+      M_HUD.SHELL.16c, (c) per-unit-type "Select All" remains as a
+      sub-item M_GAME.BUG.4b (depends on M_GAME.MODE.PEON.4 multi-
+      select gestures landing first). Peon selectability is
+      governed by M_GAME.MODE.PEON.1 (autoMode-aware
+      findSelectableAtTile); reverted from the v0.1.20 hard
+      skip-peons rule.
+- [ ] [WAIT-FOCUS] M_GAME.BUG.4b — Per-unit-type multi-select
+      ("Select All Footmen") sidebar actions. Same blast radius as
+      M_GAME.MODE.PEON.4 — defer to focused multi-select cycle.
+- [x] M_GAME.BUG.5 — IdlePeonsIndicator deleted; replaced by
+      IdleUnitIndicator in M_HUD.SHELL.16c. New indicator counts
+      idle military by default; will additionally count idle
+      MANUAL-mode peons once M_GAME.MODE.PEON.1 lands the
+      autoMode field.
+- [x] M_HUD.SHELL.16c — IdleUnitIndicator shipped (replaces
+      IdlePeonsIndicator). Counts idle player military (and idle
+      MANUAL-mode peons once M_GAME.MODE.PEON.1 lands). Tap-to-
+      cycle dispatches `aethelgard:focus-tile` so the camera tweens
+      to the next idle unit via M_GAME.BUG.11. SelectionPanel
+      "Select All [Type]" multi-select is a separate sub-item
+      M_HUD.SHELL.16d (depends on M_GAME.MODE.PEON.4 since
+      "select all peons" overlaps).
+- [x] M_GAME.BUG.6 — findSelectableAtTile now skips peons (Unit.unitType
+      === 'Peon'). Taps on peon tiles fall through to building / tile
+      interaction. Peons are autonomous; their info is irrelevant.
+- [x] M_GAME.BUG.7 — CameraRig pitch locked to ~35° Civ-VI/Warcraft
+      2.5D pose (minPolarAngle === maxPolarAngle === 0.96 rad).
+      Rotation policy SUPERSEDED by M_GAME.BUG.11 (platter rotation
+      re-enabled — azimuth-only, polar still locked).
+- [x] M_GAME.BUG.11 — Platter rotation (azimuth-only) re-enabled +
+      horizon-aware fog density ramping with camera distance +
+      `aethelgard:focus-tile` auto-focus tween. CameraRig.tsx +
+      DayNightCycle.tsx. Lets the player rotate around the pan
+      target to see behind mountain ranges (without ever tipping
+      the Civ pose), and any HUD surface can ask the camera to
+      "go look here" with a snappy 6Hz settle. Shipped 2026-05-25.
+- [x] M_GAME.BUG.7b — Selection now dispatches the
+      `aethelgard:focus-tile` event so the CameraRig M_GAME.BUG.11
+      auto-focus tween centers on the selected entity. Gated by
+      the `aethelgard.camera.autoFocus` preference (default ON; '0'
+      opts out). Wired in src/game/selection.ts → selectEntity →
+      maybeFocusOnSelection. SettingsModal toggle wiring is
+      M_HUD.SHELL.CAMERA.1 (the toggle UI), separate from the
+      camera-tween hook landed here.
+- [x] M_HUD.NOTIF.1 + M_HUD.NOTIF.2 — Radix Toast bus shipped at
+      src/hud/Toasts.tsx + mounted in App.tsx. Listens for
+      `aethelgard:toast` CustomEvent, renders a top-center stack
+      with 5 tones (info/success/warning/danger/critical), tap-to-
+      focus via `aethelgard:focus-tile` integration with the
+      M_GAME.BUG.11 camera tween. Queue policy: 3 simultaneous
+      non-critical visible, FIFO eviction on the 4th; critical
+      bypasses the cap and never auto-dismisses. Dedup by id.
+      4 browser harness tests passing
+      (tests/harness/toasts.browser.test.tsx). Wiring per-event
+      emitters (enemy engages / Discovery / Wonder / MYTH) tracked
+      separately as M_HUD.NOTIF.WIRING.1.
+- [ ] [WAIT-FOCUS] M_HUD.NOTIF.WIRING.1 — Additional toast
+      emitters beyond the shipped subset (Discovery unlocked,
+      Wonder rises, camp cleared, first-harvest-per-resource).
+      Remaining: enemy unit engages player structure, ZoC
+      border breach, MYTH event fire. Each needs a per-system
+      callsite; defer to focused "notifications" cycle once the
+      stacking + RTS-opening work has landed and the toast queue
+      doesn't risk spamming during phase 1.
+- [x] M_GAME.BUG.8 — Camera boots focused on the PLAYER'S Town Hall
+      (GameCanvas landCenter now reads game.townHallKey directly,
+      not the base-pair midpoint or centroid) + at 55% of the per-
+      viewport profile distance (CameraRig startDistance clamp). Pinch
+      reveals the wider realm; pinch-in goes deeper. Aligns with the
+      mobile-first "you are HERE, in your realm" boot framing.
+- [x] M_GAME.BUG.9 — MAP_SIZES bumped: small 18→26, medium 28→38,
+      large 36→48, huge 43→58. Realm now proportional to the chunky
+      hexes; peons can't cross the map immediately.
+- [x] M_GAME.BUG.10 — Phase-1 peon roam-radius gate shipped. New
+      `maxRoamRadius` field on PeonRoutingContext + PeonWorld;
+      filters the candidate resource list to those within N hexes
+      of the faction's base BEFORE the nearestResource picker runs.
+      Wired in economy-tick-phases.ts: starts at 14 hex (preserves
+      AIVAI economy test), grows +1 hex per 20s game time, soft-
+      caps at 60 hex (whole-map coverage by ~15 min). Stops the
+      "peons sprint across the map immediately" failure without
+      breaking late-game expansion. 3 unit tests
+      (src/rules/__tests__/peon-roam-radius.test.ts) + AIVAI
+      passes after radius tuning. Manual-mode peons bypass the
+      job-routing system entirely so they're unaffected (player
+      can always order a manual peon anywhere).
+
+### v0.10.F — LORE foundation (new track — Aethelgard has none yet)
+
+- [x] M_LORE.0 — `docs/lore/00-canon.md` shipped: 7 sections covering the world (hex archipelago + The Strata), the 6 eras mapped to the 6 game modes, the 4 faction archetypes with origin + disposition, the bestiary (peons through Wonders) with in-fiction reasoning, the MYTH events as "the strata speaking", the Renaissance ascendancy win-condition fiction, and the player as Chronicler-King (which explains the procedural nickname pattern in GameOverModal). Cross-references list the four follow-up docs M_LORE.1-4 will fill.
+- [x] M_LORE.1 — All four faction archetype backgrounds shipped: docs/lore/factions/medieval.md (Charter Realms / gold-banner / lawful expansion), orc.md (Ember Highlanders / crimson-banner / pressure-applying tribute), undead.md (Revenants of the Glacial Halt / frost-pale-blue banner / reclamation), mystic.md (Scholars of the Mythic Stratum / violet-cream banner / knowledge-hoarding). Each spec'd: origin, disposition, signature units + buildings + banner, in-game flavour hooks (nickname motifs, MYTH event interpretation, diplomacy voice).
+- [x] M_LORE.2 — `docs/lore/biomes.md` shipped: all 13 biomes (GRASS / FOREST / HIGHLAND / MOUNTAIN / MOUNTAIN_PASS / BEACH / OCEAN / DESERT / SWAMP / RUINS / VOLCANO / LAVA / QUICKSAND) tied to the strata canon. Each entry: which stratum is breaching, lore-tone, MYTH-event hooks. Cross-references the biome-palette + Decoration scatter and the myth-events JSON registry M_LORE.3 will expand.
+- [x] M_LORE.3 — `docs/lore/myth-events.md` shipped. All 5 events in the JSON registry (solar-eclipse / meteor-strike / wildlife-migration / oracle-vision / harvest-festival) get an in-fiction explanation: which stratum produces it, what each archetype's interpretation is, a Chronicler's-voice flavour quote. Pattern set so the 6th-event template includes a lore entry automatically.
+- [x] M_LORE.4 — `docs/lore/discoveries.md` shipped. All 7 Discoveries in the registry (forgedBlades, steelPlows, trade-route, cartography, iron-tools, siege-engineering, monumental-architecture) get an in-fiction expansion: which Stratum was questioned, Chronicler's-voice flavour line, archetype affinities (who learns it fast, who refuses). DiscoveriesPanel UX adoption tracked separately as M_HUD.SHELL.17.
+
+### v0.10.G — Promo & marketing prompt library (new track)
+
+- [x] M_PROMO.0 — `docs/prompts/intro-video.md` shipped. ~1480-char master prompt + 9 engine variants (Sora 2 / Veo 3 chained / Kling 2.x / Seedance 1.0 Pro / Runway Gen-4 / Pika 2.x / Luma Ray2 / Hailuo 02 / Vidu Q1) — each tuned to its recommended length, aspect ratio, motion vocabulary, and prompt-token limit. Plus a 9:16 short-form supplement + 5 cross-engine continuity notes (seed locking, no-HUD-in-prompt, 24fps shutter, palette re-mention, no franchise names).
+- [x] M_PROMO.1 — `docs/prompts/key-art.md` shipped. Master 3:2 hero prompt + 4 engine variants (Midjourney v7, SDXL/FLUX, Imagen 3/4, Adobe Firefly/Recraft for brand-safe), plus 4 per-faction 1:1 banner prompts (medieval / orc / undead / mystic) consistent with the lore docs.
+- [x] M_PROMO.2 — `docs/prompts/biome-thumbs.md` shipped. All 13 biomes get a 1:1 hex-tile thumbnail prompt: GRASS / FOREST / HIGHLAND / MOUNTAIN / MOUNTAIN_PASS / BEACH / OCEAN / DESERT / SWAMP / RUINS / VOLCANO / LAVA / QUICKSAND. Each calls out a per-biome accent colour layered on the 5 anchor palette hexes + biome-specific scenic detail tied to docs/lore/biomes.md.
+- [x] M_PROMO.3 — `docs/prompts/social-clips.md` shipped. Platform sweet-spot table (TikTok/Reels/Shorts × engine pick), 5 hook clips (Realm reveal / Strata ignite / Faction reveal montage / MYTH event hook / Wonder reveal) each tuned for 9:16 vertical 6-15s. Caption/hook templates ready to paste. Sixth cross-engine continuity note added for social: wordmark or hero composition in the FIRST FRAME for autoplay-without-sound scroll-stop.
+
+### v0.10.E — Player journey continuation (per-page Magic + token sweep)
+
+- [x] M_HUD.SHELL.16 — SelectionPanel touch-friendly pass: HudButton gains aria-label (uses the visible label, includes disabled reason when gated), data-testid (slugified from label so Maestro can target by build-type or stance), minHeight 44px + padding 12px so phone-portrait touch targets hit the platform-recommended size. Full Magic rewrite of the panel layout (faction-colored selection ring / icon-first row / build-menu CTA on the right) deferred as M_HUD.SHELL.16b — substrate is now tap-safe.
+- [x] M_HUD.SHELL.16b — SelectionPanel faction-colour left-rail accent landed. SelectionView gains a factionColor field (looked up from game.factions registry via FactionTrait.faction). Panel renders a 4px borderLeft in the selected entity's banner colour — glanceable "whose unit/building this is" cue across faction-colored matches. Full Magic rewrite (iconified action rows, sticky CTA right-rail, mobile bottom-shelf collapse) tracked separately when v0.11 lifts the cycle.
+- [x] M_HUD.SHELL.17 — DiscoveriesPanel now surfaces the Chronicler's-voice flavour line per Discovery id (italic gold, opacity 0.85, displayed under the mechanical description). Source: docs/lore/discoveries.md M_LORE.4 verbatim. Each row gains data-testid="discovery-flavor-${id}" for test addressability. Reads like a tome of strata-answers instead of a tech-tree spreadsheet.
+- [x] M_HUD.SHELL.18 — SettingsModal Hotkeys section gated to viewport.class === 'desktop' || 'ultraWide'. Mobile / tablet / foldable users no longer see the kbd-rebind UI (Aethelgard ships to Android+iOS where users tap). Section also gains data-testid="settings-hotkey-section" for test addressability. SectionCard primitive adoption deferred to a focused follow-up (the modal has 6 distinct option sections that each warrant the visual upgrade — bigger refactor than this M_HUD.SHELL.18 line item targeted).
+- [x] M_HUD.SHELL.19 — ScoringScreen now opens with a Trophy lucide hero icon in a flavor-tinted bordered tile next to the title (consistent with GameOverModal's Trophy / Skull / Scale hero treatment). The New Match button uses TreasureButton primitive with RotateCcw icon. Test contract preserved (scoring-screen-title / -winner / -stats / scoring-stats-${id} / scoring-screen-restart data-testids intact). Wider rebuild (per-category scoring breakdown: military/economic/scientific/diplomatic + animated winner reveal) tracked as a future focused cycle.
+- [x] M_HUD.SHELL.20 — In-game HUD shell composition: FactionChips now collapses to a single "Players (N)" Radix Popover trigger on non-desktop viewports (foldable / tablet / phone) — fixes the OnePlus Open overcrowding (6 chips eating the top band). Wide viewports (desktop / ultraWide) keep the full horizontal strip. Test contract preserved via faction-chips-strip data-testid on the trigger AND on the popover content (chips render in Radix Portal when open). Mode-context pills (WinConditionPill / RaidPressurePill / MatchAgePill / EraProgressPill / ZoneControlPill) confirmed already mutually-exclusive via game.mode gates — no further composition fix needed. Future ResourceBar + BottomShelf layout polish tracked as M_HUD.SHELL.20b.
+- [x] M_HUD.SHELL.20b — `<BottomShelf>` primitive shipped (src/hud/primitives/BottomShelf.tsx). Wide viewports: passthrough — children keep their own positioning. Narrow viewports: fixed bottom-right cluster with rounded panel chrome + safe-area-inset offset. Future consumers (BuildMenuButton, EndTurnButton, mode-specific CTAs) wrap themselves in `<BottomShelf>` to opt in.
 
 ## MAIN-THREAD ACTIVE QUEUE — things THIS session drives (not grinder)
 

@@ -12,8 +12,8 @@
  * detector AND the per-tick cession mutation.
  */
 import type { FactionId } from '@/config/factions';
-import { type GameEconomy, addResource } from './economy';
 import { type DiplomacyState, setRelation, tributaryDominant } from './diplomacy';
+import { addResource, type GameEconomy } from './economy';
 
 /** Supply ratio threshold for a clearly-stronger faction. */
 export const TRIBUTE_DEMAND_RATIO = 2.0;

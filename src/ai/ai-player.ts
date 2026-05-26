@@ -14,17 +14,17 @@
  * claim by exploitation (spec 101); exploration is emergent.
  */
 import { GameEntity, Think } from 'yuka';
-import type { Faction } from '@/ecs/components';
 import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
-import { announceAiTaunt } from './taunt';
+import type { Faction } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { BuildEvaluator } from './evaluators/build';
-import { TrainEvaluator } from './evaluators/train';
+import { DiplomaticEvaluator } from './evaluators/diplomatic';
 import { MilitaryEvaluator } from './evaluators/military';
 import { PatrolEvaluator } from './evaluators/patrol';
 import { ResignEvaluator } from './evaluators/resign';
-import { DiplomaticEvaluator } from './evaluators/diplomatic';
+import { TrainEvaluator } from './evaluators/train';
 import { WonderEvaluator } from './evaluators/wonder';
+import { announceAiTaunt } from './taunt';
 
 /** The Think brain over the AiPlayer's evaluators. */
 class AiBrain extends Think<AiPlayer> {}

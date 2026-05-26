@@ -130,8 +130,8 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
           className={cn(
             'hud-interactive fixed flex items-center justify-center',
             'h-11 w-11 rounded-full border shadow-lg transition-colors',
-            'border-[var(--color-border-hud)] bg-[var(--color-panel)] text-[var(--color-text-hud)]',
-            'hover:bg-[var(--color-panel-solid)] active:scale-95',
+            'border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-on-surface)]',
+            'hover:bg-[var(--color-surface-solid)] active:scale-95',
           )}
           style={{
             top: 'calc(var(--safe-top) + 8px)',
@@ -166,7 +166,7 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
                 className={cn(
                   'hud-interactive fixed top-0 right-0 flex h-full w-[min(320px,86vw)] flex-col',
                   'border-l shadow-2xl',
-                  'border-[var(--color-border-hud)] bg-[var(--color-panel-solid)]/95 backdrop-blur-md',
+                  'border-[var(--color-border)] bg-[var(--color-surface-solid)]/95 backdrop-blur-md',
                 )}
                 style={{
                   zIndex: 'calc(var(--z-hud-drawer) + 1)',
@@ -175,9 +175,9 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
                   paddingBottom: 'var(--safe-bottom)',
                 }}
               >
-                <header className="flex items-center justify-between border-b border-[var(--color-border-hud)] px-5 py-4">
+                <header className="flex items-center justify-between border-b border-[var(--color-border)] px-5 py-4">
                   <Dialog.Title
-                    className="font-display text-lg font-bold text-[var(--color-gold-hud)]"
+                    className="font-display text-lg font-bold text-[var(--color-treasure)]"
                     style={{ fontFamily: 'var(--font-display)' }}
                   >
                     Aethelgard
@@ -186,7 +186,7 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
                     <button
                       type="button"
                       aria-label="Close menu"
-                      className="hud-interactive flex h-8 w-8 items-center justify-center rounded-md text-[var(--color-muted-hud)] hover:bg-white/5 hover:text-[var(--color-text-hud)]"
+                      className="hud-interactive flex h-8 w-8 items-center justify-center rounded-md text-[var(--color-on-surface-muted)] hover:bg-white/5 hover:text-[var(--color-on-surface)]"
                     >
                       <X className="h-4 w-4" aria-hidden />
                     </button>
@@ -208,9 +208,9 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
                             'text-sm font-medium',
                             row.variant === 'danger'
                               ? confirmingResign
-                                ? 'bg-[var(--color-danger-hud)]/20 text-[var(--color-danger-hud)]'
-                                : 'text-[var(--color-danger-hud)]/90 hover:bg-[var(--color-danger-hud)]/10'
-                              : 'text-[var(--color-text-hud)] hover:bg-white/5',
+                                ? 'bg-[var(--color-danger)]/20 text-[var(--color-danger)]'
+                                : 'text-[var(--color-danger)]/90 hover:bg-[var(--color-danger)]/10'
+                              : 'text-[var(--color-on-surface)] hover:bg-white/5',
                           )}
                         >
                           <row.Icon className="h-4 w-4 shrink-0" aria-hidden />
@@ -221,8 +221,8 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
                     ))}
                   </ul>
                 </nav>
-                <footer className="border-t border-[var(--color-border-hud)] px-5 py-3 text-center">
-                  <span className="text-xs text-[var(--color-muted-hud)]">
+                <footer className="border-t border-[var(--color-border)] px-5 py-3 text-center">
+                  <span className="text-xs text-[var(--color-on-surface-muted)]">
                     seed · {game.seedPhrase}
                   </span>
                 </footer>

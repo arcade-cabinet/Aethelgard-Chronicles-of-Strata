@@ -11,6 +11,7 @@ import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 // M_MICRO.2.2 — local parseStep replaced by shared parseHexLevelKey.
 const parseStep = parseHexLevelKey;
 
+import { biomeRule } from '@/config/mapgen';
 /**
  * Advance every entity with a PathQueue toward its next tile. When an entity
  * reaches the next step it snaps to that tile, updates HexPosition (including
@@ -27,7 +28,6 @@ const parseStep = parseHexLevelKey;
  */
 import type { BoardData } from '@/core/board';
 import { Building, Combatant, FactionTrait, Health } from '@/ecs/components';
-import { biomeRule } from '@/config/mapgen';
 
 const FORTIFY_BUILDINGS = new Set(['Wall', 'Watchtower']);
 
@@ -129,6 +129,32 @@ export function pathFollowSystem(
       }
       movement.isMoving = true;
       const step = parseStep(next);
+      // M_GAME.BUG.2 — defensive walkable check. If the next step's
+      // tile is non-walkable (mountain, ocean, etc.), drop the step
+      // and clear the rest of the path so the unit re-plans on the
+      // next tick. A* should never produce a non-walkable step, but
+      // hydrology-driven tile-type changes (volcano eruption flips
+      // a GRASS tile to LAVA, navGraph dirty bit gets set NEXT tick)
+      // can leave an already-queued path with a now-invalid step.
+      // Without this, the unit moves onto the bad tile + render
+      // shoots its transform.y high and the unit appears to vanish.
+      // M_GAME.BUG.2 — defensive walkable check on INTERMEDIATE
+      // path steps only. Building tiles are intentionally marked
+      // !walkable (the building occupies them) but units path TO
+      // them as final-destination targets (build, deposit, attack).
+      // So only reject when there's a subsequent step queued AND
+      // the current step is non-walkable — that combination indicates
+      // a stale path crossing newly-impassable terrain (volcano flip,
+      // gate close, etc.). Without this, units could walk onto
+      // mountain tiles whose walkable flag changed mid-path.
+      if (tiles && path.steps.length > 1) {
+        const stepTile = tiles.get(`${step.q},${step.r}`);
+        if (stepTile && !stepTile.walkable) {
+          path.steps = [];
+          movement.isMoving = false;
+          return;
+        }
+      }
       const goal = axialToWorld(step.q, step.r);
       const dx = goal.x - transform.x;
       const dz = goal.z - transform.z;

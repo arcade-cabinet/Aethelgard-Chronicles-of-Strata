@@ -17,10 +17,10 @@
     "mapRadius": 20
   },
   "mapSizes": {
-    "small": 18,
-    "medium": 28,
-    "large": 36,
-    "huge": 43
+    "small": 26,
+    "medium": 38,
+    "large": 48,
+    "huge": 58
   },
   "dayLength": 240,
   "weather": {

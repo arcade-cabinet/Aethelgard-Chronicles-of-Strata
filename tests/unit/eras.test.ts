@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  ERA_SCIENCE_THRESHOLD,
   eraForScience,
   eraProgressFraction,
-  ERA_SCIENCE_THRESHOLD,
   nextEra,
   scienceToNextEra,
 } from '@/rules/eras';

@@ -8,6 +8,7 @@ import {
   MYTH_MIN_INTERVAL_SECONDS,
   mythEventFor,
 } from '@/config/myth-events';
+import { createEconomy, type GameEconomy } from '@/game/economy';
 import {
   applyHarvestFestival,
   canFireMythEvent,
@@ -15,7 +16,6 @@ import {
   fireMythEvent,
   pickMythEvent,
 } from '@/game/myth-events';
-import { createEconomy, type GameEconomy } from '@/game/economy';
 
 describe('MYTH_EVENTS registry', () => {
   it('contains the 5 declared events', () => {
