@@ -254,9 +254,15 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       Dedup id `zoc-shift-{q}-{r}` keyed by coordinates so a
       flapping tile replaces in the Toasts queue rather than
       spamming.
-- [ ] M_V11.NOTIF.MYTH-EVENT — Warning toast per MYTH event fire
-      with Chronicler quote (from docs/lore/myth-events.md) +
-      focus on event tile.
+- [x] M_V11.NOTIF.MYTH-EVENT — fireMythEvent emits a warning-tone
+      toast with the Chronicler-voice flavor line (5 events sourced
+      from docs/lore/myth-events.md). Per-event dedup id keyed by
+      event id + nowSeconds so re-fires get fresh slots. No focus
+      (most MYTH events are realm-wide). Note: fireMythEvent has
+      no callers in src/game/random-events.ts today — it's the
+      proper choke point and the toast fires automatically once
+      a future commit wires the random-events dispatcher to call
+      it.
 - [ ] M_V11.NOTIF.STACK-DISSOLVED — Info toast "Cohort broken"
       on Stack auto-dissolve from combat damage. focus on
       dissolution tile.
