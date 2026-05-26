@@ -11,6 +11,7 @@ import {
   Combatant,
   FactionTrait,
   Health,
+  HexPosition,
   Stack,
   StackMember,
   Unit,
@@ -156,7 +157,12 @@ export function damageStack(game: GameState, stack: Entity, damage: number): num
   const next = Math.max(0, s.combinedHp - damage);
   stack.set(Stack, { ...s, combinedHp: next });
   if (next <= 0) {
+    // M_V11.NOTIF.STACK-DISSOLVED — capture the stack's last tile
+    // position from any member BEFORE dissolving, so the toast can
+    // tap-to-focus there. dissolveStack removes the back-refs.
+    const focusTile = lookupAnyMemberTile(game, s.members);
     dissolveStack(game, stack);
+    emitStackDissolvedToast(focusTile);
     return 0;
   }
   // Proportional member kills (M_GAME.STACK.4): if the stack took
@@ -185,11 +191,55 @@ export function damageStack(game: GameState, stack: Entity, damage: number): num
         }
       }
       if (survivors.length <= 1) {
+        // M_V11.NOTIF.STACK-DISSOLVED — capture the surviving (or
+        // last-known) member tile before the dissolve clears refs.
+        const focusTile = lookupAnyMemberTile(game, survivors);
         // Single-member or zero — auto-unstack.
         dissolveStack(game, stack);
+        emitStackDissolvedToast(focusTile);
         return next;
       }
     }
   }
   return next;
+}
+
+/**
+ * M_V11.NOTIF.STACK-DISSOLVED — find the hex tile of any still-
+ * alive member of the dissolving stack. Used to populate the
+ * tap-to-focus payload on the dissolve toast. Falls back to
+ * `null` if no member has a HexPosition (e.g. all members
+ * already destroyed via the proportional-kill path).
+ */
+function lookupAnyMemberTile(
+  game: GameState,
+  memberIds: number[],
+): { q: number; r: number } | null {
+  if (memberIds.length === 0) return null;
+  const ids = new Set(memberIds);
+  for (const e of game.world.query(HexPosition)) {
+    if (!ids.has(e.id())) continue;
+    const pos = e.get(HexPosition);
+    if (pos) return { q: pos.q, r: pos.r };
+  }
+  return null;
+}
+
+/**
+ * M_V11.NOTIF.STACK-DISSOLVED — info-tone toast on auto-dissolve.
+ * Tap-to-focus when we managed to capture a member tile.
+ */
+function emitStackDissolvedToast(focusTile: { q: number; r: number } | null): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(
+    new CustomEvent('aethelgard:toast', {
+      detail: {
+        id: focusTile ? `stack-dissolved-${focusTile.q}-${focusTile.r}` : 'stack-dissolved',
+        tone: 'info',
+        title: 'Cohort broken',
+        description: 'A stack lost its formation cohesion and dissolved into individuals.',
+        ...(focusTile ? { focus: focusTile } : {}),
+      },
+    }),
+  );
 }

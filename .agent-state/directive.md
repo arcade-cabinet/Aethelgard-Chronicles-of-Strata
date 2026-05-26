@@ -263,9 +263,13 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       proper choke point and the toast fires automatically once
       a future commit wires the random-events dispatcher to call
       it.
-- [ ] M_V11.NOTIF.STACK-DISSOLVED — Info toast "Cohort broken"
-      on Stack auto-dissolve from combat damage. focus on
-      dissolution tile.
+- [x] M_V11.NOTIF.STACK-DISSOLVED — Info-tone tap-to-focus toast
+      "Cohort broken" wired into both auto-dissolve paths in
+      `damageStack` (combinedHp ≤ 0 + single-survivor unstack).
+      `lookupAnyMemberTile` captures a focus tile BEFORE
+      dissolveStack clears the member refs. Manual unstacks via
+      MultiSelectActions are NOT toasted — that's a
+      player-initiated action, not a notable event.
 
 ### §7 — Performance + visual lock + release ladder
 
