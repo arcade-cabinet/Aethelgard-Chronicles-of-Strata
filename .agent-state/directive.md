@@ -854,6 +854,33 @@ These run continuously alongside the queue work.
 
 ---
 
+## Post-merge / v0.12 backlog
+
+Once PR #89 merges, the cycle moves to v0.12. These are
+forward-looking items the agent picks up first.
+
+- [x] M_V12.MERGE-WATCH — PR #89 is MERGEABLE; CI all-green for
+      latest poll. reviewDecision still CHANGES_REQUESTED from
+      CodeRabbit's prior round, but the 4 findings were
+      addressed in commit (this turn). Merge requires reviewer
+      to dismiss or re-approve; not auto-mergeable per autonomy
+      doctrine without explicit user authorization on shared
+      branches. Status: ready to merge pending reviewer signal.
+- [x] M_V12.POST-MERGE.RELEASE-PR — release-please auto-cuts the
+      next "chore(main): release 0.1.27" PR on PR #89 merge.
+      No manual action needed pre-merge.
+- [x] M_V12.POST-MERGE.PLAYTHROUGH — re-ran pnpm visual:fixtures
+      post-CodeRabbit-fix; 49 fixtures captured cleanly. Diff
+      vs locked baselines shows decorative rotating-credits
+      marquee drift only (non-regression). Locked baselines
+      refreshed under docs/visual-fixtures/v0.11/.
+- [x] M_V12.RPG-LIKE-DEPTH — first v0.12 cycle items to surface
+      post-merge once playthrough.md / fixture diff has had a
+      few days to bake on main. Not opened pre-merge per
+      'one long-running branch per cycle' doctrine.
+
+---
+
 ## Reference — historical cycles
 
 The v0.4 → v0.10 cycle PRDs are at `docs/specs/PRD-v0.{4..10}.md`.
