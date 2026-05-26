@@ -287,6 +287,26 @@ function PbrDome({ reducedMotion }: { reducedMotion: boolean }) {
     return () => window.removeEventListener('mousemove', onMouseMove);
   }, [size.width, size.height]);
 
+  // M_HUD.SHELL.8 — re-read shader colors from CSS vars so the dome
+  // swaps palette when the theme flips. Listens for the broadcast
+  // CustomEvent from `useTheme()` + does an initial sync on mount.
+  useEffect(() => {
+    const syncTheme = () => {
+      const style = getComputedStyle(document.documentElement);
+      const bg = style.getPropertyValue('--color-bg').trim();
+      const treasure = style.getPropertyValue('--color-treasure').trim();
+      const accent = style.getPropertyValue('--color-accent').trim();
+      const u = material.uniforms;
+      if (u.uColorObsidian && bg) (u.uColorObsidian.value as Color).set(bg);
+      if (u.uColorGold && treasure) (u.uColorGold.value as Color).set(treasure);
+      if (u.uColorAccent && accent) (u.uColorAccent.value as Color).set(accent);
+    };
+    syncTheme();
+    const onChange = () => syncTheme();
+    window.addEventListener('aethelgard:theme-changed', onChange);
+    return () => window.removeEventListener('aethelgard:theme-changed', onChange);
+  }, [material]);
+
   useFrame((state) => {
     const t = state.clock.getElapsedTime();
     if (!meshRef.current) return;
