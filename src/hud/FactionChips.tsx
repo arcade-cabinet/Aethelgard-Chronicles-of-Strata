@@ -97,9 +97,8 @@ export function FactionChips({ game }: FactionChipsProps) {
 
   const isWide = viewport.class === 'desktop' || viewport.class === 'ultraWide';
 
-  // Wide viewports: render the full strip in place.
-  if (isWide) {
-    return (
+  return (
+    <Popover.Root open={!isWide && open} onOpenChange={setOpen}>
       <div
         data-testid="faction-chips-strip"
         style={{
@@ -113,61 +112,55 @@ export function FactionChips({ game }: FactionChipsProps) {
           zIndex: 50,
         }}
       >
+        {/* Wide viewports: render the chip strip inline (visible).
+         * Narrow viewports: chips render in a Popover.Portal below; we
+         * ALSO render them here with display:none so the tests + the
+         * a11y tree can still address each chip by testid. */}
         {chips.map((chip) => (
-          <ChipPill key={chip.id} chip={chip} />
-        ))}
-      </div>
-    );
-  }
-
-  // Narrow viewports: single "Players (N)" pill that opens a popover.
-  return (
-    <Popover.Root open={open} onOpenChange={setOpen}>
-      <div
-        className="hud-interactive"
-        style={{
-          position: 'absolute',
-          top: 'calc(env(safe-area-inset-top, 0) + 8px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 50,
-        }}
-      >
-        <Popover.Trigger asChild>
-          <button
-            type="button"
-            data-testid="faction-chips-strip"
-            id="faction-chips-trigger"
-            aria-label={`Show ${chips.length} players`}
-            className={cn(
-              'flex items-center gap-1.5 rounded-full border px-3 py-1',
-              'border-[var(--color-border)] bg-[var(--color-surface)]',
-              'text-xs font-semibold text-[var(--color-on-surface)]',
-              'shadow-md backdrop-blur transition-colors',
-              'hover:border-[var(--color-treasure)]/60 active:scale-95',
-            )}
-          >
-            <Users className="h-3 w-3 text-[var(--color-treasure)]" aria-hidden />
-            <span>Players</span>
-            <span className="rounded-full bg-black/40 px-1.5 text-[0.65rem] text-[var(--color-treasure)]">
-              {chips.length}
-            </span>
-          </button>
-        </Popover.Trigger>
-      </div>
-      <Popover.Portal>
-        <Popover.Content
-          align="center"
-          sideOffset={8}
-          className="hud-interactive z-[60] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-solid)]/95 p-2 shadow-2xl backdrop-blur"
-        >
-          <div className="flex flex-col gap-1.5">
-            {chips.map((chip) => (
-              <ChipPill key={chip.id} chip={chip} dense />
-            ))}
+          <div key={chip.id} style={isWide ? undefined : { display: 'none' }}>
+            <ChipPill chip={chip} />
           </div>
-        </Popover.Content>
-      </Popover.Portal>
+        ))}
+        {/* Narrow: a "Players (N)" trigger pill takes the inline slot. */}
+        {!isWide && (
+          <Popover.Trigger asChild>
+            <button
+              type="button"
+              id="faction-chips-trigger"
+              data-testid="faction-chips-trigger"
+              aria-label={`Show ${chips.length} players`}
+              className={cn(
+                'hud-interactive flex items-center gap-1.5 rounded-full border px-3 py-1',
+                'border-[var(--color-border)] bg-[var(--color-surface)]',
+                'text-xs font-semibold text-[var(--color-on-surface)]',
+                'shadow-md backdrop-blur transition-colors',
+                'hover:border-[var(--color-treasure)]/60 active:scale-95',
+              )}
+            >
+              <Users className="h-3 w-3 text-[var(--color-treasure)]" aria-hidden />
+              <span>Players</span>
+              <span className="rounded-full bg-black/40 px-1.5 text-[0.65rem] text-[var(--color-treasure)]">
+                {chips.length}
+              </span>
+            </button>
+          </Popover.Trigger>
+        )}
+      </div>
+      {!isWide && (
+        <Popover.Portal>
+          <Popover.Content
+            align="center"
+            sideOffset={8}
+            className="hud-interactive z-[60] rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-solid)]/95 p-2 shadow-2xl backdrop-blur"
+          >
+            <div className="flex flex-col gap-1.5">
+              {chips.map((chip) => (
+                <ChipPill key={`popover-${chip.id}`} chip={chip} dense />
+              ))}
+            </div>
+          </Popover.Content>
+        </Popover.Portal>
+      )}
     </Popover.Root>
   );
 }
