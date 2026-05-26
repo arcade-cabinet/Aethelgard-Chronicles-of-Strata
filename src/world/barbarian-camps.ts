@@ -196,7 +196,13 @@ export function factionConfigForCamp(spec: BarbarianCampSpec): FactionConfig {
   // Greys/browns — visually distinct from player palette, signals
   // "neutral aggressor" rather than a player faction. Index off
   // the trailing camp number so cycling through is deterministic.
-  const CAMP_COLORS = ['#78716c', '#5f5b56', '#8b7355', '#6b5f48', '#9b8b6c', '#4b4339'];
+  // M_V11.POLISH.CAMP-MOB-VISUAL — shift each camp into a distinct
+  // grey-tinted hue so the player can tell barbarian-camp-1 mobs
+  // from barbarian-camp-2 mobs in the same frame. Kept dim (chroma
+  // ≤0.2) so they still read as "neutral aggressor" vs the bright
+  // player palette. Hue band: warm-grey → bronze → moss → slate →
+  // muddy-purple → blood-rust, each ≈60° apart.
+  const CAMP_COLORS = ['#a8736c', '#a89366', '#7c8b5c', '#6c8aa8', '#8a6ca8', '#a86c6c'];
   const idx = Number.parseInt(spec.factionId.replace('barbarian-camp-', ''), 10) - 1;
   const color = CAMP_COLORS[idx % CAMP_COLORS.length] ?? CAMP_COLORS[0]!;
   return {

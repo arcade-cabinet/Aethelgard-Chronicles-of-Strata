@@ -147,4 +147,33 @@ test.describe('journey capture (manual review)', () => {
     await page.waitForTimeout(400);
     await snap(page, '07-game-over-loss');
   });
+
+  // M_V11.POLISH.SCREENSHOT-BATTERY — v0.11-specific moments so a
+  // reviewer can spot regressions in the new substrate work.
+
+  test('08-long-sim-90s-camps-mobs', async ({ page }) => {
+    test.setTimeout(90_000);
+    await enterGame(page, 'ancient-silver-forest');
+    await dismissOnboardingAndWaitForScene(page);
+    // 5400 frames / 60fps = 90s of sim — past the 90s mob-spawn
+    // baseline so barbarian-camp mobs should be visible roaming.
+    await page.evaluate(() => {
+      const w = window as unknown as { __game_advanceFrames?: (n: number) => void };
+      w.__game_advanceFrames?.(5400);
+    });
+    await page.waitForTimeout(800);
+    await snap(page, '08-long-sim-90s-camps-mobs');
+  });
+
+  test('09-procedural-buildings-zoom', async ({ page }) => {
+    await enterGame(page, 'ancient-silver-forest');
+    await dismissOnboardingAndWaitForScene(page);
+    // Tight zoom on the player Town Hall so the procedural
+    // composition (columns + banners + spire + shields) reads.
+    await page.evaluate(() => {
+      window.dispatchEvent(new CustomEvent('aethelgard:focus-town-hall'));
+    });
+    await page.waitForTimeout(800);
+    await snap(page, '09-procedural-buildings-zoom');
+  });
 });

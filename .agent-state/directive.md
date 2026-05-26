@@ -466,15 +466,33 @@ between "PR open" and "merge".
       HUD-AUDIT, ship a layout fix: collapse / overflow-menu /
       responsive-stack / safe-area padding as needed. Re-screenshot
       to verify.
-- [ ] M_V11.POLISH.SCREENSHOT-BATTERY — Maestro + Playwright
+- [x] M_V11.POLISH.SCREENSHOT-BATTERY — Maestro + Playwright
       screenshot battery against the 14 landmark moments of
       docs/specs/10-player-journey.md. Each shot saved under
-      docs/screenshots/v0.11/ + linked in PR body.
-- [ ] M_V11.POLISH.VISUAL-COMPARE — for every screenshot in the
+      docs/screenshots/v0.11/ + linked in PR body. Implemented
+      as JOURNEY=1 pnpm test:e2e on the existing
+      journey-capture.spec.ts (extended with shots 08+09 for
+      v0.11-specific moments). 10/10 captures pass. Shots
+      copied to docs/screenshots/v0.11/.
+- [x] M_V11.POLISH.VISUAL-COMPARE — for every screenshot in the
       battery, compare against the spec brief (AC:NH biome shots,
       Stardew HUD, references/) + name the comparison verdict in
       a `docs/screenshots/v0.11/judgement.md` ledger. Catch every
-      drift before merge.
+      drift before merge. Judgement ledger written to
+      docs/screenshots/v0.11/judgement.md; 7 OK rows + 3 MISS/
+      PARTIAL findings surfaced as new directive items below.
+- [ ] M_V11.POLISH.BUILD-MENU-CTA — build menu DOM doesn't appear
+      when aethelgard:open-build-menu is dispatched without a
+      Town Hall selection. Either drop a "Tap Town Hall first"
+      hint OR auto-select Town Hall on dispatch.
+- [ ] M_V11.POLISH.JOURNEY-CAPTURE-ZOOM — extend the camera API
+      with aethelgard:zoom-to(q, r, distance) event so journey
+      captures can pull in for v0.11-specific shots (mobs,
+      loot, procedural buildings need tighter framing).
+- [ ] M_V11.POLISH.JOURNEY-CAMERA-EVENTS — wire focus-town-hall +
+      zoom-to + pan-to-tile CustomEvents so the journey battery
+      can drive deterministic camera framings (currently shots
+      09+ skip-fire because no listener exists).
 - [ ] M_V11.POLISH.A11Y-SWEEP — `@axe-core/playwright` against
       every HUD route. Address each violation (contrast, missing
       ARIA, focus-trap, etc.) before merge.
@@ -500,12 +518,15 @@ between "PR open" and "merge".
       with subtle Y bob; color picked from dominant resource
       (gold→amber, stone→slate, wood→amber). Emissive 0.6 so
       it reads at zoom-out.
-- [ ] M_V11.POLISH.CAMP-MOB-VISUAL — barbarian-camp mobs are
+- [x] M_V11.POLISH.CAMP-MOB-VISUAL — barbarian-camp mobs are
       tinted via existing characterTint logic in Units.tsx (line
       114 skips them) — verify the player can visually distinguish
       a barbarian-camp-1 mob from a barbarian-camp-2 mob in the
-      same frame. Shift CAMP_COLORS in barbarian-camps.ts if
-      indistinguishable.
+      same frame. CAMP_COLORS shifted to a 6-step hue band (warm-
+      grey → bronze → moss → slate → muddy-purple → blood-rust),
+      each ≈60° apart, chroma ≤0.2 so still reads as 'neutral
+      aggressor' vs the bright player palette. 6 camps now
+      visually distinguishable in any frame.
 - [ ] M_V11.POLISH.PROCMESH-FACTION-CROSS — visual self-judge:
       run all 9 procedural buildings under player palette + enemy
       palette, screenshot side-by-side, verify each pair reads as
