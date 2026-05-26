@@ -85,6 +85,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
   );
 
   // Cascade: mode change resets preset-derived fields.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: seedPhrase intentionally excluded — re-seeding on every keystroke would discard slot customisations.
   useEffect(() => {
     const preset = presetFor(mode);
     setMapSize(preset.mapSize);
@@ -103,7 +104,6 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     const n = preset.defaultPlayerCount;
     setNPlayer(n);
     setNPlayerColors(defaultFactionColors(n, seedPhrase));
-    // biome-ignore lint/correctness/useExhaustiveDependencies: seedPhrase intentionally excluded — re-seeding on every keystroke would discard slot customisations.
   }, [mode]);
 
   // Override wrappers that flip the "Custom Realm" marker.
@@ -381,10 +381,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                               {nPlayer}
                             </span>
                           </div>
-                          <div
-                            data-testid="n-player-color-slots"
-                            className="flex flex-col gap-2"
-                          >
+                          <div data-testid="n-player-color-slots" className="flex flex-col gap-2">
                             <AnimatePresence initial={false}>
                               {Array.from({ length: nPlayer }, (_, i) => {
                                 const isYou = i === 0;
@@ -394,9 +391,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                                     key={`n-player-slot-${i}`}
                                     data-testid={`n-player-slot-${i}`}
                                     initial={
-                                      reducedMotion
-                                        ? false
-                                        : { opacity: 0, x: -8, height: 0 }
+                                      reducedMotion ? false : { opacity: 0, x: -8, height: 0 }
                                     }
                                     animate={{ opacity: 1, x: 0, height: 'auto' }}
                                     exit={
@@ -453,34 +448,24 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                           className="flex flex-wrap items-center gap-6 text-sm text-[var(--color-on-surface-muted)]"
                         >
                           <div className="flex items-center gap-2">
-                            <Crown
-                              className="h-4 w-4 text-[var(--color-treasure)]"
-                              aria-hidden
-                            />
+                            <Crown className="h-4 w-4 text-[var(--color-treasure)]" aria-hidden />
                             <span className="w-14 text-sm text-[var(--color-on-surface)]">
                               Player
                             </span>
                             <FactionColorPicker
                               color={factionColors.player}
-                              onChange={(c) =>
-                                setFactionColors((prev) => ({ ...prev, player: c }))
-                              }
+                              onChange={(c) => setFactionColors((prev) => ({ ...prev, player: c }))}
                               ariaLabel="Player faction color"
                             />
                           </div>
                           <div className="flex items-center gap-2">
-                            <Bot
-                              className="h-4 w-4 text-[var(--color-danger)]"
-                              aria-hidden
-                            />
+                            <Bot className="h-4 w-4 text-[var(--color-danger)]" aria-hidden />
                             <span className="w-14 text-sm text-[var(--color-on-surface)]">
                               Enemy
                             </span>
                             <FactionColorPicker
                               color={factionColors.enemy}
-                              onChange={(c) =>
-                                setFactionColors((prev) => ({ ...prev, enemy: c }))
-                              }
+                              onChange={(c) => setFactionColors((prev) => ({ ...prev, enemy: c }))}
                               ariaLabel="Enemy faction color"
                             />
                           </div>

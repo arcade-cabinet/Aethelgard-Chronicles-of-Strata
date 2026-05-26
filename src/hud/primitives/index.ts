@@ -5,9 +5,10 @@
  * v0.10 cycle — extracted here as reusable components instead of
  * being re-implemented per page.
  */
-export { HeroBanner, type HeroBannerProps } from './HeroBanner';
+
 export { Halo, type HaloProps, type HaloTone } from './Halo';
-export { TreasureButton, type TreasureButtonProps } from './TreasureButton';
+export { HeroBanner, type HeroBannerProps } from './HeroBanner';
+export { IconButton, type IconButtonProps } from './IconButton';
 export { SectionCard, type SectionCardProps } from './SectionCard';
 export { StepProgressDots, type StepProgressDotsProps } from './StepProgressDots';
-export { IconButton, type IconButtonProps } from './IconButton';
+export { TreasureButton, type TreasureButtonProps } from './TreasureButton';

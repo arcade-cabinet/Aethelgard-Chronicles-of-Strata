@@ -6,4 +6,4 @@
  * 'ultraWide'` so mobile / tablet / foldable users never get the
  * shortcuts (and tests never depend on them).
  */
-export { useDesktopShortcuts, type DesktopShortcut } from './useDesktopShortcuts';
+export { type DesktopShortcut, useDesktopShortcuts } from './useDesktopShortcuts';
