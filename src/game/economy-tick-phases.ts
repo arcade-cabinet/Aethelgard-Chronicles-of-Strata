@@ -44,6 +44,7 @@ import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { scienceSystem } from '@/ecs/systems/science';
 import { spawnSystem } from '@/ecs/systems/spawn';
+import { mobTargetingSystem } from '@/ecs/systems/mob-targeting';
 import { stanceBehaviorSystem } from '@/ecs/systems/stance-behavior';
 import { wanderSystem } from '@/ecs/systems/wander';
 import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
@@ -310,10 +311,16 @@ export function tickCommandPhase(game: GameState, delta: number, turnGateOpen: b
     spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty, game.eventRng);
     aiSystem(game.world, game.board, game.navGraph);
     stanceBehaviorSystem(game.world, game.navGraph, makeMoveCostFn(game.board.tiles));
+    // M_V11.CAMPS.HOSTILE-ALL — barbarian-camp mobs pick targets
+    // independently of stance / aiSystem (which are player- or
+    // enemy-faction scoped). Runs BEFORE wander so a mob with a
+    // valid target falls through to stance-set pathing instead of
+    // taking a wander step.
+    mobTargetingSystem(game.world);
     // M_V11.CAMPS.WANDER — barbarian-camp mobs roam within their
-    // anchor's radius. Runs AFTER stance so a mob with a combat
-    // target keeps its stance-set PathQueue (wanderSystem skips
-    // anything with steps already queued).
+    // anchor's radius. Runs AFTER stance + mob targeting so a mob
+    // with a combat target keeps its set PathQueue (wanderSystem
+    // skips anything with steps already queued).
     wanderSystem(game.world, game.board, game.eventRng);
   }
   // M_TURNS.1 — pathFollow ALWAYS ticks so issued move commands resolve.
