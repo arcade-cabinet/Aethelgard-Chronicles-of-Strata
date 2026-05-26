@@ -94,10 +94,13 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       GameMode union in game-state.ts. All branches gone.
       Remaining modes: border-clash / frontier-raid / long-reign
       / strata-wars / coexistence (5 RTS variants).
-- [ ] M_V11.PURGE.TURN-GATE — Remove `currentTurn` param from
-      path-follow + other systems. Delete `Combatant.restUntilTurn`.
-      Update callsites. (Defer to follow-up commit — heavier
-      blast radius into sim + AI.)
+- [x] M_V11.PURGE.TURN-GATE — `_currentTurn?` param removed from
+      `pathFollowSystem` signature; `Combatant.restUntilTurn` field
+      deleted from the trait. economy-tick-phases callsite + 2 test
+      files updated. Turn-based fatigue-skip branch stripped from
+      path-follow.ts. Continuous fatigueDecayTimer + damage-side
+      (1 - fatigue) multiplier remain — RTS uses those for the
+      cost of MOUNTAIN_PASS traversal.
 - [x] M_V11.PURGE.SCORING — Deleted src/hud/ScoringScreen.tsx
       + harness test + 4 baselines + victory-conditions.ts +
       victoryRecord field on GameState. GameOverModal now

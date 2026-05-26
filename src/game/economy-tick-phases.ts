@@ -105,12 +105,12 @@ export function tickCommandPhase(game: GameState, delta: number, turnGateOpen: b
   // M_TURNS.1 — pathFollow ALWAYS ticks so issued move commands resolve.
   // M_V8.PORTAL-STONE.COOLDOWN-HOOK — closure captures game.portalStoneCooldowns
   // + game.clock.elapsed so the callback can update the per-faction expiry.
+  // M_V11.PURGE — currentTurn param removed (RTS only).
   pathFollowSystem(
     game.world,
     delta,
     WEATHER_SPEED_MULTIPLIER[game.weather.state],
     game.board.tiles,
-    game.turn ? game.turn.turnsElapsed : undefined,
     (factionId: string) => {
       refreshPortalStoneCooldown(game.portalStoneCooldowns, factionId, game.clock.elapsed);
     },
