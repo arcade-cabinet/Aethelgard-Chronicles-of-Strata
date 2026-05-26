@@ -5,7 +5,7 @@ import { foundBase } from '@/game/commands';
 import { startGame } from '@/game/game-state';
 
 describe('foundBase (M_MODES.6 — 4X expansion)', () => {
-  it('consumes a Settler + spawns a new TownHall+AttractorBehavior', () => {
+  it('consumes a Settler + spawns a new Palace+AttractorBehavior', () => {
     const game = startGame('settle-test');
     // find a free walkable tile near center
     let tile: { q: number; r: number; level: number } | null = null;
@@ -70,7 +70,7 @@ describe('foundBase (M_MODES.6 — 4X expansion)', () => {
       level: 1,
       factionOverride: 'player',
     });
-    // place settler at TownHall hex
+    // place settler at Palace hex
     settler.set(HexPosition, { q: thq ?? 0, r: thr ?? 0, level: 1 });
     expect(foundBase(game, settler)).toBeNull();
   });

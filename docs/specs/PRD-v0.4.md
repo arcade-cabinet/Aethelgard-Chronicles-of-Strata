@@ -155,12 +155,12 @@ back to attractor-target the opposing baseKey at threshold time
 
 **Pattern C — INSTABILITY (diplomat vs raider).** Win in 1 turn,
 4 chunks (~40s wall-clock), 2 kills. A lone Footman lucky-rushed
-the diplomat TownHall before the diplomat had any military. Healthy
+the diplomat Palace before the diplomat had any military. Healthy
 matches don't end in 40s. The harness should tighten its lower
 bound from `elapsedTurns >= 1` to `>= 2` (i.e. >= 2 sim-min) so
 single-Footman rushes fail the gate as the imbalance they are.
 Fix the GAME so the early game isn't lethal to a peaceful
-personality (Town Hall has 300 HP — should survive a single
+personality (Palace has 300 HP — should survive a single
 Footman attack; investigate whether Footman damage is mis-tuned).
 
 **Pattern D — HOARDER OVERBUILDS (hoarder/hoarder, mad-king/builder).**

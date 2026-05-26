@@ -102,12 +102,12 @@ export function recomputeMaxSupply(
 const PEONS_PER_HOUSE = 3;
 /** How many peons each Granary supports (storage feeds workers). */
 const PEONS_PER_GRANARY = 2;
-/** Peons supported with no Houses or Granaries — the Town Hall's base capacity. */
+/** Peons supported with no Houses or Granaries — the Palace's base capacity. */
 const BASE_PEON_CAP = 4;
 
 /**
  * The peon cap for a faction — how many peons it may field. Equal to a base
- * capacity (the Town Hall) plus the contribution of every complete House and
+ * capacity (the Palace) plus the contribution of every complete House and
  * Granary. Caps peon spam and ties economy scale to construction (spec 101).
  */
 export function peonCap(houseCount: number, granaryCount: number): number {

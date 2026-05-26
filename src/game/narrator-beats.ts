@@ -11,7 +11,7 @@ import type { GameState } from './game-state';
 /**
  * M_V11.OPEN.INACTIVITY — narrator beats fired when the player has
  * not queued a peon yet. The clock ticks even before the player
- * acts; without these beats the empty Town Hall could sit silently
+ * acts; without these beats the empty Palace could sit silently
  * for minutes and the player wouldn't know what's expected of
  * them. Each beat fires once per match (tracked via the
  * `inactivityBeatsFired` bitfield on GameState).
@@ -48,7 +48,7 @@ export function tickInactivityBeats(game: GameState): void {
           id: 'inactivity-beat-30s',
           tone: 'info',
           title: 'Aethelgard awaits your first decree',
-          description: 'Tap your Town Hall and queue a Peon to begin.',
+          description: 'Tap your Palace and queue a Peon to begin.',
         },
       }),
     );
@@ -62,7 +62,7 @@ export function tickInactivityBeats(game: GameState): void {
           id: 'inactivity-beat-90s',
           tone: 'warning',
           title: 'Your realm cannot grow without peons',
-          description: 'A Peon costs 30 wood. Queue one from the Town Hall.',
+          description: 'A Peon costs 30 wood. Queue one from the Palace.',
         },
       }),
     );
@@ -71,8 +71,8 @@ export function tickInactivityBeats(game: GameState): void {
 
 /**
  * M_V11.NOTIF.ENEMY-AT-TH — fire a critical toast when an enemy
- * unit comes within 2 hex of the player's Town Hall. Tap-to-focus
- * goes to the Town Hall tile so the player can re-orient.
+ * unit comes within 2 hex of the player's Palace. Tap-to-focus
+ * goes to the Palace tile so the player can re-orient.
  *
  * Dedup: `inactivityBeatsFired` is reused with a higher bit
  * (0b100) to record "ENEMY-AT-TH already toasted this match." A
@@ -84,7 +84,7 @@ export function tickInactivityBeats(game: GameState): void {
  * grace (the enemy can't be at the keep on tick 0 in the
  * classic-RTS opening anyway, but defensive).
  */
-export function tickEnemyAtTownHallToast(game: GameState): void {
+export function tickEnemyAtPalaceToast(game: GameState): void {
   if (typeof window === 'undefined') return;
   if (game.clock.elapsed < 30) return;
   const fired = game.inactivityBeatsFired ?? 0;
@@ -103,7 +103,7 @@ export function tickEnemyAtTownHallToast(game: GameState): void {
           id: 'enemy-at-th',
           tone: 'critical',
           title: 'Enemy at the gates',
-          description: 'An enemy unit is closing on your Town Hall. Defend it now.',
+          description: 'An enemy unit is closing on your Palace. Defend it now.',
           focus: { q: tq, r: tr },
         },
       }),

@@ -165,7 +165,7 @@ function cyrb128(str: string): [number, number, number, number] {
 ```
 
 The first two words of the hash seed the **map PRNG** (controls: terrain noise offset,
-resource node placement, ramp placement, enemy spawn positions, Town Hall position).
+resource node placement, ramp placement, enemy spawn positions, Palace position).
 The second two words seed the **event PRNG** (controls: combat crits, hit variance,
 weather transitions, raid timing).
 

@@ -33,7 +33,7 @@ function spawnPlayerPeons(game: ReturnType<typeof startGame>, count: number): vo
 }
 
 describe('economy integration', () => {
-  it('startGame creates an economy, a Town Hall, and resource nodes', () => {
+  it('startGame creates an economy, a Palace, and resource nodes', () => {
     const game = startGame('ancient-silver-forest');
     // M_V11.OPEN.STOCKPILE — starting wood is 80 (was 50 pre-v0.11).
     expect(game.economy.player.wood).toBe(80);

@@ -14,7 +14,7 @@ import type { GameMode } from '@/game/game-state';
  *   different paint passes when their items land).
  * - guidedMapGen: master switch — when false, paint passes are skipped
  *   (skirmish mode preserves the v0.3 pure-noise behavior).
- * - invulnerableBases: M_MODES.4 endless mode — TownHalls take 0 damage.
+ * - invulnerableBases: M_MODES.4 endless mode — Palaces take 0 damage.
  */
 export type MatchLength = 'short' | 'medium' | 'long' | 'endless';
 export type TurnsMode = 'real-time' | 'turn-based';

@@ -49,7 +49,7 @@ An undead AI tends to:
 
 | Unit / Building | Lore role |
 |---|---|
-| **Town Hall** | A re-roofed memorial cairn over the original frozen marching column. The brazier is cold. |
+| **Palace** | A re-roofed memorial cairn over the original frozen marching column. The brazier is cold. |
 | **Footman** | Still in oath-formation, eight centuries late. Carries the rusted standard of a realm that no longer exists. |
 | **Watchtower** | A bone-and-frost pillar that watches the reseal line. |
 | **Wall** | Built from re-frozen Glacial-Stratum dust. Heals slowly while the strata are quiet. |

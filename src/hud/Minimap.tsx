@@ -57,7 +57,7 @@ function renderTerrain(game: GameState): HTMLCanvasElement {
 /**
  * A 2D top-down minimap. The terrain — which never changes after `startGame` —
  * is rasterized once to an offscreen canvas; each frame blits that cached layer
- * then draws the live overlay: unit dots, the Town Hall / Portal markers, and a
+ * then draws the live overlay: unit dots, the Palace / Portal markers, and a
  * rectangle showing the slice of the board the camera is currently framing.
  *
  * M_EXPANSION.U.116 — zoom support: wheel and pinch adjust zoom 1.0..3.5.

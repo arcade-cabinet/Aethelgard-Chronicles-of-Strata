@@ -41,7 +41,7 @@ the WAIT-FOCUS items deferred from v0.10 — the multi-file refactors
 that the v0.10 substrate makes straightforward:
 
 1. **Strip 4X scaffolding** — there is one game shape (RTS).
-2. **Classic-RTS opening** — Town Hall + small stockpile, no
+2. **Classic-RTS opening** — Palace + small stockpile, no
    pre-spawned units. Player and AI symmetric.
 3. **Stack runtime** — movement, rendering, combat, peon Work Crew
    auto-form, mob auto-stack.
@@ -85,20 +85,20 @@ the commitment is RTS-only.
 ## §2 — Classic-RTS opening (M_V11.RTS-OPEN)
 
 Per `docs/specs/200-genre-commitment.md` §"The classic RTS opening":
-spawn ONLY the Town Hall + a small stockpile. Player and AI
+spawn ONLY the Palace + a small stockpile. Player and AI
 symmetric. No pre-spawned peons or military.
 
 ### Deliverables
 
 - **§2.1 OPEN.SPAWN** — `src/game/game-state.ts` faction spawn:
   wipe the 2 pre-spawned peons (lines ~652-670) + the
-  `extra-peons` bonus path. Spawn Town Hall only.
+  `extra-peons` bonus path. Spawn Palace only.
 - **§2.2 OPEN.STOCKPILE** — Add `startingStockpile: { wood: 80,
   stone: 60, gold: 0 }` to faction spawn config. Sized so 2 peons
   (~30 wood each) are queueable on tick 0 and a defensive Wall
   (~20 stone) drops immediately.
-- **§2.3 OPEN.TH-AFFORDANCE** — Town Hall first-action highlight:
-  when Town Hall is selected and stockpile is sufficient, the
+- **§2.3 OPEN.TH-AFFORDANCE** — Palace first-action highlight:
+  when Palace is selected and stockpile is sufficient, the
   "Queue Peon" build button gets a faction-coloured pulsing halo
   until the first peon is queued. Once any peon exists, the halo
   retires.
@@ -107,7 +107,7 @@ symmetric. No pre-spawned peons or military.
   asymmetric advantage — difficulty axis lives in decision
   quality (AI evaluator weights), not starting resources.
 - **§2.5 OPEN.ONBOARDING** — Replace the OnboardingOverlay first
-  step ("Watch your peons auto-harvest") with "Tap your Town Hall,
+  step ("Watch your peons auto-harvest") with "Tap your Palace,
   queue 2 peons." Rewrite the second step accordingly. All 4
   visual baselines for the overlay regenerate.
 - **§2.6 OPEN.INACTIVITY** — Inactivity narrator beats: at 30s
@@ -117,7 +117,7 @@ symmetric. No pre-spawned peons or military.
   dismissable; reset on first peon queue.
 - **§2.7 OPEN.TESTS** — Update the ~6 tests that assert
   starting-peon-count or first-peon-position. Add: spawn-test
-  asserts 0 peons + 0 military + 1 Town Hall + 80 wood + 60 stone
+  asserts 0 peons + 0 military + 1 Palace + 80 wood + 60 stone
   for each faction.
 
 ## §3 — Stack runtime (M_V11.STACK-RUNTIME)
@@ -189,7 +189,7 @@ sidebar actions, peon command-verb split, batch Take command.
   peons get Harvest here / Build here / Repair / Return to Town
   Hall / Take command / Resume automation. Military get
   Attack-move / Patrol / Hold position / Fall back. Mixed
-  selection shows intersection (Return to Town Hall, Hold
+  selection shows intersection (Return to Palace, Hold
   position) + per-type submenus.
 - **§4.4 SEL.BATCH-PEON** — Batch Take command for peon selection.
   Calls `setPeonAutoMode` on every peon in the selection.
@@ -246,7 +246,7 @@ emitters.
 ### Deliverables
 
 - **§6.1 NOTIF.ENEMY-AT-TH** — When an enemy unit enters a tile
-  adjacent to the player's Town Hall, fire a critical toast
+  adjacent to the player's Palace, fire a critical toast
   "Enemy at the gates" with focus={townHall.q, townHall.r}.
   Dedup id keyed by 'enemy-at-th'.
 - **§6.2 NOTIF.ZOC-BREACH** — When a tile flips faction (player
@@ -318,13 +318,13 @@ from lower order structural components > buildings > skins."
 
 | Asset class | Source post-§8 |
 |---|---|
-| Player/AI faction buildings (TownHall, Barracks, Wall, Watchtower, Farm, House, Granary, Library, Wonder) | **Procedural — composed from structural primitives** |
+| Player/AI faction buildings (Palace, Barracks, Wall, Watchtower, Farm, House, Granary, Library, Wonder) | **Procedural — composed from structural primitives** |
 | Player/AI units (Peon, Footman, Knight, Wizard, etc.) | **GLB (KayKit Adventurers)** — unchanged |
 | Nature props (trees, rocks, banners, fountains, gravestones) | **GLB** — unchanged |
 | Horde-camp / Graveyard pieces (crypt, gravestones, portal-crypt) | **GLB (KayKit Mystery / Graveyard Kit)** — unchanged |
 
 GLB building files (`public/assets/structures/rts/*`, `crypt.glb`
-when used as a TownHall, `town-center/*`, `barracks/*`, etc.) get
+when used as a Palace, `town-center/*`, `barracks/*`, etc.) get
 removed from the PLAYER/AI PATH. The Graveyard Kit GLBs (`crypt`,
 `gravestone-*`, `portal-crypt`) STAY because horde camps continue
 to use them.
@@ -352,7 +352,7 @@ src/world/procedural/
     Buttress.tsx          # angled support
     Shield.tsx            # round or kite, faction-coloured
   buildings/         # Tier 2: building compositions (each = a tree of primitives)
-    TownHall.tsx
+    Palace.tsx
     Barracks.tsx
     Wall.tsx
     Watchtower.tsx
@@ -372,7 +372,7 @@ The composition discipline:
    object the building composer passes through. SKINS swaps
    materials globally per faction; primitives don't know about
    factions.
-2. **A building composes primitives**: `TownHall.tsx` mounts
+2. **A building composes primitives**: `Palace.tsx` mounts
    `<StonePlinth>` + 4× `<Column>` + N× `<Wall>` segments +
    `<PitchedRoof>` + `<Banner>` + `<Spire>` — that's the whole
    file, no inline meshes. The reference doc's bespoke building
@@ -412,7 +412,7 @@ The composition discipline:
   stone tone + trim shifts; KayKit-tinted-unit pattern from
   v0.10 stays for units.
 - **§8.3 PROCMESH.BUILDINGS** — `src/world/procedural/buildings/`
-  with TownHall + Barracks + Wall + Watchtower + Farm + House +
+  with Palace + Barracks + Wall + Watchtower + Farm + House +
   Granary + Library + Wonder. Each composes primitives + reads
   `factionMaterials` via a context or prop. NO inline meshes —
   if a building needs a shape no primitive covers, ADD A
@@ -427,7 +427,7 @@ The composition discipline:
 - **§8.5 PROCMESH.HARNESS** — Vitest browser test per primitive
   (~16 baselines) + per building composition (~9 baselines) +
   per faction-skin × representative building (e.g. 2 factions ×
-  TownHall = 2 baselines). Lock the adornments + material
+  Palace = 2 baselines). Lock the adornments + material
   overrides so future drift is caught at PR time.
 - **§8.6 PROCMESH.GLB-CLEANUP** — delete the player/AI building
   GLBs from `public/assets/structures/rts/` (town-center,
@@ -512,7 +512,7 @@ The visual + a11y + density gates between PR open and merge:
   visual baselines.
 - **PEON-CTA-DECAY** + **WAYPOINT-RESPONSIVENESS** + **BUILD-
   MENU-CTA** + **FOCUS-TILE-CALLERS** — verified.
-- **JOURNEY-CAMERA-EVENTS** — `aethelgard:focus-town-hall`
+- **JOURNEY-CAMERA-EVENTS** — `aethelgard:focus-palace`
   forward + 3 follow-up items (BUILD-MENU-CTA / JOURNEY-
   CAPTURE-ZOOM / CAMERA-TWEEN-RACE) tracked + resolved.
 

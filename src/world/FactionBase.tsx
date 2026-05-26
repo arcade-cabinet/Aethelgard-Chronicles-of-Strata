@@ -3,13 +3,13 @@
  *
  * Before this file, `HomeBase.tsx` (player) and `EnemyBase.tsx` (enemy)
  * were sibling components that diverged on hardcoded values: HomeBase
- * loaded the TownHall mesh + iterated `game.buildSites` for placed
+ * loaded the Palace mesh + iterated `game.buildSites` for placed
  * structures; EnemyBase loaded the portal-crypt mesh + a hardcoded
  * tuple of (gravestone × 3, fence × 3) at fixed local-space offsets.
  * Per-faction divergence was 100% code.
  *
  * After M_REGISTRY.4: per-faction divergence is 100% **data**, owned by
- * the Skin slot (`SKINS[faction].structure.TownHall` + `.baseProps`).
+ * the Skin slot (`SKINS[faction].structure.Palace` + `.baseProps`).
  * `FactionBase` is the single component; the player and enemy roots
  * mount it twice with different `faction` props. A third tribe drops in
  * by adding a Skin row — no new component.
@@ -178,7 +178,7 @@ function BasePropMesh({
  * up at night. Reads game.clock each frame; intensity is the inverse
  * of the directional-light intensity (peaks at midnight, off at noon).
  * Local-space child of the faction base group, so it sits at the base
- * regardless of where the player has placed their Town Hall.
+ * regardless of where the player has placed their Palace.
  */
 function BaseNightLight({ game, faction }: { game: GameState; faction: Faction }) {
   const ref = useRef<PointLight | null>(null);
@@ -211,7 +211,7 @@ function BaseNightLight({ game, faction }: { game: GameState; faction: Faction }
  * AI player builds too — M_MODES enemy economy).
  */
 export function FactionBase({ game, faction }: { game: GameState; faction: Faction }) {
-  // Base-tile world position (TownHall for player, crypt for enemy).
+  // Base-tile world position (Palace for player, crypt for enemy).
   const basePos = useMemo(() => {
     if (faction === 'player') {
       const { q, r } = parseHexKey(game.townHallKey);
@@ -226,7 +226,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
     return { x, y: hexPos.level * TILE_HEIGHT, z };
   }, [faction, game.townHallKey, game.board, game.enemyBaseEntity]);
 
-  // Per-faction placed structures (excluding the central TownHall mesh,
+  // Per-faction placed structures (excluding the central Palace mesh,
   // which is rendered directly below). The buildSites map is shared,
   // so filter by the entity's FactionTrait via Building component (the
   // ECS entity already carries faction; we read from the Building
@@ -303,7 +303,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
   return (
     <FactionMaterialsProvider faction={faction}>
       <group name={`${faction}-base`}>
-        {/* M_GAME.BUG.1 — faction-color halo ring under the Town Hall
+        {/* M_GAME.BUG.1 — faction-color halo ring under the Palace
           so the player can LOCATE their capital at a glance from any
           camera distance, regardless of mesh silhouette + map
           biome. The ring is rendered just above ground level (y+0.02)
@@ -318,10 +318,10 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
           <ringGeometry args={[1.0, 1.35, 36]} />
           <meshBasicMaterial color={skin.zoneBorderColor} transparent opacity={0.6} />
         </mesh>
-        {/* Central base mesh — TownHall (player) / crypt (enemy). */}
+        {/* Central base mesh — Palace (player) / crypt (enemy). */}
         <StructureMesh
           faction={faction}
-          type="TownHall"
+          type="Palace"
           x={basePos.x}
           y={basePos.y}
           z={basePos.z}
@@ -370,7 +370,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
   );
 }
 
-// Preload every GLB any Skin references — central base mesh (TownHall),
+// Preload every GLB any Skin references — central base mesh (Palace),
 // every structure type the faction may place (Farm/House/Granary/
 // Barracks/Watchtower/Wall/Wonder/Library — pre-warmed so placement
 // doesn't stutter), AND decorative baseProps. The Skin registry is

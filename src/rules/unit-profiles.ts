@@ -198,7 +198,7 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     // movement speed, low HP (40), no attack — reveals enemy positions but
     // can't fight. Counted as civilian for combat role gates. Double
     // vision radius (visionRadiusMultiplier: 2) surfaces fog-of-war
-    // earlier; trained from TownHall for 30 wood.
+    // earlier; trained from Palace for 30 wood.
     harvester: false,
     nonCombat: true,
     founder: false,

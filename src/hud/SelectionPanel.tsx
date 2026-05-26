@@ -36,7 +36,7 @@ import { useRafLoop } from './useRafLoop';
 
 /** Buildable types derived from the BUILDING_COSTS table — NOT hardcoded. */
 const BUILDABLE_TYPES = Object.keys(BUILDING_COSTS).sort() as ReadonlyArray<
-  Exclude<BuildingType, 'TownHall'>
+  Exclude<BuildingType, 'Palace'>
 >;
 
 /** Whether the player's economy can cover a building cost — thin wrapper over rules.canAfford. */
@@ -46,7 +46,7 @@ function canAffordCost(game: GameState, cost: ResourceCost): boolean {
 
 /**
  * M_V11.OPEN.TH-AFFORDANCE — count of player-faction Peon entities
- * (spawned + queued). The Town Hall "Train Peon" CTA pulses while
+ * (spawned + queued). The Palace "Train Peon" CTA pulses while
  * this is zero so the player sees the first decision they must
  * make. Drains O(units); fine — Selection-panel render is rare.
  */
@@ -80,7 +80,7 @@ export interface SelectionPanelProps {
 /**
  * A description of the selected entity for display. Building-specific
  * branching uses `buildingType` + the rules/display.ts table — not hardcoded
- * `isTownHall`/`isBarracks` flags. Adding a new building type with actions
+ * `isPalace`/`isBarracks` flags. Adding a new building type with actions
  * is one BUILDING_DISPLAY row, no SelectionPanel JSX change.
  */
 interface SelectionView {
@@ -308,7 +308,7 @@ function HudButton({
   /**
    * M_V11.OPEN.TH-AFFORDANCE — when true, pulse a faction-coloured
    * halo around the button to draw the player's eye. Used for the
-   * "Queue Peon" CTA on the Town Hall until the first peon is
+   * "Queue Peon" CTA on the Palace until the first peon is
    * queued. Quiet otherwise (no pulse, no border-color shift).
    */
   highlighted?: boolean;
@@ -398,7 +398,7 @@ const STANCE_CHIPS: ReadonlyArray<{ mode: StanceMode; label: string }> = [
 
 /**
  * The HUD selection panel. Slides in from the left (framer-motion) when an
- * entity is selected. The Town Hall shows build buttons (Farm, Barracks); a
+ * entity is selected. The Palace shows build buttons (Farm, Barracks); a
  * Barracks shows research buttons. Buttons call the M6 game commands.
  *
  * UI sounds fire via the module-level emitter so they reach the howler buses
@@ -587,7 +587,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               paddingLeft: 14,
               // M_V11.POLISH.SELECTION-PANEL-DENSITY — clamp the panel
               // height to 70% of viewport so it doesn't spill off-screen
-              // on a phone-portrait when a TownHall selection surfaces
+              // on a phone-portrait when a Palace selection surfaces
               // the train/build/research lists below the formation +
               // stance + autoMode + select-all chips. Internal scroll
               // keeps every action reachable.
@@ -934,19 +934,19 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                 return (
                   <div style={{ marginTop: 10 }}>
                     {/* Train buttons — driven by display.trainsUnits, NOT building type.
-                        M_POLISH2.RTS.22: TownHall now yields [Peon, Scout]; each gets
+                        M_POLISH2.RTS.22: Palace now yields [Peon, Scout]; each gets
                         its own HudButton rendered in order. */}
                     {(meta.trainsUnits ?? []).map((role) => {
                       const cost = UNIT_COSTS[role];
                       const trainReason = trainDisabledReason(game, role, cost);
                       // M_V11.OPEN.TH-AFFORDANCE — pulse the "Train
-                      // Peon" CTA on the Town Hall until the player
+                      // Peon" CTA on the Palace until the player
                       // queues their first peon. Gated tight: only
                       // role === 'Peon', only when the player has
                       // zero peons in the world (including queued).
                       // Once any peon exists, the pulse retires.
                       const highlighted =
-                        view.buildingType === 'TownHall' &&
+                        view.buildingType === 'Palace' &&
                         role === 'Peon' &&
                         countPlayerPeons(game) === 0 &&
                         canAffordCost(game, cost);

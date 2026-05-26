@@ -60,7 +60,7 @@ describe('zone-of-control border (M8.5z)', () => {
     // the unit roster" — i.e. world.query(Unit) returns ALL units
     // regardless of fog. With 0 pre-spawned units, .length === 0 still
     // proves the query path is unfiltered. Spawned units come later
-    // via Town Hall queue → BarracksBuilder etc.
+    // via Palace queue → BarracksBuilder etc.
     const before = game.world.query(Unit).length;
     expect(before).toBeGreaterThanOrEqual(0);
   });

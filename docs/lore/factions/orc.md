@@ -44,7 +44,7 @@ An orc AI tends to:
 
 | Unit / Building | Lore role |
 |---|---|
-| **Town Hall** | The forge-hold. Built around an Ember-vent. The brazier in the medieval keep is a polite fire; the orc hold's brazier is a *vent*. |
+| **Palace** | The forge-hold. Built around an Ember-vent. The brazier in the medieval keep is a polite fire; the orc hold's brazier is a *vent*. |
 | **Footman (raider variant)** | Lightly armoured, fast; carries a hatchet and a torch. The torch is for setting the enemy's wood-store on fire on the way out. |
 | **Watchtower** | Less common — the highlanders don't watch, they listen for hooves. |
 | **Wall** | Built rarely; when they build a wall it's around the forge, not the perimeter. |

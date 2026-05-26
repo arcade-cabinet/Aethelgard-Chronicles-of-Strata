@@ -54,9 +54,9 @@ viewport differences are layout-only, not flow.
   - `ZoneLegend` pill (top-left under the resource bar) — teaches the
     territory visual language.
   - `SoundToggle`.
-- Tapping a tile selects what's on it (your Town Hall, a peon, a unit, an
+- Tapping a tile selects what's on it (your Palace, a peon, a unit, an
   enemy you can see). Selection opens the `#selection-panel`:
-  - Town Hall → build menu (6 buttons: Farm / House / Granary / Barracks /
+  - Palace → build menu (6 buttons: Farm / House / Granary / Barracks /
     Watchtower / Wall).
   - Barracks → research buttons + rally point setter.
 - Peons autonomously harvest the nearest resource in your zone; the zone

@@ -15,7 +15,7 @@ import { startGame } from '@/game/game-state';
 import { FactionBase } from '@/world/FactionBase';
 
 describe('FactionBase rendering (M_REGISTRY.4 unified)', () => {
-  it('renders player base (TownHall — Castle Kit tower-square)', async () => {
+  it('renders player base (Palace — Castle Kit tower-square)', async () => {
     const game = startGame('ancient-silver-forest');
     const captured: { scene?: Object3D } = {};
 

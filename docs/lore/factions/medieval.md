@@ -16,7 +16,7 @@ signatories, and they have never let the chronicle forget it. The
 charter is why they call themselves *kingdoms* and why every keep is
 expected to keep records.
 
-The medieval realms built the first **Keeps** (the player Town Hall
+The medieval realms built the first **Keeps** (the player Palace
 becomes one in fiction), the first **standing armies** (Footmen are
 their household oath-bound), and the first **walls** (every wall is
 mortared with strata-dust because the charter says walls must root
@@ -38,7 +38,7 @@ A medieval AI tends to:
 
 | Unit / Building | Lore role |
 |---|---|
-| **Town Hall** | The Keep of a Chronicler-King. Houses the brazier whose oath the Footmen swore. |
+| **Palace** | The Keep of a Chronicler-King. Houses the brazier whose oath the Footmen swore. |
 | **Footman** | Oath-bound household soldier. Gold pauldron is the oath-mark. |
 | **Watchtower** | Surveying post — sees by strata-resonance. Charter requirement: every claimed tile must be visible from a tower. |
 | **Wall** | Strata-dust mortared masonry. Roots to the layer below. |

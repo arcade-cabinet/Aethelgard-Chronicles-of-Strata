@@ -35,7 +35,7 @@ describe('buildingDeathSystem (M_GAMEPLAY.6)', () => {
     const sites = new Map();
     const baseEnt = world.spawn(
       HexPosition({ q: tile.q, r: tile.r, level: tile.level }),
-      Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
+      Building({ buildingType: 'Palace', isComplete: true, progress: 1 }),
       Health({ current: 0, max: 500 }),
       FactionTrait({ faction: 'player' }),
       FactionBase({ faction: 'player' }),
@@ -43,7 +43,7 @@ describe('buildingDeathSystem (M_GAMEPLAY.6)', () => {
     const graph = buildingDeathSystem(world, sites, board);
     expect(graph).toBeNull();
     // base entity NOT destroyed — still queryable
-    expect(baseEnt.get(Building)?.buildingType).toBe('TownHall');
+    expect(baseEnt.get(Building)?.buildingType).toBe('Palace');
   });
 
   it('returns null on a no-op tick (no 0-HP buildings)', () => {

@@ -5,17 +5,17 @@ import { canAfford, type GameEconomy, type ResourceCost } from '@/game/economy';
 import { BUILDING_PROFILES } from './building-profiles';
 
 /**
- * Resource cost per buildable building type. `TownHall` is excluded — it is a
+ * Resource cost per buildable building type. `Palace` is excluded — it is a
  * generation-time attractor, never built mid-game (spec 102).
  *
  * M_REGISTRY.5 — derived from the unified registry. Buildable rows
  * MUST declare a `cost`; a missing cost is a registry bug (caught at
  * module load), not a silent zero-cost build.
  */
-function deriveBuildingCosts(): Record<Exclude<BuildingType, 'TownHall'>, ResourceCost> {
-  const out: Partial<Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>> = {};
+function deriveBuildingCosts(): Record<Exclude<BuildingType, 'Palace'>, ResourceCost> {
+  const out: Partial<Record<Exclude<BuildingType, 'Palace'>, ResourceCost>> = {};
   for (const key of Object.keys(BUILDING_PROFILES) as BuildingType[]) {
-    if (key === 'TownHall') continue;
+    if (key === 'Palace') continue;
     const cost = BUILDING_PROFILES[key].cost;
     if (cost === undefined) {
       // Code-reviewer Finding 1 (latent trap): a buildable BuildingType
@@ -24,18 +24,17 @@ function deriveBuildingCosts(): Record<Exclude<BuildingType, 'TownHall'>, Resour
       // forgets the cost surfaces in a developer test run, not after
       // ship.
       throw new Error(
-        `placement: BUILDING_PROFILES[${key}] is buildable (not TownHall) but has no cost. Add a cost row in src/rules/building-profiles.ts.`,
+        `placement: BUILDING_PROFILES[${key}] is buildable (not Palace) but has no cost. Add a cost row in src/rules/building-profiles.ts.`,
       );
     }
-    out[key as Exclude<BuildingType, 'TownHall'>] = cost;
+    out[key as Exclude<BuildingType, 'Palace'>] = cost;
   }
-  return out as Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
+  return out as Record<Exclude<BuildingType, 'Palace'>, ResourceCost>;
 }
 
-export const BUILDING_COSTS: Record<
-  Exclude<BuildingType, 'TownHall'>,
-  ResourceCost
-> = Object.freeze(deriveBuildingCosts()) as Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
+export const BUILDING_COSTS: Record<Exclude<BuildingType, 'Palace'>, ResourceCost> = Object.freeze(
+  deriveBuildingCosts(),
+) as Record<Exclude<BuildingType, 'Palace'>, ResourceCost>;
 
 /**
  * Supply each building contributes once complete. M_REGISTRY.5 — derived
@@ -75,7 +74,7 @@ export function canBuild(
   board: BoardData,
   occupied: ReadonlySet<string>,
   tileKey: string,
-  type: Exclude<BuildingType, 'TownHall'>,
+  type: Exclude<BuildingType, 'Palace'>,
   economy: GameEconomy,
 ): PlacementCheck {
   const tile = board.tiles.get(tileKey);

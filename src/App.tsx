@@ -263,7 +263,7 @@ function GameSession({
     };
     // M_POLISH2.B.1 — open-build-menu was dispatched by the keyboard
     // shortcut + the new mobile build chip but NOTHING was listening.
-    // The listener selects the player's TownHall (which has
+    // The listener selects the player's Palace (which has
     // showsBuildMenu=true) and lets the existing SelectionPanel render
     // the build-button list — re-uses the single source of truth
     // instead of forking a separate build modal.
@@ -271,18 +271,18 @@ function GameSession({
       for (const ent of game.world.query(Building, FactionTrait)) {
         const b = ent.get(Building);
         const f = ent.get(FactionTrait);
-        if (b?.buildingType === 'TownHall' && f?.faction === 'player') {
+        if (b?.buildingType === 'Palace' && f?.faction === 'player') {
           selectEntity(game, ent);
           break;
         }
       }
     };
-    // M_V11.POLISH.JOURNEY-CAMERA-EVENTS — focus-town-hall pans
-    // the camera onto the player Town Hall + zooms in tight.
+    // M_V11.POLISH.JOURNEY-CAMERA-EVENTS — focus-palace pans
+    // the camera onto the player Palace + zooms in tight.
     // Forwards to aethelgard:focus-tile (CameraRig already listens)
     // with parsed q/r + a tight distance so journey-capture shots
-    // can frame the procedural Town Hall composition.
-    const onFocusTownHall = () => {
+    // can frame the procedural Palace composition.
+    const onFocusPalace = () => {
       const key = game.townHallKey;
       if (!key) return;
       const [qStr, rStr] = key.split(',');
@@ -296,11 +296,11 @@ function GameSession({
     };
     window.addEventListener('aethelgard:trigger-build', onTriggerBuild);
     window.addEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
-    window.addEventListener('aethelgard:focus-town-hall', onFocusTownHall);
+    window.addEventListener('aethelgard:focus-palace', onFocusPalace);
     return () => {
       window.removeEventListener('aethelgard:trigger-build', onTriggerBuild);
       window.removeEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
-      window.removeEventListener('aethelgard:focus-town-hall', onFocusTownHall);
+      window.removeEventListener('aethelgard:focus-palace', onFocusPalace);
     };
   }, [game]);
   // r3f camera ref retained even though SelectionRect no longer

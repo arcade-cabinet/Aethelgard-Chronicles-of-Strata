@@ -126,7 +126,7 @@ test.describe('journey capture (manual review)', () => {
     // (mobile build chip dispatches { type: 'Barracks' } etc.)
     // → App handler sets buildContext → TileInteraction enters
     // placement mode. The SelectionPanel build-button list is
-    // ONLY visible while a Town Hall is selected, but the build
+    // ONLY visible while a Palace is selected, but the build
     // *flow* (placement cursor) is independent.
     // For the screenshot, trigger the build placement mode for
     // a Barracks — produces visible placement cursor in the world.
@@ -194,7 +194,7 @@ test.describe('journey capture (manual review)', () => {
     // Re-dispatch focus-tile a few times so we win the race
     // against CameraRig's useEffect mounting after the Suspense
     // boundary resolves all GLBs. distance=4 pulls in tight on
-    // the player Town Hall at axial 0,0.
+    // the player Palace at axial 0,0.
     for (let i = 0; i < 5; i++) {
       await page.evaluate(() => {
         window.dispatchEvent(

@@ -369,7 +369,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
       expect.soft(resolvedWithinBudget, 'match must reach a terminal outcome').toBe(true);
       // PATTERN-C — tightened from >=1 to >=2 sim-min. A win in
       // 1 sim-min means a single-Footman rush instakilled a
-      // TownHall, which is a balance failure (the gate should
+      // Palace, which is a balance failure (the gate should
       // catch it as such).
       expect.soft(elapsedTurns, 'turn count too low — instant finish').toBeGreaterThanOrEqual(2);
       expect.soft(elapsedTurns, 'turn count too high — drag').toBeLessThanOrEqual(15);

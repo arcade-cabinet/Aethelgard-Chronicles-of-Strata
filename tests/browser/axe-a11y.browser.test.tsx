@@ -110,20 +110,20 @@ describe('M_EXPANSION.T.138 — axe-core a11y scan of modals', () => {
   // multi-summary strip + formation chips + select-all-of-type
   // buttons + biome-scoped peon selector + per-class submenus.
   // Every new surface gets axed.
-  it('SelectionPanel with TownHall selected has zero axe violations', async () => {
+  it('SelectionPanel with Palace selected has zero axe violations', async () => {
     const game = startGame('axe-selection');
-    // Find the player TownHall (has Selectable trait per
+    // Find the player Palace (has Selectable trait per
     // M_V11.POLISH.BUILD-MENU-CTA) and select it.
     let townHall: import('koota').Entity | undefined;
     for (const e of game.world.query(Selectable, Building, FactionTrait)) {
       const b = e.get(Building);
       const f = e.get(FactionTrait);
-      if (b?.buildingType === 'TownHall' && f?.faction === 'player') {
+      if (b?.buildingType === 'Palace' && f?.faction === 'player') {
         townHall = e;
         break;
       }
     }
-    if (!townHall) throw new Error('no player Town Hall found');
+    if (!townHall) throw new Error('no player Palace found');
     selectEntity(game, townHall);
     await render(<SelectionPanel game={game} onBeginBuild={() => {}} />);
     await vi.waitFor(

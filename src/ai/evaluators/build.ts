@@ -57,7 +57,7 @@ export class BuildEvaluator extends GoalEvaluator<AiPlayer> {
   }
 
   /** The first need in priority order whose rules.canBuild succeeds. */
-  pickBuildable(owner: AiPlayer): Exclude<BuildingType, 'TownHall'> | null {
+  pickBuildable(owner: AiPlayer): Exclude<BuildingType, 'Palace'> | null {
     const { game, faction } = owner;
     if (!game) return null;
     const eco = game.economy[faction];
@@ -66,7 +66,7 @@ export class BuildEvaluator extends GoalEvaluator<AiPlayer> {
     const granaries = ownedBuildingCount(game, faction, 'Granary');
     const atCap = peons >= peonCap(houses, granaries);
 
-    const priority: Array<Exclude<BuildingType, 'TownHall'>> = [];
+    const priority: Array<Exclude<BuildingType, 'Palace'>> = [];
     if (atCap) priority.push('House');
     if (!atCap && ownedBuildingCount(game, faction, 'House') < 2) priority.push('House');
     priority.push('Farm');
@@ -93,7 +93,7 @@ export class BuildEvaluator extends GoalEvaluator<AiPlayer> {
 class BuildGoal extends Goal<AiPlayer> {
   constructor(
     owner: AiPlayer,
-    private readonly buildingType: Exclude<BuildingType, 'TownHall'>,
+    private readonly buildingType: Exclude<BuildingType, 'Palace'>,
   ) {
     super(owner);
   }

@@ -79,7 +79,7 @@ component.
 
 - **Default on spawn**: `autoMode === 'auto'`. Peon obeys the
   current Skirmish behavior — picks a free resource node, harvests,
-  returns to Town Hall, repeats. No player attention required.
+  returns to Palace, repeats. No player attention required.
 - **On player selection** (single or multi-select via the new
   "Select all peons" / "Select all peons of biome X" actions):
   SelectionPanel exposes two actions:
@@ -171,12 +171,12 @@ decide what to build. it's an RTS not Civ."
 
 This is the C&C / Warcraft / AoE opening pose, period:
 
-- **Starting state per faction**: 1× Town Hall, 0 peons, 0 military.
+- **Starting state per faction**: 1× Palace, 0 peons, 0 military.
 - **Starting stockpile**: a small wood + stone amount, exact value
   to be tuned but sized so the player can immediately queue 2-3
-  peons from the Town Hall without first having to do anything
+  peons from the Palace without first having to do anything
   else.
-- **Camera open pose**: zoomed in on the player's Town Hall
+- **Camera open pose**: zoomed in on the player's Palace
   (already shipped in M_GAME.BUG.8 — keep). The first thing the
   player sees is "this building is yours; what do you build first?"
 - **No pre-spawned peons.** The current spawn-time peon-creation
@@ -188,8 +188,8 @@ This is the C&C / Warcraft / AoE opening pose, period:
 
 The fun loop:
 
-1. **Tick 0** — see Town Hall, see "you have 80 wood / 60 stone,"
-   tap Town Hall, queue peons.
+1. **Tick 0** — see Palace, see "you have 80 wood / 60 stone,"
+   tap Palace, queue peons.
 2. **Tick 0-30s** — first peons spawn, auto-mode picks up
    harvest tasks. Stockpile starts growing.
 3. **Tick 30-60s** — player decides: scout? build a Barracks for
@@ -198,24 +198,24 @@ The fun loop:
    start meeting, the actual game.
 
 This is the proper RTS arc — economic ramp → military buildup →
-engagement. The current build skips step 1 (peons + Town Hall
+engagement. The current build skips step 1 (peons + Palace
 pre-spawned), which is why the early game feels eventless.
 
 Promoted to the directive:
 
 - **M_GAME.MODE.RTS.OPEN.1** — Faction spawn delivers ONLY the
-  Town Hall. Wipe pre-spawned peons and pre-spawned military.
+  Palace. Wipe pre-spawned peons and pre-spawned military.
 - **M_GAME.MODE.RTS.OPEN.2** — Add `startingStockpile: { wood,
   stone, gold? }` to the faction spawn config. Defaults tuned
   for "2-3 peons queueable on tick 0."
-- **M_GAME.MODE.RTS.OPEN.3** — Town Hall must expose "Queue Peon"
+- **M_GAME.MODE.RTS.OPEN.3** — Palace must expose "Queue Peon"
   as the prominent first-action affordance from frame 0. When
-  Town Hall is selected and the player has stockpile to spawn a
+  Palace is selected and the player has stockpile to spawn a
   peon, the action button is highlighted (faction-colored halo).
 - **M_GAME.MODE.RTS.OPEN.4** — AI player applies the same opening
   — symmetric start, no AI gets pre-spawned advantage.
 - **M_GAME.MODE.RTS.OPEN.5** — Onboarding overlay update: the
-  first step should be "Tap your Town Hall, queue 2 peons" not
+  first step should be "Tap your Palace, queue 2 peons" not
   "your peons are already harvesting; tap one to see..."
 
 ## What this means for camera + HUD
@@ -246,7 +246,7 @@ User direction: decide everything now, don't defer.
   capped at one per resource type per match. After that, peon work
   is silent. Wired into M_HUD.NOTIF.PEON.1.
 - **SelectionPanel per-unit command verbs: SPLIT.** Peons get
-  `Harvest here`, `Build here`, `Repair`, `Return to Town Hall`,
+  `Harvest here`, `Build here`, `Repair`, `Return to Palace`,
   `Take command` / `Resume automation`. Military get `Attack-move`,
   `Patrol between A and B`, `Hold position`, `Fall back to Town
   Hall`. Mixed selection shows the INTERSECTION (Return to Town
@@ -267,7 +267,7 @@ User direction: decide everything now, don't defer.
 - **Toast cap / queue policy: 3 SIMULTANEOUS, OLDEST DISMISSES.**
   Radix Toast supports a swipe-dismiss model; we keep the most
   recent 3 toasts visible, FIFO oldest dismisses when a fourth
-  fires. Critical toasts (enemy at Town Hall, Wonder completed)
+  fires. Critical toasts (enemy at Palace, Wonder completed)
   bypass the cap and stack on top. Wired into M_HUD.NOTIF.2 (new).
 - **Starting stockpile values: 80 wood / 60 stone / 0 gold.**
   Sized so a Peon costs 30 wood (≈ 2.6 peons queueable) and a
@@ -276,7 +276,7 @@ User direction: decide everything now, don't defer.
   military. Tuned to first-playable economic ramp; revisit after
   AIVAI playtest.
 - **Pre-spawned enemy AI: SYMMETRIC.** Enemy AI gets the same
-  Town Hall + same stockpile. AI's first scheduler tick runs at
+  Palace + same stockpile. AI's first scheduler tick runs at
   frame 0 and immediately queues 2 peons. No headstart, no
   asymmetric advantage. AI difficulty axis is in decision quality,
   not in starting resources.
@@ -287,13 +287,13 @@ User direction: decide everything now, don't defer.
   STILL needed because manual-mode peons should still be
   walk-clamped to "your sphere of influence" by default unless
   the player explicitly orders them past it.
-- **Town Hall destruction = match loss: KEEP.** The pre-spawned-
+- **Palace destruction = match loss: KEEP.** The pre-spawned-
   peons removal doesn't change the victory condition. Player loses
-  when Town Hall is destroyed; player wins by destroying enemy
-  Town Hall (or hitting Wonder victory threshold first).
-- **What happens if the player ignores the Town Hall and just
+  when Palace is destroyed; player wins by destroying enemy
+  Palace (or hitting Wonder victory threshold first).
+- **What happens if the player ignores the Palace and just
   pans around for 5 minutes?** Onboarding overlay never
-  auto-dismisses; the first step ("tap your Town Hall, queue 2
+  auto-dismisses; the first step ("tap your Palace, queue 2
   peons") stays visible until the action is taken. After 30s of
   no-action, a gentle narrator toast: "Aethelgard awaits your
   first decree." After 90s, a stronger one: "Your realm cannot

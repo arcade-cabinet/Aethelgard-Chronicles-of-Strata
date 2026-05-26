@@ -12,7 +12,7 @@ import type { GameState } from '@/game/game-state';
  * so units can path through, and the build-site map is updated. Faction-
  * symmetric: either side's buildings destruct the same way.
  *
- * The Town Hall / enemy base (`FactionBase`) is exempt — its destruction is
+ * The Palace / enemy base (`FactionBase`) is exempt — its destruction is
  * the WIN/LOSS condition, scored by evaluateWinLoss; removing it from the
  * world would lose the loss signal. They stay as 0-HP entities; the game
  * ends instead.

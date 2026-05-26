@@ -15,7 +15,7 @@ import { measuredScale, measuredYOffset, measuredEntry } from '../asset-scale';
 describe('asset-scale (M_GAME.SCALE.GLB-MEASURE.1)', () => {
   it('returns measured scales for SKINS-referenced ids', () => {
     // M_V11.PROCMESH.GLB-CLEANUP — player/AI building GLBs were
-    // removed (TownHall, Barracks, Wall, Farm, etc.) and now render
+    // removed (Palace, Barracks, Wall, Farm, etc.) and now render
     // procedurally. Remaining SKINS-referenced GLBs are: horde-camp
     // graveyard kit (crypt, portal-crypt, gravestones) + baseProps
     // (banner-faction, fountain, iron-fence) + characters.

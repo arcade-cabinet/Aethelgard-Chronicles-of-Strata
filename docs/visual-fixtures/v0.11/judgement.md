@@ -46,7 +46,7 @@ Viewports (from playwright `devices` registry):
   size, mode, players) + "Begin Match" CTA. All within viewport.
   Pass per spec §New Game Modal.
 - **onboarding**: "Welcome to Aethelgard" copy mentions
-  Town Hall + 80 wood + 60 stone — matches the v0.11 RTS
+  Palace + 80 wood + 60 stone — matches the v0.11 RTS
   opening (M_V11.OPEN). Pass.
 - **gameover-win**: "Victory! Trophy + match-summary card
   ("The Patient Hearth") + stats table". Pass.

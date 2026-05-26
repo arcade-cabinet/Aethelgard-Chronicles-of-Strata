@@ -34,7 +34,7 @@ import { unitProfileFor } from '@/rules/unit-profiles';
  * the same factory function; they differ in spawn trigger and
  * storage policy:
  *
- * 1. Fixed NPCs — TownHall, named heroes (Knight). Same skinned-
+ * 1. Fixed NPCs — Palace, named heroes (Knight). Same skinned-
  *    mesh GLB across every seed, identity stable across seeds.
  *    Spawned at startGame() time from the player base config.
  *

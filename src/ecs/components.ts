@@ -186,13 +186,13 @@ export const RESOURCE_TYPES: ReadonlyArray<ResourceType> =
 export type { ResourceType };
 
 /**
- * A building type. `TownHall` is the attractor (start base, not built
+ * A building type. `Palace` is the attractor (start base, not built
  * mid-game); `Farm`/`House`/`Granary` are economy buildings; `Barracks` trains
  * military; `Watchtower`/`Wall` are the offensive/defensive territorial
  * buildings. See `docs/specs/102-zone-of-control.md`.
  */
 export type BuildingType =
-  | 'TownHall'
+  | 'Palace'
   | 'Farm'
   | 'House'
   | 'Granary'

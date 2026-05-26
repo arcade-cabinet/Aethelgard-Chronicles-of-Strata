@@ -37,7 +37,7 @@ describe('placeRoad (M_FEATURE.1)', () => {
     expect(foundOnKey).toBe(true);
   });
 
-  it('rejects placement on the player Town Hall', () => {
+  it('rejects placement on the player Palace', () => {
     const game = startGame('road-test-2');
     const before = game.economy.player.stone;
     expect(placeRoad(game, game.townHallKey, 'stone')).toBe(false);

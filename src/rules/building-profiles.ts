@@ -61,7 +61,7 @@ export interface DisplaySlot {
   /**
    * Which trainable units (if any) this building produces.
    * Replaces the old single-value `trains` slot so a building can offer
-   * more than one unit button (TownHall: Peon + Scout). The HUD renders
+   * more than one unit button (Palace: Peon + Scout). The HUD renders
    * one HudButton per entry.
    */
   trainsUnits?: ReadonlyArray<'Peon' | 'Footman' | 'Scout'>;
@@ -83,7 +83,7 @@ export interface BuildingProfile {
   behaviors: BuildingBehaviorProfile;
   /** HUD-facing strings + interaction flags — was BUILDING_DISPLAY. */
   display: DisplaySlot;
-  /** Construction cost in resources. TownHall has none (starts in world). */
+  /** Construction cost in resources. Palace has none (starts in world). */
   cost?: ResourceCost;
   /** Supply cap contributed when complete. */
   supply: number;
@@ -91,7 +91,7 @@ export interface BuildingProfile {
   producer?: ProducerSlot;
   /**
    * Selection-ring scale for this building (M_REGISTRY.19) — was a
-   * branch in SelectionRing.tsx; TownHall + FactionBase get 1.5 (the
+   * branch in SelectionRing.tsx; Palace + FactionBase get 1.5 (the
    * largest ring); regular buildings get 1.25; Wall + similar minor
    * structures could get smaller in future.
    */
@@ -129,16 +129,16 @@ export interface AccretionSlot {
  * economy tick, supply recompute) pick it up automatically.
  */
 export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
-  TownHall: {
+  Palace: {
     behaviors: { attractor: { radius: 2 } },
     display: {
-      name: 'Town Hall',
-      // M_POLISH2.RTS.22 — TownHall now trains both Peon and Scout.
+      name: 'Palace',
+      // M_POLISH2.RTS.22 — Palace now trains both Peon and Scout.
       description: 'Your home base. Anchors the kingdom, trains peons and scouts.',
       trainsUnits: ['Peon', 'Scout'],
       showsBuildMenu: true,
     },
-    // No cost — TownHall is the starting structure, placed by startGame.
+    // No cost — Palace is the starting structure, placed by startGame.
     supply: 5,
     selectionRadius: 1.5,
   },

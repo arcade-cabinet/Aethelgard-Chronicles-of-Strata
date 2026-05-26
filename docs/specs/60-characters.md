@@ -134,7 +134,7 @@ crossfade when the state changes.
 
 ## Building Characters
 
-Buildings (TownHall, Farm, Barracks, EnemyBase) use KayKit building GLBs from the
+Buildings (Palace, Farm, Barracks, EnemyBase) use KayKit building GLBs from the
 Dungeon Pack. They are not animated and do not use the shared-rig pattern. They are
 instantiated by `src/entities/buildingFactory.ts`, which follows the same parameter
 pattern as `createCharacter` but without animation setup.
@@ -167,7 +167,7 @@ itself is shared, but the spawn triggers and storage policies differ.
 | Generic-fixed   | seed + name table    | OPFS (runtime bake)      | one seed               |
 | Random NPCs     | seed + RNG draw      | OPFS (runtime bake)      | one seed               |
 
-**Fixed NPCs** — TownHall + named heroes (Knight). Same skinned-mesh
+**Fixed NPCs** — Palace + named heroes (Knight). Same skinned-mesh
 GLB across every seed. The KayKit hero mesh is the source.
 
 **Generic-fixed NPCs** (M_EXPANSION.S.60 — not yet implemented) —

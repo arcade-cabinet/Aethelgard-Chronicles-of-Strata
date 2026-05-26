@@ -1,5 +1,5 @@
 /**
- * M_V11.PROCMESH.BUILDINGS — Town Hall (hero building).
+ * M_V11.PROCMESH.BUILDINGS — Palace (hero building).
  *
  * Source-unit bbox (default args): width 1.25, depth 1.1, height ~1.5
  * (incl spire). Hex-fit scale: 1.0 (this is the centre tile).
@@ -24,7 +24,7 @@ import {
 } from '../primitives';
 import { useFactionMaterials } from '../faction-materials';
 
-export function TownHall({
+export function Palace({
   width = 1.25,
   depth = 1.1,
   bodyHeight = 0.75,
@@ -93,7 +93,7 @@ export function TownHall({
         position={[0, 0.18 + bodyHeight + 0.04, 0]}
         material={mats.roof}
       />
-      {/* Small clocktower turret on the -X end of the roof — TownHall's
+      {/* Small clocktower turret on the -X end of the roof — Palace's
           unique silhouette marker. A short stone cylinder cap'd with a
           conical roof and a Flag, set offset from the central spire. */}
       <group position={[-width * 0.34, 0.18 + bodyHeight + 0.04, 0]}>

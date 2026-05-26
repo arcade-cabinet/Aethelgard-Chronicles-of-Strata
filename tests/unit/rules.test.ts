@@ -41,9 +41,9 @@ describe('rules engine barrel (M8.6b, spec 101)', () => {
 
   it('recomputeMaxSupply sums the contributions of complete buildings', () => {
     const eco = createEconomy();
-    recomputeMaxSupply(eco, ['TownHall', 'Farm']);
+    recomputeMaxSupply(eco, ['Palace', 'Farm']);
     const twoBuildings = eco.maxSupply;
-    recomputeMaxSupply(eco, ['TownHall', 'Farm', 'Farm']);
+    recomputeMaxSupply(eco, ['Palace', 'Farm', 'Farm']);
     expect(eco.maxSupply).toBeGreaterThan(twoBuildings);
   });
 

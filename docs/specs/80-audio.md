@@ -85,7 +85,7 @@ flowchart LR
 | Peon footstep on HIGHLAND/MOUNTAIN | `audio/footstep-stone` | sfx | |
 | Harvest swing (wood) | `audio/harvest-chop` | sfx | On each harvest animation swing |
 | Harvest clink (stone/gold) | `audio/harvest-clink` | sfx | On each harvest animation swing |
-| Carry deposit at Town Hall | `audio/deposit-chime` | sfx | On resource deposit |
+| Carry deposit at Palace | `audio/deposit-chime` | sfx | On resource deposit |
 | Unit selected | `audio/select-unit` | ui | On click/tap of any selectable entity |
 | Build hammer strike | `audio/build-hammer` | sfx | Each construction progress tick |
 | Building complete | `audio/build-complete` | ui | When `Building.isComplete` flips true |

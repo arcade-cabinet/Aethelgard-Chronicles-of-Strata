@@ -16,7 +16,7 @@ import type { FactionArchetype } from '@/config/factions';
 
 const EXPECTED_ARCHETYPES = ['medieval', 'orc', 'undead', 'mystic'] as const;
 const EXPECTED_BUILDINGS = [
-  'TownHall',
+  'Palace',
   'Farm',
   'House',
   'Granary',
@@ -92,7 +92,7 @@ describe('archetypeFor', () => {
 
 describe('buildingMeshFor', () => {
   it('returns the mesh shape for a known archetype + building', () => {
-    const m = buildingMeshFor('medieval', 'TownHall');
+    const m = buildingMeshFor('medieval', 'Palace');
     expect(m).not.toBeNull();
     expect(m?.meshLogicalId).toContain('town-center');
   });

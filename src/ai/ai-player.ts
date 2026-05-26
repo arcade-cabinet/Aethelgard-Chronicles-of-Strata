@@ -52,7 +52,7 @@ export class AiPlayer extends GameEntity {
    * M_V11.OPEN.AI-SYMMETRY — auto-queue 2 peons on the first AI
    * tick so AI factions match the player's classic-RTS opening
    * (player starts with 80 wood + 60 stone + queues 2 peons from
-   * the Town Hall via the affordance halo).
+   * the Palace via the affordance halo).
    */
   private firstTickDone = false;
 

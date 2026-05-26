@@ -138,7 +138,7 @@ Modal box (`.modal-box`):
 - **Defeat title** (`.modal-title-loss`): Metamorphous 2.8rem, red `#ef4444`,
   red glow shadow, "Defeat!".
 - Description `<p>`: "You have vanquished the Goblins of Strata." (win) or
-  "Your Town Hall has fallen." (loss). Slate `#94a3b8`.
+  "Your Palace has fallen." (loss). Slate `#94a3b8`.
 - Stat lines: Gold Earned, Lumber Harvested, Enemies Vanquished. Each is a flex row
   with the value in accent blue.
 - "Re-enter Aethelgard" button: same style as launcher "Enter Realm" button.

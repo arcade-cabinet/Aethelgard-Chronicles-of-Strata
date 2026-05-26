@@ -108,7 +108,7 @@ export interface StructureModel {
 /**
  * One decorative prop placed at a fixed local-space offset around the
  * faction's base tile (M_REGISTRY.4). Player base today has no props
- * (the central TownHall mesh + the placed structures around it provide
+ * (the central Palace mesh + the placed structures around it provide
  * the visual identity); enemy base clusters gravestones + fences
  * around the central crypt for the necropolis silhouette.
  */
@@ -311,7 +311,7 @@ export const SKINS: Record<Faction, Skin> = {
       // every primitive. Was: GLB pipeline via measured(...).
       // Removed GLBs: structures.rts.town-center/barracks/tower-house/
       // wall (M_V11.PROCMESH.GLB-CLEANUP).
-      TownHall: procedural(BUILDING_COMPONENTS.TownHall),
+      Palace: procedural(BUILDING_COMPONENTS.Palace),
       Farm: procedural(BUILDING_COMPONENTS.Farm),
       House: procedural(BUILDING_COMPONENTS.House),
       Granary: procedural(BUILDING_COMPONENTS.Granary),
@@ -321,7 +321,7 @@ export const SKINS: Record<Faction, Skin> = {
       Wonder: procedural(BUILDING_COMPONENTS.Wonder, 1.0),
       Library: procedural(BUILDING_COMPONENTS.Library),
     },
-    // M_EXPANSION.A.4 + A.10 — faction banner behind Town Hall + a
+    // M_EXPANSION.A.4 + A.10 — faction banner behind Palace + a
     // small fountain to the side. The fountain anchors the base as a
     // CIVIC space; the banner gives it identity. Both stay close enough
     // to the central tile that player-built structures landing on
@@ -376,7 +376,7 @@ export const SKINS: Record<Faction, Skin> = {
       // fences) stay GLB so the necropolis biome ambient is preserved.
       // Barbarian camps (separate from this faction) still use the
       // Graveyard Kit GLBs (crypt, portal-crypt, gravestones).
-      TownHall: procedural(BUILDING_COMPONENTS.TownHall),
+      Palace: procedural(BUILDING_COMPONENTS.Palace),
       Farm: procedural(BUILDING_COMPONENTS.Farm),
       House: procedural(BUILDING_COMPONENTS.House),
       Granary: procedural(BUILDING_COMPONENTS.Granary),

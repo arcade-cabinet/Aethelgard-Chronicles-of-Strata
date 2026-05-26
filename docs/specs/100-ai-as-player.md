@@ -27,7 +27,7 @@ single sequential arc (docs → tests → code), not parallelizable.
 
 Both factions (`player`, `enemy`) are built from the **same ECS traits, the
 same systems, the same command API**. The ONLY divergence is the render layer:
-a player Town Hall and an enemy hub are the same `Base` trait with the same
+a player Palace and an enemy hub are the same `Base` trait with the same
 `build` behavior — they just resolve different GLB models.
 
 - `Buildings.tsx` is deleted. `src/world/HomeBase.tsx` renders the player
@@ -35,7 +35,7 @@ a player Town Hall and an enemy hub are the same `Base` trait with the same
   Both consume one shared `FactionBase` render core, parameterised by a
   `factionStyle` (which model set to use).
 - ECS: a `Base` trait (faction, hub, member structures). `GoblinPortalTrait`
-  → `EnemyBase` and the player Town Hall both become `Base` instances. The
+  → `EnemyBase` and the player Palace both become `Base` instances. The
   `GoblinPortal*` naming is fully removed.
 - Every buildable structure has a player model AND an enemy model (Castle Kit
   vs Graveyard Kit). Structure *types* and their *costs/behaviors* are shared.

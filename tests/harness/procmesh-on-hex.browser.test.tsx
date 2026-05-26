@@ -20,7 +20,7 @@ import {
   Granary,
   House,
   Library,
-  TownHall,
+  Palace,
   Wall,
   Watchtower,
   Wonder,
@@ -31,7 +31,7 @@ import { FactionMaterialsProvider } from '@/world/procedural/FactionMaterialsCon
  *  game-board camera angle. */
 function HexStage({
   children,
-  // tighter cam for smaller buildings; pulled back for Wonder/TownHall.
+  // tighter cam for smaller buildings; pulled back for Wonder/Palace.
   cameraDist = 4.2,
 }: {
   children: React.ReactNode;
@@ -72,7 +72,7 @@ describe('procmesh on-hex composite — buildings at game-camera scale', () => {
   // has radius 1; small buildings scale to ~0.9× of footprint, large
   // ones scale down so they fit visually on one tile.
   const BUILDINGS = [
-    ['townhall', TownHall, 0.85, 4.2],
+    ['palace', Palace, 0.85, 4.2],
     ['house', House, 1.05, 3.6],
     ['barracks', Barracks, 0.95, 4.0],
     ['farm', Farm, 0.9, 4.4],

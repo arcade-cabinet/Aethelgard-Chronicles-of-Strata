@@ -153,10 +153,10 @@ export function issueMoveOrder(game: GameState, targetKey: string): boolean {
 export function placeBuilding(
   game: GameState,
   tileKey: string,
-  type: Exclude<BuildingType, 'TownHall'>,
+  type: Exclude<BuildingType, 'Palace'>,
   faction: Faction = 'player',
 ): boolean {
-  // CodeRabbit HIGH-4: the enemy base tile (and player TownHall) are
+  // CodeRabbit HIGH-4: the enemy base tile (and player Palace) are
   // BOTH unbuildable — without including enemyBaseKey, a player click on
   // the enemy hex would let placeBuilding stamp a second FactionBase-
   // adjacent entity right on top of the enemy base.
@@ -195,7 +195,7 @@ export function placeBuilding(
     FactionTrait({ faction }),
     // M_V11.POLISH.BUILD-MENU-CTA — every built building is tappable
     // so the player can select it (and so the build-menu CTA's
-    // auto-select path can find it). Existing buildings (TownHall,
+    // auto-select path can find it). Existing buildings (Palace,
     // enemy base) get Selectable at spawn in game-state.ts.
     Selectable({ isSelected: false }),
     ...(behaviors.offensive ? [OffensiveBehavior(behaviors.offensive)] : []),
@@ -325,7 +325,7 @@ export function placeRoad(
  * autonomous harvest loop picks up.
  *
  * The same channel is called by:
- *  - The human UI — Train Peon button on the Town Hall, Train Footman on the
+ *  - The human UI — Train Peon button on the Palace, Train Footman on the
  *    Barracks (M_GAMEPLAY.1).
  *  - The AI player — its TrainEvaluator (M_AI_DEPTH.2).
  *
@@ -452,13 +452,13 @@ export function foundBase(game: GameState, settler: Entity): Entity | null {
   if (tileKey === game.townHallKey || tileKey === game.enemyBaseKey) return null;
   // Consume the Settler.
   settler.destroy();
-  // Compose the new base. TownHall-style: AttractorBehavior + Building +
+  // Compose the new base. Palace-style: AttractorBehavior + Building +
   // FactionBase + Health.
   const tile = game.board.tiles.get(tileKey);
-  const profile = behaviorsFor('TownHall');
+  const profile = behaviorsFor('Palace');
   const traits = [
     HexPosition({ q: hex.q, r: hex.r, level: hex.level }),
-    Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
+    Building({ buildingType: 'Palace', isComplete: true, progress: 1 }),
     FactionTrait({ faction }),
     ...(profile.attractor ? [AttractorBehavior(profile.attractor)] : []),
     // NB: FactionBase NOT added — only the ORIGINAL base counts as the
@@ -546,10 +546,10 @@ export function upgradeBuilding(
   if (!b.isComplete) return false;
   if (b.tier >= 3) return false;
   if (buildingEntity.get(FactionTrait)?.faction !== faction) return false;
-  // TownHall is exempt from upgrades (it's the FactionBase + has
+  // Palace is exempt from upgrades (it's the FactionBase + has
   // no buildingCost — Object.hasOwn guard for the
   // BUILDING_COSTS lookup keeps tsc + the contract happy).
-  if (b.buildingType === 'TownHall') return false;
+  if (b.buildingType === 'Palace') return false;
   const costs = BUILDING_COSTS as Record<string, ResourceCost>;
   const baseCost = costs[b.buildingType];
   if (!baseCost) return false;

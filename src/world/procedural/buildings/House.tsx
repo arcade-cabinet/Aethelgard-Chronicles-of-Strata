@@ -50,7 +50,7 @@ export function House({
       />
       {/* exposed timber framing (X-brace on +Z face).
           braceLen = wall diagonal; without this the rotated box pokes out
-          past the gable as a "long pole" — visible in every house/townhall
+          past the gable as a "long pole" — visible in every house/palace
           baseline before this fix. */}
       {(() => {
         const braceLen = Math.hypot(width, bodyHeight) * 0.94;

@@ -25,9 +25,9 @@ describe('supply system', () => {
     // is now added on top of building contributions so a House-less
     // faction can still field the starting kit. Expected = 5 + sum.
     const eco = createEconomy();
-    recomputeMaxSupply(eco, ['TownHall', 'Farm']);
+    recomputeMaxSupply(eco, ['Palace', 'Farm']);
     expect(eco.maxSupply).toBe(20);
-    recomputeMaxSupply(eco, ['TownHall', 'Farm', 'Farm']);
+    recomputeMaxSupply(eco, ['Palace', 'Farm', 'Farm']);
     expect(eco.maxSupply).toBe(30);
   });
 });

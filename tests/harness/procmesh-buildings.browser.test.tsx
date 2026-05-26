@@ -16,7 +16,7 @@ import {
   Granary,
   House,
   Library,
-  TownHall,
+  Palace,
   Wall,
   Watchtower,
   Wonder,
@@ -85,17 +85,17 @@ async function settle() {
 }
 
 describe('procmesh buildings — tier-2 visual baselines (player palette)', () => {
-  it('TownHall', async () => {
+  it('Palace', async () => {
     render(
       <Stage cameraPos={[2.6, 2.2, 2.6]}>
         <FactionMaterialsProvider faction="player">
-          <TownHall />
+          <Palace />
         </FactionMaterialsProvider>
       </Stage>,
     );
     await settle();
     await expect(
-      page.screenshot({ path: `${baselineDir}/procmesh-building-player-townhall.png` }),
+      page.screenshot({ path: `${baselineDir}/procmesh-building-player-palace.png` }),
     ).resolves.toBeTruthy();
   });
   it('Barracks', async () => {
@@ -230,17 +230,17 @@ describe('procmesh buildings — Wall variants (M_V11.POLISH.PROCMESH.WALL-VARIA
 });
 
 describe('procmesh buildings — faction-cross palette shift', () => {
-  it('TownHall — enemy (necropolis palette)', async () => {
+  it('Palace — enemy (necropolis palette)', async () => {
     render(
       <Stage cameraPos={[2.6, 2.2, 2.6]}>
         <FactionMaterialsProvider faction="enemy">
-          <TownHall />
+          <Palace />
         </FactionMaterialsProvider>
       </Stage>,
     );
     await settle();
     await expect(
-      page.screenshot({ path: `${baselineDir}/procmesh-building-enemy-townhall.png` }),
+      page.screenshot({ path: `${baselineDir}/procmesh-building-enemy-palace.png` }),
     ).resolves.toBeTruthy();
   });
   it('Wonder — enemy (necropolis palette)', async () => {

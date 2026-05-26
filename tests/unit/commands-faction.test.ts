@@ -6,12 +6,12 @@ import { startGame } from '@/game/game-state';
 
 const SEED = 'ancient-silver-forest';
 
-// M_V11.OPEN.SPAWN — playerPawn now points at the Town Hall entity
+// M_V11.OPEN.SPAWN — playerPawn now points at the Palace entity
 // (no Movement trait), so moveUnit-on-playerPawn is a no-op by
 // design. These tests spawn a Peon explicitly to exercise moveUnit.
 function spawnPlayerPeon(game: ReturnType<typeof startGame>) {
   const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
-  // Find a walkable neighbor of the Town Hall for the peon.
+  // Find a walkable neighbor of the Palace for the peon.
   const dirs: ReadonlyArray<readonly [number, number]> = [
     [1, 0],
     [0, 1],
@@ -33,7 +33,7 @@ function spawnPlayerPeon(game: ReturnType<typeof startGame>) {
       });
     }
   }
-  throw new Error('no walkable neighbor of Town Hall');
+  throw new Error('no walkable neighbor of Palace');
 }
 
 describe('command API — faction parameter (M8.3)', () => {

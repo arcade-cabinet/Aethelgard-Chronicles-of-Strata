@@ -7,7 +7,7 @@ import type { ResourceNodePlan } from '@/world/resource-spawn';
 import { RESOURCE_PROFILES } from './resource-profiles';
 
 /**
- * Attractor rules (spec 102). A Town Hall is the sole attractor — at map
+ * Attractor rules (spec 102). A Palace is the sole attractor — at map
  * generation it guarantees a minimum number of each resource type within its
  * radius, so a freshly-spawned peon always has work in-zone. This makes the
  * game-start fully emergent (no scripted resource sequence) and ensures the AI

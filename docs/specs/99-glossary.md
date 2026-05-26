@@ -14,7 +14,7 @@ this is what it means.
 
 - **Faction** — `'player' | 'enemy'`. The two sides of every match; the
   architecture is faction-symmetric (spec 100).
-- **Faction Base** — the home anchor of a faction (Town Hall for the
+- **Faction Base** — the home anchor of a faction (Palace for the
   player, the graveyard for the enemy). Tracked by the `FactionBase` ECS
   trait; losing it ends the match (`evaluateWinLoss`).
 - **Zone of Control** — the *territory* a faction holds. The set of tiles
@@ -67,7 +67,7 @@ this is what it means.
 
 ## File / path terms
 
-- **logical asset id** — a stable string like `structures.town-hall`. Code
+- **logical asset id** — a stable string like `structures.palace`. Code
   resolves it via `assets.url(...)`, never raw paths.
 - **`.agent-state/`** — the per-repo working memory the agent uses
   (directive, decisions, digest, cursor).

@@ -96,7 +96,7 @@ describe('statusAttributesSystem (M_FUN.ATTR)', () => {
 
   it('buildings on SWAMP are NOT damaged by terrain ticks', () => {
     // Coderabbit MAJOR PR #10 04:56Z: the system used to query
-    // Health+HexPosition, so a Town Hall planted on a SWAMP tile
+    // Health+HexPosition, so a Palace planted on a SWAMP tile
     // took -1 HP/tick from the disease branch. Adding Unit to the
     // query gates the loop to mobile combatants only.
     const world = createEcsWorld();
@@ -111,7 +111,7 @@ describe('statusAttributesSystem (M_FUN.ATTR)', () => {
         dehydration: 0,
         dehydrationRecoveryTimer: 0,
       }),
-      Building({ buildingType: 'TownHall', isComplete: true, progress: 1, tier: 1 }),
+      Building({ buildingType: 'Palace', isComplete: true, progress: 1, tier: 1 }),
       FactionTrait({ faction: 'player' }),
     );
     for (let i = 0; i < 10; i++) statusAttributesSystem(world, tiles, 1);

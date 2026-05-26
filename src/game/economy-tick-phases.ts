@@ -57,7 +57,7 @@ import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
 import type { GameState } from './game-state';
 import { advanceProjectiles } from './projectiles';
-import { tickEnemyAtTownHallToast, tickInactivityBeats } from './narrator-beats';
+import { tickEnemyAtPalaceToast, tickInactivityBeats } from './narrator-beats';
 import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { grantRandomDiscovery } from './research';
 import { autoFormMobRabble, autoFormWorkCrews, dissolveStaleWorkCrews } from './stack-auto-form';
@@ -77,7 +77,7 @@ export function tickClockPhase(game: GameState, delta: number): void {
   tickRandomEvents(game, game.eventRng, delta);
   tickLongReignEscalation(game, game.eventRng, game.clock.elapsed);
   tickInactivityBeats(game);
-  tickEnemyAtTownHallToast(game);
+  tickEnemyAtPalaceToast(game);
   // M_V6.DIPLO.BORDER-ASK — sweep expired non-aggression-pact proposals.
   // Silent: a refused / ignored proposal just drops off the HUD; the
   // BORDER-ASK directive's "wave-of-attack penalty on refusal" is a
@@ -360,7 +360,7 @@ export function tickDepositPhase(game: GameState): void {
               tone: 'info',
               title: `Your peons have begun harvesting ${ev.type}`,
               description: `The realm's ${ev.type} reserves are now growing.`,
-              // No focus — the deposit is at the Town Hall (already
+              // No focus — the deposit is at the Palace (already
               // on screen) and the player's attention should stay
               // wherever they are, not jolt back to the keep.
             },

@@ -130,11 +130,11 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 ### §2 — Classic-RTS opening (M_V11.RTS-OPEN)
 
 - [x] M_V11.OPEN.SPAWN — game-state.ts faction spawn now creates
-      ONLY the Town Hall (player + AI symmetric). Pre-spawned 2
+      ONLY the Palace (player + AI symmetric). Pre-spawned 2
       peons, +1 Footman, and the AIVAI 2-enemy-peons + 1-enemy-
       Footman kit all stripped. extra-peons bonus is a no-op
       (kept on the union for save compat). `playerPawn` now
-      points at the Town Hall entity; moveUnit on it no-ops by
+      points at the Palace entity; moveUnit on it no-ops by
       design (no Movement trait). Helper fns
       adjacentWalkableTiles + walkableTilesByExpansion deleted
       (only served the deleted spawns).
@@ -146,7 +146,7 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       `highlighted` + `highlightColor` props that render a
       faction-coloured pulsing halo (1.8s loop via CSS keyframes
       in src/hud/th-affordance.css). SelectionPanel wires the
-      flag for Town Hall "Train Peon" while
+      flag for Palace "Train Peon" while
       `countPlayerPeons(game) === 0` AND the player can afford
       the cost. Once any peon exists, the pulse retires
       automatically. data-highlighted attribute exposed for tests.
@@ -157,8 +157,8 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       player's RTS opening start state.
 - [x] M_V11.OPEN.ONBOARDING — Rewrote OnboardingOverlay steps 1-3
       for the classic-RTS opening. Step 1 "Welcome" notes the
-      Town Hall + 80 wood + 60 stone opening with no pre-spawned
-      peons; step 2 (new) "Tap your Town Hall — queue two peons"
+      Palace + 80 wood + 60 stone opening with no pre-spawned
+      peons; step 2 (new) "Tap your Palace — queue two peons"
       walks the player through the first decision and the
       glowing Train Peon button; step 3 "Peons are autonomous"
       now reads "Once spawned..." and mentions the Take command
@@ -352,10 +352,10 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 
 ### §6 — Toast wiring expansion (M_V11.NOTIF)
 
-- [x] M_V11.NOTIF.ENEMY-AT-TH — `tickEnemyAtTownHallToast` added
+- [x] M_V11.NOTIF.ENEMY-AT-TH — `tickEnemyAtPalaceToast` added
       to `tickClockPhase`. Fires a critical-tone tap-to-focus
       toast on the FIRST enemy unit within 2 hex of the player
-      Town Hall after a 30s grace. Reuses the
+      Palace after a 30s grace. Reuses the
       `inactivityBeatsFired` bitfield (bit 0b100) to record
       "already toasted this match" so the warning fires once,
       not on every proximity tick.
@@ -509,7 +509,7 @@ between "PR open" and "merge".
         wide). Fixed: top offset is now
         clamp(8px, 48px - 8vw, 48px) — sits below the top strip
         on narrow viewports, stays at top:8 on wider.
-      - SelectionPanel could exceed viewport height on a TownHall
+      - SelectionPanel could exceed viewport height on a Palace
         selection with all sections rendered. Fixed via
         SELECTION-PANEL-DENSITY (maxHeight + overflowY).
 - [x] M_V11.POLISH.SCREENSHOT-BATTERY — Maestro + Playwright
@@ -527,18 +527,18 @@ between "PR open" and "merge".
       drift before merge. Judgement ledger written to
       docs/screenshots/v0.11/judgement.md; 7 OK rows + 3 MISS/
       PARTIAL findings surfaced as new directive items below.
-- [x] M_V11.POLISH.BUILD-MENU-CTA — Root cause: TownHall +
+- [x] M_V11.POLISH.BUILD-MENU-CTA — Root cause: Palace +
       enemy base + every constructed Building was missing the
       Selectable trait at spawn. selectEntity() requires the
       target to have Selectable; without it the auto-select
       no-op'd silently. Fixed by adding Selectable({isSelected:
-      false}) to (a) the TownHall spawn in game-state.ts, (b)
+      false}) to (a) the Palace spawn in game-state.ts, (b)
       the enemy base spawn in game-state.ts, (c) every building
       construction in commands.ts. New __game_selectEntity test
       hook for deterministic Playwright selection. The
       open-build-menu CustomEvent path (App.tsx:254 auto-selects
       via the listener) now resolves: it finds the player
-      Town Hall, the Selectable trait is present, selectEntity
+      Palace, the Selectable trait is present, selectEntity
       sets selectedId, SelectionPanel's useRafLoop diffs the
       view, panel mounts with build buttons. Tests: 1163/1163
       green. Journey-shot 05 still doesn't capture the panel in
@@ -549,14 +549,14 @@ between "PR open" and "merge".
       captures can pull in for v0.11-specific shots. Already
       supported via the existing aethelgard:focus-tile event
       which accepts an optional `distance` field (CameraRig.tsx:
-      124). focus-town-hall (M_V11.POLISH.JOURNEY-CAMERA-EVENTS)
+      124). focus-palace (M_V11.POLISH.JOURNEY-CAMERA-EVENTS)
       uses distance=6 to demonstrate. The headless tween-race
       visible in journey-shot 09 is tracked separately under
       M_V11.POLISH.CAMERA-TWEEN-RACE.
-- [x] M_V11.POLISH.JOURNEY-CAMERA-EVENTS — wire focus-town-hall +
+- [x] M_V11.POLISH.JOURNEY-CAMERA-EVENTS — wire focus-palace +
       zoom-to + pan-to-tile CustomEvents so the journey battery
       can drive deterministic camera framings. Wired
-      aethelgard:focus-town-hall in App.tsx (parses townHallKey,
+      aethelgard:focus-palace in App.tsx (parses townHallKey,
       forwards to existing aethelgard:focus-tile with distance=6).
       aethelgard:focus-tile + aethelgard:pan-camera already
       existed on CameraRig. Note: the journey shot 09 still
@@ -568,12 +568,12 @@ between "PR open" and "merge".
 - [x] M_V11.POLISH.CAMERA-TWEEN-RACE — Investigated. CameraRig's
       focus-tile useEffect mounts on Canvas init; the listener IS
       live when journey-shot 09 dispatches. Test was extended to
-      dispatch focus-tile DIRECTLY (skipping focus-town-hall
+      dispatch focus-tile DIRECTLY (skipping focus-palace
       forwarding) 5× across 1.5s with 2s settle wait. Camera
       visibly stays at the start framing in the captured PNG —
       likely a headless-Chromium rAF-throttle issue in
       offscreen Canvas. focus-tile IS exercised by real product
-      paths (App focus-town-hall, selection.ts auto-focus,
+      paths (App focus-palace, selection.ts auto-focus,
       Toasts tap-to-focus, IdleUnitIndicator click — verified
       via grep). The substrate is correct; the Playwright
       capture limitation is a known offscreen-Canvas quirk.
@@ -586,7 +586,7 @@ between "PR open" and "merge".
       biome-scoped selector + per-class verb submenus). 4/4 axe
       tests pass — 0 wcag2a / wcag2aa / best-practice violations
       across GameOverModal-win, GameOverModal-loss, NewGameModal,
-      SelectionPanel-with-TownHall.
+      SelectionPanel-with-Palace.
 - [x] M_V11.POLISH.MOBILE-MAESTRO — full `.maestro/*.yaml` battery
       against the actual Android APK + iOS IPA. Verify every
       tap-path resolves. Selector-level validation done: walked
@@ -612,14 +612,14 @@ between "PR open" and "merge".
       accordion sections within SelectionPanel so a touch-user
       can fold sections they're not using. Implemented with
       native <details><summary> elements wrapping the build list
-      (default open — primary CTA for TownHall) and the research
+      (default open — primary CTA for Palace) and the research
       list (default closed since building > researching in
       early-game decision ordering). Summary labels include the
       item count: "Build (8)", "Research (6)". Stance + autoMode
       + formation chips stay always-visible since they're each
       one fieldset, not a list. Tests: 1163 unit + 4 axe pass.
 - [x] M_V11.POLISH.FOCUS-TILE-CALLERS — verified: 4 non-test
-      dispatchers already wired (App.tsx focus-town-hall
+      dispatchers already wired (App.tsx focus-palace
       forward, selection.ts maybeFocusOnSelection on entity
       select, Toasts.tsx tap-to-focus on critical toasts,
       IdleUnitIndicator.tsx tap to cycle idle units). The
@@ -764,7 +764,7 @@ the full architecture.
       the building composer reads the materials via context so
       primitive call sites stay clean.
 - [x] M_V11.PROCMESH.BUILDINGS — `src/world/procedural/buildings/`
-      with TownHall, Barracks, Wall, Watchtower, Farm, House,
+      with Palace, Barracks, Wall, Watchtower, Farm, House,
       Granary, Library, Wonder. Each is a pure composition
       tree of primitives — **no inline meshes**. If a building
       needs a shape no primitive covers, add a primitive first.

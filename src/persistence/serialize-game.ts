@@ -131,7 +131,10 @@ interface DiplomacyRelationSnapshot {
 //        + volcano blocks (all optional; v1 saves migrated).
 //   v3 — M_V7.CARRY.SAVE-V6-STATE added v0.6 substrate blocks
 //        (all optional; v2 saves migrated).
-const SNAPSHOT_VERSION = 3;
+//   v4 — M_V11.RENAME.TOWNHALL-TO-PALACE renamed the central faction
+//        building type from 'TownHall' to 'Palace'. v3 saves carry the
+//        old string and migrate by walking the entity table.
+const SNAPSHOT_VERSION = 4;
 
 /** ZoneState → serializable form (Set+Map → arrays). */
 function zoneToSnapshot(zone: ZoneState): ZoneSnapshot {
@@ -571,6 +574,43 @@ const SNAPSHOT_MIGRATIONS: Record<number, SnapshotMigration> = {
     version: 3,
     // No active state to carry forward; all defaults are valid.
   }),
+  // v3 → v4 (M_V11.RENAME.TOWNHALL-TO-PALACE): walk the entity table
+  // and rewrite any saved Building/buildingType field that still reads
+  // 'TownHall' to 'Palace'. v3 saves only carry the legacy string;
+  // rendering the un-migrated value would render nothing (the registry
+  // no longer has a TownHall entry).
+  3: (snap) => {
+    // Entities live under snap.world.entities. Walk the array and
+    // rewrite any Building trait with buildingType='TownHall' to 'Palace'.
+    const world = snap.world;
+    if (!world || typeof world !== 'object') return { ...snap, version: 4 };
+    const worldObj = world as Record<string, unknown>;
+    // Each entity is a flat dict of trait-name → trait-data (see
+    // serializeWorld in serialize.ts). The Building trait lives at the
+    // top level keyed 'Building'.
+    const entities = Array.isArray(worldObj.entities) ? worldObj.entities : [];
+    const migratedEntities = entities.map((raw) => {
+      if (!raw || typeof raw !== 'object') return raw;
+      const e = raw as Record<string, unknown>;
+      const building = e.Building;
+      if (
+        building &&
+        typeof building === 'object' &&
+        (building as Record<string, unknown>).buildingType === 'TownHall'
+      ) {
+        return {
+          ...e,
+          Building: { ...(building as object), buildingType: 'Palace' },
+        };
+      }
+      return e;
+    });
+    return {
+      ...snap,
+      version: 4,
+      world: { ...worldObj, entities: migratedEntities },
+    };
+  },
 };
 
 function migrateSnapshot(snap: Record<string, unknown>): Record<string, unknown> {

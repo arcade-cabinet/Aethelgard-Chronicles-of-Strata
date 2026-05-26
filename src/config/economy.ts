@@ -69,7 +69,7 @@ export type ResourceSpawnRule = z.infer<typeof ResourceSpawnRuleSchema> & {
  * interface, so a plain `satisfies` is sufficient without the double cast.
  */
 export interface EconomyConfig {
-  buildingCosts: Record<Exclude<BuildingType, 'TownHall'>, ResourceCost>;
+  buildingCosts: Record<Exclude<BuildingType, 'Palace'>, ResourceCost>;
   buildingSupply: Record<BuildingType, number>;
   buildableBiomes: string[];
   supplyCosts: Record<UnitType, number>;
@@ -115,7 +115,7 @@ export function harvestYieldFor(type: ResourceType): number {
 }
 
 /** Resource cost of a building type. */
-export function buildingCostFor(type: Exclude<BuildingType, 'TownHall'>): ResourceCost {
+export function buildingCostFor(type: Exclude<BuildingType, 'Palace'>): ResourceCost {
   return ECONOMY.buildingCosts[type] as ResourceCost;
 }
 

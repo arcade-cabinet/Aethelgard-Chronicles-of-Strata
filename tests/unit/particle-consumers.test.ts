@@ -83,7 +83,7 @@ describe('M_REGISTRY.6 — particle consumer specs', () => {
   describe('buildCompleteConsumer', () => {
     it('returns null when no buildings exist', () => {
       const game = startGame('no-buildings');
-      // startGame places a TownHall + EnemyBase, both isComplete=true at
+      // startGame places a Palace + EnemyBase, both isComplete=true at
       // tick 0. The consumer's seen-set is module-level — but on the
       // FIRST call after a fresh seenRef sees both as new. We can't
       // easily reset module state from a test; instead verify the
@@ -209,7 +209,7 @@ describe('M_REGISTRY.6 — particle consumer specs', () => {
 
     it('returns null when no Barracks are built', () => {
       const game = startGame('embers-no-barracks');
-      // fresh game has no buildings beyond the starting TownHall;
+      // fresh game has no buildings beyond the starting Palace;
       // Barracks query is empty.
       const fresh = embersConsumer.tick({
         game,

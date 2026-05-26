@@ -27,7 +27,7 @@ flowchart TB
     G3[scatterResources]
     G4[paintBeach/Lake/Channel/Desert/Mountain]
     G5[placeAccretedProps]
-    G6[placeTownHall + EnemyBase]
+    G6[placePalace + EnemyBase]
   end
   subgraph RuntimePass["Runtime pass — runs every economy tick"]
     R1[harvestSystem]
@@ -68,8 +68,8 @@ The core economic loop runs autonomously once peons exist and resources are on t
 2. **SEEKING** — Peon has a resource target. A* path computed to the resource's hex.
 3. **HARVESTING** — Peon is adjacent to a resource node. `harvestTimer` counts up at
    `harvestRate` per second. `AnimationState` → `HARVESTING` (axe-swing clip).
-4. **CARRYING** — Peon's Carrier is full. A* path computed back to Town Hall.
-5. **DEPOSITING** — Peon is adjacent to Town Hall. Resources added to global totals.
+4. **CARRYING** — Peon's Carrier is full. A* path computed back to Palace.
+5. **DEPOSITING** — Peon is adjacent to Palace. Resources added to global totals.
    Carrier cleared. Peon returns to SEEKING the same resource type if node is not
    depleted, otherwise IDLE.
 
@@ -80,7 +80,7 @@ The core economic loop runs autonomously once peons exist and resources are on t
 
 **Acceptance criteria:**
 - A peon assigned to a resource node reaches it, completes harvest animation, carries
-  load back to Town Hall, deposits, and repeats without player intervention.
+  load back to Palace, deposits, and repeats without player intervention.
 - Resource node amount decreases with each harvest. When depleted (amount ≤ 0), the
   peon enters IDLE.
 - Global resource counters in the HUD update immediately on deposit.
@@ -88,7 +88,7 @@ The core economic loop runs autonomously once peons exist and resources are on t
 ### Supply System
 
 Each unit consumes supply capacity from its faction's pool; buildings
-add supply when complete. The TownHall is the starting structure and
+add supply when complete. The Palace is the starting structure and
 provides the base capacity.
 
 > **M_AUDIT2.ARCH.37 — regenerated from data sources 2026-05-23.**
@@ -114,7 +114,7 @@ provides the base capacity.
 
 | Building | Supply provided |
 |---|---|
-| TownHall | 5 |
+| Palace | 5 |
 | Farm | 10 |
 | House | 4 |
 | Granary | 2 |
@@ -254,7 +254,7 @@ Portal entity removal and triggers the win flow:
    font, "Victory!" text).
 3. Stats shown: Gold Earned, Lumber Harvested, Enemies Vanquished.
 
-**Loss:** The TownHall entity's Health reaches 0. The `winLossSystem` detects this
+**Loss:** The Palace entity's Health reaches 0. The `winLossSystem` detects this
 and triggers the loss flow:
 1. All player input is disabled.
 2. The loss modal appears with `modal-title-loss` styling (red `#ef4444`, "Defeat!").
@@ -265,7 +265,7 @@ reset to the launcher.
 
 **Acceptance criteria:**
 - Reducing the EnemyBase to 0 HP triggers the victory modal.
-- Reducing the TownHall to 0 HP triggers the defeat modal.
+- Reducing the Palace to 0 HP triggers the defeat modal.
 - No player input is accepted after either modal appears.
 - Stats accurately reflect the completed session's totals.
 
@@ -273,13 +273,13 @@ reset to the launcher.
 
 The enemy AI runs in `aiSystem` each frame. For each enemy entity with no current path:
 
-1. Find the nearest player-faction entity (unit or TownHall) within a 10-tile radius.
+1. Find the nearest player-faction entity (unit or Palace) within a 10-tile radius.
 2. Compute A* path to that target's hex.
 3. Assign the path to the entity's PathQueue.
 
 Goblins spawn from the EnemyBase on a timer (every 45 seconds at base rate, reduced
 by 10% per surviving footman). They always target the nearest player unit first; if no
-units exist, they target the TownHall directly.
+units exist, they target the Palace directly.
 
 Orcs spawn after the player has 3 or more footmen or the game clock exceeds 10 minutes,
 representing an escalating threat.

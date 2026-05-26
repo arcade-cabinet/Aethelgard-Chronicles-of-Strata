@@ -17,12 +17,12 @@ import { Farm } from './Farm';
 import { Granary } from './Granary';
 import { House } from './House';
 import { Library } from './Library';
-import { TownHall } from './TownHall';
+import { Palace } from './Palace';
 import { Wall } from './Wall';
 import { Watchtower } from './Watchtower';
 import { Wonder } from './Wonder';
 
-export { Barracks, Farm, Granary, House, Library, TownHall, Wall, Watchtower, Wonder };
+export { Barracks, Farm, Granary, House, Library, Palace, Wall, Watchtower, Wonder };
 
 /** Generic shape every building accepts so consumers can switch on
  *  BuildingType without inspecting which composition is wired. */
@@ -31,7 +31,7 @@ export type ProceduralBuildingComponent = (props: {
 }) => ReactElement;
 
 export const BUILDING_COMPONENTS: Record<BuildingType, ProceduralBuildingComponent> = {
-  TownHall: TownHall as ProceduralBuildingComponent,
+  Palace: Palace as ProceduralBuildingComponent,
   Barracks: Barracks as ProceduralBuildingComponent,
   Wall: Wall as ProceduralBuildingComponent,
   Watchtower: Watchtower as ProceduralBuildingComponent,

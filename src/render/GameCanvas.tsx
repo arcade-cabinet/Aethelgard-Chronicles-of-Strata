@@ -162,12 +162,12 @@ function Scene({
   // whole match.
   //
   // M_GAME.BUG.8 — mobile-first camera start: focus on the PLAYER'S
-  // Town Hall (not the base-pair midpoint, not the land centroid).
+  // Palace (not the base-pair midpoint, not the land centroid).
   // The player should boot looking at "their realm" — a hex-slice
   // around home — and pinch-out to reveal the wider map. This makes
   // the on-boarding "you are HERE" feel correct, especially on
   // portrait phones where the centroid framing left the player
-  // disoriented. Falls back to the centroid only if the Town Hall
+  // disoriented. Falls back to the centroid only if the Palace
   // tile is absent (extremely early init).
   const landCenter = useMemo<{ x: number; z: number }>(() => {
     const pBase = game.board.tiles.get(game.townHallKey);
