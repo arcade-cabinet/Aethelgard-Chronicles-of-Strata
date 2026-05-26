@@ -298,112 +298,167 @@ each fixture.
   bump per Conventional Commits scope. Goal: ship v0.11.0 by
   end of cycle.
 
-## §8 — Procedural building + unit meshes (M_V11.PROCMESH)
+## §8 — Procedural buildings via composed structural primitives (M_V11.PROCMESH)
 
-User direction 2026-05-26: "thoroughly review references/procedural_
-buildings.md. Take a look at the designs for the different buildings.
-Take a look at the designs for different units. We could refine that
-work even further and avoid a LOT of problems with things not
-displaying and so on. Obviously they are rough but even rough at a
-baseline they have adornements, details, etc..."
+User direction 2026-05-26 (refined): "no fallbacks, we're gonna
+make all buildings have a procedural buildout and then skins the
+coloring for the buildings. But we're gonna be smart by
+internalizing the building types and shapes from the reference
+doc as building blocks (e.g. logs, towers, buttresses, etc...) as
+the lowest level for Koota and then make each building from a
+composition of those lower order, versus bespoke for each
+building. That will be a significant improvement over the
+reference." Plus: "we're gonna entirely remove GLB buildings",
+"Props and units we'll keep GLBs for now as that seems to be
+working much better", "we'll also keep the graveyard pieces for
+horde camps", "for now just each human/AI player will be built
+from lower order structural components > buildings > skins."
 
-The reference doc bundles r3f primitives (Box/Cylinder/Cone) into
-React components that render WallSegment / Watchtower / Granary /
-Palace / Warehouse / Barracks / Library buildings and Peasant /
-Worker / Warrior / Defender units. Pure-procedural — zero GLB
-dependency. Each carries baseline adornments: faction-colored
-banners + gold trim + battlements + emissive windows + weapon
-racks + decorative doors + shields.
+### Scope
 
-### Why this matters
+| Asset class | Source post-§8 |
+|---|---|
+| Player/AI faction buildings (TownHall, Barracks, Wall, Watchtower, Farm, House, Granary, Library, Wonder) | **Procedural — composed from structural primitives** |
+| Player/AI units (Peon, Footman, Knight, Wizard, etc.) | **GLB (KayKit Adventurers)** — unchanged |
+| Nature props (trees, rocks, banners, fountains, gravestones) | **GLB** — unchanged |
+| Horde-camp / Graveyard pieces (crypt, gravestones, portal-crypt) | **GLB (KayKit Mystery / Graveyard Kit)** — unchanged |
 
-Three classes of problem the GLB-driven SKINS pipeline has
-historically hit:
+GLB building files (`public/assets/structures/rts/*`, `crypt.glb`
+when used as a TownHall, `town-center/*`, `barracks/*`, etc.) get
+removed from the PLAYER/AI PATH. The Graveyard Kit GLBs (`crypt`,
+`gravestone-*`, `portal-crypt`) STAY because horde camps continue
+to use them.
 
-1. **Missing-GLB → invisible building** failure mode (the
-   "Town Hall isn't visible" issue we chased via the GLB
-   measurement tool in M_GAME.SCALE.GLB-MEASURE.1).
-2. **Bake-time recolor cost** — per-faction tinting via Skin
-   tints multiplies into the GLB's diffuse, which can wash
-   out the silhouette. Procedural meshes recolor per-mesh by
-   prop change — instant + crisp.
-3. **Adornment dropout under low-LOD bakes** — KayKit / Quaternius
-   GLBs come with a fixed level of detail; primitive composition
-   adds a flagpole / banner / weapon rack at no asset cost.
+### Architecture — three-tier composition
 
-### Architectural fit
+```
+src/world/procedural/
+  primitives/        # Tier 1: structural primitives (the koota-low-level)
+    Log.tsx               # horizontal-stacked log row + end caps
+    StonePlinth.tsx       # cylindrical or boxed foundation
+    WoodPost.tsx          # vertical wood beam, configurable height
+    StoneBrick.tsx        # stone-textured brick segment
+    Banner.tsx            # rectangular banner mesh with optional emblem
+    GoldTrim.tsx          # gold band (cylinder or box, configurable)
+    Battlement.tsx        # crenellation block
+    ConeRoof.tsx          # tower-cap cone with optional finial
+    PitchedRoof.tsx       # gabled roof for buildings
+    Column.tsx            # column shaft + capital + fluting
+    Window.tsx            # frame + emissive glass + muntins
+    Door.tsx              # door + frame + panels + handle
+    WeaponRack.tsx        # rack + N weapons
+    Chimney.tsx
+    Spire.tsx             # cone + finial + base
+    Buttress.tsx          # angled support
+    Shield.tsx            # round or kite, faction-coloured
+  buildings/         # Tier 2: building compositions (each = a tree of primitives)
+    TownHall.tsx
+    Barracks.tsx
+    Wall.tsx
+    Watchtower.tsx
+    Farm.tsx
+    House.tsx
+    Granary.tsx
+    Library.tsx
+    Wonder.tsx
+  index.ts           # building<-->logical-id map for SKINS lookup
+```
 
-The reference implementation is a r3f component tree (`<group>` +
-`<mesh>` + `<boxGeometry>` etc.). The Aethelgard renderer is
-already r3f, so the components drop in directly. The choice for
-each building type:
+The composition discipline:
 
-- **Always-procedural**: WallSegment / Watchtower / Granary /
-  Barracks / Library / Warehouse — small footprint, high adornment
-  ROI, no GLB equivalent that matches the procedural's banner +
-  trim detail.
-- **GLB-with-procedural-overlay**: TownHall / Wonder — the big
-  hero meshes. The Quaternius / Castle Kit GLB carries the core
-  silhouette; a procedural overlay layers the faction banner +
-  gold trim + battlements on top. Best of both.
-- **Procedural-only**: every faction's *small* support buildings
-  (Farm, House — currently using Quaternius Fantasy Town props
-  that don't carry faction identity).
+1. **A primitive accepts MATERIAL props, not COLOR props**:
+   `<Log color={...}>` is wrong; `<Log material={woodMat}>` is
+   right. The material itself is a `MeshStandardMaterialProps`
+   object the building composer passes through. SKINS swaps
+   materials globally per faction; primitives don't know about
+   factions.
+2. **A building composes primitives**: `TownHall.tsx` mounts
+   `<StonePlinth>` + 4× `<Column>` + N× `<Wall>` segments +
+   `<PitchedRoof>` + `<Banner>` + `<Spire>` — that's the whole
+   file, no inline meshes. The reference doc's bespoke building
+   bodies become primitive composition trees.
+3. **SKINS provides the materials**: each Skin has a
+   `factionMaterials` slot returning a typed Record of
+   `MeshStandardMaterialProps` keyed by primitive family
+   (`stone`, `wood`, `banner`, `trim`, `accent`, `glass`).
+   Each faction overrides only the colors / metalness /
+   roughness it cares about; defaults supplied for the rest.
 
-For units: the GLB roster (KayKit Adventurers + Mystery) stays as
-the primary mesh because the animation rigs are the value-add a
-procedural unit can't easily replace. BUT a procedural-unit fallback
-ships so spawned units NEVER render as empty groups when a mesh
-fails to load — the player sees a Peasant / Worker / Warrior /
-Defender placeholder instead of a missing-mesh hole.
+### Why this is a step up from the reference
 
-### Deliverables
+- **N buildings × M primitives = O(N + M) code** instead of the
+  reference's O(N × inline meshes). Adding a third faction is a
+  new `factionMaterials` row, not a re-implementation of every
+  building.
+- **A new building type = a new composition file**, with all the
+  primitives ready. The reference re-implements adornments per
+  building; here a `<Banner>` mesh is one component shared by
+  every building that wants one.
+- **Visual harnesses pin every primitive** in isolation (a single
+  `<Log>` rendered against a hex baseplate, materials default),
+  so a renderer / material change can't silently rot a Granary's
+  silo band without also reddening the primitive baseline.
 
-- **§8.1 PROCMESH.SUBSTRATE** — `src/world/procedural/` directory
-  with one file per building (WallSegment, Watchtower, Granary,
-  Palace, Warehouse, Barracks, Library) and one per fallback
-  unit (Peasant, Worker, Warrior, Defender). Each exports a
-  React component matching the reference's props shape, BUT
-  accepting `factionColor: string` + `accentColor: string` props
-  so the blue + gold accents recolor per-faction.
-- **§8.2 PROCMESH.SKIN-INTEGRATION** — extend the SKINS registry
-  with an optional `proceduralMesh?: 'wall' | 'watchtower' | ...`
-  slot. When set, `FactionBase` + `StructureMesh` prefer the
-  procedural component over the GLB. Existing entries keep their
-  GLB path; new buildings can opt in. The `factionColor` for the
-  procedural component is `skin.zoneBorderColor`.
-- **§8.3 PROCMESH.FALLBACK-UNIT** — `<UnitMesh>` wraps the
-  existing `<AnimatedCharacter>` in a `<Suspense fallback=...>`
-  where the fallback is the procedural unit component matching
-  the unit's role (Peon → Peasant, Builder → Worker, Footman /
-  Knight → Warrior, Pikeman → Defender). Once the GLB finishes
-  loading the rigged mesh replaces the procedural placeholder.
-- **§8.4 PROCMESH.ADORNMENT-LAYER** — for the GLB-with-overlay
-  buildings (TownHall + Wonder), add `<ProceduralAdornments>`
-  that mounts a faction banner mesh + gold trim ring + flagpole
-  next to the GLB. Gated by `skin.proceduralAdornments?: true`
-  so existing TownHall/Wonder entries opt-in. This is the
-  cleanest way to add faction identity to the Quaternius RTS
-  meshes without re-baking them.
-- **§8.5 PROCMESH.HARNESS** — visual harness for each procedural
-  building + unit (Vitest browser test, screenshot baselines)
-  so future renderer / material changes don't silently regress
-  the adornments.
-- **§8.6 PROCMESH.SCALE** — pick scales that fit a hex tile by
-  default (the reference uses 1.3 wide for WallSegment — already
-  tile-sized). For buildings larger than a hex (Palace), the
-  `scale` prop is wired through SKINS as the per-faction
-  override. The measurement tool from M_GAME.SCALE.GLB-MEASURE.1
-  is bypassed for procedural meshes since the bbox is known at
-  source.
+### Deliverables (revised)
+
+- **§8.1 PROCMESH.PRIMITIVES** — `src/world/procedural/primitives/`
+  with the tier-1 component set (see tree above). Each accepts
+  `material?: MeshStandardMaterialProps`, `position`, dimensional
+  args, and renders pure r3f primitives. ZERO faction knowledge
+  at this layer.
+- **§8.2 PROCMESH.MATERIALS** — Skin gains a `factionMaterials:
+  Record<PrimitiveFamily, MeshStandardMaterialProps>` slot
+  (defaults provided). Per faction the player/AI banner +
+  stone tone + trim shifts; KayKit-tinted-unit pattern from
+  v0.10 stays for units.
+- **§8.3 PROCMESH.BUILDINGS** — `src/world/procedural/buildings/`
+  with TownHall + Barracks + Wall + Watchtower + Farm + House +
+  Granary + Library + Wonder. Each composes primitives + reads
+  `factionMaterials` via a context or prop. NO inline meshes —
+  if a building needs a shape no primitive covers, ADD A
+  PRIMITIVE first.
+- **§8.4 PROCMESH.SKINS-PIVOT** — SKINS.structure[type] no longer
+  carries `logicalId` for the building set; it carries a
+  `proceduralComponent` reference (the buildings/<Type>.tsx
+  export). `FactionBase` + `StructureMesh` switch on that.
+  Existing GLB-path callers for Graveyard horde camps (crypt,
+  gravestone, portal-crypt) keep the `logicalId` slot — that
+  pool is unchanged.
+- **§8.5 PROCMESH.HARNESS** — Vitest browser test per primitive
+  (~16 baselines) + per building composition (~9 baselines) +
+  per faction-skin × representative building (e.g. 2 factions ×
+  TownHall = 2 baselines). Lock the adornments + material
+  overrides so future drift is caught at PR time.
+- **§8.6 PROCMESH.GLB-CLEANUP** — delete the player/AI building
+  GLBs from `public/assets/structures/rts/` (town-center,
+  barracks, tower-house, wall — both first-age + second-age
+  variants). Update src/rules/glb-metadata.json + the
+  measure-glbs.mjs categorization to skip the deleted paths.
+  Graveyard Kit + non-building props stay.
+- **§8.7 PROCMESH.PLAYER-SECONDARY-BUILDINGS** — the Farm /
+  House / Granary / Library entries currently using Fantasy
+  Town Kit GLBs (windmill, watermill, house, etc.) flip to
+  procedural so faction identity carries through the whole
+  player base.
 
 ### What this does NOT do
 
-- Does NOT replace the GLB pipeline. The two coexist; SKINS
-  chooses per building type.
-- Does NOT change game balance. Visual-only.
-- Does NOT add per-LOD billboards. The procedural meshes are
-  already lower poly than the GLBs they fall back from.
+- Does NOT touch player/AI UNIT GLBs (KayKit Adventurers stay).
+- Does NOT touch nature-prop GLBs (trees, rocks, banners,
+  fountains stay).
+- Does NOT touch the GRAVEYARD KIT GLBs (crypt, gravestone
+  variants, portal-crypt) — these continue to drive horde camps.
+- Does NOT change game balance. Visual + asset-pipeline only.
+
+### Open question — building footprints
+
+The reference's procedural buildings ship at a known scale
+(WallSegment ~1.3 wide for hex tile fit). Each `buildings/<Type>.tsx`
+documents its source-unit bbox and the hex-fit scale at the top
+of the file. The `pnpm assets:measure` tool (M_GAME.SCALE.GLB-
+MEASURE.1) doesn't apply to procedural — bbox is known at compile
+time. SKINS optionally carries a per-faction scale multiplier for
+buildings (Wonder might be 1.6× normal, etc.).
 
 ## Scope NOT in v0.11
 
