@@ -10,8 +10,8 @@
  */
 import {
   Banner,
-  Battlement,
   Door,
+  Flag,
   PitchedRoof,
   StonePlinth,
   WeaponRack,
@@ -130,17 +130,40 @@ export function Barracks({
         weaponMaterial={mats.metal}
         shaftMaterial={mats.wood}
       />
-      {/* row of battlement teeth above the roof ridge — military read */}
-      {[-0.3, -0.1, 0.1, 0.3].map((x) => (
-        <Battlement
-          key={x}
-          width={0.1}
-          height={0.12}
-          depth={0.1}
-          position={[x, 0.08 + bodyHeight + 0.4, 0]}
-          material={mats.stone}
-        />
-      ))}
+      {/* Training dummy outside — quintessential barracks identifier.
+          Wooden post + cross beam + small head sphere; sits beside
+          the weapon rack so the +X side reads as a training yard. */}
+      <group position={[width / 2 + 0.36, 0, -depth / 3.2]}>
+        {/* post */}
+        <mesh position={[0, 0.18, 0]} castShadow receiveShadow>
+          <cylinderGeometry args={[0.025, 0.03, 0.36, 8]} />
+          <meshStandardMaterial {...mats.wood} />
+        </mesh>
+        {/* cross beam (arms) */}
+        <mesh position={[0, 0.3, 0]} castShadow>
+          <boxGeometry args={[0.22, 0.025, 0.04]} />
+          <meshStandardMaterial {...mats.wood} />
+        </mesh>
+        {/* sack head */}
+        <mesh position={[0, 0.38, 0]} castShadow>
+          <sphereGeometry args={[0.055, 10, 8]} />
+          <meshStandardMaterial color="#9c7b48" roughness={0.95} />
+        </mesh>
+        {/* strap stripe on head */}
+        <mesh position={[0, 0.38, 0.04]} castShadow>
+          <boxGeometry args={[0.08, 0.012, 0.012]} />
+          <meshStandardMaterial {...mats.dark} />
+        </mesh>
+      </group>
+      {/* Flag pole jutting from the roof peak — military identifier. */}
+      <Flag
+        poleHeight={0.34}
+        pennantLength={0.16}
+        pennantHeight={0.1}
+        position={[0, 0.08 + bodyHeight + 0.4, 0]}
+        poleMaterial={mats.dark}
+        pennantMaterial={mats.banner}
+      />
     </group>
   );
 }

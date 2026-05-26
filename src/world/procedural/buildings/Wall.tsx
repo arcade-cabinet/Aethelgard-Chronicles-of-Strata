@@ -12,7 +12,15 @@
  * primitive) + (optional corner: a second perpendicular wall body)
  * + (optional banner) + battlement row cap.
  */
-import { Banner, BattlementRow, Door, StoneBrick, StonePlinth } from '../primitives';
+import {
+  ArrowSlit,
+  Banner,
+  BattlementRow,
+  Door,
+  Ivy,
+  StoneBrick,
+  StonePlinth,
+} from '../primitives';
 import { useFactionMaterials } from '../faction-materials';
 
 const GATE_HALF_WIDTH = 0.18;
@@ -97,6 +105,41 @@ export function Wall({
         position={[0, 0.08 + courses * brickHeight + 0.09, 0]}
         material={mats.stone}
       />
+      {/* Arrow slits in the upper third of the wall body (skip when
+          there's a gate — the gate gap already breaks up the face). */}
+      {!hasGate &&
+        Array.from(
+          {
+            length: Math.max(2, Math.floor(length / 0.32)),
+          },
+          (_, i) => {
+            const slotCount = Math.max(2, Math.floor(length / 0.32));
+            const xSpacing = length / (slotCount + 1);
+            const x = -length / 2 + xSpacing * (i + 1);
+            return (
+              <ArrowSlit
+                key={`slit-${x.toFixed(3)}`}
+                height={0.18}
+                width={0.035}
+                position={[x, 0.08 + courses * brickHeight * 0.7, depth / 2 + 0.008]}
+                material={mats.dark}
+              />
+            );
+          },
+        )}
+      {/* Two vertical ivy strips on the +Z face — softens the stone. */}
+      {!hasGate && (
+        <>
+          <Ivy
+            height={courses * brickHeight * 0.72}
+            position={[-length / 4, 0.08, depth / 2 + 0.012]}
+          />
+          <Ivy
+            height={courses * brickHeight * 0.85}
+            position={[length / 4, 0.08, depth / 2 + 0.012]}
+          />
+        </>
+      )}
       {/* Corner: drop a perpendicular Wall body at the +Z end so
           this segment reads as an L-bend. The perpendicular section
           is a thin brick stack (no plinth / battlements — those are

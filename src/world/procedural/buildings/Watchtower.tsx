@@ -1,57 +1,77 @@
 /**
- * M_V11.PROCMESH.BUILDINGS — Watchtower.
+ * M_V11.PROCMESH.BUILDINGS + M_V11.POLISH.PROCMESH.WATCHTOWER-IDENTITY —
+ * Watchtower (defensive military lookout).
  *
- * Source-unit bbox (default args): radius 0.32, height ~1.4 (incl roof).
- * Hex-fit scale: 1.0 (cylinder fits within a hex footprint).
+ * Source-unit bbox (default args): radius 0.32, height ~1.6 (incl roof+flag).
+ * Hex-fit scale: 1.0.
  *
- * Composition: round stone plinth + cylindrical tower body + gold trim
- * ring + crenellated cap + conical roof with finial + corner windows.
+ * Identity props: TAPERED body (Kenney-style — top is narrower than
+ * base), ring of arrow slits at mid-level, crenellated walkway cap,
+ * conical roof, finial, and a Flag on top.
+ *
+ * Composition: round stone plinth + tapered cylindrical body +
+ * arrow-slit ring + corner windows + gold band + crenellated cap +
+ * conical roof + flag on top.
  */
-import { ConeRoof, GoldTrim, StonePlinth, Window } from '../primitives';
+import { ArrowSlit, ConeRoof, Flag, GoldTrim, StonePlinth, Window } from '../primitives';
 import { useFactionMaterials } from '../faction-materials';
 
 export function Watchtower({
-  radius = 0.32,
-  bodyHeight = 0.9,
+  baseRadius = 0.34,
+  topRadius = 0.26,
+  bodyHeight = 0.95,
   position = [0, 0, 0],
 }: {
-  radius?: number;
+  baseRadius?: number;
+  topRadius?: number;
   bodyHeight?: number;
   position?: [number, number, number];
 }) {
   const mats = useFactionMaterials();
+  // Mid-radius for the arrow-slit ring.
+  const midRadius = baseRadius - (baseRadius - topRadius) * 0.4;
   return (
     <group position={position}>
       <StonePlinth
         shape="round"
-        radius={radius + 0.05}
+        radius={baseRadius + 0.06}
         height={0.08}
         position={[0, 0.04, 0]}
         material={mats.stone}
       />
-      {/* tower body */}
+      {/* Tapered tower body — bottom wider than top. */}
       <mesh position={[0, 0.08 + bodyHeight / 2, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[radius, radius * 1.02, bodyHeight, 16]} />
+        <cylinderGeometry args={[topRadius, baseRadius, bodyHeight, 18]} />
         <meshStandardMaterial {...mats.stone} />
       </mesh>
-      <GoldTrim
-        shape="ring"
-        radius={radius * 1.04}
-        thickness={0.05}
-        position={[0, 0.08 + bodyHeight * 0.7, 0]}
-        material={mats.trim}
-      />
-      {/* windows around the upper body — N=4 cardinal */}
+      {/* Low ring of arrow slits (defensive). */}
+      {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => {
+        const angle = (i / 8) * Math.PI * 2;
+        return (
+          <ArrowSlit
+            key={`slit-${i}`}
+            height={0.18}
+            width={0.035}
+            position={[
+              Math.sin(angle) * (midRadius + 0.01),
+              0.08 + bodyHeight * 0.34,
+              Math.cos(angle) * (midRadius + 0.01),
+            ]}
+            material={mats.dark}
+          />
+        );
+      })}
+      {/* Upper-level windows — N=4 cardinal. */}
       {[0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2].map((angle) => (
         <Window
           key={angle}
-          width={0.12}
-          height={0.18}
+          width={0.1}
+          height={0.16}
           depth={0.05}
           position={[
-            Math.sin(angle) * (radius + 0.02),
-            0.08 + bodyHeight * 0.55,
-            Math.cos(angle) * (radius + 0.02),
+            Math.sin(angle) * (topRadius + 0.015),
+            0.08 + bodyHeight * 0.72,
+            Math.cos(angle) * (topRadius + 0.015),
           ]}
           rotationY={angle}
           muntins={false}
@@ -59,33 +79,48 @@ export function Watchtower({
           glassMaterial={mats.glass}
         />
       ))}
-      {/* crenellated cap ring (square blocks around perimeter) */}
+      <GoldTrim
+        shape="ring"
+        radius={topRadius * 1.04}
+        thickness={0.04}
+        position={[0, 0.08 + bodyHeight - 0.05, 0]}
+        material={mats.trim}
+      />
+      {/* Crenellated walkway cap. */}
       {Array.from({ length: 10 }, (_, i) => {
         const angle = (i / 10) * Math.PI * 2;
         return (
           <mesh
             key={`crenel-${angle.toFixed(3)}`}
             position={[
-              Math.sin(angle) * (radius + 0.01),
-              0.08 + bodyHeight + 0.08,
-              Math.cos(angle) * (radius + 0.01),
+              Math.sin(angle) * (topRadius + 0.02),
+              0.08 + bodyHeight + 0.06,
+              Math.cos(angle) * (topRadius + 0.02),
             ]}
             rotation={[0, -angle, 0]}
             castShadow
           >
-            <boxGeometry args={[0.1, 0.16, 0.1]} />
+            <boxGeometry args={[0.08, 0.12, 0.08]} />
             <meshStandardMaterial {...mats.stone} />
           </mesh>
         );
       })}
-      {/* conical roof + finial */}
       <ConeRoof
-        radius={radius + 0.05}
+        radius={topRadius + 0.05}
         height={0.4}
-        position={[0, 0.08 + bodyHeight + 0.36, 0]}
+        position={[0, 0.08 + bodyHeight + 0.34, 0]}
         finial
         material={mats.roof}
         finialMaterial={mats.trim}
+      />
+      {/* Flag flying from the roof peak. */}
+      <Flag
+        poleHeight={0.28}
+        pennantLength={0.14}
+        pennantHeight={0.09}
+        position={[0, 0.08 + bodyHeight + 0.78, 0]}
+        poleMaterial={mats.dark}
+        pennantMaterial={mats.banner}
       />
     </group>
   );

@@ -1,24 +1,22 @@
 /**
- * M_V11.PROCMESH.BUILDINGS — Wonder (final game-changer building).
+ * M_V11.PROCMESH.BUILDINGS + M_V11.POLISH.PROCMESH.WONDER-IDENTITY —
+ * Wonder (the keep / capital monument).
  *
- * Source-unit bbox: width 1.6, depth 1.6, height ~2.2 (incl spire).
- * Hex-fit scale: 1.0 (intentionally oversized — Wonder uses
- *   factionMaterials + a per-faction buildingScale override of ~1.6×
- *   on top of the tile bbox; the composition is already scaled here).
+ * Source-unit bbox: width 1.6, depth 1.6, height ~2.6 (incl spire+flags).
+ * Hex-fit scale: 1.0 (Wonder is intentionally oversized vs other tiles).
  *
- * Composition: multi-tier stone plinth + 8 facade columns + stone body
- * with arched window inset + tall spire with finial + 4 corner battlement
- * towers + grand banner ramp + flanking shields + gold trim every tier.
- *
- * The 'imposing keep' silhouette. Carries the most banner+trim+spire of
- * any building so faction identity is unmistakable at zoom-out.
+ * Identity: a 3-tier stepped plinth (ziggurat base), tall central keep
+ * with arched windows + columns + banners, four tall corner spire-towers
+ * each capped with a conical roof + flying flag, central monumental
+ * spire with finial. Reads as 'the imposing capital monument' at any
+ * zoom level.
  */
 import {
   Banner,
-  BattlementRow,
   Column,
+  ConeRoof,
+  Flag,
   GoldTrim,
-  PitchedRoof,
   Shield,
   Spire,
   StonePlinth,
@@ -40,7 +38,7 @@ export function Wonder({
   const mats = useFactionMaterials();
   return (
     <group position={position}>
-      {/* 3-tier plinth */}
+      {/* 3-tier stepped plinth — ziggurat base reads as monument. */}
       <StonePlinth
         width={width + 0.3}
         depth={depth + 0.3}
@@ -62,12 +60,12 @@ export function Wonder({
         position={[0, 0.25, 0]}
         material={mats.stone}
       />
-      {/* main body */}
+      {/* Main keep body. */}
       <mesh position={[0, 0.28 + bodyHeight / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[width, bodyHeight, depth]} />
         <meshStandardMaterial {...mats.stone} />
       </mesh>
-      {/* gold trim — bottom + middle + top of body */}
+      {/* Gold trim — three horizontal bands. */}
       {[0.05, 0.45, 0.88].map((tFrac) => (
         <GoldTrim
           key={tFrac}
@@ -79,13 +77,13 @@ export function Wonder({
           material={mats.trim}
         />
       ))}
-      {/* 8 facade columns (4 on each long side) */}
+      {/* Engaged facade columns on front + back. */}
       {[-0.42, -0.18, 0.18, 0.42].map((xFrac) => (
         <Column
           key={`front-${xFrac}`}
           height={bodyHeight * 0.9}
           radius={0.08}
-          position={[width * xFrac, 0.28, depth / 2 - 0.04]}
+          position={[width * xFrac, 0.28, depth / 2 - 0.06]}
           fluted
           fluteCount={8}
           capital
@@ -98,7 +96,7 @@ export function Wonder({
           key={`back-${xFrac}`}
           height={bodyHeight * 0.9}
           radius={0.08}
-          position={[width * xFrac, 0.28, -depth / 2 + 0.04]}
+          position={[width * xFrac, 0.28, -depth / 2 + 0.06]}
           fluted
           fluteCount={8}
           capital
@@ -106,7 +104,7 @@ export function Wonder({
           material={mats.accent}
         />
       ))}
-      {/* arched windows row */}
+      {/* Arched windows row across the front facade. */}
       {[-0.32, 0, 0.32].map((xFrac) => (
         <Window
           key={xFrac}
@@ -118,59 +116,79 @@ export function Wonder({
           glassMaterial={mats.glass}
         />
       ))}
-      {/* pitched roof */}
-      <PitchedRoof
-        width={width + 0.2}
-        length={depth + 0.2}
-        ridgeHeight={0.5}
-        position={[0, 0.28 + bodyHeight + 0.04, 0]}
-        material={mats.roof}
-      />
-      {/* central spire */}
+      {/* Low pyramidal roof slab + recessed cap so the central spire
+          rises above a clear base. No tall PitchedRoof here — it would
+          hide the corner towers. */}
+      <mesh position={[0, 0.28 + bodyHeight + 0.04, 0]} castShadow receiveShadow>
+        <boxGeometry args={[width + 0.1, 0.08, depth + 0.1]} />
+        <meshStandardMaterial {...mats.stone} />
+      </mesh>
+      <mesh position={[0, 0.28 + bodyHeight + 0.14, 0]} castShadow receiveShadow>
+        <boxGeometry args={[width * 0.7, 0.1, depth * 0.7]} />
+        <meshStandardMaterial {...mats.stone} />
+      </mesh>
+      {/* Central monumental spire with finial. */}
       <Spire
-        height={0.75}
-        radius={0.09}
-        position={[0, 0.28 + bodyHeight + 0.62, 0]}
+        height={0.95}
+        radius={0.11}
+        position={[0, 0.28 + bodyHeight + 0.2, 0]}
         finialBall
         material={mats.roof}
         trimMaterial={mats.trim}
       />
-      {/* 4 corner battlement towers — short cylinders capped with
-          battlement teeth */}
-      {[
-        [-width / 2 + 0.08, -depth / 2 + 0.08],
-        [width / 2 - 0.08, -depth / 2 + 0.08],
-        [-width / 2 + 0.08, depth / 2 - 0.08],
-        [width / 2 - 0.08, depth / 2 - 0.08],
-      ].map(([x, z]) => (
-        <group key={`corner-${x},${z}`}>
-          <mesh
-            position={[x as number, 0.28 + bodyHeight / 2, z as number]}
-            castShadow
-            receiveShadow
-          >
-            <cylinderGeometry args={[0.12, 0.13, bodyHeight + 0.15, 10]} />
-            <meshStandardMaterial {...mats.stone} />
-          </mesh>
-          <BattlementRow
-            count={6}
-            length={0.22}
-            blockWidth={0.06}
-            blockHeight={0.08}
-            blockDepth={0.06}
-            position={[x as number, 0.28 + bodyHeight + 0.16, z as number]}
-            material={mats.stone}
-          />
-        </group>
-      ))}
-      {/* huge faction banner cascading from the eave */}
+      {/* 4 corner spire-towers. Each is a taller-than-body tapered
+          cylinder + cone roof + flag — reads as castle-keep corner
+          towers above the main roof. */}
+      {(
+        [
+          [-width / 2 + 0.1, -depth / 2 + 0.1],
+          [width / 2 - 0.1, -depth / 2 + 0.1],
+          [-width / 2 + 0.1, depth / 2 - 0.1],
+          [width / 2 - 0.1, depth / 2 - 0.1],
+        ] as Array<[number, number]>
+      ).map(([x, z]) => {
+        const towerH = bodyHeight + 0.4;
+        return (
+          <group key={`tower-${x},${z}`} position={[x, 0, z]}>
+            <mesh position={[0, 0.28 + towerH / 2, 0]} castShadow receiveShadow>
+              <cylinderGeometry args={[0.12, 0.15, towerH, 12]} />
+              <meshStandardMaterial {...mats.stone} />
+            </mesh>
+            {/* Gold band around top of each tower. */}
+            <GoldTrim
+              shape="ring"
+              radius={0.125}
+              thickness={0.02}
+              position={[0, 0.28 + towerH - 0.04, 0]}
+              material={mats.trim}
+            />
+            <ConeRoof
+              radius={0.16}
+              height={0.28}
+              position={[0, 0.28 + towerH + 0.14, 0]}
+              finial
+              material={mats.roof}
+              finialMaterial={mats.trim}
+            />
+            <Flag
+              poleHeight={0.22}
+              pennantLength={0.12}
+              pennantHeight={0.08}
+              position={[0, 0.28 + towerH + 0.34, 0]}
+              poleMaterial={mats.dark}
+              pennantMaterial={mats.banner}
+            />
+          </group>
+        );
+      })}
+      {/* Huge faction banner cascading from the front eave. */}
       <Banner
         width={0.42}
         height={0.85}
         position={[0, 0.28 + bodyHeight - 0.04, depth / 2 + 0.05]}
         material={mats.banner}
       />
-      {/* flanking shields on side faces */}
+      {/* Flanking shields on side faces. */}
       <Shield
         shape="round"
         size={0.32}

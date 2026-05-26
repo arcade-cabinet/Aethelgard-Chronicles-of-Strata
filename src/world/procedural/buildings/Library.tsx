@@ -8,7 +8,7 @@
  * stone cap + central cupola (small spire) + tall arched windows on
  * sides + ornate door + gold trim band. Reads as 'classical learning'.
  */
-import { Column, Door, GoldTrim, Spire, StonePlinth, Window } from '../primitives';
+import { Column, Door, Flag, GoldTrim, Lantern, Spire, StonePlinth, Window } from '../primitives';
 import { useFactionMaterials } from '../faction-materials';
 
 export function Library({
@@ -59,20 +59,56 @@ export function Library({
         position={[0, 0.1 + bodyHeight * 0.82, 0]}
         material={mats.trim}
       />
-      {/* facade columns — 6 across +Z face */}
-      {[-0.42, -0.25, -0.08, 0.08, 0.25, 0.42].map((x) => (
-        <Column
-          key={x}
-          height={bodyHeight}
-          radius={0.06}
-          position={[x * (width / 0.5), 0.1, depth / 2 - 0.02]}
-          fluted
-          fluteCount={6}
-          capital
-          base
-          material={mats.accent}
-        />
-      ))}
+      {/* Engaged facade columns — half-columns embedded into the +Z
+          face. 6 columns spaced evenly across the width minus margins.
+          Position: at depth/2 - columnRadius so half the column reads
+          as architectural and the rest is buried in the wall. */}
+      {(() => {
+        const margin = 0.08;
+        const usableWidth = width - margin * 2;
+        const columnCount = 6;
+        const columnRadius = 0.055;
+        const step = usableWidth / (columnCount - 1);
+        return Array.from({ length: columnCount }, (_, i) => {
+          const x = -usableWidth / 2 + step * i;
+          return (
+            <Column
+              key={`col-${x.toFixed(3)}`}
+              height={bodyHeight}
+              radius={columnRadius}
+              position={[x, 0.1, depth / 2 - columnRadius * 0.4]}
+              fluted
+              fluteCount={6}
+              capital
+              base
+              material={mats.accent}
+            />
+          );
+        });
+      })()}
+      {/* Two lanterns flanking the door — emissive glow reads at
+          game-camera distance even in shadow. */}
+      <Lantern
+        size={0.05}
+        bracketLength={0.07}
+        position={[-0.22, 0.1 + 0.32, depth / 2 + 0.03]}
+        bracketMaterial={mats.dark}
+      />
+      <Lantern
+        size={0.05}
+        bracketLength={0.07}
+        position={[0.22, 0.1 + 0.32, depth / 2 + 0.03]}
+        bracketMaterial={mats.dark}
+      />
+      {/* Flag from the cupola apex. */}
+      <Flag
+        poleHeight={0.22}
+        pennantLength={0.12}
+        pennantHeight={0.08}
+        position={[0, 0.1 + bodyHeight + 0.4, 0]}
+        poleMaterial={mats.dark}
+        pennantMaterial={mats.banner}
+      />
       {/* tall arched windows on side walls — represented as tall thin Windows */}
       {[-1, 1].map((sign) => (
         <Window

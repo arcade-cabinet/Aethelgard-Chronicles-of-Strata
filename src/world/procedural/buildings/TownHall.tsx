@@ -13,6 +13,7 @@ import {
   BattlementRow,
   Column,
   Door,
+  Flag,
   GoldTrim,
   PitchedRoof,
   Shield,
@@ -65,15 +66,19 @@ export function TownHall({
         position={[0, 0.18 + bodyHeight * 0.78, 0]}
         material={mats.trim}
       />
-      {/* facade columns — 4 across the front (depth/2 face) */}
+      {/* Engaged facade columns — half-embedded in the +Z wall so they
+          read as architectural, not decorative pillars floating in
+          front of the building. */}
       {[-width * 0.36, -width * 0.12, width * 0.12, width * 0.36].map((x) => (
         <Column
           key={x}
           height={bodyHeight}
           radius={0.08}
-          position={[x, 0.18, depth / 2 - 0.02]}
+          position={[x, 0.18, depth / 2 - 0.04]}
           fluted
           fluteCount={6}
+          capital
+          base
           material={mats.accent}
         />
       ))}
@@ -85,6 +90,44 @@ export function TownHall({
         position={[0, 0.18 + bodyHeight + 0.04, 0]}
         material={mats.roof}
       />
+      {/* Small clocktower turret on the -X end of the roof — TownHall's
+          unique silhouette marker. A short stone cylinder cap'd with a
+          conical roof and a Flag, set offset from the central spire. */}
+      <group position={[-width * 0.34, 0.18 + bodyHeight + 0.04, 0]}>
+        <mesh position={[0, 0.18, 0]} castShadow receiveShadow>
+          <cylinderGeometry args={[0.1, 0.11, 0.36, 12]} />
+          <meshStandardMaterial {...mats.stone} />
+        </mesh>
+        {/* gold ring around the clocktower */}
+        <GoldTrim
+          shape="ring"
+          radius={0.115}
+          thickness={0.025}
+          position={[0, 0.32, 0]}
+          material={mats.trim}
+        />
+        {/* dark clock face */}
+        <mesh position={[0, 0.28, 0.111]} castShadow>
+          <cylinderGeometry args={[0.05, 0.05, 0.012, 16]} />
+          <meshStandardMaterial
+            color="#1a1410"
+            emissive={mats.trim.color ?? '#e4b54b'}
+            emissiveIntensity={0.6}
+          />
+        </mesh>
+        <mesh position={[0, 0.42, 0]} castShadow>
+          <coneGeometry args={[0.13, 0.22, 12]} />
+          <meshStandardMaterial {...mats.roof} />
+        </mesh>
+        <Flag
+          poleHeight={0.16}
+          pennantLength={0.08}
+          pennantHeight={0.06}
+          position={[0, 0.54, 0]}
+          poleMaterial={mats.dark}
+          pennantMaterial={mats.banner}
+        />
+      </group>
       {/* central spire on roof ridge */}
       <Spire
         height={0.45}

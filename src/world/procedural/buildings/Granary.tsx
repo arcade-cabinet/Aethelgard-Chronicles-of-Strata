@@ -9,7 +9,7 @@
  * Distinctive cylindrical silhouette so the player tells food
  * production from other small buildings at a glance.
  */
-import { ConeRoof, Door, GoldTrim, StonePlinth, WoodPost } from '../primitives';
+import { ConeRoof, Door, GoldTrim, HayStack, StonePlinth, WoodPost } from '../primitives';
 import { useFactionMaterials } from '../faction-materials';
 
 export function Granary({
@@ -85,6 +85,18 @@ export function Granary({
         position={[radius + 0.03, 0.07 + bodyHeight / 2, -0.08]}
         material={mats.dark}
       />
+      {/* Ladder rungs joining the two posts. */}
+      {Array.from({ length: 5 }, (_, i) => {
+        const y = 0.07 + (bodyHeight * (i + 0.5)) / 5;
+        return (
+          <mesh key={`rung-y${y.toFixed(3)}`} position={[radius + 0.03, y, 0]} castShadow>
+            <boxGeometry args={[0.025, 0.018, 0.16]} />
+            <meshStandardMaterial {...mats.dark} />
+          </mesh>
+        );
+      })}
+      {/* Haystack at the base — granary identifier. */}
+      <HayStack height={0.22} radius={0.14} position={[-radius - 0.18, 0, radius * 0.4]} />
     </group>
   );
 }

@@ -4,8 +4,10 @@
  * One screenshot per building composition + a faction-cross sample
  * so palette drift is caught.
  */
-import { Canvas } from '@react-three/fiber';
+import { Canvas, useThree } from '@react-three/fiber';
 import { page } from '@vitest/browser/context';
+import { useEffect, useRef } from 'react';
+import { Box3, type Group, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import {
@@ -21,23 +23,55 @@ import {
 } from '@/world/procedural/buildings';
 import { FactionMaterialsProvider } from '@/world/procedural/FactionMaterialsContext';
 
+/** Auto-fit camera onto the rendered group bbox so tall buildings aren't
+ *  cropped. Frames the bbox with padding and points the camera at the
+ *  bbox centre, viewed from a fixed 3/4 angle. */
+function AutoFit({ children }: { children: React.ReactNode }) {
+  const ref = useRef<Group>(null);
+  const { camera } = useThree();
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return;
+    const box = new Box3().setFromObject(node);
+    const center = new Vector3();
+    const sz = new Vector3();
+    box.getCenter(center);
+    box.getSize(sz);
+    const maxExtent = Math.max(sz.x, sz.y, sz.z);
+    // FOV-driven distance with 1.05× padding so the whole silhouette
+    // including roof spires sits inside the frame but fills it tightly
+    // so detail is visible at the screenshot scale.
+    const fov = 'fov' in camera ? (camera as { fov: number }).fov : 38;
+    const fovRad = (fov * Math.PI) / 180;
+    const dist = (maxExtent * 1.05) / Math.tan(fovRad / 2);
+    const dir = new Vector3(1, 0.85, 1).normalize();
+    camera.position.copy(center).addScaledVector(dir, dist);
+    camera.lookAt(center);
+    // Push near/far so the building can't be clipped.
+    if ('near' in camera) (camera as { near: number }).near = Math.max(0.01, dist * 0.05);
+    if ('far' in camera) (camera as { far: number }).far = dist * 6;
+    if ('updateProjectionMatrix' in camera) camera.updateProjectionMatrix();
+  }, [camera]);
+  return <group ref={ref}>{children}</group>;
+}
+
 function Stage({
   children,
-  cameraPos = [2.2, 2.0, 2.2] as [number, number, number],
 }: {
   children: React.ReactNode;
+  /** Legacy prop — kept so call sites compile while we transition; ignored. */
   cameraPos?: [number, number, number];
 }) {
   return (
     <div style={{ width: 320, height: 320 }}>
-      <Canvas camera={{ position: cameraPos, fov: 38 }} style={{ background: '#0f172a' }}>
+      <Canvas camera={{ position: [2.2, 2, 2.2], fov: 38 }} style={{ background: '#0f172a' }}>
         <ambientLight intensity={0.75} />
         <directionalLight position={[4, 6, 3]} intensity={1.45} castShadow />
         <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
           <circleGeometry args={[1, 6]} />
           <meshStandardMaterial color="#1e293b" />
         </mesh>
-        {children}
+        <AutoFit>{children}</AutoFit>
       </Canvas>
     </div>
   );
@@ -46,7 +80,8 @@ function Stage({
 const baselineDir = '__screenshots__';
 
 async function settle() {
-  await new Promise((r) => setTimeout(r, 300));
+  // Give AutoFit's useEffect a frame to run before the screenshot.
+  await new Promise((r) => setTimeout(r, 600));
 }
 
 describe('procmesh buildings — tier-2 visual baselines (player palette)', () => {
@@ -167,6 +202,31 @@ describe('procmesh buildings — tier-2 visual baselines (player palette)', () =
       page.screenshot({ path: `${baselineDir}/procmesh-building-player-wonder.png` }),
     ).resolves.toBeTruthy();
   });
+});
+
+describe('procmesh buildings — Wall variants (M_V11.POLISH.PROCMESH.WALL-VARIANTS)', () => {
+  for (const [name, props] of [
+    ['plain', {}],
+    ['gate', { hasGate: true }],
+    ['banner', { withBanner: true }],
+    ['corner', { isCorner: true }],
+    ['gate-banner', { hasGate: true, withBanner: true }],
+    ['gate-banner-corner', { hasGate: true, withBanner: true, isCorner: true }],
+  ] as const) {
+    it(`Wall ${name}`, async () => {
+      render(
+        <Stage>
+          <FactionMaterialsProvider faction="player">
+            <Wall {...(props as Record<string, boolean>)} />
+          </FactionMaterialsProvider>
+        </Stage>,
+      );
+      await settle();
+      await expect(
+        page.screenshot({ path: `${baselineDir}/procmesh-building-wall-variant-${name}.png` }),
+      ).resolves.toBeTruthy();
+    });
+  }
 });
 
 describe('procmesh buildings — faction-cross palette shift', () => {

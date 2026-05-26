@@ -12,6 +12,7 @@ import { page } from '@vitest/browser/context';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import {
+  ArrowSlit,
   Banner,
   Battlement,
   Buttress,
@@ -20,13 +21,21 @@ import {
   ConeRoof,
   DEFAULT_MATERIALS,
   Door,
+  Finial,
+  Flag,
+  Furrow,
   GoldTrim,
+  HayStack,
+  Ivy,
+  Lantern,
   Log,
   PitchedRoof,
   Shield,
+  Silo,
   Spire,
   StoneBrick,
   StonePlinth,
+  Tree,
   WeaponRack,
   Window,
   WoodPost,
@@ -273,6 +282,107 @@ describe('procmesh primitives — tier-1 visual baselines', () => {
     await settle();
     await expect(
       page.screenshot({ path: `${baselineDir}/procmesh-primitive-shield-round.png` }),
+    ).resolves.toBeTruthy();
+  });
+  // M_V11.POLISH.PROCMESH.ORNAMENTS — new primitives for unique
+  // building silhouettes. Each gets a baseline locked.
+  it('Silo', async () => {
+    render(
+      <Stage>
+        <Silo height={0.55} radius={0.16} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/procmesh-primitive-silo.png` }),
+    ).resolves.toBeTruthy();
+  });
+  it('HayStack', async () => {
+    render(
+      <Stage>
+        <HayStack height={0.32} radius={0.2} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/procmesh-primitive-haystack.png` }),
+    ).resolves.toBeTruthy();
+  });
+  it('Furrow', async () => {
+    render(
+      <Stage>
+        <Furrow width={0.6} depth={0.4} rows={5} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/procmesh-primitive-furrow.png` }),
+    ).resolves.toBeTruthy();
+  });
+  it('Finial', async () => {
+    render(
+      <Stage>
+        <Finial height={0.3} position={[0, 0.3, 0]} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/procmesh-primitive-finial.png` }),
+    ).resolves.toBeTruthy();
+  });
+  it('Flag', async () => {
+    render(
+      <Stage>
+        <Flag poleHeight={0.4} pennantLength={0.2} pennantHeight={0.12} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/procmesh-primitive-flag.png` }),
+    ).resolves.toBeTruthy();
+  });
+  it('Lantern', async () => {
+    render(
+      <Stage>
+        <Lantern size={0.08} bracketLength={0.12} position={[0.1, 0.5, 0]} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/procmesh-primitive-lantern.png` }),
+    ).resolves.toBeTruthy();
+  });
+  it('ArrowSlit', async () => {
+    render(
+      <Stage>
+        <ArrowSlit height={0.3} width={0.06} position={[0, 0.5, 0]} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/procmesh-primitive-arrowslit.png` }),
+    ).resolves.toBeTruthy();
+  });
+  it('Ivy', async () => {
+    render(
+      <Stage>
+        <Ivy height={0.5} position={[0, 0, 0]} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/procmesh-primitive-ivy.png` }),
+    ).resolves.toBeTruthy();
+  });
+  it('Tree', async () => {
+    render(
+      <Stage>
+        <Tree height={0.6} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/procmesh-primitive-tree.png` }),
     ).resolves.toBeTruthy();
   });
 });
