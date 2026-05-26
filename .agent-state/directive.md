@@ -337,7 +337,7 @@ buildings → skins**. Captures the reference doc's adornment
 detail with O(N+M) code instead of O(N×M). See PRD-v0.11 §8 for
 the full architecture.
 
-- [ ] M_V11.PROCMESH.PRIMITIVES — `src/world/procedural/primitives/`
+- [x] M_V11.PROCMESH.PRIMITIVES — `src/world/procedural/primitives/`
       with the tier-1 component set: Log, StonePlinth, WoodPost,
       StoneBrick, Banner, GoldTrim, Battlement, ConeRoof,
       PitchedRoof, Column, Window, Door, WeaponRack, Chimney,
@@ -347,27 +347,27 @@ the full architecture.
       `factionColor` prop, only material objects. Vitest browser
       baseline per primitive on a neutral hex baseplate (≈17
       screenshots).
-- [ ] M_V11.PROCMESH.MATERIALS — Skin gains a `factionMaterials:
+- [x] M_V11.PROCMESH.MATERIALS — Skin gains a `factionMaterials:
       Record<PrimitiveFamily, MeshStandardMaterialProps>` slot
       with defaults supplied (stone, wood, banner, trim, accent,
       glass, metal). Each faction overrides only what shifts;
       the building composer reads the materials via context so
       primitive call sites stay clean.
-- [ ] M_V11.PROCMESH.BUILDINGS — `src/world/procedural/buildings/`
+- [x] M_V11.PROCMESH.BUILDINGS — `src/world/procedural/buildings/`
       with TownHall, Barracks, Wall, Watchtower, Farm, House,
       Granary, Library, Wonder. Each is a pure composition
       tree of primitives — **no inline meshes**. If a building
       needs a shape no primitive covers, add a primitive first.
       Vitest browser baseline per building (≈9 screenshots) +
       per faction × representative building (≈2 cross-skin).
-- [ ] M_V11.PROCMESH.SKINS-PIVOT — SKINS.structure[type] drops
+- [x] M_V11.PROCMESH.SKINS-PIVOT — SKINS.structure[type] drops
       `logicalId` for the player/AI building set; replaces with
       `proceduralComponent` ref pointing at buildings/<Type>.tsx
       exports. `FactionBase` + `StructureMesh` switch on the
       new field. Graveyard-Kit `logicalId` entries (crypt,
       gravestone variants, portal-crypt) stay UNCHANGED — that
       pool drives horde camps and continues to use GLBs.
-- [ ] M_V11.PROCMESH.GLB-CLEANUP — `git rm` the player/AI
+- [x] M_V11.PROCMESH.GLB-CLEANUP — `git rm` the player/AI
       building GLBs under `public/assets/structures/rts/`
       (town-center, barracks, tower-house, wall — first-age +
       second-age variants). Update `src/rules/glb-metadata.json`
@@ -375,12 +375,12 @@ the full architecture.
       categorizer to skip the deleted paths. KEEP nature, prop,
       unit, and graveyard GLBs (verify each retained path via
       a grep + spot-check).
-- [ ] M_V11.PROCMESH.PLAYER-SECONDARY — flip Farm / House /
+- [x] M_V11.PROCMESH.PLAYER-SECONDARY — flip Farm / House /
       Granary / Library / etc. (currently Fantasy Town Kit GLBs:
       windmill, watermill, house etc.) to procedural so faction
       identity carries through the whole player base, not just
       the hero buildings.
-- [ ] M_V11.PROCMESH.FOOTPRINT-DOC — each `buildings/<Type>.tsx`
+- [x] M_V11.PROCMESH.FOOTPRINT-DOC — each `buildings/<Type>.tsx`
       documents its source-unit bbox + hex-fit scale at the top
       of the file. Optional per-faction `buildingScale?: Partial<
       Record<BuildingType, number>>` in Skin for Wonder + outsize
