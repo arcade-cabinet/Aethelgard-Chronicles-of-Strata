@@ -53,6 +53,15 @@ export interface PeonWorld {
   baseKey: string;
   /** Tile keys currently pulsing under encroachment — peons avoid these. */
   threatenedTiles: ReadonlySet<string>;
+  /**
+   * M_GAME.BUG.10 — max hex-distance from the base that auto-mode
+   * peons will roam to harvest. Filters `resources` to only those
+   * within this radius before the nearestResource picker runs.
+   * Grows with game age so phase-1 peons stay near home and
+   * late-game peons can range further. Undefined = no limit (the
+   * pre-v0.10 behavior).
+   */
+  maxRoamRadius?: number;
 }
 
 /**
@@ -170,7 +179,18 @@ export function nextPeonAction(peon: PeonView, world: PeonWorld): PeonAction {
   // the map just because it was closest to its spawn. baseKey is
   // already faction-scoped in PeonWorld.
   const [bq, br] = world.baseKey.split(',').map(Number) as [number, number];
-  const targetStillLive = peon.targetKey && world.resources.some((s) => s.key === peon.targetKey);
+  // M_GAME.BUG.10 — hard-cap auto-mode peon roam radius from base.
+  // Filters the candidate list BEFORE the picker runs so the
+  // base-bias formula can't be overridden by "just one more hex
+  // gets a perfect node." Phase-1 maps stay tight; late-game
+  // expands by the caller raising maxRoamRadius with game age.
+  const inRangeResources =
+    world.maxRoamRadius === undefined
+      ? world.resources
+      : world.resources.filter(
+          (s) => hexDistance(bq, br, s.q, s.r) <= (world.maxRoamRadius as number),
+        );
+  const targetStillLive = peon.targetKey && inRangeResources.some((s) => s.key === peon.targetKey);
   if (peon.state === 'SEEKING' && targetStillLive) {
     // Coderabbit MAJOR PR #10 05:46Z — respect threatened-tile
     // avoidance even when keeping the current target. The old code
@@ -179,7 +199,7 @@ export function nextPeonAction(peon: PeonView, world: PeonWorld): PeonAction {
     // alternative; if there isn't one, idle (the flee path at the
     // top of this function handles a peon already ON the threat).
     if (world.threatenedTiles.has(peon.targetKey)) {
-      const bestSafe = nearestResource(peon.q, peon.r, bq, br, world.resources);
+      const bestSafe = nearestResource(peon.q, peon.r, bq, br, inRangeResources);
       if (bestSafe && !world.threatenedTiles.has(bestSafe.key)) {
         return { kind: 'seek', targetKey: bestSafe.key };
       }
@@ -188,7 +208,7 @@ export function nextPeonAction(peon: PeonView, world: PeonWorld): PeonAction {
     // Honor the current target ONLY if it's the best base-anchored
     // pick; otherwise switch. Avoids the "enemy peon walking the
     // length of the board" failure mode.
-    const best = nearestResource(peon.q, peon.r, bq, br, world.resources);
+    const best = nearestResource(peon.q, peon.r, bq, br, inRangeResources);
     if (best && best.key === peon.targetKey) {
       return { kind: 'seek', targetKey: peon.targetKey };
     }
@@ -197,7 +217,7 @@ export function nextPeonAction(peon: PeonView, world: PeonWorld): PeonAction {
     }
     return { kind: 'seek', targetKey: peon.targetKey };
   }
-  const nearest = nearestResource(peon.q, peon.r, bq, br, world.resources);
+  const nearest = nearestResource(peon.q, peon.r, bq, br, inRangeResources);
   if (nearest) {
     if (!world.threatenedTiles.has(nearest.key)) {
       return { kind: 'seek', targetKey: nearest.key };

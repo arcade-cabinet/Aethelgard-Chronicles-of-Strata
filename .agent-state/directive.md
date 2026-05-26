@@ -404,13 +404,19 @@ stockpile, no pre-spawned peons or military.
 - [x] M_GAME.BUG.9 — MAP_SIZES bumped: small 18→26, medium 28→38,
       large 36→48, huge 43→58. Realm now proportional to the chunky
       hexes; peons can't cross the map immediately.
-- [ ] M_GAME.BUG.10 — Peon roam radius / phase-1 distance gate. Even
-      after the map-size bump, peons should NOT be able to walk to
-      enemy territory in the first few minutes. Investigate
-      src/ecs/systems/peon-autonomy or equivalent — clamp peon-pathing
-      destination to within N hexes of the home Town Hall (where N
-      grows with game-time / score / discovered area). Bias to "your
-      realm" not "across the map."
+- [x] M_GAME.BUG.10 — Phase-1 peon roam-radius gate shipped. New
+      `maxRoamRadius` field on PeonRoutingContext + PeonWorld;
+      filters the candidate resource list to those within N hexes
+      of the faction's base BEFORE the nearestResource picker runs.
+      Wired in economy-tick-phases.ts: starts at 14 hex (preserves
+      AIVAI economy test), grows +1 hex per 20s game time, soft-
+      caps at 60 hex (whole-map coverage by ~15 min). Stops the
+      "peons sprint across the map immediately" failure without
+      breaking late-game expansion. 3 unit tests
+      (src/rules/__tests__/peon-roam-radius.test.ts) + AIVAI
+      passes after radius tuning. Manual-mode peons bypass the
+      job-routing system entirely so they're unaffected (player
+      can always order a manual peon anywhere).
 
 ### v0.10.F — LORE foundation (new track — Aethelgard has none yet)
 

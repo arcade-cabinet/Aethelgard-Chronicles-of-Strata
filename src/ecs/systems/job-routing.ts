@@ -52,6 +52,13 @@ export interface PeonRoutingContext {
   baseKeys: Record<Faction, string>;
   /** Each faction's zone — claimed tiles grow as peons exploit resources. */
   zones: Record<Faction, ZoneState>;
+  /**
+   * M_GAME.BUG.10 — max hex-distance from base for auto-mode peon
+   * resource picking. Phase-1 stays tight; late-game expands by
+   * the caller raising the value with game age. Undefined = no
+   * limit (pre-v0.10 behavior, kept for legacy tests).
+   */
+  maxRoamRadius?: number;
 }
 
 /**
@@ -62,7 +69,7 @@ export interface PeonRoutingContext {
  * (spec 102) — peon exploitation is how territory grows.
  */
 export function jobRoutingSystem(ctx: PeonRoutingContext): void {
-  const { world, board, graph, baseKeys, zones } = ctx;
+  const { world, board, graph, baseKeys, zones, maxRoamRadius } = ctx;
   // M_POLISH2.RTS.24a — peons prefer cheap (grass/beach/desert)
   // routes over FOREST (1.25×) / HIGHLAND (1.5×).
   const costOf = makeMoveCostFn(board.tiles);
@@ -106,6 +113,11 @@ export function jobRoutingSystem(ctx: PeonRoutingContext): void {
         // pulsing tiles on the faction's own zone are under encroachment —
         // peons flee them (spec 102, wired by the encroachmentSystem)
         threatenedTiles: threatenedByFaction[faction],
+        // M_GAME.BUG.10 — pass through the per-tick roam cap so
+        // auto-mode peons stay within `maxRoamRadius` hexes of their
+        // base. Manual-mode peons (M_GAME.MODE.PEON.1) bypass the
+        // job-routing system entirely, so they're unaffected.
+        ...(maxRoamRadius !== undefined ? { maxRoamRadius } : {}),
       });
 
       switch (action.kind) {

@@ -143,6 +143,17 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
       graph: game.navGraph,
       baseKeys: { player: game.townHallKey, enemy: game.enemyBaseKey },
       zones: game.zones,
+      // M_GAME.BUG.10 — phase-1 distance gate: auto-mode peons can
+      // roam at most this far from base. Starts at 14 hex (enough
+      // to reach resources on small + medium maps without sending
+      // peons across the realm) and grows ~+1 hex per 20s, soft-
+      // capping at 60 hex (whole-map coverage by ~15 minutes).
+      // The minimum value 14 was chosen so the AIVAI economy test
+      // (which expects the enemy faction to harvest within a 60s
+      // sim window on a 24-hex board) still passes — drops the
+      // "peons cross map immediately" failure mode while keeping
+      // the autonomous behavior viable.
+      maxRoamRadius: Math.min(60, 14 + Math.floor(game.clock.elapsed / 20)),
     });
     harvestSystem(game.world, delta);
     buildSystem(game.world, game.buildSites, delta);
