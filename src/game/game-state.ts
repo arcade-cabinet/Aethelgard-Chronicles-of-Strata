@@ -51,6 +51,7 @@ import type { GameOutcome } from '@/ecs/systems/win-loss';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
 import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 import {
+  campCountForMapSize,
   defaultCampCount,
   factionConfigForCamp,
   placeBarbarianCamps,
@@ -799,17 +800,21 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
           : base;
       });
 
-  // M_PIVOT.BARBARIAN-CAMPS — when 3+ player factions are configured,
-  // auto-spawn neutral camps so the match feels like a proper N-player
-  // round. The 2-player default keeps zero camps (no behavioural drift
-  // for legacy 1v1 matches; v0.4 saves replay byte-identical).
-  // count = clamp(round(N/2)+1, 1, 6); minimum 6-hex radius from every
-  // player base. The camps are added to game.factions so renderers
-  // (ZoneBorder, HUD chips) pick them up via the same registry path
-  // as player factions.
-  const playerFactionCount = factions.filter((f) => f.kind !== 'barbarian').length;
-  if (playerFactionCount >= 3 && !config.factions?.some((f) => f.kind === 'barbarian')) {
-    const campCount = defaultCampCount(playerFactionCount);
+  // M_V11.CAMPS.SPAWN — auto-spawn barbarian camps in EVERY match
+  // (was gated on playerFactionCount >= 3 in v0.10). Count tied to
+  // map size per spec: small=2, medium=4, large=6, huge=8. Camps are
+  // added to game.factions so renderers (ZoneBorder, HUD chips) pick
+  // them up via the same registry path as player factions.
+  //
+  // The legacy M_PIVOT.BARBARIAN-CAMPS N-player formula
+  // (defaultCampCount) is preserved as the FLOOR — for 5+ player
+  // matches the N-based formula may exceed the size-based count, so
+  // we take the max of the two.
+  if (!config.factions?.some((f) => f.kind === 'barbarian')) {
+    const playerFactionCount = factions.filter((f) => f.kind !== 'barbarian').length;
+    const sizeCount = campCountForMapSize(mapSize);
+    const nplayerCount = playerFactionCount >= 3 ? defaultCampCount(playerFactionCount) : 0;
+    const campCount = Math.max(sizeCount, nplayerCount);
     const playerBaseKeys = [townHallKey, enemyBaseKey];
     const campSpecs = placeBarbarianCamps(board, playerBaseKeys, campCount, mapRng);
     for (const spec of campSpecs) {

@@ -105,8 +105,13 @@ describe('factions registry — GameState wiring', () => {
       difficulty: 'normal',
       eventSeed: 'evt',
     });
-    expect(game.factions).toHaveLength(2);
-    const ids = factionIds(game.factions);
+    // M_V11.CAMPS.SPAWN — every match auto-spawns barbarian camps;
+    // for mapSize=8 (small bucket) that's 2 camps. The two PLAYER
+    // factions still come first in the array (player + enemy) so
+    // the legacy contract for the player/enemy slot is preserved.
+    const playerFactions = game.factions.filter((f) => f.kind !== 'barbarian');
+    expect(playerFactions).toHaveLength(2);
+    const ids = factionIds(playerFactions);
     expect(ids).toEqual(['player', 'enemy']);
     // Legacy colors preserved.
     expect(getFaction(game.factions, 'player').color).toBe('#3b82f6');

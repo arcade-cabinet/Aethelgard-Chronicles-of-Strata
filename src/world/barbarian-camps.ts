@@ -57,6 +57,42 @@ export function defaultCampCount(playerFactionCount: number): number {
 }
 
 /**
+ * M_V11.CAMPS.SPAWN — camp count scales with map size. Per spec:
+ *   small  = 2  (radius ≤ 10)
+ *   medium = 4  (radius 11..16)
+ *   large  = 6  (radius 17..22)
+ *   huge   = 8  (radius ≥ 23)
+ *
+ * Accepts EITHER a MapSizeKey string ('small'|'medium'|'large'|
+ * 'huge') OR a numeric radius — startGame plumbs the radius
+ * through as a number, so the function buckets by range when given
+ * a number.
+ *
+ * Independent of player-faction count: every match (including
+ * legacy 1v1) gets neutral aggressor camps so the v0.11 PvE
+ * pressure loop is uniform across modes.
+ */
+export function campCountForMapSize(mapSize: string | number): number {
+  if (typeof mapSize === 'number') {
+    if (mapSize <= 10) return 2;
+    if (mapSize <= 16) return 4;
+    if (mapSize <= 22) return 6;
+    return 8;
+  }
+  switch (mapSize) {
+    case 'small':
+      return 2;
+    case 'large':
+      return 6;
+    case 'huge':
+      return 8;
+    case 'medium':
+    default:
+      return 4;
+  }
+}
+
+/**
  * Pick camp tile positions. Centroid-biased — preferring walkable tiles
  * close to the centroid of all walkable LAND tiles, but with a minimum
  * 6-tile separation from every player base. The PRNG ordering is the

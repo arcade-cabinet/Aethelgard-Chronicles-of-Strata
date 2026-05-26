@@ -25,19 +25,23 @@ describe('M_V6.CARRY.SAVE-N-PLAYER — round-trip registry', () => {
       difficulty: 'normal',
       eventSeed: 'evt',
     });
+    // M_V11.CAMPS.SPAWN — startGame now auto-spawns N barbarian camps
+    // every match. Filter to player factions for the contract checks.
     const snap = serializeGame(game);
     expect(snap.config.factions).toBeDefined();
-    expect(snap.config.factions).toHaveLength(2);
-    expect(snap.config.factions?.[0]?.id).toBe('player');
-    expect(snap.config.factions?.[1]?.id).toBe('enemy');
-    expect(snap.config.factions?.[0]?.color).toBe('#3b82f6');
-    expect(snap.config.factions?.[1]?.color).toBe('#ef4444');
+    const playerFactions = snap.config.factions?.filter((f) => f.kind !== 'barbarian') ?? [];
+    expect(playerFactions).toHaveLength(2);
+    expect(playerFactions[0]?.id).toBe('player');
+    expect(playerFactions[1]?.id).toBe('enemy');
+    expect(playerFactions[0]?.color).toBe('#3b82f6');
+    expect(playerFactions[1]?.color).toBe('#ef4444');
 
     // Round-trip through JSON to mimic real persistence.
     const restored = deserializeGame(JSON.parse(JSON.stringify(snap)));
-    expect(restored.factions).toHaveLength(2);
-    expect(restored.factions[0]?.id).toBe('player');
-    expect(restored.factions[1]?.color).toBe('#ef4444');
+    const restoredPlayers = restored.factions.filter((f) => f.kind !== 'barbarian');
+    expect(restoredPlayers).toHaveLength(2);
+    expect(restoredPlayers[0]?.id).toBe('player');
+    expect(restoredPlayers[1]?.color).toBe('#ef4444');
   });
 
   it('6-faction save round-trips with all slot ids + colors preserved', () => {
@@ -86,9 +90,13 @@ describe('M_V6.CARRY.SAVE-N-PLAYER — round-trip registry', () => {
     delete (legacy.config as { factions?: unknown }).factions;
     const restored = deserializeGame(legacy);
     // LEGACY fallback kicks in — startGame defaults to LEGACY_FACTIONS overlay.
-    expect(restored.factions).toHaveLength(2);
-    expect(restored.factions[0]?.id).toBe('player');
-    expect(restored.factions[0]?.color).toBe(LEGACY_FACTIONS[0]?.color);
+    // M_V11.CAMPS.SPAWN — startGame also auto-spawns barbarian camps,
+    // but the LEGACY fallback path only restores the 2-player slot;
+    // serialized factions are the source of truth on a restore.
+    const playerFactions = restored.factions.filter((f) => f.kind !== 'barbarian');
+    expect(playerFactions).toHaveLength(2);
+    expect(playerFactions[0]?.id).toBe('player');
+    expect(playerFactions[0]?.color).toBe(LEGACY_FACTIONS[0]?.color);
   });
 
   it('rejects a tampered registry (invalid color hex)', () => {
