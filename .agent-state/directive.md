@@ -164,10 +164,13 @@ stockpile, no pre-spawned peons or military.
 - [ ] M_HUD.NOTIF.2 — Toast queue policy: 3 simultaneous visible,
       FIFO oldest-dismisses. Critical toasts (enemy at Town Hall,
       Wonder completed) bypass the cap and stack on top.
-- [ ] M_HUD.SHELL.CAMERA.1 — SettingsModal new "Camera" group:
-      "Auto-focus on selection" toggle (default ON). When OFF,
-      tap-selecting a unit doesn't move the camera; the auto-focus
-      tween still fires for explicit toast/sidebar invocations.
+- [x] M_HUD.SHELL.CAMERA.1 — SettingsModal "Auto-focus camera on
+      selection" toggle landed. Default ON. Writes both
+      localStorage (for the synchronous read in selection.ts) and
+      the async Capacitor Preferences row at PREF_KEYS.cameraAutoFocus.
+      Tap-selection tween fires when ON; explicit toast / sidebar
+      focus-tile dispatches keep working regardless.
+      data-testid="settings-camera-autofocus" for tests.
 - [x] M_GAME.SCALE.UNIT.1 — Unit / building scale audit. User
       observation 2026-05-25: "units seem REALLY big" + "buildings
       potentially scaled up." Initial scale tweaks were rejected

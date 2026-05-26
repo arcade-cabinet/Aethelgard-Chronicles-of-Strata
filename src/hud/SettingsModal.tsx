@@ -43,6 +43,16 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
   const [muted, setMutedState] = useState(false);
   const [colorblind, setColorblindState] = useState<boolean>(() => isColorblindMode());
   const [captions, setCaptionsState] = useState<boolean>(() => isCaptionsEnabled());
+  // M_HUD.SHELL.CAMERA.1 — default ON. localStorage '0' = explicit
+  // opt-out; anything else (missing, empty, '1') = ON.
+  const [cameraAutoFocus, setCameraAutoFocusState] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return window.localStorage?.getItem(PREF_KEYS.cameraAutoFocus) !== '0';
+    } catch {
+      return true;
+    }
+  });
   const [volumes, setVolumes] = useState<Record<keyof AudioBuses, number>>(() => ({
     sfx: getBusVolume('sfx'),
     music: getBusVolume('music'),
@@ -142,6 +152,19 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
     setColorblindState(next);
     setColorblindMode(next);
     void persistence.setSetting(PREF_KEYS.colorblind, String(next));
+  };
+
+  const toggleCameraAutoFocus = () => {
+    const next = !cameraAutoFocus;
+    setCameraAutoFocusState(next);
+    // Selection.ts reads localStorage directly, so the write must
+    // be synchronous (Preferences is async). Keep both in sync.
+    try {
+      window.localStorage?.setItem(PREF_KEYS.cameraAutoFocus, next ? '1' : '0');
+    } catch {
+      /* private mode — accept the in-memory toggle */
+    }
+    void persistence.setSetting(PREF_KEYS.cameraAutoFocus, next ? '1' : '0');
   };
 
   const toggleCaptions = () => {
@@ -308,6 +331,46 @@ export function SettingsModal({ open, onOpenChange, persistence }: SettingsModal
             }}
           >
             {colorblind ? '✓ On' : 'Off'}
+          </button>
+        </div>
+
+        {/* M_HUD.SHELL.CAMERA.1 — auto-focus-on-selection toggle.
+            When ON (default), tap-selecting a unit tweens the
+            camera to its hex via the M_GAME.BUG.11 focus-tile
+            channel. When OFF, the camera stays put on tap-select
+            (the explicit toast-tap + sidebar-cycle still tween). */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '10px 0',
+            borderTop: `1px solid ${HUD_THEME.color.border}`,
+          }}
+        >
+          <span style={{ fontSize: '0.9rem' }}>Auto-focus camera on selection</span>
+          <button
+            type="button"
+            id="settings-camera-autofocus"
+            data-testid="settings-camera-autofocus"
+            aria-label={
+              cameraAutoFocus ? 'Disable auto-focus on selection' : 'Enable auto-focus on selection'
+            }
+            aria-pressed={cameraAutoFocus}
+            onClick={toggleCameraAutoFocus}
+            style={{
+              padding: '8px 14px',
+              borderRadius: 8,
+              border: `1px solid ${HUD_THEME.color.border}`,
+              background: 'rgba(56,189,248,0.12)',
+              color: cameraAutoFocus ? HUD_THEME.color.accent : HUD_THEME.color.muted,
+              fontFamily: HUD_THEME.font.body,
+              fontWeight: 700,
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+            }}
+          >
+            {cameraAutoFocus ? '✓ On' : 'Off'}
           </button>
         </div>
 
