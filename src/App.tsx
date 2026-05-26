@@ -16,6 +16,7 @@ import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { CriticalWarning } from '@/hud/CriticalWarning';
+import { DiplomacyModal } from '@/hud/DiplomacyModal';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { FactionChips } from '@/hud/FactionChips';
@@ -379,6 +380,11 @@ function GameSession({
         </>
       )}
       <DiscoveriesPanel game={game} />
+      {/* M_V11.HUD.DIPLOMACY-MODAL — player-facing diplomacy. Opens on
+          the 'aethelgard:open-diplomacy' window event, fired by the
+          SystemMenu (top-right hamburger) — same pattern as the
+          DiscoveriesPanel. */}
+      <DiplomacyModal game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />

@@ -26,6 +26,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   Compass,
   Flag,
+  Handshake,
   Map as MapIcon,
   Menu,
   Settings as SettingsIcon,
@@ -90,6 +91,15 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
       label: 'Discoveries',
       onSelect: () => {
         window.dispatchEvent(new CustomEvent('aethelgard:open-discoveries'));
+        setOpen(false);
+      },
+    },
+    {
+      id: 'diplomacy',
+      Icon: Handshake,
+      label: 'Diplomacy',
+      onSelect: () => {
+        window.dispatchEvent(new CustomEvent('aethelgard:open-diplomacy'));
         setOpen(false);
       },
     },
