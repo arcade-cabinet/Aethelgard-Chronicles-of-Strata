@@ -64,7 +64,7 @@
 ### v0.10.G — Promo & marketing prompt library (new track)
 
 - [x] M_PROMO.0 — `docs/prompts/intro-video.md` shipped. ~1480-char master prompt + 9 engine variants (Sora 2 / Veo 3 chained / Kling 2.x / Seedance 1.0 Pro / Runway Gen-4 / Pika 2.x / Luma Ray2 / Hailuo 02 / Vidu Q1) — each tuned to its recommended length, aspect ratio, motion vocabulary, and prompt-token limit. Plus a 9:16 short-form supplement + 5 cross-engine continuity notes (seed locking, no-HUD-in-prompt, 24fps shutter, palette re-mention, no franchise names).
-- [ ] M_PROMO.1 — `docs/prompts/key-art.md` for still-image generation (Midjourney v7 / SDXL / FLUX / Imagen 3 / Gemini Imagen). Wordmark + hex map + faction banners.
+- [x] M_PROMO.1 — `docs/prompts/key-art.md` shipped. Master 3:2 hero prompt + 4 engine variants (Midjourney v7, SDXL/FLUX, Imagen 3/4, Adobe Firefly/Recraft for brand-safe), plus 4 per-faction 1:1 banner prompts (medieval / orc / undead / mystic) consistent with the lore docs.
 - [ ] M_PROMO.2 — `docs/prompts/biome-thumbs.md` — one prompt per biome for tile-thumbnail generation that matches the in-game low-poly aesthetic.
 - [ ] M_PROMO.3 — `docs/prompts/social-clips.md` — short-form (vertical, 9:16, 6-15s) video prompts for TikTok / Reels / Shorts gameplay clips.
 
