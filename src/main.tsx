@@ -147,8 +147,29 @@ if (typeof window !== 'undefined') {
 
 const rootEl = document.getElementById('root');
 if (!rootEl) throw new Error('Root element #root not found');
-createRoot(rootEl).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+
+// M_HUD.SHELL.13 — fixture-mode URL routing. When `?fixture=<name>`
+// is present, mount the FixtureApp which renders a SINGLE screen
+// with mocked props in isolation. Used by the visual fixture battery
+// (scripts/capture-aethelgard-fixtures.mjs) so screen captures don't
+// need to drive the full title → new-game → onboarding → play flow.
+const fixture =
+  typeof window !== 'undefined'
+    ? new URLSearchParams(window.location.search).get('fixture')
+    : null;
+
+if (fixture) {
+  void import('./test/FixtureApp').then((mod) => {
+    createRoot(rootEl).render(
+      <StrictMode>
+        <mod.FixtureApp fixture={fixture} />
+      </StrictMode>,
+    );
+  });
+} else {
+  createRoot(rootEl).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
