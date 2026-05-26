@@ -62,9 +62,11 @@ becomes the integration branch — all open PR work gets pulled in
 here, all CodeRabbit / reviewer feedback gets resolved here, stale
 PRs get closed.
 
-- [ ] M_HUD.SHELL.22 — pull PR #60 (`fix/multi-viewport-canvas-paint-check`
-      — v0.9 cycle work) into current branch via cherry-pick / merge.
-      Resolve any conflicts. Close PR #60 once integrated.
+- [x] M_HUD.SHELL.22 — PR #60 (`fix/multi-viewport-canvas-paint-check`)
+      merged into current branch in commit e17ff8a. Conflicts resolved
+      ours (SystemMenu/SettingsModal/styles.css are wholesale rewritten
+      on the integration branch — kept the new shell). PR will close
+      automatically when this branch lands.
 - [ ] M_HUD.SHELL.23 — pull PR #64 (`feat/title-screen-cinematic-pbr`
       — TitleScreen PBR shader) into current branch. Already largely
       contained in M_HUD.SHELL.2 commits on this branch; verify no
@@ -75,6 +77,89 @@ PRs get closed.
 - [ ] M_HUD.SHELL.25 — sweep all CodeRabbit / review comments on
       every open PR via `gh api repos/.../pulls/<N>/comments` + reply
       with resolution sha or rebut. Close threads.
+
+### v0.10.J — RTS commitment + classic-RTS opening + selectable-automatable peons
+
+**Per user direction 2026-05-25 + docs/specs/200-genre-commitment.md** —
+Aethelgard is committed to RTS. No turns, no 4X, no Civ-style era
+progression. Peons are selectable like any other unit; automation is a
+verb applied to the selection (autoMode = 'auto' default, 'manual'
+when player takes command). Classic RTS opening: Town Hall + small
+stockpile, no pre-spawned peons or military.
+
+- [ ] M_GAME.MODE.RTS.1 — Strike all 4X-mode scaffolding from the
+      codebase. There is one game shape (RTS). No `gameMode` enum,
+      no "Coming soon" mode cards.
+- [ ] M_GAME.MODE.RTS.OPEN.1 — Faction spawn delivers ONLY the Town
+      Hall. Wipe pre-spawned peons + military from
+      src/game/spawn-factions.ts (or wherever spawning happens).
+      Both player and AI start symmetric.
+- [ ] M_GAME.MODE.RTS.OPEN.2 — Add `startingStockpile: { wood: 80,
+      stone: 60, gold: 0 }` to faction spawn config. Sized so 2 peons
+      (~30 wood each) are queueable on tick 0 and a defensive wall
+      (~20 stone) can be dropped immediately.
+- [ ] M_GAME.MODE.RTS.OPEN.3 — Town Hall first-action affordance:
+      when Town Hall is selected and stockpile is sufficient, the
+      "Queue Peon" build button is highlighted with a
+      faction-coloured halo until first peon is queued.
+- [ ] M_GAME.MODE.RTS.OPEN.4 — AI player applies the same opening;
+      no AI gets pre-spawned advantage. AI's first scheduler tick
+      runs at frame 0 and queues 2 peons.
+- [ ] M_GAME.MODE.RTS.OPEN.5 — Onboarding overlay update: first
+      step is "Tap your Town Hall, queue 2 peons" — replaces the
+      "your peons are already harvesting; tap one to see..." copy.
+- [ ] M_GAME.MODE.RTS.OPEN.6 — Inactivity narrator beats: at 30s
+      of no-action, gentle toast "Aethelgard awaits your first
+      decree." At 90s of no-action, stronger "Your realm cannot
+      grow without peons." Both dismissable; onboarding step
+      persists.
+- [ ] M_GAME.MODE.PEON.1 — Add `autoMode: 'auto' | 'manual'` field
+      to Peon Unit spawn. Default `'auto'`. Persisted in save
+      schema (so commanded peons stay commanded across save/load).
+      Revert the `findSelectableAtTile` peon-skip shipped in
+      M_GAME.BUG.6 — peons ARE selectable now.
+- [ ] M_GAME.MODE.PEON.2 — SelectionPanel: when selection includes
+      peons, expose "Take command" / "Resume automation" actions.
+      Mixed selection (peons + military) shows actions only for
+      the peons in the selection.
+- [ ] M_GAME.MODE.PEON.3 — Rename `IdlePeonsIndicator` to
+      `IdleUnitIndicator`. Counts: peons with
+      `autoMode === 'manual' && idle === true` + all idle military
+      units. Tap cycles through them via the
+      `aethelgard:focus-tile` event shipped in M_GAME.BUG.11.
+- [ ] M_GAME.MODE.PEON.4 — "Select all peons" + "Select all peons
+      of biome X" multi-select gestures on the sidebar (the
+      M_GAME.BUG.4 replacement for drag-select). Touch-friendly,
+      no rectangle drag.
+- [ ] M_GAME.MODE.PEON.5 — Peon free-task scheduler: when a peon
+      flips back to `autoMode = 'auto'`, it must find a fresh task
+      immediately (re-queue hook on mode-flip).
+- [ ] M_GAME.MODE.PEON.6 — SelectionPanel per-unit command verbs
+      split: peons get Harvest here / Build here / Repair / Return
+      to Town Hall / Take command / Resume automation. Military
+      get Attack-move / Patrol / Hold position / Fall back. Mixed
+      shows the intersection.
+- [ ] M_HUD.NOTIF.PEON.1 — First-peon-task-per-resource narrator
+      toast: when the first peon picks up wood/stone/gold for the
+      session, surface "Your peons have begun harvesting [resource]."
+      Cap at one per resource type per match.
+- [ ] M_HUD.NOTIF.2 — Toast queue policy: 3 simultaneous visible,
+      FIFO oldest-dismisses. Critical toasts (enemy at Town Hall,
+      Wonder completed) bypass the cap and stack on top.
+- [ ] M_HUD.SHELL.CAMERA.1 — SettingsModal new "Camera" group:
+      "Auto-focus on selection" toggle (default ON). When OFF,
+      tap-selecting a unit doesn't move the camera; the auto-focus
+      tween still fires for explicit toast/sidebar invocations.
+- [ ] M_GAME.SCALE.UNIT.1 — Unit / building scale audit. User
+      observation 2026-05-25: "units seem REALLY big like they
+      need to be scaled down relative to hex tile size and
+      buildings potentially scaled up." Add an isolated
+      tests/harness/unit-vs-hex.html harness rendering each unit
+      archetype on a single hex tile + a single complete building
+      on a tile; screenshot both and adjust scale constants in
+      src/entities/* + src/world/FactionBase.tsx so unit silhouette
+      reads as "occupies a tile" not "covers two tiles" and
+      buildings read as "occupies their footprint" not "miniature."
 
 ### v0.10.I — User-reported in-game bugs (visual + interaction)
 
@@ -110,11 +195,17 @@ PRs get closed.
 - [x] M_GAME.BUG.6 — findSelectableAtTile now skips peons (Unit.unitType
       === 'Peon'). Taps on peon tiles fall through to building / tile
       interaction. Peons are autonomous; their info is irrelevant.
-- [x] M_GAME.BUG.7 — CameraRig MapControls now has enableRotate={false}
-      and pitch locked to a fixed ~35° Civ-VI/Warcraft 2.5D pose
-      (minPolarAngle === maxPolarAngle === 0.96 rad). Two-finger drag
-      now pans the camera; rotation is no longer possible. Mountains
-      stay visible behind closer hexes at this gentler tilt.
+- [x] M_GAME.BUG.7 — CameraRig pitch locked to ~35° Civ-VI/Warcraft
+      2.5D pose (minPolarAngle === maxPolarAngle === 0.96 rad).
+      Rotation policy SUPERSEDED by M_GAME.BUG.11 (platter rotation
+      re-enabled — azimuth-only, polar still locked).
+- [x] M_GAME.BUG.11 — Platter rotation (azimuth-only) re-enabled +
+      horizon-aware fog density ramping with camera distance +
+      `aethelgard:focus-tile` auto-focus tween. CameraRig.tsx +
+      DayNightCycle.tsx. Lets the player rotate around the pan
+      target to see behind mountain ranges (without ever tipping
+      the Civ pose), and any HUD surface can ask the camera to
+      "go look here" with a snappy 6Hz settle. Shipped 2026-05-25.
 - [ ] M_GAME.BUG.7b — "Follow selected unit" camera tween: when a
       unit is selected via SelectionPanel "Next Idle" or tile-tap,
       the camera tweens its target to that unit's tile + a closer
