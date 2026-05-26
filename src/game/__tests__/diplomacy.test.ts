@@ -21,6 +21,7 @@ import {
   isEnemy,
   relationKey,
   setRelation,
+  tickAllianceExpiry,
   tributaryDominant,
 } from '@/game/diplomacy';
 import { startGame } from '@/game/game-state';
@@ -107,6 +108,42 @@ describe('tributary semantics', () => {
     const d = createDiplomacyState();
     setRelation(d, 'player', 'enemy', 'ally', 50);
     expect(tributaryDominant(d, 'player', 'enemy')).toBeNull();
+  });
+});
+
+describe('tickAllianceExpiry (M_V11.DIPLO.TEMP-ALLIANCE)', () => {
+  it('keeps a timed alliance until its expiresAtSeconds', () => {
+    const d = createDiplomacyState();
+    setRelation(d, 'player', 'enemy', 'ally', 0, null, 300);
+    expect(tickAllianceExpiry(d, 100)).toBe(0);
+    expect(getRelation(d, 'player', 'enemy')).toBe('ally');
+    expect(tickAllianceExpiry(d, 299)).toBe(0);
+    expect(getRelation(d, 'player', 'enemy')).toBe('ally');
+  });
+
+  it('drops the alliance when clock crosses expiresAtSeconds', () => {
+    const d = createDiplomacyState();
+    setRelation(d, 'player', 'enemy', 'ally', 0, null, 300);
+    expect(tickAllianceExpiry(d, 300)).toBe(1);
+    expect(getRelation(d, 'player', 'enemy')).toBe('neutral');
+  });
+
+  it('leaves permanent alliances (no expiresAtSeconds) alone forever', () => {
+    const d = createDiplomacyState();
+    setRelation(d, 'player', 'enemy', 'ally', 0);
+    expect(tickAllianceExpiry(d, 99999)).toBe(0);
+    expect(getRelation(d, 'player', 'enemy')).toBe('ally');
+  });
+
+  it('expires only the alliances whose timer has elapsed in a multi-pair state', () => {
+    const d = createDiplomacyState();
+    setRelation(d, 'player', 'enemy', 'ally', 0, null, 100);
+    setRelation(d, 'player', 'orc', 'ally', 0, null, 500);
+    setRelation(d, 'enemy', 'orc', 'ally', 0);
+    expect(tickAllianceExpiry(d, 150)).toBe(1);
+    expect(getRelation(d, 'player', 'enemy')).toBe('neutral');
+    expect(getRelation(d, 'player', 'orc')).toBe('ally');
+    expect(getRelation(d, 'enemy', 'orc')).toBe('ally');
   });
 });
 

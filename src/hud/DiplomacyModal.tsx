@@ -35,7 +35,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import type { FactionId } from '@/config/factions';
-import { type DiplomacyState, getRelation, setRelation } from '@/game/diplomacy';
+import { type DiplomacyState, getRelation, getRelationEntry, setRelation } from '@/game/diplomacy';
 import {
   acceptProposal,
   type DiplomacyProposalState,
@@ -71,6 +71,8 @@ interface FactionRow {
   outgoingProposal: boolean;
   /** Pending proposal where THIS faction is asking the player (we accept/reject). */
   incomingProposal: boolean;
+  /** Remaining sim-seconds before a timed alliance expires (null = permanent or non-ally). */
+  allianceRemainingSeconds: number | null;
 }
 
 function buildRows(game: GameState): FactionRow[] {
@@ -90,6 +92,11 @@ function buildRows(game: GameState): FactionRow[] {
     // (neutral relations don't have a row in the diplomacy map, but
     // an in-flight proposal proves the two factions know each other).
     const contact = hasHadContact(game.diplomacy, PLAYER, fc.id) || outgoing || incoming;
+    const entry = getRelationEntry(game.diplomacy, PLAYER, fc.id);
+    const remaining =
+      entry?.relation === 'ally' && entry.expiresAtSeconds !== undefined
+        ? Math.max(0, entry.expiresAtSeconds - game.clock.elapsed)
+        : null;
     rows.push({
       id: fc.id,
       displayName: fc.displayName,
@@ -99,6 +106,7 @@ function buildRows(game: GameState): FactionRow[] {
       theirEco,
       outgoingProposal: outgoing,
       incomingProposal: incoming,
+      allianceRemainingSeconds: remaining,
     });
   }
   return rows;
@@ -151,7 +159,15 @@ export function DiplomacyModal({ game }: DiplomacyModalProps) {
     bump();
   };
   const accept = (fc: FactionId) => {
+    // M_V11.DIPLO.TEMP-ALLIANCE — default to a 5-minute timed
+    // alliance so the player can opt INTO an ally-of-convenience
+    // play without locking themselves into a permanent pact. The
+    // alliance auto-expires via tickAllianceExpiry; the player can
+    // also Break Pact early.
     acceptProposal(game.diplomacyProposals, game.diplomacy, fc, PLAYER, now);
+    // acceptProposal sets relation 'ally' with no expiry — overwrite
+    // with the same relation + an expiry stamp.
+    setRelation(game.diplomacy, fc, PLAYER, 'ally', now, null, now + 5 * 60);
     bump();
   };
   const reject = (fc: FactionId) => {
@@ -244,6 +260,15 @@ export function DiplomacyModal({ game }: DiplomacyModalProps) {
                     }}
                   >
                     {row.contact ? row.relation : 'unknown'}
+                    {row.allianceRemainingSeconds !== null && (
+                      <span style={{ color: HUD_THEME.color.muted, marginLeft: 8 }}>
+                        · {Math.floor(row.allianceRemainingSeconds / 60)}m{' '}
+                        {Math.floor(row.allianceRemainingSeconds % 60)
+                          .toString()
+                          .padStart(2, '0')}
+                        s left
+                      </span>
+                    )}
                   </span>
                 </div>
                 <div style={{ color: HUD_THEME.color.muted, fontSize: 12 }}>

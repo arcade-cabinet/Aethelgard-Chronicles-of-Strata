@@ -52,6 +52,7 @@ import { chokePointMultiplier } from '@/rules/choke-points';
 import { refreshPortalStoneCooldown, tickPortalStonesTrigger } from '@/world/portal-stones';
 import { tickAutoSave } from './auto-save';
 import { advanceClock, cyclePhase } from './clock';
+import { tickAllianceExpiry } from './diplomacy';
 import { expireProposals } from './diplomacy-border';
 import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
@@ -84,6 +85,10 @@ export function tickClockPhase(game: GameState, delta: number): void {
   // separate optional escalation that the HUD pill can wire on
   // explicit reject.
   expireProposals(game.diplomacyProposals, game.clock.elapsed);
+  // M_V11.DIPLO.TEMP-ALLIANCE — sweep timed alliances that have passed
+  // their expiresAtSeconds; the relation flips to 'neutral' silently
+  // (the HUD's DiplomacyModal renders the change next time it opens).
+  tickAllianceExpiry(game.diplomacy, game.clock.elapsed);
   // M_V7.PORTAL-STONES.TRIGGER — random-event roll for the rare
   // portal-stones placement (1-in-200 once map clock > 5min,
   // at-most-once-per-match). Mutates board.tiles on a successful

@@ -33,6 +33,15 @@ export interface RelationEntry {
   dominant: FactionId | null;
   /** Sim-seconds at which the relation entered its current state. */
   sinceClockSeconds: number;
+  /**
+   * M_V11.DIPLO.TEMP-ALLIANCE — optional expiry timestamp. When set
+   * AND clock > expiresAtSeconds the relation auto-flips to 'neutral'
+   * (handled by tickAllianceExpiry). Used for the player's "ally of
+   * convenience against the strongest opponent" play: alliances are
+   * timed by default; permanent alliances are an explicit opt-in by
+   * omitting the field.
+   */
+  expiresAtSeconds?: number;
 }
 
 /** Build the sorted pair key for symmetric Map storage. */
@@ -88,6 +97,7 @@ export function setRelation(
   relation: Relation,
   clockSeconds: number,
   dominant: FactionId | null = null,
+  expiresAtSeconds?: number,
 ): void {
   if (a === b) return;
   const key = relationKey(a, b);
@@ -97,9 +107,29 @@ export function setRelation(
   }
   state.relations.set(key, {
     relation,
+    ...(expiresAtSeconds !== undefined ? { expiresAtSeconds } : {}),
     dominant,
     sinceClockSeconds: clockSeconds,
   });
+}
+
+/**
+ * M_V11.DIPLO.TEMP-ALLIANCE — sweep expired timed relations.
+ *
+ * For each relation with an `expiresAtSeconds` set, drop it (flip to
+ * 'neutral') when the clock has passed. Called from the per-tick
+ * runtime (economy-tick-phases). Returns the count of dropped entries
+ * for telemetry / UI ("alliance with X has ended").
+ */
+export function tickAllianceExpiry(state: DiplomacyState, clockSeconds: number): number {
+  let dropped = 0;
+  for (const [key, entry] of state.relations) {
+    if (entry.expiresAtSeconds === undefined) continue;
+    if (clockSeconds < entry.expiresAtSeconds) continue;
+    state.relations.delete(key);
+    dropped += 1;
+  }
+  return dropped;
 }
 
 /**

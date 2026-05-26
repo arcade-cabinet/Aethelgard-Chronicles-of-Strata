@@ -73,6 +73,22 @@ describe('M_V11.HUD.DIPLOMACY-MODAL — visual baselines', () => {
     ).resolves.toBeTruthy();
   });
 
+  it('timed alliance — shows countdown', async () => {
+    const game = startGame('diplo-modal-timed-ally');
+    // Seed a timed alliance with 4 minutes remaining. Verifies the
+    // "Xm YYs left" suffix renders.
+    setRelation(game.diplomacy, 'player', 'enemy', 'ally', 0, null, 240);
+    render(
+      <Stage>
+        <DiplomacyModal game={game} />
+      </Stage>,
+    );
+    await settle();
+    await expect(
+      page.screenshot({ path: `${baselineDir}/diplomacy-modal-timed-alliance.png` }),
+    ).resolves.toBeTruthy();
+  });
+
   it('incoming pact proposal — accept/reject pair shown', async () => {
     const game = startGame('diplo-modal-incoming');
     // Seed a contact (any relation row creates the has-had-contact gate).
