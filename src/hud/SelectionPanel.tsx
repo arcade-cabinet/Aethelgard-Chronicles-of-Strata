@@ -21,6 +21,7 @@ import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
 import type { BuildContext } from '@/world/TileInteraction';
 import { costLabel } from './format';
 import { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
+import './th-affordance.css';
 import {
   buildDisabledReason,
   researchDisabledReason,
@@ -36,6 +37,22 @@ const BUILDABLE_TYPES = Object.keys(BUILDING_COSTS).sort() as ReadonlyArray<
 /** Whether the player's economy can cover a building cost — thin wrapper over rules.canAfford. */
 function canAffordCost(game: GameState, cost: ResourceCost): boolean {
   return canAfford(game.economy.player, cost);
+}
+
+/**
+ * M_V11.OPEN.TH-AFFORDANCE — count of player-faction Peon entities
+ * (spawned + queued). The Town Hall "Train Peon" CTA pulses while
+ * this is zero so the player sees the first decision they must
+ * make. Drains O(units); fine — Selection-panel render is rare.
+ */
+function countPlayerPeons(game: GameState): number {
+  let n = 0;
+  for (const e of game.world.query(Unit, FactionTrait)) {
+    if (e.get(FactionTrait)?.faction !== 'player') continue;
+    if (e.get(Unit)?.unitType !== 'Peon') continue;
+    n++;
+  }
+  return n;
 }
 
 // M_EXPANSION.D.172 — disabled-reason helpers moved to a sibling
@@ -143,13 +160,25 @@ function HudButton({
   onClick,
   disabled,
   disabledReason,
+  highlighted,
+  highlightColor,
 }: {
   label: string;
   onClick: () => void;
   disabled?: boolean;
   /** Shown via Tooltip + title when disabled. ≥3 words: explain the gate. */
   disabledReason?: string | undefined;
+  /**
+   * M_V11.OPEN.TH-AFFORDANCE — when true, pulse a faction-coloured
+   * halo around the button to draw the player's eye. Used for the
+   * "Queue Peon" CTA on the Town Hall until the first peon is
+   * queued. Quiet otherwise (no pulse, no border-color shift).
+   */
+  highlighted?: boolean;
+  /** Halo + border accent color when highlighted. Default treasure. */
+  highlightColor?: string;
 }) {
+  const accent = highlightColor ?? HUD_THEME.color.gold;
   const btn = (
     <button
       type="button"
@@ -160,6 +189,7 @@ function HudButton({
       aria-label={disabled && disabledReason ? `${label} (${disabledReason})` : label}
       aria-describedby={disabled && disabledReason ? `${label}-reason` : undefined}
       data-testid={`hud-button-${label.replace(/\s+/g, '-').toLowerCase()}`}
+      data-highlighted={highlighted ? 'true' : undefined}
       style={{
         display: 'block',
         width: '100%',
@@ -170,14 +200,24 @@ function HudButton({
         minHeight: 44,
         padding: '12px 12px',
         borderRadius: 8,
-        border: `1px solid ${HUD_THEME.color.border}`,
-        background: disabled ? 'rgba(255,255,255,0.04)' : 'rgba(56,189,248,0.14)',
-        color: disabled ? HUD_THEME.color.muted : HUD_THEME.color.accent,
+        border: highlighted ? `1px solid ${accent}` : `1px solid ${HUD_THEME.color.border}`,
+        background: disabled
+          ? 'rgba(255,255,255,0.04)'
+          : highlighted
+            ? `linear-gradient(180deg, ${accent}33 0%, ${accent}1a 100%)`
+            : 'rgba(56,189,248,0.14)',
+        color: disabled ? HUD_THEME.color.muted : highlighted ? accent : HUD_THEME.color.accent,
         fontFamily: HUD_THEME.font.body,
         fontSize: '0.8rem',
         fontWeight: 700,
         cursor: disabled ? 'default' : 'pointer',
         textAlign: 'left',
+        // M_V11.OPEN.TH-AFFORDANCE — gentle 2s pulse on the halo.
+        // Uses CSS shadow rather than framer-motion to avoid a layout
+        // hit on every button repaint.
+        boxShadow: highlighted ? `0 0 0 0 ${accent}66` : undefined,
+        animation: highlighted ? 'th-affordance-pulse 1.8s ease-in-out infinite' : undefined,
+        transition: 'box-shadow 200ms ease, border-color 200ms ease',
       }}
     >
       {label}
@@ -418,6 +458,17 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                     {(meta.trainsUnits ?? []).map((role) => {
                       const cost = UNIT_COSTS[role];
                       const trainReason = trainDisabledReason(game, role, cost);
+                      // M_V11.OPEN.TH-AFFORDANCE — pulse the "Train
+                      // Peon" CTA on the Town Hall until the player
+                      // queues their first peon. Gated tight: only
+                      // role === 'Peon', only when the player has
+                      // zero peons in the world (including queued).
+                      // Once any peon exists, the pulse retires.
+                      const highlighted =
+                        view.buildingType === 'TownHall' &&
+                        role === 'Peon' &&
+                        countPlayerPeons(game) === 0 &&
+                        canAffordCost(game, cost);
                       return (
                         <HudButton
                           key={role}
@@ -431,6 +482,8 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                           }}
                           disabled={!canAffordCost(game, cost)}
                           disabledReason={trainReason}
+                          highlighted={highlighted}
+                          highlightColor={view.factionColor}
                         />
                       );
                     })}

@@ -1,0 +1,17 @@
+/* M_V11.OPEN.TH-AFFORDANCE — pulse animation for the Town Hall
+   "Queue Peon" CTA. Used by HudButton's `highlighted` prop. The
+   keyframes ramp box-shadow inset/outset to draw a soft halo
+   around the button. 1.8s loop matches the gentle "this is your
+   first action" tone — not a danger-bright flash. */
+
+@keyframes th-affordance-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 80, 0.55);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(255, 215, 80, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 215, 80, 0);
+  }
+}
