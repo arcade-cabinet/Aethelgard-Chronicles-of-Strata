@@ -397,6 +397,28 @@ export const EnemySpawner = trait({
   liveMobs: 0,
 });
 
+/**
+ * M_V11.CAMPS.WANDER — anchor + radius for a roaming mob's behavior.
+ *
+ * - `anchorQ` / `anchorR`: the camp tile the mob came from.
+ * - `radius`: max hex distance the mob will wander from its anchor.
+ *   Spec default 5.
+ * - `pickChance`: per-tick probability of choosing a new random
+ *   walkable tile within the radius. Spec default 0.05.
+ *
+ * Wander logic stays distinct from Stance (combat-target picking) —
+ * a mob with WanderBehavior + no enemy in stance-range walks aimlessly
+ * within its leash; once an enemy enters stance-range, Stance takes
+ * over and Wander pauses by definition (the stance pathing overrides
+ * the wander destination).
+ */
+export const WanderBehavior = trait({
+  anchorQ: 0,
+  anchorR: 0,
+  radius: 5,
+  pickChance: 0.05,
+});
+
 /** The entity an enemy is currently hunting. `targetId` is -1 when none. */
 export const EnemyTarget = trait({ targetId: -1 });
 
@@ -589,4 +611,7 @@ export const SERIALIZED_TRAITS: ReadonlyArray<{ name: string; traitObj: any }> =
   // M_GAME.MODE.PEON.1 — peon autoMode persists across save/load so
   // a player's commanded peon stays commanded after a reload.
   { name: 'PeonAutonomy', traitObj: PeonAutonomy },
+  // M_V11.CAMPS.WANDER — barbarian-camp mob's wander anchor + radius
+  // persists across save/load so a reloaded mob keeps its leash.
+  { name: 'WanderBehavior', traitObj: WanderBehavior },
 ];

@@ -2,7 +2,13 @@ import type { World } from 'koota';
 import { COMBAT } from '@/config/combat';
 import type { BoardData } from '@/core/board';
 import { hexNeighbors } from '@/core/hex';
-import { EnemySpawner, FactionTrait, HexPosition, type UnitType } from '@/ecs/components';
+import {
+  EnemySpawner,
+  FactionTrait,
+  HexPosition,
+  type UnitType,
+  WanderBehavior,
+} from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import type { Difficulty } from '@/game/difficulty';
 
@@ -127,10 +133,11 @@ export function spawnSystem(
     const role = pickEnemyRole(spawner.spawnCount, gameElapsed);
     const factionOverride = entity.get(FactionTrait)?.faction;
     const spawnArgs = factionOverride !== undefined ? { factionOverride } : {};
+    let spawned: ReturnType<typeof createCharacter> | null = null;
     for (const nKey of hexNeighbors(hex.q, hex.r)) {
       const tile = board.tiles.get(nKey);
       if (tile?.walkable) {
-        createCharacter({
+        spawned = createCharacter({
           world,
           role,
           q: tile.q,
@@ -139,18 +146,33 @@ export function spawnSystem(
           difficulty,
           ...spawnArgs,
         });
-        return;
+        break;
       }
     }
-    // fallback: spawn on the base tile itself when no walkable neighbour exists
-    createCharacter({
-      world,
-      role,
-      q: hex.q,
-      r: hex.r,
-      level: hex.level,
-      difficulty,
-      ...spawnArgs,
-    });
+    if (spawned === null) {
+      // fallback: spawn on the base tile itself when no walkable neighbour exists
+      spawned = createCharacter({
+        world,
+        role,
+        q: hex.q,
+        r: hex.r,
+        level: hex.level,
+        difficulty,
+        ...spawnArgs,
+      });
+    }
+    // M_V11.CAMPS.WANDER — capped (camp) spawns get a WanderBehavior
+    // anchored at the camp tile with the spec default radius=5 +
+    // pickChance=0.05. Uncapped spawns (legacy enemy base) leave
+    // motion to Stance + spawn-side scripting.
+    if (spawner.mobCap > 0) {
+      spawned.add(WanderBehavior);
+      spawned.set(WanderBehavior, {
+        anchorQ: hex.q,
+        anchorR: hex.r,
+        radius: 5,
+        pickChance: 0.05,
+      });
+    }
   });
 }
