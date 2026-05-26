@@ -293,13 +293,24 @@ stockpile, no pre-spawned peons or military.
       the camera tweens its target to that unit's tile + a closer
       zoom level (~midZoom). Released on deselect / Escape. Separate
       from the rotation-lock fix shipped in BUG.7.
-- [ ] M_HUD.NOTIF.1 — Toast notification system: when an enemy unit
-      engages a player structure, when ZoC contracts/expands, when a
-      Discovery completes, when a wonder is started/finished, when a
-      MYTH event fires — surface a toast in a top-center stack (Radix
-      Toast). Each toast is tap-able to zoom-the-camera into the
-      event's tile. Auto-dismiss after 6s, manual dismiss via X. Stack
-      max 3 visible; older queue up.
+- [x] M_HUD.NOTIF.1 + M_HUD.NOTIF.2 — Radix Toast bus shipped at
+      src/hud/Toasts.tsx + mounted in App.tsx. Listens for
+      `aethelgard:toast` CustomEvent, renders a top-center stack
+      with 5 tones (info/success/warning/danger/critical), tap-to-
+      focus via `aethelgard:focus-tile` integration with the
+      M_GAME.BUG.11 camera tween. Queue policy: 3 simultaneous
+      non-critical visible, FIFO eviction on the 4th; critical
+      bypasses the cap and never auto-dismisses. Dedup by id.
+      4 browser harness tests passing
+      (tests/harness/toasts.browser.test.tsx). Wiring per-event
+      emitters (enemy engages / Discovery / Wonder / MYTH) tracked
+      separately as M_HUD.NOTIF.WIRING.1.
+- [ ] M_HUD.NOTIF.WIRING.1 — Wire emitToast() calls for the actual
+      gameplay events: enemy unit engages player structure, ZoC
+      contracts/expands, Discovery completes, Wonder started/
+      finished, MYTH event fires. Each emitter sits in the
+      relevant sim or HUD system; toast detail includes focus q/r
+      where the event happened (so tap-to-zoom works).
 - [x] M_GAME.BUG.8 — Camera boots focused on the PLAYER'S Town Hall
       (GameCanvas landCenter now reads game.townHallKey directly,
       not the base-pair midpoint or centroid) + at 55% of the per-

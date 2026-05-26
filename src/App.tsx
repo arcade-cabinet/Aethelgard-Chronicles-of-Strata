@@ -40,6 +40,7 @@ import { ScoringScreen } from '@/hud/ScoringScreen';
 import { ScreenshotButton } from '@/hud/ScreenshotButton';
 import { SelectionPanel } from '@/hud/SelectionPanel';
 import { SettingsModal } from '@/hud/SettingsModal';
+import { Toasts } from '@/hud/Toasts';
 import { SpeedControl } from '@/hud/SpeedControl';
 import { SystemMenu } from '@/hud/SystemMenu';
 import { TitleScreen } from '@/hud/TitleScreen';
@@ -387,6 +388,10 @@ function GameSession({
           (src/hud/aria-live-bus.ts) lets any sim event announce
           accessibly without lifting state. */}
       <AriaLiveRegion />
+      {/* M_HUD.NOTIF.1 — Aethelgard toast bus. Mounted once at the
+          App root; any code can dispatch `aethelgard:toast` to surface
+          a tap-to-focus toast in the top-center stack. */}
+      <Toasts />
       {/* M_EXPANSION.U.114 — visible captions band for deaf accessibility.
           Renders nothing when captions are off OR when no live captions
           are queued, so the overlay is zero-cost for hearing players. */}
