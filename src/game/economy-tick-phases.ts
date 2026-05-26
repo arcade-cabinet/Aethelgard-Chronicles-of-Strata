@@ -400,6 +400,25 @@ export function tickScoringPhase(game: GameState, delta: number): void {
     }
     if (game.wonderTimers[factionId] === Infinity) {
       game.wonderTimers[factionId] = WONDER_COUNTDOWN_SECONDS;
+      // M_HUD.NOTIF.WIRING.1 — Wonder completion crosses the Infinity →
+      // countdown boundary exactly once per wonder. Fire a critical
+      // toast so the player can never miss "the enemy just started
+      // their wonder timer" or "your wonder is now ticking."
+      if (typeof window !== 'undefined') {
+        const isPlayer = game.factions.find((f) => f.id === factionId)?.kind === 'human';
+        window.dispatchEvent(
+          new CustomEvent('aethelgard:toast', {
+            detail: {
+              id: `wonder-started-${factionId}`,
+              tone: 'critical',
+              title: isPlayer ? 'Your Wonder rises' : 'Enemy Wonder rises',
+              description: isPlayer
+                ? `Hold for ${WONDER_COUNTDOWN_SECONDS}s to win the realm.`
+                : `Destroy it within ${WONDER_COUNTDOWN_SECONDS}s or the realm is lost.`,
+            },
+          }),
+        );
+      }
     }
     game.wonderTimers[factionId] = Math.max(0, (game.wonderTimers[factionId] ?? 0) - delta);
   }

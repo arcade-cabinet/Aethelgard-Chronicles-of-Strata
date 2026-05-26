@@ -22,6 +22,7 @@ const DISCOVERY_FLAVOR: Record<string, string> = {
     'The strata answered as one — yes, remember this. We laid the cornerstone before sunset.',
 };
 import { costLabel } from './format';
+import { emitToast } from './Toasts';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
 
@@ -245,7 +246,17 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
               <button
                 type="button"
                 disabled={!available}
-                onClick={() => doResearch(game, d.id as ResearchId)}
+                onClick={() => {
+                  const ok = doResearch(game, d.id as ResearchId);
+                  if (ok) {
+                    emitToast({
+                      id: `discovery-${d.id}`,
+                      tone: 'success',
+                      title: 'Discovery unlocked',
+                      description: d.name,
+                    });
+                  }
+                }}
                 style={{
                   padding: '6px 14px',
                   borderRadius: 8,
