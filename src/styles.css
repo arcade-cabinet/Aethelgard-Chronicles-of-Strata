@@ -51,6 +51,55 @@
   --color-danger: #ef4444;
   --color-warning: #f97316;
 
+  /* Signature gradients — named so components reference one place. */
+  --gradient-treasure-wordmark: linear-gradient(
+    180deg,
+    #fef3c7 0%,
+    #d4af37 45%,
+    #b45309 78%,
+    #7c2d12 100%
+  );
+  --gradient-treasure-button: linear-gradient(
+    180deg,
+    #e8c660 0%,
+    #d4af37 50%,
+    #8b7124 100%
+  );
+  --gradient-victory-title: linear-gradient(
+    180deg,
+    #fef3c7 0%,
+    #d4af37 45%,
+    #b45309 78%,
+    #7c2d12 100%
+  );
+  --gradient-defeat-title: linear-gradient(
+    180deg,
+    #fecaca 0%,
+    #ef4444 55%,
+    #7f1d1d 100%
+  );
+  --gradient-draw-title: linear-gradient(
+    180deg,
+    #e0f2fe 0%,
+    #38bdf8 55%,
+    #0369a1 100%
+  );
+  --halo-treasure-radial: radial-gradient(
+    circle,
+    rgba(212, 175, 55, 0.35) 0%,
+    transparent 70%
+  );
+  --halo-danger-radial: radial-gradient(
+    circle,
+    rgba(239, 68, 68, 0.30) 0%,
+    transparent 70%
+  );
+  --halo-accent-radial: radial-gradient(
+    circle,
+    rgba(56, 189, 248, 0.30) 0%,
+    transparent 70%
+  );
+
   /* Resource semantics (game-domain). */
   --color-wood: #f97316;
   --color-stone: #94a3b8;
@@ -127,6 +176,51 @@
   --color-stone: #44403c;
   --color-coin: #b45309;
   --color-supply: #6d28d9;
+
+  /* Light-theme signature gradients: parchment + copper + ink. */
+  --gradient-treasure-wordmark: linear-gradient(
+    180deg,
+    #fef3c7 0%,
+    #b45309 50%,
+    #7c2d12 100%
+  );
+  --gradient-treasure-button: linear-gradient(
+    180deg,
+    #fde68a 0%,
+    #b45309 55%,
+    #7c2d12 100%
+  );
+  --gradient-victory-title: linear-gradient(
+    180deg,
+    #fef3c7 0%,
+    #b45309 50%,
+    #7c2d12 100%
+  );
+  --gradient-defeat-title: linear-gradient(
+    180deg,
+    #b91c1c 0%,
+    #7f1d1d 100%
+  );
+  --gradient-draw-title: linear-gradient(
+    180deg,
+    #0369a1 0%,
+    #075985 100%
+  );
+  --halo-treasure-radial: radial-gradient(
+    circle,
+    rgba(180, 83, 9, 0.28) 0%,
+    transparent 70%
+  );
+  --halo-danger-radial: radial-gradient(
+    circle,
+    rgba(185, 28, 28, 0.25) 0%,
+    transparent 70%
+  );
+  --halo-accent-radial: radial-gradient(
+    circle,
+    rgba(3, 105, 161, 0.25) 0%,
+    transparent 70%
+  );
 }
 
 /* ─────────────────────────────────────────────────────────────────────
@@ -167,8 +261,8 @@
     gap: 0.5rem;
     padding: 0.875rem 1.5rem;
     border-radius: 0.875rem;
-    border: 1px solid rgba(212, 175, 55, 0.6);
-    background: linear-gradient(180deg, #e8c660 0%, #d4af37 50%, #8b7124 100%);
+    border: 1px solid var(--color-treasure);
+    background: var(--gradient-treasure-button);
     color: #1a1208;
     font-family: var(--font-display);
     font-size: 1rem;

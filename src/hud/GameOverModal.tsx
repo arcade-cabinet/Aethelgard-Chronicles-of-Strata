@@ -115,11 +115,18 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
   const titleText = isWin ? 'Victory!' : isDraw ? 'Draw!' : 'Defeat!';
   const titleClass = isWin ? 'modal-title-win' : isDraw ? 'modal-title-draw' : 'modal-title-loss';
   const titleGradient = isWin
-    ? 'linear-gradient(180deg, #fef3c7, #d4af37 45%, #b45309 78%, #7c2d12)'
+    ? 'var(--gradient-victory-title)'
     : isDraw
-      ? 'linear-gradient(180deg, #e0f2fe, #38bdf8 55%, #0369a1)'
-      : 'linear-gradient(180deg, #fecaca, #ef4444 55%, #7f1d1d)';
-  const haloColor = isWin
+      ? 'var(--gradient-draw-title)'
+      : 'var(--gradient-defeat-title)';
+  const haloGradient = isWin
+    ? 'var(--halo-treasure-radial)'
+    : isDraw
+      ? 'var(--halo-accent-radial)'
+      : 'var(--halo-danger-radial)';
+  // Halo drop-shadow color stays approximated (drop-shadow can't read
+  // a gradient var); fold-back keeps the visual cue cheap.
+  const haloShadow = isWin
     ? 'rgba(212,175,55,0.35)'
     : isDraw
       ? 'rgba(56,189,248,0.30)'
@@ -230,7 +237,7 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                     aria-hidden
                     className="absolute left-1/2 top-6 h-40 w-40 -translate-x-1/2 rounded-full"
                     style={{
-                      background: `radial-gradient(circle, ${haloColor} 0%, transparent 70%)`,
+                      background: haloGradient,
                       filter: 'blur(8px)',
                     }}
                     animate={
@@ -278,7 +285,7 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                       backgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       color: 'transparent',
-                      filter: `drop-shadow(0 8px 24px ${haloColor})`,
+                      filter: `drop-shadow(0 8px 24px ${haloShadow})`,
                     }}
                   >
                     {titleText}

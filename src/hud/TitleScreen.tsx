@@ -105,8 +105,7 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
             )}
             style={{
               fontFamily: 'var(--font-display)',
-              backgroundImage:
-                'linear-gradient(180deg, #fef3c7 0%, #d4af37 45%, #b45309 78%, #7c2d12 100%)',
+              backgroundImage: 'var(--gradient-treasure-wordmark)',
               WebkitBackgroundClip: 'text',
               backgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
