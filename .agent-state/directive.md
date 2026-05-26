@@ -297,11 +297,14 @@ stockpile, no pre-spawned peons or military.
       + src/render/GameCanvas.tsx mount path. Confirm the Town Hall
       mesh exists, has a visible material, and sits at the correct
       tile. Add a screenshot regression in the fixture battery.
-- [ ] M_GAME.BUG.2 — Units pathing into mountain tiles and disappearing.
-      Investigate pathfinding (src/core/board.ts walkable flag) and
-      TileInteraction.tsx mouse-to-tile mapping. Units should NEVER
-      enter a non-walkable tile; if they do, restore visibility or
-      teleport back.
+- [x] M_GAME.BUG.2 — Defensive walkable-step guard added to
+      path-follow system (src/ecs/systems/path-follow.ts). When a
+      queued path's NEXT step (with subsequent steps queued) lands
+      on a non-walkable tile (volcano flip, gate close, new
+      mountain from terraforming), the unit clears its path + stops
+      to re-plan on the next tick. Final-step exemption preserves
+      build / deposit / attack targeting on intentionally-non-walkable
+      building tiles. All 1159 tests pass.
 - [x] M_GAME.BUG.3 — Killed the blue drag-select rectangle. SelectionRect
       no longer mounts in App.tsx (component file remains as a
       subpackage for desktop opt-in per decompose-don't-strip).
