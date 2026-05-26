@@ -5,6 +5,14 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.20](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.19...v0.1.20) (2026-05-26)
+
+
+### Features
+
+* **hud:** universal SystemMenu drawer + Tailwind v4 + lucide-react ([#62](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/62)) ([487ab8f](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/487ab8ff9f7da8aba4b6f227306f491471925fdc))
+* **v0.10:** HUD overhaul + RTS commitment + stacking + camera/horizon + measurement-driven scales ([#65](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/65)) ([bb24ca7](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/bb24ca7cf7440ea13ac1d2c7d00ff749e9fa8cbc))
+
 ## [0.1.19](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.18...v0.1.19) (2026-05-25)
 
 
