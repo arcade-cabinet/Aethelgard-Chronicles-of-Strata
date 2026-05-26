@@ -30,6 +30,7 @@ import { cn } from '@/lib/cn';
 import type { Persistence } from '@/persistence/persistence';
 import { formatInt, formatTime } from './format';
 import { MatchSummaryCard } from './MatchSummaryCard';
+import { Halo, TreasureButton } from './primitives';
 
 interface StatLine {
   label: string;
@@ -119,13 +120,9 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
     : isDraw
       ? 'var(--gradient-draw-title)'
       : 'var(--gradient-defeat-title)';
-  const haloGradient = isWin
-    ? 'var(--halo-treasure-radial)'
-    : isDraw
-      ? 'var(--halo-accent-radial)'
-      : 'var(--halo-danger-radial)';
-  // Halo drop-shadow color stays approximated (drop-shadow can't read
-  // a gradient var); fold-back keeps the visual cue cheap.
+  // <Halo> primitive picks the radial gradient by tone; we still need
+  // a CSS color literal for the title drop-shadow (filter: drop-shadow
+  // can't read a CSS gradient var).
   const haloShadow = isWin
     ? 'rgba(212,175,55,0.35)'
     : isDraw
@@ -233,28 +230,7 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
               >
                 {/* Hero zone: pulsing halo + giant icon + outcome title. */}
                 <div className="relative flex flex-col items-center pb-4 pt-10">
-                  <motion.div
-                    aria-hidden
-                    className="absolute left-1/2 top-6 h-40 w-40 -translate-x-1/2 rounded-full"
-                    style={{
-                      background: haloGradient,
-                      filter: 'blur(8px)',
-                    }}
-                    animate={
-                      reducedMotion
-                        ? { scale: 1, opacity: 0.7 }
-                        : { scale: [1, 1.08, 1], opacity: [0.55, 0.85, 0.55] }
-                    }
-                    transition={
-                      reducedMotion
-                        ? { duration: 0 }
-                        : {
-                            duration: 3.4,
-                            repeat: Number.POSITIVE_INFINITY,
-                            ease: 'easeInOut',
-                          }
-                    }
-                  />
+                  <Halo tone={isWin ? 'treasure' : isDraw ? 'accent' : 'danger'} />
                   <div
                     className={cn(
                       'relative z-10 flex h-20 w-20 items-center justify-center rounded-full border-2 bg-black/40',
@@ -401,22 +377,14 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
                     </ul>
                   )}
 
-                  <button
-                    type="button"
+                  <TreasureButton
+                    aria-label="Reload the page to start a new game"
                     onClick={() => location.reload()}
-                    className={cn(
-                      'group relative mx-auto mt-2 flex w-full max-w-xs items-center justify-center gap-2',
-                      'rounded-xl border border-[#d4af37]/60 px-6 py-3.5 font-display text-base font-bold',
-                      'bg-gradient-to-b from-[#e8c660] via-[#d4af37] to-[#8b7124] text-[#1a1208]',
-                      'shadow-[0_8px_28px_rgba(212,175,55,0.35),inset_0_1px_0_rgba(255,255,255,0.35)]',
-                      'transition-all duration-150 hover:-translate-y-0.5',
-                      'hover:shadow-[0_12px_36px_rgba(212,175,55,0.5)] active:translate-y-0 active:scale-[0.97]',
-                    )}
-                    style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}
+                    icon={<RotateCcw className="h-4 w-4" aria-hidden />}
+                    className="mx-auto mt-2 w-full max-w-xs"
                   >
-                    <RotateCcw className="h-4 w-4" aria-hidden />
                     Re-enter Aethelgard
-                  </button>
+                  </TreasureButton>
                 </div>
               </motion.div>
             </Dialog.Content>

@@ -31,6 +31,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { cn } from '@/lib/cn';
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
+import { HeroBanner, StepProgressDots, TreasureButton } from './primitives';
 
 const ONBOARDING_KEY = PREF_KEYS.onboarding;
 
@@ -202,65 +203,13 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                   fontFamily: 'var(--font-body)',
                 }}
               >
-                {/* Hero gradient strip with step icon + ? toggle */}
-                <div className="relative h-24 overflow-hidden">
-                  <motion.div
-                    aria-hidden
-                    className="absolute inset-0"
-                    style={{
-                      backgroundImage:
-                        'linear-gradient(110deg, rgba(212,175,55,0.35) 0%, rgba(56,189,248,0.25) 45%, rgba(212,175,55,0.30) 100%)',
-                      backgroundSize: '220% 100%',
-                    }}
-                    animate={
-                      reducedMotion
-                        ? { backgroundPosition: '0% 0%' }
-                        : { backgroundPosition: ['0% 0%', '100% 0%', '0% 0%'] }
-                    }
-                    transition={
-                      reducedMotion
-                        ? { duration: 0 }
-                        : {
-                            duration: 18,
-                            repeat: Number.POSITIVE_INFINITY,
-                            ease: 'easeInOut',
-                          }
-                    }
-                  />
-                  <div className="absolute inset-0 flex items-center justify-between px-6">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={cn(
-                          'flex h-12 w-12 items-center justify-center rounded-xl',
-                          'border border-[var(--color-treasure)]/50 bg-black/40 shadow-lg',
-                          'text-[var(--color-treasure)]',
-                        )}
-                      >
-                        <StepIcon className="h-6 w-6" aria-hidden />
-                      </div>
-                      <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-on-surface-muted)]">
-                        Step {step + 1} of {steps.length}
-                      </span>
-                    </div>
-                    {/* M_HUD.SHELL.6 — kbd-shortcuts help button retired (mobile-first). */}
-                  </div>
-                </div>
+                <HeroBanner
+                  icon={StepIcon}
+                  caption={`Step ${step + 1} of ${steps.length}`}
+                />
 
-                {/* Step indicator row */}
-                <div className="flex gap-1.5 px-6 pb-1 pt-4">
-                  {steps.map((_, i) => (
-                    <div
-                      // biome-ignore lint/suspicious/noArrayIndexKey: step index IS the identity.
-                      key={`progress-dot-${i}`}
-                      aria-label={`Step ${i + 1} of ${steps.length}`}
-                      className={cn(
-                        'h-1.5 flex-1 rounded-full transition-colors',
-                        i < step && 'bg-[var(--color-on-surface-muted)]/60',
-                        i === step && 'bg-[var(--color-treasure)]',
-                        i > step && 'bg-white/8',
-                      )}
-                    />
-                  ))}
+                <div className="px-6 pb-1 pt-4">
+                  <StepProgressDots total={steps.length} current={step} />
                 </div>
 
                 {/* Card body with cross-fade step transition */}
@@ -314,34 +263,29 @@ export function OnboardingOverlay({ persistence, factionCount = 2 }: OnboardingO
                     >
                       <ChevronLeft className="h-4 w-4" aria-hidden />
                     </button>
-                    <button
-                      type="button"
+                    <TreasureButton
                       id="onboarding-next"
+                      aria-label={isLast ? 'Begin Realm — start the match' : 'Next tutorial step'}
                       onClick={next}
+                      icon={
+                        isLast ? (
+                          <Swords className="h-4 w-4" aria-hidden />
+                        ) : undefined
+                      }
                       className={cn(
-                        'flex items-center gap-2 rounded-xl px-5 py-2.5 font-display text-sm font-bold',
-                        'border border-[#d4af37]/60 text-[#1a1208]',
-                        'bg-gradient-to-b from-[#e8c660] via-[#d4af37] to-[#8b7124]',
-                        'shadow-[0_6px_22px_rgba(212,175,55,0.35),inset_0_1px_0_rgba(255,255,255,0.35)]',
-                        'transition-all duration-150',
-                        'hover:-translate-y-0.5 hover:shadow-[0_10px_30px_rgba(212,175,55,0.5),inset_0_1px_0_rgba(255,255,255,0.4)]',
-                        'active:translate-y-0 active:scale-[0.97]',
+                        'px-5 py-2.5 text-sm',
                         isLast && !reducedMotion && 'animate-pulse',
                       )}
-                      style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}
                     >
                       {isLast ? (
-                        <>
-                          <Swords className="h-4 w-4" aria-hidden />
-                          <span>Begin Realm</span>
-                        </>
+                        'Begin Realm'
                       ) : (
-                        <>
-                          <span>Next</span>
+                        <span className="flex items-center gap-2">
+                          Next
                           <ChevronRight className="h-4 w-4" aria-hidden />
-                        </>
+                        </span>
                       )}
-                    </button>
+                    </TreasureButton>
                   </div>
                 </div>
 

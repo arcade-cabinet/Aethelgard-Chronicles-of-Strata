@@ -32,6 +32,7 @@ import { MapPreview } from './MapPreview';
 import { PLAYER_COLORS } from './new-game-options';
 import { OpponentPicker } from './OpponentPicker';
 import { PresetControls } from './PresetControls';
+import { SectionCard, TreasureButton } from './primitives';
 import { SeedField } from './SeedField';
 
 /** The choices a New Game collects. */
@@ -56,51 +57,7 @@ export interface NewGameModalProps {
   onBegin: (choices: NewGameChoices) => void;
 }
 
-/** Reusable section card with a heading + icon + caption. */
-function SectionCard({
-  icon: Icon,
-  title,
-  caption,
-  children,
-  delay = 0,
-  reducedMotion,
-}: {
-  icon: typeof MapIcon;
-  title: string;
-  caption?: string;
-  children: React.ReactNode;
-  delay?: number;
-  reducedMotion: boolean;
-}) {
-  return (
-    <motion.section
-      initial={reducedMotion ? false : { opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.32, delay, ease: [0.16, 1, 0.3, 1] }}
-      className={cn(
-        'rounded-2xl border bg-[rgba(15,23,42,0.55)] backdrop-blur',
-        'border-[var(--color-border)]',
-        'shadow-[0_6px_24px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(56,189,248,0.06)]',
-      )}
-    >
-      <header className="flex items-baseline justify-between gap-3 border-b border-[var(--color-border)] px-5 pb-3 pt-4">
-        <div className="flex items-center gap-2">
-          <Icon className="h-4 w-4 text-[var(--color-treasure)]" aria-hidden />
-          <h3
-            className="font-display text-base font-semibold tracking-[0.08em] text-[var(--color-treasure)]"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            {title}
-          </h3>
-        </div>
-        {caption && (
-          <p className="hidden text-xs italic text-[var(--color-on-surface-muted)] sm:block">{caption}</p>
-        )}
-      </header>
-      <div className="px-5 py-4">{children}</div>
-    </motion.section>
-  );
-}
+// SectionCard primitive lives in src/hud/primitives/SectionCard.tsx
 
 export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps) {
   const reducedMotion = useReducedMotion() ?? false;
@@ -323,7 +280,6 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                       title="World"
                       caption="Generates terrain, resources, ramps."
                       delay={0.02}
-                      reducedMotion={reducedMotion}
                     >
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_220px]">
                         <SeedField
@@ -346,7 +302,6 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                       title="Mode"
                       caption="How the realm is won."
                       delay={0.06}
-                      reducedMotion={reducedMotion}
                     >
                       <PresetControls
                         mode={mode}
@@ -373,7 +328,6 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                       title="Opponents"
                       caption="Personality drives diplomacy and war hunger."
                       delay={0.1}
-                      reducedMotion={reducedMotion}
                     >
                       <OpponentPicker
                         aiVsAi={aiVsAi}
@@ -389,7 +343,6 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                         title="Players"
                         caption="Free-for-all across N factions, each with its own throne."
                         delay={0.14}
-                        reducedMotion={reducedMotion}
                       >
                         <div data-testid="n-player-picker" className="flex flex-col gap-4">
                           <div className="flex items-center gap-4">
@@ -494,7 +447,6 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                         title="Players"
                         caption="Pick the banner colors for the two factions."
                         delay={0.14}
-                        reducedMotion={reducedMotion}
                       >
                         <div
                           data-testid="faction-colors-row"
@@ -550,25 +502,17 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                       </span>
                     ))}
                   </div>
-                  <button
-                    type="button"
+                  <TreasureButton
                     id="begin-game"
+                    aria-label="Begin the match with the configured realm"
                     onClick={handleBegin}
                     disabled={beginDisabled}
                     aria-disabled={beginDisabled}
-                    className={cn(
-                      'group relative flex w-full items-center justify-center gap-3 overflow-hidden rounded-xl px-6 py-4 font-display text-lg',
-                      'border border-[#d4af37]/60 text-[#1a1208]',
-                      'transition-all duration-150',
-                      beginDisabled
-                        ? 'cursor-not-allowed opacity-60'
-                        : 'bg-gradient-to-b from-[#e8c660] via-[#d4af37] to-[#8b7124] shadow-[0_8px_32px_rgba(212,175,55,0.35),inset_0_1px_0_rgba(255,255,255,0.35)] hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(212,175,55,0.5),inset_0_1px_0_rgba(255,255,255,0.4)] active:translate-y-0 active:scale-[0.98]',
-                    )}
-                    style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.06em' }}
+                    icon={<Swords className="h-5 w-5" aria-hidden />}
+                    className="w-full text-lg"
                   >
-                    <Swords className="h-5 w-5" aria-hidden />
-                    <span className="relative z-10">Begin Match</span>
-                  </button>
+                    Begin Match
+                  </TreasureButton>
                 </footer>
               </motion.div>
             </Dialog.Content>
