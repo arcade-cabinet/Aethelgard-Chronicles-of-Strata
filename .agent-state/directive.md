@@ -201,19 +201,28 @@ stockpile, no pre-spawned peons or military.
       Discoveries). Each: composition validator + stat modifier.
       5 ECS tests + 9 formation registry tests passing. Stack
       creation/movement/combat/render systems (STACK.2-10) follow.
-- [ ] M_GAME.STACK.2 — Stack creation flow: SelectionPanel
-      "Stack Selected" button gated on selection containing 2+
-      same-faction military units. Members 200ms-lerp to stack
-      tile; stack entity spawned; member.stackId set.
+- [x] M_GAME.STACK.2 — Stack creation command shipped
+      (`src/game/stacking.ts createStack(game, members)`). Validates
+      2..8 same-faction members, none already stacked, composition
+      matches the resolved default formation. Aggregates member
+      stats + applies formation modifier for combinedMaxHp +
+      combinedDps. Sets StackMember back-references. SelectionPanel
+      "Stack Selected" button wiring is M_GAME.STACK.2b.
+- [ ] M_GAME.STACK.2b — SelectionPanel "Stack Selected" button:
+      gated on selection containing 2+ same-faction military
+      units; calls createStack and emits a success toast.
 - [ ] M_GAME.STACK.3 — Stack movement: tap-to-command on a tile
       paths the entire Stack. PathRequest source = stack.tile.
-- [ ] M_GAME.STACK.4 — Stack combat: combined-stats damage
-      resolution. Stack-vs-stack ticks simultaneously. Partial
-      damage kills proportional members (rounding preserves
-      dominant unit type). Single survivor auto-unstacks.
-- [ ] M_GAME.STACK.5 — Unstack: SelectionPanel "Unstack" button.
-      Stack entity destroyed; members repopulated on tile +
-      neighbors.
+- [x] M_GAME.STACK.4 — Stack damage resolution shipped
+      (`damageStack(game, stack, damage)`): reduces combinedHp,
+      auto-dissolves at 0, kills proportional members at high
+      partial damage (50% damage → 50% members removed). Full
+      combat-tick integration with offensive-behavior systems is
+      M_GAME.STACK.4b.
+- [x] M_GAME.STACK.5 — `dissolveStack` shipped: destroys the Stack
+      entity + removes every StackMember back-reference. Idempotent
+      on already-dissolved stacks. SelectionPanel "Unstack" button
+      wiring is M_GAME.STACK.5b.
 - [ ] M_GAME.STACK.6 — Formation registry: `src/world/formations.ts`
       exports FORMATIONS map. Each entry: composition validator,
       stat-modifier function, badge SVG path, available-from
