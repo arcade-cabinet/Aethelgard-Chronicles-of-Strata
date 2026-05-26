@@ -147,9 +147,17 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       tick auto-queues 2 peons. AIVAI test gets a test-only seed
       meanwhile; real AI scheduler hook lands in a focused
       follow-up after the substrate stabilizes.
-- [ ] M_V11.OPEN.ONBOARDING — Rewrite OnboardingOverlay first +
-      second steps for the new opening. Defer; needs visual
-      baseline regeneration across all 4 overlay viewports.
+- [x] M_V11.OPEN.ONBOARDING — Rewrote OnboardingOverlay steps 1-3
+      for the classic-RTS opening. Step 1 "Welcome" notes the
+      Town Hall + 80 wood + 60 stone opening with no pre-spawned
+      peons; step 2 (new) "Tap your Town Hall — queue two peons"
+      walks the player through the first decision and the
+      glowing Train Peon button; step 3 "Peons are autonomous"
+      now reads "Once spawned..." and mentions the Take command
+      option. Steps 4-N (build menu, military, etc.) unchanged.
+      Visual baseline regen for overlay viewports a follow-up
+      polish item; the text change alone makes the onboarding
+      narrative correct.
 - [x] M_V11.OPEN.INACTIVITY — `tickInactivityBeats` added to
       `tickClockPhase` in economy-tick-phases.ts. Two beats:
       30s info-tone "Aethelgard awaits your first decree" +

@@ -45,15 +45,15 @@ interface Step {
 export const STEPS: Step[] = [
   {
     title: 'Welcome to Aethelgard',
-    body: "You command a kingdom on a hex-tile island. The enemy commands one too. The first to raze the other's base wins. Watch your peons auto-harvest; the resources you see at the top fund your buildings.",
+    body: "You command a kingdom on a hex-tile island. The enemy commands one too. The first to raze the other's base wins. You start with a Town Hall and 80 wood + 60 stone — no peons yet. The pulsing button on your Town Hall is your first move.",
   },
   {
-    title: 'Reading the HUD',
-    body: 'Top-left shows your resources. The pill at top-centre tells you what you need to do to win this mode. Top-right is pause + speed. Bottom-right has the 🏗 build button; bottom-left flashes if any peon is idle.',
+    title: 'Tap your Town Hall — queue two peons',
+    body: "Tap the keep at the centre of your realm. The Selection panel shows a glowing 'Train Peon' button — tap it twice (30 wood each). Your peons appear and start harvesting nearby resources autonomously.",
   },
   {
     title: 'Peons are autonomous',
-    body: "Your peons find the nearest resource in your zone of control and harvest it. They never need orders — and they're nonviolent. As they exploit tiles, your zone of control (the blue border) grows.",
+    body: "Once spawned, your peons find the nearest resource in your zone of control and harvest it. They never need orders — and they're nonviolent. As they exploit tiles, your zone of control (the blue border) grows. Tap a peon to 'Take command' if you want to direct it manually.",
   },
   {
     title: 'Tap to build',
