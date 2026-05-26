@@ -368,6 +368,29 @@ export function tickScoringPhase(game: GameState, delta: number): void {
         }),
       );
     }
+    // M_HUD.NOTIF.WIRING.1 + M_GAME.CAMP.3 — surface the camp clear
+    // as a tap-to-focus toast so the player can zoom to the loot
+    // tile and pick up the wood/stone reward visually. The toast
+    // fires for every clearing (both player + AI) — the player's
+    // wood/stone bumped silently before this. Critical-tone for
+    // human clearings, info-tone for AI clearings.
+    if (typeof window !== 'undefined') {
+      const clearerFaction = game.factions.find((f) => f.id === cleared.clearedBy);
+      const isHuman = clearerFaction?.kind === 'human';
+      window.dispatchEvent(
+        new CustomEvent('aethelgard:toast', {
+          detail: {
+            id: `camp-cleared-${cleared.q}-${cleared.r}`,
+            tone: isHuman ? 'success' : 'info',
+            title: isHuman ? 'Barbarian camp cleared' : 'Enemy cleared a camp',
+            description: isHuman
+              ? `+50 wood, +50 stone${granted ? ' + a Discovery' : ''}.`
+              : `An enemy faction claimed the spoils.`,
+            focus: { q: cleared.q, r: cleared.r },
+          },
+        }),
+      );
+    }
     // M_V6.CARRY.RUINS-BIOME — flip the camp tile to RUINS so the
     // renderer paints "old camp remains" decoration. Walkable +
     // buildable (faction can recover the territory). NavGraph dirty
