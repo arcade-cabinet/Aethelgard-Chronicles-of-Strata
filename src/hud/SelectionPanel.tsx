@@ -121,6 +121,15 @@ interface SelectionView {
     /** All selected entities are player peons (Take/Resume applies
      *  to every one). Drives the autoMode button gate. */
     allPlayerPeons: boolean;
+    /** M_V11.SEL.PEON-VERBS.SUBMENUS — for mixed selections, expose
+     *  per-class verb surfaces. anyMilitary lets the stance fieldset
+     *  render as a per-type submenu (apply to the military subset
+     *  only); anyPlayerPeon does the same for the autoMode button.
+     *  Counts give the submenu its label ("Military (3)"). */
+    anyMilitary: boolean;
+    anyPlayerPeon: boolean;
+    militaryCount: number;
+    playerPeonCount: number;
   };
 }
 
@@ -151,18 +160,37 @@ function computeIntersectionVerbs(
   entities: ReadonlyArray<import('koota').Entity>,
 ): SelectionView['intersectionVerbs'] {
   if (entities.length === 0) {
-    return { allMilitary: false, allPlayerPeons: false };
+    return {
+      allMilitary: false,
+      allPlayerPeons: false,
+      anyMilitary: false,
+      anyPlayerPeon: false,
+      militaryCount: 0,
+      playerPeonCount: 0,
+    };
   }
   let allMilitary = true;
   let allPlayerPeons = true;
+  let militaryCount = 0;
+  let playerPeonCount = 0;
   for (const e of entities) {
     const u = e.get(Unit);
     const f = e.get(FactionTrait)?.faction;
-    if (!u || !MILITARY_UNIT_TYPES.has(u.unitType)) allMilitary = false;
-    if (!u || u.unitType !== 'Peon' || f !== 'player') allPlayerPeons = false;
-    if (!allMilitary && !allPlayerPeons) break;
+    const isMilitary = !!(u && MILITARY_UNIT_TYPES.has(u.unitType));
+    const isPlayerPeon = !!(u && u.unitType === 'Peon' && f === 'player');
+    if (isMilitary) militaryCount++;
+    if (isPlayerPeon) playerPeonCount++;
+    if (!isMilitary) allMilitary = false;
+    if (!isPlayerPeon) allPlayerPeons = false;
   }
-  return { allMilitary, allPlayerPeons };
+  return {
+    allMilitary,
+    allPlayerPeons,
+    anyMilitary: militaryCount > 0,
+    anyPlayerPeon: playerPeonCount > 0,
+    militaryCount,
+    playerPeonCount,
+  };
 }
 
 /** Build a display view from the selected entity. */
@@ -434,20 +462,46 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
     onBeginBuild(ctx);
   };
 
-  /** M_POLISH2.RTS.16 — change the selected military unit's stance. */
+  /** M_POLISH2.RTS.16 + M_V11.SEL.PEON-VERBS.SUBMENUS — change
+   *  stance for the military subset of the selection. Multi-select
+   *  with mixed types: applies to military entities only (peons
+   *  skipped). Single-select: applies to the primary if military. */
   const changeStance = (mode: StanceMode) => {
-    const entity = selectedEntity(game);
-    if (!entity) return;
-    setStance(game, entity, mode, 'player');
-    emitUiSound('ui-button-click');
+    const all = selectedEntities(game);
+    const targets = all.length > 0 ? all : [selectedEntity(game)].filter(Boolean);
+    let okCount = 0;
+    for (const e of targets) {
+      if (!e) continue;
+      const u = e.get(Unit);
+      if (!u || !MILITARY_UNIT_TYPES.has(u.unitType)) continue;
+      setStance(game, e, mode, 'player');
+      okCount++;
+    }
+    emitUiSound(okCount > 0 ? 'ui-button-click' : 'ui-error');
   };
 
   /** M_V11.STACK.PANEL — switch the selected Stack's formation. */
   const changeFormation = (target: FormationId) => {
-    const entity = selectedEntity(game);
-    if (!entity) return;
-    const result = setStackFormation(game, entity, target);
-    emitUiSound(result.ok ? 'ui-button-click' : 'ui-error');
+    // M_V11.STACK.PANEL.MULTI-STACK — apply formation switch across
+    // EVERY selected stack entity (not just the primary). Mixed
+    // single + multi flows: single → loop runs once on the primary;
+    // multi → loop runs over each selected Stack entity. Non-stack
+    // members in the selection are skipped (setStackFormation
+    // requires a Stack trait).
+    const all = selectedEntities(game);
+    const targets = all.length > 0 ? all.filter((e) => e.has(Stack)) : [];
+    if (targets.length === 0) {
+      const primary = selectedEntity(game);
+      if (!primary) return;
+      const result = setStackFormation(game, primary, target);
+      emitUiSound(result.ok ? 'ui-button-click' : 'ui-error');
+      return;
+    }
+    let okCount = 0;
+    for (const stack of targets) {
+      if (setStackFormation(game, stack, target).ok) okCount++;
+    }
+    emitUiSound(okCount > 0 ? 'ui-button-click' : 'ui-error');
   };
 
   /** M_V11.SEL.ALL-OF-TYPE — select every same-faction unit of the
@@ -609,8 +663,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                 so peon+footman mixed selections don't surface Stance.
                 In single-select, view.stance !== null IS the check
                 (set when the primary is military). */}
-            {view.stance !== null &&
-              (view.multi === null || view.intersectionVerbs.allMilitary) && (
+            {(view.stance !== null || (view.multi !== null && view.intersectionVerbs.anyMilitary)) && (
                 <div style={{ marginTop: 10 }}>
                   <div
                     style={{
@@ -621,7 +674,9 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                       marginBottom: 4,
                     }}
                   >
-                    Stance
+                    {view.multi && !view.intersectionVerbs.allMilitary
+                      ? `Stance — Military (${view.intersectionVerbs.militaryCount})`
+                      : 'Stance'}
                   </div>
                   <fieldset
                     style={{
@@ -760,20 +815,20 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                 );
               })()}
 
-            {/* M_GAME.MODE.PEON.2 — peon autonomy action. When the
-                selected entity is a player peon, expose Take command
-                (if currently auto) or Resume automation (if manual).
-                M_V11.SEL.PEON-VERBS — in multi-select, gate on
-                intersectionVerbs.allPlayerPeons so a mixed peon+
-                footman group doesn't surface a verb that wouldn't
-                apply to half of them. */}
-            {view.peonAutoMode !== null &&
-              (view.multi === null || view.intersectionVerbs.allPlayerPeons) && (
+            {/* M_GAME.MODE.PEON.2 + M_V11.SEL.PEON-VERBS.SUBMENUS —
+                peon autonomy action. Single-select: peon's autoMode
+                is non-null. Multi-select: renders as a per-class
+                submenu when ANY selected entity is a player peon,
+                operating on the peon subset only. */}
+            {(view.peonAutoMode !== null ||
+              (view.multi !== null && view.intersectionVerbs.anyPlayerPeon)) && (
                 <div style={{ marginTop: 10 }}>
                   <HudButton
                     label={
                       view.multi
-                        ? `${view.peonAutoMode === 'auto' ? 'Take all' : 'Resume all'} (${view.multi.total})`
+                        ? view.intersectionVerbs.allPlayerPeons
+                          ? `${view.peonAutoMode === 'auto' ? 'Take all' : 'Resume all'} (${view.multi.total})`
+                          : `Take peons (${view.intersectionVerbs.playerPeonCount})`
                         : view.peonAutoMode === 'auto'
                           ? 'Take command'
                           : 'Resume automation'

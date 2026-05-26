@@ -431,16 +431,24 @@ following sub-items previously closed-with-defers are re-opened.
       the multiplier shape. Implemented as workCrewMultiplier
       helper in harvest.ts; 5 unit tests in
       src/ecs/systems/__tests__/work-crew-buff.test.ts.
-- [ ] M_V11.STACK.PANEL.MULTI-STACK — extend setStackFormation
+- [x] M_V11.STACK.PANEL.MULTI-STACK — extend setStackFormation
       to apply across multi-stack selection so the user can flip
-      formation on a group of cohorts at once. The current
-      single-stack path stays.
-- [ ] M_V11.SEL.PEON-VERBS.SUBMENUS — actual per-type submenu
-      surfaces in the SelectionPanel for mixed selections
-      (peon-verb fieldset visible alongside military-stance
-      fieldset when both classes are selected). The current
-      intersection-gates hide both for mixed selection; surface
-      them in a "per-type submenu" expander instead.
+      formation on a group of cohorts at once. Implemented in
+      SelectionPanel.changeFormation: walks selectedEntities,
+      filters to entities with Stack trait, iterates
+      setStackFormation per target. Single-selection falls through
+      to the primary path. Emits ui-button-click if any switch
+      landed, ui-error if all rejected.
+- [x] M_V11.SEL.PEON-VERBS.SUBMENUS — actual per-type submenu
+      surfaces in the SelectionPanel for mixed selections.
+      intersectionVerbs gained anyMilitary + anyPlayerPeon +
+      militaryCount + playerPeonCount slots. The stance fieldset
+      now renders when ANY military entity is selected (label
+      flips to "Stance — Military (N)" in mixed cases), applying
+      to the military subset only. The autoMode button renders
+      when ANY player peon is selected ("Take peons (N)" in
+      mixed cases). Mixed peon+military selection now surfaces
+      BOTH verb sets — no more all-or-nothing intersection.
 - [ ] M_V11.SEL.ALL-OF-TYPE.BIOME — biome-scoped "Select All Peons
       of [biome X]" variant. Plumbs biome into the all-of-type
       walker via game.board.tiles lookup.
