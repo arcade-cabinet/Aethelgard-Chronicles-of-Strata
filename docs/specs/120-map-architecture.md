@@ -120,7 +120,6 @@ canonical paired set is:
 | frontier-raid | continent OR dry-land | fast military pressure; choke-heavy |
 | long-reign    | continent        | attrition match; multiple alternate chokes |
 | strata-wars   | continent        | larger landmass, 2–3 layered chokes        |
-| age-of-strata | balanced OR archipelago | 4X — exploration matters, more islands |
 | coexistence   | archipelago      | sandbox — relaxed chokes, abundant relief  |
 
 Other mode/type combinations remain selectable; the table above
@@ -199,23 +198,8 @@ be held + flipped, not just funnels.
 - **Balance**: symmetric, but central zone is intentionally
   contested (no one starts holding it).
 
-### age-of-strata (4X turn-based, 60-turn cap)
-
-Exploration matters. Map should reward EXPANSION (Wonder building,
-era progression). Less about RTS-style choke-and-funnel; more about
-turn-by-turn pressure of where to settle next.
-
-- **Choke architecture**: chokes appear later — initial expansion
-  is open. Mid-game chokes form as zones bump into each other.
-- **Pressure points**: Wonder buildable tiles (era-gated), high-
-  yield resource clusters.
-- **Relief valves**: peripheral islands (archipelago variant gives
-  the strongest 4X exploration feel).
-- **Elevation slowdown**: applies to TURN movement costs too —
-  HIGHLAND/MOUNTAIN tiles cost more turn-action budget.
-- **Fortification**: Walls + Wonders both relevant.
-- **Balance**: symmetric start, but the map deliberately HAS
-  asymmetric resource clusters so 4X exploration finds value.
+<!-- M_V11.PURGE — age-of-strata (4X) section removed per the RTS
+     commitment in docs/specs/200-genre-commitment.md. -->
 
 ### coexistence (no-win sandbox)
 
@@ -372,11 +356,11 @@ Today: bases are mirror-symmetric. For replayability + 4X depth:
 
 ### 4. Late-game systems (M_FUN.LATE)
 
-Today: long-reign + age-of-strata are the long modes but get
-repetitive past ~10 minutes. Add:
+Today: long-reign is the long mode but gets repetitive past
+~10 minutes. Add:
 
-- **Era progression** (already in age-of-strata): extend to all
-  modes — tech eras unlock new buildings + units.
+- **Era progression** (M_V11.PURGE: was age-of-strata only;
+  now an open RTS-mode idea — tech eras unlock new buildings + units).
 - **Settler / colony** unit: build a 2nd Town Hall on a peripheral
   island. Multi-base play.
 - **Diplomatic events** (3+ faction modes, future): temporary

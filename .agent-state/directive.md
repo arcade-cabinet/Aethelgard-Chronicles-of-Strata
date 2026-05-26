@@ -110,10 +110,15 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       age-of-strata-win) + ai-profiles.test.ts + modes-4x.test.ts
       + era-progress-pill.browser.test.tsx +
       victory-conditions.test.ts. Test count: 1165 → 1129.
-- [ ] M_V11.PURGE.DOCS — Strike 4X / era / turn references from
-      docs/specs/*.md (excluding historical PRD-v0.4..v0.10).
-      Update README + CLAUDE.md. (Defer to a docs-sweep PR after
-      the code purge stabilizes.)
+- [x] M_V11.PURGE.DOCS — Stripped 4X / age-of-strata references
+      from docs/specs/120-map-architecture.md (mode table + per-mode
+      design section + late-game systems caveat),
+      docs/lore/00-canon.md (Era of the Aged Strata table row +
+      Renaissance ascendancy reframed as general Wonder-victory),
+      docs/lore/factions/mystic.md (preferred-mode line). README
+      + CLAUDE.md had no 4X refs to strip. Historical PRD-v0.4
+      through PRD-v0.10 preserved as append-only history per the
+      spec.
 
 ### §2 — Classic-RTS opening (M_V11.RTS-OPEN)
 

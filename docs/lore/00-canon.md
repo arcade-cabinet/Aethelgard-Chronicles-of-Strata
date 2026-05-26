@@ -48,7 +48,7 @@ one-to-one to those eras — playing a mode is playing in its era.
 | **Era of Frontier-Raid** | `frontier-raid` | A defender's age — raids from beyond the cartographic edge test how long a kingdom can hold its frontier. |
 | **Era of Long-Reign** | `long-reign` | The endurance age. A dynasty that survives long enough through escalating mythic events earns its place in the chronicle. |
 | **Era of Strata-Wars** | `strata-wars` | The territorial age. Whoever holds the strata long enough redraws the map. |
-| **Era of the Aged Strata** | `age-of-strata` | The grand-strategic age (4X). N rival realms; technology, diplomacy, wonders, and the Renaissance-tier mythic ascendancy. |
+<!-- M_V11.PURGE — Era of the Aged Strata removed with the 4X mode. -->
 | **Era of Coexistence** | `coexistence` | The pacific age — the strata teach restraint. Conflict is muted; cohabitation is the win condition. |
 
 A campaign is, conceptually, a journey through the eras as the
@@ -97,10 +97,15 @@ expand row-by-row.
 
 ## VI. The Renaissance ascendancy
 
-When a faction in `age-of-strata` mode reaches the Renaissance era and
-builds a Wonder, they have *touched the Mythic Stratum directly*.
-This is the win condition's fiction: the realm has graduated from
-caring about borders to caring about understanding. The Wonder is
+<!-- M_V11.PURGE — was age-of-strata-only; reframed as the general
+     RTS Wonder-victory condition. The fiction stands; the gating
+     mode is gone. -->
+
+When a faction builds a Wonder and holds it through the
+WONDER_COUNTDOWN_SECONDS timer (per economy-tick-phases.ts),
+they have *touched the Mythic Stratum directly*. This is the
+win condition's fiction: the realm has graduated from caring
+about borders to caring about understanding. The Wonder is
 both a building and a covenant.
 
 ## VII. Why the player's faction is "player"
