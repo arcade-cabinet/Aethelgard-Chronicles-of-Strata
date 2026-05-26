@@ -135,6 +135,11 @@ export function FixtureApp({ fixture }: FixtureAppProps) {
       );
     }
 
+    // (In-game HUD composition is captured via the full App + the
+    // Maestro flow .maestro/menu-to-onboarding.yaml — mounting the
+    // ECS + r3f Canvas just for a screenshot is too heavyweight for
+    // this fixture system.)
+
     default:
       return (
         <div
