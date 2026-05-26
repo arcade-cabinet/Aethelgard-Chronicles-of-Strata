@@ -191,8 +191,14 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       M_V11.STACK.RENDER (still pending) — for now the single
       moveUnit call advances the proxy + the rest of the stack
       follows once STACK.RENDER + the move-system pinning lands.
-- [ ] M_V11.STACK.STEP-LERP — 200ms member-to-stack-tile lerp on
-      stack creation.
+- [x] M_V11.STACK.STEP-LERP — createStack now picks the first
+      member's tile as the canonical stack tile and queues a
+      single-step PathQueue toward it for every non-stack-tile
+      member. The existing pathFollowSystem walks Transform
+      along its per-tick step distance (the same per-frame lerp
+      used for normal moves), so members snap into formation
+      over ~12 frames (≈200ms at 60Hz). Members already on the
+      stack tile get no path queue (no-op).
 - [ ] M_V11.STACK.COMBAT — OffensiveBehavior routes damage to
       Stack.combinedHp via damageStack when target is a Stack.
       Stack-vs-stack simultaneous tick.

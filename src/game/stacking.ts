@@ -12,6 +12,7 @@ import {
   FactionTrait,
   Health,
   HexPosition,
+  PathQueue,
   Stack,
   StackMember,
   Unit,
@@ -106,6 +107,16 @@ export function createStack(game: GameState, members: Entity[]): StackResult {
   }
   const stats = spec.combine(agg);
 
+  // M_V11.STACK.STEP-LERP — pick the FIRST member's tile as the
+  // canonical stack tile. The rest of the members will path to it
+  // via a single-step PathQueue queued below; pathFollowSystem
+  // lerps their Transform over its existing per-tick step distance
+  // (~200ms for a 1-hex adjacent move at default speed). Members
+  // already on the stack tile get an empty queue (no-op).
+  const firstMember = members[0];
+  const stackHex = firstMember?.get(HexPosition);
+  const stackTileKey = stackHex ? `${stackHex.q},${stackHex.r}` : undefined;
+
   const stack = game.world.spawn(Stack);
   const stackId = stack.id();
   stack.set(Stack, {
@@ -119,6 +130,17 @@ export function createStack(game: GameState, members: Entity[]): StackResult {
   for (const m of members) {
     if (!m.has(StackMember)) m.add(StackMember);
     m.set(StackMember, { stackId });
+    // M_V11.STACK.STEP-LERP — non-stack-tile members get a
+    // single-step PathQueue toward the stack tile. The
+    // pathFollowSystem walks Transform along the existing
+    // per-tick step distance + flips HexPosition on arrival;
+    // the visual effect is a snappy lerp into formation.
+    if (!stackTileKey || !stackHex) continue;
+    const hex = m.get(HexPosition);
+    if (!hex || (hex.q === stackHex.q && hex.r === stackHex.r)) continue;
+    if (!m.has(PathQueue)) m.add(PathQueue);
+    const stepKey = `${stackTileKey},${stackHex.level}`;
+    m.set(PathQueue, { steps: [stepKey] });
   }
   return { ok: true, stack };
 }
