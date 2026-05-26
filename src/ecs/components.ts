@@ -441,6 +441,70 @@ export const Stance = trait({ mode: 'defensive' as StanceMode });
 export const CommandedTile = trait({ q: 0, r: 0 });
 
 // ---------------------------------------------------------------------------
+// M_GAME.STACK.1 — Stack components (per docs/specs/201-stacking-and-formations.md)
+// ---------------------------------------------------------------------------
+
+/** A formation id — gates which combined-stat modifier applies to a Stack. */
+export type FormationId =
+  | 'rabble'
+  | 'phalanx'
+  | 'cadre'
+  | 'wedge'
+  | 'skirmish-line'
+  | 'square'
+  | 'combined-arms'
+  | 'work-crew';
+
+/**
+ * A multi-member stack of same-faction units occupying a single tile.
+ * The Stack entity itself is created when 2+ units stack-up; its
+ * members keep their Unit + FactionTrait + HexPosition traits but also
+ * gain a StackMember back-reference so render + pathing systems can
+ * early-out on per-member ticks (the stack drives motion + combat).
+ *
+ * `members` is an Entity[] — koota uses numeric ids; the Stack
+ * substrate stores the live Entity refs so a member's death simply
+ * filters the array. When `members.length <= 1` the stack auto-
+ * dissolves (handled by stackSystem in M_GAME.STACK.4).
+ *
+ * `combinedHp` / `combinedMaxHp` are SUMMED across members at
+ * formation time + on every member-death. They drive Stack-vs-Stack
+ * combat resolution.
+ *
+ * `combinedDps` is derived from members' Combatant.attackDamage /
+ * attackCooldown × the formation's stat modifier.
+ *
+ * `dominantUnitType` powers the badge icon (the unit type with the
+ * largest member count, tie-broken by member order).
+ */
+export const Stack = trait(
+  (): {
+    members: number[]; // Entity ids; koota Entity is a numeric handle
+    formationId: FormationId;
+    combinedHp: number;
+    combinedMaxHp: number;
+    combinedDps: number;
+    dominantUnitType: UnitType;
+  } => ({
+    members: [],
+    formationId: 'rabble',
+    combinedHp: 0,
+    combinedMaxHp: 0,
+    combinedDps: 0,
+    dominantUnitType: 'Footman',
+  }),
+);
+
+/**
+ * Back-reference: a Unit entity that's part of a Stack. Set when the
+ * member joins; cleared when the stack dissolves or the member is
+ * un-stacked. `stackId === -1` means "not in a stack" (legal but
+ * never persisted — the trait is removed entirely instead, so a
+ * has-Stack-member ECS query returns only true members).
+ */
+export const StackMember = trait({ stackId: -1 });
+
+// ---------------------------------------------------------------------------
 // SERIALIZED_TRAITS (M_REGISTRY.25)
 // ---------------------------------------------------------------------------
 
@@ -492,4 +556,8 @@ export const SERIALIZED_TRAITS: ReadonlyArray<{ name: string; traitObj: any }> =
   // M_POLISH2.RTS.16 — stance system traits round-trip across save/load.
   { name: 'Stance', traitObj: Stance },
   { name: 'CommandedTile', traitObj: CommandedTile },
+  // M_GAME.STACK.1 — Stack + StackMember round-trip so a saved game
+  // resumes with all formations and member back-references intact.
+  { name: 'Stack', traitObj: Stack },
+  { name: 'StackMember', traitObj: StackMember },
 ];

@@ -189,9 +189,18 @@ stockpile, no pre-spawned peons or military.
   multiple Discoveries).
 - Cleans up the board AND syncs naturally with Discoveries.
 
-- [ ] M_GAME.STACK.1 — Add `Stack` component + ECS substrate
-      (members, formationId, combinedStats, dominantUnitType).
-      Pure-data + unit tests; no UI/rendering yet.
+- [x] M_GAME.STACK.1 — Stack + StackMember traits shipped on
+      koota's ECS in src/ecs/components.ts. Stack carries
+      members (Entity-id array), formationId, combinedHp/MaxHp/Dps,
+      dominantUnitType. StackMember is the unit's back-reference
+      (stackId; -1 = not in a stack). Both are registered in
+      SERIALIZED_TRAITS so save/load round-trips them.
+      Formation registry shipped at src/world/formations.ts:
+      8 formations (Rabble + Work-Crew defaults; Phalanx, Cadre,
+      Wedge, Skirmish Line, Square, Combined Arms unlocked via
+      Discoveries). Each: composition validator + stat modifier.
+      5 ECS tests + 9 formation registry tests passing. Stack
+      creation/movement/combat/render systems (STACK.2-10) follow.
 - [ ] M_GAME.STACK.2 — Stack creation flow: SelectionPanel
       "Stack Selected" button gated on selection containing 2+
       same-faction military units. Members 200ms-lerp to stack
