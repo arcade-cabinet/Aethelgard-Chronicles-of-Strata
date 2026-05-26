@@ -390,16 +390,14 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       Deferred until the PR open + reviewer trio findings folded
       so the locked baselines represent the merge state, not an
       intermediate commit.
-- [ ] [WAIT-OPEN-PR] M_V11.RELEASE.LADDER — One long-running
-      branch `feat/v0.11-cycle` accumulates the v0.11 work as
-      discrete commits. Per ~/.claude/CLAUDE.md autonomy doctrine
-      (and user direction 2026-05-26): NO per-commit PRs — that
-      churn pattern is forbidden. Open ONE PR for the whole cycle
-      when §1-§8 + review trio + visual lock are all done.
-      release-please cuts the version on merge. All §1-§8
-      directive items are NOW closed; remaining gates are the
-      reviewer-trio dispatch (run after every commit) + the
-      PROFILE/VISUAL.LOCK passes above + PR creation.
+- [ ] [WAIT-CI] M_V11.RELEASE.LADDER — One long-running branch
+      `feat/v0.11-cycle` accumulates the v0.11 work as discrete
+      commits. Per ~/.claude/CLAUDE.md autonomy doctrine (and
+      user direction 2026-05-26): NO per-commit PRs — that
+      churn pattern is forbidden. PR opens when push lands and
+      verify is green; release-please cuts the version on merge.
+      Status as of fingerprint 23653b1: branch pushed (or push
+      in flight); awaiting GitHub PR creation + CI green.
 
 ### §8 — Procedural buildings via composed structural primitives (M_V11.PROCMESH)
 
