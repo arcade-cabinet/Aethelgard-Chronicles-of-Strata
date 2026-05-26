@@ -62,7 +62,6 @@ describe('portal teleport (M_FUN.MAP.PORTAL)', () => {
         attackTimer: 0,
         fatigue: 0,
         fatigueDecayTimer: 0,
-        restUntilTurn: 0,
       }),
     );
     // Advance enough for the unit to reach (1,0) — the portal.
@@ -114,7 +113,7 @@ describe('M_V8.PORTAL-STONE.COOLDOWN-HOOK — onPortalStoneArrival callback', ()
     );
 
     const calledWith: string[] = [];
-    pathFollowSystem(world, 10, 1, tiles, undefined, (factionId) => calledWith.push(factionId));
+    pathFollowSystem(world, 10, 1, tiles, (factionId) => calledWith.push(factionId));
 
     expect(calledWith).toEqual(['player']);
   });
@@ -139,7 +138,7 @@ describe('M_V8.PORTAL-STONE.COOLDOWN-HOOK — onPortalStoneArrival callback', ()
     );
 
     const calledWith: string[] = [];
-    pathFollowSystem(world, 10, 1, tiles, undefined, (factionId) => calledWith.push(factionId));
+    pathFollowSystem(world, 10, 1, tiles, (factionId) => calledWith.push(factionId));
 
     // Teleport happened (GRASS portal is still a valid portal) but no
     // PORTAL_STONE cooldown should fire.

@@ -71,15 +71,6 @@ export function pathFollowSystem(
   speedMultiplier = 1,
   tiles?: BoardData['tiles'],
   /**
-   * M_FUN.MECH.FATIGUE.TURN-MODE — current turn number for
-   * turn-based modes. When provided, units with
-   * `Combatant.restUntilTurn > currentTurn` are gated out of
-   * movement (they SKIP the turn to recover from fatigue).
-   * Omit (or pass undefined) in RTS mode — the existing
-   * continuous-decay path applies.
-   */
-  _currentTurn?: number,
-  /**
    * M_V8.PORTAL-STONE.COOLDOWN-HOOK — called when a unit teleports
    * through a PORTAL_STONE tile. Caller (economy-tick-phases) wires
    * this to refreshPortalStoneCooldown so the 60s per-faction gate
@@ -89,7 +80,7 @@ export function pathFollowSystem(
    */
   onPortalStoneArrival?: (factionId: string) => void,
 ): void {
-  const currentTurn = _currentTurn;
+  // M_V11.PURGE — turn-based fatigue gating removed (RTS only).
   // M_FUN.MAP.FORTIFY — build the per-faction fortified-tile index
   // ONCE per tick. Read by the per-arrival fatigue branch via
   // O(1) Set.has() instead of the prior per-arrival world.query.
@@ -115,18 +106,8 @@ export function pathFollowSystem(
         movement.isMoving = false;
         return;
       }
-      // M_FUN.MECH.FATIGUE.TURN-MODE — turn-based fatigue gating.
-      // If we're in turn-based mode AND this combatant's
-      // restUntilTurn hasn't elapsed yet, skip the move step.
-      // (In RTS, currentTurn is undefined and this branch never
-      // fires — the continuous-decay path runs unchanged.)
-      if (currentTurn !== undefined) {
-        const c = entity.get(Combatant);
-        if (c && c.restUntilTurn > currentTurn) {
-          movement.isMoving = false;
-          return;
-        }
-      }
+      // M_V11.PURGE — turn-based fatigue gating removed (4X-only).
+      // RTS uses continuous fatigueDecayTimer instead.
       movement.isMoving = true;
       const step = parseStep(next);
       // M_GAME.BUG.2 — defensive walkable check. If the next step's
@@ -225,18 +206,13 @@ export function pathFollowSystem(
                   // M_FUN.MECH.FATIGUE.TURN-MODE — in turn-based
                   // mode, set restUntilTurn so the next 1-2 turns
                   // skip this unit's movement (proportional to the
-                  // biome's attributeStrength). RTS mode leaves
-                  // restUntilTurn at 0 and the continuous fatigue
-                  // multiplier on damage carries the cost instead.
-                  const restTurns =
-                    currentTurn !== undefined
-                      ? Math.max(1, Math.round(rule.attributeStrength * 2))
-                      : 0;
+                  // M_V11.PURGE — RTS continuous-fatigue path only.
+                  // restUntilTurn / turn-based gating removed; the
+                  // damage-side fatigue multiplier carries the cost.
                   entity.set(Combatant, {
                     ...c,
                     fatigue: Math.min(1, c.fatigue + rule.attributeStrength),
                     fatigueDecayTimer: 0,
-                    restUntilTurn: currentTurn !== undefined ? currentTurn + restTurns : 0,
                   });
                 }
               }
