@@ -31,10 +31,10 @@ import { ResourceNodes } from '@/world/ResourceNodes';
 import { ResourceText } from '@/world/ResourceText';
 import { Roads } from '@/world/Roads';
 import { SelectionRing } from '@/world/SelectionRing';
+import { StackRender } from '@/world/StackRender';
 import { Terrain } from '@/world/Terrain';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
-import { StackRender } from '@/world/StackRender';
 import { UnitHexOutline } from '@/world/UnitHexOutline';
 import { Units } from '@/world/Units';
 import { VolcanoLayer } from '@/world/VolcanoLayer';
@@ -355,7 +355,7 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
         canvas.addEventListener('webglcontextlost', onLost as EventListener, false);
         canvas.addEventListener('webglcontextrestored', onRestored, false);
         // Defensive: if gl is a stub from a fallback path, surface.
-        if (!gl || !gl.getContext()) {
+        if (!gl?.getContext()) {
           console.error(
             '[GameCanvas] WebGL CONTEXT FAILED to initialize — board will be blank. ' +
               'Browser refused getContext("webgl"). Check device GPU compat.',

@@ -142,8 +142,8 @@ export function Wonder({
         [width / 2 - 0.08, -depth / 2 + 0.08],
         [-width / 2 + 0.08, depth / 2 - 0.08],
         [width / 2 - 0.08, depth / 2 - 0.08],
-      ].map(([x, z], i) => (
-        <group key={i}>
+      ].map(([x, z]) => (
+        <group key={`corner-${x},${z}`}>
           <mesh
             position={[x as number, 0.28 + bodyHeight / 2, z as number]}
             castShadow

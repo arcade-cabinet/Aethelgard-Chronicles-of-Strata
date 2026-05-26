@@ -43,7 +43,7 @@ export function Column({
           const fz = Math.sin(angle) * (radius * 0.95);
           return (
             <mesh
-              key={i}
+              key={`flute-${angle.toFixed(3)}`}
               position={[fx, baseY + shaftHeight / 2, fz]}
               rotation={[0, -angle, 0]}
               castShadow

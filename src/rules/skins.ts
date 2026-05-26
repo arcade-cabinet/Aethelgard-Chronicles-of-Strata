@@ -100,7 +100,9 @@ export interface StructureModel {
    *  prop already adjusted for yOffset; scale is applied via a
    *  parent group transform. Wrap in FactionMaterialsProvider at
    *  the call site so primitives pick up the faction palette. */
-  proceduralComponent?: (props: { position?: [number, number, number] }) => import('react').ReactElement;
+  proceduralComponent?: (props: {
+    position?: [number, number, number];
+  }) => import('react').ReactElement;
 }
 
 /**

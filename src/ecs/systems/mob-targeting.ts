@@ -25,14 +25,7 @@
 import type { Entity, World } from 'koota';
 import { COMBAT } from '@/config/combat';
 import { hexDistance } from '@/core/hex';
-import {
-  Combatant,
-  EnemyTarget,
-  FactionTrait,
-  Health,
-  HexPosition,
-  Unit,
-} from '@/ecs/components';
+import { Combatant, EnemyTarget, FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 
 const AGGRO_RADIUS: number = COMBAT.ai.aggroRadius;
 

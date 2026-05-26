@@ -25,13 +25,7 @@ import {
 import { deathSystem } from '@/ecs/systems/death';
 
 function spawnCamp(world: World, factionId: string, q: number, r: number) {
-  const e = world.spawn(
-    FactionBase,
-    Health,
-    HexPosition,
-    EnemySpawner,
-    FactionTrait,
-  );
+  const e = world.spawn(FactionBase, Health, HexPosition, EnemySpawner, FactionTrait);
   e.set(FactionTrait, { faction: factionId as 'player' | 'enemy' });
   e.set(HexPosition, { q, r, level: 0 });
   e.set(EnemySpawner, {

@@ -50,16 +50,19 @@ export function BattlementRow({
   const step = count > 1 ? (length - blockWidth) / (count - 1) : 0;
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
-      {Array.from({ length: count }, (_, i) => (
-        <Battlement
-          key={i}
-          width={blockWidth}
-          height={blockHeight}
-          depth={blockDepth}
-          position={[start + i * step, 0, 0]}
-          material={material}
-        />
-      ))}
+      {Array.from({ length: count }, (_, i) => {
+        const x = start + i * step;
+        return (
+          <Battlement
+            key={`crenel-x${x.toFixed(3)}`}
+            width={blockWidth}
+            height={blockHeight}
+            depth={blockDepth}
+            position={[x, 0, 0]}
+            material={material}
+          />
+        );
+      })}
     </group>
   );
 }

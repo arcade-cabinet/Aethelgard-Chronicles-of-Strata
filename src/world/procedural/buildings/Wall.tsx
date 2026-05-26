@@ -45,13 +45,14 @@ export function Wall({
           const xOffset = c % 2 === 0 ? 0 : actualBrickWidth / 2;
           const x = -length / 2 + actualBrickWidth / 2 + b * actualBrickWidth + xOffset;
           if (x > length / 2) return null;
+          const y = 0.08 + brickHeight / 2 + c * brickHeight;
           return (
             <StoneBrick
-              key={`${c}-${b}`}
+              key={`brick-x${x.toFixed(3)}-y${y.toFixed(3)}`}
               width={actualBrickWidth - 0.01}
               height={brickHeight - 0.005}
               depth={depth}
-              position={[x, 0.08 + brickHeight / 2 + c * brickHeight, 0]}
+              position={[x, y, 0]}
               material={mats.stone}
             />
           );

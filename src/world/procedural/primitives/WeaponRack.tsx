@@ -35,11 +35,7 @@ export function WeaponRack({
         <meshStandardMaterial {...rackMaterial} />
       </mesh>
       {/* horizontal cross bar at chest level */}
-      <mesh
-        position={[0, height * 0.7, 0]}
-        rotation={[0, 0, Math.PI / 2]}
-        castShadow
-      >
+      <mesh position={[0, height * 0.7, 0]} rotation={[0, 0, Math.PI / 2]} castShadow>
         <cylinderGeometry args={[postRadius, postRadius, width, 6]} />
         <meshStandardMaterial {...rackMaterial} />
       </mesh>
@@ -49,7 +45,7 @@ export function WeaponRack({
         const x = -width / 2 + 0.04 + t * (width - 0.08);
         const shaftHeight = height * 0.95;
         return (
-          <group key={i} position={[x, 0, 0.02]} rotation={[0.05, 0, 0]}>
+          <group key={`weapon-${t.toFixed(3)}`} position={[x, 0, 0.02]} rotation={[0.05, 0, 0]}>
             <mesh position={[0, shaftHeight / 2, 0]} castShadow>
               <cylinderGeometry args={[0.008, 0.008, shaftHeight, 5]} />
               <meshStandardMaterial {...shaftMaterial} />

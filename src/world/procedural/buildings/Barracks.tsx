@@ -43,14 +43,16 @@ export function Barracks({
         material={mats.stone}
       />
       {/* corner posts */}
-      {([
-        [-width / 2, depth / 2],
-        [width / 2, depth / 2],
-        [-width / 2, -depth / 2],
-        [width / 2, -depth / 2],
-      ] as Array<[number, number]>).map(([x, z], i) => (
+      {(
+        [
+          [-width / 2, depth / 2],
+          [width / 2, depth / 2],
+          [-width / 2, -depth / 2],
+          [width / 2, -depth / 2],
+        ] as Array<[number, number]>
+      ).map(([x, z]) => (
         <WoodPost
-          key={i}
+          key={`post-${x},${z}`}
           height={bodyHeight}
           width={0.08}
           depth={0.08}

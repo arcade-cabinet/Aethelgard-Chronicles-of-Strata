@@ -86,7 +86,6 @@ export function campCountForMapSize(mapSize: string | number): number {
       return 6;
     case 'huge':
       return 8;
-    case 'medium':
     default:
       return 4;
   }

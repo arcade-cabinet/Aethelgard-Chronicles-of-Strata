@@ -44,20 +44,16 @@ function findWalkableWithNeighbor(board: ReturnType<typeof generateBoard>) {
   ];
   for (const tile of board.tiles.values()) {
     if (!tile.walkable) continue;
-    const hasN = dirs.some(([dq, dr]) => board.tiles.get(`${tile.q + dq},${tile.r + dr}`)?.walkable);
+    const hasN = dirs.some(
+      ([dq, dr]) => board.tiles.get(`${tile.q + dq},${tile.r + dr}`)?.walkable,
+    );
     if (hasN) return tile;
   }
   throw new Error('no walkable tile with neighbor');
 }
 
 function spawnCamp(world: World, factionId: string, tile: { q: number; r: number; level: number }) {
-  const e = world.spawn(
-    FactionBase,
-    Health,
-    HexPosition,
-    EnemySpawner,
-    FactionTrait,
-  );
+  const e = world.spawn(FactionBase, Health, HexPosition, EnemySpawner, FactionTrait);
   e.set(FactionTrait, { faction: factionId as 'player' | 'enemy' });
   e.set(HexPosition, { q: tile.q, r: tile.r, level: tile.level });
   e.set(Health, { current: 200, max: 200 });

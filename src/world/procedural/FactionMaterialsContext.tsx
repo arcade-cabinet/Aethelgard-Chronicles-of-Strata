@@ -14,10 +14,7 @@
 import { type ReactNode, useMemo } from 'react';
 import type { Faction } from '@/ecs/components';
 import { SKINS } from '@/rules/skins';
-import {
-  FactionMaterialsContext,
-  resolveFactionMaterials,
-} from './faction-materials';
+import { FactionMaterialsContext, resolveFactionMaterials } from './faction-materials';
 
 export function FactionMaterialsProvider({
   faction,
@@ -27,10 +24,7 @@ export function FactionMaterialsProvider({
   children: ReactNode;
 }) {
   const overrides = SKINS[faction]?.factionMaterials;
-  const value = useMemo(
-    () => resolveFactionMaterials(faction, overrides),
-    [faction, overrides],
-  );
+  const value = useMemo(() => resolveFactionMaterials(faction, overrides), [faction, overrides]);
   return (
     <FactionMaterialsContext.Provider value={value}>{children}</FactionMaterialsContext.Provider>
   );

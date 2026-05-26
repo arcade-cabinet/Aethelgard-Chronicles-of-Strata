@@ -595,14 +595,7 @@
     "path": "assets/characters/rigs/large-general.glb",
     "category": "characters",
     "kind": "glb",
-    "animations": [
-      "Death_A",
-      "Death_A_Pose",
-      "Hit_A",
-      "Idle_A",
-      "Idle_B",
-      "T-Pose"
-    ],
+    "animations": ["Death_A", "Death_A_Pose", "Hit_A", "Idle_A", "Idle_B", "T-Pose"],
     "pack": "KayKit Adventurers + Mystery",
     "triangles": 9148
   },
@@ -611,11 +604,7 @@
     "path": "assets/characters/rigs/large-movement.glb",
     "category": "characters",
     "kind": "glb",
-    "animations": [
-      "Running_A",
-      "T-Pose",
-      "Walking_A"
-    ],
+    "animations": ["Running_A", "T-Pose", "Walking_A"],
     "pack": "KayKit Adventurers + Mystery",
     "triangles": 9148
   },

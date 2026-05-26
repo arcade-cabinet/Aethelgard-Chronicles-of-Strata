@@ -293,70 +293,70 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
 
   return (
     <FactionMaterialsProvider faction={faction}>
-    <group name={`${faction}-base`}>
-      {/* M_GAME.BUG.1 — faction-color halo ring under the Town Hall
+      <group name={`${faction}-base`}>
+        {/* M_GAME.BUG.1 — faction-color halo ring under the Town Hall
           so the player can LOCATE their capital at a glance from any
           camera distance, regardless of mesh silhouette + map
           biome. The ring is rendered just above ground level (y+0.02)
           to avoid z-fighting with terrain. Pulses gently by reading
           the day/night phase indirectly (no extra subscriptions —
           the constant radius + faction tint is enough at this scale). */}
-      <mesh
-        position={[basePos.x, basePos.y + 0.02, basePos.z]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        renderOrder={1}
-      >
-        <ringGeometry args={[1.0, 1.35, 36]} />
-        <meshBasicMaterial color={skin.zoneBorderColor} transparent opacity={0.6} />
-      </mesh>
-      {/* Central base mesh — TownHall (player) / crypt (enemy). */}
-      <StructureMesh
-        faction={faction}
-        type="TownHall"
-        x={basePos.x}
-        y={basePos.y}
-        z={basePos.z}
-        progress={1}
-      />
-      {/* Decorative props (Skin slot — empty for player, necropolis for enemy). */}
-      <group position={[basePos.x, basePos.y, basePos.z]}>
-        {skin.baseProps.map((p) => (
-          <BasePropMesh
-            // CodeRabbit MAJOR — composite key from stable data fields
-            // only (logicalId + x + y + z + scale + rotationY uniquely
-            // identifies a prop within a skin); idx removed.
-            key={`prop-${p.logicalId}-${p.x}-${p.y}-${p.z}-${p.scale}-${p.rotationY}`}
-            logicalId={p.logicalId}
-            x={p.x}
-            y={p.y}
-            z={p.z}
-            scale={p.scale}
-            rotationY={p.rotationY}
-          />
-        ))}
-        {/* M_EXPANSION.A.11 — warm point light at the base, auto-fades
+        <mesh
+          position={[basePos.x, basePos.y + 0.02, basePos.z]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          renderOrder={1}
+        >
+          <ringGeometry args={[1.0, 1.35, 36]} />
+          <meshBasicMaterial color={skin.zoneBorderColor} transparent opacity={0.6} />
+        </mesh>
+        {/* Central base mesh — TownHall (player) / crypt (enemy). */}
+        <StructureMesh
+          faction={faction}
+          type="TownHall"
+          x={basePos.x}
+          y={basePos.y}
+          z={basePos.z}
+          progress={1}
+        />
+        {/* Decorative props (Skin slot — empty for player, necropolis for enemy). */}
+        <group position={[basePos.x, basePos.y, basePos.z]}>
+          {skin.baseProps.map((p) => (
+            <BasePropMesh
+              // CodeRabbit MAJOR — composite key from stable data fields
+              // only (logicalId + x + y + z + scale + rotationY uniquely
+              // identifies a prop within a skin); idx removed.
+              key={`prop-${p.logicalId}-${p.x}-${p.y}-${p.z}-${p.scale}-${p.rotationY}`}
+              logicalId={p.logicalId}
+              x={p.x}
+              y={p.y}
+              z={p.z}
+              scale={p.scale}
+              rotationY={p.rotationY}
+            />
+          ))}
+          {/* M_EXPANSION.A.11 — warm point light at the base, auto-fades
             up at night. Placeholder for a future lamp-post asset; for
             now the banner-faction baseProp serves as the visual anchor
             (the light origin coincides with it). */}
-        <BaseNightLight game={game} faction={faction} />
-      </group>
-      {/* Placed structures this faction has constructed mid-game. */}
-      {placed.map((b) => (
-        <group key={b.key}>
-          <StructureMesh
-            faction={faction}
-            type={b.type}
-            x={b.x}
-            y={b.y}
-            z={b.z}
-            progress={b.progress}
-            hasGate={b.hasGate}
-            isCorner={b.isCorner ?? false}
-          />
-          <ConstructionRing x={b.x} y={b.y} z={b.z} progress={b.progress} />
+          <BaseNightLight game={game} faction={faction} />
         </group>
-      ))}
-    </group>
+        {/* Placed structures this faction has constructed mid-game. */}
+        {placed.map((b) => (
+          <group key={b.key}>
+            <StructureMesh
+              faction={faction}
+              type={b.type}
+              x={b.x}
+              y={b.y}
+              z={b.z}
+              progress={b.progress}
+              hasGate={b.hasGate}
+              isCorner={b.isCorner ?? false}
+            />
+            <ConstructionRing x={b.x} y={b.y} z={b.z} progress={b.progress} />
+          </group>
+        ))}
+      </group>
     </FactionMaterialsProvider>
   );
 }

@@ -12,12 +12,7 @@
  * for the next sweep. Cheap O(caches × units_on_tile) — pre-indexed
  * by tile-key to make the inner lookup O(1).
  */
-import {
-  FactionTrait,
-  HexPosition,
-  LootCache,
-  Unit,
-} from '@/ecs/components';
+import { FactionTrait, HexPosition, LootCache, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 
 export function lootPickupSystem(game: GameState): void {

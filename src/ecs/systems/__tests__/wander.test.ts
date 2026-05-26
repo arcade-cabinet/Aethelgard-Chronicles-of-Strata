@@ -13,13 +13,7 @@
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
-import {
-  FactionTrait,
-  HexPosition,
-  PathQueue,
-  Unit,
-  WanderBehavior,
-} from '@/ecs/components';
+import { FactionTrait, HexPosition, PathQueue, Unit, WanderBehavior } from '@/ecs/components';
 import { wanderSystem } from '@/ecs/systems/wander';
 
 function makeMob(

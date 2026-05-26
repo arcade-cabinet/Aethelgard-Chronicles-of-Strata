@@ -20,12 +20,7 @@ export function Log({
   material?: PrimitiveMaterial;
 }) {
   return (
-    <mesh
-      position={position}
-      rotation={[0, rotationY, Math.PI / 2]}
-      castShadow
-      receiveShadow
-    >
+    <mesh position={position} rotation={[0, rotationY, Math.PI / 2]} castShadow receiveShadow>
       <cylinderGeometry args={[radius, radius, length, 8]} />
       <meshStandardMaterial {...material} />
     </mesh>

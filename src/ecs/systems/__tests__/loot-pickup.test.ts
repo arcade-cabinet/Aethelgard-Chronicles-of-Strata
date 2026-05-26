@@ -15,12 +15,7 @@
  */
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
-import {
-  FactionTrait,
-  HexPosition,
-  LootCache,
-  Unit,
-} from '@/ecs/components';
+import { FactionTrait, HexPosition, LootCache, Unit } from '@/ecs/components';
 import { lootForBiome } from '@/ecs/systems/death';
 import { lootPickupSystem } from '@/ecs/systems/loot-pickup';
 import type { GameState } from '@/game/game-state';

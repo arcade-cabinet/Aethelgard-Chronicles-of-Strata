@@ -64,7 +64,7 @@ export function Watchtower({
         const angle = (i / 10) * Math.PI * 2;
         return (
           <mesh
-            key={i}
+            key={`crenel-${angle.toFixed(3)}`}
             position={[
               Math.sin(angle) * (radius + 0.01),
               0.08 + bodyHeight + 0.08,

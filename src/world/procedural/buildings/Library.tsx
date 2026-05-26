@@ -8,14 +8,7 @@
  * stone cap + central cupola (small spire) + tall arched windows on
  * sides + ornate door + gold trim band. Reads as 'classical learning'.
  */
-import {
-  Column,
-  Door,
-  GoldTrim,
-  Spire,
-  StonePlinth,
-  Window,
-} from '../primitives';
+import { Column, Door, GoldTrim, Spire, StonePlinth, Window } from '../primitives';
 import { useFactionMaterials } from '../faction-materials';
 
 export function Library({

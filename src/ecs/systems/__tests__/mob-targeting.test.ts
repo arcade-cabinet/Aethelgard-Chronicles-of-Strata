@@ -13,14 +13,7 @@
  */
 import { createWorld, type World } from 'koota';
 import { describe, expect, it } from 'vitest';
-import {
-  Combatant,
-  EnemyTarget,
-  FactionTrait,
-  Health,
-  HexPosition,
-  Unit,
-} from '@/ecs/components';
+import { Combatant, EnemyTarget, FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 import { mobTargetingSystem } from '@/ecs/systems/mob-targeting';
 
 function spawnMob(world: World, faction: string, q: number, r: number) {

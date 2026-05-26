@@ -18,14 +18,14 @@ describe('observability (M_FUN.FOUNDATION.SENTRY + .ANALYTICS)', () => {
   });
 
   it('reportError is a no-op when opted out', () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     reportError(new Error('boom'));
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
   });
 
   it('trackEvent is a no-op when opted out', () => {
-    const spy = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
     trackEvent('test');
     expect(spy).not.toHaveBeenCalled();
     spy.mockRestore();
@@ -33,7 +33,7 @@ describe('observability (M_FUN.FOUNDATION.SENTRY + .ANALYTICS)', () => {
 
   it('reportError fires once opted in', () => {
     setObservabilityOptIn(true);
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     reportError(new Error('boom'));
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();
@@ -41,7 +41,7 @@ describe('observability (M_FUN.FOUNDATION.SENTRY + .ANALYTICS)', () => {
 
   it('trackEvent fires once opted in', () => {
     setObservabilityOptIn(true);
-    const spy = vi.spyOn(console, 'info').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'info').mockImplementation(() => undefined);
     trackEvent('match-finished', { outcome: 'win' });
     expect(spy).toHaveBeenCalled();
     spy.mockRestore();

@@ -9,17 +9,18 @@
  *   clock → command → terrain → combat → deposit → scoring
  */
 
+import type { Entity } from 'koota';
 import { aiVisionRadiusFor } from '@/config/combat';
 import { factionIds } from '@/config/factions';
 import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { buildNavGraph } from '@/core/pathfinding';
 import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
+  AssignedJob,
   Building,
   type BuildingType,
   FACTIONS,
   type Faction,
-  AssignedJob,
   FactionBase,
   FactionTrait,
   Health,
@@ -27,8 +28,6 @@ import {
   StackMember,
   Unit,
 } from '@/ecs/components';
-import type { Entity } from 'koota';
-import { createStack } from './stacking';
 import { aiSystem } from '@/ecs/systems/ai';
 import { animationSystem } from '@/ecs/systems/animation';
 import { buildSystem } from '@/ecs/systems/build';
@@ -40,16 +39,16 @@ import { encroachmentSystem } from '@/ecs/systems/encroachment';
 import { harvestSystem } from '@/ecs/systems/harvest';
 import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
+import { lootPickupSystem } from '@/ecs/systems/loot-pickup';
+import { mobTargetingSystem } from '@/ecs/systems/mob-targeting';
 import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { scienceSystem } from '@/ecs/systems/science';
 import { spawnSystem } from '@/ecs/systems/spawn';
-import { lootPickupSystem } from '@/ecs/systems/loot-pickup';
-import { mobTargetingSystem } from '@/ecs/systems/mob-targeting';
 import { stanceBehaviorSystem } from '@/ecs/systems/stance-behavior';
-import { wanderSystem } from '@/ecs/systems/wander';
 import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
 import { volcanoSystem } from '@/ecs/systems/volcano';
+import { wanderSystem } from '@/ecs/systems/wander';
 import { wildfireSystem } from '@/ecs/systems/wildfire';
 import { evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { presetFor, recomputeMaxSupply, SUPPLY_COST } from '@/rules';
@@ -64,6 +63,7 @@ import type { GameState } from './game-state';
 import { advanceProjectiles } from './projectiles';
 import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { grantRandomDiscovery } from './research';
+import { createStack } from './stacking';
 import { buildEntityTileIndex } from './tile-index';
 import { advanceWeather, WEATHER_PROFILES, WEATHER_SPEED_MULTIPLIER } from './weather';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
@@ -248,13 +248,7 @@ function autoFormWorkCrews(game: GameState): void {
 }
 
 /** Set membership check for barbarian unit roles (vs player roles). */
-const BARBARIAN_ROLES = new Set<string>([
-  'Goblin',
-  'Orc',
-  'Vampire',
-  'BlackKnight',
-  'Witch',
-]);
+const BARBARIAN_ROLES = new Set<string>(['Goblin', 'Orc', 'Vampire', 'BlackKnight', 'Witch']);
 
 /**
  * M_V11.STACK.MOB-RABBLE — auto-form Rabble stacks for barbarian-
@@ -279,7 +273,7 @@ export function autoFormMobRabble(game: GameState): void {
     // Barbarian camps use the 'barbarian-camp-N' faction-id pattern
     // (see barbarian-camps.ts:142). The Unit type may be any of the
     // BARBARIAN pool, but tile-based clustering treats them uniformly.
-    if (!fac || !fac.startsWith('barbarian-camp-')) continue;
+    if (!fac?.startsWith('barbarian-camp-')) continue;
     const role = e.get(Unit)?.unitType;
     if (!role || !BARBARIAN_ROLES.has(role)) continue;
     if (e.has(StackMember)) continue;

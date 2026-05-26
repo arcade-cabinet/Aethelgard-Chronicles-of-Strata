@@ -73,9 +73,9 @@ function collectStacks(game: GameState): StackVisualData[] {
     let faction = 'player';
     const memberTiles: StackVisualData['memberTiles'] = [];
     for (const memberId of stack.members) {
-      const member = game.world.query(HexPosition, FactionTrait, StackMember).find(
-        (m) => m.id() === memberId,
-      );
+      const member = game.world
+        .query(HexPosition, FactionTrait, StackMember)
+        .find((m) => m.id() === memberId);
       if (!member) continue;
       const hex = member.get(HexPosition);
       const fac = member.get(FactionTrait)?.faction;
