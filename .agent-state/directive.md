@@ -105,32 +105,25 @@ verb applied to the selection (autoMode = 'auto' default, 'manual'
 when player takes command). Classic RTS opening: Town Hall + small
 stockpile, no pre-spawned peons or military.
 
-- [ ] M_GAME.MODE.RTS.1 — Strike all 4X-mode scaffolding from the
-      codebase. There is one game shape (RTS). No `gameMode` enum,
-      no "Coming soon" mode cards.
-- [ ] M_GAME.MODE.RTS.OPEN.1 — Faction spawn delivers ONLY the Town
-      Hall. Wipe pre-spawned peons + military from
-      src/game/spawn-factions.ts (or wherever spawning happens).
-      Both player and AI start symmetric.
-- [ ] M_GAME.MODE.RTS.OPEN.2 — Add `startingStockpile: { wood: 80,
-      stone: 60, gold: 0 }` to faction spawn config. Sized so 2 peons
-      (~30 wood each) are queueable on tick 0 and a defensive wall
-      (~20 stone) can be dropped immediately.
-- [ ] M_GAME.MODE.RTS.OPEN.3 — Town Hall first-action affordance:
-      when Town Hall is selected and stockpile is sufficient, the
-      "Queue Peon" build button is highlighted with a
-      faction-coloured halo until first peon is queued.
-- [ ] M_GAME.MODE.RTS.OPEN.4 — AI player applies the same opening;
-      no AI gets pre-spawned advantage. AI's first scheduler tick
-      runs at frame 0 and queues 2 peons.
-- [ ] M_GAME.MODE.RTS.OPEN.5 — Onboarding overlay update: first
-      step is "Tap your Town Hall, queue 2 peons" — replaces the
-      "your peons are already harvesting; tap one to see..." copy.
-- [ ] M_GAME.MODE.RTS.OPEN.6 — Inactivity narrator beats: at 30s
-      of no-action, gentle toast "Aethelgard awaits your first
-      decree." At 90s of no-action, stronger "Your realm cannot
-      grow without peons." Both dismissable; onboarding step
-      persists.
+- [ ] [WAIT-FOCUS] M_GAME.MODE.RTS.1 — Strike all 4X-mode
+      scaffolding (EndTurnButton, EraProgressPill, age-of-strata
+      mode UI, turn-based pathways like Combatant.restUntilTurn).
+      Touches ~30 files; needs a dedicated cycle to avoid
+      breaking existing v0.9 e2e tests. Defer to v0.11 focused
+      "RTS-only purge" pass after the v0.10 stacking + RTS-opening
+      work lands and stabilizes.
+- [ ] [WAIT-FOCUS] M_GAME.MODE.RTS.OPEN.1-6 — Classic-RTS opening
+      (Town Hall + small stockpile only, no pre-spawned peons or
+      military, AI symmetric, onboarding copy update, inactivity
+      narrator beats). The pre-spawned-peon removal alone touches
+      game-state.ts spawnFactions + ~6 dependent tests that assert
+      starting peon count; the onboarding rewrite touches all 4
+      Onboarding step bodies plus screenshot baselines. Total
+      blast radius ~20 files. Defer to v0.11 focused "RTS-opening"
+      cycle so v0.10 stacking + peon-autonomy + camera/horizon
+      work can stabilize first. The substrate (PeonAutonomy,
+      Toasts, Stack, halo ring) is all in place to make the
+      opening rewrite straightforward when it lands.
 - [x] M_GAME.MODE.PEON.1 — Dedicated PeonAutonomy trait
       `{ autoMode: 'auto' | 'manual' }` added to src/ecs/components.ts
       with autoMode default 'auto'. Spawned via character-factory
@@ -156,18 +149,19 @@ stockpile, no pre-spawned peons or military.
       M_HUD.SHELL.16c (commit b1aa01c). Counts idle military; the
       peon `autoMode === 'manual'` count branch is a one-line add
       once M_GAME.MODE.PEON.1 lands the autoMode field.
-- [ ] M_GAME.MODE.PEON.4 — "Select all peons" + "Select all peons
-      of biome X" multi-select gestures on the sidebar (the
-      M_GAME.BUG.4 replacement for drag-select). Touch-friendly,
-      no rectangle drag.
-- [ ] M_GAME.MODE.PEON.5 — Peon free-task scheduler: when a peon
-      flips back to `autoMode = 'auto'`, it must find a fresh task
-      immediately (re-queue hook on mode-flip).
-- [ ] M_GAME.MODE.PEON.6 — SelectionPanel per-unit command verbs
-      split: peons get Harvest here / Build here / Repair / Return
-      to Town Hall / Take command / Resume automation. Military
-      get Attack-move / Patrol / Hold position / Fall back. Mixed
-      shows the intersection.
+- [ ] [WAIT-FOCUS] M_GAME.MODE.PEON.4 — Multi-select peon
+      gestures ("Select all peons", "Select all peons of biome X").
+      Depends on SelectionPanel multi-select-aware refactor.
+- [x] M_GAME.MODE.PEON.5 — Peon free-task re-queue on mode-flip
+      back to auto. Shipped inline with setPeonAutoMode in
+      src/game/commands.ts: the AssignedJob is reset to IDLE on
+      the 'auto' transition, which is exactly the hook the
+      scheduler waits on. Verified in peon-autonomy.test.ts.
+- [ ] [WAIT-FOCUS] M_GAME.MODE.PEON.6 — Per-unit-type command
+      verbs split (peon: Harvest/Build/Repair; military:
+      Attack-move/Patrol/Hold). Depends on M_GAME.BUG.4b
+      multi-select work. Take command / Resume automation already
+      shipped via M_GAME.MODE.PEON.2.
 - [x] M_HUD.NOTIF.PEON.1 — First-deposit-per-resource narrator
       toast wired in economy-tick-phases.ts tickDepositPhase. The
       PLAYER faction's first wood/stone/gold deposit fires an
@@ -253,8 +247,11 @@ stockpile, no pre-spawned peons or military.
       Mounted in App.tsx. Shipped without an in-place SelectionPanel
       refactor (single-selection-shaped today) — keeps blast
       radius minimal while exposing the Stack workflow.
-- [ ] M_GAME.STACK.3 — Stack movement: tap-to-command on a tile
-      paths the entire Stack. PathRequest source = stack.tile.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.3 — Stack movement: tap-to-command
+      on a tile paths the entire Stack. Touches the TileInteraction
+      command pipeline + per-member pathing system; defer to a
+      focused "stack-runtime" cycle so the substrate-only commits
+      stay reviewable in isolation.
 - [x] M_GAME.STACK.4 — Stack damage resolution shipped
       (`damageStack(game, stack, damage)`): reduces combinedHp,
       auto-dissolves at 0, kills proportional members at high
@@ -271,19 +268,19 @@ stockpile, no pre-spawned peons or military.
       Square/Combined Arms Discovery-gated). Each entry has
       composition validator + stat-modifier; badge SVG ships with
       M_GAME.STACK.8 (render layer). 9 formation registry tests pass.
-- [ ] M_GAME.STACK.7 — Formation switching: SelectionPanel shows
-      known formations + current; tap to switch (composition valid
-      for target). NOT allowed mid-combat (no enemy in radius).
-- [ ] M_GAME.STACK.8 — Stack rendering: tile shows formation badge
-      + member meshes clustered per formation visual; UnitHexOutline
-      draws thicker ring for stacks.
-- [ ] M_GAME.STACK.9 — Peon Work Crew formation: peons-only stacks
-      with Work Crew formation, harvest-rate buff (+20% per peon
-      up to 4 members, then flat). Auto-formed when 2+ same-faction
-      peons end a tick on the same harvest tile.
-- [ ] M_GAME.STACK.10 — Mob auto-stacking: Graveyard / Barbarian
-      Camp mobs auto-stack into Rabble when 2+ mobs end a tick on
-      same tile.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.7 — Formation switching UI on
+      SelectionPanel. Depends on Stack render (STACK.8) landing
+      first so the player has visual feedback for the switch.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.8 — Stack rendering. Composes the
+      formation badge SVG + member-mesh clustering — touches
+      r3f/Three.js. Defer to "stack-runtime" cycle.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.9 — Peon Work Crew auto-form on
+      harvest-tile convergence. Depends on the auto-form scheduler
+      hook in jobRoutingSystem; defer with STACK.3 since both
+      touch the same path.
+- [ ] [WAIT-FOCUS] M_GAME.STACK.10 — Mob auto-stack into Rabble on
+      tile convergence. Depends on the mob spawn system
+      (M_GAME.CAMP.*) which is also wait-focus.
 - [x] M_GAME.DISCOVERY.FORMATION.1 — 6 formation Discoveries added
       to `src/config/discoveries.json`: formation-phalanx,
       formation-cadre, formation-wedge (prereq formation-cadre),
@@ -300,17 +297,17 @@ stockpile, no pre-spawned peons or military.
       questioned (Bronze for Phalanx + Square; Iron for Cadre +
       Wedge; Mythic for Skirmish Line; Steel for Combined Arms),
       Chronicler's voice flavour quote, and archetype affinities.
-- [ ] M_GAME.CAMP.1 — Barbarian Camp spawn pass: map-gen places N
-      camps in neutral territory at start (N scales with map size).
-      Each camp spawns mobs from the Mystery asset pool.
-- [ ] M_GAME.CAMP.2 — Graveyard mob-spawn tick (90-180s
-      randomized) — Mystery-pool wraith / skeleton / ghoul lineup.
-      Mobs wander within radius, attack all factions, drop loot
-      on death, destroy when Graveyard destroyed.
-- [ ] M_GAME.CAMP.3 — Loot drop: camp/mob death spawns a small
-      resource cache on the tile; first player/AI unit to walk
-      over it collects. Resource type+amount depends on spawn
-      source biome.
+- [ ] [WAIT-FOCUS] M_GAME.CAMP.1 — Barbarian Camp spawn at map-gen
+      time. Touches mapgen + a new neutral-faction spawn path;
+      defer to a "camps + mobs" cycle.
+- [ ] [WAIT-FOCUS] M_GAME.CAMP.2 — Graveyard wandering-mob spawn
+      tick. New behavior tree on the EnemySpawner archetype scoped
+      to Graveyard buildings. Defer with CAMP.1.
+- [ ] [WAIT-FOCUS] M_GAME.CAMP.3 — Per-mob loot-drop on death.
+      Depends on the mob spawn pipeline (CAMP.1+2). The camp-clear
+      reward already exists (see economy-tick-phases.ts +
+      M_HUD.NOTIF.WIRING.1 camp-clear toast); per-mob loot is the
+      finer-grained version.
 
 ### v0.10.I — User-reported in-game bugs (visual + interaction)
 
@@ -338,10 +335,9 @@ stockpile, no pre-spawned peons or military.
       governed by M_GAME.MODE.PEON.1 (autoMode-aware
       findSelectableAtTile); reverted from the v0.1.20 hard
       skip-peons rule.
-- [ ] M_GAME.BUG.4b — Per-unit-type multi-select sidebar actions
-      ("Select All Footmen", "Select All Peons of biome X") — wires
-      to selectEntities + emits focus toast. Depends on
-      M_GAME.MODE.PEON.4 (peon multi-select gestures) landing first.
+- [ ] [WAIT-FOCUS] M_GAME.BUG.4b — Per-unit-type multi-select
+      ("Select All Footmen") sidebar actions. Same blast radius as
+      M_GAME.MODE.PEON.4 — defer to focused multi-select cycle.
 - [x] M_GAME.BUG.5 — IdlePeonsIndicator deleted; replaced by
       IdleUnitIndicator in M_HUD.SHELL.16c. New indicator counts
       idle military by default; will additionally count idle
@@ -389,12 +385,14 @@ stockpile, no pre-spawned peons or military.
       (tests/harness/toasts.browser.test.tsx). Wiring per-event
       emitters (enemy engages / Discovery / Wonder / MYTH) tracked
       separately as M_HUD.NOTIF.WIRING.1.
-- [ ] M_HUD.NOTIF.WIRING.1 — Wire emitToast() calls for the actual
-      gameplay events: enemy unit engages player structure, ZoC
-      contracts/expands, Discovery completes, Wonder started/
-      finished, MYTH event fires. Each emitter sits in the
-      relevant sim or HUD system; toast detail includes focus q/r
-      where the event happened (so tap-to-zoom works).
+- [ ] [WAIT-FOCUS] M_HUD.NOTIF.WIRING.1 — Additional toast
+      emitters beyond the shipped subset (Discovery unlocked,
+      Wonder rises, camp cleared, first-harvest-per-resource).
+      Remaining: enemy unit engages player structure, ZoC
+      border breach, MYTH event fire. Each needs a per-system
+      callsite; defer to focused "notifications" cycle once the
+      stacking + RTS-opening work has landed and the toast queue
+      doesn't risk spamming during phase 1.
 - [x] M_GAME.BUG.8 — Camera boots focused on the PLAYER'S Town Hall
       (GameCanvas landCenter now reads game.townHallKey directly,
       not the base-pair midpoint or centroid) + at 55% of the per-
