@@ -5,6 +5,13 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.26](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.25...v0.1.26) (2026-05-26)
+
+
+### Features
+
+* **game:** member-to-stack-tile snap-in lerp on createStack (M_V11.STACK.STEP-LERP) ([#86](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/86)) ([86bd56e](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/86bd56e8b383e1ac27357cde2c9ab263b7aa8d4a))
+
 ## [0.1.25](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.24...v0.1.25) (2026-05-26)
 
 
