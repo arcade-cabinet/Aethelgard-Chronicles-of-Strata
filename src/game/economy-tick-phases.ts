@@ -25,6 +25,7 @@ import {
   FactionTrait,
   Health,
   HexPosition,
+  Stack,
   StackMember,
   Unit,
 } from '@/ecs/components';
@@ -63,7 +64,7 @@ import type { GameState } from './game-state';
 import { advanceProjectiles } from './projectiles';
 import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { grantRandomDiscovery } from './research';
-import { createStack } from './stacking';
+import { createStack, dissolveStack } from './stacking';
 import { buildEntityTileIndex } from './tile-index';
 import { advanceWeather, WEATHER_PROFILES, WEATHER_SPEED_MULTIPLIER } from './weather';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
@@ -247,6 +248,47 @@ function autoFormWorkCrews(game: GameState): void {
   }
 }
 
+/**
+ * M_V11.STACK.WORK-CREW dissolve sweep — gemini-code-assist review
+ * on PR #89: a work-crew stack formed when N peons converged on a
+ * harvest tile in HARVESTING state will persist forever as those
+ * peons transition out (back to deposit, idle, build, etc.) — the
+ * stack-coupled stragglers logic would keep them pinned to the
+ * stack tile or the badge would render over a now-scattered group.
+ *
+ * Fix: each tick, walk every Stack whose formationId === 'work-crew'.
+ * If ANY member is no longer HARVESTING, dissolve the stack so
+ * members revert to individuals and re-form fresh when they
+ * converge again. Cheap O(work-crew-stacks).
+ */
+function dissolveStaleWorkCrews(game: GameState): void {
+  const toDissolve: Entity[] = [];
+  for (const stackEntity of game.world.query(Stack)) {
+    const stack = stackEntity.get(Stack);
+    if (!stack || stack.formationId !== 'work-crew') continue;
+    let stillHarvesting = true;
+    for (const memberId of stack.members) {
+      let found = false;
+      for (const m of game.world.query(StackMember, AssignedJob)) {
+        if (m.id() !== memberId) continue;
+        found = true;
+        if (m.get(AssignedJob)?.state !== 'HARVESTING') {
+          stillHarvesting = false;
+        }
+        break;
+      }
+      // A member without AssignedJob (e.g. just finished + cleared
+      // the job) ALSO counts as no-longer-harvesting.
+      if (!found) stillHarvesting = false;
+      if (!stillHarvesting) break;
+    }
+    if (!stillHarvesting) toDissolve.push(stackEntity);
+  }
+  for (const stackEntity of toDissolve) {
+    dissolveStack(game, stackEntity);
+  }
+}
+
 /** Set membership check for barbarian unit roles (vs player roles). */
 const BARBARIAN_ROLES = new Set<string>(['Goblin', 'Orc', 'Vampire', 'BlackKnight', 'Witch']);
 
@@ -372,15 +414,15 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
     });
     harvestSystem(game.world, delta);
     autoFormWorkCrews(game);
+    // Gemini-code-assist review on PR #89 (work-crew lingers after
+    // members stop HARVESTING) — dissolve stale work-crew stacks
+    // each tick so the auto-form cycle re-fires fresh on the next
+    // tile convergence.
+    dissolveStaleWorkCrews(game);
     // M_V11.STACK.MOB-RABBLE — barbarian mobs auto-stack into Rabble
     // on tile convergence (cap 6 per stack). Cheap parallel sweep
     // mirroring the work-crew form pass.
     autoFormMobRabble(game);
-    // M_V11.CAMPS.LOOT — un-collected resource caches from dead
-    // mobs are scooped up by the first non-barbarian unit on the
-    // cache tile. Runs after harvest/build so within-tick movement
-    // is already settled.
-    lootPickupSystem(game);
     buildSystem(game.world, game.buildSites, delta);
     // Credit first-House completion per faction (cheap O(buildings) sweep).
     if (
@@ -583,6 +625,10 @@ export function tickDepositPhase(game: GameState): void {
 // ---------------------------------------------------------------------------
 export function tickScoringPhase(game: GameState, delta: number): void {
   const deathResult = deathSystem(game.world, delta, game.board);
+  // M_V11.CAMPS.LOOT — pickup MUST run after deathSystem within the
+  // same tick so a player unit standing on the death tile collects
+  // the cache the same tick the mob died.
+  lootPickupSystem(game);
   game.economy.player.kills += deathResult.enemyKills;
   if (deathResult.enemyDeathKeys.length > 0) {
     const enemyBaseKey = game.enemyBaseKey;
