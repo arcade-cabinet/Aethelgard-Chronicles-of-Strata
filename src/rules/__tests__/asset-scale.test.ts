@@ -14,12 +14,17 @@ import { measuredScale, measuredYOffset, measuredEntry } from '../asset-scale';
 
 describe('asset-scale (M_GAME.SCALE.GLB-MEASURE.1)', () => {
   it('returns measured scales for SKINS-referenced ids', () => {
+    // M_V11.PROCMESH.GLB-CLEANUP — player/AI building GLBs were
+    // removed (TownHall, Barracks, Wall, Farm, etc.) and now render
+    // procedurally. Remaining SKINS-referenced GLBs are: horde-camp
+    // graveyard kit (crypt, portal-crypt, gravestones) + baseProps
+    // (banner-faction, fountain, iron-fence) + characters.
     const ids = [
-      'structures.rts.town-center.first-age.l1',
       'structures.crypt',
-      'structures.rts.barracks.first-age.l1',
-      'structures.rts.wall.first-age',
-      'structures.farm',
+      'structures.portal-crypt',
+      'structures.banner-faction',
+      'structures.fountain',
+      'structures.iron-fence',
       'characters.heroes.knight',
       'characters.heroes.engineer',
       'characters.enemies.orc',
@@ -48,17 +53,18 @@ describe('asset-scale (M_GAME.SCALE.GLB-MEASURE.1)', () => {
     }
   });
 
-  it('building scales target ~1.1 world-unit footprint', () => {
-    const ids = ['structures.rts.town-center.first-age.l1', 'structures.farm'];
-    for (const id of ids) {
-      const entry = measuredEntry(id);
-      expect(entry, id).toBeDefined();
-      const e = entry as NonNullable<typeof entry>;
-      const sizeX = e.bbox.size[0] ?? 0;
-      const sizeZ = e.bbox.size[2] ?? 0;
-      const footprint = Math.max(sizeX, sizeZ) * e.scale;
-      expect(footprint).toBeCloseTo(1.1, 1);
-    }
+  it('building scales target the building/prop footprints', () => {
+    // M_V11.PROCMESH.GLB-CLEANUP — the only remaining structure GLBs
+    // are graveyard kit (horde camps; crypt category) + baseProps.
+    // Crypt targets the building footprint (~1.1).
+    const id = 'structures.crypt';
+    const entry = measuredEntry(id);
+    expect(entry, id).toBeDefined();
+    const e = entry as NonNullable<typeof entry>;
+    const sizeX = e.bbox.size[0] ?? 0;
+    const sizeZ = e.bbox.size[2] ?? 0;
+    const footprint = Math.max(sizeX, sizeZ) * e.scale;
+    expect(footprint).toBeCloseTo(1.1, 1);
   });
 
   it('returns fallback for unknown ids', () => {
