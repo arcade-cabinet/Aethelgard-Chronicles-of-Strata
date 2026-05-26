@@ -23,7 +23,11 @@ import { expect, test } from '@playwright/test';
 // Uses test.describe.configure so the timeout applies to EVERY test in
 // the file — `test.setTimeout` inside `describe` doesn't override the
 // per-test wall when later code calls test.setTimeout again.
-test.describe.configure({ timeout: 180_000 });
+// M_GAME.BUG.10 CI bump: v0.10's per-tick walkable + roam-radius
+// + stack-substrate work pushes the 24000-frame burst from ~150s
+// to ~200s on GitHub-hosted runners. 240s preserves the per-test
+// safety net.
+test.describe.configure({ timeout: 240_000 });
 test.describe('M_V7.E2E.4-PLAYER-CAMP-CLEAR', () => {
   test('4-player setup auto-spawns camps; clearing one credits reward', async ({ page }) => {
     await page.goto('/?ai-vs-ai=1&seed=n-player-camp-clear-e2e&mode=border-clash&nplayer=4');
