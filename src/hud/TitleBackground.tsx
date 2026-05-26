@@ -280,6 +280,11 @@ function PbrDome({ reducedMotion }: { reducedMotion: boolean }) {
 
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
+      // CodeRabbit PR#64 — guard against zero canvas size (initial
+      // mount before layout, hidden iframes, Vitest 0-px canvases).
+      // Division would produce Infinity / NaN and propagate into the
+      // shader uniform.
+      if (size.width <= 0 || size.height <= 0) return;
       mouse.current.x = e.clientX / size.width;
       mouse.current.y = 1 - e.clientY / size.height;
     };

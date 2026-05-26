@@ -67,16 +67,34 @@ PRs get closed.
       ours (SystemMenu/SettingsModal/styles.css are wholesale rewritten
       on the integration branch — kept the new shell). PR will close
       automatically when this branch lands.
-- [ ] M_HUD.SHELL.23 — pull PR #64 (`feat/title-screen-cinematic-pbr`
-      — TitleScreen PBR shader) into current branch. Already largely
-      contained in M_HUD.SHELL.2 commits on this branch; verify no
-      drift. Close PR #64 once integrated.
-- [ ] M_HUD.SHELL.24 — PR #63 release-please — let it land normally
-      OR re-target to current branch after integration so the next
-      release tags include all integrated work.
-- [ ] M_HUD.SHELL.25 — sweep all CodeRabbit / review comments on
-      every open PR via `gh api repos/.../pulls/<N>/comments` + reply
-      with resolution sha or rebut. Close threads.
+- [x] M_HUD.SHELL.23 — PR #64 (`feat/title-screen-cinematic-pbr`)
+      verified already absorbed. The single commit on that branch
+      (3a49c1b "M_HUD.SHELL.2 cinematic TitleScreen + PBR shader")
+      is the exact landed work from M_HUD.SHELL.2 on this integration
+      branch. PR will close automatically when this branch merges.
+- [x] M_HUD.SHELL.24 — PR #63 is the release-please bot's
+      "chore(main): release 0.1.20" PR. release-please will
+      automatically re-stage against main after this integration
+      branch merges; manual intervention is the wrong move
+      (forcing a re-target would orphan the bot's existing changelog
+      cursor). Strategy: let PR #63 land as-is when 0.1.20 ships,
+      release-please will then open 0.1.21 against the integration
+      work post-merge.
+- [x] M_HUD.SHELL.25 — CodeRabbit sweep on PRs #60, #63, #64:
+      - PR #60: 0 line comments; nothing to address.
+      - PR #63: 0 (release-please bot PR, no review).
+      - PR #64: 4 line comments —
+        * exact-pin policy (MAJOR): pinned
+          `@react-three/postprocessing` 3.0.4 + `postprocessing`
+          6.39.1 in package.json (was `^3.0.4` / `^6.39.1`).
+        * division-by-zero in TitleBackground mouse handler
+          (MINOR): added size>0 guard.
+        * theme toggle non-functional (TRIVIAL): already fixed by
+          M_HUD.SHELL.6 useTheme + M_HUD.SHELL.8 (PbrDome
+          CSS-var re-read on theme-changed).
+        * test isolation nitpick (LOW): rejected — CodeRabbit-
+          tagged "low value", shared persistence is intentional
+          for these tests.
 
 ### v0.10.J — RTS commitment + classic-RTS opening + selectable-automatable peons
 
