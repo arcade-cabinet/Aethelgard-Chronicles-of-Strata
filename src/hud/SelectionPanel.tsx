@@ -6,8 +6,10 @@ import {
   Building,
   type BuildingType,
   FactionTrait,
+  type FormationId,
   Health,
   PeonAutonomy,
+  Stack,
   Stance,
   type StanceMode,
   Unit,
@@ -17,7 +19,9 @@ import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
 import { selectedEntity } from '@/game/selection';
+import { setStackFormation } from '@/game/stacking';
 import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
+import { FORMATIONS } from '@/world/formations';
 import type { BuildContext } from '@/world/TileInteraction';
 import { costLabel } from './format';
 import { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
@@ -95,6 +99,10 @@ interface SelectionView {
    * Resume automation button on the SelectionPanel.
    */
   peonAutoMode: 'auto' | 'manual' | null;
+  /** M_V11.STACK.PANEL — current formation id of the selected Stack,
+   *  or null when the selection is not a Stack. Drives the "Switch
+   *  Formation" fieldset render. */
+  formationId: FormationId | null;
 }
 
 /** Build a display view from the selected entity. */
@@ -118,6 +126,25 @@ function viewOf(game: GameState): SelectionView | null {
       stance: null,
       factionColor,
       peonAutoMode: null,
+      formationId: null,
+    };
+  }
+  // M_V11.STACK.PANEL — Stack entity selection (the formation badge
+  // surface is clickable in a future commit; for now, sticking a
+  // ranged-attack StackMember tile selects the Stack via game.selection).
+  const stack = entity.get(Stack);
+  if (stack) {
+    const spec = FORMATIONS[stack.formationId];
+    return {
+      name: `${spec.name} (${stack.members.length})`,
+      task: `HP ${Math.round(stack.combinedHp)}/${stack.combinedMaxHp} — DPS ${Math.round(
+        stack.combinedDps,
+      )}`,
+      buildingType: null,
+      stance: null,
+      factionColor,
+      peonAutoMode: null,
+      formationId: stack.formationId,
     };
   }
   const unit = entity.get(Unit);
@@ -137,6 +164,7 @@ function viewOf(game: GameState): SelectionView | null {
       stance: stanceTrait?.mode ?? null,
       factionColor,
       peonAutoMode,
+      formationId: null,
     };
   }
   return {
@@ -146,6 +174,7 @@ function viewOf(game: GameState): SelectionView | null {
     stance: null,
     factionColor,
     peonAutoMode: null,
+    formationId: null,
   };
 }
 
@@ -287,7 +316,8 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
         next.task === prev.task &&
         next.buildingType === prev.buildingType &&
         next.stance === prev.stance &&
-        next.peonAutoMode === prev.peonAutoMode
+        next.peonAutoMode === prev.peonAutoMode &&
+        next.formationId === prev.formationId
       ) {
         return prev;
       }
@@ -325,6 +355,14 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
     if (!entity) return;
     setStance(game, entity, mode, 'player');
     emitUiSound('ui-button-click');
+  };
+
+  /** M_V11.STACK.PANEL — switch the selected Stack's formation. */
+  const changeFormation = (target: FormationId) => {
+    const entity = selectedEntity(game);
+    if (!entity) return;
+    const result = setStackFormation(game, entity, target);
+    emitUiSound(result.ok ? 'ui-button-click' : 'ui-error');
   };
 
   return (
@@ -428,6 +466,101 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                 </fieldset>
               </div>
             )}
+
+            {/* M_V11.STACK.PANEL — formation switcher. Only renders
+                when the selected entity is a Stack. Each chip:
+                  - active when view.formationId === id
+                  - disabled w/ tooltip when the Discovery isn't owned,
+                    composition fails validate, or stack is mid-combat
+                The setStackFormation call returns the rejection
+                reason verbatim, so we surface it as the chip's title. */}
+            {view.formationId !== null &&
+              (() => {
+                const entity = selectedEntity(game);
+                const ownedDiscoveries = game.research?.purchased ?? new Set();
+                return (
+                  <div style={{ marginTop: 10 }}>
+                    <div
+                      style={{
+                        fontSize: '0.7rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: 1,
+                        color: HUD_THEME.color.muted,
+                        marginBottom: 4,
+                      }}
+                    >
+                      Formation
+                    </div>
+                    <fieldset
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: '1fr 1fr',
+                        gap: 4,
+                        border: 'none',
+                        margin: 0,
+                        padding: 0,
+                      }}
+                      aria-label="Stack formation"
+                    >
+                      {Object.values(FORMATIONS).map((spec) => {
+                        const active = view.formationId === spec.id;
+                        // Dry-run gate: simulate setStackFormation
+                        // without calling it so we can show a reason
+                        // in the tooltip. The real check still runs
+                        // on click so race conditions surface.
+                        let disabled = false;
+                        let reason: string | undefined;
+                        if (entity && !active) {
+                          if (
+                            spec.unlockDiscovery !== null &&
+                            !ownedDiscoveries.has(spec.unlockDiscovery as never)
+                          ) {
+                            disabled = true;
+                            reason = `Requires Discovery: ${spec.unlockDiscovery}`;
+                          }
+                        }
+                        return (
+                          <button
+                            key={spec.id}
+                            type="button"
+                            aria-pressed={active}
+                            onClick={() => changeFormation(spec.id)}
+                            disabled={disabled}
+                            title={reason}
+                            data-testid={`formation-chip-${spec.id}`}
+                            style={{
+                              minHeight: 44,
+                              padding: '6px 4px',
+                              borderRadius: 6,
+                              border: `1px solid ${
+                                active ? HUD_THEME.color.accent : HUD_THEME.color.border
+                              }`,
+                              background: disabled
+                                ? 'rgba(255,255,255,0.04)'
+                                : active
+                                  ? 'rgba(56,189,248,0.25)'
+                                  : 'rgba(255,255,255,0.06)',
+                              color: disabled
+                                ? HUD_THEME.color.muted
+                                : active
+                                  ? HUD_THEME.color.accent
+                                  : HUD_THEME.color.text,
+                              fontFamily: HUD_THEME.font.body,
+                              fontSize: '0.72rem',
+                              fontWeight: active ? 800 : 500,
+                              cursor: disabled ? 'not-allowed' : 'pointer',
+                              textAlign: 'center',
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {spec.name}
+                          </button>
+                        );
+                      })}
+                    </fieldset>
+                  </div>
+                );
+              })()}
 
             {/* M_GAME.MODE.PEON.2 — peon autonomy action. When the
                 selected entity is a player peon, expose Take command

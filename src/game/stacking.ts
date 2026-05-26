@@ -10,6 +10,7 @@ import type { Entity } from 'koota';
 import {
   Combatant,
   FactionTrait,
+  type FormationId,
   Health,
   HexPosition,
   PathQueue,
@@ -152,6 +153,83 @@ export function createStack(game: GameState, members: Entity[]): StackResult {
  *
  * Idempotent: calling on an already-dissolved Stack is a no-op.
  */
+/**
+ * M_V11.STACK.PANEL — switch a Stack's formation. Returns a
+ * StackResult-shaped { ok, reason } so the HUD can disable buttons
+ * + surface a tooltip when a switch is rejected. Validates:
+ *
+ *   1. Stack exists + has members.
+ *   2. Target formation exists.
+ *   3. Composition validates against the target formation's predicate.
+ *   4. Discovery (if any) is owned by the stack's faction.
+ *   5. Stack is NOT mid-combat (any member's Combatant.attackTimer > 0
+ *      counts as mid-combat — switching formation mid-swing is the
+ *      forbidden state per spec).
+ *
+ * On success: re-aggregates members, runs the new formation's combine()
+ * to recompute combinedHp / combinedMaxHp / combinedDps, persists.
+ */
+export function setStackFormation(
+  game: GameState,
+  stack: Entity,
+  targetId: FormationId,
+): StackResult {
+  const s = stack.get(Stack);
+  if (!s) return { ok: false, reason: 'Stack does not exist.' };
+  const spec = FORMATIONS[targetId];
+  if (!spec) return { ok: false, reason: `Unknown formation: ${targetId}.` };
+
+  // Gather live member entities + their unit types.
+  const memberEntities: Entity[] = [];
+  const memberIds = new Set(s.members);
+  for (const e of game.world.query(StackMember, Unit)) {
+    if (memberIds.has(e.id())) memberEntities.push(e);
+  }
+  if (memberEntities.length < 2) {
+    return { ok: false, reason: 'Stack has too few members for a switch.' };
+  }
+
+  // Composition validate.
+  const agg = aggregateMembers(memberEntities);
+  if (!spec.validate(agg.unitTypes)) {
+    return { ok: false, reason: `Composition invalid for ${spec.name}.` };
+  }
+
+  // Discovery gate. game.research.purchased is a shared session
+  // Set — Discoveries are not per-faction in v0.11 (a future
+  // M_RESEARCH.PER-FACTION ticket would split). The mid-combat gate
+  // below covers the "you can't switch a stack in active combat",
+  // which is the practical asymmetry between human + AI today.
+  if (spec.unlockDiscovery !== null) {
+    const owned = game.research?.purchased ?? new Set<string>();
+    if (!owned.has(spec.unlockDiscovery as never)) {
+      return { ok: false, reason: `Requires Discovery: ${spec.unlockDiscovery}.` };
+    }
+  }
+
+  // Mid-combat gate.
+  for (const e of memberEntities) {
+    const c = e.get(Combatant);
+    if (c && c.attackTimer > 0) {
+      return { ok: false, reason: 'Cannot switch formation mid-combat.' };
+    }
+  }
+
+  // Recompute stats with the new formation modifier. Preserve the
+  // current combinedHp ratio so a half-dead stack stays half-dead
+  // after the switch (don't free-heal them).
+  const stats = spec.combine(agg);
+  const ratio = s.combinedMaxHp > 0 ? s.combinedHp / s.combinedMaxHp : 1;
+  stack.set(Stack, {
+    ...s,
+    formationId: targetId,
+    combinedMaxHp: stats.combinedMaxHp,
+    combinedHp: Math.round(stats.combinedMaxHp * ratio),
+    combinedDps: stats.combinedDps,
+  });
+  return { ok: true, stack };
+}
+
 export function dissolveStack(game: GameState, stack: Entity): void {
   const s = stack.get(Stack);
   if (!s) return;
