@@ -208,9 +208,13 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       fieldset on Stack selection. Gated on
       Research.purchased[formation Discovery] + composition
       validate. Forbidden mid-combat.
-- [ ] M_V11.STACK.SAVE — Save/load round-trip verification for
-      Stack + StackMember (substrate already serialized; add
-      e2e proof).
+- [x] M_V11.STACK.SAVE — Save/load round-trip verified in
+      src/persistence/__tests__/save-stack-roundtrip.test.ts.
+      Creates a 3-member Stack, serializes, deserializes, asserts
+      formationId / combinedHp / combinedMaxHp / dominantUnitType
+      / member ids all preserved + StackMember back-references
+      survive. The substrate was already wired in SERIALIZED_TRAITS
+      (M_GAME.STACK.1); this commit pins the contract.
 
 ### §4 — SelectionPanel multi-select refactor (M_V11.SELECTION)
 
