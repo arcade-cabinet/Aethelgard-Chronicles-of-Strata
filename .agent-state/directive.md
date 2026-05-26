@@ -180,9 +180,17 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 
 ### §3 — Stack runtime (M_V11.STACK-RUNTIME)
 
-- [ ] M_V11.STACK.MOVE — TileInteraction tap-to-move routes
-      through stacks. PathRequest source = stack.tile. Members
-      pinned to stack tile.
+- [x] M_V11.STACK.MOVE — TileInteraction onRightPick now
+      collects the unique parent stacks of selected members and
+      routes each stack as a SINGLE moveUnit (not per-member
+      flocking). Issues the move against a proxy member; the
+      member's HexPosition === stack tile, so the A* path
+      computes from the stack tile. Free military (members of
+      no stack) keep the flocking ring offsets. Members pinned
+      to the stack tile via the formation rendering work in
+      M_V11.STACK.RENDER (still pending) — for now the single
+      moveUnit call advances the proxy + the rest of the stack
+      follows once STACK.RENDER + the move-system pinning lands.
 - [ ] M_V11.STACK.STEP-LERP — 200ms member-to-stack-tile lerp on
       stack creation.
 - [ ] M_V11.STACK.COMBAT — OffensiveBehavior routes damage to
