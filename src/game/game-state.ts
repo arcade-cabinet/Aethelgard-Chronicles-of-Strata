@@ -456,6 +456,13 @@ export interface GameState {
    */
   peonFirstHarvestToastedTypes?: Set<string>;
   /**
+   * M_V11.OPEN.INACTIVITY — bitfield tracking which inactivity
+   * narrator beats have already fired this match. Bit 0 = 30s
+   * "Aethelgard awaits..." beat, bit 1 = 90s "Your realm cannot
+   * grow..." beat. Optional because pre-v0.11 saves don't carry it.
+   */
+  inactivityBeatsFired?: number;
+  /**
    * Auto-save timer. Attached by the App layer (which owns the persistence
    * facade); when present, `runEconomyTick` advances it. Absent in tests and
    * headless sims that do not persist.

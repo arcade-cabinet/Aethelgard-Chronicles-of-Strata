@@ -69,6 +69,7 @@ export function tickClockPhase(game: GameState, delta: number): void {
   advanceWeather(game.weather, game.eventRng, delta);
   tickRandomEvents(game, game.eventRng, delta);
   tickLongReignEscalation(game, game.eventRng, game.clock.elapsed);
+  tickInactivityBeats(game);
   // M_V6.DIPLO.BORDER-ASK — sweep expired non-aggression-pact proposals.
   // Silent: a refused / ignored proposal just drops off the HUD; the
   // BORDER-ASK directive's "wave-of-attack penalty on refusal" is a
@@ -89,6 +90,67 @@ export function tickClockPhase(game: GameState, delta: number): void {
     );
   }
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
+}
+
+/**
+ * M_V11.OPEN.INACTIVITY — narrator beats fired when the player has
+ * not queued a peon yet. The clock ticks even before the player
+ * acts; without these beats the empty Town Hall could sit silently
+ * for minutes and the player wouldn't know what's expected of
+ * them. Each beat fires once per match (tracked via the
+ * `inactivityBeatsFired` bitfield on GameState).
+ *
+ *   30s — info-tone: "Aethelgard awaits your first decree."
+ *   90s — warning-tone: "Your realm cannot grow without peons."
+ *
+ * Reset condition: any peon entity exists for the player faction.
+ * Skipping subsequent beats when the player has queued at least
+ * one peon prevents the toast from harassing a player who simply
+ * paused to think.
+ */
+function tickInactivityBeats(game: GameState): void {
+  if (typeof window === 'undefined') return;
+  const elapsed = game.clock.elapsed;
+  const fired = game.inactivityBeatsFired ?? 0;
+  // No further work if both beats already fired.
+  if ((fired & 0b11) === 0b11) return;
+  // Has the player queued any peon? If so, no beat ever fires.
+  for (const e of game.world.query(Unit, FactionTrait)) {
+    if (e.get(FactionTrait)?.faction !== 'player') continue;
+    if (e.get(Unit)?.unitType !== 'Peon') continue;
+    // Lock in the 'both beats handled' state so we skip the
+    // query on every tick going forward.
+    game.inactivityBeatsFired = 0b11;
+    return;
+  }
+  // Beat 1 — 30s.
+  if (elapsed >= 30 && (fired & 0b01) === 0) {
+    game.inactivityBeatsFired = fired | 0b01;
+    window.dispatchEvent(
+      new CustomEvent('aethelgard:toast', {
+        detail: {
+          id: 'inactivity-beat-30s',
+          tone: 'info',
+          title: 'Aethelgard awaits your first decree',
+          description: 'Tap your Town Hall and queue a Peon to begin.',
+        },
+      }),
+    );
+  }
+  // Beat 2 — 90s.
+  if (elapsed >= 90 && ((game.inactivityBeatsFired ?? 0) & 0b10) === 0) {
+    game.inactivityBeatsFired = (game.inactivityBeatsFired ?? 0) | 0b10;
+    window.dispatchEvent(
+      new CustomEvent('aethelgard:toast', {
+        detail: {
+          id: 'inactivity-beat-90s',
+          tone: 'warning',
+          title: 'Your realm cannot grow without peons',
+          description: 'A Peon costs 30 wood. Queue one from the Town Hall.',
+        },
+      }),
+    );
+  }
 }
 
 // ---------------------------------------------------------------------------

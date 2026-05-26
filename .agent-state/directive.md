@@ -150,9 +150,17 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 - [ ] M_V11.OPEN.ONBOARDING — Rewrite OnboardingOverlay first +
       second steps for the new opening. Defer; needs visual
       baseline regeneration across all 4 overlay viewports.
-- [ ] M_V11.OPEN.INACTIVITY — 30s + 90s narrator-toast beats.
-      Defer; needs game-state per-faction "first peon queued
-      yet?" flag + clock-driven emitter.
+- [x] M_V11.OPEN.INACTIVITY — `tickInactivityBeats` added to
+      `tickClockPhase` in economy-tick-phases.ts. Two beats:
+      30s info-tone "Aethelgard awaits your first decree" +
+      90s warning-tone "Your realm cannot grow without peons".
+      Each beat fires once per match (tracked via the
+      `inactivityBeatsFired` bitfield on GameState). Either beat
+      gates on "no player peon exists" so a player who queues a
+      peon at any point silences future beats. The
+      `inactivityBeatsFired = 0b11` lock when a peon is seen
+      prevents the per-tick world.query from re-running for the
+      rest of the match.
 - [x] M_V11.OPEN.TESTS — Updated 8 spawn-touching tests:
       starting-bonus.test.ts deleted (premise gone); commands-
       faction, commands, deposit-system, economy, economy-
