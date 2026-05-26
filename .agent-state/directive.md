@@ -308,17 +308,24 @@ stockpile, no pre-spawned peons or military.
 - [x] M_GAME.BUG.3 — Killed the blue drag-select rectangle. SelectionRect
       no longer mounts in App.tsx (component file remains as a
       subpackage for desktop opt-in per decompose-don't-strip).
-- [ ] M_GAME.BUG.4 — Selection model: replace drag-select with a sidebar
-      with "Select next idle" + "Select all of type X" actions. Per
-      user 2026-05-25: peons are AUTONOMOUS and never idle by definition
-      — they should be NON-INTERACTABLE entirely (TileInteraction
-      should not select them, SelectionPanel should not render their
-      info, the idle-peons indicator should be removed or repurposed
-      since peons by definition aren't idle).
-- [ ] M_GAME.BUG.5 — IdlePeonsIndicator: remove or repurpose. Peons
-      are autonomous; the indicator is misleading. Replace with an
-      "Idle Military Units" indicator that lights up when a footman /
-      siege unit has no orders.
+- [x] M_GAME.BUG.4 — Selection-model replacement landed in pieces:
+      (a) drag-select retired in M_GAME.BUG.3, (b) IdleUnitIndicator
+      with tap-to-cycle "Next Idle" replaces the chip via
+      M_HUD.SHELL.16c, (c) per-unit-type "Select All" remains as a
+      sub-item M_GAME.BUG.4b (depends on M_GAME.MODE.PEON.4 multi-
+      select gestures landing first). Peon selectability is
+      governed by M_GAME.MODE.PEON.1 (autoMode-aware
+      findSelectableAtTile); reverted from the v0.1.20 hard
+      skip-peons rule.
+- [ ] M_GAME.BUG.4b — Per-unit-type multi-select sidebar actions
+      ("Select All Footmen", "Select All Peons of biome X") — wires
+      to selectEntities + emits focus toast. Depends on
+      M_GAME.MODE.PEON.4 (peon multi-select gestures) landing first.
+- [x] M_GAME.BUG.5 — IdlePeonsIndicator deleted; replaced by
+      IdleUnitIndicator in M_HUD.SHELL.16c. New indicator counts
+      idle military by default; will additionally count idle
+      MANUAL-mode peons once M_GAME.MODE.PEON.1 lands the
+      autoMode field.
 - [x] M_HUD.SHELL.16c — IdleUnitIndicator shipped (replaces
       IdlePeonsIndicator). Counts idle player military (and idle
       MANUAL-mode peons once M_GAME.MODE.PEON.1 lands). Tap-to-
@@ -341,11 +348,14 @@ stockpile, no pre-spawned peons or military.
       target to see behind mountain ranges (without ever tipping
       the Civ pose), and any HUD surface can ask the camera to
       "go look here" with a snappy 6Hz settle. Shipped 2026-05-25.
-- [ ] M_GAME.BUG.7b — "Follow selected unit" camera tween: when a
-      unit is selected via SelectionPanel "Next Idle" or tile-tap,
-      the camera tweens its target to that unit's tile + a closer
-      zoom level (~midZoom). Released on deselect / Escape. Separate
-      from the rotation-lock fix shipped in BUG.7.
+- [x] M_GAME.BUG.7b — Selection now dispatches the
+      `aethelgard:focus-tile` event so the CameraRig M_GAME.BUG.11
+      auto-focus tween centers on the selected entity. Gated by
+      the `aethelgard.camera.autoFocus` preference (default ON; '0'
+      opts out). Wired in src/game/selection.ts → selectEntity →
+      maybeFocusOnSelection. SettingsModal toggle wiring is
+      M_HUD.SHELL.CAMERA.1 (the toggle UI), separate from the
+      camera-tween hook landed here.
 - [x] M_HUD.NOTIF.1 + M_HUD.NOTIF.2 — Radix Toast bus shipped at
       src/hud/Toasts.tsx + mounted in App.tsx. Listens for
       `aethelgard:toast` CustomEvent, renders a top-center stack

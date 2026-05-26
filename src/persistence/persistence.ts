@@ -208,6 +208,11 @@ export const PREF_KEYS = {
   // M_HUD.SHELL.6 — persisted user theme override ('dark' | 'light' | '').
   // Empty string = follow OS preference.
   theme: 'aethelgard.theme',
+  // M_HUD.SHELL.CAMERA.1 — "Auto-focus on selection" toggle. Stored
+  // as '1' (default ON) or '0'. When OFF, tap-selecting a unit
+  // doesn't move the camera; the M_GAME.BUG.11 auto-focus tween
+  // still fires for explicit toast/sidebar invocations.
+  cameraAutoFocus: 'aethelgard.camera.autoFocus',
 } as const;
 export type PrefKey = (typeof PREF_KEYS)[keyof typeof PREF_KEYS];
 
