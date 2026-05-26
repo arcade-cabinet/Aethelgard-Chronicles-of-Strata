@@ -15,7 +15,8 @@
  */
 import { GameEntity, Think } from 'yuka';
 import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
-import type { Faction } from '@/ecs/components';
+import { FactionTrait, type Faction, Unit } from '@/ecs/components';
+import { trainUnit } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { BuildEvaluator } from './evaluators/build';
 import { DiplomaticEvaluator } from './evaluators/diplomatic';
@@ -46,6 +47,14 @@ export class AiPlayer extends GameEntity {
 
   /** Seconds the faction has been "starved" (M_MODES.10) — accumulates across ticks. */
   starvedFor = 0;
+
+  /**
+   * M_V11.OPEN.AI-SYMMETRY — auto-queue 2 peons on the first AI
+   * tick so AI factions match the player's classic-RTS opening
+   * (player starts with 80 wood + 60 stone + queues 2 peons from
+   * the Town Hall via the affordance halo).
+   */
+  private firstTickDone = false;
 
   /**
    * M_FUN.AI.NAMED — opponent personality key (e.g. 'the-builder',
@@ -93,6 +102,31 @@ export class AiPlayer extends GameEntity {
    */
   tick(game: GameState, delta: number): void {
     this.game = game;
+    // M_V11.OPEN.AI-SYMMETRY — on the first tick the AI sees, fire
+    // two trainUnit('Peon') calls so AI factions match the
+    // player's RTS opening (player starts at 80 wood / 60 stone /
+    // no peons; the affordance halo nudges them to queue 2).
+    // Without this, AI factions sit idle indefinitely waiting for
+    // BuildEvaluator to surface, which doesn't have peon-queue
+    // logic since it expects peons to already exist.
+    if (!this.firstTickDone) {
+      this.firstTickDone = true;
+      // Gate on faction having NO peons yet (handles deserialize
+      // path: a restored game already has the peons, fresh
+      // AiPlayer instance shouldn't double-queue).
+      let hasPeon = false;
+      for (const e of game.world.query(Unit, FactionTrait)) {
+        if (e.get(FactionTrait)?.faction !== this.faction) continue;
+        if (e.get(Unit)?.unitType === 'Peon') {
+          hasPeon = true;
+          break;
+        }
+      }
+      if (!hasPeon) {
+        trainUnit(game, 'Peon', this.faction);
+        trainUnit(game, 'Peon', this.faction);
+      }
+    }
     // Accumulate starvation continuously (independent of decisionInterval) —
     // ResignEvaluator reads this each arbitration.
     const zone = game.zones[this.faction];

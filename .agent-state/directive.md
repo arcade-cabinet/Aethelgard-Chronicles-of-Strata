@@ -150,10 +150,11 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       `countPlayerPeons(game) === 0` AND the player can afford
       the cost. Once any peon exists, the pulse retires
       automatically. data-highlighted attribute exposed for tests.
-- [ ] [WAIT-FOCUS] M_V11.OPEN.AI-SYMMETRY — AI scheduler first-
-      tick auto-queues 2 peons. AIVAI test gets a test-only seed
-      meanwhile; real AI scheduler hook lands in a focused
-      follow-up after the substrate stabilizes.
+- [x] M_V11.OPEN.AI-SYMMETRY — AI scheduler first-tick auto-
+      queues 2 peons. Implemented in AiPlayer.tick: on first tick,
+      if the faction has no Peon yet (gated for save-load
+      idempotency), fires trainUnit×2. AI factions now match the
+      player's RTS opening start state.
 - [x] M_V11.OPEN.ONBOARDING — Rewrote OnboardingOverlay steps 1-3
       for the classic-RTS opening. Step 1 "Welcome" notes the
       Town Hall + 80 wood + 60 stone opening with no pre-spawned

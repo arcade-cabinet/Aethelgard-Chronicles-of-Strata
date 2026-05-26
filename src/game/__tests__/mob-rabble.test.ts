@@ -25,7 +25,7 @@ import {
   type UnitType,
 } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { autoFormMobRabble } from '@/game/economy-tick-phases';
+import { autoFormMobRabble } from '@/game/stack-auto-form';
 
 /** Tiny GameState shape — autoFormMobRabble only needs game.world. */
 function mockGame(world: World): GameState {

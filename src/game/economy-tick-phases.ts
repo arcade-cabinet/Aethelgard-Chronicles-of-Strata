@@ -9,14 +9,12 @@
  *   clock → command → terrain → combat → deposit → scoring
  */
 
-import type { Entity } from 'koota';
 import { aiVisionRadiusFor } from '@/config/combat';
 import { factionIds } from '@/config/factions';
 import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { buildNavGraph } from '@/core/pathfinding';
 import { makeMoveCostFn } from '@/core/terrain-cost';
 import {
-  AssignedJob,
   Building,
   type BuildingType,
   FACTIONS,
@@ -24,9 +22,6 @@ import {
   FactionBase,
   FactionTrait,
   Health,
-  HexPosition,
-  Stack,
-  StackMember,
   Unit,
 } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
@@ -62,9 +57,16 @@ import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
 import type { GameState } from './game-state';
 import { advanceProjectiles } from './projectiles';
+import { tickEnemyAtTownHallToast, tickInactivityBeats } from './narrator-beats';
 import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { grantRandomDiscovery } from './research';
-import { createStack, dissolveStack } from './stacking';
+import {
+  autoFormMobRabble,
+  autoFormWorkCrews,
+  dissolveStaleWorkCrews,
+} from './stack-auto-form';
+// createStack + dissolveStack moved with the auto-form helpers
+// to ./stack-auto-form.ts; the imports here are no longer needed.
 import { buildEntityTileIndex } from './tile-index';
 import { advanceWeather, WEATHER_PROFILES, WEATHER_SPEED_MULTIPLIER } from './weather';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
@@ -102,241 +104,6 @@ export function tickClockPhase(game: GameState, delta: number): void {
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 }
 
-/**
- * M_V11.OPEN.INACTIVITY — narrator beats fired when the player has
- * not queued a peon yet. The clock ticks even before the player
- * acts; without these beats the empty Town Hall could sit silently
- * for minutes and the player wouldn't know what's expected of
- * them. Each beat fires once per match (tracked via the
- * `inactivityBeatsFired` bitfield on GameState).
- *
- *   30s — info-tone: "Aethelgard awaits your first decree."
- *   90s — warning-tone: "Your realm cannot grow without peons."
- *
- * Reset condition: any peon entity exists for the player faction.
- * Skipping subsequent beats when the player has queued at least
- * one peon prevents the toast from harassing a player who simply
- * paused to think.
- */
-function tickInactivityBeats(game: GameState): void {
-  if (typeof window === 'undefined') return;
-  const elapsed = game.clock.elapsed;
-  const fired = game.inactivityBeatsFired ?? 0;
-  // No further work if both beats already fired.
-  if ((fired & 0b11) === 0b11) return;
-  // Has the player queued any peon? If so, no beat ever fires.
-  for (const e of game.world.query(Unit, FactionTrait)) {
-    if (e.get(FactionTrait)?.faction !== 'player') continue;
-    if (e.get(Unit)?.unitType !== 'Peon') continue;
-    // Lock in the 'both beats handled' state so we skip the
-    // query on every tick going forward.
-    game.inactivityBeatsFired = 0b11;
-    return;
-  }
-  // Beat 1 — 30s.
-  if (elapsed >= 30 && (fired & 0b01) === 0) {
-    game.inactivityBeatsFired = fired | 0b01;
-    window.dispatchEvent(
-      new CustomEvent('aethelgard:toast', {
-        detail: {
-          id: 'inactivity-beat-30s',
-          tone: 'info',
-          title: 'Aethelgard awaits your first decree',
-          description: 'Tap your Town Hall and queue a Peon to begin.',
-        },
-      }),
-    );
-  }
-  // Beat 2 — 90s.
-  if (elapsed >= 90 && ((game.inactivityBeatsFired ?? 0) & 0b10) === 0) {
-    game.inactivityBeatsFired = (game.inactivityBeatsFired ?? 0) | 0b10;
-    window.dispatchEvent(
-      new CustomEvent('aethelgard:toast', {
-        detail: {
-          id: 'inactivity-beat-90s',
-          tone: 'warning',
-          title: 'Your realm cannot grow without peons',
-          description: 'A Peon costs 30 wood. Queue one from the Town Hall.',
-        },
-      }),
-    );
-  }
-}
-
-/**
- * M_V11.NOTIF.ENEMY-AT-TH — fire a critical toast when an enemy
- * unit comes within 2 hex of the player's Town Hall. Tap-to-focus
- * goes to the Town Hall tile so the player can re-orient.
- *
- * Dedup: `inactivityBeatsFired` is reused with a higher bit
- * (0b100) to record "ENEMY-AT-TH already toasted this match." A
- * single toast per match keeps the warning meaningful — a player
- * who's been hearing the enemy approach for the past 60s doesn't
- * want a re-fire on every tick of new proximity.
- *
- * Tightened: only fires after the player has had at least 30s of
- * grace (the enemy can't be at the keep on tick 0 in the
- * classic-RTS opening anyway, but defensive).
- */
-function tickEnemyAtTownHallToast(game: GameState): void {
-  if (typeof window === 'undefined') return;
-  if (game.clock.elapsed < 30) return;
-  const fired = game.inactivityBeatsFired ?? 0;
-  if ((fired & 0b100) !== 0) return;
-  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
-  for (const e of game.world.query(Unit, FactionTrait, HexPosition)) {
-    const faction = e.get(FactionTrait)?.faction;
-    if (faction !== 'enemy') continue;
-    const pos = e.get(HexPosition);
-    if (!pos) continue;
-    if (hexDistance(tq, tr, pos.q, pos.r) > 2) continue;
-    game.inactivityBeatsFired = fired | 0b100;
-    window.dispatchEvent(
-      new CustomEvent('aethelgard:toast', {
-        detail: {
-          id: 'enemy-at-th',
-          tone: 'critical',
-          title: 'Enemy at the gates',
-          description: 'An enemy unit is closing on your Town Hall. Defend it now.',
-          focus: { q: tq, r: tr },
-        },
-      }),
-    );
-    return;
-  }
-}
-
-/**
- * M_V11.STACK.WORK-CREW — auto-form Work Crew stacks for player
- * peons that converged on the same harvest tile. Per
- * docs/specs/201-stacking-and-formations.md: "auto-formed when
- * 2+ same-faction peons end a tick on the same harvest tile."
- *
- * Sweep:
- *   1. Bucket player peons that are NOT already in a stack by
- *      hex tile + HARVESTING state (the auto-form trigger).
- *   2. Any bucket with >=2 peons → createStack. The stack's
- *      defaultFormationFor selects 'work-crew' for peon-only
- *      compositions; the harvest-rate buff is applied
- *      separately (M_V11.STACK.WORK-CREW.BUFF, deferred — the
- *      Stack's existence is the substrate the buff hooks onto).
- *
- * Cheap: O(peons + tiles_with_peons). Runs once per tick in the
- * turn-gated portion of tickTerrainPhase.
- */
-function autoFormWorkCrews(game: GameState): void {
-  const buckets = new Map<string, Entity[]>();
-  for (const e of game.world.query(Unit, FactionTrait, HexPosition, AssignedJob)) {
-    if (e.get(FactionTrait)?.faction !== 'player') continue;
-    if (e.get(Unit)?.unitType !== 'Peon') continue;
-    if (e.has(StackMember)) continue;
-    if (e.get(AssignedJob)?.state !== 'HARVESTING') continue;
-    const hex = e.get(HexPosition);
-    if (!hex) continue;
-    const key = `${hex.q},${hex.r}`;
-    let bucket = buckets.get(key);
-    if (!bucket) {
-      bucket = [];
-      buckets.set(key, bucket);
-    }
-    bucket.push(e);
-  }
-  for (const bucket of buckets.values()) {
-    if (bucket.length < 2) continue;
-    // Cap to MAX_STACK_SIZE (8) handled by createStack itself.
-    createStack(game, bucket.slice(0, 8));
-  }
-}
-
-/**
- * M_V11.STACK.WORK-CREW dissolve sweep — gemini-code-assist review
- * on PR #89: a work-crew stack formed when N peons converged on a
- * harvest tile in HARVESTING state will persist forever as those
- * peons transition out (back to deposit, idle, build, etc.) — the
- * stack-coupled stragglers logic would keep them pinned to the
- * stack tile or the badge would render over a now-scattered group.
- *
- * Fix: each tick, walk every Stack whose formationId === 'work-crew'.
- * If ANY member is no longer HARVESTING, dissolve the stack so
- * members revert to individuals and re-form fresh when they
- * converge again. Cheap O(work-crew-stacks).
- */
-function dissolveStaleWorkCrews(game: GameState): void {
-  const toDissolve: Entity[] = [];
-  for (const stackEntity of game.world.query(Stack)) {
-    const stack = stackEntity.get(Stack);
-    if (!stack || stack.formationId !== 'work-crew') continue;
-    let stillHarvesting = true;
-    for (const memberId of stack.members) {
-      let found = false;
-      for (const m of game.world.query(StackMember, AssignedJob)) {
-        if (m.id() !== memberId) continue;
-        found = true;
-        if (m.get(AssignedJob)?.state !== 'HARVESTING') {
-          stillHarvesting = false;
-        }
-        break;
-      }
-      // A member without AssignedJob (e.g. just finished + cleared
-      // the job) ALSO counts as no-longer-harvesting.
-      if (!found) stillHarvesting = false;
-      if (!stillHarvesting) break;
-    }
-    if (!stillHarvesting) toDissolve.push(stackEntity);
-  }
-  for (const stackEntity of toDissolve) {
-    dissolveStack(game, stackEntity);
-  }
-}
-
-/** Set membership check for barbarian unit roles (vs player roles). */
-const BARBARIAN_ROLES = new Set<string>(['Goblin', 'Orc', 'Vampire', 'BlackKnight', 'Witch']);
-
-/**
- * M_V11.STACK.MOB-RABBLE — auto-form Rabble stacks for barbarian-
- * faction mobs that converged on a tile. Per spec: "Mob auto-stack
- * into Rabble on tile convergence (max 6 mobs per stack)".
- *
- * Sweep:
- *   1. Bucket non-stacked mobs from barbarian factions by tile.
- *      Discriminator: FactionTrait.faction begins with
- *      'barbarian-camp-' (the v0.5 N-player convention).
- *   2. Any bucket with >=2 mobs → createStack(slice(0, 6)). The
- *      stack's defaultFormationFor picks 'rabble' for mixed-mob
- *      compositions; barbarian Rabble is the default formation.
- *
- * Cheap: O(mobs + tiles_with_mobs). Runs alongside autoFormWorkCrews
- * inside tickTerrainPhase.
- */
-export function autoFormMobRabble(game: GameState): void {
-  const buckets = new Map<string, Entity[]>();
-  for (const e of game.world.query(Unit, FactionTrait, HexPosition)) {
-    const fac = e.get(FactionTrait)?.faction;
-    // Barbarian camps use the 'barbarian-camp-N' faction-id pattern
-    // (see barbarian-camps.ts:142). The Unit type may be any of the
-    // BARBARIAN pool, but tile-based clustering treats them uniformly.
-    if (!fac?.startsWith('barbarian-camp-')) continue;
-    const role = e.get(Unit)?.unitType;
-    if (!role || !BARBARIAN_ROLES.has(role)) continue;
-    if (e.has(StackMember)) continue;
-    const hex = e.get(HexPosition);
-    if (!hex) continue;
-    // Bucket by tile AND faction-id — two camps' mobs on the same
-    // tile shouldn't merge (different factions can't share a stack).
-    const key = `${fac}|${hex.q},${hex.r}`;
-    let bucket = buckets.get(key);
-    if (!bucket) {
-      bucket = [];
-      buckets.set(key, bucket);
-    }
-    bucket.push(e);
-  }
-  for (const bucket of buckets.values()) {
-    if (bucket.length < 2) continue;
-    // Spec caps mob stacks at 6 (vs 8 for work crews).
-    createStack(game, bucket.slice(0, 6));
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Phase 2 — Command: AI decisions, spawning, stance + pathFollow.
