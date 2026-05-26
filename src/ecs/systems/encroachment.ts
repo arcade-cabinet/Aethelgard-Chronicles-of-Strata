@@ -109,7 +109,27 @@ export function encroachmentSystem(
         // M_REGISTRY.28 — `selectedEntities(game)` + observer-faction
         // session context. The check stays here as documentation-by-code
         // until that session context lands.
-        if (faction === 'player') emitUiSound('critical-alarm');
+        if (faction === 'player') {
+          emitUiSound('critical-alarm');
+          // M_V11.NOTIF.ZOC-BREACH — surface a tap-to-focus toast
+          // so the player can zoom to the flipped tile. Dedup keyed
+          // by the tile coordinates so a flapping tile doesn't spam
+          // (same id replaces in the Toasts queue).
+          if (typeof window !== 'undefined') {
+            const [q, r] = tileKey.split(',').map(Number) as [number, number];
+            window.dispatchEvent(
+              new CustomEvent('aethelgard:toast', {
+                detail: {
+                  id: `zoc-shift-${q}-${r}`,
+                  tone: 'warning',
+                  title: 'Your border shifted',
+                  description: `Tile (${q}, ${r}) flipped to the enemy.`,
+                  focus: { q, r },
+                },
+              }),
+            );
+          }
+        }
       } else {
         myZone.pulsing.set(tileKey, elapsed);
       }

@@ -248,8 +248,12 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       `inactivityBeatsFired` bitfield (bit 0b100) to record
       "already toasted this match" so the warning fires once,
       not on every proximity tick.
-- [ ] M_V11.NOTIF.ZOC-BREACH — Info toast on tile-flip events
-      with focus on flipped tile. dedup id 'zoc-shift-{q}-{r}'.
+- [x] M_V11.NOTIF.ZOC-BREACH — Warning-tone tap-to-focus toast
+      added next to the existing critical-alarm chime in
+      encroachment.ts when a player-owned tile flips to enemy.
+      Dedup id `zoc-shift-{q}-{r}` keyed by coordinates so a
+      flapping tile replaces in the Toasts queue rather than
+      spamming.
 - [ ] M_V11.NOTIF.MYTH-EVENT — Warning toast per MYTH event fire
       with Chronicler quote (from docs/lore/myth-events.md) +
       focus on event tile.
