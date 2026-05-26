@@ -759,13 +759,38 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               (view.multi === null || view.intersectionVerbs.allPlayerPeons) && (
               <div style={{ marginTop: 10 }}>
                 <HudButton
-                  label={view.peonAutoMode === 'auto' ? 'Take command' : 'Resume automation'}
+                  label={
+                    view.multi
+                      ? `${view.peonAutoMode === 'auto' ? 'Take all' : 'Resume all'} (${view.multi.total})`
+                      : view.peonAutoMode === 'auto'
+                        ? 'Take command'
+                        : 'Resume automation'
+                  }
                   onClick={() => {
-                    const entity = selectedEntity(game);
-                    if (!entity) return;
+                    // M_V11.SEL.BATCH-PEON — apply autoMode flip to
+                    // every selected peon, not just the primary.
+                    // Walks game.world.query each call so race
+                    // conditions (a peon destroyed under selection)
+                    // are surfaced via setPeonAutoMode's bool return.
+                    const targets = view.multi
+                      ? selectedEntities(game).filter((e) => {
+                          const u = e.get(Unit);
+                          const f = e.get(FactionTrait)?.faction;
+                          return u?.unitType === 'Peon' && f === 'player';
+                        })
+                      : selectedEntity(game)
+                        ? [selectedEntity(game) as import('koota').Entity]
+                        : [];
+                    if (targets.length === 0) {
+                      emitUiSound('ui-error');
+                      return;
+                    }
                     const nextMode = view.peonAutoMode === 'auto' ? 'manual' : 'auto';
-                    const ok = setPeonAutoMode(game, entity, nextMode);
-                    emitUiSound(ok ? 'ui-button-click' : 'ui-error');
+                    let okCount = 0;
+                    for (const t of targets) {
+                      if (setPeonAutoMode(game, t, nextMode)) okCount++;
+                    }
+                    emitUiSound(okCount > 0 ? 'ui-button-click' : 'ui-error');
                   }}
                 />
               </div>
