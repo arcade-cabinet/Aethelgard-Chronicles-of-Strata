@@ -241,9 +241,13 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 
 ### §6 — Toast wiring expansion (M_V11.NOTIF)
 
-- [ ] M_V11.NOTIF.ENEMY-AT-TH — Critical toast "Enemy at the
-      gates" on enemy-unit adjacency to player Town Hall.
-      focus = Town Hall tile. dedup id 'enemy-at-th'.
+- [x] M_V11.NOTIF.ENEMY-AT-TH — `tickEnemyAtTownHallToast` added
+      to `tickClockPhase`. Fires a critical-tone tap-to-focus
+      toast on the FIRST enemy unit within 2 hex of the player
+      Town Hall after a 30s grace. Reuses the
+      `inactivityBeatsFired` bitfield (bit 0b100) to record
+      "already toasted this match" so the warning fires once,
+      not on every proximity tick.
 - [ ] M_V11.NOTIF.ZOC-BREACH — Info toast on tile-flip events
       with focus on flipped tile. dedup id 'zoc-shift-{q}-{r}'.
 - [ ] M_V11.NOTIF.MYTH-EVENT — Warning toast per MYTH event fire

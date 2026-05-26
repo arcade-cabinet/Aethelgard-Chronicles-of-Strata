@@ -22,6 +22,7 @@ import {
   FactionBase,
   FactionTrait,
   Health,
+  HexPosition,
   Unit,
 } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
@@ -70,6 +71,7 @@ export function tickClockPhase(game: GameState, delta: number): void {
   tickRandomEvents(game, game.eventRng, delta);
   tickLongReignEscalation(game, game.eventRng, game.clock.elapsed);
   tickInactivityBeats(game);
+  tickEnemyAtTownHallToast(game);
   // M_V6.DIPLO.BORDER-ASK — sweep expired non-aggression-pact proposals.
   // Silent: a refused / ignored proposal just drops off the HUD; the
   // BORDER-ASK directive's "wave-of-attack penalty on refusal" is a
@@ -150,6 +152,49 @@ function tickInactivityBeats(game: GameState): void {
         },
       }),
     );
+  }
+}
+
+/**
+ * M_V11.NOTIF.ENEMY-AT-TH — fire a critical toast when an enemy
+ * unit comes within 2 hex of the player's Town Hall. Tap-to-focus
+ * goes to the Town Hall tile so the player can re-orient.
+ *
+ * Dedup: `inactivityBeatsFired` is reused with a higher bit
+ * (0b100) to record "ENEMY-AT-TH already toasted this match." A
+ * single toast per match keeps the warning meaningful — a player
+ * who's been hearing the enemy approach for the past 60s doesn't
+ * want a re-fire on every tick of new proximity.
+ *
+ * Tightened: only fires after the player has had at least 30s of
+ * grace (the enemy can't be at the keep on tick 0 in the
+ * classic-RTS opening anyway, but defensive).
+ */
+function tickEnemyAtTownHallToast(game: GameState): void {
+  if (typeof window === 'undefined') return;
+  if (game.clock.elapsed < 30) return;
+  const fired = game.inactivityBeatsFired ?? 0;
+  if ((fired & 0b100) !== 0) return;
+  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+  for (const e of game.world.query(Unit, FactionTrait, HexPosition)) {
+    const faction = e.get(FactionTrait)?.faction;
+    if (faction !== 'enemy') continue;
+    const pos = e.get(HexPosition);
+    if (!pos) continue;
+    if (hexDistance(tq, tr, pos.q, pos.r) > 2) continue;
+    game.inactivityBeatsFired = fired | 0b100;
+    window.dispatchEvent(
+      new CustomEvent('aethelgard:toast', {
+        detail: {
+          id: 'enemy-at-th',
+          tone: 'critical',
+          title: 'Enemy at the gates',
+          description: 'An enemy unit is closing on your Town Hall. Defend it now.',
+          focus: { q: tq, r: tr },
+        },
+      }),
+    );
+    return;
   }
 }
 
