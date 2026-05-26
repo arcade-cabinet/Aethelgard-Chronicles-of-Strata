@@ -381,7 +381,21 @@ export const FactionBase = trait({ faction: 'player' as Faction });
  * the player builds units instead. The count lives on the entity — not module
  * state — so it survives save/load.
  */
-export const EnemySpawner = trait({ spawnTimer: 0, spawnInterval: 45, spawnCount: 0 });
+/**
+ * M_V11.CAMPS.MOB-SPAWN — `mobCap` (>0) caps the number of live mobs
+ *  this spawner has produced; once hit, the tick skips spawning until
+ *  one of its mobs dies. 0 = uncapped (legacy enemy base behavior).
+ *
+ *  `liveMobs` is the current count, maintained by spawnSystem +
+ *  decremented by deathSystem on barbarian-camp-N mob death.
+ */
+export const EnemySpawner = trait({
+  spawnTimer: 0,
+  spawnInterval: 45,
+  spawnCount: 0,
+  mobCap: 0,
+  liveMobs: 0,
+});
 
 /** The entity an enemy is currently hunting. `targetId` is -1 when none. */
 export const EnemyTarget = trait({ targetId: -1 });

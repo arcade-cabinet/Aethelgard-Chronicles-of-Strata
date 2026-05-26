@@ -306,7 +306,7 @@ export function autoFormMobRabble(game: GameState): void {
 export function tickCommandPhase(game: GameState, delta: number, turnGateOpen: boolean): void {
   if (turnGateOpen) {
     for (const ai of Object.values(game.aiPlayers)) ai?.tick(game, delta);
-    spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
+    spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty, game.eventRng);
     aiSystem(game.world, game.board, game.navGraph);
     stanceBehaviorSystem(game.world, game.navGraph, makeMoveCostFn(game.board.tiles));
   }

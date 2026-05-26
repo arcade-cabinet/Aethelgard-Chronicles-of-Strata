@@ -4,6 +4,7 @@ import { hexDistance } from '@/core/hex';
 import {
   AnimationState,
   DeathTimer,
+  EnemySpawner,
   FactionBase,
   FactionTrait,
   Health,
@@ -155,6 +156,23 @@ export function deathSystem(world: World, delta: number): DeathSystemResult {
         const unitType = entity.get(Unit)?.unitType;
         if (unitType) {
           window.dispatchEvent(new CustomEvent('aethelgard:unit-death', { detail: { unitType } }));
+        }
+      }
+      // M_V11.CAMPS.MOB-SPAWN — when a barbarian-camp-N mob dies,
+      // decrement liveMobs on the matching camp's EnemySpawner so a
+      // capped camp can replenish. Match is via FactionTrait shared
+      // between mob + spawner.
+      const factionStr = faction as unknown as string | undefined;
+      if (factionStr?.startsWith('barbarian-camp-')) {
+        for (const camp of world.query(EnemySpawner, FactionTrait)) {
+          const campFaction = camp.get(FactionTrait)?.faction as unknown as string | undefined;
+          if (campFaction !== factionStr) continue;
+          const spawner = camp.get(EnemySpawner);
+          if (!spawner) continue;
+          if (spawner.mobCap > 0) {
+            camp.set(EnemySpawner, { ...spawner, liveMobs: Math.max(0, spawner.liveMobs - 1) });
+          }
+          break;
         }
       }
       entity.destroy();

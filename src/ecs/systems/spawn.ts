@@ -92,6 +92,11 @@ export function spawnSystem(
   delta: number,
   gameElapsed: number,
   difficulty: Difficulty = 'normal',
+  /** M_V11.CAMPS.MOB-SPAWN — deterministic RNG for re-rolling per-
+   *  fire spawn intervals on capped camps. Optional so legacy 4-arg
+   *  call sites keep working; without it, capped spawners fall back
+   *  to spawnInterval as a deterministic constant cadence. */
+  eventRng?: () => number,
 ): void {
   // M_PIVOT.BARBARIAN-CAMPS — iterate spawner entities; if the spawner
   // also carries FactionTrait, the spawned units inherit that camp's
@@ -103,8 +108,22 @@ export function spawnSystem(
   world.query(EnemySpawner, HexPosition).updateEach(([spawner, hex], entity) => {
     spawner.spawnTimer += delta;
     if (spawner.spawnTimer < spawner.spawnInterval) return;
+    // M_V11.CAMPS.MOB-SPAWN — capped spawner: skip the actual
+    // spawn (but DO reset the timer) once mobCap live mobs are
+    // out. Avoids draining tile candidates on a stuck camp.
+    if (spawner.mobCap > 0 && spawner.liveMobs >= spawner.mobCap) {
+      spawner.spawnTimer = 0;
+      return;
+    }
     spawner.spawnTimer = 0;
     spawner.spawnCount += 1;
+    // M_V11.CAMPS.MOB-SPAWN — re-roll the interval per fire for
+    // capped (barbarian-camp) spawners: 90-180s band. Uncapped
+    // spawners (the legacy enemy base) keep their fixed cadence.
+    if (spawner.mobCap > 0 && eventRng) {
+      spawner.spawnInterval = 90 + Math.floor(eventRng() * 91);
+    }
+    if (spawner.mobCap > 0) spawner.liveMobs += 1;
     const role = pickEnemyRole(spawner.spawnCount, gameElapsed);
     const factionOverride = entity.get(FactionTrait)?.faction;
     const spawnArgs = factionOverride !== undefined ? { factionOverride } : {};

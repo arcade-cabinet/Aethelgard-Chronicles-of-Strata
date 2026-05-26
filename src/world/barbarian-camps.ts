@@ -223,7 +223,16 @@ export function spawnBarbarianCamp(world: World, spec: BarbarianCampSpec): Entit
   return world.spawn(
     HexPosition({ q: spec.q, r: spec.r, level: spec.level }),
     Health({ current: spec.hp, max: spec.hp }),
-    EnemySpawner({ spawnTimer: 0, spawnInterval: 60, spawnCount: 0 }),
+    // M_V11.CAMPS.MOB-SPAWN — cadence 90-180s (the spawn-system
+    // re-rolls on every fire so each tick draws fresh from the
+    // band), capped at 4 live mobs per camp.
+    EnemySpawner({
+      spawnTimer: 0,
+      spawnInterval: 90,
+      spawnCount: 0,
+      mobCap: 4,
+      liveMobs: 0,
+    }),
     // Cast: FactionTrait.faction is typed Faction (literal union) for
     // compile-time narrowing on the legacy 2-faction case; runtime
     // accepts any string. Camp ids live in the registry, not the union.
