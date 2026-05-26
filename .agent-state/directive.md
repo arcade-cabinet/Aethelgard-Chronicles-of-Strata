@@ -51,7 +51,7 @@
 
 ### v0.10.D — Desktop-keyboard subpackage (decompose, don't strip)
 
-- [ ] M_HUD.SHELL.15 — `src/hud/desktop-keyboard/`: opt-in subpackage that owns kbd nav (the Enter/N/C/S/M shortcuts from TitleScreen + the arrow-key step nav from OnboardingOverlay + the kbd-hint popover UI). Re-mountable per-viewport — only mounts when `viewport.class === 'desktop' || 'ultraWide'`. The previous-commit "strip" becomes a clean extraction.
+- [x] M_HUD.SHELL.15 — `src/hud/desktop-keyboard/` opt-in subpackage. Exports `useDesktopShortcuts(shortcuts, enabled)` hook + `DesktopShortcut` type. TitleScreen migrated as first consumer — viewport-gated (`viewport.class === 'desktop' || 'ultraWide'`) so mobile/foldable/tablet never see the kbd shortcut. The previous "strip" became a clean extraction; future OnboardingOverlay arrow-key nav + SystemMenu kbd shortcuts can re-adopt the same hook.
 
 ### v0.10.E — Player journey continuation (per-page Magic + token sweep)
 

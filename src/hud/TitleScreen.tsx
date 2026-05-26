@@ -12,13 +12,15 @@
  */
 import { motion, useReducedMotion } from 'framer-motion';
 import { Moon, Sun, Volume2, VolumeX } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useMutedPreference } from '@/audio/useMutedPreference';
 import { useTitleMusic } from '@/audio/useTitleMusic';
 import { cn } from '@/lib/cn';
 import { useTheme } from '@/lib/theme';
 import type { Persistence } from '@/persistence/persistence';
+import { useViewport } from '@/render/useViewport';
 import { CreditsModal } from './CreditsModal';
+import { useDesktopShortcuts } from './desktop-keyboard';
 import { IconButton, TreasureButton } from './primitives';
 import { TitleBackground } from './TitleBackground';
 
@@ -49,19 +51,18 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
   const [theme, setTheme] = useTheme(persistence);
   const [showCredits, setShowCredits] = useState(false);
 
-  // M_HUD.SHELL.6 — keyboard shortcuts retired as primary navigation.
-  // Aethelgard ships to Android + iOS where every user TAPS. Desktop
-  // gets one convenience shortcut (Enter = primary action New Game)
-  // but the visible UI never advertises kbd as the path. All
-  // interactive surfaces are reachable + tested via aria-label + tap.
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'Enter') onNewGame();
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onNewGame]);
+  // M_HUD.SHELL.15 — keyboard shortcut as a viewport-gated subpackage
+  // hook. Mobile / tablet / foldable users (and the entire test suite)
+  // never see the shortcut — it ONLY arms on desktop / ultrawide. The
+  // visible UI never advertises kbd as a path; this is a silent
+  // convenience.
+  const viewport = useViewport();
+  const desktopShortcutsEnabled =
+    viewport.class === 'desktop' || viewport.class === 'ultraWide';
+  useDesktopShortcuts(
+    [{ key: 'enter', onMatch: onNewGame }],
+    desktopShortcutsEnabled,
+  );
 
   const version = typeof __APP_VERSION__ === 'undefined' ? 'dev' : (__APP_VERSION__ as string);
 
