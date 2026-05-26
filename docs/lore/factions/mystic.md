@@ -41,7 +41,8 @@ A mystic AI tends to:
 - Prioritise Discoveries (research) over military.
 - Propose pacts with everyone in the first 60s — pact = "leave my
   sanctuaries alone, I leave your keeps alone".
-- Strongly prefer the `coexistence` and `age-of-strata` modes.
+- Strongly prefer the `coexistence` mode (knowledge-hoarding +
+  isolation). <!-- M_V11.PURGE — age-of-strata mode removed -->
 
 ## Signature units + buildings
 
