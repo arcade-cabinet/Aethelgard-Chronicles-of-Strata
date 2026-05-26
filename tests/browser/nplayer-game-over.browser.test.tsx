@@ -54,11 +54,8 @@ function make4PlayerGame() {
     factions,
   });
   game.outcome = 'win';
-  game.victoryRecord = {
-    kind: 'military',
-    winner: 'player',
-    detectedAtSeconds: 300,
-  };
+  // M_V11.PURGE — victoryRecord field gone; GameOverModal now
+  // derives winnerId from outcome alone.
   return game;
 }
 

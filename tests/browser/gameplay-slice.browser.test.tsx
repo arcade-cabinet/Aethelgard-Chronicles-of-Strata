@@ -39,14 +39,9 @@ describe('gameplay slice — recent feature commits land cleanly in real Chromiu
     });
     titleBtn.click();
     // The 6 brand-aligned mode labels.
-    const expected = [
-      'Border Clash',
-      'Frontier Raid',
-      'Long Reign',
-      'Strata Wars',
-      'Age of Strata',
-      'Coexistence',
-    ];
+    // M_V11.PURGE — 'Age of Strata' (4X mode) stripped per RTS
+    // commitment. 5 RTS variants remain.
+    const expected = ['Border Clash', 'Frontier Raid', 'Long Reign', 'Strata Wars', 'Coexistence'];
     await new Promise((r) => setTimeout(r, 200));
     const text = document.body.textContent ?? '';
     for (const label of expected) {

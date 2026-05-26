@@ -159,7 +159,15 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
   // N-player per-faction grid.
   const nonBarbarianFactions = game.factions.filter((f) => f.kind !== 'barbarian');
   const isNPlayer = nonBarbarianFactions.length > 2;
-  const winnerId = game.victoryRecord?.winner ?? null;
+  // M_V11.PURGE — victoryRecord was the 4X named-victory field.
+  // RTS modes use outcome-based winner attribution (player wins
+  // when game.outcome === 'win', otherwise the enemy faction).
+  const winnerId =
+    game.outcome === 'win'
+      ? 'player'
+      : game.outcome === 'loss'
+        ? (nonBarbarianFactions.find((f) => f.id !== 'player')?.id ?? null)
+        : null;
 
   interface FactionRow {
     id: string;

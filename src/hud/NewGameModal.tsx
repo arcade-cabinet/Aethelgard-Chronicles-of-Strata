@@ -94,7 +94,6 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       'frontier-raid': 'hard',
       'long-reign': 'normal',
       'strata-wars': 'normal',
-      'age-of-strata': 'normal',
       coexistence: 'easy',
     };
     setDifficulty(aiByMode[mode]);
@@ -152,18 +151,25 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       { label: mapSize, icon: MapIcon },
       { label: mode.replace(/-/g, ' '), icon: Gamepad2 },
       {
-        label: mode === 'age-of-strata' ? `${nPlayer} players` : '2 players',
+        // M_V11.PURGE — n-player picker only surfaces in modes that
+        // historically supported it (4X-only). RTS modes are 2-faction
+        // by default; the picker's hidden so the chip always reads
+        // "2 players". When N-player FFA returns as an RTS-mode option
+        // this branch will gate on nPlayer > 2 instead.
+        label: '2 players',
         icon: Crown,
       },
     ],
-    [seedPhrase, mapSize, mode, nPlayer],
+    [seedPhrase, mapSize, mode],
   );
 
   const beginDisabled = !seedPhrase.trim();
 
   const buildFactions = (): FactionConfig[] => {
     const preset = presetFor(mode);
-    if (mode !== 'age-of-strata' && preset.defaultPlayerCount <= 2) {
+    // M_V11.PURGE — age-of-strata mode is gone; RTS modes are
+    // 2-faction by default unless preset says otherwise.
+    if (preset.defaultPlayerCount <= 2) {
       const [lp, le] = LEGACY_FACTIONS;
       if (!lp || !le) {
         return buildDefaultFactions(preset.defaultPlayerCount, nPlayerColors);
@@ -337,140 +343,44 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                       />
                     </SectionCard>
 
-                    {mode === 'age-of-strata' && (
-                      <SectionCard
-                        icon={Crown}
-                        title="Players"
-                        caption="Free-for-all across N factions, each with its own throne."
-                        delay={0.14}
+                    {/* M_V11.PURGE — age-of-strata mode (and its
+                        n-player picker) gone per the RTS commitment.
+                        All modes ship as 2-faction; the picker
+                        always shows the player + enemy color
+                        swatches. N-player FFA as an RTS-mode option
+                        is a future cycle. */}
+                    <SectionCard
+                      icon={Palette}
+                      title="Players"
+                      caption="Pick the banner colors for the two factions."
+                      delay={0.14}
+                    >
+                      <div
+                        data-testid="faction-colors-row"
+                        className="flex flex-wrap items-center gap-6 text-sm text-[var(--color-on-surface-muted)]"
                       >
-                        <div data-testid="n-player-picker" className="flex flex-col gap-4">
-                          <div className="flex items-center gap-4">
-                            <label
-                              htmlFor="n-player-slider"
-                              className="shrink-0 text-sm text-[var(--color-on-surface-muted)]"
-                            >
-                              Count
-                            </label>
-                            <input
-                              id="n-player-slider"
-                              type="range"
-                              min={2}
-                              max={6}
-                              step={1}
-                              value={nPlayer}
-                              data-testid="n-player-slider"
-                              onChange={(e) => {
-                                const n = Number(e.target.value);
-                                setNPlayer(n);
-                                setNPlayerColors((prev) => {
-                                  const extra = defaultFactionColors(n, seedPhrase);
-                                  return Array.from(
-                                    { length: n },
-                                    (_, i) => prev[i] ?? extra[i] ?? '#888',
-                                  );
-                                });
-                              }}
-                              className="h-2 flex-1 cursor-pointer appearance-none rounded-full bg-[var(--color-border)] accent-[var(--color-treasure)]"
-                            />
-                            <span
-                              data-testid="n-player-count"
-                              className="min-w-[2ch] text-right font-display text-2xl text-[var(--color-treasure)]"
-                              style={{ fontFamily: 'var(--font-display)' }}
-                            >
-                              {nPlayer}
-                            </span>
-                          </div>
-                          <div data-testid="n-player-color-slots" className="flex flex-col gap-2">
-                            {/* M_HUD.SHELL.21 — AnimatePresence removed.
-                             * The exiting items lingered in DOM during
-                             * their 200ms exit anim and broke the
-                             * n-player-picker test (querying slot count
-                             * during the anim window saw stale entries).
-                             * Slot identity is the index; React's
-                             * reconciler handles the count change
-                             * cleanly without anim juice. */}
-                            {Array.from({ length: nPlayer }, (_, i) => {
-                              const isYou = i === 0;
-                              return (
-                                <motion.div
-                                  // biome-ignore lint/suspicious/noArrayIndexKey: slot index IS the identity.
-                                  key={`n-player-slot-${i}`}
-                                  data-testid={`n-player-slot-${i}`}
-                                  initial={reducedMotion ? false : { opacity: 0, x: -8 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ duration: 0.18 }}
-                                  className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-black/20 px-3 py-2"
-                                >
-                                  {isYou ? (
-                                    <Crown
-                                      className="h-4 w-4 text-[var(--color-treasure)]"
-                                      aria-hidden
-                                    />
-                                  ) : (
-                                    <Bot
-                                      className="h-4 w-4 text-[var(--color-on-surface-muted)]"
-                                      aria-hidden
-                                    />
-                                  )}
-                                  <span className="w-16 shrink-0 text-sm">
-                                    {isYou ? 'You' : `AI ${i}`}
-                                  </span>
-                                  <FactionColorPicker
-                                    color={nPlayerColors[i] ?? '#888888'}
-                                    onChange={(c) =>
-                                      setNPlayerColors((prev) => {
-                                        const next = [...prev];
-                                        next[i] = c;
-                                        return next;
-                                      })
-                                    }
-                                    ariaLabel={`Faction ${i + 1} color`}
-                                  />
-                                </motion.div>
-                              );
-                            })}
-                          </div>
+                        <div className="flex items-center gap-2">
+                          <Crown className="h-4 w-4 text-[var(--color-treasure)]" aria-hidden />
+                          <span className="w-14 text-sm text-[var(--color-on-surface)]">
+                            Player
+                          </span>
+                          <FactionColorPicker
+                            color={factionColors.player}
+                            onChange={(c) => setFactionColors((prev) => ({ ...prev, player: c }))}
+                            ariaLabel="Player faction color"
+                          />
                         </div>
-                      </SectionCard>
-                    )}
-
-                    {mode !== 'age-of-strata' && (
-                      <SectionCard
-                        icon={Palette}
-                        title="Players"
-                        caption="Pick the banner colors for the two factions."
-                        delay={0.14}
-                      >
-                        <div
-                          data-testid="faction-colors-row"
-                          className="flex flex-wrap items-center gap-6 text-sm text-[var(--color-on-surface-muted)]"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Crown className="h-4 w-4 text-[var(--color-treasure)]" aria-hidden />
-                            <span className="w-14 text-sm text-[var(--color-on-surface)]">
-                              Player
-                            </span>
-                            <FactionColorPicker
-                              color={factionColors.player}
-                              onChange={(c) => setFactionColors((prev) => ({ ...prev, player: c }))}
-                              ariaLabel="Player faction color"
-                            />
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Bot className="h-4 w-4 text-[var(--color-danger)]" aria-hidden />
-                            <span className="w-14 text-sm text-[var(--color-on-surface)]">
-                              Enemy
-                            </span>
-                            <FactionColorPicker
-                              color={factionColors.enemy}
-                              onChange={(c) => setFactionColors((prev) => ({ ...prev, enemy: c }))}
-                              ariaLabel="Enemy faction color"
-                            />
-                          </div>
+                        <div className="flex items-center gap-2">
+                          <Bot className="h-4 w-4 text-[var(--color-danger)]" aria-hidden />
+                          <span className="w-14 text-sm text-[var(--color-on-surface)]">Enemy</span>
+                          <FactionColorPicker
+                            color={factionColors.enemy}
+                            onChange={(c) => setFactionColors((prev) => ({ ...prev, enemy: c }))}
+                            ariaLabel="Enemy faction color"
+                          />
                         </div>
-                      </SectionCard>
-                    )}
+                      </div>
+                    </SectionCard>
                   </div>
                 </div>
 

@@ -103,11 +103,8 @@ export function FixtureApp({ fixture }: FixtureAppProps) {
       const outcome =
         fixture === 'gameover-win' ? 'win' : fixture === 'gameover-loss' ? 'loss' : 'draw';
       game.outcome = outcome;
-      game.victoryRecord = {
-        kind: 'military',
-        winner: outcome === 'win' ? 'player' : 'enemy',
-        detectedAtSeconds: 300,
-      };
+      // M_V11.PURGE — victoryRecord field stripped (was 4X-only).
+      // GameOverModal now derives the winnerId from outcome alone.
       return (
         <>
           <DimBackdrop label={`Game Over — ${outcome}`} />

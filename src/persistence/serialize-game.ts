@@ -217,13 +217,9 @@ export function serializeGame(game: GameState): GameSnapshot {
       active: game.mythEvents.active ? { ...game.mythEvents.active } : null,
       lastFireSeconds: game.mythEvents.lastFireSeconds,
     },
-    victoryRecord: game.victoryRecord
-      ? {
-          kind: game.victoryRecord.kind,
-          winner: game.victoryRecord.winner,
-          detectedAtSeconds: game.victoryRecord.detectedAtSeconds,
-        }
-      : null,
+    // M_V11.PURGE — victoryRecord field stripped (4X-only). Saves
+    // that carried it deserialize fine — the deserializer simply
+    // ignores the unknown key.
     portalStoneCooldowns: Array.from(game.portalStoneCooldowns.entries()),
     // M_V7.ECONOMY.REGISTRY — flatten the N-player economy Map to
     // tuples. Each row is a fresh shallow-clone of the GameEconomy
@@ -407,23 +403,9 @@ export function deserializeGame(snap: GameSnapshot): GameState {
       }
     }
   }
-  if (snap.victoryRecord && typeof snap.victoryRecord === 'object') {
-    const vr = snap.victoryRecord;
-    const VALID_KINDS = new Set(['military', 'economic', 'scientific', 'diplomatic']);
-    if (
-      typeof vr.kind === 'string' &&
-      VALID_KINDS.has(vr.kind) &&
-      typeof vr.winner === 'string' &&
-      vr.winner.length > 0 &&
-      Number.isFinite(vr.detectedAtSeconds)
-    ) {
-      game.victoryRecord = {
-        kind: vr.kind as 'military' | 'economic' | 'scientific' | 'diplomatic',
-        winner: vr.winner,
-        detectedAtSeconds: vr.detectedAtSeconds,
-      };
-    }
-  }
+  // M_V11.PURGE — snap.victoryRecord from pre-v0.11 saves is now
+  // silently discarded; the field doesn't exist on GameState
+  // anymore.
   if (Array.isArray(snap.portalStoneCooldowns)) {
     for (const pair of snap.portalStoneCooldowns.slice(0, 64)) {
       if (!Array.isArray(pair) || pair.length !== 2) continue;

@@ -21,7 +21,6 @@ export const MODES: ReadonlyArray<{ key: GameMode; label: string }> = [
   { key: 'frontier-raid', label: 'Frontier Raid' },
   { key: 'long-reign', label: 'Long Reign' },
   { key: 'strata-wars', label: 'Strata Wars' },
-  { key: 'age-of-strata', label: 'Age of Strata' },
   { key: 'coexistence', label: 'Coexistence' },
 ];
 

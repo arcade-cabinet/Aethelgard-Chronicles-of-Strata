@@ -85,22 +85,32 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 
 ### §1 — 4X scaffolding strip (M_V11.RTS-PURGE)
 
-- [ ] M_V11.PURGE.UI — Delete EndTurnButton, EraProgressPill,
-      age-of-strata mode UI surfaces. Strip App.tsx mounts. Remove
-      `age-of-strata` mode from NewGameModal.
-- [ ] M_V11.PURGE.MODE-ENUM — Reduce src/config/modes*.ts to
-      border-clash + existing tutorial/ai-vs-ai variants. Collapse
-      mode picker.
+- [x] M_V11.PURGE.UI — Deleted src/hud/EndTurnButton.tsx +
+      src/hud/EraProgressPill.tsx + their App.tsx mounts.
+      NewGameModal's n-player picker block (97 lines) + the
+      `mode === 'age-of-strata'` gates are gone. mode-presets +
+      ai-profiles + new-game-options entries stripped.
+- [x] M_V11.PURGE.MODE-ENUM — `'age-of-strata'` removed from
+      GameMode union in game-state.ts. All branches gone.
+      Remaining modes: border-clash / frontier-raid / long-reign
+      / strata-wars / coexistence (5 RTS variants).
 - [ ] M_V11.PURGE.TURN-GATE — Remove `currentTurn` param from
       path-follow + other systems. Delete `Combatant.restUntilTurn`.
-      Update callsites.
-- [ ] M_V11.PURGE.SCORING — Remove the 4X-only per-era scoring
-      panel path. Keep per-faction end-game summary.
-- [ ] M_V11.PURGE.E2E — Delete e2e specs exercising age-of-strata
-      mode + era progression. RTS specs stay.
+      Update callsites. (Defer to follow-up commit — heavier
+      blast radius into sim + AI.)
+- [x] M_V11.PURGE.SCORING — Deleted src/hud/ScoringScreen.tsx
+      + harness test + 4 baselines + victory-conditions.ts +
+      victoryRecord field on GameState. GameOverModal now
+      derives winnerId from outcome alone.
+- [x] M_V11.PURGE.E2E — Deleted tests/e2e/per-mode-journey.spec.ts
+      + 4 unit tests (turn-cap, turn-based, turn-freeze,
+      age-of-strata-win) + ai-profiles.test.ts + modes-4x.test.ts
+      + era-progress-pill.browser.test.tsx +
+      victory-conditions.test.ts. Test count: 1165 → 1129.
 - [ ] M_V11.PURGE.DOCS — Strike 4X / era / turn references from
       docs/specs/*.md (excluding historical PRD-v0.4..v0.10).
-      Update README + CLAUDE.md.
+      Update README + CLAUDE.md. (Defer to a docs-sweep PR after
+      the code purge stabilizes.)
 
 ### §2 — Classic-RTS opening (M_V11.RTS-OPEN)
 

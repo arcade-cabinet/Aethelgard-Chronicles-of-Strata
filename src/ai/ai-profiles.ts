@@ -96,13 +96,6 @@ export const AI_PROFILES: Record<GameMode, AiProfile> = {
     buildWeight: 1.3,
     militaryWeight: 1.0,
   },
-  'age-of-strata': {
-    ...DEFAULT_PROFILE,
-    buildWeight: 1.4,
-    militaryWeight: 0.9,
-    endgameUrgencyMultiplier: 2.0,
-    urgencyThreshold: 20,
-  },
   coexistence: {
     ...DEFAULT_PROFILE,
     buildWeight: 0,
