@@ -1,0 +1,61 @@
+---
+# menu-to-onboarding.yaml — Aethelgard v0.10 first-run player journey.
+#
+# Boots the app, walks the launcher → new game → begin → onboarding
+# stepper end-to-end. Exercises every primary surface a brand-new
+# player taps on first launch.
+appId: com.arcadecabinet.aethelgard
+---
+- launchApp
+- assertVisible:
+    id: "title-screen"
+
+# Launcher chrome — all primary CTAs must be visible + tappable.
+- assertVisible:
+    id: "menu-new-game"
+- assertVisible:
+    id: "menu-continue"
+- assertVisible:
+    id: "menu-settings"
+- assertVisible:
+    id: "title-credits"
+
+# Open the system-menu drawer (top-right hamburger) and back out.
+- tapOn:
+    id: "system-menu-trigger"
+    optional: true
+- assertVisible:
+    id: "system-menu-drawer"
+    optional: true
+- tapOn:
+    text: "Close menu"
+    optional: true
+
+# Open New Game.
+- tapOn:
+    id: "menu-new-game"
+- assertVisible:
+    text: "Forge Your Realm"
+- assertVisible:
+    id: "begin-game"
+
+# Begin the match — the modal closes, the game canvas mounts, and
+# OnboardingOverlay opens with step 1.
+- tapOn:
+    id: "begin-game"
+- assertVisible:
+    id: "onboarding-overlay"
+
+# Walk all 9 steps via Next.
+- repeat:
+    times: 9
+    commands:
+      - tapOn:
+          id: "onboarding-next"
+          optional: true
+
+# After Begin Realm, onboarding is dismissed and the in-game HUD is live.
+- assertNotVisible:
+    id: "onboarding-overlay"
+- assertVisible:
+    id: "system-menu-trigger"

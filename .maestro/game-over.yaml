@@ -1,0 +1,28 @@
+---
+# game-over.yaml — Aethelgard v0.10 terminal-state HUD.
+#
+# Boots to a fresh game, force-flips the outcome to 'win' via the
+# dev hook, asserts the cinematic GameOverModal renders with the
+# Re-enter Aethelgard CTA. Pins the terminal-state contract.
+appId: com.arcadecabinet.aethelgard
+---
+- launchApp
+- tapOn:
+    id: "menu-new-game"
+- tapOn:
+    id: "begin-game"
+- tapOn:
+    text: "Skip tutorial"
+    optional: true
+
+# Force a win outcome via the dev hook exposed on window.__triggerGameOver.
+- evalScript: ${output.win = window.__triggerGameOver?.('win')}
+
+# The cinematic terminal screen should render.
+- assertVisible:
+    id: "game-over-modal"
+- assertVisible:
+    text: "Victory!"
+    optional: true
+- assertVisible:
+    text: "Re-enter Aethelgard"

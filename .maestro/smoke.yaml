@@ -1,0 +1,38 @@
+---
+# smoke.yaml — Aethelgard v0.10 minimal native flow.
+#
+# Boots the app on Android (or iOS), verifies the launcher renders, taps
+# the New Game CTA, and confirms the setup modal opens. The smallest
+# flow that proves the Capacitor build is alive and the SystemMenu
+# substrate is wired.
+#
+# Run with: pnpm test:maestro
+appId: com.arcadecabinet.aethelgard
+---
+- launchApp
+# 1. Launcher must show with the gold wordmark visible.
+- assertVisible:
+    id: "title-screen"
+- assertVisible:
+    id: "title-heading"
+- assertVisible:
+    text: "New Game"
+# 2. Tap the primary CTA — opens NewGameModal.
+- tapOn:
+    id: "menu-new-game"
+- assertVisible:
+    text: "Forge Your Realm"
+# 3. Tap the Begin Match CTA — exits the modal into the live game.
+- tapOn:
+    id: "begin-game"
+# 4. Onboarding overlay should now be visible (first-run); dismiss
+#    via the Skip tutorial button.
+- assertVisible:
+    id: "onboarding-overlay"
+    optional: true
+- tapOn:
+    text: "Skip tutorial"
+    optional: true
+# 5. The top-right SystemMenu hamburger must be reachable mid-game.
+- assertVisible:
+    id: "system-menu-trigger"

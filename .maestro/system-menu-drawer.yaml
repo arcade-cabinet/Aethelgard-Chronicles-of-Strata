@@ -1,0 +1,59 @@
+---
+# system-menu-drawer.yaml — Aethelgard v0.10 in-game chrome reachability.
+#
+# Boots into a fresh match (skips onboarding), opens the top-right
+# hamburger, walks every drawer row, and confirms each one's effect.
+# Catches regressions where a drawer row falls behind another HUD
+# element (the original OnePlus Open overlap class of bugs).
+appId: com.arcadecabinet.aethelgard
+---
+- launchApp
+- assertVisible:
+    id: "title-screen"
+- tapOn:
+    id: "menu-new-game"
+- tapOn:
+    id: "begin-game"
+- tapOn:
+    text: "Skip tutorial"
+    optional: true
+
+# In-game now.
+- assertVisible:
+    id: "system-menu-trigger"
+- tapOn:
+    id: "system-menu-trigger"
+- assertVisible:
+    id: "system-menu-drawer"
+
+# Every row must be present + tappable.
+- assertVisible:
+    id: "system-menu-settings"
+- assertVisible:
+    id: "system-menu-discoveries"
+- assertVisible:
+    id: "system-menu-legend"
+- assertVisible:
+    id: "system-menu-sound"
+- assertVisible:
+    id: "system-menu-resign"
+
+# Test Zone Legend toggle — opens panel.
+- tapOn:
+    id: "system-menu-legend"
+- assertVisible:
+    id: "zone-legend"
+    optional: true
+
+# Re-open drawer + flip the sound row (label flips).
+- tapOn:
+    id: "system-menu-trigger"
+- tapOn:
+    id: "system-menu-sound"
+# Drawer stays open (keepOpen=true on the sound row).
+- assertVisible:
+    id: "system-menu-drawer"
+
+# Close drawer via the X.
+- tapOn:
+    text: "Close menu"

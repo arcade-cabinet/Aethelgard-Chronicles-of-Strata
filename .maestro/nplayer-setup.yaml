@@ -1,0 +1,40 @@
+---
+# nplayer-setup.yaml — Aethelgard v0.10 N-player FFA setup flow.
+#
+# Boots to launcher, opens Forge Your Realm, picks Age of Strata mode,
+# drives the N-player slider, verifies per-slot color rows render,
+# then begins the match. Pins the v0.5+ N-player picker contract.
+appId: com.arcadecabinet.aethelgard
+---
+- launchApp
+- tapOn:
+    id: "menu-new-game"
+- assertVisible:
+    text: "Forge Your Realm"
+
+# Pick Age of Strata mode in the Mode section.
+- tapOn:
+    text: "Age of Strata"
+- assertVisible:
+    id: "n-player-picker"
+- assertVisible:
+    id: "n-player-slider"
+- assertVisible:
+    id: "n-player-count"
+- assertVisible:
+    id: "n-player-color-slots"
+
+# Each default slot must render.
+- assertVisible:
+    id: "n-player-slot-0"
+- assertVisible:
+    id: "n-player-slot-1"
+
+# Begin Match.
+- tapOn:
+    id: "begin-game"
+- tapOn:
+    text: "Skip tutorial"
+    optional: true
+- assertVisible:
+    id: "system-menu-trigger"
