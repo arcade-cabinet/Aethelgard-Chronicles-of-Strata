@@ -10,7 +10,7 @@
  * chimney + door + two upper windows.
  */
 import { Chimney, Door, PitchedRoof, StonePlinth, Window } from '../primitives';
-import { useFactionMaterials } from '../FactionMaterialsContext';
+import { useFactionMaterials } from '../faction-materials';
 
 export function House({
   width = 0.85,

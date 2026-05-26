@@ -1,3 +1,4 @@
+import { DoubleSide } from 'three';
 import { DEFAULT_MATERIALS, type PrimitiveMaterial } from './types';
 
 /** Decorative gold band. Two shapes supported:
@@ -27,7 +28,7 @@ export function GoldTrim({
     return (
       <mesh position={position} rotation={[0, rotationY, 0]} castShadow>
         <cylinderGeometry args={[radius, radius, thickness, 24, 1, true]} />
-        <meshStandardMaterial {...material} side={2 /* DoubleSide */} />
+        <meshStandardMaterial {...material} side={DoubleSide} />
       </mesh>
     );
   }

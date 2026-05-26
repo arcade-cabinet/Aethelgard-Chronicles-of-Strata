@@ -10,7 +10,7 @@
  * production from other small buildings at a glance.
  */
 import { ConeRoof, Door, GoldTrim, StonePlinth, WoodPost } from '../primitives';
-import { useFactionMaterials } from '../FactionMaterialsContext';
+import { useFactionMaterials } from '../faction-materials';
 
 export function Granary({
   radius = 0.36,

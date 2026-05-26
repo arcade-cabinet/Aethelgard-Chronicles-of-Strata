@@ -1,18 +1,23 @@
 /**
- * M_V11.PROCMESH.MATERIALS — context provider so buildings/* compositions
- * read per-faction primitive materials without prop-drilling through
- * every nested primitive. A building's parent (FactionBase or harness
- * fixture) wraps the tree in <FactionMaterialsProvider faction='player'>;
- * each composition pulls the resolved Record via useFactionMaterials().
+ * M_V11.PROCMESH.MATERIALS — Provider component for the per-faction
+ * primitive material context. Reads the SKINS registry (which lives
+ * outside this dir) and resolves it into a complete materials map.
+ *
+ * This module is the ONLY procedural-tier file that depends on
+ * `@/rules/skins`, by design. Buildings depend on the leaf
+ * `./faction-materials` module (context + hook + type only) so the
+ * skins → buildings → context → skins import cycle stays broken.
+ *
+ * Existing callers that imported the hook from this path still work
+ * via the re-export at the bottom of this file.
  */
-import { createContext, type ReactNode, useContext, useMemo } from 'react';
+import { type ReactNode, useMemo } from 'react';
 import type { Faction } from '@/ecs/components';
-import { DEFAULT_MATERIALS, type PrimitiveFamily, type PrimitiveMaterial } from './primitives';
-import { resolveFactionMaterials } from '@/rules/skins';
-
-type MaterialsMap = Record<PrimitiveFamily, PrimitiveMaterial>;
-
-const FactionMaterialsContext = createContext<MaterialsMap>(DEFAULT_MATERIALS);
+import { SKINS } from '@/rules/skins';
+import {
+  FactionMaterialsContext,
+  resolveFactionMaterials,
+} from './faction-materials';
 
 export function FactionMaterialsProvider({
   faction,
@@ -21,14 +26,16 @@ export function FactionMaterialsProvider({
   faction: Faction;
   children: ReactNode;
 }) {
-  const value = useMemo(() => resolveFactionMaterials(faction), [faction]);
+  const overrides = SKINS[faction]?.factionMaterials;
+  const value = useMemo(
+    () => resolveFactionMaterials(faction, overrides),
+    [faction, overrides],
+  );
   return (
     <FactionMaterialsContext.Provider value={value}>{children}</FactionMaterialsContext.Provider>
   );
 }
 
-/** Hook for buildings/* to pick a material by family. Default-mat
- *  fallback is automatic — never returns undefined. */
-export function useFactionMaterials(): MaterialsMap {
-  return useContext(FactionMaterialsContext);
-}
+// Compatibility re-export — original location of the hook. New
+// callers should import directly from `./faction-materials`.
+export { useFactionMaterials } from './faction-materials';

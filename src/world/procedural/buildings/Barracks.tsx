@@ -18,7 +18,7 @@ import {
   Window,
   WoodPost,
 } from '../primitives';
-import { useFactionMaterials } from '../FactionMaterialsContext';
+import { useFactionMaterials } from '../faction-materials';
 
 export function Barracks({
   width = 1.1,

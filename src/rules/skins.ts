@@ -25,37 +25,13 @@
  */
 import type { BuildingType, Faction, UnitType } from '@/ecs/components';
 import { BUILDING_COMPONENTS } from '@/world/procedural/buildings';
-import {
-  DEFAULT_MATERIALS,
-  type PrimitiveFamily,
-  type PrimitiveMaterial,
-} from '@/world/procedural/primitives';
+// M_V11.PROCMESH.MATERIALS — FactionMaterials type moved to
+// `src/world/procedural/faction-materials.ts` to break the import
+// cycle (skins → buildings → context → skins). Re-exported here for
+// backwards compatibility with existing callers.
+import type { FactionMaterials } from '@/world/procedural/faction-materials';
+export type { FactionMaterials } from '@/world/procedural/faction-materials';
 import { measuredScale, measuredYOffset } from './asset-scale';
-
-/**
- * M_V11.PROCMESH.MATERIALS — per-faction primitive material overrides.
- * Buildings compose tier-1 primitives (Log, StonePlinth, Banner, etc.)
- * and read the materials by family. SKINS supplies a Record per faction;
- * any family omitted falls back to DEFAULT_MATERIALS.
- *
- * The buildings/* compositions resolve their materials from this slot
- * via the FactionMaterialsContext provider — primitive call sites in
- * a building stay clean (no per-primitive lookup), and a third tribe
- * gets a new colour palette by editing ONE row in SKINS.
- */
-export type FactionMaterials = Partial<Record<PrimitiveFamily, PrimitiveMaterial>>;
-
-/** Merge a faction's partial overrides on top of the default set so
- *  consumers always get a complete map. */
-export function resolveFactionMaterials(
-  faction: Faction,
-): Record<PrimitiveFamily, PrimitiveMaterial> {
-  const overrides = SKINS[faction].factionMaterials ?? {};
-  return {
-    ...DEFAULT_MATERIALS,
-    ...overrides,
-  };
-}
 
 /**
  * M_GAME.SCALE.GLB-MEASURE.1 — DRY helper. Builds a StructureModel

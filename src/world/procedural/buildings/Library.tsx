@@ -16,7 +16,7 @@ import {
   StonePlinth,
   Window,
 } from '../primitives';
-import { useFactionMaterials } from '../FactionMaterialsContext';
+import { useFactionMaterials } from '../faction-materials';
 
 export function Library({
   width = 1.05,

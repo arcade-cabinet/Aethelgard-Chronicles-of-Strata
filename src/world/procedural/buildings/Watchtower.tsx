@@ -8,7 +8,7 @@
  * ring + crenellated cap + conical roof with finial + corner windows.
  */
 import { ConeRoof, GoldTrim, StonePlinth, Window } from '../primitives';
-import { useFactionMaterials } from '../FactionMaterialsContext';
+import { useFactionMaterials } from '../faction-materials';
 
 export function Watchtower({
   radius = 0.32,

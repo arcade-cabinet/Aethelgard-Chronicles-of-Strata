@@ -22,15 +22,17 @@ export function Buttress({
   rotationY?: number;
   material?: PrimitiveMaterial;
 }) {
+  // Yaw FIRST, then lean in the yawed frame — nesting two groups makes
+  // the rotation order explicit. (Pre-fix: a single Euler [0, rotationY,
+  // lean] with the default XYZ order lean'd toward the buttress's local
+  // +X *before* yawing, so side-wall buttresses tilted along the wall's
+  // length instead of into the wall face. Reviewer flag B1 PR #v0.11.)
   return (
-    <mesh
-      position={position}
-      rotation={[0, rotationY, lean]}
-      castShadow
-      receiveShadow
-    >
-      <boxGeometry args={[width, height, depth]} />
-      <meshStandardMaterial {...material} />
-    </mesh>
+    <group position={position} rotation={[0, rotationY, 0]}>
+      <mesh rotation={[0, 0, lean]} castShadow receiveShadow>
+        <boxGeometry args={[width, height, depth]} />
+        <meshStandardMaterial {...material} />
+      </mesh>
+    </group>
   );
 }

@@ -8,7 +8,7 @@
  * on the centre face. Battlement row caps the top.
  */
 import { BattlementRow, Banner, StoneBrick, StonePlinth } from '../primitives';
-import { useFactionMaterials } from '../FactionMaterialsContext';
+import { useFactionMaterials } from '../faction-materials';
 
 export function Wall({
   length = 1.0,

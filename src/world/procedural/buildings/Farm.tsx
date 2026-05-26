@@ -8,7 +8,7 @@
  * chimney + door + small window. Reads as 'small homestead'.
  */
 import { Chimney, Door, PitchedRoof, StonePlinth, Window } from '../primitives';
-import { useFactionMaterials } from '../FactionMaterialsContext';
+import { useFactionMaterials } from '../faction-materials';
 
 export function Farm({
   width = 0.9,

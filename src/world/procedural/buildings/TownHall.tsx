@@ -20,7 +20,7 @@ import {
   StonePlinth,
   Window,
 } from '../primitives';
-import { useFactionMaterials } from '../FactionMaterialsContext';
+import { useFactionMaterials } from '../faction-materials';
 
 export function TownHall({
   width = 1.25,
