@@ -261,11 +261,30 @@ function GameSession({
         }
       }
     };
+    // M_V11.POLISH.JOURNEY-CAMERA-EVENTS — focus-town-hall pans
+    // the camera onto the player Town Hall + zooms in tight.
+    // Forwards to aethelgard:focus-tile (CameraRig already listens)
+    // with parsed q/r + a tight distance so journey-capture shots
+    // can frame the procedural Town Hall composition.
+    const onFocusTownHall = () => {
+      const key = game.townHallKey;
+      if (!key) return;
+      const [qStr, rStr] = key.split(',');
+      const q = Number.parseInt(qStr ?? '0', 10);
+      const r = Number.parseInt(rStr ?? '0', 10);
+      window.dispatchEvent(
+        new CustomEvent('aethelgard:focus-tile', {
+          detail: { q, r, distance: 6 },
+        }),
+      );
+    };
     window.addEventListener('aethelgard:trigger-build', onTriggerBuild);
     window.addEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
+    window.addEventListener('aethelgard:focus-town-hall', onFocusTownHall);
     return () => {
       window.removeEventListener('aethelgard:trigger-build', onTriggerBuild);
       window.removeEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
+      window.removeEventListener('aethelgard:focus-town-hall', onFocusTownHall);
     };
   }, [game]);
   // r3f camera ref retained even though SelectionRect no longer

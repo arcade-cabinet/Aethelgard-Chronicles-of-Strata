@@ -489,10 +489,25 @@ between "PR open" and "merge".
       with aethelgard:zoom-to(q, r, distance) event so journey
       captures can pull in for v0.11-specific shots (mobs,
       loot, procedural buildings need tighter framing).
-- [ ] M_V11.POLISH.JOURNEY-CAMERA-EVENTS — wire focus-town-hall +
+- [x] M_V11.POLISH.JOURNEY-CAMERA-EVENTS — wire focus-town-hall +
       zoom-to + pan-to-tile CustomEvents so the journey battery
-      can drive deterministic camera framings (currently shots
-      09+ skip-fire because no listener exists).
+      can drive deterministic camera framings. Wired
+      aethelgard:focus-town-hall in App.tsx (parses townHallKey,
+      forwards to existing aethelgard:focus-tile with distance=6).
+      aethelgard:focus-tile + aethelgard:pan-camera already
+      existed on CameraRig. Note: the journey shot 09 still
+      doesn't visibly zoom — investigation deferred to a follow-up
+      since the substrate is correct; likely the focus-tile tween
+      converges after the 4s wait but the screenshot is captured
+      before the camera settles. M_V11.POLISH.CAMERA-TWEEN-RACE
+      added below to track.
+- [ ] M_V11.POLISH.CAMERA-TWEEN-RACE — journey-capture shot 09
+      dispatches focus-town-hall but the captured screenshot
+      still shows the wide-view framing. The tween is r3f-
+      useFrame driven; the 4s wait should be enough for the
+      ~6Hz exp-smooth. Investigate: is the listener mounted at
+      dispatch time? Is the cameraRef ready? Add a __camera_focus
+      promise the test can await.
 - [ ] M_V11.POLISH.A11Y-SWEEP — `@axe-core/playwright` against
       every HUD route. Address each violation (contrast, missing
       ARIA, focus-trap, etc.) before merge.

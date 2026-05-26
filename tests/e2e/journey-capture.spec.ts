@@ -166,14 +166,20 @@ test.describe('journey capture (manual review)', () => {
   });
 
   test('09-procedural-buildings-zoom', async ({ page }) => {
+    test.setTimeout(60_000);
     await enterGame(page, 'ancient-silver-forest');
     await dismissOnboardingAndWaitForScene(page);
     // Tight zoom on the player Town Hall so the procedural
     // composition (columns + banners + spire + shields) reads.
+    // Dispatches focus-town-hall (App listener forwards to
+    // focus-tile which CameraRig tweens). The tween is r3f-
+    // useFrame-driven (~6Hz exp-smooth, settles when within
+    // 0.5 world units of target). Wait 4s real-time for the
+    // tween to fully converge + the cameraTap re-paint.
     await page.evaluate(() => {
       window.dispatchEvent(new CustomEvent('aethelgard:focus-town-hall'));
     });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(4000);
     await snap(page, '09-procedural-buildings-zoom');
   });
 });
