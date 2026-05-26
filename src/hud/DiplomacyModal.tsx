@@ -151,6 +151,7 @@ export function DiplomacyModal({ game }: DiplomacyModalProps) {
     window.addEventListener('aethelgard:open-diplomacy', onOpen);
     return () => window.removeEventListener('aethelgard:open-diplomacy', onOpen);
   }, []);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `open` is intentionally a dependency so rows recompute each time the modal is reopened.
   const rows = useMemo(() => buildRows(game), [game, open]);
   const now = game.clock.elapsed;
 
@@ -219,18 +220,25 @@ export function DiplomacyModal({ game }: DiplomacyModalProps) {
           Propose pacts, demand tribute, declare war. Temporary alliances let you team up against
           the strongest opponent — and break the alliance when convenient.
         </Dialog.Description>
-        <div
+        <ul
           id="diplomacy-modal-faction-list"
           aria-label="Diplomacy faction list"
-          style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 14,
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+          }}
         >
           {rows.length === 0 && (
-            <div style={{ color: HUD_THEME.color.muted, fontSize: 13 }}>
+            <li style={{ color: HUD_THEME.color.muted, fontSize: 13 }}>
               No other factions in this match.
-            </div>
+            </li>
           )}
           {rows.map((row) => (
-            <div
+            <li
               key={row.id}
               id={`diplomacy-row-${row.id}`}
               aria-label={`Diplomacy row for ${row.displayName}`}
@@ -379,9 +387,9 @@ export function DiplomacyModal({ game }: DiplomacyModalProps) {
                     )}
                 </div>
               )}
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 18 }}>
           <Dialog.Close asChild>
             <button
