@@ -110,6 +110,18 @@ interface SelectionView {
     total: number;
     typeCounts: Array<{ type: string; count: number }>;
   } | null;
+  /** M_V11.SEL.PEON-VERBS — intersection-verb gates. true ⇒ EVERY
+   *  selected entity supports this verb, so it's safe to show as a
+   *  group action. In the single-selection case these are simply
+   *  the primary's per-trait checks. */
+  intersectionVerbs: {
+    /** All selected entities are military units (Stance trait
+     *  applies to every one). Drives the stance fieldset gate. */
+    allMilitary: boolean;
+    /** All selected entities are player peons (Take/Resume applies
+     *  to every one). Drives the autoMode button gate. */
+    allPlayerPeons: boolean;
+  };
 }
 
 /** Summarize a multi-entity selection into per-type counts. */
@@ -131,6 +143,28 @@ function buildMultiSummary(
   return { total: entities.length, typeCounts };
 }
 
+/** M_V11.SEL.PEON-VERBS — compute which group-actions apply to the
+ *  intersection of selected entities. The single-selection case
+ *  collapses to "does the one selected entity support this verb".
+ *  Returns false-flags when the selection is empty (defensive). */
+function computeIntersectionVerbs(
+  entities: ReadonlyArray<import('koota').Entity>,
+): SelectionView['intersectionVerbs'] {
+  if (entities.length === 0) {
+    return { allMilitary: false, allPlayerPeons: false };
+  }
+  let allMilitary = true;
+  let allPlayerPeons = true;
+  for (const e of entities) {
+    const u = e.get(Unit);
+    const f = e.get(FactionTrait)?.faction;
+    if (!u || !MILITARY_UNIT_TYPES.has(u.unitType)) allMilitary = false;
+    if (!u || u.unitType !== 'Peon' || f !== 'player') allPlayerPeons = false;
+    if (!allMilitary && !allPlayerPeons) break;
+  }
+  return { allMilitary, allPlayerPeons };
+}
+
 /** Build a display view from the selected entity. */
 function viewOf(game: GameState): SelectionView | null {
   const entity = selectedEntity(game);
@@ -146,6 +180,10 @@ function viewOf(game: GameState): SelectionView | null {
   // stable display.
   const all = selectedEntities(game);
   const multi = all.length > 1 ? buildMultiSummary(all) : null;
+  // M_V11.SEL.PEON-VERBS — intersection-verb gates: a group action
+  // only renders if EVERY selected entity supports it. Single-
+  // selection falls through to the primary's per-trait booleans.
+  const intersectionVerbs = computeIntersectionVerbs(all.length > 0 ? all : [entity]);
   const building = entity.get(Building);
   if (building) {
     const meta = displayFor(building.buildingType);
@@ -161,6 +199,7 @@ function viewOf(game: GameState): SelectionView | null {
       peonAutoMode: null,
       formationId: null,
       multi,
+      intersectionVerbs,
     };
   }
   // M_V11.STACK.PANEL — Stack entity selection (the formation badge
@@ -180,6 +219,7 @@ function viewOf(game: GameState): SelectionView | null {
       peonAutoMode: null,
       formationId: stack.formationId,
       multi,
+      intersectionVerbs,
     };
   }
   const unit = entity.get(Unit);
@@ -201,6 +241,7 @@ function viewOf(game: GameState): SelectionView | null {
       peonAutoMode,
       formationId: null,
       multi,
+      intersectionVerbs,
     };
   }
   return {
@@ -212,6 +253,7 @@ function viewOf(game: GameState): SelectionView | null {
     peonAutoMode: null,
     formationId: null,
     multi,
+    intersectionVerbs,
   };
 }
 
@@ -550,8 +592,13 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                 })()
               : null}
 
-            {/* M_POLISH2.RTS.16 — 4-segment stance picker for military units */}
-            {view.stance !== null && (
+            {/* M_POLISH2.RTS.16 — 4-segment stance picker for military
+                units. M_V11.SEL.PEON-VERBS — in multi-select, gate on
+                "all selected are military" (intersectionVerbs.allMilitary)
+                so peon+footman mixed selections don't surface Stance.
+                In single-select, view.stance !== null IS the check
+                (set when the primary is military). */}
+            {view.stance !== null && (view.multi === null || view.intersectionVerbs.allMilitary) && (
               <div style={{ marginTop: 10 }}>
                 <div
                   style={{
@@ -703,8 +750,13 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
 
             {/* M_GAME.MODE.PEON.2 — peon autonomy action. When the
                 selected entity is a player peon, expose Take command
-                (if currently auto) or Resume automation (if manual). */}
-            {view.peonAutoMode !== null && (
+                (if currently auto) or Resume automation (if manual).
+                M_V11.SEL.PEON-VERBS — in multi-select, gate on
+                intersectionVerbs.allPlayerPeons so a mixed peon+
+                footman group doesn't surface a verb that wouldn't
+                apply to half of them. */}
+            {view.peonAutoMode !== null &&
+              (view.multi === null || view.intersectionVerbs.allPlayerPeons) && (
               <div style={{ marginTop: 10 }}>
                 <HudButton
                   label={view.peonAutoMode === 'auto' ? 'Take command' : 'Resume automation'}
