@@ -153,8 +153,13 @@ export function CameraRig({ viewport, boardRadius, landCenter }: CameraRigProps)
     const dxCam = camera.position.x - tgt.x;
     const dzCam = camera.position.z - tgt.z;
     const currentDist = Math.hypot(dxCam, dzCam);
-    const desiredHoriz = Math.cos(0.96) * t.targetDistance;
-    const desiredVert = Math.sin(0.96) * t.targetDistance;
+    // Gemini PR #65 — polar 0.96 rad is measured from the vertical
+    // (Y-axis), so the XZ radius is sin(polar) and the Y height is
+    // cos(polar). Previously swapped, which tweened to a ~55°
+    // from-horizon pose and then snapped back to ~35° when
+    // MapControls regained authority — a visible camera jolt.
+    const desiredHoriz = Math.sin(0.96) * t.targetDistance;
+    const desiredVert = Math.cos(0.96) * t.targetDistance;
     const azimuth = currentDist > 0.001 ? Math.atan2(dxCam, dzCam) : 0;
     const targetCamX = tgt.x + Math.sin(azimuth) * desiredHoriz;
     const targetCamZ = tgt.z + Math.cos(azimuth) * desiredHoriz;

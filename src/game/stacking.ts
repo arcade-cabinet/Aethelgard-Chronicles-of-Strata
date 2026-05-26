@@ -170,8 +170,20 @@ export function damageStack(game: GameState, stack: Entity, damage: number): num
     if (killCount > 0) {
       // Drop the last K members (non-dominant types preferred — to
       // be refined in STACK.4; for now last-wins).
+      const killedIds = new Set(s.members.slice(memberCount - killCount));
       const survivors = s.members.slice(0, memberCount - killCount);
       stack.set(Stack, { ...s, combinedHp: next, members: survivors });
+      // Gemini PR #65 — clean up the orphaned member entities. The
+      // prior shape removed them from the Stack.members array but
+      // left their ECS entities (with StackMember back-references
+      // still pointing at this stack) leaked in the world. Destroy
+      // them so the existing death/cleanup systems see consistent
+      // state.
+      for (const memberEntity of game.world.query(StackMember)) {
+        if (killedIds.has(memberEntity.id())) {
+          memberEntity.destroy();
+        }
+      }
       if (survivors.length <= 1) {
         // Single-member or zero — auto-unstack.
         dissolveStack(game, stack);

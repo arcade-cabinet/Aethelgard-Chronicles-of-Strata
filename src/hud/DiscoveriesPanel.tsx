@@ -20,6 +20,21 @@ const DISCOVERY_FLAVOR: Record<string, string> = {
     'We asked the wall its name; it answered; we wrote the answer on a stone, and the stone broke the wall.',
   'monumental-architecture':
     'The strata answered as one — yes, remember this. We laid the cornerstone before sunset.',
+  // M_GAME.DISCOVERY.FORMATION.1+2 — Chronicler's voice for the 6
+  // formation Discoveries, sourced from docs/lore/discoveries.md.
+  // Gemini PR #65: prevents the panel from rendering a bare cost +
+  // mechanical line for these entries.
+  'formation-phalanx':
+    'And when the spears were planted as one, the bronze beneath the realm shifted, and the line became wall.',
+  'formation-cadre': 'The cadre is not three swords. It is one sword that wears three faces.',
+  'formation-wedge':
+    'The wedge does not arrive. The wedge is what was already there, only the enemy did not yet know.',
+  'formation-skirmish-line':
+    'The skirmish line is not a line of archers. It is the SHAPE the arrows make in flight.',
+  'formation-square':
+    'The square is the realm in miniature. It does not advance. It cannot retreat. It survives, and that is enough.',
+  'formation-combined-arms':
+    'And the Chronicler-King saw that the spear was not the answer, and the bow was not the answer, and the wedge was not the answer. The answer was all three, spoken in the same breath.',
 };
 import { costLabel } from './format';
 import { emitToast } from './Toasts';
