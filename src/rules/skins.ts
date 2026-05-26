@@ -24,7 +24,37 @@
  * (per-faction decoration choices). Each slot lands on its own commit.
  */
 import type { BuildingType, Faction, UnitType } from '@/ecs/components';
+import {
+  DEFAULT_MATERIALS,
+  type PrimitiveFamily,
+  type PrimitiveMaterial,
+} from '@/world/procedural/primitives';
 import { measuredScale, measuredYOffset } from './asset-scale';
+
+/**
+ * M_V11.PROCMESH.MATERIALS — per-faction primitive material overrides.
+ * Buildings compose tier-1 primitives (Log, StonePlinth, Banner, etc.)
+ * and read the materials by family. SKINS supplies a Record per faction;
+ * any family omitted falls back to DEFAULT_MATERIALS.
+ *
+ * The buildings/* compositions resolve their materials from this slot
+ * via the FactionMaterialsContext provider — primitive call sites in
+ * a building stay clean (no per-primitive lookup), and a third tribe
+ * gets a new colour palette by editing ONE row in SKINS.
+ */
+export type FactionMaterials = Partial<Record<PrimitiveFamily, PrimitiveMaterial>>;
+
+/** Merge a faction's partial overrides on top of the default set so
+ *  consumers always get a complete map. */
+export function resolveFactionMaterials(
+  faction: Faction,
+): Record<PrimitiveFamily, PrimitiveMaterial> {
+  const overrides = SKINS[faction].factionMaterials ?? {};
+  return {
+    ...DEFAULT_MATERIALS,
+    ...overrides,
+  };
+}
 
 /**
  * M_GAME.SCALE.GLB-MEASURE.1 — DRY helper. Builds a StructureModel
@@ -189,6 +219,16 @@ export interface Skin {
     aggressiveness?: number;
     economyFocus?: number;
   };
+  /**
+   * M_V11.PROCMESH.MATERIALS — per-primitive-family material overrides
+   * for procedural building compositions. Any family omitted falls
+   * back to DEFAULT_MATERIALS (see `resolveFactionMaterials`).
+   *
+   * Player today: warm stone + warm wood + red banner + gold trim.
+   * Enemy today: cold blue-grey stone + dark wood + violet banner +
+   * silver trim. Adding a third tribe = ONE new entry here.
+   */
+  factionMaterials?: FactionMaterials;
 }
 
 /**
@@ -306,6 +346,19 @@ export const SKINS: Record<Faction, Skin> = {
       scaleRange: [0.5, 0.8],
       seedTag: 'player-accretion',
     },
+    // M_V11.PROCMESH.MATERIALS — warm-stone + warm-wood + crimson
+    // banner + gold trim. Reads as 'classical kingdom'.
+    factionMaterials: {
+      stone: { color: '#c7b9a3', roughness: 0.9, metalness: 0.04 },
+      wood: { color: '#8a4a1c', roughness: 0.88, metalness: 0 },
+      roof: { color: '#7a2e1e', roughness: 0.82, metalness: 0 },
+      banner: { color: '#dc2626', roughness: 0.55, metalness: 0 },
+      trim: { color: '#facc15', roughness: 0.28, metalness: 0.82 },
+      accent: { color: '#e2e8f0', roughness: 0.4, metalness: 0.6 },
+      glass: { color: '#fde68a', emissive: '#fbbf24', emissiveIntensity: 0.7, roughness: 0.18 },
+      metal: { color: '#d6d3d1', roughness: 0.34, metalness: 0.85 },
+      dark: { color: '#27272a', roughness: 0.95, metalness: 0.05 },
+    },
   },
   enemy: {
     structure: {
@@ -388,6 +441,19 @@ export const SKINS: Record<Faction, Skin> = {
       density: 0.55,
       scaleRange: [0.8, 1.1],
       seedTag: 'graveyard',
+    },
+    // M_V11.PROCMESH.MATERIALS — cold blue-grey stone + dark wood +
+    // violet banner + silver trim. Reads as 'necropolis'.
+    factionMaterials: {
+      stone: { color: '#6b7280', roughness: 0.92, metalness: 0.08 },
+      wood: { color: '#3f2a1a', roughness: 0.9, metalness: 0 },
+      roof: { color: '#3b0764', roughness: 0.85, metalness: 0.05 },
+      banner: { color: '#7e22ce', roughness: 0.55, metalness: 0 },
+      trim: { color: '#cbd5e1', roughness: 0.32, metalness: 0.78 },
+      accent: { color: '#a78bfa', roughness: 0.4, metalness: 0.55 },
+      glass: { color: '#a5f3fc', emissive: '#22d3ee', emissiveIntensity: 0.85, roughness: 0.2 },
+      metal: { color: '#94a3b8', roughness: 0.32, metalness: 0.88 },
+      dark: { color: '#0f172a', roughness: 0.96, metalness: 0.05 },
     },
   },
 };
