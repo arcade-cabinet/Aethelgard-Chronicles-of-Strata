@@ -18,7 +18,7 @@ import { doResearch, setPeonAutoMode, setStance, trainUnit } from '@/game/comman
 import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
-import { selectedEntities, selectedEntity } from '@/game/selection';
+import { selectEntities, selectedEntities, selectedEntity } from '@/game/selection';
 import { setStackFormation } from '@/game/stacking';
 import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
 import { FORMATIONS } from '@/world/formations';
@@ -408,6 +408,21 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
     emitUiSound(result.ok ? 'ui-button-click' : 'ui-error');
   };
 
+  /** M_V11.SEL.ALL-OF-TYPE — select every same-faction unit of the
+   *  primary's unit type currently in the world. Cap at 50 so the
+   *  HUD diff doesn't choke on a mega-army. */
+  const selectAllOfType = (faction: string, unitType: string) => {
+    const matches: Array<import('koota').Entity> = [];
+    for (const e of game.world.query(Unit, FactionTrait)) {
+      if (e.get(FactionTrait)?.faction !== faction) continue;
+      if (e.get(Unit)?.unitType !== unitType) continue;
+      matches.push(e);
+      if (matches.length >= 50) break;
+    }
+    if (matches.length > 0) selectEntities(game, matches);
+    emitUiSound(matches.length > 0 ? 'ui-button-click' : 'ui-error');
+  };
+
   return (
     // M_AUDIT2.UX.9 — Tooltip.Provider scoped here so the HudButton
     // disabledReason tooltips render. delayDuration=300 matches the
@@ -497,6 +512,43 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               {view.name}
             </div>
             <div style={{ fontSize: '0.78rem', color: '#fde047', marginTop: 2 }}>{view.task}</div>
+
+            {/* M_V11.SEL.ALL-OF-TYPE — small "All <Type>" button for
+                unit selections so the player can expand to every
+                same-faction same-type unit currently in the world.
+                Hidden for Stack / Building / Unknown selections —
+                those don't multi-select in this shape. */}
+            {view.stance !== null || view.peonAutoMode !== null
+              ? (() => {
+                  const entity = selectedEntity(game);
+                  const u = entity?.get(Unit);
+                  const f = entity?.get(FactionTrait)?.faction;
+                  if (!u || !f) return null;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => selectAllOfType(f, u.unitType)}
+                      data-testid={`select-all-${u.unitType.toLowerCase()}`}
+                      aria-label={`Select all ${u.unitType}s`}
+                      style={{
+                        marginTop: 8,
+                        padding: '6px 10px',
+                        minHeight: 32,
+                        borderRadius: 6,
+                        border: `1px solid ${HUD_THEME.color.border}`,
+                        background: 'rgba(255,255,255,0.04)',
+                        color: HUD_THEME.color.accent,
+                        fontFamily: HUD_THEME.font.body,
+                        fontSize: '0.72rem',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Select all {u.unitType}s
+                    </button>
+                  );
+                })()
+              : null}
 
             {/* M_POLISH2.RTS.16 — 4-segment stance picker for military units */}
             {view.stance !== null && (
