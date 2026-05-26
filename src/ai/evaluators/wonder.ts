@@ -21,11 +21,9 @@ import { BUILDING_COSTS } from '@/rules';
 export { WonderGoal };
 
 class WonderGoal extends Goal<AiPlayer> {
-  constructor(owner: AiPlayer) {
-    super(owner);
-  }
-  activate(): void {}
-  execute(): void {
+  // biome-ignore lint/suspicious/noEmptyBlockStatements: yuka Goal lifecycle stubs
+  override activate(): void {}
+  override execute(): void {
     // owner is nullable in yuka types — cast defensively.
     const owner = this.owner as AiPlayer;
     if (!owner?.game) {
@@ -40,7 +38,8 @@ class WonderGoal extends Goal<AiPlayer> {
     const ok = placeBuilding(owner.game, tileKey, 'Wonder', owner.faction);
     this.status = ok ? Goal.STATUS.COMPLETED : Goal.STATUS.FAILED;
   }
-  terminate(): void {}
+  // biome-ignore lint/suspicious/noEmptyBlockStatements: yuka Goal lifecycle stubs
+  override terminate(): void {}
 }
 
 export class WonderEvaluator extends GoalEvaluator<AiPlayer> {
