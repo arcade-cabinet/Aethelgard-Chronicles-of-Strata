@@ -284,7 +284,7 @@ function GameSession({
     // with parsed q/r + a tight distance so journey-capture shots
     // can frame the procedural Palace composition.
     const onFocusPalace = () => {
-      const key = game.townHallKey;
+      const key = game.palaceKey;
       if (!key) return;
       const [qStr, rStr] = key.split(',');
       const q = Number.parseInt(qStr ?? '0', 10);

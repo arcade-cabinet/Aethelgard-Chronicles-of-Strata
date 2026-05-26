@@ -247,7 +247,7 @@ emitters.
 
 - **§6.1 NOTIF.ENEMY-AT-TH** — When an enemy unit enters a tile
   adjacent to the player's Palace, fire a critical toast
-  "Enemy at the gates" with focus={townHall.q, townHall.r}.
+  "Enemy at the gates" with focus={palace.q, palace.r}.
   Dedup id keyed by 'enemy-at-th'.
 - **§6.2 NOTIF.ZOC-BREACH** — When a tile flips faction (player
   loses or gains a tile), fire an info-tone toast "Your border

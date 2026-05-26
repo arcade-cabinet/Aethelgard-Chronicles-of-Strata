@@ -24,7 +24,7 @@ import { runEconomyTick, startGame } from '@/game/game-state';
 // lands) will queue these from the AI's first scheduler tick;
 // until then this is the test-only seed.
 function seedFactionPeons(game: ReturnType<typeof startGame>, faction: 'player' | 'enemy'): void {
-  const baseKey = faction === 'player' ? game.townHallKey : game.enemyBaseKey;
+  const baseKey = faction === 'player' ? game.palaceKey : game.enemyBaseKey;
   const [tq, tr] = baseKey.split(',').map(Number) as [number, number];
   const dirs: ReadonlyArray<readonly [number, number]> = [
     [1, 0],

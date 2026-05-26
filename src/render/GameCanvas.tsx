@@ -113,7 +113,7 @@ function DecorationLive({
       board={game.board}
       occupiedKeys={occupiedKeys}
       enemyBaseKey={game.enemyBaseKey}
-      playerBaseKey={game.townHallKey}
+      playerBaseKey={game.palaceKey}
       buildSites={sites}
     />
   );
@@ -170,7 +170,7 @@ function Scene({
   // disoriented. Falls back to the centroid only if the Palace
   // tile is absent (extremely early init).
   const landCenter = useMemo<{ x: number; z: number }>(() => {
-    const pBase = game.board.tiles.get(game.townHallKey);
+    const pBase = game.board.tiles.get(game.palaceKey);
     if (pBase) {
       const p = axialToWorld(pBase.q, pBase.r);
       return { x: p.x, z: p.z };
@@ -187,7 +187,7 @@ function Scene({
       n++;
     }
     return n > 0 ? { x: sx / n, z: sz / n } : { x: 0, z: 0 };
-  }, [game.board, game.townHallKey]);
+  }, [game.board, game.palaceKey]);
 
   return (
     <>

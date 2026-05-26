@@ -39,7 +39,7 @@ describe('enemy base (M8.1 faction model)', () => {
     expect(game.enemyBaseEntity.has(EnemySpawner)).toBe(true);
     expect(game.enemyBaseEntity.has(FactionBase)).toBe(true);
     expect(game.enemyBaseEntity.get(FactionBase)?.faction).toBe('enemy');
-    expect(game.townHallEntity.has(EnemySpawner)).toBe(false);
-    expect(game.townHallEntity.get(FactionBase)?.faction).toBe('player');
+    expect(game.palaceEntity.has(EnemySpawner)).toBe(false);
+    expect(game.palaceEntity.get(FactionBase)?.faction).toBe('player');
   });
 });

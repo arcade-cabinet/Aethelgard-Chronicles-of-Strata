@@ -89,7 +89,7 @@ export function tickEnemyAtPalaceToast(game: GameState): void {
   if (game.clock.elapsed < 30) return;
   const fired = game.inactivityBeatsFired ?? 0;
   if ((fired & 0b100) !== 0) return;
-  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+  const [tq, tr] = game.palaceKey.split(',').map(Number) as [number, number];
   for (const e of game.world.query(Unit, FactionTrait, HexPosition)) {
     const faction = e.get(FactionTrait)?.faction;
     if (faction !== 'enemy') continue;

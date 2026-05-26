@@ -160,11 +160,7 @@ export function placeBuilding(
   // BOTH unbuildable — without including enemyBaseKey, a player click on
   // the enemy hex would let placeBuilding stamp a second FactionBase-
   // adjacent entity right on top of the enemy base.
-  const occupied = new Set<string>([
-    game.townHallKey,
-    game.enemyBaseKey,
-    ...game.buildSites.keys(),
-  ]);
+  const occupied = new Set<string>([game.palaceKey, game.enemyBaseKey, ...game.buildSites.keys()]);
   const economy = game.economy[faction];
 
   const check = canBuild(game.board, occupied, tileKey, type, economy);
@@ -273,7 +269,7 @@ export function placeRoad(
   const tile = game.board.tiles.get(tileKey);
   if (!tile) return false;
   // Base tiles + completed building tiles are off-limits.
-  if (tileKey === game.townHallKey || tileKey === game.enemyBaseKey) return false;
+  if (tileKey === game.palaceKey || tileKey === game.enemyBaseKey) return false;
   const existingBuilding = game.buildSites.get(tileKey);
   // A Wall (DefensiveBehavior + Building) at this tile composes a Gate.
   const isWallTile = existingBuilding?.has(DefensiveBehavior) === true;
@@ -449,7 +445,7 @@ export function foundBase(game: GameState, settler: Entity): Entity | null {
   if (!hex) return null;
   const tileKey = getHexKey(hex.q, hex.r);
   if (game.buildSites.has(tileKey)) return null;
-  if (tileKey === game.townHallKey || tileKey === game.enemyBaseKey) return null;
+  if (tileKey === game.palaceKey || tileKey === game.enemyBaseKey) return null;
   // Consume the Settler.
   settler.destroy();
   // Compose the new base. Palace-style: AttractorBehavior + Building +

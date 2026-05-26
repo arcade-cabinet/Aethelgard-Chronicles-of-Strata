@@ -292,7 +292,7 @@ export interface GameState {
    */
   economyExtra: Map<FactionId, GameEconomy>;
   /** The hex key of the player's home-base (Palace) tile. */
-  townHallKey: string;
+  palaceKey: string;
   /** The hex key of the enemy base tile — the enemy's deposit/build anchor. */
   enemyBaseKey: string;
   /** All planned resource node placements for this session. */
@@ -308,7 +308,7 @@ export interface GameState {
    */
   buildSitesGeneration: number;
   /** The player home base ECS entity (the Palace — loss condition). */
-  townHallEntity: Entity;
+  palaceEntity: Entity;
   /** The enemy base ECS entity (the graveyard spawner — win condition). */
   enemyBaseEntity: Entity;
   /** Current win/loss outcome; 'playing' until a condition is met. */
@@ -497,7 +497,7 @@ function findCentralWalkableTile(board: BoardData): { q: number; r: number; leve
 /**
  * Resolve a faction's base hex key from the live game state. M_REGISTRY.16
  * + M_REGISTRY.14 — single source for the per-faction baseKey lookup.
- * Was 4 hand-written `faction === 'player' ? game.townHallKey :
+ * Was 4 hand-written `faction === 'player' ? game.palaceKey :
  * game.enemyBaseKey` ternaries scattered across game-state.ts,
  * commands.ts, ai-player.ts (and the deposit-tick allocation in
  * runEconomyTick). Now ONE function the entire codebase consults.
@@ -505,7 +505,7 @@ function findCentralWalkableTile(board: BoardData): { q: number; r: number; leve
  * caller auto-uses it.
  */
 export function baseKeyFor(game: GameState, faction: Faction): string {
-  return faction === 'player' ? game.townHallKey : game.enemyBaseKey;
+  return faction === 'player' ? game.palaceKey : game.enemyBaseKey;
 }
 
 // M_V11.OPEN.SPAWN — adjacentWalkableTiles + walkableTilesByExpansion
@@ -583,7 +583,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // adjacent tiles — never on the Palace tile itself (they would overlap
   // the building mesh).
   const center = findCentralWalkableTile(board);
-  const townHallKey = getHexKey(center.q, center.r);
+  const palaceKey = getHexKey(center.q, center.r);
   // Both factions get a symmetric economy — the player's and the AI enemy's.
   const economy: Record<Faction, GameEconomy> = {
     player: createEconomy(),
@@ -598,8 +598,8 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // Mark the Palace tile unwalkable BEFORE building the nav graph — units
   // path around the building and deposit from an adjacent tile. The enemy
   // base is marked + the graph rebuilt below, once its tile is picked.
-  const townHallTile = board.tiles.get(townHallKey);
-  if (townHallTile) townHallTile.walkable = false;
+  const palaceTile = board.tiles.get(palaceKey);
+  if (palaceTile) palaceTile.walkable = false;
   let navGraph = buildNavGraph(board);
 
   // M_V11.OPEN.SPAWN — classic-RTS opening. Per
@@ -616,14 +616,14 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // Spawn the player home base (the Palace — loss condition when destroyed).
   // Palace composes AttractorBehavior (spec 102) — radius drives the
   // map-gen guarantee AND the initial zone-of-control footprint.
-  const townHallProfile = behaviorsFor('Palace');
+  const palaceProfile = behaviorsFor('Palace');
   // M_EXPANSION.F.84 — apply starting bonus to Palace HP.
   const bonusHp = config.startingBonus === 'extra-hp' ? 200 : 0;
   // M_FUN.QA.AIVAI.TUNE.PATTERN-C — base HP raised from 500 to
   // 1500. A 15-DPS Footman now takes 100 sim-seconds to solo a
   // Palace — long enough that the defending faction can muster
   // a counter-force. Solo-rush wins drop out of the matrix.
-  const townHallEntity = world.spawn(
+  const palaceEntity = world.spawn(
     HexPosition({ q: center.q, r: center.r, level: center.level }),
     Building({ buildingType: 'Palace', isComplete: true, progress: 1 }),
     Health({ current: 1800 + bonusHp, max: 1800 + bonusHp }),
@@ -636,7 +636,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     // via the journey-shot 05 build-menu-open capture failing to
     // surface the SelectionPanel.
     Selectable({ isSelected: false }),
-    ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
+    ...(palaceProfile.attractor ? [AttractorBehavior(palaceProfile.attractor)] : []),
   );
 
   // M_MAPGEN.12 — pick the enemy base as the BEST-BALANCED placement,
@@ -715,7 +715,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     // M_V11.POLISH.BUILD-MENU-CTA — enemy base also gets Selectable
     // so a player can tap it to inspect.
     Selectable({ isSelected: false }),
-    ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
+    ...(palaceProfile.attractor ? [AttractorBehavior(palaceProfile.attractor)] : []),
   );
 
   // M_V11.OPEN.SPAWN — pre-spawned Footman stripped. Per the
@@ -754,7 +754,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   ]);
   resourceNodes = ensureAttractorResources(
     board,
-    townHallKey,
+    palaceKey,
     center.q,
     center.r,
     resourceNodes,
@@ -826,7 +826,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     const sizeCount = campCountForMapSize(mapSize);
     const nplayerCount = playerFactionCount >= 3 ? defaultCampCount(playerFactionCount) : 0;
     const campCount = Math.max(sizeCount, nplayerCount);
-    const playerBaseKeys = [townHallKey, enemyBaseKey];
+    const playerBaseKeys = [palaceKey, enemyBaseKey];
     const campSpecs = placeBarbarianCamps(board, playerBaseKeys, campCount, mapRng);
     for (const spec of campSpecs) {
       spawnBarbarianCamp(world, spec);
@@ -849,7 +849,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     // M_V11.OPEN.SPAWN — playerPawn points at the Palace entity
     // post-v0.11 (no pre-spawned peons). Callers using moveUnit on
     // it no-op gracefully (Palace has no Movement trait).
-    playerPawn: townHallEntity,
+    playerPawn: palaceEntity,
     factions,
     portalStoneCooldowns: new Map<string, number>(),
     diplomacy: createDiplomacyState(),
@@ -860,12 +860,12 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     // M_V7.ECONOMY.REGISTRY — empty Map; economyFor() lazy-creates
     // entries when a non-legacy factionId is first looked up.
     economyExtra: new Map<FactionId, GameEconomy>(),
-    townHallKey,
+    palaceKey,
     enemyBaseKey,
     resourceNodes,
     buildSites,
     buildSitesGeneration: 0,
-    townHallEntity,
+    palaceEntity,
     enemyBaseEntity,
     outcome: 'playing',
     lastDamageEvents: [],
@@ -986,7 +986,7 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
       if (woodNodes.length === 0 && resourceNodes.length === 0) return;
       const candidates = woodNodes.length > 0 ? woodNodes : resourceNodes;
       const anchors = {
-        player: parseHexKey(townHallKey),
+        player: parseHexKey(palaceKey),
         enemy: parseHexKey(enemyBaseKey),
       };
 

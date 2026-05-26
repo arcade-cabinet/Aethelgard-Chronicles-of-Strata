@@ -101,7 +101,7 @@ describe('statusAttributesSystem (M_FUN.ATTR)', () => {
     // query gates the loop to mobile combatants only.
     const world = createEcsWorld();
     const tiles = tilesAt(0, 0, 'SWAMP');
-    const townHall = world.spawn(
+    const palace = world.spawn(
       HexPosition({ q: 0, r: 0, level: 1 }),
       Health({
         current: 500,
@@ -115,7 +115,7 @@ describe('statusAttributesSystem (M_FUN.ATTR)', () => {
       FactionTrait({ faction: 'player' }),
     );
     for (let i = 0; i < 10; i++) statusAttributesSystem(world, tiles, 1);
-    expect(townHall.get(Health)?.current).toBe(500);
+    expect(palace.get(Health)?.current).toBe(500);
   });
 
   it('off-DESERT for 3+ seconds recovers dehydration', () => {

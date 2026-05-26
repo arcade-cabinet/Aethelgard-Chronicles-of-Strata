@@ -8,7 +8,7 @@ import { startGame } from '@/game/game-state';
 // (no PathQueue, no Movement). These tests spawn a Peon explicitly
 // to exercise move-order behavior against a movable unit.
 function spawnPeonAdjacentToPalace(game: ReturnType<typeof startGame>) {
-  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+  const [tq, tr] = game.palaceKey.split(',').map(Number) as [number, number];
   const dirs: ReadonlyArray<readonly [number, number]> = [
     [1, 0],
     [0, 1],

@@ -12,7 +12,7 @@ describe('foundBase (M_MODES.6 — 4X expansion)', () => {
     for (const t of game.board.tiles.values()) {
       if (!t.walkable) continue;
       const key = `${t.q},${t.r}`;
-      if (key === game.townHallKey || key === game.enemyBaseKey) continue;
+      if (key === game.palaceKey || key === game.enemyBaseKey) continue;
       if (game.buildSites.has(key)) continue;
       tile = { q: t.q, r: t.r, level: t.level };
       break;
@@ -42,7 +42,7 @@ describe('foundBase (M_MODES.6 — 4X expansion)', () => {
     for (const t of game.board.tiles.values()) {
       if (!t.walkable) continue;
       const key = `${t.q},${t.r}`;
-      if (key === game.townHallKey || key === game.enemyBaseKey) continue;
+      if (key === game.palaceKey || key === game.enemyBaseKey) continue;
       if (game.buildSites.has(key)) continue;
       tile = { q: t.q, r: t.r, level: t.level };
       break;
@@ -59,9 +59,9 @@ describe('foundBase (M_MODES.6 — 4X expansion)', () => {
     expect(peon.has(Unit)).toBe(true); // not consumed
   });
 
-  it('refuses to found on the original townHall or enemy base', () => {
+  it('refuses to found on the original palace or enemy base', () => {
     const game = startGame('settle-conflict');
-    const [thq, thr] = game.townHallKey.split(',').map(Number);
+    const [thq, thr] = game.palaceKey.split(',').map(Number);
     const settler = createCharacter({
       world: game.world,
       role: 'Settler',

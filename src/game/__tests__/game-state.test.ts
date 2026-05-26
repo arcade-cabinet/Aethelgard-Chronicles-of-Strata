@@ -20,7 +20,7 @@ describe('startGame', () => {
   // deliberately marked non-walkable so units path around it.
   it('playerPawn points at the Palace entity (post-v0.11 RTS opening)', () => {
     const game = startGame('ancient-silver-forest');
-    expect(game.playerPawn).toBe(game.townHallEntity);
+    expect(game.playerPawn).toBe(game.palaceEntity);
     const hex = game.playerPawn.get(HexPosition);
     expect(hex).toBeDefined();
     const tile = game.board.tiles.get(`${hex?.q},${hex?.r}`);

@@ -149,7 +149,7 @@ export interface UnitRig {
 /**
  * Minimap visual identity per faction (M_REGISTRY.27) — was a hand-
  * written ternary `faction === 'enemy' ? '#ef4444' : '#22c55e'` in
- * Minimap.tsx:118 plus a literal tuple of (townHallEntity, '#38bdf8') /
+ * Minimap.tsx:118 plus a literal tuple of (palaceEntity, '#38bdf8') /
  * (enemyBaseEntity, '#a855f7') for base markers. After M_REGISTRY.27,
  * these are Skin slot reads.
  */

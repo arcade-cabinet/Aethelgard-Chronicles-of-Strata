@@ -311,7 +311,7 @@ function drawOverlay(
   // = ONE registry entry, no Minimap edit.
   for (const [entity, color] of [
     [
-      game.townHallEntity,
+      game.palaceEntity,
       findFaction(game.factions, 'player')?.color ?? SKINS.player.minimap.baseColor,
     ],
     [

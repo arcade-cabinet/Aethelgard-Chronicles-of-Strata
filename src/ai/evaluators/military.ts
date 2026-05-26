@@ -74,7 +74,7 @@ class MoveMilitaryGoal extends Goal<AiPlayer> {
       return;
     }
     const opposingBase =
-      owner.faction === 'player' ? owner.game.enemyBaseEntity : owner.game.townHallEntity;
+      owner.faction === 'player' ? owner.game.enemyBaseEntity : owner.game.palaceEntity;
     const opposingBaseId = Number(opposingBase);
     let any = false;
     for (const e of owner.game.world.query(Unit, FactionTrait)) {

@@ -14,7 +14,7 @@ import { createStack } from '@/game/stacking';
 import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
 
 function spawnFootman(game: ReturnType<typeof startGame>, dq: number) {
-  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+  const [tq, tr] = game.palaceKey.split(',').map(Number) as [number, number];
   // Find a walkable tile dq away from the Palace.
   for (let r = -1; r <= 1; r++) {
     const tile = game.board.tiles.get(`${tq + dq},${tr + r}`);

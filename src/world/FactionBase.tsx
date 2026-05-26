@@ -214,9 +214,9 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
   // Base-tile world position (Palace for player, crypt for enemy).
   const basePos = useMemo(() => {
     if (faction === 'player') {
-      const { q, r } = parseHexKey(game.townHallKey);
+      const { q, r } = parseHexKey(game.palaceKey);
       const { x, z } = axialToWorld(q, r);
-      const tile = game.board.tiles.get(game.townHallKey);
+      const tile = game.board.tiles.get(game.palaceKey);
       return { x, y: (tile?.level ?? 0) * TILE_HEIGHT, z };
     }
     // enemy — derive from the enemyBaseEntity's live HexPosition trait.
@@ -224,7 +224,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
     if (!hexPos) return null;
     const { x, z } = axialToWorld(hexPos.q, hexPos.r);
     return { x, y: hexPos.level * TILE_HEIGHT, z };
-  }, [faction, game.townHallKey, game.board, game.enemyBaseEntity]);
+  }, [faction, game.palaceKey, game.board, game.enemyBaseEntity]);
 
   // Per-faction placed structures (excluding the central Palace mesh,
   // which is rendered directly below). The buildSites map is shared,

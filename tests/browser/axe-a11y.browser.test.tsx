@@ -114,17 +114,17 @@ describe('M_EXPANSION.T.138 — axe-core a11y scan of modals', () => {
     const game = startGame('axe-selection');
     // Find the player Palace (has Selectable trait per
     // M_V11.POLISH.BUILD-MENU-CTA) and select it.
-    let townHall: import('koota').Entity | undefined;
+    let palace: import('koota').Entity | undefined;
     for (const e of game.world.query(Selectable, Building, FactionTrait)) {
       const b = e.get(Building);
       const f = e.get(FactionTrait);
       if (b?.buildingType === 'Palace' && f?.faction === 'player') {
-        townHall = e;
+        palace = e;
         break;
       }
     }
-    if (!townHall) throw new Error('no player Palace found');
-    selectEntity(game, townHall);
+    if (!palace) throw new Error('no player Palace found');
+    selectEntity(game, palace);
     await render(<SelectionPanel game={game} onBeginBuild={() => {}} />);
     await vi.waitFor(
       () => {

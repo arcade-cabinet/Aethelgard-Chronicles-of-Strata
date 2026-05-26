@@ -165,7 +165,7 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
       world: game.world,
       board: game.board,
       graph: game.navGraph,
-      baseKeys: { player: game.townHallKey, enemy: game.enemyBaseKey },
+      baseKeys: { player: game.palaceKey, enemy: game.enemyBaseKey },
       zones: game.zones,
       // M_GAME.BUG.10 — phase-1 distance gate: auto-mode peons can
       // roam at most this far from base. Starts at 14 hex (enough
@@ -336,7 +336,7 @@ export function tickDepositPhase(game: GameState): void {
   const resourceEvents: ResourceDepositEvent[] = [];
   for (const f of FACTIONS) {
     // Inline baseKeyFor(game, f) to avoid circular import with game-state.ts.
-    const baseKey = f === 'player' ? game.townHallKey : game.enemyBaseKey;
+    const baseKey = f === 'player' ? game.palaceKey : game.enemyBaseKey;
     depositSystem(game.world, game.economy[f], baseKey, f, resourceEvents);
   }
   game.lastResourceEvents = resourceEvents;

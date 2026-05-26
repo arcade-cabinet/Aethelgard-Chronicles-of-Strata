@@ -589,6 +589,16 @@ const SNAPSHOT_MIGRATIONS: Record<number, SnapshotMigration> = {
     // serializeWorld in serialize.ts). The Building trait lives at the
     // top level keyed 'Building'.
     const entities = Array.isArray(worldObj.entities) ? worldObj.entities : [];
+    // CodeRabbit (PR #89): bound the entities length before the
+    // pre-validation .map() so a tampered save with a huge
+    // world.entities can't burn unbounded CPU/memory before
+    // validateSnapshot runs. MAX_ENTITY_COUNT is the same gate
+    // validateSnapshot enforces; failing fast here is the safe move.
+    if (entities.length > MAX_ENTITY_COUNT) {
+      throw new Error(
+        `serialize-game: snapshot migration v3→v4 rejected — world.entities too large (${entities.length} > ${MAX_ENTITY_COUNT})`,
+      );
+    }
     const migratedEntities = entities.map((raw) => {
       if (!raw || typeof raw !== 'object') return raw;
       const e = raw as Record<string, unknown>;
