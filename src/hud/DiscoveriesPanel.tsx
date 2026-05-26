@@ -5,6 +5,22 @@ import { canAfford } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
 import { DISCOVERIES, scaledCostFor } from '@/rules';
+
+// M_HUD.SHELL.17 / M_LORE.4 — Chronicler's-voice flavour per Discovery
+// id, sourced from docs/lore/discoveries.md. Shown italic below the
+// mechanical description so the panel reads like a tome of strata-
+// answers rather than a tech-tree spreadsheet.
+const DISCOVERY_FLAVOR: Record<string, string> = {
+  forgedBlades: 'The Ember answered with an edge.',
+  steelPlows: 'We asked the Verdant; it lent us the season.',
+  'trade-route': 'The strata held the road through the winter; the wagons did not stray.',
+  cartography: 'The Mythic showed us the realm whole, for one cold afternoon.',
+  'iron-tools': 'The seam yielded; we shod our chisels in iron, and the mountain was kinder.',
+  'siege-engineering':
+    'We asked the wall its name; it answered; we wrote the answer on a stone, and the stone broke the wall.',
+  'monumental-architecture':
+    'The strata answered as one — yes, remember this. We laid the cornerstone before sunset.',
+};
 import { costLabel } from './format';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
@@ -168,6 +184,21 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
                 >
                   {d.description}
                 </div>
+                {DISCOVERY_FLAVOR[d.id] && (
+                  <div
+                    data-testid={`discovery-flavor-${d.id}`}
+                    style={{
+                      fontSize: '0.74rem',
+                      fontStyle: 'italic',
+                      color: HUD_THEME.color.gold,
+                      marginTop: 4,
+                      opacity: 0.85,
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    “{DISCOVERY_FLAVOR[d.id]}”
+                  </div>
+                )}
                 {/* M_AUDIT2.UX.17 — prereq tree row. Lists each prereq
                     with its own status (✓ met, ✗ missing) so the
                     player sees the dependency at a glance. Empty for

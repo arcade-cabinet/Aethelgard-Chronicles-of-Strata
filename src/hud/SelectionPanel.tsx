@@ -5,6 +5,7 @@ import { emitUiSound } from '@/audio/ui-sound-emitter';
 import {
   Building,
   type BuildingType,
+  FactionTrait,
   Health,
   Stance,
   type StanceMode,
@@ -68,19 +69,31 @@ interface SelectionView {
   buildingType: BuildingType | null;
   /** Current stance of the selected military unit, or null for non-military. */
   stance: StanceMode | null;
+  /** M_HUD.SHELL.16b — selected faction's banner colour for left-rail accent. */
+  factionColor: string;
 }
 
 /** Build a display view from the selected entity. */
 function viewOf(game: GameState): SelectionView | null {
   const entity = selectedEntity(game);
   if (!entity) return null;
+  const factionTrait = entity.get(FactionTrait);
+  const factionId = factionTrait?.faction ?? 'player';
+  const factionColor =
+    game.factions.find((f) => f.id === factionId)?.color ?? HUD_THEME.color.friendly;
   const building = entity.get(Building);
   if (building) {
     const meta = displayFor(building.buildingType);
     const task = building.isComplete
       ? 'Operational'
       : `Constructing — ${Math.round(building.progress * 100)}%`;
-    return { name: meta.name, task, buildingType: building.buildingType, stance: null };
+    return {
+      name: meta.name,
+      task,
+      buildingType: building.buildingType,
+      stance: null,
+      factionColor,
+    };
   }
   const unit = entity.get(Unit);
   if (unit) {
@@ -93,9 +106,10 @@ function viewOf(game: GameState): SelectionView | null {
       task: `Ready${hp}`,
       buildingType: null,
       stance: stanceTrait?.mode ?? null,
+      factionColor,
     };
   }
-  return { name: 'Unknown', task: '', buildingType: null, stance: null };
+  return { name: 'Unknown', task: '', buildingType: null, stance: null, factionColor };
 }
 
 /**
@@ -274,11 +288,13 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
               position: 'absolute',
               left: 16,
               bottom: 16,
-              // M_AUDIT2.UX.19 — clamp() so labels like "Build Watchtower
-              // — 60w 40s" stop truncating at the old 200px floor; still
-              // capped to avoid pushing the minimap on portrait viewports.
               width: 'clamp(220px, 22vw, 280px)',
               padding: '14px 16px',
+              // M_HUD.SHELL.16b — selected-faction-colour left-rail accent
+              // makes whose unit/building this is glanceable. Falls back to
+              // the friendly green when no faction info is available.
+              borderLeft: `4px solid ${view.factionColor}`,
+              paddingLeft: 14,
             }}
           >
             <div

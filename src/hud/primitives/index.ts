@@ -6,6 +6,7 @@
  * being re-implemented per page.
  */
 
+export { BottomShelf, type BottomShelfProps } from './BottomShelf';
 export { Halo, type HaloProps, type HaloTone } from './Halo';
 export { HeroBanner, type HeroBannerProps } from './HeroBanner';
 export { IconButton, type IconButtonProps } from './IconButton';

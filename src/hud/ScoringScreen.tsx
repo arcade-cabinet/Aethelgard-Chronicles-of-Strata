@@ -12,6 +12,7 @@
  * payoff per the v0.7 directive.
  */
 import * as Dialog from '@radix-ui/react-dialog';
+import { RotateCcw, Trophy } from 'lucide-react';
 import { findFaction } from '@/config/factions';
 import { Building, FactionTrait } from '@/ecs/components';
 import { economyFor } from '@/game/economy-for';
@@ -20,6 +21,7 @@ import type { VictoryKind } from '@/game/victory-conditions';
 import { formatInt, formatTime } from './format';
 import { HUD_THEME } from './hud-theme';
 import { ModalShell } from './ModalShell';
+import { TreasureButton } from './primitives';
 
 const KIND_FLAVOR: Record<VictoryKind, { title: string; flavor: string; tint: string }> = {
   military: {
@@ -101,18 +103,35 @@ export function ScoringScreen({ game }: ScoringScreenProps) {
           color: '#fff',
         }}
       >
-        <Dialog.Title
-          data-testid="scoring-screen-title"
-          style={{
-            fontFamily: HUD_THEME.font.display,
-            fontSize: '2.2rem',
-            fontWeight: 800,
-            margin: '0 0 8px',
-            color: flavor.tint,
-          }}
-        >
-          {flavor.title}
-        </Dialog.Title>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 48,
+              height: 48,
+              borderRadius: 12,
+              border: `2px solid ${flavor.tint}`,
+              background: 'rgba(0,0,0,0.45)',
+              color: flavor.tint,
+            }}
+          >
+            <Trophy size={24} aria-hidden />
+          </div>
+          <Dialog.Title
+            data-testid="scoring-screen-title"
+            style={{
+              fontFamily: HUD_THEME.font.display,
+              fontSize: '2.2rem',
+              fontWeight: 800,
+              margin: 0,
+              color: flavor.tint,
+            }}
+          >
+            {flavor.title}
+          </Dialog.Title>
+        </div>
         <div data-testid="scoring-screen-winner" style={{ fontSize: 16, marginBottom: 6 }}>
           Winner: <span style={{ color: winnerColor }}>{winnerName}</span>
         </div>
@@ -155,25 +174,17 @@ export function ScoringScreen({ game }: ScoringScreenProps) {
           ))}
         </div>
 
-        <button
-          type="button"
-          data-testid="scoring-screen-restart"
-          onClick={() => location.reload()}
-          style={{
-            marginTop: 24,
-            padding: '12px 24px',
-            borderRadius: 10,
-            border: 'none',
-            background: HUD_THEME.blueGradient,
-            color: '#fff',
-            fontFamily: HUD_THEME.font.display,
-            fontSize: '1rem',
-            cursor: 'pointer',
-            width: '100%',
-          }}
-        >
-          New Match
-        </button>
+        <div style={{ marginTop: 24 }}>
+          <TreasureButton
+            data-testid="scoring-screen-restart"
+            aria-label="Restart for a new match"
+            onClick={() => location.reload()}
+            icon={<RotateCcw className="h-4 w-4" aria-hidden />}
+            className="w-full"
+          >
+            New Match
+          </TreasureButton>
+        </div>
       </ModalShell>
     </Dialog.Root>
   );
