@@ -1,0 +1,35 @@
+{
+  "cycle": "v0.11",
+  "capturedAt": "2026-05-26T17:44:34.488Z",
+  "config": {
+    "factions": [
+      "player",
+      "enemy"
+    ],
+    "aiPlayers": [
+      "player",
+      "enemy"
+    ],
+    "mapSize": 12,
+    "simSeconds": 300,
+    "tickDt": 0.1,
+    "ticks": 3000
+  },
+  "perTickMs": {
+    "mean": 0.761,
+    "p50": 0.91,
+    "p95": 1.431,
+    "max": 3.189
+  },
+  "totalWallClockMs": 2283,
+  "realtimeRatio": 131.42,
+  "entityCounts": {
+    "start": 0,
+    "end": 37
+  },
+  "gcPauses": {
+    "count": 0,
+    "totalMs": 0,
+    "maxMs": 0
+  }
+}
