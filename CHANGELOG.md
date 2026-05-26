@@ -5,6 +5,14 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.24](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.23...v0.1.24) (2026-05-26)
+
+
+### Features
+
+* **hud:** Cohort-broken toast on stack auto-dissolve (M_V11.NOTIF.STACK-DISSOLVED) ([#82](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/82)) ([eef8854](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/eef8854ce80d5820103b99ab466942e94acf68cd))
+* **hud:** MYTH-event Chronicler-voice toast (M_V11.NOTIF.MYTH-EVENT) ([#80](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/80)) ([6650f11](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/6650f11db7f3c0a43f432ea05de1ba8485225806))
+
 ## [0.1.23](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.22...v0.1.23) (2026-05-26)
 
 
