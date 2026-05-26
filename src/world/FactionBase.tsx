@@ -39,6 +39,7 @@ import { cyclePhase, lightIntensityAt } from '@/game/clock';
 import type { GameState } from '@/game/game-state';
 import { SKINS } from '@/rules/skins';
 import { ConstructionRing } from './ConstructionRing';
+import { FactionMaterialsProvider } from './procedural/FactionMaterialsContext';
 import { structureModel } from './structure-models';
 
 // M_MICRO.2.2 — local parseKey replaced by shared parseHexKey.
@@ -71,15 +72,65 @@ function StructureMesh({
   isCorner?: boolean;
 }) {
   const model = structureModel(faction, type);
+  const effectiveScale = model.scale * (0.5 + 0.5 * Math.min(progress, 1));
+  // M_V11.PROCMESH.SKINS-PIVOT — when the Skin slot supplies a
+  // procedural component, render it instead of loading a GLB. The
+  // FactionMaterialsProvider wrapping the FactionBase tree pipes the
+  // per-faction palette through; primitives consume via context.
+  if (model.proceduralComponent) {
+    const Component = model.proceduralComponent;
+    return (
+      <group position={[x, y + model.yOffset, z]} scale={effectiveScale}>
+        <Component position={[0, 0, 0]} />
+      </group>
+    );
+  }
+  return (
+    <GlbStructureMesh
+      faction={faction}
+      type={type}
+      x={x}
+      y={y + model.yOffset}
+      z={z}
+      scale={effectiveScale}
+      hasGate={hasGate}
+      isCorner={isCorner}
+      defaultLogicalId={model.logicalId}
+    />
+  );
+}
+
+/** GLB-path fallback for Skin entries that still reference a logicalId
+ *  (e.g. future graveyard-kit horde camps or temporary asset rows). */
+function GlbStructureMesh({
+  faction,
+  type,
+  x,
+  y,
+  z,
+  scale,
+  hasGate,
+  isCorner,
+  defaultLogicalId,
+}: {
+  faction: Faction;
+  type: BuildingType;
+  x: number;
+  y: number;
+  z: number;
+  scale: number;
+  hasGate: boolean;
+  isCorner: boolean;
+  defaultLogicalId: string;
+}) {
   const logicalId = hasGate
     ? 'structures.gate-stone'
     : isCorner && type === 'Wall' && faction === 'player'
       ? 'structures.wall-stone-corner'
-      : model.logicalId;
+      : defaultLogicalId;
   const glb = useGLTF(assets.url(logicalId));
-  const effectiveScale = model.scale * (0.5 + 0.5 * Math.min(progress, 1));
   return (
-    <group position={[x, y + model.yOffset, z]} scale={effectiveScale}>
+    <group position={[x, y, z]} scale={scale}>
       <Clone object={glb.scene} />
     </group>
   );
@@ -241,6 +292,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
   const skin = SKINS[faction];
 
   return (
+    <FactionMaterialsProvider faction={faction}>
     <group name={`${faction}-base`}>
       {/* M_GAME.BUG.1 — faction-color halo ring under the Town Hall
           so the player can LOCATE their capital at a glance from any
@@ -305,6 +357,7 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
         </group>
       ))}
     </group>
+    </FactionMaterialsProvider>
   );
 }
 
@@ -317,7 +370,13 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
 // SKINS automatically preloads its GLB.
 const SEEN_PRELOAD = new Set<string>();
 for (const skin of Object.values(SKINS)) {
-  for (const model of Object.values(skin.structure)) SEEN_PRELOAD.add(model.logicalId);
+  for (const model of Object.values(skin.structure)) {
+    // M_V11.PROCMESH.SKINS-PIVOT — procedural entries carry a
+    // sentinel logicalId ('procedural'); skip them in the GLB
+    // preload pass since they have no asset.
+    if (model.proceduralComponent || model.logicalId === 'procedural') continue;
+    SEEN_PRELOAD.add(model.logicalId);
+  }
   for (const p of skin.baseProps) SEEN_PRELOAD.add(p.logicalId);
 }
 for (const id of SEEN_PRELOAD) useGLTF.preload(assets.url(id));
