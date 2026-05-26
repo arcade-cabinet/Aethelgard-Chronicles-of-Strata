@@ -383,52 +383,50 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
                           </div>
                           <div data-testid="n-player-color-slots" className="flex flex-col gap-2">
                             {/* M_HUD.SHELL.21 — AnimatePresence removed.
-                              * The exiting items lingered in DOM during
-                              * their 200ms exit anim and broke the
-                              * n-player-picker test (querying slot count
-                              * during the anim window saw stale entries).
-                              * Slot identity is the index; React's
-                              * reconciler handles the count change
-                              * cleanly without anim juice. */}
+                             * The exiting items lingered in DOM during
+                             * their 200ms exit anim and broke the
+                             * n-player-picker test (querying slot count
+                             * during the anim window saw stale entries).
+                             * Slot identity is the index; React's
+                             * reconciler handles the count change
+                             * cleanly without anim juice. */}
                             {Array.from({ length: nPlayer }, (_, i) => {
                               const isYou = i === 0;
                               return (
                                 <motion.div
-                                    // biome-ignore lint/suspicious/noArrayIndexKey: slot index IS the identity.
-                                    key={`n-player-slot-${i}`}
-                                    data-testid={`n-player-slot-${i}`}
-                                    initial={
-                                      reducedMotion ? false : { opacity: 0, x: -8 }
-                                    }
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ duration: 0.18 }}
-                                    className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-black/20 px-3 py-2"
-                                  >
-                                    {isYou ? (
-                                      <Crown
-                                        className="h-4 w-4 text-[var(--color-treasure)]"
-                                        aria-hidden
-                                      />
-                                    ) : (
-                                      <Bot
-                                        className="h-4 w-4 text-[var(--color-on-surface-muted)]"
-                                        aria-hidden
-                                      />
-                                    )}
-                                    <span className="w-16 shrink-0 text-sm">
-                                      {isYou ? 'You' : `AI ${i}`}
-                                    </span>
-                                    <FactionColorPicker
-                                      color={nPlayerColors[i] ?? '#888888'}
-                                      onChange={(c) =>
-                                        setNPlayerColors((prev) => {
-                                          const next = [...prev];
-                                          next[i] = c;
-                                          return next;
-                                        })
-                                      }
-                                      ariaLabel={`Faction ${i + 1} color`}
+                                  // biome-ignore lint/suspicious/noArrayIndexKey: slot index IS the identity.
+                                  key={`n-player-slot-${i}`}
+                                  data-testid={`n-player-slot-${i}`}
+                                  initial={reducedMotion ? false : { opacity: 0, x: -8 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ duration: 0.18 }}
+                                  className="flex items-center gap-3 rounded-lg border border-[var(--color-border)] bg-black/20 px-3 py-2"
+                                >
+                                  {isYou ? (
+                                    <Crown
+                                      className="h-4 w-4 text-[var(--color-treasure)]"
+                                      aria-hidden
                                     />
+                                  ) : (
+                                    <Bot
+                                      className="h-4 w-4 text-[var(--color-on-surface-muted)]"
+                                      aria-hidden
+                                    />
+                                  )}
+                                  <span className="w-16 shrink-0 text-sm">
+                                    {isYou ? 'You' : `AI ${i}`}
+                                  </span>
+                                  <FactionColorPicker
+                                    color={nPlayerColors[i] ?? '#888888'}
+                                    onChange={(c) =>
+                                      setNPlayerColors((prev) => {
+                                        const next = [...prev];
+                                        next[i] = c;
+                                        return next;
+                                      })
+                                    }
+                                    ariaLabel={`Faction ${i + 1} color`}
+                                  />
                                 </motion.div>
                               );
                             })}
