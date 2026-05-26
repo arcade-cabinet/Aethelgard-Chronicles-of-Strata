@@ -390,14 +390,21 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       Deferred until the PR open + reviewer trio findings folded
       so the locked baselines represent the merge state, not an
       intermediate commit.
-- [ ] [WAIT-CI] M_V11.RELEASE.LADDER — One long-running branch
-      `feat/v0.11-cycle` accumulates the v0.11 work as discrete
-      commits. Per ~/.claude/CLAUDE.md autonomy doctrine (and
-      user direction 2026-05-26): NO per-commit PRs — that
-      churn pattern is forbidden. PR opens when push lands and
-      verify is green; release-please cuts the version on merge.
-      Status as of fingerprint 23653b1: branch pushed (or push
-      in flight); awaiting GitHub PR creation + CI green.
+- [x] M_V11.RELEASE.LADDER — PR #89 opened against main
+      (https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/pull/89).
+      Branch pushed at fingerprint 1d5d109 with ~30 forward
+      commits across §1–§8. release-please cuts the version on
+      merge. Remaining gates are external: [WAIT-CI] CI green
+      + [WAIT-REVIEW] CodeRabbit / human review on the PR +
+      [WAIT-PROFILE] PERF.PROFILE + PERF.RECLAIM + [WAIT-VISUAL]
+      VISUAL.LOCK pre-merge.
+- [ ] [WAIT-CI] M_V11.RELEASE.LADDER.CI — PR #89 CI green.
+      Build + lint + unit + browser + e2e batteries on GitHub
+      Actions. Auto-detected via PR status checks.
+- [ ] [WAIT-REVIEW] M_V11.RELEASE.LADDER.REVIEW — CodeRabbit
+      / human review on PR #89 fully addressed. Findings folded
+      as additional commits on `feat/v0.11-cycle` (never amended)
+      until the conversation hits zero.
 
 ### §8 — Procedural buildings via composed structural primitives (M_V11.PROCMESH)
 
