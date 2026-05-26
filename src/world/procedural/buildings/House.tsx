@@ -9,7 +9,15 @@
  * body (stone material with brighter accent inset) + pitched roof +
  * chimney + door + two upper windows.
  */
-import { Chimney, Door, Lantern, PitchedRoof, StonePlinth, Window } from '../primitives';
+import {
+  Chimney,
+  Door,
+  Lantern,
+  PitchedRoof,
+  PlasterBox,
+  StonePlinth,
+  Window,
+} from '../primitives';
 import { useFactionMaterials } from '../faction-materials';
 
 export function House({
@@ -33,10 +41,13 @@ export function House({
         position={[0, 0.03, 0]}
         material={mats.stone}
       />
-      <mesh position={[0, 0.06 + bodyHeight / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[width, bodyHeight, depth]} />
-        <meshStandardMaterial {...mats.stone} />
-      </mesh>
+      <PlasterBox
+        width={width}
+        height={bodyHeight}
+        depth={depth}
+        position={[0, 0.06 + bodyHeight / 2, 0]}
+        material={mats.stone}
+      />
       {/* exposed timber framing (X-brace on +Z face).
           braceLen = wall diagonal; without this the rotated box pokes out
           past the gable as a "long pole" — visible in every house/townhall

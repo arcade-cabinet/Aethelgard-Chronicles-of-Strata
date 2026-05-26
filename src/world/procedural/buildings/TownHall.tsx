@@ -16,6 +16,7 @@ import {
   Flag,
   GoldTrim,
   PitchedRoof,
+  PlasterBox,
   Shield,
   Spire,
   StonePlinth,
@@ -52,11 +53,13 @@ export function TownHall({
         position={[0, 0.15, 0]}
         material={mats.stone}
       />
-      {/* stone body */}
-      <mesh position={[0, 0.18 + bodyHeight / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[width, bodyHeight, depth]} />
-        <meshStandardMaterial {...mats.stone} />
-      </mesh>
+      <PlasterBox
+        width={width}
+        height={bodyHeight}
+        depth={depth}
+        position={[0, 0.18 + bodyHeight / 2, 0]}
+        material={mats.stone}
+      />
       {/* gold trim band around the upper body */}
       <GoldTrim
         shape="strip"

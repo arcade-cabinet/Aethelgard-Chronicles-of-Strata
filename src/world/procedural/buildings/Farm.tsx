@@ -21,6 +21,7 @@ import {
   Furrow,
   HayStack,
   PitchedRoof,
+  PlasterBox,
   Silo,
   StonePlinth,
   Window,
@@ -48,10 +49,13 @@ export function Farm({
         position={[0, 0.03, 0]}
         material={mats.stone}
       />
-      <mesh position={[0, 0.06 + bodyHeight / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[width, bodyHeight, depth]} />
-        <meshStandardMaterial {...mats.wood} />
-      </mesh>
+      <PlasterBox
+        width={width}
+        height={bodyHeight}
+        depth={depth}
+        position={[0, 0.06 + bodyHeight / 2, 0]}
+        material={mats.wood}
+      />
       <PitchedRoof
         width={width + 0.08}
         length={depth + 0.08}

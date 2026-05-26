@@ -8,7 +8,17 @@
  * stone cap + central cupola (small spire) + tall arched windows on
  * sides + ornate door + gold trim band. Reads as 'classical learning'.
  */
-import { Column, Door, Flag, GoldTrim, Lantern, Spire, StonePlinth, Window } from '../primitives';
+import {
+  Column,
+  Door,
+  Flag,
+  GoldTrim,
+  Lantern,
+  PlasterBox,
+  Spire,
+  StonePlinth,
+  Window,
+} from '../primitives';
 import { useFactionMaterials } from '../faction-materials';
 
 export function Library({
@@ -32,15 +42,20 @@ export function Library({
         position={[0, 0.05, 0]}
         material={mats.stone}
       />
-      <mesh position={[0, 0.1 + bodyHeight / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[width, bodyHeight, depth]} />
-        <meshStandardMaterial {...mats.stone} />
-      </mesh>
-      {/* flat roof slab */}
-      <mesh position={[0, 0.1 + bodyHeight + 0.03, 0]} castShadow receiveShadow>
-        <boxGeometry args={[width + 0.08, 0.06, depth + 0.08]} />
-        <meshStandardMaterial {...mats.stone} />
-      </mesh>
+      <PlasterBox
+        width={width}
+        height={bodyHeight}
+        depth={depth}
+        position={[0, 0.1 + bodyHeight / 2, 0]}
+        material={mats.stone}
+      />
+      <PlasterBox
+        width={width + 0.08}
+        height={0.06}
+        depth={depth + 0.08}
+        position={[0, 0.1 + bodyHeight + 0.03, 0]}
+        material={mats.stone}
+      />
       {/* central cupola */}
       <Spire
         height={0.3}

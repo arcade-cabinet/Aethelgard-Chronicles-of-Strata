@@ -25,6 +25,7 @@ export { Ivy } from './Ivy';
 export { Lantern } from './Lantern';
 export { Log } from './Log';
 export { PitchedRoof } from './PitchedRoof';
+export { PlasterBox } from './PlasterBox';
 export { Shield } from './Shield';
 export { Silo } from './Silo';
 export { Spire } from './Spire';

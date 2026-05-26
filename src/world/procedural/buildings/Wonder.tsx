@@ -17,6 +17,7 @@ import {
   ConeRoof,
   Flag,
   GoldTrim,
+  PlasterBox,
   Shield,
   Spire,
   StonePlinth,
@@ -60,11 +61,13 @@ export function Wonder({
         position={[0, 0.25, 0]}
         material={mats.stone}
       />
-      {/* Main keep body. */}
-      <mesh position={[0, 0.28 + bodyHeight / 2, 0]} castShadow receiveShadow>
-        <boxGeometry args={[width, bodyHeight, depth]} />
-        <meshStandardMaterial {...mats.stone} />
-      </mesh>
+      <PlasterBox
+        width={width}
+        height={bodyHeight}
+        depth={depth}
+        position={[0, 0.28 + bodyHeight / 2, 0]}
+        material={mats.stone}
+      />
       {/* Gold trim — three horizontal bands. */}
       {[0.05, 0.45, 0.88].map((tFrac) => (
         <GoldTrim
@@ -116,17 +119,20 @@ export function Wonder({
           glassMaterial={mats.glass}
         />
       ))}
-      {/* Low pyramidal roof slab + recessed cap so the central spire
-          rises above a clear base. No tall PitchedRoof here — it would
-          hide the corner towers. */}
-      <mesh position={[0, 0.28 + bodyHeight + 0.04, 0]} castShadow receiveShadow>
-        <boxGeometry args={[width + 0.1, 0.08, depth + 0.1]} />
-        <meshStandardMaterial {...mats.stone} />
-      </mesh>
-      <mesh position={[0, 0.28 + bodyHeight + 0.14, 0]} castShadow receiveShadow>
-        <boxGeometry args={[width * 0.7, 0.1, depth * 0.7]} />
-        <meshStandardMaterial {...mats.stone} />
-      </mesh>
+      <PlasterBox
+        width={width + 0.1}
+        height={0.08}
+        depth={depth + 0.1}
+        position={[0, 0.28 + bodyHeight + 0.04, 0]}
+        material={mats.stone}
+      />
+      <PlasterBox
+        width={width * 0.7}
+        height={0.1}
+        depth={depth * 0.7}
+        position={[0, 0.28 + bodyHeight + 0.14, 0]}
+        material={mats.stone}
+      />
       {/* Central monumental spire with finial. */}
       <Spire
         height={0.95}
