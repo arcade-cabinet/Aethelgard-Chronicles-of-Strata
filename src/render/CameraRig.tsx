@@ -45,10 +45,15 @@ export function CameraRig({ viewport, boardRadius, landCenter }: CameraRigProps)
   // generation; subsequent unit movement does NOT shift the centroid
   // because it's keyed on game.board identity in GameCanvas).
   useEffect(() => {
+    // M_GAME.BUG.8 — mobile-first start zoom. The per-viewport profile
+    // distance is the FULLY zoomed-out "see the whole realm" framing;
+    // boot at ~55% of that so the player starts looking at their Town
+    // Hall + a few hex-rings around. Pinch-out reveals the wider map;
+    // pinch-in (centered on a tapped tile) goes deeper.
     const { distance, pitch, fov } = viewport.camera;
-    // place the camera at `distance` along a vector pitched down by `pitch`
-    const horiz = Math.cos(pitch) * distance;
-    const vert = Math.sin(pitch) * distance;
+    const startDistance = Math.max(WORLD.camera.minZoom + 4, distance * 0.55);
+    const horiz = Math.cos(pitch) * startDistance;
+    const vert = Math.sin(pitch) * startDistance;
     camera.position.set(cx, vert, cz + horiz);
     camera.lookAt(cx, 0, cz);
     if ('fov' in camera) {

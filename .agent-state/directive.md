@@ -127,6 +127,22 @@ PRs get closed.
       Toast). Each toast is tap-able to zoom-the-camera into the
       event's tile. Auto-dismiss after 6s, manual dismiss via X. Stack
       max 3 visible; older queue up.
+- [x] M_GAME.BUG.8 — Camera boots focused on the PLAYER'S Town Hall
+      (GameCanvas landCenter now reads game.townHallKey directly,
+      not the base-pair midpoint or centroid) + at 55% of the per-
+      viewport profile distance (CameraRig startDistance clamp). Pinch
+      reveals the wider realm; pinch-in goes deeper. Aligns with the
+      mobile-first "you are HERE, in your realm" boot framing.
+- [x] M_GAME.BUG.9 — MAP_SIZES bumped: small 18→26, medium 28→38,
+      large 36→48, huge 43→58. Realm now proportional to the chunky
+      hexes; peons can't cross the map immediately.
+- [ ] M_GAME.BUG.10 — Peon roam radius / phase-1 distance gate. Even
+      after the map-size bump, peons should NOT be able to walk to
+      enemy territory in the first few minutes. Investigate
+      src/ecs/systems/peon-autonomy or equivalent — clamp peon-pathing
+      destination to within N hexes of the home Town Hall (where N
+      grows with game-time / score / discovered area). Bias to "your
+      realm" not "across the map."
 
 ### v0.10.F — LORE foundation (new track — Aethelgard has none yet)
 

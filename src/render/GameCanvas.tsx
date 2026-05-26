@@ -159,22 +159,21 @@ function Scene({
   // happen off-screen. The user watches a beautiful empty map for the
   // whole match.
   //
-  // Fix: prefer the MIDPOINT of player base + enemy base. That's
-  // where the two factions actually meet — for border-clash mode it's
-  // the optimal framing; for single-player it sits between the home
-  // base and the threat. Falls back to the land centroid when either
-  // base entity hasn't been spawned yet (asymmetric / early single-
-  // player init), then to the axial origin as last resort.
+  // M_GAME.BUG.8 — mobile-first camera start: focus on the PLAYER'S
+  // Town Hall (not the base-pair midpoint, not the land centroid).
+  // The player should boot looking at "their realm" — a hex-slice
+  // around home — and pinch-out to reveal the wider map. This makes
+  // the on-boarding "you are HERE" feel correct, especially on
+  // portrait phones where the centroid framing left the player
+  // disoriented. Falls back to the centroid only if the Town Hall
+  // tile is absent (extremely early init).
   const landCenter = useMemo<{ x: number; z: number }>(() => {
-    // 1. Try the base-pair midpoint first.
     const pBase = game.board.tiles.get(game.townHallKey);
-    const eBase = game.board.tiles.get(game.enemyBaseKey);
-    if (pBase && eBase) {
+    if (pBase) {
       const p = axialToWorld(pBase.q, pBase.r);
-      const e = axialToWorld(eBase.q, eBase.r);
-      return { x: (p.x + e.x) / 2, z: (p.z + e.z) / 2 };
+      return { x: p.x, z: p.z };
     }
-    // 2. Fallback — land centroid (the prior PATTERN-H implementation).
+    // Fallback — land centroid (the prior PATTERN-H implementation).
     let sx = 0;
     let sz = 0;
     let n = 0;
@@ -186,7 +185,7 @@ function Scene({
       n++;
     }
     return n > 0 ? { x: sx / n, z: sz / n } : { x: 0, z: 0 };
-  }, [game.board, game.townHallKey, game.enemyBaseKey]);
+  }, [game.board, game.townHallKey]);
 
   return (
     <>
