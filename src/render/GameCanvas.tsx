@@ -34,6 +34,7 @@ import { SelectionRing } from '@/world/SelectionRing';
 import { Terrain } from '@/world/Terrain';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
+import { StackRender } from '@/world/StackRender';
 import { UnitHexOutline } from '@/world/UnitHexOutline';
 import { Units } from '@/world/Units';
 import { VolcanoLayer } from '@/world/VolcanoLayer';
@@ -239,6 +240,11 @@ function Scene({
           <UnitHexOutline game={game} />
           <BuildingOutlineRing game={game} />
         </group>
+        {/* M_V11.STACK.RENDER — formation badges + bolder outline rings
+            on each Stack's member tiles. Sits inside the Suspense
+            because StackRender uses drei <Billboard> + <Text> (font
+            asset). */}
+        <StackRender game={game} />
       </Suspense>
       <CombatText game={game} />
       <ResourceText game={game} />
