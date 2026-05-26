@@ -1,7 +1,8 @@
 import { MapControls } from '@react-three/drei';
-import { useThree } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { type ComponentRef, useEffect, useRef } from 'react';
 import { HEX_RADIUS, WORLD } from '@/config/world';
+import { axialToWorld } from '@/core/hex';
 import { cameraView } from './camera-view';
 import type { ViewportProfile } from './useViewport';
 
@@ -98,6 +99,76 @@ export function CameraRig({ viewport, boardRadius, landCenter }: CameraRigProps)
     return () => controls.removeEventListener('change', onChange);
   }, [panLimit, camera, cx, cz]);
 
+  // M_GAME.BUG.11 — auto-focus tween. Other surfaces dispatch
+  //   window.dispatchEvent(new CustomEvent('aethelgard:focus-tile',
+  //     { detail: { q, r, distance? } }))
+  // and the camera tweens its pan target to the world position of
+  // that hex + optionally re-zooms to the supplied distance (clamped
+  // to WORLD.camera.{minZoom,maxZoom}). Used by:
+  //   - selection bar "Center on unit" buttons (M_HUD.SHELL.16c)
+  //   - toast "tap to zoom" on enemy-engagement events (M_HUD.NOTIF.1)
+  //   - sidebar "Select next idle military" cycling (M_GAME.BUG.4)
+  //
+  // The tween is exponential-smoothing inside a useFrame so it
+  // composes cleanly with the user dragging — if the player touches
+  // the screen mid-tween, drei MapControls' damping takes over and
+  // the tween silently completes against the dragged target.
+  const tweenRef = useRef<{
+    targetX: number;
+    targetZ: number;
+    targetDistance: number;
+    active: boolean;
+  }>({ targetX: 0, targetZ: 0, targetDistance: 0, active: false });
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ q: number; r: number; distance?: number }>).detail;
+      if (!detail) return;
+      const { x, z } = axialToWorld(detail.q, detail.r);
+      const desired =
+        detail.distance ?? Math.max(WORLD.camera.minZoom + 4, viewport.camera.distance * 0.45);
+      tweenRef.current.targetX = x;
+      tweenRef.current.targetZ = z;
+      tweenRef.current.targetDistance = Math.max(
+        WORLD.camera.minZoom,
+        Math.min(WORLD.camera.maxZoom, desired),
+      );
+      tweenRef.current.active = true;
+    };
+    window.addEventListener('aethelgard:focus-tile', handler);
+    return () => window.removeEventListener('aethelgard:focus-tile', handler);
+  }, [viewport]);
+  useFrame((_, dt) => {
+    const t = tweenRef.current;
+    if (!t.active) return;
+    const controls = controlsRef.current;
+    if (!controls) return;
+    // exp-smooth at ~6 Hz convergence — feels "snappy but motion-blurred"
+    const k = 1 - Math.exp(-6 * dt);
+    const tgt = controls.target;
+    const dx = t.targetX - tgt.x;
+    const dz = t.targetZ - tgt.z;
+    tgt.x += dx * k;
+    tgt.z += dz * k;
+    // re-pose camera along current azimuth at the new distance
+    const dxCam = camera.position.x - tgt.x;
+    const dzCam = camera.position.z - tgt.z;
+    const currentDist = Math.hypot(dxCam, dzCam);
+    const desiredHoriz = Math.cos(0.96) * t.targetDistance;
+    const desiredVert = Math.sin(0.96) * t.targetDistance;
+    const azimuth = currentDist > 0.001 ? Math.atan2(dxCam, dzCam) : 0;
+    const targetCamX = tgt.x + Math.sin(azimuth) * desiredHoriz;
+    const targetCamZ = tgt.z + Math.cos(azimuth) * desiredHoriz;
+    camera.position.x += (targetCamX - camera.position.x) * k;
+    camera.position.z += (targetCamZ - camera.position.z) * k;
+    camera.position.y += (desiredVert - camera.position.y) * k;
+    controls.update();
+    // settle: when within 0.5 world-units of target, mark done so
+    // we stop fighting drei's damping every frame.
+    if (Math.abs(dx) < 0.5 && Math.abs(dz) < 0.5) {
+      t.active = false;
+    }
+  });
+
   // M_AUDIT2.UX.31 — wire arrow-key camera pan. KeyboardShortcuts
   // dispatches a CustomEvent 'aethelgard:pan-camera' { dx, dz } per
   // arrow keypress; we translate the target + camera by that vector
@@ -149,17 +220,23 @@ export function CameraRig({ viewport, boardRadius, landCenter }: CameraRigProps)
       dampingFactor={0.12}
       minDistance={WORLD.camera.minZoom}
       maxDistance={WORLD.camera.maxZoom}
-      // M_GAME.BUG.7 — rotation entirely disabled per user direction
-      // (2026-05-25). Aethelgard is one fixed immersive Warcraft-1/2
-      // style game-board view; the player ZOOMS to inspect, never
-      // rotates. Two-finger drag previously orbited the island; now
-      // it pans (MapControls' default for touch when rotate is off).
-      enableRotate={false}
-      // Lock pitch to a Civ-VI / Warcraft 2.5D pose: ~35° from
-      // horizon (polar = π/2 − 35° ≈ 0.96 rad). Mountains stay
-      // visible behind closer hexes; the steeper the polar, the
-      // more dramatic the tilt and the more mountains occlude the
-      // realm. minPolarAngle === maxPolarAngle locks it.
+      // M_GAME.BUG.11 — PLATTER rotation (azimuth-only) per user
+      // direction 2026-05-25: "CIRCULAR platter style rotation to
+      // allow seeing the view behind mountains". This is NOT free
+      // orbital rotation — the polar (tilt) is locked below so the
+      // camera spins around the pan target as if the world were a
+      // record on a turntable. Two-finger touch drag drives it on
+      // mobile; right-click + drag drives it on desktop. The board
+      // tilt never changes; only the compass bearing does. Lets the
+      // player look behind a mountain range without losing the Civ
+      // VI 2.5D pose.
+      enableRotate
+      rotateSpeed={0.45}
+      // Lock pitch (polar) to a Civ-VI / Warcraft 2.5D pose: ~35°
+      // from horizon (polar = π/2 − 35° ≈ 0.96 rad).
+      // minPolarAngle === maxPolarAngle locks it — drei MapControls
+      // then degenerates the "orbit" to pure yaw, which IS the
+      // platter rotation we want.
       minPolarAngle={0.96}
       maxPolarAngle={0.96}
     />
