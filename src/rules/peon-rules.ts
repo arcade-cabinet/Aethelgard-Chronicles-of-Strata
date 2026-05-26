@@ -47,21 +47,19 @@ export type PeonAction =
 
 /** The world facts the peon decision needs — all faction-scoped. */
 export interface PeonWorld {
-  /** Live resource sites (amount > 0) the peon may target. */
+  /**
+   * Live resource sites (amount > 0) the peon may target.
+   *
+   * M_GAME.BUG.10 — the caller (jobRoutingSystem) is responsible for
+   * pre-filtering this list by roam radius per tick, so the picker
+   * here stays O(R) regardless of peon count. Don't add per-peon
+   * filtering here.
+   */
   resources: ResourceSite[];
   /** The faction's base tile key — where loads are deposited. */
   baseKey: string;
   /** Tile keys currently pulsing under encroachment — peons avoid these. */
   threatenedTiles: ReadonlySet<string>;
-  /**
-   * M_GAME.BUG.10 — max hex-distance from the base that auto-mode
-   * peons will roam to harvest. Filters `resources` to only those
-   * within this radius before the nearestResource picker runs.
-   * Grows with game age so phase-1 peons stay near home and
-   * late-game peons can range further. Undefined = no limit (the
-   * pre-v0.10 behavior).
-   */
-  maxRoamRadius?: number;
 }
 
 /**
@@ -180,16 +178,12 @@ export function nextPeonAction(peon: PeonView, world: PeonWorld): PeonAction {
   // already faction-scoped in PeonWorld.
   const [bq, br] = world.baseKey.split(',').map(Number) as [number, number];
   // M_GAME.BUG.10 — hard-cap auto-mode peon roam radius from base.
-  // Filters the candidate list BEFORE the picker runs so the
-  // base-bias formula can't be overridden by "just one more hex
-  // gets a perfect node." Phase-1 maps stay tight; late-game
-  // expands by the caller raising maxRoamRadius with game age.
-  const inRangeResources =
-    world.maxRoamRadius === undefined
-      ? world.resources
-      : world.resources.filter(
-          (s) => hexDistance(bq, br, s.q, s.r) <= (world.maxRoamRadius as number),
-        );
+  // The caller pre-filters `world.resources` to this radius once per
+  // tick (in jobRoutingSystem), so the picker here is a no-op when
+  // `maxRoamRadius` is undefined and an already-filtered list when
+  // it is set. This keeps the per-peon work O(N resources) instead
+  // of O(N peons × N resources) per tick.
+  const inRangeResources = world.resources;
   const targetStillLive = peon.targetKey && inRangeResources.some((s) => s.key === peon.targetKey);
   if (peon.state === 'SEEKING' && targetStillLive) {
     // Coderabbit MAJOR PR #10 05:46Z — respect threatened-tile

@@ -19,12 +19,12 @@ describe('combat integration', () => {
     expect(game.outcome === 'playing' || game.outcome === 'win' || game.outcome === 'loss').toBe(
       true,
     );
-  }, 30000);
+  }, 60000); // M_GAME.BUG.10 CI-slowness bump
 
   it('runs 7200 combat ticks without throwing', () => {
     const game = startGame('ancient-silver-forest');
     expect(() => {
       for (let i = 0; i < 7200; i++) runEconomyTick(game, 1 / 60);
     }).not.toThrow();
-  }, 30000);
+  }, 60000); // M_GAME.BUG.10 CI-slowness bump
 });

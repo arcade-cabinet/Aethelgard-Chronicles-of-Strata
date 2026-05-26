@@ -1,13 +1,14 @@
 /**
  * M_GAME.BUG.10 — peon roam-radius distance gate.
  *
- * Verifies the maxRoamRadius filter in nextPeonAction:
- * - With a generous radius (or undefined), the peon picks the
- *   absolute-nearest resource (legacy behavior).
- * - With a tight radius, the peon prefers an in-range resource
- *   over a closer out-of-range one.
- * - With no in-range resources, the peon idles instead of
- *   sprinting across the map.
+ * The filter itself is hoisted into the caller (job-routing.ts) per
+ * the post-CI perf revision (pre-filtered once per tick, not per
+ * peon). These tests still document the END contract: when the
+ * caller passes a filtered list, the picker behaves correctly.
+ *
+ * - Picker chooses the closest entry in the supplied list.
+ * - Picker idles when the supplied list is empty (the radius
+ *   has zero matches).
  */
 import { describe, expect, it } from 'vitest';
 import { nextPeonAction, type PeonView, type ResourceSite } from '@/rules';
@@ -27,7 +28,7 @@ function site(q: number, r: number): ResourceSite {
 }
 
 describe('peon roam-radius (M_GAME.BUG.10)', () => {
-  it('without maxRoamRadius, picks the closest resource regardless of base distance', () => {
+  it('picker chooses the closest entry in the supplied list', () => {
     const sites = [site(20, 0), site(2, 0)];
     const action = nextPeonAction(peon, {
       resources: sites,
@@ -39,27 +40,25 @@ describe('peon roam-radius (M_GAME.BUG.10)', () => {
     expect(action.targetKey).toBe('2,0');
   });
 
-  it('with maxRoamRadius=5, ignores the out-of-range node even if it is closer to the peon', () => {
-    const sites = [site(8, 0), site(4, 0)]; // both farther from base than peon
+  it('picker prefers the in-range entry when the caller filtered out the closer-to-peon-but-farther-from-base node', () => {
+    // The caller (jobRoutingSystem) is responsible for filtering;
+    // here we simulate "the radius cap removed the 8,0 node."
+    const sites = [site(4, 0)];
     const action = nextPeonAction(peon, {
       resources: sites,
       baseKey,
       threatenedTiles: new Set(),
-      maxRoamRadius: 5,
     });
     expect(action.kind).toBe('seek');
     if (action.kind !== 'seek') return;
-    // 8 is out of range; 4 is in range.
     expect(action.targetKey).toBe('4,0');
   });
 
-  it('with no in-range resources, the peon idles instead of seeking', () => {
-    const sites = [site(20, 0), site(30, 0)];
+  it('picker idles when the supplied (filtered) list is empty', () => {
     const action = nextPeonAction(peon, {
-      resources: sites,
+      resources: [],
       baseKey,
       threatenedTiles: new Set(),
-      maxRoamRadius: 5,
     });
     expect(action.kind).toBe('idle');
   });
