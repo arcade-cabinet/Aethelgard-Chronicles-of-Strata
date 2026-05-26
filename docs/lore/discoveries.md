@@ -119,6 +119,81 @@ realm falls. The chronicle records it; the realm graduates.
 
 ---
 
+## formation-phalanx
+
+- **Mechanical:** Unlocks the Phalanx formation. Spear stacks gain
+  +50% defense (combined-HP ×1.5).
+- **Stratum questioned:** Bronze Stratum — the layer of disciplined
+  bronze, where the first cohorts learned to lock their shields.
+- **Chronicler's voice:** *"And when the spears were planted as one,
+  the bronze beneath the realm shifted, and the line became wall."*
+- **Affinity:** Medieval / Mystic — Charter Realms drill formations
+  on parade grounds; Mythic Scholars treasure the geometric purity
+  of a closed phalanx.
+
+## formation-cadre
+
+- **Mechanical:** Unlocks the Cadre formation. Melee stacks gain
+  +25% damage.
+- **Stratum questioned:** Iron Stratum — the layer of forged
+  brotherhoods, where the first warbands learned to strike as one.
+- **Chronicler's voice:** *"The cadre is not three swords. It is
+  one sword that wears three faces."*
+- **Affinity:** Medieval / Orc — Charter Realms field household
+  guards in cadres; Ember Highlanders raid in tight packs that ARE
+  this formation.
+
+## formation-wedge
+
+- **Mechanical:** Unlocks the Wedge formation. Heavy cavalry stacks
+  gain +25% damage on the first attack of each engagement.
+- **Stratum questioned:** Iron Stratum — the same layer, now
+  questioned about momentum: how does iron meet iron at speed?
+- **Chronicler's voice:** *"The wedge does not arrive. The wedge
+  is what was already there, only the enemy did not yet know."*
+- **Affinity:** Orc — the Ember Highlanders' war-mount packs are
+  born to this shape.
+
+## formation-skirmish-line
+
+- **Mechanical:** Unlocks the Skirmish Line formation. Ranged stacks
+  gain +15% range.
+- **Stratum questioned:** Mythic Stratum — the layer of distance,
+  where the first arrow flew further than the eye could measure.
+- **Chronicler's voice:** *"The skirmish line is not a line of
+  archers. It is the SHAPE the arrows make in flight."*
+- **Affinity:** Mystic / Undead — Mythic Scholars perfect the
+  geometry of arc and trajectory; Revenants of the Glacial Halt
+  loose volleys from frost-bound bow-lines.
+
+## formation-square
+
+- **Mechanical:** Unlocks the Square formation. Defensive stacks gain
+  +30% defense; cannot move while in formation.
+- **Stratum questioned:** Bronze Stratum — the layer of fortification,
+  now asked: when shall the line refuse to break?
+- **Chronicler's voice:** *"The square is the realm in miniature.
+  It does not advance. It cannot retreat. It survives, and that is
+  enough."*
+- **Affinity:** Medieval — Charter Realms drill the square as
+  doctrine; it is the formation that defends the King's banner when
+  all else fails.
+
+## formation-combined-arms
+
+- **Mechanical:** Unlocks the Combined Arms formation (requires
+  Phalanx + Wedge as prereqs). Mixed melee+ranged stacks gain +25%
+  HP and +20% damage.
+- **Stratum questioned:** Steel Stratum — the latest layer, born of
+  the marriage of disciplines.
+- **Chronicler's voice:** *"And the Chronicler-King saw that the
+  spear was not the answer, and the bow was not the answer, and the
+  wedge was not the answer. The answer was all three, spoken in the
+  same breath."*
+- **Affinity:** Any archetype that already speaks both Phalanx and
+  Wedge — the formation BELONGS to no faction but is unlocked by
+  the discipline to study two shapes at once.
+
 ## Cross-references
 
 - JSON registry: `src/config/discoveries.json` (canonical mechanical

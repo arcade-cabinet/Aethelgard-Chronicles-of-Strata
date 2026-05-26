@@ -231,15 +231,22 @@ stockpile, no pre-spawned peons or military.
 - [ ] M_GAME.STACK.10 — Mob auto-stacking: Graveyard / Barbarian
       Camp mobs auto-stack into Rabble when 2+ mobs end a tick on
       same tile.
-- [ ] M_GAME.DISCOVERY.FORMATION.1 — Add 6 formation Discoveries
-      (Phalanx, Cadre, Wedge, Skirmish Line, Square, Combined
-      Arms) to the registry. Costs ~120 wood + 80 gold. Combined
-      Arms requires Phalanx + Wedge as prereqs. DiscoveriesPanel
-      renders the formation badge preview.
-- [ ] M_GAME.DISCOVERY.FORMATION.2 — `docs/lore/discoveries.md`
-      expanded with the 6 formation entries; each gets a
-      Chronicler's-voice flavour line (Stratum + archetype
-      affinities per the doc).
+- [x] M_GAME.DISCOVERY.FORMATION.1 — 6 formation Discoveries added
+      to `src/config/discoveries.json`: formation-phalanx,
+      formation-cadre, formation-wedge (prereq formation-cadre),
+      formation-skirmish-line, formation-square (prereq
+      formation-phalanx), formation-combined-arms (prereqs
+      formation-phalanx + formation-wedge). All use
+      `{ kind: "flag" }` effect and cost 120 wood + 80 gold (200/160
+      for Combined Arms). Zod-validated on module load; existing
+      discovery system reads the new entries with zero code change.
+      DiscoveriesPanel badge preview is a follow-up
+      M_GAME.DISCOVERY.FORMATION.1b once formation render lands.
+- [x] M_GAME.DISCOVERY.FORMATION.2 — `docs/lore/discoveries.md`
+      expanded with 6 formation entries. Each gets stratum
+      questioned (Bronze for Phalanx + Square; Iron for Cadre +
+      Wedge; Mythic for Skirmish Line; Steel for Combined Arms),
+      Chronicler's voice flavour quote, and archetype affinities.
 - [ ] M_GAME.CAMP.1 — Barbarian Camp spawn pass: map-gen places N
       camps in neutral territory at start (N scales with map size).
       Each camp spawns mobs from the Mystery asset pool.

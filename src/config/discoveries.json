@@ -55,6 +55,54 @@
       "cost": { "stone": 200, "gold": 200 },
       "prereqs": ["steelPlows"],
       "effect": { "kind": "flag" }
+    },
+    {
+      "id": "formation-phalanx",
+      "name": "Formation: Phalanx",
+      "description": "Unlocks the Phalanx formation — spear stacks gain +50% defense.",
+      "cost": { "wood": 120, "gold": 80 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "formation-cadre",
+      "name": "Formation: Cadre",
+      "description": "Unlocks the Cadre formation — melee stacks gain +25% damage.",
+      "cost": { "wood": 120, "gold": 80 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "formation-wedge",
+      "name": "Formation: Wedge",
+      "description": "Unlocks the Wedge formation — heavy cavalry stacks gain +25% damage on the first attack.",
+      "cost": { "wood": 120, "gold": 80 },
+      "prereqs": ["formation-cadre"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "formation-skirmish-line",
+      "name": "Formation: Skirmish Line",
+      "description": "Unlocks the Skirmish Line formation — ranged stacks gain +15% range.",
+      "cost": { "wood": 120, "gold": 80 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "formation-square",
+      "name": "Formation: Square",
+      "description": "Unlocks the Square formation — defensive stacks gain +30% defense; cannot move while in formation.",
+      "cost": { "wood": 120, "gold": 80 },
+      "prereqs": ["formation-phalanx"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "formation-combined-arms",
+      "name": "Formation: Combined Arms",
+      "description": "Unlocks the Combined Arms formation — mixed melee+ranged stacks gain +25% HP and +20% damage.",
+      "cost": { "wood": 200, "gold": 160 },
+      "prereqs": ["formation-phalanx", "formation-wedge"],
+      "effect": { "kind": "flag" }
     }
   ]
 }

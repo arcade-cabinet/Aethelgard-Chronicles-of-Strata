@@ -26,8 +26,8 @@ describe('M_V7.DISCOVERY-TREE.V6 — new tech entries', () => {
     }
   });
 
-  it('registry contains 7 total Discoveries (v0.4 2 + v0.7 5)', () => {
-    expect(DISCOVERIES.length).toBe(7);
+  it('registry contains 13 total Discoveries (v0.4 2 + v0.7 5 + v0.10 6 formations)', () => {
+    expect(DISCOVERIES.length).toBe(13);
   });
 
   it('siege-engineering + monumental-architecture have prereqs (deeper-tier)', () => {
