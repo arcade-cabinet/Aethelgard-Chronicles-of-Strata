@@ -5,6 +5,23 @@ All notable changes to Aethelgard: Chronicles of Strata will be documented in th
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.22](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.21...v0.1.22) (2026-05-26)
+
+
+### Features
+
+* **game:** inactivity narrator beats (M_V11.OPEN.INACTIVITY) ([#74](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/74)) ([f15998c](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/f15998c4855d11fec453923a204ed46daf7dcbda))
+* **hud:** Town Hall "Queue Peon" affordance halo (M_V11.OPEN.TH-AFFORDANCE) ([#73](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/73)) ([7827994](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/7827994bb698c8e103631aee4c917c94a077033b))
+* **v0.11:** classic-RTS opening — Town Hall + stockpile only (M_V11.OPEN) ([#71](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/71)) ([39a43ab](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/39a43ab5c69a52fccfbf5c0c2bb950ed16322946))
+* **v0.11:** RTS-purge — strip 4X scaffolding (M_V11.PURGE.UI/MODE-ENUM/SCORING/E2E) ([#68](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/68)) ([a203da9](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/a203da9a028b1a32d56c18a3c37a82c26f2af5d0))
+* **v0.11:** strip currentTurn / restUntilTurn turn-gating (M_V11.PURGE.TURN-GATE) ([#69](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/69)) ([24d3526](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/24d3526d1605f1a9268b15a9b37b2cc113d6b9db))
+
+
+### Documentation
+
+* **hud:** OnboardingOverlay copy for classic-RTS opening (M_V11.OPEN.ONBOARDING) ([#76](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/76)) ([8b549bb](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/8b549bbfee5d8fc4b9244baa54797e6003f285c5))
+* **v0.11:** strip 4X / age-of-strata refs from active docs (M_V11.PURGE.DOCS) ([#70](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/issues/70)) ([0499501](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/commit/049950154b4ce72604c1f194b04326ad3973d253))
+
 ## [0.1.21](https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/compare/v0.1.20...v0.1.21) (2026-05-26)
 
 
@@ -513,4 +530,3 @@ five archetype traits (Attractor / Offensive / Defensive / Mover / Consumer) +
 a bi-signed magnetic force field + a pairwise composition algebra + a
 damage-type × armor table. Units and buildings share the same archetype
 universe — adding a new entity is a new TABLE ROW, not a new code path.
-
