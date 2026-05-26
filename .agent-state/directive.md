@@ -3,11 +3,18 @@
 **Status:** ACTIVE
 **Owner:** Claude
 **Cycle:** v0.11 (post-v0.10 release at 0.1.20 on main)
-**Mandate:** Per user direction 2026-05-26: "figure out current PR
-stack, get to squash, then overhaul directive and PRDs to everything
-remaining to do." PR stack drained (#60/63/64/65 closed/merged);
-release v0.1.20 cut. v0.11 is the runtime + RTS-opening cycle that
-picks up the WAIT-FOCUS items deferred from v0.10.
+**Mandate:** Per user direction 2026-05-26: "I want your directives
+updated so that EVERYTHING is in scope, NOTHING deferred, ALL
+planned features done, polished, verified locally with
+screenshots, ZERO issues with UI/UX or HUD crowding." All
+deferred items lifted into §9 + §10 + §11. PR #89 stays open
+through the polish + verification gates; merge only when every
+checkbox is `[x]`.
+
+Prior context: PR stack drained (#60/63/64/65 closed/merged);
+release v0.1.20 cut. v0.11 is the runtime + RTS-opening cycle
+that picks up the WAIT-FOCUS items deferred from v0.10 plus
+all polish work explicitly re-scoped by the 2026-05-26 directive.
 
 ## What CONTINUOUS means
 
@@ -376,20 +383,18 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 
 ### §7 — Performance + visual lock + release ladder
 
-- [ ] [WAIT-PROFILE] M_V11.PERF.PROFILE — 4-player AIVAI 300s
-      profile via chrome-devtools-mcp. Requires a running dev
-      server + chrome-devtools-mcp connection to drive the trace.
-      Deferred until the PR is opened so the profile sample
-      represents the merge state.
-- [ ] [WAIT-PROFILE] M_V11.PERF.RECLAIM — Address each hot path
-      identified by PROFILE. Tied to PROFILE; can only run with
-      a profile sample in hand.
-- [ ] [WAIT-VISUAL] M_V11.VISUAL.LOCK — Post-§2, run
-      `pnpm visual:fixtures`, judge against
-      `docs/specs/20-visual-language.md` briefs, commit baselines.
-      Deferred until the PR open + reviewer trio findings folded
-      so the locked baselines represent the merge state, not an
-      intermediate commit.
+- [ ] M_V11.PERF.PROFILE — 4-player AIVAI 300s profile via
+      chrome-devtools-mcp. Stand up the dev server, drive the
+      MCP trace, capture mean/max frame time + GC count, log
+      top 3 hot paths. Comparison vs the pre-v0.10 baseline
+      (saved in docs/perf/pre-v0.10-baseline.json).
+- [ ] M_V11.PERF.RECLAIM — Land targeted optimizations for
+      each hot path PROFILE surfaced. Target: CI runtime ≤ 120%
+      of pre-v0.10. Tighten test timeouts back down once met.
+- [ ] M_V11.VISUAL.LOCK — Run `pnpm visual:fixtures` end-to-end;
+      judge each baseline against `docs/specs/20-visual-language.md`
+      + per-biome briefs in `docs/BIOMES/*.md`; commit the locked
+      baselines. ANY drift = a code bug, not a baseline update.
 - [x] M_V11.RELEASE.LADDER — PR #89 opened against main
       (https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/pull/89).
       Branch pushed at fingerprint 1d5d109 with ~30 forward
@@ -405,6 +410,128 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       / human review on PR #89 fully addressed. Findings folded
       as additional commits on `feat/v0.11-cycle` (never amended)
       until the conversation hits zero.
+
+### §9 — Lift previously-deferred items (user direction 2026-05-26)
+
+User direction: "EVERYTHING is in scope, NOTHING deferred, ALL
+planned features done, polished, verified locally with
+screenshots, ZERO issues with UI/UX or HUD crowding". The
+following sub-items previously closed-with-defers are re-opened.
+
+- [ ] M_V11.STACK.WORK-CREW.BUFF — harvest-rate buff for work-crew
+      stacks. Spec: +20% harvest tick per member up to +4 members.
+      Hook into harvestSystem: when a peon entity is a StackMember
+      of a 'work-crew' Stack, scale its tick rate. Unit test pins
+      the multiplier shape.
+- [ ] M_V11.STACK.PANEL.MULTI-STACK — extend setStackFormation
+      to apply across multi-stack selection so the user can flip
+      formation on a group of cohorts at once. The current
+      single-stack path stays.
+- [ ] M_V11.SEL.PEON-VERBS.SUBMENUS — actual per-type submenu
+      surfaces in the SelectionPanel for mixed selections
+      (peon-verb fieldset visible alongside military-stance
+      fieldset when both classes are selected). The current
+      intersection-gates hide both for mixed selection; surface
+      them in a "per-type submenu" expander instead.
+- [ ] M_V11.SEL.ALL-OF-TYPE.BIOME — biome-scoped "Select All Peons
+      of [biome X]" variant. Plumbs biome into the all-of-type
+      walker via game.board.tiles lookup.
+- [ ] M_V11.PROCMESH.WALL-VARIANTS — gate + corner variants for
+      the procedural Wall (drops the dead M_EXPANSION.A.3 + .A.6
+      GLB overrides in FactionBase.GlbStructureMesh). Removes the
+      gate-stone.glb + wall-stone-corner.glb GLBs once parity is
+      reached.
+
+### §10 — Polish + UI/UX + HUD crowding audit (M_V11.POLISH)
+
+User direction: zero HUD crowding, zero UI/UX issues, everything
+verified locally with screenshots. This section is the gate
+between "PR open" and "merge".
+
+- [ ] M_V11.POLISH.HUD-AUDIT — walk every HUD surface (Title /
+      NewGameModal / SettingsModal / SelectionPanel / MinimapHud /
+      Toasts / EraProgressPill / Multi/Diplo/Research panels) on
+      mobile-portrait + tablet + desktop viewports. Catch every
+      overlap, every off-screen element, every text-truncation.
+      Screenshot each.
+- [ ] M_V11.POLISH.HUD-CROWDING — for each crowding finding from
+      HUD-AUDIT, ship a layout fix: collapse / overflow-menu /
+      responsive-stack / safe-area padding as needed. Re-screenshot
+      to verify.
+- [ ] M_V11.POLISH.SCREENSHOT-BATTERY — Maestro + Playwright
+      screenshot battery against the 14 landmark moments of
+      docs/specs/10-player-journey.md. Each shot saved under
+      docs/screenshots/v0.11/ + linked in PR body.
+- [ ] M_V11.POLISH.VISUAL-COMPARE — for every screenshot in the
+      battery, compare against the spec brief (AC:NH biome shots,
+      Stardew HUD, references/) + name the comparison verdict in
+      a `docs/screenshots/v0.11/judgement.md` ledger. Catch every
+      drift before merge.
+- [ ] M_V11.POLISH.A11Y-SWEEP — `@axe-core/playwright` against
+      every HUD route. Address each violation (contrast, missing
+      ARIA, focus-trap, etc.) before merge.
+- [ ] M_V11.POLISH.MOBILE-MAESTRO — full `.maestro/*.yaml` battery
+      against the actual Android APK + iOS IPA. Verify every
+      tap-path resolves. No flakes.
+- [ ] M_V11.POLISH.SELECTION-PANEL-DENSITY — SelectionPanel grew
+      a multi-summary strip + formation chip grid + select-all-of-
+      type button + stance fieldset + autoMode button + train/build
+      lists — verify it stays under the 'reader-can-hold-in-head'
+      threshold on a phone-portrait viewport. Split into
+      collapsible accordion sections if not.
+- [ ] M_V11.POLISH.STACKRENDER-DEDUP — verify StackRender's
+      formation badges don't pile on top of the unit name labels
+      or HealthBillboard at zoom-in; introduce a vertical-stack
+      layout for overlapping world-space text if they collide.
+- [ ] M_V11.POLISH.LOOT-FX — un-collected LootCache currently has
+      ZERO visual presence in the world (M_V11.CAMPS.LOOT shipped
+      the data trait only). Add a small spinning coin / gem mesh
+      + subtle particle so the player can SEE the cache before
+      walking over it.
+- [ ] M_V11.POLISH.CAMP-MOB-VISUAL — barbarian-camp mobs are
+      tinted via existing characterTint logic in Units.tsx (line
+      114 skips them) — verify the player can visually distinguish
+      a barbarian-camp-1 mob from a barbarian-camp-2 mob in the
+      same frame. Shift CAMP_COLORS in barbarian-camps.ts if
+      indistinguishable.
+- [ ] M_V11.POLISH.PROCMESH-FACTION-CROSS — visual self-judge:
+      run all 9 procedural buildings under player palette + enemy
+      palette, screenshot side-by-side, verify each pair reads as
+      'kingdom vs necropolis'. Currently only TownHall + Wonder
+      have cross-faction baselines.
+- [ ] M_V11.POLISH.PEON-CTA-DECAY — the Train-Peon affordance
+      halo (M_V11.OPEN.TH-AFFORDANCE) pulses while
+      countPlayerPeons === 0. Verify the pulse retires immediately
+      on first queue; verify it doesn't compete with the inactivity
+      narrator beats for the player's attention.
+- [ ] M_V11.POLISH.WAYPOINT-RESPONSIVENESS — tap-to-move on a
+      multi-selected group should produce ONE rally marker, not
+      N. Verify TileInteraction.onRightPick collapses stack
+      members into a single moveUnit per stack (the M_V11 work
+      shipped this; verify it on a 3-stack group selection).
+
+### §11 — End-to-end verification gate (M_V11.E2E)
+
+Hard gate between v0.11 PR and merge. None of these are optional.
+
+- [ ] M_V11.E2E.LOCAL-PLAYTHROUGH — manual full match (~10 sim
+      minutes) on a real Pixel 5a tier device profile. Catch the
+      bugs the test suite misses. Screenshot every notable beat
+      + log to docs/playthroughs/v0.11.md.
+- [ ] M_V11.E2E.AIVAI-200S-BAKE — runEconomyTick at 0.5s × 400
+      ticks (200 sim seconds) with both factions AI. Assert: no
+      stuck units, no NaN positions, all factions still have
+      units, supply caps respected, no perpetual idle camps.
+- [ ] M_V11.E2E.SAVE-LOAD-MID-MATCH — save at the 90s mark of an
+      AIVAI sim; load; resume; verify entity counts match
+      byte-identical to the pre-save snapshot.
+- [ ] M_V11.E2E.CAMERA-SANITY — pinch/pan/orbit through the full
+      camera range; verify no clipping, no perspective inversion,
+      no orphan render artifacts at extreme zoom.
+- [ ] M_V11.E2E.PERF-MOBILE — run the perf trace on a
+      mobile-tier emulator (Pixel 5a). Assert mean frame time
+      ≤ 22ms (45fps floor) on 4-player AIVAI medium map. If
+      not, M_V11.PERF.RECLAIM has more work.
 
 ### §8 — Procedural buildings via composed structural primitives (M_V11.PROCMESH)
 
