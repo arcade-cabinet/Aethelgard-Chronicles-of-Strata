@@ -727,62 +727,63 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                 so peon+footman mixed selections don't surface Stance.
                 In single-select, view.stance !== null IS the check
                 (set when the primary is military). */}
-            {(view.stance !== null || (view.multi !== null && view.intersectionVerbs.anyMilitary)) && (
-                <div style={{ marginTop: 10 }}>
-                  <div
-                    style={{
-                      fontSize: '0.7rem',
-                      textTransform: 'uppercase',
-                      letterSpacing: 1,
-                      color: HUD_THEME.color.muted,
-                      marginBottom: 4,
-                    }}
-                  >
-                    {view.multi && !view.intersectionVerbs.allMilitary
-                      ? `Stance — Military (${view.intersectionVerbs.militaryCount})`
-                      : 'Stance'}
-                  </div>
-                  <fieldset
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: '1fr 1fr',
-                      gap: 4,
-                      border: 'none',
-                      margin: 0,
-                      padding: 0,
-                    }}
-                    aria-label="Unit stance"
-                  >
-                    {STANCE_CHIPS.map(({ mode, label }) => {
-                      const active = view.stance === mode;
-                      return (
-                        <button
-                          key={mode}
-                          type="button"
-                          aria-pressed={active}
-                          onClick={() => changeStance(mode)}
-                          style={{
-                            minHeight: 44,
-                            padding: '6px 4px',
-                            borderRadius: 6,
-                            border: `1px solid ${active ? HUD_THEME.color.accent : HUD_THEME.color.border}`,
-                            background: active ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.04)',
-                            color: active ? HUD_THEME.color.accent : HUD_THEME.color.text,
-                            fontFamily: HUD_THEME.font.body,
-                            fontSize: '0.72rem',
-                            fontWeight: active ? 800 : 500,
-                            cursor: 'pointer',
-                            textAlign: 'center',
-                            lineHeight: 1.2,
-                          }}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </fieldset>
+            {(view.stance !== null ||
+              (view.multi !== null && view.intersectionVerbs.anyMilitary)) && (
+              <div style={{ marginTop: 10 }}>
+                <div
+                  style={{
+                    fontSize: '0.7rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: 1,
+                    color: HUD_THEME.color.muted,
+                    marginBottom: 4,
+                  }}
+                >
+                  {view.multi && !view.intersectionVerbs.allMilitary
+                    ? `Stance — Military (${view.intersectionVerbs.militaryCount})`
+                    : 'Stance'}
                 </div>
-              )}
+                <fieldset
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '1fr 1fr',
+                    gap: 4,
+                    border: 'none',
+                    margin: 0,
+                    padding: 0,
+                  }}
+                  aria-label="Unit stance"
+                >
+                  {STANCE_CHIPS.map(({ mode, label }) => {
+                    const active = view.stance === mode;
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        aria-pressed={active}
+                        onClick={() => changeStance(mode)}
+                        style={{
+                          minHeight: 44,
+                          padding: '6px 4px',
+                          borderRadius: 6,
+                          border: `1px solid ${active ? HUD_THEME.color.accent : HUD_THEME.color.border}`,
+                          background: active ? 'rgba(56,189,248,0.25)' : 'rgba(255,255,255,0.04)',
+                          color: active ? HUD_THEME.color.accent : HUD_THEME.color.text,
+                          fontFamily: HUD_THEME.font.body,
+                          fontSize: '0.72rem',
+                          fontWeight: active ? 800 : 500,
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          lineHeight: 1.2,
+                        }}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
+                </fieldset>
+              </div>
+            )}
 
             {/* M_V11.STACK.PANEL — formation switcher. Only renders
                 when the selected entity is a Stack. Each chip:
@@ -886,46 +887,46 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                 operating on the peon subset only. */}
             {(view.peonAutoMode !== null ||
               (view.multi !== null && view.intersectionVerbs.anyPlayerPeon)) && (
-                <div style={{ marginTop: 10 }}>
-                  <HudButton
-                    label={
-                      view.multi
-                        ? view.intersectionVerbs.allPlayerPeons
-                          ? `${view.peonAutoMode === 'auto' ? 'Take all' : 'Resume all'} (${view.multi.total})`
-                          : `Take peons (${view.intersectionVerbs.playerPeonCount})`
-                        : view.peonAutoMode === 'auto'
-                          ? 'Take command'
-                          : 'Resume automation'
+              <div style={{ marginTop: 10 }}>
+                <HudButton
+                  label={
+                    view.multi
+                      ? view.intersectionVerbs.allPlayerPeons
+                        ? `${view.peonAutoMode === 'auto' ? 'Take all' : 'Resume all'} (${view.multi.total})`
+                        : `Take peons (${view.intersectionVerbs.playerPeonCount})`
+                      : view.peonAutoMode === 'auto'
+                        ? 'Take command'
+                        : 'Resume automation'
+                  }
+                  onClick={() => {
+                    // M_V11.SEL.BATCH-PEON — apply autoMode flip to
+                    // every selected peon, not just the primary.
+                    // Walks game.world.query each call so race
+                    // conditions (a peon destroyed under selection)
+                    // are surfaced via setPeonAutoMode's bool return.
+                    const targets = view.multi
+                      ? selectedEntities(game).filter((e) => {
+                          const u = e.get(Unit);
+                          const f = e.get(FactionTrait)?.faction;
+                          return u?.unitType === 'Peon' && f === 'player';
+                        })
+                      : selectedEntity(game)
+                        ? [selectedEntity(game) as import('koota').Entity]
+                        : [];
+                    if (targets.length === 0) {
+                      emitUiSound('ui-error');
+                      return;
                     }
-                    onClick={() => {
-                      // M_V11.SEL.BATCH-PEON — apply autoMode flip to
-                      // every selected peon, not just the primary.
-                      // Walks game.world.query each call so race
-                      // conditions (a peon destroyed under selection)
-                      // are surfaced via setPeonAutoMode's bool return.
-                      const targets = view.multi
-                        ? selectedEntities(game).filter((e) => {
-                            const u = e.get(Unit);
-                            const f = e.get(FactionTrait)?.faction;
-                            return u?.unitType === 'Peon' && f === 'player';
-                          })
-                        : selectedEntity(game)
-                          ? [selectedEntity(game) as import('koota').Entity]
-                          : [];
-                      if (targets.length === 0) {
-                        emitUiSound('ui-error');
-                        return;
-                      }
-                      const nextMode = view.peonAutoMode === 'auto' ? 'manual' : 'auto';
-                      let okCount = 0;
-                      for (const t of targets) {
-                        if (setPeonAutoMode(game, t, nextMode)) okCount++;
-                      }
-                      emitUiSound(okCount > 0 ? 'ui-button-click' : 'ui-error');
-                    }}
-                  />
-                </div>
-              )}
+                    const nextMode = view.peonAutoMode === 'auto' ? 'manual' : 'auto';
+                    let okCount = 0;
+                    for (const t of targets) {
+                      if (setPeonAutoMode(game, t, nextMode)) okCount++;
+                    }
+                    emitUiSound(okCount > 0 ? 'ui-button-click' : 'ui-error');
+                  }}
+                />
+              </div>
+            )}
 
             {view.buildingType &&
               (() => {

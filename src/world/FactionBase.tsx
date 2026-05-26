@@ -83,8 +83,7 @@ function StructureMesh({
     // hasGate + isCorner. Other proc components ignore these
     // (their type signature only declares `position` but JS
     // ignores extra props).
-    const extraProps =
-      type === 'Wall' ? { hasGate, isCorner } : {};
+    const extraProps = type === 'Wall' ? { hasGate, isCorner } : {};
     return (
       <group position={[x, y + model.yOffset, z]} scale={effectiveScale}>
         <Component position={[0, 0, 0]} {...extraProps} />

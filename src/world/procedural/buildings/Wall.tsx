@@ -106,7 +106,7 @@ export function Wall({
           const y = 0.08 + brickHeight / 2 + c * brickHeight;
           return (
             <StoneBrick
-              key={`corner-c${c}`}
+              key={`corner-y${y.toFixed(3)}`}
               width={depth}
               height={brickHeight - 0.005}
               depth={depth * 1.4}

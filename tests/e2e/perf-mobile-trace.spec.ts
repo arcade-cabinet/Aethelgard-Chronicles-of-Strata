@@ -75,7 +75,10 @@ test.describe('M_V11.E2E.PERF-MOBILE', () => {
       p95: Number(p(0.95).toFixed(2)),
       max: Number(Math.max(...samples).toFixed(2)),
     };
-    writeFileSync(join(OUT_DIR, 'mobile-border-clash.json'), `${JSON.stringify(result, null, 2)}\n`);
+    writeFileSync(
+      join(OUT_DIR, 'mobile-border-clash.json'),
+      `${JSON.stringify(result, null, 2)}\n`,
+    );
     console.log('[perf-mobile]', JSON.stringify(result));
 
     // 95th-percentile under 40ms (~25fps). Desktop Chromium with

@@ -14,14 +14,7 @@
  *     auto-stack into a 'rabble' formation (cap 6).
  */
 import type { Entity } from 'koota';
-import {
-  AssignedJob,
-  FactionTrait,
-  HexPosition,
-  Stack,
-  StackMember,
-  Unit,
-} from '@/ecs/components';
+import { AssignedJob, FactionTrait, HexPosition, Stack, StackMember, Unit } from '@/ecs/components';
 import type { GameState } from './game-state';
 import { createStack, dissolveStack } from './stacking';
 

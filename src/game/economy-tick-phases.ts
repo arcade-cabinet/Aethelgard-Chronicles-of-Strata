@@ -60,11 +60,7 @@ import { advanceProjectiles } from './projectiles';
 import { tickEnemyAtTownHallToast, tickInactivityBeats } from './narrator-beats';
 import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { grantRandomDiscovery } from './research';
-import {
-  autoFormMobRabble,
-  autoFormWorkCrews,
-  dissolveStaleWorkCrews,
-} from './stack-auto-form';
+import { autoFormMobRabble, autoFormWorkCrews, dissolveStaleWorkCrews } from './stack-auto-form';
 // createStack + dissolveStack moved with the auto-form helpers
 // to ./stack-auto-form.ts; the imports here are no longer needed.
 import { buildEntityTileIndex } from './tile-index';
@@ -103,7 +99,6 @@ export function tickClockPhase(game: GameState, delta: number): void {
   }
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 }
-
 
 // ---------------------------------------------------------------------------
 // Phase 2 — Command: AI decisions, spawning, stance + pathFollow.

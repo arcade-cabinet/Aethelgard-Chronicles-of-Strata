@@ -18,14 +18,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { AiPlayer } from '@/ai/ai-player';
-import {
-  Combatant,
-  EnemySpawner,
-  FactionTrait,
-  Health,
-  HexPosition,
-  Unit,
-} from '@/ecs/components';
+import { Combatant, EnemySpawner, FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 import { runEconomyTick, startGame } from '@/game/game-state';
 
 describe('AIVAI 200s bake (M_V11.E2E.AIVAI-200S-BAKE)', () => {
