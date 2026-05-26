@@ -19,6 +19,7 @@ import { cn } from '@/lib/cn';
 import { useTheme } from '@/lib/theme';
 import type { Persistence } from '@/persistence/persistence';
 import { CreditsModal } from './CreditsModal';
+import { IconButton, TreasureButton } from './primitives';
 import { TitleBackground } from './TitleBackground';
 
 export interface TitleScreenProps {
@@ -142,9 +143,9 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
           custom={0.28}
           className="flex w-full max-w-sm flex-col gap-3"
         >
-          <PrimaryButton id="menu-new-game" onClick={onNewGame}>
+          <TreasureButton id="menu-new-game" aria-label="Start a new game" onClick={onNewGame}>
             New Game
-          </PrimaryButton>
+          </TreasureButton>
           <SecondaryButton
             id="menu-continue"
             onClick={onContinue ?? (() => undefined)}
@@ -173,13 +174,13 @@ export function TitleScreen({ onNewGame, onContinue, onSettings, persistence }: 
       >
         <IconButton
           onClick={() => setMuted(!muted)}
-          ariaLabel={muted ? 'Unmute audio' : 'Mute audio'}
+          aria-label={muted ? 'Unmute audio' : 'Mute audio'}
         >
           {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
         </IconButton>
         <IconButton
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          ariaLabel={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+          aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
         >
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </IconButton>
@@ -223,28 +224,6 @@ interface ButtonBaseProps {
   children: React.ReactNode;
   disabled?: boolean;
   disabledReason?: string;
-}
-
-function PrimaryButton({ id, onClick, children }: ButtonBaseProps) {
-  return (
-    <button
-      type="button"
-      id={id}
-      onClick={onClick}
-      className={cn(
-        'group relative overflow-hidden rounded-xl px-6 py-4 font-display text-lg',
-        'border border-[#d4af37]/60',
-        'bg-gradient-to-b from-[#e8c660] via-[#d4af37] to-[#8b7124]',
-        'text-[#1a1208] shadow-[0_8px_32px_rgba(212,175,55,0.35),inset_0_1px_0_rgba(255,255,255,0.35)]',
-        'transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_12px_40px_rgba(212,175,55,0.5),inset_0_1px_0_rgba(255,255,255,0.4)]',
-        'active:translate-y-0 active:scale-[0.97]',
-      )}
-      style={{ fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
-    >
-      <span className="relative z-10">{children}</span>
-      <span className="absolute inset-0 bg-gradient-to-t from-black/15 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
-    </button>
-  );
 }
 
 function SecondaryButton({ id, onClick, children, disabled, disabledReason }: ButtonBaseProps) {
@@ -293,29 +272,4 @@ function GhostButton({ id, onClick, children }: ButtonBaseProps) {
   );
 }
 
-function IconButton({
-  onClick,
-  ariaLabel,
-  children,
-}: {
-  onClick: () => void;
-  ariaLabel: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={ariaLabel}
-      className={cn(
-        'flex h-10 w-10 items-center justify-center rounded-lg',
-        'border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-treasure)]',
-        'shadow-md backdrop-blur transition-colors',
-        'hover:border-[var(--color-treasure)]/60 hover:text-[var(--color-on-surface)]',
-        'active:scale-95',
-      )}
-    >
-      {children}
-    </button>
-  );
-}
+// IconButton primitive lives in src/hud/primitives/IconButton.tsx
