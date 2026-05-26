@@ -16,7 +16,7 @@ describe('deposit system', () => {
     );
     // base at 0,0 — peon at 1,0 is adjacent
     depositSystem(world, eco, '0,0', 'player');
-    expect(eco.wood).toBe(60);
+    expect(eco.wood).toBe(90); // M_V11.OPEN.STOCKPILE 80+10=90;
     expect(peon.get(Carrier)?.amount).toBe(0);
     expect(peon.get(Carrier)?.carryType).toBe('none');
   });
@@ -44,7 +44,7 @@ describe('deposit system', () => {
       FactionTrait({ faction: 'player' }),
     );
     depositSystem(world, eco, '0,0', 'player');
-    expect(eco.wood).toBe(50);
+    expect(eco.wood).toBe(80); // M_V11.OPEN.STOCKPILE;
   });
 
   it('only deposits for the faction it is run for', () => {
@@ -59,6 +59,6 @@ describe('deposit system', () => {
     );
     // running the player deposit must NOT collect the enemy peon's load
     depositSystem(world, playerEco, '0,0', 'player');
-    expect(playerEco.wood).toBe(50);
+    expect(playerEco.wood).toBe(80); // M_V11.OPEN.STOCKPILE;
   });
 });

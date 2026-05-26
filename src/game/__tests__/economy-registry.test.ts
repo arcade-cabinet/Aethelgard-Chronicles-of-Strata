@@ -45,13 +45,13 @@ describe('economyFor lookup', () => {
     expect(game.economyExtra.has('player-3')).toBe(false);
     const eco = economyFor(game, 'player-3');
     expect(eco).toBeDefined();
-    expect(eco.wood).toBe(50); // createEconomy default
+    expect(eco.wood).toBe(80); // M_V11.OPEN.STOCKPILE
     expect(game.economyExtra.has('player-3')).toBe(true);
     // Same ref on second lookup; mutations stick.
     const eco2 = economyFor(game, 'player-3');
     expect(eco2).toBe(eco);
     eco2.wood += 100;
-    expect(economyFor(game, 'player-3').wood).toBe(150);
+    expect(economyFor(game, 'player-3').wood).toBe(180); // 80 + 100 (M_V11.OPEN.STOCKPILE)
   });
 });
 
