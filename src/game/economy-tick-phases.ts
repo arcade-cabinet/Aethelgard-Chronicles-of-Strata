@@ -244,6 +244,61 @@ function autoFormWorkCrews(game: GameState): void {
   }
 }
 
+/** Set membership check for barbarian unit roles (vs player roles). */
+const BARBARIAN_ROLES = new Set<string>([
+  'Goblin',
+  'Orc',
+  'Vampire',
+  'BlackKnight',
+  'Witch',
+]);
+
+/**
+ * M_V11.STACK.MOB-RABBLE — auto-form Rabble stacks for barbarian-
+ * faction mobs that converged on a tile. Per spec: "Mob auto-stack
+ * into Rabble on tile convergence (max 6 mobs per stack)".
+ *
+ * Sweep:
+ *   1. Bucket non-stacked mobs from barbarian factions by tile.
+ *      Discriminator: FactionTrait.faction begins with
+ *      'barbarian-camp-' (the v0.5 N-player convention).
+ *   2. Any bucket with >=2 mobs → createStack(slice(0, 6)). The
+ *      stack's defaultFormationFor picks 'rabble' for mixed-mob
+ *      compositions; barbarian Rabble is the default formation.
+ *
+ * Cheap: O(mobs + tiles_with_mobs). Runs alongside autoFormWorkCrews
+ * inside tickTerrainPhase.
+ */
+export function autoFormMobRabble(game: GameState): void {
+  const buckets = new Map<string, Entity[]>();
+  for (const e of game.world.query(Unit, FactionTrait, HexPosition)) {
+    const fac = e.get(FactionTrait)?.faction;
+    // Barbarian camps use the 'barbarian-camp-N' faction-id pattern
+    // (see barbarian-camps.ts:142). The Unit type may be any of the
+    // BARBARIAN pool, but tile-based clustering treats them uniformly.
+    if (!fac || !fac.startsWith('barbarian-camp-')) continue;
+    const role = e.get(Unit)?.unitType;
+    if (!role || !BARBARIAN_ROLES.has(role)) continue;
+    if (e.has(StackMember)) continue;
+    const hex = e.get(HexPosition);
+    if (!hex) continue;
+    // Bucket by tile AND faction-id — two camps' mobs on the same
+    // tile shouldn't merge (different factions can't share a stack).
+    const key = `${fac}|${hex.q},${hex.r}`;
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = [];
+      buckets.set(key, bucket);
+    }
+    bucket.push(e);
+  }
+  for (const bucket of buckets.values()) {
+    if (bucket.length < 2) continue;
+    // Spec caps mob stacks at 6 (vs 8 for work crews).
+    createStack(game, bucket.slice(0, 6));
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Phase 2 — Command: AI decisions, spawning, stance + pathFollow.
 // AI/spawn/stance are turn-gated; pathFollow always runs.
@@ -309,6 +364,10 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
     });
     harvestSystem(game.world, delta);
     autoFormWorkCrews(game);
+    // M_V11.STACK.MOB-RABBLE — barbarian mobs auto-stack into Rabble
+    // on tile convergence (cap 6 per stack). Cheap parallel sweep
+    // mirroring the work-crew form pass.
+    autoFormMobRabble(game);
     buildSystem(game.world, game.buildSites, delta);
     // Credit first-House completion per faction (cheap O(buildings) sweep).
     if (
