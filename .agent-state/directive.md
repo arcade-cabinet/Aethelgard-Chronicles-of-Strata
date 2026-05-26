@@ -397,10 +397,18 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       ~85s for 1163 unit tests (well under any reasonable
       target). Mobile-tier validation deferred to §11
       PERF-MOBILE which has the actual frame-rate gate.
-- [ ] M_V11.VISUAL.LOCK — Run `pnpm visual:fixtures` end-to-end;
+- [x] M_V11.VISUAL.LOCK — Run `pnpm visual:fixtures` end-to-end;
       judge each baseline against `docs/specs/20-visual-language.md`
       + per-biome briefs in `docs/BIOMES/*.md`; commit the locked
       baselines. ANY drift = a code bug, not a baseline update.
+      Ran `pnpm visual:fixtures` → 49 captures (7 fixtures × 7
+      viewports including pixel-7 / iphone-14 / ipad-mini /
+      foldable / ultrawide). Each spot-checked against the spec.
+      Ledger: `docs/visual-fixtures/v0.11/judgement.md`. All 49
+      verdict OK. The substrate baselines
+      (tests/harness/__screenshots__/procmesh-*.png — 30 shots,
+      biome-*.png) lock M_V11.PROCMESH + biome palette via
+      `pnpm test:browser` (runs every CI build).
 - [x] M_V11.RELEASE.LADDER — PR #89 opened against main
       (https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/pull/89).
       Branch pushed at fingerprint 1d5d109 with ~30 forward
