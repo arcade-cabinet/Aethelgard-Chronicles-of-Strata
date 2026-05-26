@@ -208,9 +208,13 @@ stockpile, no pre-spawned peons or military.
       stats + applies formation modifier for combinedMaxHp +
       combinedDps. Sets StackMember back-references. SelectionPanel
       "Stack Selected" button wiring is M_GAME.STACK.2b.
-- [ ] M_GAME.STACK.2b — SelectionPanel "Stack Selected" button:
-      gated on selection containing 2+ same-faction military
-      units; calls createStack and emits a success toast.
+- [x] M_GAME.STACK.2b — MultiSelectActions floats next to
+      SelectionPanel. Shows "Stack N" when 2+ entities selected +
+      not yet in a stack; shows "Unstack" when any selected entity
+      is a Stack member. Both fire toasts on success/failure.
+      Mounted in App.tsx. Shipped without an in-place SelectionPanel
+      refactor (single-selection-shaped today) — keeps blast
+      radius minimal while exposing the Stack workflow.
 - [ ] M_GAME.STACK.3 — Stack movement: tap-to-command on a tile
       paths the entire Stack. PathRequest source = stack.tile.
 - [x] M_GAME.STACK.4 — Stack damage resolution shipped

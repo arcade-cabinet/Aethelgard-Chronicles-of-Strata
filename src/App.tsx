@@ -23,6 +23,7 @@ import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { FactionChips } from '@/hud/FactionChips';
 import { GameOverModal } from '@/hud/GameOverModal';
 import { IdleUnitIndicator } from '@/hud/IdleUnitIndicator';
+import { MultiSelectActions } from '@/hud/MultiSelectActions';
 import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
 import { LoadingScreen } from '@/hud/LoadingScreen';
 import { MatchAgePill } from '@/hud/MatchAgePill';
@@ -301,6 +302,10 @@ function GameSession({
           setBuildContext({ type: ctx.type, onPlaced: () => setBuildContext(null) })
         }
       />
+      {/* M_GAME.STACK.2b — multi-select Stack/Unstack actions. Floats
+          next to the SelectionPanel; visible only when 2+ units are
+          selected (or any selected unit is already in a Stack). */}
+      <MultiSelectActions game={game} />
       {/* M_GAME.BUG.3 — desktop blue drag-select rectangle retired.
           Selection is tap-only now. Multi-select via tap-and-hold-then-
           drag (per OnboardingOverlay's "Commanding military" step) is
