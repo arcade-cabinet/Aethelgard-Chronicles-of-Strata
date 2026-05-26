@@ -298,6 +298,113 @@ each fixture.
   bump per Conventional Commits scope. Goal: ship v0.11.0 by
   end of cycle.
 
+## §8 — Procedural building + unit meshes (M_V11.PROCMESH)
+
+User direction 2026-05-26: "thoroughly review references/procedural_
+buildings.md. Take a look at the designs for the different buildings.
+Take a look at the designs for different units. We could refine that
+work even further and avoid a LOT of problems with things not
+displaying and so on. Obviously they are rough but even rough at a
+baseline they have adornements, details, etc..."
+
+The reference doc bundles r3f primitives (Box/Cylinder/Cone) into
+React components that render WallSegment / Watchtower / Granary /
+Palace / Warehouse / Barracks / Library buildings and Peasant /
+Worker / Warrior / Defender units. Pure-procedural — zero GLB
+dependency. Each carries baseline adornments: faction-colored
+banners + gold trim + battlements + emissive windows + weapon
+racks + decorative doors + shields.
+
+### Why this matters
+
+Three classes of problem the GLB-driven SKINS pipeline has
+historically hit:
+
+1. **Missing-GLB → invisible building** failure mode (the
+   "Town Hall isn't visible" issue we chased via the GLB
+   measurement tool in M_GAME.SCALE.GLB-MEASURE.1).
+2. **Bake-time recolor cost** — per-faction tinting via Skin
+   tints multiplies into the GLB's diffuse, which can wash
+   out the silhouette. Procedural meshes recolor per-mesh by
+   prop change — instant + crisp.
+3. **Adornment dropout under low-LOD bakes** — KayKit / Quaternius
+   GLBs come with a fixed level of detail; primitive composition
+   adds a flagpole / banner / weapon rack at no asset cost.
+
+### Architectural fit
+
+The reference implementation is a r3f component tree (`<group>` +
+`<mesh>` + `<boxGeometry>` etc.). The Aethelgard renderer is
+already r3f, so the components drop in directly. The choice for
+each building type:
+
+- **Always-procedural**: WallSegment / Watchtower / Granary /
+  Barracks / Library / Warehouse — small footprint, high adornment
+  ROI, no GLB equivalent that matches the procedural's banner +
+  trim detail.
+- **GLB-with-procedural-overlay**: TownHall / Wonder — the big
+  hero meshes. The Quaternius / Castle Kit GLB carries the core
+  silhouette; a procedural overlay layers the faction banner +
+  gold trim + battlements on top. Best of both.
+- **Procedural-only**: every faction's *small* support buildings
+  (Farm, House — currently using Quaternius Fantasy Town props
+  that don't carry faction identity).
+
+For units: the GLB roster (KayKit Adventurers + Mystery) stays as
+the primary mesh because the animation rigs are the value-add a
+procedural unit can't easily replace. BUT a procedural-unit fallback
+ships so spawned units NEVER render as empty groups when a mesh
+fails to load — the player sees a Peasant / Worker / Warrior /
+Defender placeholder instead of a missing-mesh hole.
+
+### Deliverables
+
+- **§8.1 PROCMESH.SUBSTRATE** — `src/world/procedural/` directory
+  with one file per building (WallSegment, Watchtower, Granary,
+  Palace, Warehouse, Barracks, Library) and one per fallback
+  unit (Peasant, Worker, Warrior, Defender). Each exports a
+  React component matching the reference's props shape, BUT
+  accepting `factionColor: string` + `accentColor: string` props
+  so the blue + gold accents recolor per-faction.
+- **§8.2 PROCMESH.SKIN-INTEGRATION** — extend the SKINS registry
+  with an optional `proceduralMesh?: 'wall' | 'watchtower' | ...`
+  slot. When set, `FactionBase` + `StructureMesh` prefer the
+  procedural component over the GLB. Existing entries keep their
+  GLB path; new buildings can opt in. The `factionColor` for the
+  procedural component is `skin.zoneBorderColor`.
+- **§8.3 PROCMESH.FALLBACK-UNIT** — `<UnitMesh>` wraps the
+  existing `<AnimatedCharacter>` in a `<Suspense fallback=...>`
+  where the fallback is the procedural unit component matching
+  the unit's role (Peon → Peasant, Builder → Worker, Footman /
+  Knight → Warrior, Pikeman → Defender). Once the GLB finishes
+  loading the rigged mesh replaces the procedural placeholder.
+- **§8.4 PROCMESH.ADORNMENT-LAYER** — for the GLB-with-overlay
+  buildings (TownHall + Wonder), add `<ProceduralAdornments>`
+  that mounts a faction banner mesh + gold trim ring + flagpole
+  next to the GLB. Gated by `skin.proceduralAdornments?: true`
+  so existing TownHall/Wonder entries opt-in. This is the
+  cleanest way to add faction identity to the Quaternius RTS
+  meshes without re-baking them.
+- **§8.5 PROCMESH.HARNESS** — visual harness for each procedural
+  building + unit (Vitest browser test, screenshot baselines)
+  so future renderer / material changes don't silently regress
+  the adornments.
+- **§8.6 PROCMESH.SCALE** — pick scales that fit a hex tile by
+  default (the reference uses 1.3 wide for WallSegment — already
+  tile-sized). For buildings larger than a hex (Palace), the
+  `scale` prop is wired through SKINS as the per-faction
+  override. The measurement tool from M_GAME.SCALE.GLB-MEASURE.1
+  is bypassed for procedural meshes since the bbox is known at
+  source.
+
+### What this does NOT do
+
+- Does NOT replace the GLB pipeline. The two coexist; SKINS
+  chooses per building type.
+- Does NOT change game balance. Visual-only.
+- Does NOT add per-LOD billboards. The procedural meshes are
+  already lower poly than the GLBs they fall back from.
+
 ## Scope NOT in v0.11
 
 - Single-Squad camera mode (per `docs/specs/200-genre-commitment.md`

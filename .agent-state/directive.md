@@ -315,9 +315,77 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 - [ ] M_V11.VISUAL.LOCK — Post-§2, run `pnpm visual:fixtures`,
       judge against `docs/specs/20-visual-language.md` briefs,
       commit baselines.
-- [ ] M_V11.RELEASE.LADDER — Land each § as its own PR.
-      release-please auto-stages version bumps. Target: ship
-      v0.11.0 by end of cycle.
+- [ ] M_V11.RELEASE.LADDER — One long-running branch
+      `feat/v0.11-cycle` accumulates the v0.11 work as discrete
+      commits. Per ~/.claude/CLAUDE.md autonomy doctrine (and
+      user direction 2026-05-26): NO per-commit PRs — that
+      churn pattern is forbidden. Open ONE PR for the whole
+      cycle when §1-§8 + review trio + visual lock are all done.
+      release-please cuts the version on merge.
+
+### §8 — Procedural building + unit meshes (M_V11.PROCMESH)
+
+Per user direction 2026-05-26: review of
+`references/procedural_buildings.md` shows a bundle of pure-r3f
+primitives that render buildings + units with baseline adornments
+(banners, gold trim, battlements, weapon racks, emissive windows).
+The current GLB pipeline has missed adornments + has "missing GLB
+→ invisible building" failure modes. PRD-v0.11 §8 added.
+
+- [ ] M_V11.PROCMESH.SUBSTRATE — `src/world/procedural/` directory
+      with one .tsx per building (WallSegment, Watchtower,
+      Granary, Palace, Warehouse, Barracks, Library) + one per
+      fallback unit (Peasant, Worker, Warrior, Defender). Each
+      accepts `factionColor` + `accentColor` props so the blue
+      + gold accents recolor per-faction.
+- [ ] M_V11.PROCMESH.SKIN-INTEGRATION — SKINS gains an optional
+      `proceduralMesh?: 'wall' | 'watchtower' | ...` slot;
+      FactionBase + StructureMesh prefer the procedural
+      component when set. GLB path unchanged for entries that
+      don't opt in.
+- [ ] M_V11.PROCMESH.FALLBACK-UNIT — `<UnitMesh>`'s `<Suspense>`
+      fallback becomes the procedural unit matching the role.
+      Spawned units never render as empty groups even when a
+      GLB fails to load.
+- [ ] M_V11.PROCMESH.ADORNMENT-LAYER — `<ProceduralAdornments>`
+      mounts a faction banner + gold trim ring + flagpole next
+      to a GLB. Gated by `skin.proceduralAdornments?: true` for
+      Town Hall + Wonder.
+- [ ] M_V11.PROCMESH.HARNESS — visual harness (Vitest browser,
+      screenshot baselines) per procedural building + unit so
+      adornments don't silently regress on future material /
+      renderer changes.
+- [ ] M_V11.PROCMESH.SCALE — wire `scale` prop through SKINS
+      for the few procedural buildings larger than a hex
+      (Palace). Smaller procedural meshes (already hex-sized in
+      source) bypass the M_GAME.SCALE.GLB-MEASURE.1 tool since
+      their bbox is known at compile time.
+
+---
+
+## Workflow — long-running branch + forward review
+
+Per user direction 2026-05-26 + ~/.claude/CLAUDE.md autonomy
+doctrine. **PR-per-commit is forbidden** (the v0.11 §1-§6 +
+early §3 pattern of opening a fresh PR per commit was a
+workflow regression).
+
+**The pattern:**
+
+1. One long-running branch per cycle: `feat/v0.11-cycle`.
+2. Commit freely on it; push regularly so the remote stays in
+   sync (no rebase footgun).
+3. After each commit, dispatch the review trio
+   (`comprehensive-review:code-reviewer` + `security-auditor`
+   + `code-simplifier`) in parallel + background, scoped to
+   that commit's diff. Don't block — start the next item.
+4. Findings from the previous review get folded into the next
+   FORWARD commit. Never amend a reviewed commit. Never make
+   a "fix-review" commit.
+5. ONE pull request opens when the cycle's §-blocks are all
+   shipped + reviews absorbed + visual baselines locked. That
+   PR squash-merges to main; release-please cuts the version
+   bump.
 
 ---
 
