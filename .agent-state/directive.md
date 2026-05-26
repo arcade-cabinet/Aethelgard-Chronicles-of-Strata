@@ -1,14 +1,62 @@
 # Continuous Work Directive — Aethelgard: Chronicles of Strata
 
-**Status:** ACTIVE — v0.9 cycle (v0.8 released as v0.1.16 / PR #44)
-**Cycle:** v0.9 — visual baseline cross-platform lock + AI WonderEvaluator + HUD N-player win-loss + save-load N-player e2e + 4X mapgen balance + docs cycle
-**Main-thread owner:** Claude (this session — drives the items in MAIN-THREAD ACTIVE QUEUE below)
-**v0.9 background owner:** `v0_9_grinder` agent on `.claude/worktrees/agent-7222` — drives the v0.9 CYCLE work-units near line 461
+**Status:** ACTIVE — v0.10 cycle (HUD overhaul / cinematic design language)
+**Cycle:** v0.10 — pivot from feature-add to design-language coherence. Mobile-first (Android + iOS via Capacitor) testing posture. Semantic-token + dual-theme design system. mean-streets-style fixture battery + Maestro mobile e2e. Magic MCP distilled into reusable primitives.
+**Main-thread owner:** Claude (this session)
+**Active branch:** `feat/hud-overhaul-responsive-shell` (accumulating; PR'd in chunks).
+**v0.9 closeout:** PR #60 (cycle) + PR #61 (docs + nplayer test fix) + PR #62 (SystemMenu drawer + Tailwind v4) + PR #64 (TitleScreen) — released through v0.1.19
 **v0.8 closeout:** PR #44 — 13 v0.8 work-units shipped (v0.1.16)
 **v0.7 closeout:** PR #31 — substrate→player polish + 2 CRITICAL fixes + 11 work-units shipped (v0.1.11)
 **v0.6 closeout:** PR #29 — portals + diplomacy + MYTH events + 4X victory + 6 v0.5 carryovers shipped
 **v0.5 closeout:** PR #27 — N-player + barbarian-camp pivot full centerpiece
-**v0.4 closeout:** [`docs/MILESTONES.md`](../docs/MILESTONES.md) v0.4 entry (released as v0.1.4 — PR #10 + #14 + #15 + #16)
+**v0.4 closeout:** [`docs/MILESTONES.md`](../docs/MILESTONES.md) v0.4 entry (released as v0.1.4)
+
+## Cycle-shift principles (the meta — read every session start)
+
+1. **Mobile-first or it doesn't ship.** Aethelgard releases to Android + iOS via Capacitor. GitHub Pages is the testing surface, NEVER the permanent target. Every interactive must be reachable by tap with `aria-label` + `id`/`data-testid`. Keyboard nav is a quiet desktop convenience at best and MUST NOT be the only path.
+2. **Better is better. Simpler is not.** When a feature feels heavy, **decompose into subpackages** — never strip. Move desktop-keyboard nav into `src/hud/desktop-keyboard/` as an opt-in subpackage rather than evicting it. Move halo-pulse + hero-strip + step-progress-pills into `src/hud/primitives/` rather than inlining them everywhere.
+3. **Magic MCP is a teacher, not a sketch generator.** Every Magic call returns library-composition patterns (Tailwind v4 `@theme`, declarative `@react-three/postprocessing`, Radix primitive composition, framer's `useReducedMotion`/`AnimatePresence` modes, lucide as a swap-in icon system, `oklch` color spaces, CVA variants). DISTILL those into the Aethelgard design language; don't just paste icons per-page. See `magic-mcp-prompt-protocol` memory.
+4. **Design language has ONE source of truth.** Semantic tokens (`--color-surface`, `--color-on-surface-muted`, `--color-treasure`) in `src/styles.css`. Every component reads SEMANTIC names; never raw hex inline. Dual theme via `[data-theme='light']` cascade. See `mean-streets/src/ui/theme/tokens.css` as the discipline reference.
+5. **Visual verification, every UI commit.** Before claiming a HUD touch is done: boot dev, capture via the fixture battery (mean-streets pattern), look at the screenshot in a real Chromium, compare against a named reference (mean-streets / Civ VI / the prior battery), fix what looks wrong BEFORE the user has to. When the user has to point out "you're not running a chrome instance" that's a process bug equal to a missed test.
+6. **Distill EVERY major learning into this directive AND the cycle PRD.** Don't just memory-write; propagate. Future sessions read these files first.
+
+## v0.10 work-units (dependency-ordered)
+
+### v0.10.A — Design language foundation (LANDED on accumulating branch)
+
+- [x] M_HUD.SHELL.1 — Universal SystemMenu hamburger + slide drawer (PR #62 merged, in main)
+- [x] M_HUD.SHELL.2 — Cinematic TitleScreen + PBR shader hero (PR #64 — auto-merging)
+- [x] M_HUD.SHELL.3 — NewGameModal "Forge Your Realm" (local commit, on accumulating branch)
+- [x] M_HUD.SHELL.4 — OnboardingOverlay tome-by-candlelight stepper (local commit)
+- [x] M_HUD.SHELL.5 — GameOverModal cinematic terminal screen (local commit)
+- [x] M_HUD.SHELL.6 — Semantic-token design language + dual theme + `useTheme()` (local commit)
+- [x] M_HUD.SHELL.6.kbd — Retire kbd-hint UI from TitleScreen + OnboardingOverlay (mobile-first; local commit)
+
+### v0.10.B — Design system propagation (NEXT)
+
+- [ ] M_HUD.SHELL.7 — TOKEN SWEEP: replace every inline hex / `--color-obsidian` legacy alias in `src/hud/*.tsx` + `src/world/*.tsx` + `src/render/*.tsx` with semantic `var(--color-surface)` etc names. Audit by `grep -rn "#[0-9a-f]\{6\}" src/` — every hit either becomes a semantic var OR gets justified as a tier-1-game-color (faction banners, biome tints) and moved to its own token.
+- [ ] M_HUD.SHELL.8 — PBR shader reads CSS vars: TitleBackground uniforms (`uColorObsidian`, `uColorGold`, `uColorAccent`) re-read from computed style on `aethelgard:theme-changed` event so light theme actually swaps the dome palette to parchment + copper + harbor-blue.
+- [ ] M_HUD.SHELL.9 — Hardcoded gradient extraction: the gold-cream-amber-ember wordmark gradient, the gold-button gradient, the modal halo radial — extract into named CSS custom-properties (`--gradient-treasure-wordmark`, `--gradient-treasure-button`, `--halo-treasure-radial`) defined in `src/styles.css` per theme.
+- [ ] M_HUD.SHELL.10 — Distilled primitives subpackage: `src/hud/primitives/` exports `<HeroBanner>`, `<Halo>`, `<TreasureButton>`, `<SectionCard>`, `<StepProgressDots>`, `<IconButton>`. Every existing HUD page (TitleScreen, NewGameModal, OnboardingOverlay, GameOverModal, SystemMenu) refactored to consume these — no more per-page reimplementation.
+
+### v0.10.C — Mobile-first testing posture (sibling-game-modeled)
+
+- [ ] M_HUD.SHELL.11 — Maestro flow battery: `.maestro/config.yaml` + `.maestro/smoke.yaml` + `.maestro/full-game.yaml` + `.maestro/menu-to-onboarding.yaml`. Modeled on `~/src/arcade-cabinet/mean-streets/.maestro/`. Every interactive surface gets an `id=` Maestro can target. `tapOn: { id: "menu-new-game" }` style — no kbd anywhere.
+- [ ] M_HUD.SHELL.12 — Visual fixture battery: `scripts/capture-aethelgard-fixtures.mjs` modeled on `~/src/arcade-cabinet/mean-streets/scripts/capture-visual-fixtures.mjs`. Boots vite, sweeps Playwright across desktop + Pixel 7 + iPhone 14 + iPad Mini, screenshots each major screen by `data-testid`, writes per-viewport PNGs.
+- [ ] M_HUD.SHELL.13 — `?fixture=<name>` URL routing + `<FixtureApp>`: modeled on `~/src/arcade-cabinet/mean-streets/src/test/FixtureApp.tsx`. Each screen renders in isolation with mocked props so the fixture battery captures it without driving the whole title→new-game→onboarding flow.
+- [ ] M_HUD.SHELL.14 — `aria-label` + `data-testid` audit on every interactive in `src/hud/` and `src/world/TileInteraction.tsx`. Failing the audit = a Maestro flow can't reach the action without keyboard. Tests in `tests/e2e/` and `tests/browser/` migrate to query-by-aria-label / by-testid + simulate `click`/`tap` instead of keyboard.
+
+### v0.10.D — Desktop-keyboard subpackage (decompose, don't strip)
+
+- [ ] M_HUD.SHELL.15 — `src/hud/desktop-keyboard/`: opt-in subpackage that owns kbd nav (the Enter/N/C/S/M shortcuts from TitleScreen + the arrow-key step nav from OnboardingOverlay + the kbd-hint popover UI). Re-mountable per-viewport — only mounts when `viewport.class === 'desktop' || 'ultraWide'`. The previous-commit "strip" becomes a clean extraction.
+
+### v0.10.E — Player journey continuation (per-page Magic + token sweep)
+
+- [ ] M_HUD.SHELL.16 — SelectionPanel: in-game touch+drag command surface. Touch-friendly icons, faction-colored selection ring, build-menu CTA on the right.
+- [ ] M_HUD.SHELL.17 — DiscoveriesPanel: research-tree dialog with tier sections, status pips, lucide icons per discovery archetype.
+- [ ] M_HUD.SHELL.18 — SettingsModal: stacked sections (Audio buses / Display / Hotkeys [desktop-only] / Accessibility / About) with the new SectionCard primitive.
+- [ ] M_HUD.SHELL.19 — ScoringScreen: 4X mode terminal with per-category scoring (military / economic / scientific / diplomatic) + a winner reveal.
+- [ ] M_HUD.SHELL.20 — In-game HUD shell composition pass: ResourceBar / FactionChips / WinPill / BottomShelf (Build / EndTurn) layout coherent across desktop / foldable / phone-landscape / phone-portrait. The OnePlus Open overcrowding case (the original M_HUD.SHELL trigger) gets a screenshot regression test in the fixture battery.
 
 ## MAIN-THREAD ACTIVE QUEUE — things THIS session drives (not grinder)
 
