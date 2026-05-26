@@ -22,7 +22,7 @@ import { EraProgressPill } from '@/hud/EraProgressPill';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { FactionChips } from '@/hud/FactionChips';
 import { GameOverModal } from '@/hud/GameOverModal';
-import { IdlePeonsIndicator } from '@/hud/IdlePeonsIndicator';
+import { IdleUnitIndicator } from '@/hud/IdleUnitIndicator';
 import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
 import { LoadingScreen } from '@/hud/LoadingScreen';
 import { MatchAgePill } from '@/hud/MatchAgePill';
@@ -372,7 +372,7 @@ function GameSession({
       <ZoneFlipPulse game={game} />
       {/* M_POLISH2.MODES.44b — coexistence only: screenshot the realm. */}
       <ScreenshotButton game={game} />
-      <IdlePeonsIndicator game={game} />
+      <IdleUnitIndicator game={game} />
       <BuildQueueStrip game={game} />
       <AchievementWatcher game={game} />
       <PersistAchievements game={game} persistence={persistence} />

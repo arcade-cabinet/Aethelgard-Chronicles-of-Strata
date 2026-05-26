@@ -269,11 +269,14 @@ stockpile, no pre-spawned peons or military.
       are autonomous; the indicator is misleading. Replace with an
       "Idle Military Units" indicator that lights up when a footman /
       siege unit has no orders.
-- [ ] M_HUD.SHELL.16c — SelectionPanel: add an action row with "Next
-      Idle Unit" + per-unit-type "Select All [Type]" buttons that
-      pull from the ECS military-unit query. Tap-driven, mobile-first;
-      replaces the drag-select model entirely. Hidden when no military
-      units exist.
+- [x] M_HUD.SHELL.16c — IdleUnitIndicator shipped (replaces
+      IdlePeonsIndicator). Counts idle player military (and idle
+      MANUAL-mode peons once M_GAME.MODE.PEON.1 lands). Tap-to-
+      cycle dispatches `aethelgard:focus-tile` so the camera tweens
+      to the next idle unit via M_GAME.BUG.11. SelectionPanel
+      "Select All [Type]" multi-select is a separate sub-item
+      M_HUD.SHELL.16d (depends on M_GAME.MODE.PEON.4 since
+      "select all peons" overlaps).
 - [x] M_GAME.BUG.6 — findSelectableAtTile now skips peons (Unit.unitType
       === 'Peon'). Taps on peon tiles fall through to building / tile
       interaction. Peons are autonomous; their info is irrelevant.
