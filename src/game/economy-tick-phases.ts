@@ -19,12 +19,16 @@ import {
   type BuildingType,
   FACTIONS,
   type Faction,
+  AssignedJob,
   FactionBase,
   FactionTrait,
   Health,
   HexPosition,
+  StackMember,
   Unit,
 } from '@/ecs/components';
+import type { Entity } from 'koota';
+import { createStack } from './stacking';
 import { aiSystem } from '@/ecs/systems/ai';
 import { animationSystem } from '@/ecs/systems/animation';
 import { buildSystem } from '@/ecs/systems/build';
@@ -198,6 +202,48 @@ function tickEnemyAtTownHallToast(game: GameState): void {
   }
 }
 
+/**
+ * M_V11.STACK.WORK-CREW — auto-form Work Crew stacks for player
+ * peons that converged on the same harvest tile. Per
+ * docs/specs/201-stacking-and-formations.md: "auto-formed when
+ * 2+ same-faction peons end a tick on the same harvest tile."
+ *
+ * Sweep:
+ *   1. Bucket player peons that are NOT already in a stack by
+ *      hex tile + HARVESTING state (the auto-form trigger).
+ *   2. Any bucket with >=2 peons → createStack. The stack's
+ *      defaultFormationFor selects 'work-crew' for peon-only
+ *      compositions; the harvest-rate buff is applied
+ *      separately (M_V11.STACK.WORK-CREW.BUFF, deferred — the
+ *      Stack's existence is the substrate the buff hooks onto).
+ *
+ * Cheap: O(peons + tiles_with_peons). Runs once per tick in the
+ * turn-gated portion of tickTerrainPhase.
+ */
+function autoFormWorkCrews(game: GameState): void {
+  const buckets = new Map<string, Entity[]>();
+  for (const e of game.world.query(Unit, FactionTrait, HexPosition, AssignedJob)) {
+    if (e.get(FactionTrait)?.faction !== 'player') continue;
+    if (e.get(Unit)?.unitType !== 'Peon') continue;
+    if (e.has(StackMember)) continue;
+    if (e.get(AssignedJob)?.state !== 'HARVESTING') continue;
+    const hex = e.get(HexPosition);
+    if (!hex) continue;
+    const key = `${hex.q},${hex.r}`;
+    let bucket = buckets.get(key);
+    if (!bucket) {
+      bucket = [];
+      buckets.set(key, bucket);
+    }
+    bucket.push(e);
+  }
+  for (const bucket of buckets.values()) {
+    if (bucket.length < 2) continue;
+    // Cap to MAX_STACK_SIZE (8) handled by createStack itself.
+    createStack(game, bucket.slice(0, 8));
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Phase 2 — Command: AI decisions, spawning, stance + pathFollow.
 // AI/spawn/stance are turn-gated; pathFollow always runs.
@@ -262,6 +308,7 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
       maxRoamRadius: Math.min(60, 14 + Math.floor(game.clock.elapsed / 20)),
     });
     harvestSystem(game.world, delta);
+    autoFormWorkCrews(game);
     buildSystem(game.world, game.buildSites, delta);
     // Credit first-House completion per faction (cheap O(buildings) sweep).
     if (

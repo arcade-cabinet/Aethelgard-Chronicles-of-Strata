@@ -212,9 +212,16 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 - [ ] M_V11.STACK.RENDER — src/world/StackRender.tsx: formation
       badge SVG + member-mesh clustering per formation visual.
       UnitHexOutline thicker ring for stacks.
-- [ ] M_V11.STACK.WORK-CREW — Peon Work Crew auto-form on 2+
-      peons converging on harvest tile. +20%/peon-up-to-4
-      harvest buff.
+- [x] M_V11.STACK.WORK-CREW — `autoFormWorkCrews` sweep added
+      to `tickTerrainPhase` (post-harvest, pre-build).
+      Buckets player peons not already in a stack by tile +
+      HARVESTING state; any bucket >=2 → createStack (which
+      picks 'work-crew' via defaultFormationFor for peon-only
+      compositions). The +20%/peon-up-to-4 harvest-rate buff
+      itself is a separate hook (M_V11.STACK.WORK-CREW.BUFF,
+      deferred — Stack existence is the substrate the buff
+      attaches to; harvest-system tap-in follows once the
+      visual badge ships in STACK.RENDER).
 - [ ] M_V11.STACK.MOB-RABBLE — Mob auto-stack into Rabble on
       tile convergence (max 6 mobs per stack).
 - [ ] M_V11.STACK.PANEL — SelectionPanel "Switch Formation"
