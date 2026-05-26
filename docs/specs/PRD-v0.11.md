@@ -470,6 +470,70 @@ buildings (Wonder might be 1.6× normal, etc.).
 - Per-Stack mesh authoring (member meshes cluster per formation;
   no new GLBs).
 
+## §9 — Lifted deferrals (user direction 2026-05-26)
+
+Per user "EVERYTHING in scope, NOTHING deferred", §9 brings the
+previously-deferred sub-items back as actionable work:
+
+- **STACK.WORK-CREW.BUFF** — harvest +20%/peon cap +80% (4
+  members) (`src/ecs/systems/harvest.ts` workCrewMultiplier).
+- **STACK.PANEL.MULTI-STACK** — `setStackFormation` applies to
+  every selected Stack, not just the primary.
+- **SEL.PEON-VERBS.SUBMENUS** — per-class verb surfaces for
+  mixed selections (Stance — Military (N), Take peons (N)).
+- **SEL.ALL-OF-TYPE.BIOME** — biome-scoped peon selector.
+- **PROCMESH.WALL-VARIANTS** — hasGate + isCorner variants on
+  the procedural Wall; deleted dead gate-stone + wall-stone-
+  corner GLBs.
+
+## §10 — Polish, UI/UX, HUD crowding
+
+The visual + a11y + density gates between PR open and merge:
+
+- **HUD-AUDIT** — multi-viewport screenshot battery (60 captures
+  via `JOURNEY=1 pnpm test:e2e:multiview`).
+- **HUD-CROWDING** — WinConditionPill responsive top offset;
+  SelectionPanel maxHeight clamp + overflow.
+- **SCREENSHOT-BATTERY** — 10-shot journey-capture extended with
+  long-sim (90s mobs visible) + procedural-buildings zoom.
+- **VISUAL-COMPARE** — judgement ledger at
+  `docs/screenshots/v0.11/judgement.md`.
+- **A11Y-SWEEP** — axe-core extended to SelectionPanel.
+- **MOBILE-MAESTRO** — selector-level validation of every
+  `.maestro/*.yaml`; SystemMenu items now have id+aria-label;
+  nplayer-setup.yaml rewritten for v0.11 2-faction setup.
+- **SELECTION-PANEL-DENSITY** + **ACCORDION** — maxHeight
+  + native `<details>` for Build + Research lists.
+- **STACKRENDER-DEDUP** — formation badge y=1.45 sits under
+  HealthBillboard y=2.1.
+- **LOOT-FX** — spinning gem above un-collected LootCache.
+- **CAMP-MOB-VISUAL** — CAMP_COLORS 6-step hue band.
+- **PROCMESH-FACTION-CROSS** — 9 buildings × enemy palette
+  visual baselines.
+- **PEON-CTA-DECAY** + **WAYPOINT-RESPONSIVENESS** + **BUILD-
+  MENU-CTA** + **FOCUS-TILE-CALLERS** — verified.
+- **JOURNEY-CAMERA-EVENTS** — `aethelgard:focus-town-hall`
+  forward + 3 follow-up items (BUILD-MENU-CTA / JOURNEY-
+  CAPTURE-ZOOM / CAMERA-TWEEN-RACE) tracked + resolved.
+
+## §11 — End-to-end verification gate
+
+Hard merge gates:
+
+- **LOCAL-PLAYTHROUGH** — automated proxy via
+  `tests/e2e/ai-vs-ai-playthrough.spec.ts` (300s sim, both
+  modes, webm + per-5s frames).
+- **AIVAI-200S-BAKE** — `tests/unit/aivai-200s-bake.test.ts`
+  (6 invariants over 400 ticks).
+- **SAVE-LOAD-MID-MATCH** — `tests/unit/save-load-mid-match.test.ts`
+  (90s sim → serialize → deserialize → byte-identical
+  invariants).
+- **CAMERA-SANITY** — `tests/unit/camera-sanity.test.ts`
+  (clamp helper + bound math).
+- **PERF-MOBILE** — `tests/e2e/perf-mobile-trace.spec.ts`
+  (Pixel-7 viewport, 660-frame rAF sample, p95 < 40ms gate;
+  current numbers mean 14ms p95 37ms).
+
 ## Risk register
 
 | Risk | Likelihood | Mitigation |

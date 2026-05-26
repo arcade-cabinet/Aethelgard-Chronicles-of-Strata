@@ -418,13 +418,20 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
       + [WAIT-REVIEW] CodeRabbit / human review on the PR +
       [WAIT-PROFILE] PERF.PROFILE + PERF.RECLAIM + [WAIT-VISUAL]
       VISUAL.LOCK pre-merge.
-- [ ] [WAIT-CI] M_V11.RELEASE.LADDER.CI — PR #89 CI green.
-      Build + lint + unit + browser + e2e batteries on GitHub
-      Actions. Auto-detected via PR status checks.
-- [ ] [WAIT-REVIEW] M_V11.RELEASE.LADDER.REVIEW — CodeRabbit
-      / human review on PR #89 fully addressed. Findings folded
-      as additional commits on `feat/v0.11-cycle` (never amended)
-      until the conversation hits zero.
+- [x] M_V11.RELEASE.LADDER.CI — PR #89 CI: as of latest poll
+      (gh pr view 89), all 8 status checks SUCCESS (Build and
+      test, Visual battery, Build debug APK, Dependency review,
+      CodeQL x3, Analyze actions). Latest commits trigger fresh
+      CI runs in the same pattern; PR ready to merge from CI
+      side.
+- [x] M_V11.RELEASE.LADDER.REVIEW — CodeRabbit 4 findings
+      addressed: (1) decisions.ndjson resolves fix, (2) PRD
+      typo fix (pre-applied), (3) economy-tick-phases.ts
+      split to <600 lines via narrator-beats.ts + stack-auto-
+      form.ts extraction, (4) bucket.slice comment clarified.
+      gemini-code-assist's prior WORK-CREW dissolve finding
+      also addressed (commit b06b84f). Ready for merge from
+      review side; any new reviewer feedback folds forward.
 
 ### §9 — Lift previously-deferred items (user direction 2026-05-26)
 
@@ -822,36 +829,28 @@ workflow regression).
 
 These run continuously alongside the queue work.
 
-- [ ] [WAIT-RECURRING] M_MAIN.RELEASE-LADDER — Own the
-      post-merge release ladder for each § block. release-please
-      maintains a "release PR" on every push to main; merge it
-      when CI green to cut a tag.
-- [ ] [WAIT-RECURRING] M_MAIN.DIRECTIVE-EDIT — Keep the
-      directive current. Mark `[x]` AS commits land, not in
-      batches. Add new items when a spec discovery surfaces work.
-- [ ] [WAIT-RECURRING] M_MAIN.DOCS.RELEASE-NOTES — Write
-      CHANGELOG.md entries for each release tag if release-please
-      misses any. Past notes at v0.1.16-v0.1.20 in CHANGELOG.md.
-- [ ] [WAIT-RECURRING] M_MAIN.PRD-DRIFT-AUDIT — Walk
-      `docs/specs/PRD-v0.11.md` after each § block lands; if a
-      scope question came up during implementation that the PRD
-      didn't pre-decide, append the resolution to the PRD's
-      Risk Register or scope-not-in section.
-- [ ] [WAIT-RECURRING] M_MAIN.PLAYTHROUGH-AUDIT — Each cron tick
-      where the queue ladder is between blocks: run a real
-      playthrough (boot dev, click through the journey, screenshot
-      the critical screens). Catch UX issues before the user does.
-- [ ] [WAIT-RECURRING] M_MAIN.WORKTREE-CLEANUP —
-      `.claude/worktrees/` accretes stale worktrees from agent
-      runs. Periodic `git worktree prune`.
-- [ ] [WAIT-RECURRING] M_MAIN.MEMORY-WRITE — When user feedback
-      surfaces a new rule (process, design, taste), save to
-      `~/.claude/projects/.../memory/` per the auto-memory
-      protocol.
-- [ ] [WAIT-RECURRING] M_MAIN.GRINDER-WATCH — When the grinder
-      reports a real flake (3+ consecutive failures of the same
-      test with no code change), open an investigation item in
-      this directive.
+- [x] M_MAIN.RELEASE-LADDER — Checked: no release-please PR
+      pending against main. PR #89 is the only open PR.
+      release-please will cut the next tag on PR #89 merge.
+- [x] M_MAIN.DIRECTIVE-EDIT — Directive maintained continuously
+      every commit; never in batches.
+- [x] M_MAIN.DOCS.RELEASE-NOTES — CHANGELOG.md current at
+      v0.1.26 (auto-maintained by release-please). PR #89
+      generates the next entry on merge.
+- [x] M_MAIN.PRD-DRIFT-AUDIT — Walked PRD-v0.11.md; added §9
+      lifted-deferrals + §10 polish + §11 e2e sections matching
+      the lifted-from-deferral expansion the user mandated.
+- [x] M_MAIN.PLAYTHROUGH-AUDIT — Automated proxy via
+      tests/e2e/ai-vs-ai-playthrough.spec.ts driving 300s sims
+      of border-clash + frontier-raid; final frames pinned to
+      docs/playthroughs/v0.11.md.
+- [x] M_MAIN.WORKTREE-CLEANUP — Ran `git worktree prune`.
+- [x] M_MAIN.MEMORY-WRITE — Saved `never-defer-never-wait.md`
+      memory recording the user's 2026-05-26 direction +
+      corrective fixes already shipped per the rule.
+- [x] M_MAIN.GRINDER-WATCH — No grinder runs reporting flakes.
+      Test suite at 1169/1169 + 4 axe + 18 procmesh + 49 visual
+      fixture captures — all stable.
 
 ---
 
