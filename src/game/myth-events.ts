@@ -76,6 +76,20 @@ export function pickMythEvent(prng: () => number): string | null {
  * instead of throwing. A typo in the random-events dispatcher would
  * have crashed runEconomyTick mid-tick before this guard.
  */
+/**
+ * M_V11.NOTIF.MYTH-EVENT — Chronicler-voice quote per event id,
+ * sourced verbatim from `docs/lore/myth-events.md`. Surfaced in
+ * the toast emitted from `fireMythEvent` so the player gets the
+ * in-fiction explanation, not just a mechanical effect.
+ */
+const MYTH_EVENT_FLAVOR: Record<string, string> = {
+  'solar-eclipse': 'The 7th day of the year was given to the night. Our archers blessed the dark.',
+  'meteor-strike': 'A piece of the sky fell on the Pass; we built a shrine where it landed.',
+  'wildlife-migration': 'The Verdant sent its herd through our valleys. The peons ate well.',
+  'oracle-vision': 'The Mythic spoke to one of our scribes. She has not slept since.',
+  'harvest-festival': 'The strata gave one good year. We did not waste it.',
+};
+
 export function fireMythEvent(
   state: MythEventsState,
   id: string,
@@ -87,6 +101,25 @@ export function fireMythEvent(
   state.active =
     cfg.durationSeconds > 0 ? { id, expiresAtSeconds: nowSeconds + cfg.durationSeconds } : null;
   state.lastFireSeconds = nowSeconds;
+  // M_V11.NOTIF.MYTH-EVENT — Chronicler-voice toast on every MYTH
+  // event fire. Per-event dedup id so a re-fire (which can happen
+  // for non-active events like harvest-festival) gets a fresh
+  // toast slot rather than replacing an older one of a different
+  // event. Focus omitted — most MYTH events are realm-wide, not
+  // tile-scoped.
+  if (typeof window !== 'undefined') {
+    const flavor = MYTH_EVENT_FLAVOR[id] ?? '';
+    window.dispatchEvent(
+      new CustomEvent('aethelgard:toast', {
+        detail: {
+          id: `myth-event-${id}-${Math.floor(nowSeconds)}`,
+          tone: 'warning',
+          title: `The strata speak — ${id.replace(/-/g, ' ')}`,
+          description: flavor,
+        },
+      }),
+    );
+  }
   return id;
 }
 
