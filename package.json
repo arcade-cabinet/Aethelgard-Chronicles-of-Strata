@@ -37,6 +37,7 @@
     "test:e2e:visual": "VISUAL=1 playwright test",
     "test:e2e:update": "VISUAL=1 playwright test --update-snapshots",
     "test:e2e:journey": "JOURNEY=1 playwright test",
+    "visual:fixtures": "node scripts/capture-aethelgard-fixtures.mjs",
     "test:maestro": "maestro test .maestro/smoke.yaml",
     "test:maestro:all": "maestro test .maestro/",
     "test:maestro:menu": "maestro test .maestro/menu-to-onboarding.yaml",
