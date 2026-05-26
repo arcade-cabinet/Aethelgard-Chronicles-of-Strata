@@ -1,15 +1,45 @@
 import { describe, expect, it } from 'vitest';
 import { FactionTrait, HexPosition, PathQueue } from '@/ecs/components';
+import { createCharacter } from '@/entities/character-factory';
 import { moveUnit, placeBuilding } from '@/game/commands';
 import { startGame } from '@/game/game-state';
 
 const SEED = 'ancient-silver-forest';
 
+// M_V11.OPEN.SPAWN — playerPawn now points at the Town Hall entity
+// (no Movement trait), so moveUnit-on-playerPawn is a no-op by
+// design. These tests spawn a Peon explicitly to exercise moveUnit.
+function spawnPlayerPeon(game: ReturnType<typeof startGame>) {
+  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+  // Find a walkable neighbor of the Town Hall for the peon.
+  const dirs: ReadonlyArray<readonly [number, number]> = [
+    [1, 0],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [0, -1],
+    [1, -1],
+  ];
+  for (const [dq, dr] of dirs) {
+    const tile = game.board.tiles.get(`${tq + dq},${tr + dr}`);
+    if (tile?.walkable) {
+      return createCharacter({
+        world: game.world,
+        role: 'Peon',
+        q: tile.q,
+        r: tile.r,
+        level: tile.level,
+        selected: false,
+      });
+    }
+  }
+  throw new Error('no walkable neighbor of Town Hall');
+}
+
 describe('command API — faction parameter (M8.3)', () => {
   it('moveUnit moves a unit owned by the issuing faction', () => {
     const game = startGame(SEED);
-    // the player pawn is player-owned; a player-issued move should plan a path
-    const pawn = game.playerPawn;
+    const pawn = spawnPlayerPeon(game);
     const hex = pawn.get(HexPosition);
     expect(hex).toBeDefined();
     // find any reachable tile via the nav graph
@@ -25,8 +55,7 @@ describe('command API — faction parameter (M8.3)', () => {
 
   it('moveUnit refuses a unit not owned by the issuing faction', () => {
     const game = startGame(SEED);
-    // the player pawn issued by the enemy faction — must be rejected
-    const pawn = game.playerPawn;
+    const pawn = spawnPlayerPeon(game);
     const hex = pawn.get(HexPosition);
     const startKey = `${hex?.q},${hex?.r}`;
     const neighbours = game.navGraph.get(startKey);

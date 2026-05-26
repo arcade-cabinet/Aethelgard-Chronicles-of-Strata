@@ -54,9 +54,9 @@
     "dirt": { "wood": 0, "stone": 0, "gold": 0 }
   },
   "startingResources": {
-    "wood": 50,
-    "stone": 20,
-    "gold": 20,
+    "wood": 80,
+    "stone": 60,
+    "gold": 0,
     "science": 0,
     "mana": 0,
     "maxSupply": 5

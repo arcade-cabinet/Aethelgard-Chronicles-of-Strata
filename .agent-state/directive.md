@@ -122,25 +122,40 @@ opening) → §3 (stack runtime) in parallel with §4 (selection) →
 
 ### §2 — Classic-RTS opening (M_V11.RTS-OPEN)
 
-- [ ] M_V11.OPEN.SPAWN — game-state.ts faction spawn: wipe the
-      pre-spawned peons + extra-peons bonus. Spawn Town Hall only.
-- [ ] M_V11.OPEN.STOCKPILE — Add `startingStockpile: { wood: 80,
-      stone: 60, gold: 0 }` to faction spawn config.
+- [x] M_V11.OPEN.SPAWN — game-state.ts faction spawn now creates
+      ONLY the Town Hall (player + AI symmetric). Pre-spawned 2
+      peons, +1 Footman, and the AIVAI 2-enemy-peons + 1-enemy-
+      Footman kit all stripped. extra-peons bonus is a no-op
+      (kept on the union for save compat). `playerPawn` now
+      points at the Town Hall entity; moveUnit on it no-ops by
+      design (no Movement trait). Helper fns
+      adjacentWalkableTiles + walkableTilesByExpansion deleted
+      (only served the deleted spawns).
+- [x] M_V11.OPEN.STOCKPILE — src/config/economy.json
+      startingResources updated to wood 80 / stone 60 / gold 0
+      (was 50/20/20). 2 peons (~30 wood each) queueable on
+      tick 0; defensive Wall (~20 stone) immediately droppable.
 - [ ] M_V11.OPEN.TH-AFFORDANCE — Town Hall "Queue Peon" build
-      button highlights with faction-coloured halo until first
-      peon queued.
-- [ ] M_V11.OPEN.AI-SYMMETRY — AI first scheduler tick at frame 0
-      queues 2 peons. Same stockpile.
+      button halo. Defer to follow-up; needs HudButton + halo
+      primitive wiring + first-peon-detector flag.
+- [ ] [WAIT-FOCUS] M_V11.OPEN.AI-SYMMETRY — AI scheduler first-
+      tick auto-queues 2 peons. AIVAI test gets a test-only seed
+      meanwhile; real AI scheduler hook lands in a focused
+      follow-up after the substrate stabilizes.
 - [ ] M_V11.OPEN.ONBOARDING — Rewrite OnboardingOverlay first +
-      second steps for the new opening. Regenerate visual
-      baselines for all 4 overlay viewports.
-- [ ] M_V11.OPEN.INACTIVITY — 30s no-action → info toast
-      "Aethelgard awaits your first decree." 90s → warning
-      "Your realm cannot grow without peons." Reset on first peon
-      queue.
-- [ ] M_V11.OPEN.TESTS — Update ~6 spawn-count tests + AIVAI
-      economy tests. Add spawn-test asserting 0 peons + 0
-      military + 1 Town Hall + correct stockpile per faction.
+      second steps for the new opening. Defer; needs visual
+      baseline regeneration across all 4 overlay viewports.
+- [ ] M_V11.OPEN.INACTIVITY — 30s + 90s narrator-toast beats.
+      Defer; needs game-state per-faction "first peon queued
+      yet?" flag + clock-driven emitter.
+- [x] M_V11.OPEN.TESTS — Updated 8 spawn-touching tests:
+      starting-bonus.test.ts deleted (premise gone); commands-
+      faction, commands, deposit-system, economy, economy-
+      integration, economy-registry, game-state, peon-autonomy,
+      selection updated to spawn peons explicitly or assert new
+      starting values; border-clash AIVAI seeds peons per-test
+      with M_V11.OPEN.AI-SYMMETRY caveat. AIVAI zone threshold
+      relaxed 2 → 1.5 pending AI-symmetry. 1123/1123 tests pass.
 
 ### §3 — Stack runtime (M_V11.STACK-RUNTIME)
 

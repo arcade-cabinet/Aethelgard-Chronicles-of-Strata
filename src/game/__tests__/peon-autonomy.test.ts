@@ -11,8 +11,37 @@
  */
 import { describe, expect, it } from 'vitest';
 import { AssignedJob, HexPosition, PeonAutonomy, Unit } from '@/ecs/components';
+import { createCharacter } from '@/entities/character-factory';
 import { findSelectableAtTile, setPeonAutoMode } from '@/game/commands';
 import { startGame } from '@/game/game-state';
+
+// M_V11.OPEN.SPAWN — startGame no longer pre-spawns peons. The
+// PeonAutonomy substrate tests spawn one explicitly to exercise
+// the trait + command.
+function spawnFirstPlayerPeon(game: ReturnType<typeof startGame>) {
+  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+  const dirs: ReadonlyArray<readonly [number, number]> = [
+    [1, 0],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [0, -1],
+    [1, -1],
+  ];
+  for (const [dq, dr] of dirs) {
+    const tile = game.board.tiles.get(`${tq + dq},${tr + dr}`);
+    if (tile?.walkable) {
+      return createCharacter({
+        world: game.world,
+        role: 'Peon',
+        q: tile.q,
+        r: tile.r,
+        level: tile.level,
+      });
+    }
+  }
+  return undefined;
+}
 
 function getFirstPlayerPeon(game: ReturnType<typeof startGame>) {
   for (const e of game.world.query(Unit, PeonAutonomy)) {
@@ -30,6 +59,7 @@ describe('PeonAutonomy + setPeonAutoMode (M_GAME.MODE.PEON.1)', () => {
       difficulty: 'normal',
       eventSeed: 'evt',
     });
+    spawnFirstPlayerPeon(game);
     const peon = getFirstPlayerPeon(game);
     expect(peon, 'a player peon must spawn at game start').toBeDefined();
     if (!peon) return;
@@ -43,6 +73,7 @@ describe('PeonAutonomy + setPeonAutoMode (M_GAME.MODE.PEON.1)', () => {
       difficulty: 'normal',
       eventSeed: 'evt',
     });
+    spawnFirstPlayerPeon(game);
     const peon = getFirstPlayerPeon(game);
     if (!peon) return;
     // Pretend the peon was harvesting something.
@@ -66,6 +97,7 @@ describe('PeonAutonomy + setPeonAutoMode (M_GAME.MODE.PEON.1)', () => {
       difficulty: 'normal',
       eventSeed: 'evt',
     });
+    spawnFirstPlayerPeon(game);
     const peon = getFirstPlayerPeon(game);
     if (!peon) return;
     const pos = peon.get(HexPosition);

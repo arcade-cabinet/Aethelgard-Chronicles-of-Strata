@@ -2,7 +2,7 @@ import type { Entity, World } from 'koota';
 import { AiPlayer } from '@/ai/ai-player';
 import { BALANCE_TOLERANCE, reachableBuildableCount } from '@/core/balance-audit';
 import { type BoardData, generateBoard } from '@/core/board';
-import { getHexKey, hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
+import { getHexKey, hexDistance, parseHexKey } from '@/core/hex';
 import { buildNavGraph, type NavGraph } from '@/core/pathfinding';
 import {
   AssignedJob,
@@ -20,7 +20,6 @@ import { resetAiDirector } from '@/ecs/systems/ai';
 import type { DamageEvent } from '@/ecs/systems/combat';
 import type { ResourceDepositEvent } from '@/ecs/systems/deposit';
 import { createEcsWorld } from '@/ecs/world';
-import { createCharacter } from '@/entities/character-factory';
 import type { Projectile } from './projectiles';
 
 /**
@@ -220,7 +219,15 @@ export interface GameState {
   navGraphDirty: boolean;
   /** The koota ECS world. */
   world: World;
-  /** The player-controlled pawn entity. */
+  /**
+   * M_V11.OPEN.SPAWN — the canonical "you" anchor. Pre-v0.11 this
+   * was the player's first pre-spawned Peon; post-v0.11 (no
+   * pre-spawned units) it points at the player's Town Hall entity
+   * instead. Existing callers (`movePlayerPawn`, save round-trip)
+   * keep working — moveUnit on a non-Movement entity is a no-op,
+   * which is the correct behavior for "the player has no army
+   * yet, so a tap-to-move command does nothing."
+   */
   playerPawn: Entity;
   /**
    * M_PIVOT.N-PLAYER.FACTIONS — runtime faction registry.
@@ -492,66 +499,10 @@ export function baseKeyFor(game: GameState, faction: Faction): string {
   return faction === 'player' ? game.townHallKey : game.enemyBaseKey;
 }
 
-function adjacentWalkableTiles(
-  board: BoardData,
-  q: number,
-  r: number,
-  count: number,
-): Array<{ q: number; r: number; level: number }> {
-  const dirs = [
-    { q: 1, r: 0 },
-    { q: 0, r: 1 },
-    { q: -1, r: 1 },
-    { q: -1, r: 0 },
-    { q: 0, r: -1 },
-    { q: 1, r: -1 },
-  ];
-  const out: Array<{ q: number; r: number; level: number }> = [];
-  for (const d of dirs) {
-    if (out.length >= count) break;
-    const tile = board.tiles.get(getHexKey(q + d.q, r + d.r));
-    if (tile?.walkable) out.push({ q: q + d.q, r: r + d.r, level: tile.level });
-  }
-  return out;
-}
-
-/**
- * BFS expansion of walkable tiles within `maxDepth` rings of (q,r).
- * Coderabbit MAJOR PR #10 05:46Z — the AIVAI starter spawn previously
- * misused `adjacentWalkableTiles(..., N)` as a radius (the 4th arg is
- * a count of immediate neighbours, NOT a ring depth). This helper is
- * the proper radius-aware fallback when the 6 axial neighbours of a
- * blocked base tile are all non-walkable (peninsula / mountain-locked
- * spawn). Returns up to `count` walkable tiles, prefers nearer rings.
- */
-function walkableTilesByExpansion(
-  board: BoardData,
-  q: number,
-  r: number,
-  maxDepth: number,
-  count: number,
-): Array<{ q: number; r: number; level: number }> {
-  const out: Array<{ q: number; r: number; level: number }> = [];
-  const seen = new Set<string>([getHexKey(q, r)]);
-  let frontier: Array<{ q: number; r: number }> = [{ q, r }];
-  for (let depth = 0; depth < maxDepth && out.length < count; depth++) {
-    const next: Array<{ q: number; r: number }> = [];
-    for (const node of frontier) {
-      for (const key of hexNeighbors(node.q, node.r)) {
-        if (seen.has(key)) continue;
-        seen.add(key);
-        const tile = board.tiles.get(key);
-        if (!tile) continue;
-        if (tile.walkable && out.length < count) {
-          out.push({ q: tile.q, r: tile.r, level: tile.level });
-        }
-        next.push({ q: tile.q, r: tile.r });
-      }
-    }
-    frontier = next;
-  }
-  return out;
-}
+// M_V11.OPEN.SPAWN — adjacentWalkableTiles + walkableTilesByExpansion
+// helpers removed. They only served the pre-spawned peon/footman
+// placement which is gone (the classic-RTS opening spawns only the
+// Town Hall). Re-introduce if a future system needs neighbor BFS.
 
 /**
  * Start a new game.
@@ -642,46 +593,16 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   if (townHallTile) townHallTile.walkable = false;
   let navGraph = buildNavGraph(board);
 
-  const peonSpawns = adjacentWalkableTiles(board, center.q, center.r, 2);
-  // fall back to the centre tile only if the centre is somehow isolated
-  if (peonSpawns.length === 0) peonSpawns.push(center);
-
-  const firstSpawn = peonSpawns[0] ?? center;
-  const playerPawn = createCharacter({
-    world,
-    role: 'Peon',
-    q: firstSpawn.q,
-    r: firstSpawn.r,
-    level: firstSpawn.level,
-    selected: true,
-  });
-
-  const secondSpawn = peonSpawns[1] ?? firstSpawn;
-  createCharacter({
-    world,
-    role: 'Peon',
-    q: secondSpawn.q,
-    r: secondSpawn.r,
-    level: secondSpawn.level,
-    selected: false,
-  });
-
-  // M_EXPANSION.F.84 — extra-peons bonus: spawn 2 more Peons at the
-  // next available spawn tiles. Falls back to firstSpawn if the
-  // peonSpawns list ran out.
-  if (config.startingBonus === 'extra-peons') {
-    for (let i = 2; i < 4; i++) {
-      const spawn = peonSpawns[i] ?? firstSpawn;
-      createCharacter({
-        world,
-        role: 'Peon',
-        q: spawn.q,
-        r: spawn.r,
-        level: spawn.level,
-        selected: false,
-      });
-    }
-  }
+  // M_V11.OPEN.SPAWN — classic-RTS opening. Per
+  // docs/specs/200-genre-commitment.md, factions spawn with ONLY a
+  // Town Hall + the starting stockpile. The player queues their
+  // first peons from the Town Hall on tick 0+.
+  //
+  // The legacy 2-pre-spawned-peons block (plus the optional +2
+  // 'extra-peons' bonus) is gone. The 'extra-peons' startingBonus
+  // value is kept on the type union for save backwards-compat but
+  // no longer spawns anything; M_V11.OPEN.STOCKPILE adds a
+  // wood/stone bonus instead.
 
   // Spawn the player home base (the Town Hall — loss condition when destroyed).
   // Town Hall composes AttractorBehavior (spec 102) — radius drives the
@@ -778,15 +699,9 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     ...(townHallProfile.attractor ? [AttractorBehavior(townHallProfile.attractor)] : []),
   );
 
-  // Spawn one starting Footman near the Town Hall.
-  const footmanSpawn = peonSpawns[0] ?? center;
-  createCharacter({
-    world,
-    role: 'Footman',
-    q: footmanSpawn.q,
-    r: footmanSpawn.r,
-    level: footmanSpawn.level,
-  });
+  // M_V11.OPEN.SPAWN — pre-spawned Footman stripped. Per the
+  // classic-RTS opening, the player queues a Barracks → Footman
+  // from their starting stockpile.
 
   // M_FUN.QA.AIVAI.TUNE — in AI-vs-AI mode the enemy faction needs
   // the SAME starting kit as the player so its AiPlayer has peons
@@ -795,44 +710,13 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
   // before training Footman, but need a Peon to build the
   // Barracks". Single-player mode keeps the asymmetric start —
   // there the enemy gets units from the EnemySpawner cadence.
-  const isAiVsAi = typeof config === 'object' && config.aiVsAi;
-  if (isAiVsAi) {
-    // Coderabbit MAJOR PR #10 05:46Z fix to my prior fix: the 4th
-    // arg of adjacentWalkableTiles is a COUNT (cap of immediate
-    // neighbours), not a radius. The earlier "wider ring" cascade
-    // never actually widened. Use walkableTilesByExpansion for a
-    // real BFS expansion up to depth 4; only if EVERY tile within
-    // 4 rings is blocked (effectively impossible on a normal map)
-    // do we fall back to the base tile.
-    let enemyPeonSpawns = adjacentWalkableTiles(board, enemyBaseTile.q, enemyBaseTile.r, 2);
-    if (enemyPeonSpawns.length === 0) {
-      enemyPeonSpawns = walkableTilesByExpansion(board, enemyBaseTile.q, enemyBaseTile.r, 4, 6);
-    }
-    if (enemyPeonSpawns.length === 0) enemyPeonSpawns.push(enemyBaseTile);
-    for (let i = 0; i < 2; i++) {
-      // enemyPeonSpawns guaranteed non-empty by the push above —
-      // `?? enemyBaseTile` is the type-safe alternative to the
-      // banned `enemyPeonSpawns[0]!` fallback.
-      const spawn = enemyPeonSpawns[i] ?? enemyPeonSpawns[0] ?? enemyBaseTile;
-      createCharacter({
-        world,
-        role: 'Peon',
-        q: spawn.q,
-        r: spawn.r,
-        level: spawn.level,
-        factionOverride: 'enemy',
-      });
-    }
-    const enemyFootmanSpawn = enemyPeonSpawns[0] ?? enemyBaseTile;
-    createCharacter({
-      world,
-      role: 'Footman',
-      q: enemyFootmanSpawn.q,
-      r: enemyFootmanSpawn.r,
-      level: enemyFootmanSpawn.level,
-      factionOverride: 'enemy',
-    });
-  }
+  // M_V11.OPEN.AI-SYMMETRY — AI faction starts symmetric to the
+  // player: Town Hall only, no pre-spawned peons or military. The
+  // AI scheduler's first tick at frame 0 queues 2 peons from the
+  // starting stockpile (wired via M_V11.OPEN.AI-SYMMETRY in
+  // AiPlayer / military evaluator). The legacy AIVAI-only kit
+  // (2 enemy peons + 1 Footman) is gone — the same opening shape
+  // applies to single-player and AIVAI alike.
 
   // Spawn resource nodes using the map PRNG (deterministic, phrase-only).
   const mapRng = createMapPrng(seedPhrase);
@@ -939,7 +823,10 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     navGraph,
     navGraphDirty: false,
     world,
-    playerPawn,
+    // M_V11.OPEN.SPAWN — playerPawn points at the Town Hall entity
+    // post-v0.11 (no pre-spawned peons). Callers using moveUnit on
+    // it no-op gracefully (Town Hall has no Movement trait).
+    playerPawn: townHallEntity,
     factions,
     portalStoneCooldowns: new Map<string, number>(),
     diplomacy: createDiplomacyState(),

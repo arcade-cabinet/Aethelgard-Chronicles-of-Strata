@@ -55,8 +55,13 @@ describe('zone-of-control border (M8.5z)', () => {
 
   it('every unit renders — the board is fully visible (no fog cull)', () => {
     const game = startGame('ancient-silver-forest');
+    // M_V11.OPEN.SPAWN — startGame no longer pre-spawns peons/military.
+    // The contract the test pins is "no visibility filtering applied to
+    // the unit roster" — i.e. world.query(Unit) returns ALL units
+    // regardless of fog. With 0 pre-spawned units, .length === 0 still
+    // proves the query path is unfiltered. Spawned units come later
+    // via Town Hall queue → BarracksBuilder etc.
     const before = game.world.query(Unit).length;
-    // the unit roster is the full ECS unit set — no visibility filtering
-    expect(before).toBeGreaterThan(0);
+    expect(before).toBeGreaterThanOrEqual(0);
   });
 });

@@ -15,7 +15,43 @@
  */
 import { describe, expect, it } from 'vitest';
 import { Building, FactionTrait } from '@/ecs/components';
+import { createCharacter } from '@/entities/character-factory';
 import { runEconomyTick, startGame } from '@/game/game-state';
+
+// M_V11.OPEN.SPAWN — startGame no longer pre-spawns peons. The
+// AIVAI economy test bootstraps 2 peons per faction so the AI
+// scheduler has work to assign. M_V11.OPEN.AI-SYMMETRY (when it
+// lands) will queue these from the AI's first scheduler tick;
+// until then this is the test-only seed.
+function seedFactionPeons(game: ReturnType<typeof startGame>, faction: 'player' | 'enemy'): void {
+  const baseKey = faction === 'player' ? game.townHallKey : game.enemyBaseKey;
+  const [tq, tr] = baseKey.split(',').map(Number) as [number, number];
+  const dirs: ReadonlyArray<readonly [number, number]> = [
+    [1, 0],
+    [0, 1],
+    [-1, 1],
+    [-1, 0],
+    [0, -1],
+    [1, -1],
+  ];
+  let spawned = 0;
+  for (const [dq, dr] of dirs) {
+    if (spawned >= 2) break;
+    const tile = game.board.tiles.get(`${tq + dq},${tr + dr}`);
+    if (tile?.walkable) {
+      const params: Parameters<typeof createCharacter>[0] = {
+        world: game.world,
+        role: 'Peon',
+        q: tile.q,
+        r: tile.r,
+        level: tile.level,
+      };
+      if (faction === 'enemy') params.factionOverride = 'enemy';
+      createCharacter(params);
+      spawned++;
+    }
+  }
+}
 
 describe('border-clash AIVAI economy progression (PATTERN-I)', () => {
   it('enemy faction harvests wood from a playable biome distribution', {
@@ -29,7 +65,7 @@ describe('border-clash AIVAI economy progression (PATTERN-I)', () => {
     // a real perf regression (which would 3-4× the runtime).
     timeout: 240_000,
   }, async () => {
-    const startingWood = 50;
+    const startingWood = 80; // M_V11.OPEN.STOCKPILE
     const game = startGame({
       seedPhrase: 'balance-the-diplomat-vs-the-diplomat',
       mapSize: 28, // matches MAP_SIZES.medium (what the Playwright harness uses)
@@ -40,6 +76,11 @@ describe('border-clash AIVAI economy progression (PATTERN-I)', () => {
       enemyPersonality: 'the-diplomat',
       playerPersonality: 'the-diplomat',
     });
+    // M_V11.OPEN.SPAWN — seed 2 peons per faction to bootstrap the
+    // AI economy. AI auto-queue from stockpile (M_V11.OPEN.AI-SYMMETRY)
+    // not landed yet; this is the test-only kickstart.
+    seedFactionPeons(game, 'player');
+    seedFactionPeons(game, 'enemy');
     // 300 sim-seconds at 60Hz — enough for first-House completion
     // (~60s harvest, ~30s build) + some expansion on any working AI.
     for (let i = 0; i < 18_000; i++) runEconomyTick(game, 1 / 60);
@@ -81,10 +122,12 @@ describe('border-clash AIVAI economy progression (PATTERN-I)', () => {
     expect
       .soft(
         zoneUnionPct,
-        `zone-of-control union — PATTERN-K target >30 (v0.5); achievable today ≈3%. ` +
-          `Observed=${zoneUnionPct.toFixed(2)}%`,
+        `zone-of-control union — PATTERN-K target >30 (v0.5); achievable today ≈1-3%. ` +
+          `M_V11.OPEN.SPAWN dropped pre-spawned units, so the v0.10 baseline of ` +
+          `~2-3% observed at this sim window slid to ~1.5-2%. Threshold relaxed to >1.5 ` +
+          `until M_V11.OPEN.AI-SYMMETRY restores AI auto-queue. Observed=${zoneUnionPct.toFixed(2)}%`,
       )
-      .toBeGreaterThan(2);
+      .toBeGreaterThan(1.5);
     expect
       .soft(
         enemyEco.wood,
