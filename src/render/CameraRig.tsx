@@ -144,10 +144,19 @@ export function CameraRig({ viewport, boardRadius, landCenter }: CameraRigProps)
       dampingFactor={0.12}
       minDistance={WORLD.camera.minZoom}
       maxDistance={WORLD.camera.maxZoom}
-      maxPolarAngle={Math.PI / 2.2}
-      // keep the board upright — no full orbit, just RTS-style pan + pitch
-      minAzimuthAngle={-Math.PI / 4}
-      maxAzimuthAngle={Math.PI / 4}
+      // M_GAME.BUG.7 — rotation entirely disabled per user direction
+      // (2026-05-25). Aethelgard is one fixed immersive Warcraft-1/2
+      // style game-board view; the player ZOOMS to inspect, never
+      // rotates. Two-finger drag previously orbited the island; now
+      // it pans (MapControls' default for touch when rotate is off).
+      enableRotate={false}
+      // Lock pitch to a Civ-VI / Warcraft 2.5D pose: ~35° from
+      // horizon (polar = π/2 − 35° ≈ 0.96 rad). Mountains stay
+      // visible behind closer hexes; the steeper the polar, the
+      // more dramatic the tilt and the more mountains occlude the
+      // realm. minPolarAngle === maxPolarAngle locks it.
+      minPolarAngle={0.96}
+      maxPolarAngle={0.96}
     />
   );
 }

@@ -53,6 +53,81 @@
 
 - [x] M_HUD.SHELL.15 — `src/hud/desktop-keyboard/` opt-in subpackage. Exports `useDesktopShortcuts(shortcuts, enabled)` hook + `DesktopShortcut` type. TitleScreen migrated as first consumer — viewport-gated (`viewport.class === 'desktop' || 'ultraWide'`) so mobile/foldable/tablet never see the kbd shortcut. The previous "strip" became a clean extraction; future OnboardingOverlay arrow-key nav + SystemMenu kbd shortcuts can re-adopt the same hook.
 
+### v0.10.H — PR pile cleanup + remote-blocked feedback integration
+
+Per user direction 2026-05-25: GitHub permissions are blocking Claude
+from helping remotely on the open-PR pile (PR #64 comment thread is
+the trigger). Local branch `feat/hud-overhaul-responsive-shell`
+becomes the integration branch — all open PR work gets pulled in
+here, all CodeRabbit / reviewer feedback gets resolved here, stale
+PRs get closed.
+
+- [ ] M_HUD.SHELL.22 — pull PR #60 (`fix/multi-viewport-canvas-paint-check`
+      — v0.9 cycle work) into current branch via cherry-pick / merge.
+      Resolve any conflicts. Close PR #60 once integrated.
+- [ ] M_HUD.SHELL.23 — pull PR #64 (`feat/title-screen-cinematic-pbr`
+      — TitleScreen PBR shader) into current branch. Already largely
+      contained in M_HUD.SHELL.2 commits on this branch; verify no
+      drift. Close PR #64 once integrated.
+- [ ] M_HUD.SHELL.24 — PR #63 release-please — let it land normally
+      OR re-target to current branch after integration so the next
+      release tags include all integrated work.
+- [ ] M_HUD.SHELL.25 — sweep all CodeRabbit / review comments on
+      every open PR via `gh api repos/.../pulls/<N>/comments` + reply
+      with resolution sha or rebut. Close threads.
+
+### v0.10.I — User-reported in-game bugs (visual + interaction)
+
+- [ ] M_GAME.BUG.1 — No prominent visible Town Hall building rendering
+      on either side mid-game. Investigate src/world/FactionBase.tsx
+      + src/render/GameCanvas.tsx mount path. Confirm the Town Hall
+      mesh exists, has a visible material, and sits at the correct
+      tile. Add a screenshot regression in the fixture battery.
+- [ ] M_GAME.BUG.2 — Units pathing into mountain tiles and disappearing.
+      Investigate pathfinding (src/core/board.ts walkable flag) and
+      TileInteraction.tsx mouse-to-tile mapping. Units should NEVER
+      enter a non-walkable tile; if they do, restore visibility or
+      teleport back.
+- [x] M_GAME.BUG.3 — Killed the blue drag-select rectangle. SelectionRect
+      no longer mounts in App.tsx (component file remains as a
+      subpackage for desktop opt-in per decompose-don't-strip).
+- [ ] M_GAME.BUG.4 — Selection model: replace drag-select with a sidebar
+      with "Select next idle" + "Select all of type X" actions. Per
+      user 2026-05-25: peons are AUTONOMOUS and never idle by definition
+      — they should be NON-INTERACTABLE entirely (TileInteraction
+      should not select them, SelectionPanel should not render their
+      info, the idle-peons indicator should be removed or repurposed
+      since peons by definition aren't idle).
+- [ ] M_GAME.BUG.5 — IdlePeonsIndicator: remove or repurpose. Peons
+      are autonomous; the indicator is misleading. Replace with an
+      "Idle Military Units" indicator that lights up when a footman /
+      siege unit has no orders.
+- [ ] M_HUD.SHELL.16c — SelectionPanel: add an action row with "Next
+      Idle Unit" + per-unit-type "Select All [Type]" buttons that
+      pull from the ECS military-unit query. Tap-driven, mobile-first;
+      replaces the drag-select model entirely. Hidden when no military
+      units exist.
+- [x] M_GAME.BUG.6 — findSelectableAtTile now skips peons (Unit.unitType
+      === 'Peon'). Taps on peon tiles fall through to building / tile
+      interaction. Peons are autonomous; their info is irrelevant.
+- [x] M_GAME.BUG.7 — CameraRig MapControls now has enableRotate={false}
+      and pitch locked to a fixed ~35° Civ-VI/Warcraft 2.5D pose
+      (minPolarAngle === maxPolarAngle === 0.96 rad). Two-finger drag
+      now pans the camera; rotation is no longer possible. Mountains
+      stay visible behind closer hexes at this gentler tilt.
+- [ ] M_GAME.BUG.7b — "Follow selected unit" camera tween: when a
+      unit is selected via SelectionPanel "Next Idle" or tile-tap,
+      the camera tweens its target to that unit's tile + a closer
+      zoom level (~midZoom). Released on deselect / Escape. Separate
+      from the rotation-lock fix shipped in BUG.7.
+- [ ] M_HUD.NOTIF.1 — Toast notification system: when an enemy unit
+      engages a player structure, when ZoC contracts/expands, when a
+      Discovery completes, when a wonder is started/finished, when a
+      MYTH event fires — surface a toast in a top-center stack (Radix
+      Toast). Each toast is tap-able to zoom-the-camera into the
+      event's tile. Auto-dismiss after 6s, manual dismiss via X. Stack
+      max 3 visible; older queue up.
+
 ### v0.10.F — LORE foundation (new track — Aethelgard has none yet)
 
 - [x] M_LORE.0 — `docs/lore/00-canon.md` shipped: 7 sections covering the world (hex archipelago + The Strata), the 6 eras mapped to the 6 game modes, the 4 faction archetypes with origin + disposition, the bestiary (peons through Wonders) with in-fiction reasoning, the MYTH events as "the strata speaking", the Renaissance ascendancy win-condition fiction, and the player as Chronicler-King (which explains the procedural nickname pattern in GameOverModal). Cross-references list the four follow-up docs M_LORE.1-4 will fill.

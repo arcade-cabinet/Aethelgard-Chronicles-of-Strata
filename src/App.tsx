@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { useMutedPreference } from '@/audio/useMutedPreference';
 import { ALL_PERSONALITIES } from '@/config/ai-personalities';
@@ -39,7 +39,6 @@ import { ScoreBar } from '@/hud/ScoreBar';
 import { ScoringScreen } from '@/hud/ScoringScreen';
 import { ScreenshotButton } from '@/hud/ScreenshotButton';
 import { SelectionPanel } from '@/hud/SelectionPanel';
-import { SelectionRect } from '@/hud/SelectionRect';
 import { SettingsModal } from '@/hud/SettingsModal';
 import { SpeedControl } from '@/hud/SpeedControl';
 import { SystemMenu } from '@/hud/SystemMenu';
@@ -270,9 +269,10 @@ function GameSession({
       window.removeEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
     };
   }, [game]);
-  // r3f camera ref for HUD overlays that project world → screen (SelectionRect).
+  // r3f camera ref retained even though SelectionRect no longer
+  // consumes it (M_GAME.BUG.3) — future HUD overlays that project
+  // world→screen will plug back into the ref.
   const cameraRef = useRef<Camera | null>(null);
-  const getCamera = useCallback(() => cameraRef.current, []);
 
   return (
     <div id="app-shell" data-viewport={viewport.class} style={{ position: 'absolute', inset: 0 }}>
@@ -300,7 +300,13 @@ function GameSession({
           setBuildContext({ type: ctx.type, onPlaced: () => setBuildContext(null) })
         }
       />
-      <SelectionRect game={game} getCamera={getCamera} />
+      {/* M_GAME.BUG.3 — desktop blue drag-select rectangle retired.
+          Selection is tap-only now. Multi-select via tap-and-hold-then-
+          drag (per OnboardingOverlay's "Commanding military" step) is
+          handled inside TileInteraction. SelectionRect.tsx remains in
+          the tree as a subpackage for desktop opt-in (decompose, don't
+          strip) but no longer mounts in the main App. */}
+      {/* <SelectionRect game={game} getCamera={getCamera} /> */}
       {/* M_HUD.SHELL.1 — universal SystemMenu (top-right hamburger
             + slide-in drawer). Replaces the per-viewport scatter of
             ResignButton + MobileSystemMenu + SoundToggle pills that

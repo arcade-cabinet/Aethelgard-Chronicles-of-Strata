@@ -637,11 +637,21 @@ export function doResearch(game: GameState, id: ResearchId, faction: Faction = '
 // Selection helpers for TileInteraction
 // ---------------------------------------------------------------------------
 
-/** Find an entity on `tileKey` that has Selectable (a unit or building). */
+/** Find an entity on `tileKey` that has Selectable (a unit or building).
+ *
+ * M_GAME.BUG.6 — peons are AUTONOMOUS and non-interactable. Taps on a
+ * peon's tile fall through to building / tile interaction; only
+ * military units + buildings respond. The peon's information is
+ * irrelevant to the player (they auto-harvest, never wait for orders),
+ * so making them clickable was misleading. */
 export function findSelectableAtTile(game: GameState, tileKey: string): Entity | undefined {
   for (const entity of game.world.query(Selectable, HexPosition)) {
     const hex = entity.get(HexPosition);
-    if (hex && getHexKey(hex.q, hex.r) === tileKey) return entity;
+    if (!hex || getHexKey(hex.q, hex.r) !== tileKey) continue;
+    // Skip peons — they're autonomous.
+    const unit = entity.get(Unit);
+    if (unit?.unitType === 'Peon') continue;
+    return entity;
   }
   return undefined;
 }
