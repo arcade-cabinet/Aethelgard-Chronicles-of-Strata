@@ -491,11 +491,15 @@ between "PR open" and "merge".
       formation badges don't pile on top of the unit name labels
       or HealthBillboard at zoom-in; introduce a vertical-stack
       layout for overlapping world-space text if they collide.
-- [ ] M_V11.POLISH.LOOT-FX — un-collected LootCache currently has
+- [x] M_V11.POLISH.LOOT-FX — un-collected LootCache currently has
       ZERO visual presence in the world (M_V11.CAMPS.LOOT shipped
       the data trait only). Add a small spinning coin / gem mesh
       + subtle particle so the player can SEE the cache before
-      walking over it.
+      walking over it. Implemented as src/world/LootCacheLayer.tsx
+      mounted in GameCanvas: spinning octahedron gem (1 turn/2s)
+      with subtle Y bob; color picked from dominant resource
+      (gold→amber, stone→slate, wood→amber). Emissive 0.6 so
+      it reads at zoom-out.
 - [ ] M_V11.POLISH.CAMP-MOB-VISUAL — barbarian-camp mobs are
       tinted via existing characterTint logic in Units.tsx (line
       114 skips them) — verify the player can visually distinguish

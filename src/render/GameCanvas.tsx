@@ -9,6 +9,7 @@ import { CombatText } from '@/world/CombatText';
 import { ContestedPulse } from '@/world/ContestedPulse';
 import { Crossings } from '@/world/Crossings';
 import { DeathDropLayer } from '@/world/DeathDropLayer';
+import { LootCacheLayer } from '@/world/LootCacheLayer';
 import { Decoration } from '@/world/Decoration';
 import { FactionBase } from '@/world/FactionBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
@@ -260,6 +261,10 @@ function Scene({
       <FootstepEmitter game={game} />
       {/* M_EXPANSION.A.17 — coffin death-drop for enemy units. */}
       <DeathDropLayer />
+      {/* M_V11.POLISH.LOOT-FX — visible spinning gem above every
+          un-collected LootCache entity so the player can see the
+          drop before walking onto it. */}
+      <LootCacheLayer game={game} />
       <ParticleEmitter game={game} spec={rainConsumer} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
