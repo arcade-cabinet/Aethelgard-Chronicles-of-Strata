@@ -161,6 +161,73 @@ stockpile, no pre-spawned peons or military.
       reads as "occupies a tile" not "covers two tiles" and
       buildings read as "occupies their footprint" not "miniature."
 
+### v0.10.K — Stacking + Formations + Barbarian Camps + Faction Encircle Coloring
+
+**Per user direction 2026-05-25** + `docs/specs/201-stacking-and-formations.md`:
+- KEEP barbarian camp pivot from v0.5/v0.6 even with no 4X.
+- Faction-color encircle coloring is canonical (UnitHexOutline
+  already shipped substrate — confirmed kept).
+- ADD stacking: multiple offensive OR defensive units stacked on
+  one tile, group-move, fight-as-one with combined stats.
+- Stacks fight as Phalanx / Cadre / Wedge / Square / Skirmish Line
+  / Combined Arms etc — formation type gates by Discovery (or
+  multiple Discoveries).
+- Cleans up the board AND syncs naturally with Discoveries.
+
+- [ ] M_GAME.STACK.1 — Add `Stack` component + ECS substrate
+      (members, formationId, combinedStats, dominantUnitType).
+      Pure-data + unit tests; no UI/rendering yet.
+- [ ] M_GAME.STACK.2 — Stack creation flow: SelectionPanel
+      "Stack Selected" button gated on selection containing 2+
+      same-faction military units. Members 200ms-lerp to stack
+      tile; stack entity spawned; member.stackId set.
+- [ ] M_GAME.STACK.3 — Stack movement: tap-to-command on a tile
+      paths the entire Stack. PathRequest source = stack.tile.
+- [ ] M_GAME.STACK.4 — Stack combat: combined-stats damage
+      resolution. Stack-vs-stack ticks simultaneously. Partial
+      damage kills proportional members (rounding preserves
+      dominant unit type). Single survivor auto-unstacks.
+- [ ] M_GAME.STACK.5 — Unstack: SelectionPanel "Unstack" button.
+      Stack entity destroyed; members repopulated on tile +
+      neighbors.
+- [ ] M_GAME.STACK.6 — Formation registry: `src/world/formations.ts`
+      exports FORMATIONS map. Each entry: composition validator,
+      stat-modifier function, badge SVG path, available-from
+      Discovery id.
+- [ ] M_GAME.STACK.7 — Formation switching: SelectionPanel shows
+      known formations + current; tap to switch (composition valid
+      for target). NOT allowed mid-combat (no enemy in radius).
+- [ ] M_GAME.STACK.8 — Stack rendering: tile shows formation badge
+      + member meshes clustered per formation visual; UnitHexOutline
+      draws thicker ring for stacks.
+- [ ] M_GAME.STACK.9 — Peon Work Crew formation: peons-only stacks
+      with Work Crew formation, harvest-rate buff (+20% per peon
+      up to 4 members, then flat). Auto-formed when 2+ same-faction
+      peons end a tick on the same harvest tile.
+- [ ] M_GAME.STACK.10 — Mob auto-stacking: Graveyard / Barbarian
+      Camp mobs auto-stack into Rabble when 2+ mobs end a tick on
+      same tile.
+- [ ] M_GAME.DISCOVERY.FORMATION.1 — Add 6 formation Discoveries
+      (Phalanx, Cadre, Wedge, Skirmish Line, Square, Combined
+      Arms) to the registry. Costs ~120 wood + 80 gold. Combined
+      Arms requires Phalanx + Wedge as prereqs. DiscoveriesPanel
+      renders the formation badge preview.
+- [ ] M_GAME.DISCOVERY.FORMATION.2 — `docs/lore/discoveries.md`
+      expanded with the 6 formation entries; each gets a
+      Chronicler's-voice flavour line (Stratum + archetype
+      affinities per the doc).
+- [ ] M_GAME.CAMP.1 — Barbarian Camp spawn pass: map-gen places N
+      camps in neutral territory at start (N scales with map size).
+      Each camp spawns mobs from the Mystery asset pool.
+- [ ] M_GAME.CAMP.2 — Graveyard mob-spawn tick (90-180s
+      randomized) — Mystery-pool wraith / skeleton / ghoul lineup.
+      Mobs wander within radius, attack all factions, drop loot
+      on death, destroy when Graveyard destroyed.
+- [ ] M_GAME.CAMP.3 — Loot drop: camp/mob death spawns a small
+      resource cache on the tile; first player/AI unit to walk
+      over it collects. Resource type+amount depends on spawn
+      source biome.
+
 ### v0.10.I — User-reported in-game bugs (visual + interaction)
 
 - [ ] M_GAME.BUG.1 — No prominent visible Town Hall building rendering
