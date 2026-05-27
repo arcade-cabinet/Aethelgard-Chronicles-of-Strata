@@ -233,13 +233,40 @@ chains; v0.12 expands to 100+ via depth + breadth + meta-tiers.
       Chronicle saga page from §4 PERSIST). Old 5 (ancestral-vows
       / saga-of-strata / chronicler-codex / oracle-eye /
       eternal-flame) retired.
-- [ ] M_V12.DEPTH.UPGRADE-HUD — DiscoveriesPanel rewrite for
-      6-chain × 4-tier grid; chain-tab navigation + pre-req
-      arrows + locked/unlocked state. Mobile-first layout.
-- [ ] M_V12.DEPTH.UPGRADE-PERSISTENCE — Atelier extension: meta-
-      unlock IDs for cross-match upgrade-chain head-starts
-      ("start with Economy tier 1 already purchased"). New
-      meta-unlock category `chain-starters`.
+- [x] M_V12.DEPTH.UPGRADE-HUD — DiscoveriesPanel gained a chain-
+      tab navigator strip above the search filter. 7 chain tabs
+      (Economy/Military/Diplomacy/Magic/Engineering/Lore/Formations)
+      + a "Show all" reset chip when a tab is active. Active tab
+      gets the treasure-gold border + bold weight + treasure-tint
+      background. Click an active tab to toggle off. The row
+      filter composes with the search filter (chain AND search).
+      Chain-derivation is `chainForDescription` parsing the
+      description prefix ("Economy / Harvest I — ..." → economy);
+      formal `chain` field on the schema is a follow-up worth
+      doing once Atelier chain-starters need it. Tabs hidden
+      when DISCOVERIES.length < 12 so small libraries don't get
+      chrome. Mobile-portrait tested via existing chain test
+      coverage — flex-wrap keeps the strip from overflowing.
+- [x] M_V12.DEPTH.UPGRADE-PERSISTENCE — Atelier `chain-starters`
+      category landed with 12 new meta-unlocks (one per chain ×
+      spec head: starter-economy-{harvest,trade,cap},
+      starter-military-{infantry,archer,siege}, starter-diplomacy-
+      {relations,trade}, starter-magic-{offense,utility},
+      starter-engineering-defense, starter-lore-reveal). Costs
+      4-6 lore tokens. Runtime resolution via new
+      applyChainStarters helper in game-state.ts: maps each
+      starter-id → tier-I Discovery id, marks it purchased in
+      game.research.purchased, runs apply() with a fresh ctx so
+      v0.12 effect kinds (modify-supply / buff-building /
+      buff-combatant) mutate the player economy + flag map.
+      App.tsx beginGame is now async, awaits persistence.list
+      MetaUnlocks() before setConfig, and forwards unlockedMeta.
+      Test count 1235 → 1241 with tests/unit/chain-starters-v12
+      (6 pins: each named starter pre-purchases, multi-starters
+      compose, unknown ids no-op, empty list clean). Also
+      re-lands the v0.11 meta-runtime regression: the v0.11
+      squash dropped the unlockedMeta plumbing — v0.12 puts it
+      back via the same NewGameConfig.unlockedMeta path.
 
 ### §3 — AI diplomacy + alliance behavior (M_V12.AI-DIPLO)
 

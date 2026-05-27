@@ -594,13 +594,26 @@ export function App() {
     );
   }
 
-  const beginGame = (choices: NewGameChoices) => {
+  const beginGame = async (choices: NewGameChoices) => {
+    // M_V12.DEPTH.UPGRADE-PERSISTENCE — fetch the player's meta-
+    // unlock list before startGame so chain-starters land at tick 0.
+    // Falls back to an empty list on persistence error so a single
+    // bad sqlite read doesn't gate the match start.
+    let unlockedMeta: string[] = [];
+    try {
+      unlockedMeta = await persistence.listMetaUnlocks();
+    } catch (err) {
+      console.warn('[meta-progression] listMetaUnlocks failed:', err);
+    }
     setConfig({
       seedPhrase: choices.seedPhrase,
       mapSize: MAP_SIZES[choices.mapSize].radius,
       difficulty: choices.difficulty,
       // the fresh event seed minted by the modal — committed with this session
       eventSeed: choices.eventSeed,
+      // M_V12.DEPTH.UPGRADE-PERSISTENCE — chain-starter Atelier
+      // unlocks consumed by startGame.applyChainStarters.
+      unlockedMeta,
       // M_BRAND.1 — game mode preset (border-clash default).
       mode: choices.mode,
       // M_TURNS.3 — the player's Turn-style override (may differ

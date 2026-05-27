@@ -39,6 +39,9 @@ const CATEGORY_LABELS: Record<MetaUnlockCategory, string> = {
   'named-heroes': 'Named Heroes',
   'ai-bounties': 'AI Bounties',
   'lore-chapters': 'Lore Chapters',
+  // M_V12.DEPTH.UPGRADE-PERSISTENCE — chain-starter unlocks
+  // pre-purchase the tier-I head of one Discovery chain.
+  'chain-starters': 'Chain Starters',
 };
 
 const buttonStyle: CSSProperties = {

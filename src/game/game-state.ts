@@ -49,6 +49,7 @@ import type { Faction } from '@/ecs/components';
 import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/ecs/systems/volcano';
 import type { BurnState } from '@/ecs/systems/wildfire';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
+import { discoveryById } from '@/rules/discovery-registry';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
 import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
 import {
@@ -170,6 +171,16 @@ export interface NewGameConfig {
    * `barbarian-camp-2`, ... in subsequent positions.
    */
   factions?: FactionConfig[];
+  /**
+   * M_V12.DEPTH.UPGRADE-PERSISTENCE — list of meta-unlock ids
+   * currently owned by the player (from sqlite `meta_unlocks`
+   * table). App.tsx awaits persistence.listMetaUnlocks() and
+   * forwards. startGame consults this to apply chain-starter
+   * pre-purchases (Atelier "Chain Starter: Economy / Harvest"
+   * etc. mark the named Discovery as purchased at game start).
+   * Empty / undefined = baseline match.
+   */
+  unlockedMeta?: ReadonlyArray<string>;
 }
 
 /**
@@ -1048,11 +1059,76 @@ export function startGame(configOrPhrase: NewGameConfig | string): GameState {
     },
   };
 
+  // M_V12.DEPTH.UPGRADE-PERSISTENCE — apply chain-starter
+  // meta-unlocks. Each Atelier "starter-<chain>-<spec>" unlock
+  // marks the named tier-I Discovery as already purchased AND
+  // runs its apply() side-effect so the in-match stat / cap is
+  // live from tick 0. Unknown ids no-op.
+  if (config.unlockedMeta && config.unlockedMeta.length > 0) {
+    applyChainStarters(game, config.unlockedMeta);
+  }
+
   // Kick off the autonomous economy — peons begin harvesting immediately so a
   // fresh game's economic loop is self-running with no player input.
   game.assignAllPeonsToHarvest();
 
   return game;
+}
+
+/**
+ * M_V12.DEPTH.UPGRADE-PERSISTENCE — apply chain-starter meta-
+ * unlocks at game start.
+ *
+ * For each Atelier `starter-<chain>-<spec>` unlock the player
+ * owns, mark the named tier-I Discovery as purchased AND run its
+ * apply() side-effect so any stat / cap / flag the row carries is
+ * live from tick 0.
+ *
+ * Mapping is explicit (not derived from the id naming) so
+ * misspellings + future renames stay safe — a typo lands at the
+ * default-skip branch instead of silently no-oping a player's
+ * paid-for purchase.
+ */
+const CHAIN_STARTER_TO_DISCOVERY: Record<string, string> = {
+  'starter-economy-harvest': 'steelPlows',
+  'starter-economy-trade': 'trade-route',
+  'starter-economy-cap': 'bulk-baskets',
+  'starter-military-infantry': 'forgedBlades',
+  'starter-military-archer': 'iron-tipped-arrows',
+  'starter-military-siege': 'sapper-training',
+  'starter-diplomacy-relations': 'first-contact',
+  'starter-diplomacy-trade': 'exchange-policy',
+  'starter-magic-offense': 'mage-tower-aura',
+  'starter-magic-utility': 'scrying-orb',
+  'starter-engineering-defense': 'reinforced-walls',
+  'starter-lore-reveal': 'cartography',
+};
+
+function applyChainStarters(game: GameState, unlocked: ReadonlyArray<string>): void {
+  for (const id of unlocked) {
+    const discoveryId = CHAIN_STARTER_TO_DISCOVERY[id];
+    if (!discoveryId) continue; // not a chain-starter id; skip.
+    const d = discoveryById(discoveryId);
+    if (!d) continue;
+    // ResearchId is a branded string; runtime values are plain
+    // strings registered in the JSON. The branded type guards
+    // against callers passing random strings without registry
+    // validation — chain-starter mapping is validated above via
+    // discoveryById, so the brand is safe here.
+    const branded = discoveryId as unknown as Parameters<typeof game.research.purchased.add>[0];
+    if (game.research.purchased.has(branded)) continue;
+    game.research.purchased.add(branded);
+    // Apply with a ctx so v0.12 effect kinds (modify-supply etc.)
+    // can land their mutation against the player economy + a flag
+    // map. building-overrides is per-match transient; not yet
+    // plumbed into commands.ts, so override writes are recorded
+    // for future read by the build system.
+    d.apply(game.world, {
+      economy: game.economy.player,
+      flags: new Map<string, number | string | boolean>(),
+      buildingOverrides: new Map(),
+    });
+  }
 }
 
 /**
