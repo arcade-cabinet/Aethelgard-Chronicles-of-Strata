@@ -1,65 +1,255 @@
 {
   "discoveries": [
     {
-      "id": "forgedBlades",
-      "name": "Forged Blades",
-      "description": "+5 attack damage to every combatant.",
-      "cost": { "stone": 100, "gold": 150 },
-      "prereqs": [],
-      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5 }
-    },
-    {
       "id": "steelPlows",
       "name": "Steel Plows",
-      "description": "×1.5 harvest rate on every peon.",
+      "description": "Economy I — ×1.5 harvest rate on every peon.",
       "cost": { "wood": 50, "gold": 100 },
       "prereqs": [],
       "effect": { "kind": "multiply-harvest", "factor": 1.5 }
     },
     {
-      "id": "trade-route",
-      "name": "Trade Route",
-      "description": "Unlocks the Trade widget — 1:1 swap of wood/stone/gold with any non-enemy faction.",
-      "cost": { "wood": 80, "gold": 120 },
-      "prereqs": [],
-      "effect": { "kind": "flag" }
-    },
-    {
-      "id": "cartography",
-      "name": "Cartography",
-      "description": "Reveals the starting region around your base + boosts Ferryman speed by 25%.",
-      "cost": { "wood": 60, "gold": 80 },
-      "prereqs": [],
-      "effect": { "kind": "flag" }
-    },
-    {
       "id": "iron-tools",
       "name": "Iron Tools",
-      "description": "+25% Peon harvest rate (stacks with Steel Plows).",
+      "description": "Economy II — +25% Peon harvest rate (stacks with Steel Plows).",
       "cost": { "stone": 80, "gold": 100 },
-      "prereqs": [],
+      "prereqs": ["steelPlows"],
       "effect": { "kind": "multiply-harvest", "factor": 1.25 }
+    },
+    {
+      "id": "logistics-doctrine",
+      "name": "Logistics Doctrine",
+      "description": "Economy III — peons carry 50% more per trip (×1.15 effective harvest).",
+      "cost": { "wood": 120, "stone": 80, "gold": 80 },
+      "prereqs": ["iron-tools"],
+      "effect": { "kind": "multiply-harvest", "factor": 1.15 }
+    },
+    {
+      "id": "trade-route",
+      "name": "Trade Route",
+      "description": "Economy IV — unlocks the Trade widget; 1:1 swap of wood/stone/gold with any non-enemy faction.",
+      "cost": { "wood": 80, "gold": 120 },
+      "prereqs": ["steelPlows"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "treasury-vault",
+      "name": "Treasury Vault",
+      "description": "Economy V — every Palace generates +1 gold/sec from regional taxes.",
+      "cost": { "stone": 200, "gold": 150 },
+      "prereqs": ["trade-route"],
+      "effect": { "kind": "flag" }
+    },
+
+    {
+      "id": "forgedBlades",
+      "name": "Forged Blades",
+      "description": "Military I — +5 attack damage to every combatant.",
+      "cost": { "stone": 100, "gold": 150 },
+      "prereqs": [],
+      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5 }
+    },
+    {
+      "id": "honed-edges",
+      "name": "Honed Edges",
+      "description": "Military II — +5 more attack damage on every combatant.",
+      "cost": { "stone": 120, "gold": 180 },
+      "prereqs": ["forgedBlades"],
+      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5 }
+    },
+    {
+      "id": "long-reach",
+      "name": "Long Reach",
+      "description": "Military III — +1 attack range on every ranged combatant.",
+      "cost": { "wood": 120, "gold": 120 },
+      "prereqs": ["forgedBlades"],
+      "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 1 }
     },
     {
       "id": "siege-engineering",
       "name": "Siege Engineering",
-      "description": "Trebuchet trainable from a tier-1 Barracks instead of tier-2.",
+      "description": "Military IV — Trebuchet trainable from a tier-1 Barracks instead of tier-2.",
       "cost": { "wood": 120, "stone": 100, "gold": 60 },
       "prereqs": ["forgedBlades"],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "monumental-architecture",
-      "name": "Monumental Architecture",
-      "description": "Wonder build cost reduced by 20%.",
+      "id": "warrior-cult",
+      "name": "Warrior Cult",
+      "description": "Military V — +10 attack damage when stacked in a Cadre or Wedge formation.",
       "cost": { "stone": 200, "gold": 200 },
-      "prereqs": ["steelPlows"],
+      "prereqs": ["honed-edges"],
+      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 10 }
+    },
+
+    {
+      "id": "cartography",
+      "name": "Cartography",
+      "description": "Diplomacy I — reveals the starting region around your base; +25% Ferryman speed.",
+      "cost": { "wood": 60, "gold": 80 },
+      "prereqs": [],
       "effect": { "kind": "flag" }
     },
     {
+      "id": "envoys",
+      "name": "Envoys",
+      "description": "Diplomacy II — pact proposals you initiate are 2× more likely to be accepted by AI factions.",
+      "cost": { "wood": 80, "gold": 120 },
+      "prereqs": ["cartography"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "shared-codex",
+      "name": "Shared Codex",
+      "description": "Diplomacy III — allied factions exchange a Discovery per match (you pick which).",
+      "cost": { "wood": 100, "gold": 200 },
+      "prereqs": ["envoys"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "spies",
+      "name": "Spies",
+      "description": "Diplomacy IV — reveal one enemy zone tile every 30s; tribute demands cost 50% less.",
+      "cost": { "wood": 150, "gold": 150 },
+      "prereqs": ["envoys"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "world-charter",
+      "name": "World Charter",
+      "description": "Diplomacy V — alliance timer doubles to 10 minutes; broken pacts cost no relation penalty.",
+      "cost": { "wood": 200, "gold": 240 },
+      "prereqs": ["shared-codex"],
+      "effect": { "kind": "flag" }
+    },
+
+    {
+      "id": "mana-channels",
+      "name": "Mana Channels",
+      "description": "Magic I — Wizard cast cost reduced by 30%.",
+      "cost": { "wood": 80, "gold": 120 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "healing-conclave",
+      "name": "Healing Conclave",
+      "description": "Magic II — Healer aura range +1 hex; +50% regen rate.",
+      "cost": { "wood": 100, "gold": 140 },
+      "prereqs": ["mana-channels"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "elemental-weave",
+      "name": "Elemental Weave",
+      "description": "Magic III — Wizard attacks deal +5 damage AND ignore weather penalties.",
+      "cost": { "stone": 120, "gold": 180 },
+      "prereqs": ["mana-channels"],
+      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5 }
+    },
+    {
+      "id": "rune-warding",
+      "name": "Rune Warding",
+      "description": "Magic IV — Watchtowers deal +25% damage to enemies adjacent to a Wizard.",
+      "cost": { "stone": 160, "gold": 160 },
+      "prereqs": ["elemental-weave"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "starfall-rite",
+      "name": "Starfall Rite",
+      "description": "Magic V — every 90s, Wizards channel a tile-strike (3-hex AoE, 40 damage) on the nearest enemy stack.",
+      "cost": { "stone": 220, "gold": 300 },
+      "prereqs": ["rune-warding", "healing-conclave"],
+      "effect": { "kind": "flag" }
+    },
+
+    {
+      "id": "monumental-architecture",
+      "name": "Monumental Architecture",
+      "description": "Engineering I — Wonder build cost reduced by 20%.",
+      "cost": { "stone": 200, "gold": 200 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "masonry-guild",
+      "name": "Masonry Guild",
+      "description": "Engineering II — Wall + Watchtower build time reduced by 40%; +25% Wall HP.",
+      "cost": { "stone": 160, "gold": 120 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "rampart-doctrine",
+      "name": "Rampart Doctrine",
+      "description": "Engineering III — Walls automatically include arrow slits dealing 2 dmg/sec to adjacent enemies.",
+      "cost": { "stone": 200, "gold": 160 },
+      "prereqs": ["masonry-guild"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "bridge-builders",
+      "name": "Bridge Builders",
+      "description": "Engineering IV — Ferryman pathing across SHALLOWS becomes free (was ×1.8 cost).",
+      "cost": { "wood": 200, "stone": 160 },
+      "prereqs": ["masonry-guild"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "siege-foundry",
+      "name": "Siege Foundry",
+      "description": "Engineering V — Trebuchets get +50% range and +25% damage; cost +25% gold.",
+      "cost": { "stone": 240, "gold": 280 },
+      "prereqs": ["siege-engineering", "rampart-doctrine"],
+      "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 2 }
+    },
+
+    {
+      "id": "ancestral-vows",
+      "name": "Ancestral Vows",
+      "description": "Lore I — every faction you've allied with leaves a +5% morale bonus that persists if the pact ends.",
+      "cost": { "wood": 60, "gold": 100 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "saga-of-strata",
+      "name": "Saga of Strata",
+      "description": "Lore II — myth events fire 25% less often; their effects last 50% longer.",
+      "cost": { "wood": 120, "gold": 160 },
+      "prereqs": ["ancestral-vows"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "chronicler-codex",
+      "name": "Chronicler Codex",
+      "description": "Lore III — every Discovery shows its full prerequisite chain in the panel; +1 starting Discovery on every new game.",
+      "cost": { "wood": 120, "gold": 200 },
+      "prereqs": ["saga-of-strata"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "oracle-eye",
+      "name": "Oracle Eye",
+      "description": "Lore IV — view a 90-second forecast of weather + raid events in the HUD.",
+      "cost": { "wood": 140, "gold": 220 },
+      "prereqs": ["saga-of-strata"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "eternal-flame",
+      "name": "Eternal Flame",
+      "description": "Lore V — your Palace can't be destroyed while you hold ≥1 Wonder; +50% Wonder score multiplier.",
+      "cost": { "stone": 240, "gold": 320 },
+      "prereqs": ["chronicler-codex", "oracle-eye"],
+      "effect": { "kind": "flag" }
+    },
+
+    {
       "id": "formation-phalanx",
       "name": "Formation: Phalanx",
-      "description": "Unlocks the Phalanx formation — spear stacks gain +50% defense.",
+      "description": "Formations — unlocks Phalanx; spear stacks gain +50% defense.",
       "cost": { "wood": 120, "gold": 80 },
       "prereqs": [],
       "effect": { "kind": "flag" }
@@ -67,7 +257,7 @@
     {
       "id": "formation-cadre",
       "name": "Formation: Cadre",
-      "description": "Unlocks the Cadre formation — melee stacks gain +25% damage.",
+      "description": "Formations — unlocks Cadre; melee stacks gain +25% damage.",
       "cost": { "wood": 120, "gold": 80 },
       "prereqs": [],
       "effect": { "kind": "flag" }
@@ -75,7 +265,7 @@
     {
       "id": "formation-wedge",
       "name": "Formation: Wedge",
-      "description": "Unlocks the Wedge formation — heavy cavalry stacks gain +25% damage on the first attack.",
+      "description": "Formations — unlocks Wedge; heavy cavalry stacks gain +25% damage on the first attack.",
       "cost": { "wood": 120, "gold": 80 },
       "prereqs": ["formation-cadre"],
       "effect": { "kind": "flag" }
@@ -83,7 +273,7 @@
     {
       "id": "formation-skirmish-line",
       "name": "Formation: Skirmish Line",
-      "description": "Unlocks the Skirmish Line formation — ranged stacks gain +15% range.",
+      "description": "Formations — unlocks Skirmish Line; ranged stacks gain +15% range.",
       "cost": { "wood": 120, "gold": 80 },
       "prereqs": [],
       "effect": { "kind": "flag" }
@@ -91,7 +281,7 @@
     {
       "id": "formation-square",
       "name": "Formation: Square",
-      "description": "Unlocks the Square formation — defensive stacks gain +30% defense; cannot move while in formation.",
+      "description": "Formations — unlocks Square; defensive stacks gain +30% defense; cannot move while in formation.",
       "cost": { "wood": 120, "gold": 80 },
       "prereqs": ["formation-phalanx"],
       "effect": { "kind": "flag" }
@@ -99,7 +289,7 @@
     {
       "id": "formation-combined-arms",
       "name": "Formation: Combined Arms",
-      "description": "Unlocks the Combined Arms formation — mixed melee+ranged stacks gain +25% HP and +20% damage.",
+      "description": "Formations — unlocks Combined Arms; mixed melee+ranged stacks gain +25% HP and +20% damage.",
       "cost": { "wood": 200, "gold": 160 },
       "prereqs": ["formation-phalanx", "formation-wedge"],
       "effect": { "kind": "flag" }
