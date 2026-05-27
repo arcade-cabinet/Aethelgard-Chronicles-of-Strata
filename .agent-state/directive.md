@@ -166,10 +166,25 @@ chains; v0.12 expands to 100+ via depth + breadth + meta-tiers.
       pinning 16 entries + tier-chained prereqs + 4 standalone
       tier-1 heads. HUD entry is M_V12.DEPTH.UPGRADE-HUD below
       (separate item — Discoveries panel rewrite).
-- [ ] M_V12.DEPTH.MILITARY-CHAIN — parallel chain expansion: 4
-      tiers × 4 specialisations (infantry / archer / siege /
-      cavalry), each with stat-modifier upgrades + unit-unlock
-      gates.
+- [x] M_V12.DEPTH.MILITARY-CHAIN — expanded from 5 to 16 entries
+      (4 specs × 4 tiers). Existing `forgedBlades` preserved as
+      Infantry I; `honed-edges` retired in favor of
+      `tempered-edges` (Infantry II, Footman-filter); `long-reach`
+      retired in favor of `iron-tipped-arrows` (Archer I);
+      `siege-engineering` renamed `sapper-training` (Siege I);
+      `warrior-cult` retired. 12 new entries: phalanx-doctrine +
+      imperial-guard (Infantry III-IV, the latter exercising
+      unlock-unit Hero from Barracks), composite-bows +
+      volley-fire + masterwork-bows (Archer II-IV with filter),
+      catapult-blueprints + reinforced-trebuchets + seismic-
+      engines (Siege II-IV, catapult-blueprints exercising
+      unlock-unit Trebuchet from Barracks), armored-saddles +
+      barbed-spears + charge-tactics + royal-cavalry (Cavalry
+      I-IV, armored-saddles exercising unlock-unit Knight from
+      Barracks). Test count 1215 → 1219 with
+      tests/unit/military-chain-v12.test.ts (4 pins). Stale id
+      refs in discoveries-v6.test.ts + DiscoveriesPanel.tsx +
+      Engineering's rampart-line-end prereq edge all fixed.
 - [ ] M_V12.DEPTH.DIPLOMACY-CHAIN — tier upgrades that unlock
       embassy actions: tribute demands, alliance proposals,
       trade routes, peace treaties. Each ties into the AI

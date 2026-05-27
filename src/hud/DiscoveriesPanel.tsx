@@ -16,7 +16,9 @@ const DISCOVERY_FLAVOR: Record<string, string> = {
   'trade-route': 'The strata held the road through the winter; the wagons did not stray.',
   cartography: 'The Mythic showed us the realm whole, for one cold afternoon.',
   'iron-tools': 'The seam yielded; we shod our chisels in iron, and the mountain was kinder.',
-  'siege-engineering':
+  // M_V12.DEPTH.MILITARY-CHAIN — siege-engineering renamed
+  // sapper-training (Siege I) when the chain expanded to 4 specs.
+  'sapper-training':
     'We asked the wall its name; it answered; we wrote the answer on a stone, and the stone broke the wall.',
   'monumental-architecture':
     'The strata answered as one — yes, remember this. We laid the cornerstone before sunset.',

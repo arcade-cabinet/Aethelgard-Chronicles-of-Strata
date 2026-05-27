@@ -137,42 +137,160 @@
     {
       "id": "forgedBlades",
       "name": "Forged Blades",
-      "description": "Military I — +5 attack damage to every combatant.",
+      "description": "Military / Infantry I — +5 attack damage to every combatant.",
       "cost": { "stone": 100, "gold": 150 },
       "prereqs": [],
       "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5 }
     },
     {
-      "id": "honed-edges",
-      "name": "Honed Edges",
-      "description": "Military II — +5 more attack damage on every combatant.",
+      "id": "tempered-edges",
+      "name": "Tempered Edges",
+      "description": "Military / Infantry II — +3 additional attack damage on Footman / Pikeman.",
       "cost": { "stone": 120, "gold": 180 },
       "prereqs": ["forgedBlades"],
-      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5 }
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackDamage",
+        "delta": 3,
+        "filter": "Footman"
+      }
     },
     {
-      "id": "long-reach",
-      "name": "Long Reach",
-      "description": "Military III — +1 attack range on every ranged combatant.",
+      "id": "phalanx-doctrine",
+      "name": "Phalanx Doctrine",
+      "description": "Military / Infantry III — formation discipline; +5 more attack damage to Pikeman.",
+      "cost": { "stone": 180, "gold": 220 },
+      "prereqs": ["tempered-edges"],
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackDamage",
+        "delta": 5,
+        "filter": "Pikeman"
+      }
+    },
+    {
+      "id": "imperial-guard",
+      "name": "Imperial Guard",
+      "description": "Military / Infantry IV — unlock Hero training from the Barracks.",
+      "cost": { "stone": 250, "gold": 280 },
+      "prereqs": ["phalanx-doctrine"],
+      "effect": { "kind": "unlock-unit", "unitType": "Hero", "fromBuildingType": "Barracks" }
+    },
+    {
+      "id": "iron-tipped-arrows",
+      "name": "Iron-Tipped Arrows",
+      "description": "Military / Archer I — +1 attack range on every ranged combatant.",
       "cost": { "wood": 120, "gold": 120 },
-      "prereqs": ["forgedBlades"],
+      "prereqs": [],
       "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 1 }
     },
     {
-      "id": "siege-engineering",
-      "name": "Siege Engineering",
-      "description": "Military IV — Trebuchet trainable from a tier-1 Barracks instead of tier-2.",
+      "id": "composite-bows",
+      "name": "Composite Bows",
+      "description": "Military / Archer II — +1 more attack range, Archer only.",
+      "cost": { "wood": 140, "gold": 160 },
+      "prereqs": ["iron-tipped-arrows"],
+      "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 1, "filter": "Archer" }
+    },
+    {
+      "id": "volley-fire",
+      "name": "Volley Fire",
+      "description": "Military / Archer III — Archer attack damage +3.",
+      "cost": { "wood": 160, "gold": 200 },
+      "prereqs": ["composite-bows"],
+      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 3, "filter": "Archer" }
+    },
+    {
+      "id": "masterwork-bows",
+      "name": "Masterwork Bows",
+      "description": "Military / Archer IV — Archer attack range +2 (capstone).",
+      "cost": { "wood": 220, "gold": 260 },
+      "prereqs": ["volley-fire"],
+      "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 2, "filter": "Archer" }
+    },
+    {
+      "id": "sapper-training",
+      "name": "Sapper Training",
+      "description": "Military / Siege I — siege engineering flag, -15% siege build time.",
       "cost": { "wood": 120, "stone": 100, "gold": 60 },
-      "prereqs": ["forgedBlades"],
+      "prereqs": [],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "warrior-cult",
-      "name": "Warrior Cult",
-      "description": "Military V — +10 attack damage when stacked in a Cadre or Wedge formation.",
-      "cost": { "stone": 200, "gold": 200 },
-      "prereqs": ["honed-edges"],
-      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 10 }
+      "id": "catapult-blueprints",
+      "name": "Catapult Blueprints",
+      "description": "Military / Siege II — unlock Trebuchet training from the Barracks (in addition to Workshop).",
+      "cost": { "wood": 160, "stone": 140, "gold": 120 },
+      "prereqs": ["sapper-training"],
+      "effect": { "kind": "unlock-unit", "unitType": "Trebuchet", "fromBuildingType": "Barracks" }
+    },
+    {
+      "id": "reinforced-trebuchets",
+      "name": "Reinforced Trebuchets",
+      "description": "Military / Siege III — Trebuchet attack damage +5.",
+      "cost": { "wood": 180, "stone": 180, "gold": 160 },
+      "prereqs": ["catapult-blueprints"],
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackDamage",
+        "delta": 5,
+        "filter": "Trebuchet"
+      }
+    },
+    {
+      "id": "seismic-engines",
+      "name": "Seismic Engines",
+      "description": "Military / Siege IV — Trebuchet attack damage +10 (capstone).",
+      "cost": { "wood": 240, "stone": 240, "gold": 220 },
+      "prereqs": ["reinforced-trebuchets"],
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackDamage",
+        "delta": 10,
+        "filter": "Trebuchet"
+      }
+    },
+    {
+      "id": "armored-saddles",
+      "name": "Armored Saddles",
+      "description": "Military / Cavalry I — Knight unlocked + base profile (when prerequisite met by chapter / starter).",
+      "cost": { "wood": 100, "stone": 100, "gold": 140 },
+      "prereqs": [],
+      "effect": { "kind": "unlock-unit", "unitType": "Knight", "fromBuildingType": "Barracks" }
+    },
+    {
+      "id": "barbed-spears",
+      "name": "Barbed Spears",
+      "description": "Military / Cavalry II — Pikeman attack damage +3 (anti-cavalry counter).",
+      "cost": { "wood": 120, "stone": 100, "gold": 160 },
+      "prereqs": ["armored-saddles"],
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackDamage",
+        "delta": 3,
+        "filter": "Pikeman"
+      }
+    },
+    {
+      "id": "charge-tactics",
+      "name": "Charge Tactics",
+      "description": "Military / Cavalry III — Knight attack damage +5.",
+      "cost": { "wood": 140, "stone": 140, "gold": 200 },
+      "prereqs": ["barbed-spears"],
+      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5, "filter": "Knight" }
+    },
+    {
+      "id": "royal-cavalry",
+      "name": "Royal Cavalry",
+      "description": "Military / Cavalry IV — Knight attack damage +10 (capstone).",
+      "cost": { "stone": 220, "gold": 280 },
+      "prereqs": ["charge-tactics"],
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackDamage",
+        "delta": 10,
+        "filter": "Knight"
+      }
     },
 
     {
@@ -294,7 +412,7 @@
       "name": "Siege Foundry",
       "description": "Engineering V — Trebuchets get +50% range and +25% damage; cost +25% gold.",
       "cost": { "stone": 240, "gold": 280 },
-      "prereqs": ["siege-engineering", "rampart-doctrine"],
+      "prereqs": ["sapper-training", "rampart-doctrine"],
       "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 2 }
     },
 
