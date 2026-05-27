@@ -150,11 +150,22 @@ chains; v0.12 expands to 100+ via depth + breadth + meta-tiers.
       apply(world, ctx?). 8 unit tests in
       tests/unit/discovery-effect-kinds-v12.test.ts pin each
       kind's mutation. Test count 1203 → 1211.
-- [ ] M_V12.DEPTH.CHAIN-EXPANSION — implement the Economy chain
-      first (16-row depth × 4 tiers + branches). Each row gets a
-      registry entry, an in-game effect (modifier on harvest
-      tick / cost / supply / etc.), a HUD entry, and a unit test
-      pinning the effect.
+- [x] M_V12.DEPTH.CHAIN-EXPANSION — Economy chain expanded from 5
+      to 16 entries (4 specs × 4 tiers: harvest /
+      cap / trade / tax) per the upgrade-graph doc. Existing 5
+      ids preserved (steelPlows / iron-tools / logistics-doctrine
+      / trade-route / treasury-vault) so save-load + existing
+      tests stay green. New entries: grand-mill (harvest IV),
+      bulk-baskets+granary-vault+warehouses+imperial-stores (cap
+      I-IV using modify-supply), bartering-school+guild-charter+
+      global-bazaar (trade II-IV with guild-charter using
+      unlock-building), golden-coin-mint+toll-keeps+regional-taxes
+      (tax I-III, toll-keeps using buff-building/output, treasury-
+      vault re-typed from flag to buff-building/output). Test
+      count 1211 → 1215 with tests/unit/economy-chain-v12.test.ts
+      pinning 16 entries + tier-chained prereqs + 4 standalone
+      tier-1 heads. HUD entry is M_V12.DEPTH.UPGRADE-HUD below
+      (separate item — Discoveries panel rewrite).
 - [ ] M_V12.DEPTH.MILITARY-CHAIN — parallel chain expansion: 4
       tiers × 4 specialisations (infantry / archer / siege /
       cavalry), each with stat-modifier upgrades + unit-unlock

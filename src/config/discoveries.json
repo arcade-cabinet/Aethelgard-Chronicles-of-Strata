@@ -3,7 +3,7 @@
     {
       "id": "steelPlows",
       "name": "Steel Plows",
-      "description": "Economy I — ×1.5 harvest rate on every peon.",
+      "description": "Economy / Harvest I — ×1.5 harvest rate on every peon.",
       "cost": { "wood": 50, "gold": 100 },
       "prereqs": [],
       "effect": { "kind": "multiply-harvest", "factor": 1.5 }
@@ -11,7 +11,7 @@
     {
       "id": "iron-tools",
       "name": "Iron Tools",
-      "description": "Economy II — +25% Peon harvest rate (stacks with Steel Plows).",
+      "description": "Economy / Harvest II — +25% Peon harvest rate (stacks with Steel Plows).",
       "cost": { "stone": 80, "gold": 100 },
       "prereqs": ["steelPlows"],
       "effect": { "kind": "multiply-harvest", "factor": 1.25 }
@@ -19,26 +19,119 @@
     {
       "id": "logistics-doctrine",
       "name": "Logistics Doctrine",
-      "description": "Economy III — peons carry 50% more per trip (×1.15 effective harvest).",
+      "description": "Economy / Harvest III — peons carry 50% more per trip (×1.15 effective harvest).",
       "cost": { "wood": 120, "stone": 80, "gold": 80 },
       "prereqs": ["iron-tools"],
       "effect": { "kind": "multiply-harvest", "factor": 1.15 }
     },
     {
+      "id": "grand-mill",
+      "name": "Grand Mill",
+      "description": "Economy / Harvest IV — additional ×1.10 effective harvest from labor-augmenting watermills.",
+      "cost": { "wood": 200, "stone": 100, "gold": 150 },
+      "prereqs": ["logistics-doctrine"],
+      "effect": { "kind": "multiply-harvest", "factor": 1.1 }
+    },
+    {
+      "id": "bulk-baskets",
+      "name": "Bulk Baskets",
+      "description": "Economy / Cap I — +25 supply cap from larger storage baskets.",
+      "cost": { "wood": 60, "gold": 80 },
+      "prereqs": [],
+      "effect": { "kind": "modify-supply", "delta": 25 }
+    },
+    {
+      "id": "granary-vault",
+      "name": "Granary Vault",
+      "description": "Economy / Cap II — +50 supply cap from sealed granary vaults.",
+      "cost": { "stone": 120, "gold": 90 },
+      "prereqs": ["bulk-baskets"],
+      "effect": { "kind": "modify-supply", "delta": 50 }
+    },
+    {
+      "id": "warehouses",
+      "name": "Warehouses",
+      "description": "Economy / Cap III — +100 supply cap from large-block warehouse construction.",
+      "cost": { "wood": 100, "stone": 150, "gold": 120 },
+      "prereqs": ["granary-vault"],
+      "effect": { "kind": "modify-supply", "delta": 100 }
+    },
+    {
+      "id": "imperial-stores",
+      "name": "Imperial Stores",
+      "description": "Economy / Cap IV — +200 supply cap from imperial-grade storage networks.",
+      "cost": { "stone": 250, "gold": 200 },
+      "prereqs": ["warehouses"],
+      "effect": { "kind": "modify-supply", "delta": 200 }
+    },
+    {
       "id": "trade-route",
       "name": "Trade Route",
-      "description": "Economy IV — unlocks the Trade widget; 1:1 swap of wood/stone/gold with any non-enemy faction.",
+      "description": "Economy / Trade I — unlocks the Trade widget; 1:1 swap of wood/stone/gold with any non-enemy faction.",
       "cost": { "wood": 80, "gold": 120 },
-      "prereqs": ["steelPlows"],
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "bartering-school",
+      "name": "Bartering School",
+      "description": "Economy / Trade II — -15% trade-cost flag for the Trade widget.",
+      "cost": { "wood": 100, "gold": 140 },
+      "prereqs": ["trade-route"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "guild-charter",
+      "name": "Guild Charter",
+      "description": "Economy / Trade III — Market building becomes constructible for ally-trade automation.",
+      "cost": { "wood": 150, "stone": 100, "gold": 180 },
+      "prereqs": ["bartering-school"],
+      "effect": { "kind": "unlock-building", "buildingType": "Market" }
+    },
+    {
+      "id": "global-bazaar",
+      "name": "Global Bazaar",
+      "description": "Economy / Trade IV — auto-1:1 swap any resource pair via Markets, no per-trade cost.",
+      "cost": { "wood": 200, "stone": 150, "gold": 250 },
+      "prereqs": ["guild-charter"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "golden-coin-mint",
+      "name": "Golden Coin Mint",
+      "description": "Economy / Tax I — flag enabling +5% gold from every income source.",
+      "cost": { "stone": 80, "gold": 100 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "toll-keeps",
+      "name": "Toll Keeps",
+      "description": "Economy / Tax II — every Watchtower contributes +1 gold/sec from regional tolls.",
+      "cost": { "stone": 120, "gold": 130 },
+      "prereqs": ["golden-coin-mint"],
+      "effect": {
+        "kind": "buff-building",
+        "buildingType": "Watchtower",
+        "stat": "output",
+        "delta": 1
+      }
+    },
+    {
+      "id": "regional-taxes",
+      "name": "Regional Taxes",
+      "description": "Economy / Tax III — +1 gold/sec per Palace zone-of-control tile.",
+      "cost": { "stone": 180, "gold": 180 },
+      "prereqs": ["toll-keeps"],
       "effect": { "kind": "flag" }
     },
     {
       "id": "treasury-vault",
       "name": "Treasury Vault",
-      "description": "Economy V — every Palace generates +1 gold/sec from regional taxes.",
-      "cost": { "stone": 200, "gold": 150 },
-      "prereqs": ["trade-route"],
-      "effect": { "kind": "flag" }
+      "description": "Economy / Tax IV — Palace generates +2 gold/sec from treasury vaults.",
+      "cost": { "stone": 250, "gold": 200 },
+      "prereqs": ["regional-taxes"],
+      "effect": { "kind": "buff-building", "buildingType": "Palace", "stat": "output", "delta": 2 }
     },
 
     {
