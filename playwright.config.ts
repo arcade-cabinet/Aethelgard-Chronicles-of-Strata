@@ -63,6 +63,14 @@ const JOURNEY_SPECS = [
   // p95 has run-to-run variance under headless WebGL load that
   // makes it unsafe as a tier-1 gate. Opt-in via JOURNEY=1.
   'e2e/perf-mobile-trace.spec.ts',
+  // M_V11.CI.FLAKE — n-player-camp-clear runs a 24000-frame burst
+  // in a single page.evaluate that times out under CI's WebGL load
+  // (~240s wall on GitHub-hosted runners, intermittent). The
+  // deterministic version of the same contract lives in
+  // tests/browser/barbarian-camp-clear.browser.test.ts; this
+  // playwright spec was the artifact capture for the multi-faction
+  // tick stability. Opt-in via JOURNEY=1 for on-demand runs.
+  'e2e/n-player-camp-clear.spec.ts',
 ];
 const baseE2eGlob = 'e2e/**/*.spec.ts';
 const testMatch = includeVisual ? [baseE2eGlob, 'visual/**/*.spec.ts'] : [baseE2eGlob];
