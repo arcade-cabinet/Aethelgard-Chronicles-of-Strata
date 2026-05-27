@@ -47,6 +47,9 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
   const reducedMotion = useReducedMotion() ?? false;
   const [outcome, setOutcome] = useState<GameOutcome>(game.outcome);
   const lorebookWrittenRef = useRef(false);
+  // M_V12.MOBILE.HAPTICS — ref-guard so the haptic fires once per
+  // terminal state, not on every outcome re-set.
+  const hapticFiredRef = useRef(false);
 
   useEffect(() => {
     let raf = 0;
@@ -73,6 +76,23 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
       window.removeEventListener('aethelgard:outcome-changed', onOutcomeChanged);
     };
   }, [game]);
+
+  // M_V12.MOBILE.HAPTICS — fire victory/defeat haptic once per
+  // terminal state. Capacitor stub no-ops on web; Android device
+  // fires through the system haptics channel. Respects user
+  // opt-out via setHapticsEnabled (lib/haptics.ts).
+  useEffect(() => {
+    if (outcome === 'playing') return;
+    if (hapticFiredRef.current) return;
+    hapticFiredRef.current = true;
+    void (async () => {
+      const { hapticVictory, hapticDefeat } = await import('@/lib/haptics');
+      if (outcome === 'win') void hapticVictory();
+      else if (outcome === 'loss') void hapticDefeat();
+      // 'draw' intentionally no haptic — neither celebratory nor
+      // mournful; the match-end UI animation carries the tone.
+    })();
+  }, [outcome]);
 
   // Lorebook write w/ exponential backoff. `game` deliberately omitted
   // from deps — the closure captures once at firing time.

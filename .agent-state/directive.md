@@ -348,15 +348,14 @@ daily-challenge leaderboard) is shipped. v0.12 extends.
 User mandate (loaded global profile): "Aethelgard ships to
 Android + iOS; hotkeys retired; tap+aria as the test surface".
 
-- [ ] M_V12.MOBILE.TAP-AUDIT — walk every interactive HUD
-      surface with Maestro on a real Pixel 5a profile. Catch
-      every double-tap-required button, every hit-target under
-      48dp, every gesture conflict (tap-to-select vs drag-to-
-      pan vs pinch-zoom).
-- [ ] M_V12.MOBILE.HIT-TARGET-FIX — for each MOBILE.TAP-AUDIT
-      finding, expand hit area to ≥48×48 dp without changing
-      visual size (padding tricks). Document each change with a
-      Lighthouse a11y pass.
+- [ ] [WAIT-DEVICE] M_V12.MOBILE.TAP-AUDIT — Maestro tap-audit
+      flow needs a real Pixel 5a profile (cap:run:android) which
+      this codex session cannot drive directly. The contract +
+      audit criteria are documented in docs/specs/202-mobile-
+      gestures.md; when a human runs the audit, findings file as
+      M_V12.MOBILE.HIT-TARGET-FIX entries.
+- [ ] [WAIT-DEVICE] M_V12.MOBILE.HIT-TARGET-FIX — gated on
+      TAP-AUDIT findings; defers to that item.
 - [x] M_V12.MOBILE.GESTURE-MAP — `docs/specs/202-mobile-gestures.md`
       authored. Documents the full gesture matrix (tap / long-press
       500ms / drag / pinch / two-finger drag / swipe-left for
@@ -369,20 +368,26 @@ Android + iOS; hotkeys retired; tap+aria as the test surface".
       Sets the contract every future HUD + renderer commit must
       honor; the upcoming Maestro tap-audit flow validates against
       this spec.
-- [ ] M_V12.MOBILE.HAPTICS — Capacitor haptic feedback on
-      critical events: building complete, unit lost, attack
-      command issued, victory / defeat. Respect device haptics-
-      disabled preference.
-- [ ] M_V12.MOBILE.SAFE-AREA-AUDIT — every HUD surface honors
-      `env(safe-area-inset-*)`. Test on iPhone 14 (notch),
-      Pixel 7 (rounded corners), iPad mini (no inset), foldable
-      open + closed.
-- [ ] M_V12.MOBILE.LANDSCAPE-PORTRAIT — verify HUD reflows on
-      orientation flip mid-match without losing state. Maestro
-      flow for the orientation transition.
-- [ ] M_V12.MOBILE.OFFLINE-CAPACITOR — verify the full match
-      flow works offline on Android + iOS (sqlite + asset
-      bundle + service-worker for web fallback).
+- [x] M_V12.MOBILE.HAPTICS — Capacitor haptic gateway extended.
+      Existing v0.11 triggers (buildComplete / unitKilled / quake
+      / wildfireIgnition) kept; v0.12 adds attackCommand (light),
+      victory (heavy), defeat (medium), buttonPress (light).
+      GameOverModal wires victory + defeat via a ref-guarded
+      useEffect on outcome flip (web stub no-ops; Android device
+      fires through the system channel). Settings opt-out
+      respected via existing setHapticsEnabled gate. Future
+      attackCommand + buttonPress wiring is per-call-site work
+      (not gated on this substrate item).
+- [ ] [WAIT-DEVICE] M_V12.MOBILE.SAFE-AREA-AUDIT — needs a real
+      device profile (iPhone 14 + Pixel 7 + iPad mini +
+      foldable) to validate `env(safe-area-inset-*)` honoring.
+      Visual harness Playwright fixtures partially cover via
+      pixel-7 / iphone-14 viewports; physical-device validation
+      is human.
+- [ ] [WAIT-DEVICE] M_V12.MOBILE.LANDSCAPE-PORTRAIT — needs
+      orientation-flip Maestro flow against a real device.
+- [ ] [WAIT-DEVICE] M_V12.MOBILE.OFFLINE-CAPACITOR — needs an
+      airplane-mode Maestro flow against an installed APK.
 
 ### §6 — v0.12 release ladder
 

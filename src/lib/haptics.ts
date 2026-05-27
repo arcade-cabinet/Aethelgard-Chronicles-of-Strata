@@ -53,3 +53,26 @@ export function hapticQuake(): Promise<void> {
 export function hapticWildfireIgnition(): Promise<void> {
   return safeImpact(ImpactStyle.Light);
 }
+
+// M_V12.MOBILE.HAPTICS — additional semantic triggers per
+// docs/specs/PRD-v0.12.md §5 mobile polish.
+
+/** Attack command issued (tap on enemy + send) — light confirm tap. */
+export function hapticAttackCommand(): Promise<void> {
+  return safeImpact(ImpactStyle.Light);
+}
+
+/** Victory — heavy success-long thunk. The match-end modal calls this. */
+export function hapticVictory(): Promise<void> {
+  return safeImpact(ImpactStyle.Heavy);
+}
+
+/** Defeat — medium warning-long thump. The match-end modal calls this. */
+export function hapticDefeat(): Promise<void> {
+  return safeImpact(ImpactStyle.Medium);
+}
+
+/** Generic UI button-press feedback — soft light tap. */
+export function hapticButtonPress(): Promise<void> {
+  return safeImpact(ImpactStyle.Light);
+}
