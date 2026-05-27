@@ -13,6 +13,7 @@ import {
   HexPosition,
   Unit,
 } from '@/ecs/components';
+import { isAlly } from '@/game/diplomacy';
 import type { GameState } from '@/game/game-state';
 import { matchElapsedSeconds } from '@/game/match-time';
 import { MILITARY_ROLES } from '@/rules/unit-profiles';
@@ -86,7 +87,14 @@ export function discoveredEnemyTile(
 ): string | null {
   const myZone = game.zones[faction].controlled;
   for (const e of game.world.query(FactionTrait, HexPosition)) {
-    if (e.get(FactionTrait)?.faction === faction) continue;
+    const otherFaction = e.get(FactionTrait)?.faction;
+    if (otherFaction === faction) continue;
+    // M_V12.AI-DIPLO.TIMED-ALLY-USE — never target an ally's
+    // entities. Timed alliances (5-min ally relation, expires
+    // via tickAllianceExpiry) protect both factions from the
+    // other's MilitaryEvaluator. When the window expires the
+    // relation drops back to neutral and targeting resumes.
+    if (otherFaction && isAlly(game.diplomacy, faction, otherFaction as Faction)) continue;
     const h = e.get(HexPosition);
     if (!h) continue;
     const key = `${h.q},${h.r}`;

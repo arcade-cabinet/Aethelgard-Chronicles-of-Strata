@@ -301,18 +301,22 @@ v0.12 adds the AI brain.
       the-hoarder + the-mad-king both 1.0 (always demand),
       the-raider 0.4 (opportunistic), the-builder + the-diplomat
       both 0 (never).
-- [ ] M_V12.AI-DIPLO.TIMED-ALLY-USE — AI uses timed-alliance
-      windows tactically: focus-fire on a third faction during
-      a 5-min ally window; recover diplomatically when window
-      expires. Substrate (timed alliances + ally relations) is
-      there; this is the MilitaryEvaluator target-pick + the
-      recovery overture logic. Next-cycle.
-- [ ] M_V12.AI-DIPLO.DIPLOMAT-UNIT — AI trains Diplomats from
-      Embassy when relations matter; walks them into foreign
-      zones to establish contact (already-wired physical path
-      from v0.11 #77d). Substrate is the physical-walk system;
-      AI just needs to add Diplomat to the trainable-unit
-      bucket. Next-cycle.
+- [x] M_V12.AI-DIPLO.TIMED-ALLY-USE — discoveredEnemyTile in
+      src/ai/helpers.ts now skips entities whose faction is
+      currently an ally of the seeking faction via isAlly()
+      gate. When the alliance expires (tickAllianceExpiry drops
+      the row), targeting resumes naturally on the next
+      arbitration. 2 unit tests in
+      tests/unit/ai-timed-ally-target-skip-v12.test.ts pin both
+      paths (ally-skip + expiry-restore).
+- [x] M_V12.AI-DIPLO.DIPLOMAT-UNIT — TrainEvaluator gained a
+      Diplomat branch: when the AI faction owns an Embassy AND
+      can afford UNIT_COSTS.Diplomat AND canTrain(eco, Diplomat)
+      passes, it queues a Diplomat. The Diplomat then walks into
+      foreign zones via the v0.11 diplomat-contact system to
+      establish first-contact. Defense-coded: UNIT_COSTS.Diplomat
+      existence check protects against config drift (older v0.11
+      saves lacking the entry skip the branch silently).
 
 ### §4 — Persistence + lorebook depth (M_V12.PERSIST)
 
