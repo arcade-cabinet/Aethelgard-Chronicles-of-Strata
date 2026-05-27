@@ -18,7 +18,16 @@ import type { Discovery, DiscoveryApplyCtx } from './discoveries';
  * The v0.11 kinds keep their old shape; new kinds silently no-op when ctx
  * is missing (the camp-reward grant path passes no ctx today).
  */
-function applyEffect(effect: DiscoveryEffect, world: World, ctx?: DiscoveryApplyCtx): void {
+/**
+ * Exported so tests in `tests/unit/discovery-effect-kinds-v12.test.ts`
+ * can exercise the production dispatcher directly per CodeRabbit
+ * MAJOR review on PR #90 (which observed that the test was
+ * re-implementing the switch and would pass even if the real
+ * dispatcher regressed differently). Public-but-test-only API:
+ * production callers go through `Discovery.apply` (closed over
+ * its config row) so the test path is the only consumer.
+ */
+export function applyEffect(effect: DiscoveryEffect, world: World, ctx?: DiscoveryApplyCtx): void {
   switch (effect.kind) {
     case 'buff-combatant':
       world.query(Combatant).updateEach(([c], entity) => {
