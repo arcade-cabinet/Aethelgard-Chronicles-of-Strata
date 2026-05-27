@@ -30,6 +30,8 @@ import { buildSystem } from '@/ecs/systems/build';
 import { buildingDeathSystem } from '@/ecs/systems/building-death';
 import { combatSystem, type DamageEvent } from '@/ecs/systems/combat';
 import { deathSystem } from '@/ecs/systems/death';
+import { diplomatContactSystem } from '@/ecs/systems/diplomat-contact';
+import { engineerRepairSystem } from '@/ecs/systems/engineer-repair';
 import { depositSystem, type ResourceDepositEvent } from '@/ecs/systems/deposit';
 import { encroachmentSystem } from '@/ecs/systems/encroachment';
 import { harvestSystem } from '@/ecs/systems/harvest';
@@ -89,6 +91,10 @@ export function tickClockPhase(game: GameState, delta: number): void {
   // their expiresAtSeconds; the relation flips to 'neutral' silently
   // (the HUD's DiplomacyModal renders the change next time it opens).
   tickAllianceExpiry(game.diplomacy, game.clock.elapsed);
+  // M_V11.UNITS-EXPANSION (#77d runtime wire-up) — Diplomat units
+  // establish has-had-contact when walking into foreign-faction
+  // zones. Idempotent; cheap O(diplomats × factions).
+  diplomatContactSystem(game);
   // M_V7.PORTAL-STONES.TRIGGER — random-event roll for the rare
   // portal-stones placement (1-in-200 once map clock > 5min,
   // at-most-once-per-match). Mutates board.tiles on a successful
@@ -190,7 +196,10 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
     // on tile convergence (cap 6 per stack). Cheap parallel sweep
     // mirroring the work-crew form pass.
     autoFormMobRabble(game);
-    buildSystem(game.world, game.buildSites, delta);
+    buildSystem(game.world, game.buildSites, delta, game);
+    // M_V11.UNITS-EXPANSION (#77d runtime wire-up) — Engineers heal
+    // friendly buildings within 1 hex at +5 hp/sec.
+    engineerRepairSystem(game, delta);
     // Credit first-House completion per faction (cheap O(buildings) sweep).
     if (
       game.economy.player.peonMetrics.firstHouseAt < 0 ||
