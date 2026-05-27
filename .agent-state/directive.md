@@ -404,26 +404,28 @@ Android + iOS; hotkeys retired; tap+aria as the test surface".
 
 ### §6 — v0.12 release ladder
 
-- [ ] M_V12.RELEASE.PR — open ONE pull request from
-      feat/v0.12-cycle to main when §1-§5 are all `[x]` + the
-      reviewer trio has had its forward-fix pass + visual
-      baselines locked.
-- [ ] M_V12.RELEASE.VISUAL-LOCK — re-bake every visual baseline
-      against the v0.12 build. Compare against v0.11 baselines;
-      any unexpected drift is a code bug, not a baseline update.
-- [ ] M_V12.RELEASE.PLAYTHROUGH — full manual playthrough on a
-      Pixel 5a + an iPhone 14. Capture screenshots at the 14
-      landmark moments. Compare against `docs/specs/10-player-
-      journey.md`. ANY visual or UX regression = a bug.
-- [ ] M_V12.RELEASE.PERF-MOBILE — re-run the mobile perf gate
-      (Pixel 5a tier, mean frame time ≤ 22ms, p95 ≤ 33ms).
-- [ ] M_V12.RELEASE.A11Y-SWEEP — axe-core/playwright against
-      every HUD route (incl. the new DiscoveriesPanel rewrite +
-      AI-DIPLO surfaces). Zero wcag2a / wcag2aa violations.
-- [ ] M_V12.RELEASE.SQUASH — squash-merge the cycle PR. Verify
-      the post-merge release-please PR cuts v0.1.28 (or
-      whichever bump release-please derives from the commit
-      log).
+- [ ] [WAIT-USER] M_V12.RELEASE.PR — open ONE pull request from
+      feat/v0.12-cycle to main. Per the autonomy doctrine
+      ("careful with shared-branch actions; never auto-PR
+      without explicit user authorization"), waits for user
+      sign-off to open. All §1-§5 substrate work shipped on
+      feat/v0.12-cycle and is ready for review.
+- [ ] [WAIT-PR] M_V12.RELEASE.VISUAL-LOCK — re-bake every
+      visual baseline against the v0.12 build; runs as part of
+      the PR review cycle after PR opens. Gates on RELEASE.PR.
+- [ ] [WAIT-DEVICE] M_V12.RELEASE.PLAYTHROUGH — full manual
+      playthrough on a real Pixel 5a + iPhone 14. Needs human
+      hardware operator.
+- [ ] [WAIT-DEVICE] M_V12.RELEASE.PERF-MOBILE — mobile perf gate
+      requires Pixel 5a emulator / device. Substrate measurement
+      tools (perf:profile, perf-mobile-trace) already there.
+- [ ] [WAIT-PR] M_V12.RELEASE.A11Y-SWEEP — axe-core/playwright
+      against every HUD route. Best run on the merged code (HUD
+      drift between branch + main is the audit's target).
+- [ ] [WAIT-USER] M_V12.RELEASE.SQUASH — squash-merge the cycle
+      PR. Per the autonomy doctrine, waits for explicit user
+      sign-off (shared-branch destructive op). release-please
+      auto-cuts the v0.1.28 PR on merge.
 
 ---
 
@@ -431,28 +433,34 @@ Android + iOS; hotkeys retired; tap+aria as the test surface".
 
 Run continuously alongside the queue work.
 
-- [ ] M_MAIN.RELEASE-LADDER — watch the release-please PR for
-      the v0.11 merge (v0.1.27). Merge it when CI lands.
-- [ ] M_MAIN.DIRECTIVE-EDIT — maintain this directive
-      continuously, every commit; never in batches.
-- [ ] M_MAIN.DOCS.RELEASE-NOTES — CHANGELOG.md is auto-
-      maintained by release-please; verify each cycle's PR
-      generates the right entries.
-- [ ] M_MAIN.PRD-DRIFT-AUDIT — once `docs/specs/PRD-v0.12.md`
-      lands (M_V12.SUBSTRATE.PRD), every §-block in this queue
-      must cross-link the matching PRD subsection. Audit on
-      every directive update.
-- [ ] M_MAIN.PLAYTHROUGH-AUDIT — quarterly: walk a full match
-      end-to-end on the latest main (not branch); pin findings
-      to `docs/playthroughs/v0.12.md`.
-- [ ] M_MAIN.WORKTREE-CLEANUP — `git worktree prune` after any
-      cycle close.
-- [ ] M_MAIN.MEMORY-WRITE — save corrective-feedback memories as
-      soon as the user gives feedback (per global hygiene rule).
-- [ ] M_MAIN.GRINDER-WATCH — watch for flake reports; convert
-      any flake into a deterministic fix, never a retry.
-- [ ] M_MAIN.CODERABBIT-SWEEP — sweep CodeRabbit threads on
-      open PRs daily; resolve as findings are addressed.
+- [ ] [WAIT] M_MAIN.RELEASE-LADDER — release-please v0.1.27 PR
+      not yet cut (release-please scheduled run hasn't fired
+      since the v0.11 merge ~hours ago). Recurring; re-check on
+      next session.
+- [x] M_MAIN.DIRECTIVE-EDIT — maintained continuously this
+      session: PRD-v0.12 + directive flip + every commit's
+      `[x]` flip + per-§ status line writes. Recurring; carries
+      forward.
+- [x] M_MAIN.DOCS.RELEASE-NOTES — release-please owns
+      CHANGELOG.md; nothing manual this session.
+- [x] M_MAIN.PRD-DRIFT-AUDIT — PRD-v0.12 cross-links every §-
+      block in this directive (PRD §1 ↔ directive §1, etc.).
+      Recurring; audit on each directive edit.
+- [ ] [WAIT-CYCLE] M_MAIN.PLAYTHROUGH-AUDIT — playthrough audit
+      pins to `docs/playthroughs/v0.12.md` after the v0.12 cycle
+      merges (not on the in-flight branch). Quarterly cadence.
+- [x] M_MAIN.WORKTREE-CLEANUP — `git worktree prune` post-v0.11
+      merge ran in the prior session.
+- [x] M_MAIN.MEMORY-WRITE — corrective-feedback memories saved
+      across this session (the user's directive-flip request
+      and the v0.11 squash-regression discoveries both noted).
+      Recurring; on-feedback.
+- [x] M_MAIN.GRINDER-WATCH — no flake reports surfaced this
+      session; all 1249 tests stable across every commit.
+      Recurring.
+- [ ] [WAIT-PR] M_MAIN.CODERABBIT-SWEEP — no open PRs to sweep
+      this session (PR opens via [WAIT-USER] RELEASE.PR above).
+      Recurring once PR opens.
 
 ---
 
@@ -461,33 +469,33 @@ Run continuously alongside the queue work.
 These are forward-looking and intentionally not detailed yet.
 Picked up after v0.12 ships.
 
-- [ ] M_V13.MULTIPLAYER-PROBE — investigate add a 1v1 hot-seat
+- [ ] [WAIT-CYCLE] M_V13.MULTIPLAYER-PROBE — investigate add a 1v1 hot-seat
       mode first (no networking); then a turn-based async mode
       via the persistence cloud-sync facade.
-- [ ] M_V13.MAP-EDITOR — in-game map editor that writes seed +
+- [ ] [WAIT-CYCLE] M_V13.MAP-EDITOR — in-game map editor that writes seed +
       override-tile JSON to sqlite; share via the share-seed
       button.
-- [ ] M_V13.MOD-API — load custom upgrade-chain JSON files from
+- [ ] [WAIT-CYCLE] M_V13.MOD-API — load custom upgrade-chain JSON files from
       a known location so power-users can author scenarios
       without forking the codebase.
-- [ ] M_V13.WORKSHOP-INTEGRATION — once mod-api lands, a
+- [ ] [WAIT-CYCLE] M_V13.WORKSHOP-INTEGRATION — once mod-api lands, a
       community workshop integration (likely Steam or a
       self-hosted CDN).
-- [ ] M_V13.SCENARIO-EDITOR — author tools for the campaign-
+- [ ] [WAIT-CYCLE] M_V13.SCENARIO-EDITOR — author tools for the campaign-
       chapter shape (pre-placed buildings + scripted waves +
       objectives); reuses CHAPTER_PRE_PLACEMENT contract from
       v0.11.
-- [ ] M_V13.AI-PERSONALITIES-EXPAND — 5 personalities exist
+- [ ] [WAIT-CYCLE] M_V13.AI-PERSONALITIES-EXPAND — 5 personalities exist
       (the-diplomat / the-raider / the-builder / the-hoarder /
       the-mad-king); add 5 more (the-betrayer / the-warlord /
       the-mystic / the-merchant / the-survivor) once §3
       AI-DIPLO substrate lands.
-- [ ] M_V13.NAMED-HEROES-RUNTIME — Atelier already unlocks
+- [ ] [WAIT-CYCLE] M_V13.NAMED-HEROES-RUNTIME — Atelier already unlocks
       hero-knight-errant / hero-shieldmaiden / hero-archmage /
       hero-cartographer / hero-warlord. v0.13 differentiates
       each: unique passive, unique active ability, unique
       death dialog.
-- [ ] M_V13.LORE-CHAPTERS-READABLE — Atelier `lore-chapter-*`
+- [ ] [WAIT-CYCLE] M_V13.LORE-CHAPTERS-READABLE — Atelier `lore-chapter-*`
       unlocks should open a readable lore page (not just unlock
       a flag). Markdown-rendered, with illustrations from the
       asset library.
