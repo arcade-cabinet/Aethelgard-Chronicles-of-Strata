@@ -79,7 +79,7 @@ import { findBalancedBoard, matchLengthScale } from './mapgen-helpers';
 import { createMythEventsState, type MythEventsState } from './myth-events';
 import { createRally, type RallyState } from './rally';
 import { createRandomEventsState, type RandomEventsState } from './random-events';
-import { createResearch, type ResearchState } from './research';
+import { createResearch, type ResearchId, type ResearchState } from './research';
 import { createWeather, type Weather } from './weather';
 import { createZoneState, seedZonesFromAttractors, type ZoneState } from './zone';
 
@@ -1110,14 +1110,12 @@ function applyChainStarters(game: GameState, unlocked: ReadonlyArray<string>): v
     if (!discoveryId) continue; // not a chain-starter id; skip.
     const d = discoveryById(discoveryId);
     if (!d) continue;
-    // ResearchId is a branded string; runtime values are plain
-    // strings registered in the JSON. The branded type guards
-    // against callers passing random strings without registry
-    // validation — chain-starter mapping is validated above via
-    // discoveryById, so the brand is safe here.
-    const branded = discoveryId as unknown as Parameters<typeof game.research.purchased.add>[0];
-    if (game.research.purchased.has(branded)) continue;
-    game.research.purchased.add(branded);
+    // Reviewer-pass simplification: cast directly to ResearchId
+    // since chain-starter mapping is validated above via
+    // discoveryById; the branded type is safe.
+    const rid = discoveryId as ResearchId;
+    if (game.research.purchased.has(rid)) continue;
+    game.research.purchased.add(rid);
     // Apply with a ctx so v0.12 effect kinds (modify-supply etc.)
     // can land their mutation against the player economy + a flag
     // map. building-overrides is per-match transient; not yet

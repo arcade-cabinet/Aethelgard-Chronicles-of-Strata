@@ -575,26 +575,25 @@ export function App() {
     });
   }, []);
 
-  // M_V12.DEPTH.UPGRADE-PERSISTENCE — cache the meta-unlock list
-  // on App mount so beginGame can read it synchronously. v0.12
-  // (commit 8f96314) made beginGame async to await the read here;
-  // that broke browser tests whose enterGame() helper expected the
-  // session to be live immediately after the Begin click. Hooks
-  // declared BEFORE the early returns below per rules-of-hooks.
-  // Reads default to [] if the fetch hasn't resolved yet (baseline
-  // match w/ no chain-starters, identical to a player who's never
-  // opened the Atelier).
+  // M_V12.DEPTH.UPGRADE-PERSISTENCE — pre-fetch the meta-unlock
+  // list on App mount AND gate beginGame on the in-flight promise
+  // so a fast Begin click never silently loses paid-for Atelier
+  // unlocks (code reviewer blocker on PR #90). The cache ref holds
+  // the resolved list; the promise ref holds the in-flight fetch
+  // so beginGame can await it the rare time the cache hasn't
+  // resolved yet.
   const unlockedMetaCacheRef = useRef<string[]>([]);
+  const unlockedMetaPromiseRef = useRef<Promise<string[]> | null>(null);
   useEffect(() => {
     let cancelled = false;
-    void (async () => {
-      try {
-        const list = await persistence.listMetaUnlocks();
-        if (!cancelled) unlockedMetaCacheRef.current = list;
-      } catch (err) {
-        console.warn('[meta-progression] listMetaUnlocks failed:', err);
-      }
-    })();
+    const p = persistence.listMetaUnlocks().catch((err: unknown) => {
+      console.warn('[meta-progression] listMetaUnlocks failed:', err);
+      return [] as string[];
+    });
+    unlockedMetaPromiseRef.current = p;
+    void p.then((list) => {
+      if (!cancelled) unlockedMetaCacheRef.current = list;
+    });
     return () => {
       cancelled = true;
     };
@@ -619,8 +618,20 @@ export function App() {
     );
   }
 
-  const beginGame = (choices: NewGameChoices) => {
-    const unlockedMeta = unlockedMetaCacheRef.current;
+  const beginGame = async (choices: NewGameChoices) => {
+    // Wait for the in-flight fetch when the cache is still empty —
+    // a player who paid lore tokens for chain-starters MUST get them
+    // applied even if they click Begin before mount-time fetch
+    // resolved. The await is bounded by the persistence call's own
+    // timeout; on persistence failure the catch above resolves [].
+    let unlockedMeta = unlockedMetaCacheRef.current;
+    if (unlockedMeta.length === 0 && unlockedMetaPromiseRef.current) {
+      try {
+        unlockedMeta = await unlockedMetaPromiseRef.current;
+      } catch {
+        unlockedMeta = [];
+      }
+    }
     setConfig({
       seedPhrase: choices.seedPhrase,
       mapSize: MAP_SIZES[choices.mapSize].radius,

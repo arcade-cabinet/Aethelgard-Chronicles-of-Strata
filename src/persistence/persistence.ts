@@ -293,14 +293,21 @@ const DB_VERSION = 1;
 
 /**
  * M_V12.PERSIST.LEADERBOARD-CAP — FNV-1a 32-bit hash over a
- * string, returned as 8 hex chars. Deterministic, no crypto
- * dependency, sufficient tamper-detection for install-local
- * leaderboard rows.
+ * string, returned as 8 hex chars. NOT cryptographic integrity
+ * (32-bit space is offline-brute-forceable); used as
+ * obfuscation only. Cloud-sync MUST replace this with
+ * HMAC-SHA256 + server-bound key before treating as integrity.
+ *
+ * Reviewer M4 fix: TextEncoder().encode() iterates UTF-8 bytes
+ * rather than UTF-16 code units so non-BMP characters (emoji,
+ * future localized strings) hash deterministically across
+ * platforms instead of as surrogate pairs.
  */
 function fnv1aHexHash(input: string): string {
   let h = 0x811c9dc5;
-  for (let i = 0; i < input.length; i += 1) {
-    h ^= input.charCodeAt(i);
+  const bytes = new TextEncoder().encode(input);
+  for (let i = 0; i < bytes.length; i += 1) {
+    h ^= bytes[i] ?? 0;
     h = Math.imul(h, 0x01000193) >>> 0;
   }
   return h.toString(16).padStart(8, '0');
@@ -421,7 +428,16 @@ function rowToLorebookEntry(row: any): LorebookEntry {
     try {
       const parsedRich = JSON.parse(rj);
       if (parsedRich && typeof parsedRich === 'object' && !Array.isArray(parsedRich)) {
-        rich = parsedRich as Partial<LorebookEntry>;
+        // Security review M1: filter prototype-pollution keys
+        // before the spread-into-return below. JSON.parse can
+        // yield `__proto__` / `constructor` / `prototype` keys
+        // from a hostile sqlite write (rooted device / future
+        // cloud-sync); deleting them keeps the spread safe.
+        const safeRich = parsedRich as Record<string, unknown>;
+        delete safeRich['__proto__'];
+        delete safeRich['constructor'];
+        delete safeRich['prototype'];
+        rich = safeRich as Partial<LorebookEntry>;
       }
     } catch {
       /* leave rich = {} on parse error; v0.11-shape fallback. */
@@ -570,8 +586,15 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
         .execute(`
         ALTER TABLE lorebook ADD COLUMN rich_json TEXT;
       `)
-        .catch(() => {
-          // Column may already exist on re-runs; ignore.
+        .catch((err: unknown) => {
+          // Security review L1: only swallow "duplicate column" on
+          // re-runs; surface every other error (disk-full / corrupt
+          // DB / permission) so a degraded persistence state isn't
+          // silently hidden.
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!/duplicate column|already exists/i.test(msg)) {
+            console.warn('[persistence] lorebook rich_json migration failed:', err);
+          }
         });
       // M_V11.META-PROGRESSION — install-wide meta-unlock ledger.
       // One row per unlocked id; UNIQUE constraint makes the unlock
@@ -606,17 +629,23 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
         );
       `);
       // M_V12.PERSIST.LEADERBOARD-CAP — fingerprint column for
-      // server-side tamper detection once cloud-sync ships. The
-      // fingerprint is a stable hash of every other column +
-      // per-install salt; a hostile retroactive edit changes the
-      // row but not the fingerprint, surfacing the mismatch.
+      // tamper obfuscation. NOT cryptographic integrity: the FNV-1a
+      // 32-bit space (~4.3B) is offline-brute-forceable and the salt
+      // is a per-install PRNG seed (NOT a server-issued key). Cloud-
+      // sync MUST replace this with HMAC-SHA256 using a server-bound
+      // key before treating fingerprints as integrity proofs.
       // Additive column; v0.11 rows store NULL.
       await conn
         .execute(`
         ALTER TABLE daily_challenge_scores ADD COLUMN fingerprint TEXT;
       `)
-        .catch(() => {
-          /* column may already exist on re-runs */
+        .catch((err: unknown) => {
+          // Security review L1: only swallow "duplicate column" on
+          // re-runs; surface every other migration error.
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!/duplicate column|already exists/i.test(msg)) {
+            console.warn('[persistence] daily_challenge_scores fingerprint migration failed:', err);
+          }
         });
 
       sqliteDb = conn;
@@ -835,6 +864,15 @@ export function createPersistence(): Persistence {
     async unlockMeta(id: string, costSpent: number): Promise<void> {
       const db = await openDb();
       if (!db) return;
+      // Security review M3: validate id against the registered
+      // META_UNLOCKS_CONFIG keys before INSERT so a tampered call
+      // (rooted device / future cloud-sync) can't seed a fabricated
+      // id that later drives applyEffect via chain-starter resolution.
+      const { META_UNLOCKS_BY_ID } = await import('@/config/meta-unlocks');
+      if (!META_UNLOCKS_BY_ID.has(id)) {
+        console.warn('[persistence] unlockMeta rejected unknown id:', id);
+        return;
+      }
       const safeId = id.length > 128 ? id.slice(0, 128) : id;
       const safeCost = Number.isFinite(costSpent) && costSpent > 0 ? Math.floor(costSpent) : 0;
       const at = new Date().toISOString();

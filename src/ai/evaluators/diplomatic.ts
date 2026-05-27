@@ -28,6 +28,16 @@ import { bordersAreTouching, proposeNonAggressionPact } from '@/game/diplomacy-b
 import { acceptTribute, canDemandTribute, hasHadContact } from '@/game/diplomacy-tribute';
 import { economyFor } from '@/game/economy-for';
 
+/**
+ * M_V12.AI-DIPLO.BREAK-PACT — per-pair cooldown to prevent
+ * break/repact flap. Keyed by `${myId}|${targetId}` so each
+ * directional break has its own clock. Cleared on game reset is
+ * not necessary — entries are bounded by faction-pair count and
+ * the cooldown window naturally ages out.
+ */
+const BREAK_PACT_COOLDOWN = new Map<string, number>();
+const BREAK_PACT_COOLDOWN_SECONDS = 60;
+
 /** Diplomacy action identifier. */
 const DiploAction = {
   ProposePact: 'propose-pact',
@@ -136,13 +146,21 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
       //    M_V12.AI-DIPLO.BREAK-PACT — gated on:
       //      - currently allied,
       //      - relative-power gap: my used-supply ≥ 1.5× theirs,
-      //      - personality diploBias.break ≥ 0.5 threshold.
+      //      - personality diploBias.break ≥ 0.5 threshold,
+      //      - per-pair cooldown ≥ 60 sim-seconds since last break
+      //        (reviewer M5 fix: prevents break/repact flap when an
+      //        ally re-offers immediately).
       if (rel === 'ally') {
         const theirEco = economyFor(game, fc.id);
         const ratio = (myEco.usedSupply + 1) / (theirEco.usedSupply + 1);
         const personality = personalityFor(owner.personalityKey);
         const breakBias = personality.diploBias?.break ?? 0;
-        if (ratio >= 1.5 && breakBias >= 0.5) {
+        const cooldownKey = `${myId}|${fc.id}`;
+        const now = game.clock.elapsed;
+        const lastBreak = BREAK_PACT_COOLDOWN.get(cooldownKey) ?? -Infinity;
+        const cooledDown = now - lastBreak >= BREAK_PACT_COOLDOWN_SECONDS;
+        if (ratio >= 1.5 && breakBias >= 0.5 && cooledDown) {
+          BREAK_PACT_COOLDOWN.set(cooldownKey, now);
           return { action: DiploAction.BreakPact, targetId: fc.id };
         }
       }

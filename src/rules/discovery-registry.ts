@@ -131,7 +131,12 @@ export const DISCOVERIES: ReadonlyArray<Discovery> = DISCOVERIES_CONFIG.discover
   }),
 );
 
+// Reviewer M3 fix: O(n) find → O(1) Map lookup. Hot path:
+// applyChainStarters (up to 12 lookups per game start), AI
+// evaluators, DiscoveriesPanel render. Built once at module load.
+const DISCOVERIES_BY_ID = new Map<string, Discovery>(DISCOVERIES.map((d) => [d.id, d]));
+
 /** Look up a Discovery by id. Returns undefined if unknown. */
 export function discoveryById(id: string): Discovery | undefined {
-  return DISCOVERIES.find((d) => d.id === id);
+  return DISCOVERIES_BY_ID.get(id);
 }
