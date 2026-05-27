@@ -29,6 +29,7 @@ import {
   Handshake,
   Map as MapIcon,
   Menu,
+  Palette,
   Settings as SettingsIcon,
   Volume2,
   VolumeX,
@@ -100,6 +101,15 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
       label: 'Diplomacy',
       onSelect: () => {
         window.dispatchEvent(new CustomEvent('aethelgard:open-diplomacy'));
+        setOpen(false);
+      },
+    },
+    {
+      id: 'atelier',
+      Icon: Palette,
+      label: 'Atelier',
+      onSelect: () => {
+        window.dispatchEvent(new CustomEvent('aethelgard:open-atelier'));
         setOpen(false);
       },
     },

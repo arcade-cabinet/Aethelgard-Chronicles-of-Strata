@@ -16,6 +16,7 @@ import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { CriticalWarning } from '@/hud/CriticalWarning';
+import { AtelierScreen } from '@/hud/AtelierScreen';
 import { DiplomacyModal } from '@/hud/DiplomacyModal';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
@@ -392,6 +393,11 @@ function GameSession({
           SystemMenu (top-right hamburger) — same pattern as the
           DiscoveriesPanel. */}
       <DiplomacyModal game={game} />
+      {/* M_V11.META-PROGRESSION — AtelierScreen reads lore-token
+          balance + meta-unlocks from the persistence facade. Opens
+          on the 'aethelgard:open-atelier' event (SystemMenu entry +
+          auto-fired from match-end). */}
+      <AtelierScreen persistence={persistence} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />

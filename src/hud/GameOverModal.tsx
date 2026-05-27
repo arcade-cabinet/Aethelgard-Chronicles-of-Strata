@@ -110,6 +110,37 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
     })();
   }, [outcome, persistence]);
 
+  // M_V11.META-PROGRESSION — credit lore tokens per match outcome,
+  // then fire the open-atelier event so the player sees their new
+  // tokens immediately. Runs once per terminal state via the same
+  // ref-guarded pattern as the lorebook write.
+  const atelierFiredRef = useRef(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: same intent as the lorebook effect — fires once per terminal state.
+  useEffect(() => {
+    if (outcome === 'playing' || !persistence) return;
+    if (atelierFiredRef.current) return;
+    atelierFiredRef.current = true;
+    void (async () => {
+      const { loreTokenReward } = await import('@/config/meta-unlocks');
+      const reward = loreTokenReward(
+        outcome === 'win' ? 'win' : outcome === 'loss' ? 'loss' : 'draw',
+        game.difficulty,
+      );
+      if (reward > 0) {
+        try {
+          await persistence.earnLoreTokens(reward);
+        } catch (err) {
+          console.warn('[atelier] earnLoreTokens failed:', err);
+        }
+      }
+      // Stagger the modal so the GameOverModal's win/lose animation
+      // plays first, then the Atelier takes focus.
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('aethelgard:open-atelier'));
+      }, 2400);
+    })();
+  }, [outcome, persistence]);
+
   const isWin = outcome === 'win';
   const isDraw = outcome === 'draw';
   const HeroIcon = isWin ? Trophy : isDraw ? ScaleIcon : Skull;

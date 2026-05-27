@@ -92,6 +92,21 @@ export interface Persistence {
    * holds a few hundred rows even for power-users.
    */
   listLorebook(limit?: number): Promise<LorebookEntry[]>;
+  /**
+   * M_V11.META-PROGRESSION — return the set of permanently-unlocked
+   * meta-unlock ids (from the install-wide `meta_unlocks` table). Used
+   * by the AtelierScreen to render locked vs unlocked rows + by
+   * startGame to apply the starter-bonus unlocks.
+   */
+  listMetaUnlocks(): Promise<string[]>;
+  /** Mark a meta-unlock as permanently unlocked. Idempotent — re-unlock
+   *  is a no-op. */
+  unlockMeta(id: string, costSpent: number): Promise<void>;
+  /** Return the player's current lore-token balance. */
+  getLoreTokens(): Promise<number>;
+  /** Credit `n` lore tokens to the player. Called from the match-end
+   *  flow per loreTokenReward(). */
+  earnLoreTokens(n: number): Promise<void>;
   /** Read a string setting. Returns `null` if not set. */
   getSetting(key: string): Promise<string | null>;
   /** Write a string setting. */
@@ -474,6 +489,23 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
           highlights_json   TEXT NOT NULL
         );
       `);
+      // M_V11.META-PROGRESSION — install-wide meta-unlock ledger.
+      // One row per unlocked id; UNIQUE constraint makes the unlock
+      // call idempotent. `meta_lore_tokens` is a single-row counter.
+      await conn.execute(`
+        CREATE TABLE IF NOT EXISTS meta_unlocks (
+          unlock_id        TEXT PRIMARY KEY,
+          unlocked_at_iso  TEXT NOT NULL,
+          cost_spent       INTEGER NOT NULL
+        );
+      `);
+      await conn.execute(`
+        CREATE TABLE IF NOT EXISTS meta_lore_tokens (
+          id       INTEGER PRIMARY KEY CHECK (id = 1),
+          balance  INTEGER NOT NULL DEFAULT 0
+        );
+      `);
+      await conn.execute('INSERT OR IGNORE INTO meta_lore_tokens (id, balance) VALUES (1, 0);');
 
       sqliteDb = conn;
       return conn;
@@ -644,6 +676,65 @@ export function createPersistence(): Persistence {
       return out;
     },
 
+    // ----- M_V11.META-PROGRESSION -----------------------------------
+    async listMetaUnlocks(): Promise<string[]> {
+      const db = await openDb();
+      if (!db) return [];
+      const out: string[] = [];
+      try {
+        const res = await db.query(
+          'SELECT unlock_id FROM meta_unlocks ORDER BY unlocked_at_iso ASC;',
+        );
+        const rows = (res?.values ?? []) as Array<{ unlock_id?: unknown }>;
+        for (const row of rows) {
+          const id = row.unlock_id;
+          if (typeof id === 'string' && id.length > 0) out.push(id);
+        }
+      } catch (err) {
+        // Tolerant read: a fresh install / failed migration returns
+        // an empty list; the caller treats no-unlocks as "nothing
+        // unlocked yet" which is the correct fresh-install state.
+        console.warn('[persistence] listMetaUnlocks failed:', err);
+      }
+      return out;
+    },
+
+    async unlockMeta(id: string, costSpent: number): Promise<void> {
+      const db = await openDb();
+      if (!db) return;
+      const safeId = id.length > 128 ? id.slice(0, 128) : id;
+      const safeCost = Number.isFinite(costSpent) && costSpent > 0 ? Math.floor(costSpent) : 0;
+      const at = new Date().toISOString();
+      // INSERT OR IGNORE for idempotency — re-unlock a row that
+      // already exists is a no-op (the original unlock-time stays).
+      await db.run(
+        `INSERT OR IGNORE INTO meta_unlocks (unlock_id, unlocked_at_iso, cost_spent) VALUES (?, ?, ?);`,
+        [safeId, at, safeCost],
+      );
+    },
+
+    async getLoreTokens(): Promise<number> {
+      const db = await openDb();
+      if (!db) return 0;
+      try {
+        const res = await db.query('SELECT balance FROM meta_lore_tokens WHERE id = 1;');
+        const rows = (res?.values ?? []) as Array<{ balance?: unknown }>;
+        const bal = rows[0]?.balance;
+        return typeof bal === 'number' && Number.isFinite(bal) ? bal : 0;
+      } catch (err) {
+        console.warn('[persistence] getLoreTokens failed:', err);
+        return 0;
+      }
+    },
+
+    async earnLoreTokens(n: number): Promise<void> {
+      const db = await openDb();
+      if (!db) return;
+      const safeN = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+      if (safeN === 0) return;
+      await db.run(`UPDATE meta_lore_tokens SET balance = balance + ? WHERE id = 1;`, [safeN]);
+    },
+
     async getSetting(key: string): Promise<string | null> {
       const { value } = await Preferences.get({ key });
       return value;
@@ -696,6 +787,12 @@ export function createPersistence(): Persistence {
           // lorebook entries forward would surface ghost matches
           // referring to deleted saves.
           await db.run(`DELETE FROM lorebook;`);
+          // M_V11.META-PROGRESSION — meta unlocks + lore tokens get
+          // wiped too. "Reset all data" should genuinely return the
+          // player to a fresh-install state (otherwise they'd resume
+          // with unlocks bound to a save that no longer exists).
+          await db.run(`DELETE FROM meta_unlocks;`);
+          await db.run(`UPDATE meta_lore_tokens SET balance = 0 WHERE id = 1;`);
         } else failures.push('saves (db unavailable)');
       } catch (err) {
         failures.push(`saves: ${err instanceof Error ? err.message : String(err)}`);

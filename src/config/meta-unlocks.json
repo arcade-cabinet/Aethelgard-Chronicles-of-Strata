@@ -1,0 +1,219 @@
+{
+  "unlocks": [
+    {
+      "id": "starter-extra-peon",
+      "category": "starting-units",
+      "name": "Extra Peon",
+      "description": "Start every match with +1 Peon already queued.",
+      "cost": 1
+    },
+    {
+      "id": "starter-scout",
+      "category": "starting-units",
+      "name": "Starting Scout",
+      "description": "Start every match with 1 Scout (auto-revealed adjacent zone).",
+      "cost": 2
+    },
+    {
+      "id": "starter-footman",
+      "category": "starting-units",
+      "name": "Starting Footman",
+      "description": "Start every match with 1 Footman defending the Palace.",
+      "cost": 3
+    },
+    {
+      "id": "starter-healer",
+      "category": "starting-units",
+      "name": "Starting Healer",
+      "description": "Start every match with 1 Healer in your zone.",
+      "cost": 4
+    },
+    {
+      "id": "starter-hero",
+      "category": "starting-units",
+      "name": "Starting Hero",
+      "description": "Start every match with the Hero unit already trained.",
+      "cost": 6
+    },
+
+    {
+      "id": "starter-farm",
+      "category": "starting-buildings",
+      "name": "Starting Farm",
+      "description": "Start every match with 1 Farm pre-built adjacent to the Palace.",
+      "cost": 2
+    },
+    {
+      "id": "starter-granary",
+      "category": "starting-buildings",
+      "name": "Starting Granary",
+      "description": "Start every match with 1 Granary pre-built.",
+      "cost": 2
+    },
+    {
+      "id": "starter-barracks",
+      "category": "starting-buildings",
+      "name": "Starting Barracks",
+      "description": "Start every match with 1 Barracks pre-built.",
+      "cost": 3
+    },
+    {
+      "id": "starter-watchtower",
+      "category": "starting-buildings",
+      "name": "Starting Watchtower",
+      "description": "Start every match with 1 Watchtower covering the Palace approach.",
+      "cost": 3
+    },
+    {
+      "id": "starter-wall-row",
+      "category": "starting-buildings",
+      "name": "Starting Wall Row",
+      "description": "Start every match with 3 Wall segments pre-built around your Palace.",
+      "cost": 4
+    },
+
+    {
+      "id": "skin-iron-hill",
+      "category": "palette-skins",
+      "name": "Iron Hill Skin",
+      "description": "Unlock the Iron Hill palette: gunmetal stone + deep-blue banners.",
+      "cost": 2
+    },
+    {
+      "id": "skin-amber-vale",
+      "category": "palette-skins",
+      "name": "Amber Vale Skin",
+      "description": "Unlock the Amber Vale palette: golden stone + amber banners.",
+      "cost": 2
+    },
+    {
+      "id": "skin-ashfall",
+      "category": "palette-skins",
+      "name": "Ashfall Skin",
+      "description": "Unlock the Ashfall palette: charred stone + ember banners.",
+      "cost": 3
+    },
+    {
+      "id": "skin-deepwood",
+      "category": "palette-skins",
+      "name": "Deepwood Skin",
+      "description": "Unlock the Deepwood palette: weathered wood + moss banners.",
+      "cost": 3
+    },
+    {
+      "id": "skin-frostkeep",
+      "category": "palette-skins",
+      "name": "Frostkeep Skin",
+      "description": "Unlock the Frostkeep palette: ice-veined stone + silver banners.",
+      "cost": 4
+    },
+
+    {
+      "id": "hero-knight-errant",
+      "category": "named-heroes",
+      "name": "Hero: Knight-Errant",
+      "description": "Unlock the Knight-Errant hero — +20% damage, ignores zone-of-control.",
+      "cost": 3
+    },
+    {
+      "id": "hero-shieldmaiden",
+      "category": "named-heroes",
+      "name": "Hero: Shieldmaiden",
+      "description": "Unlock the Shieldmaiden hero — +40% defense, 2-hex defensive aura.",
+      "cost": 3
+    },
+    {
+      "id": "hero-archmage",
+      "category": "named-heroes",
+      "name": "Hero: Archmage",
+      "description": "Unlock the Archmage hero — Wizard with +50% spell damage + 3-hex range.",
+      "cost": 4
+    },
+    {
+      "id": "hero-cartographer",
+      "category": "named-heroes",
+      "name": "Hero: Cartographer",
+      "description": "Unlock the Cartographer hero — Scout with permanent zone visibility.",
+      "cost": 4
+    },
+    {
+      "id": "hero-warlord",
+      "category": "named-heroes",
+      "name": "Hero: Warlord",
+      "description": "Unlock the Warlord hero — gives +10% damage to every stack within 5 hex.",
+      "cost": 5
+    },
+
+    {
+      "id": "bounty-no-trade",
+      "category": "ai-bounties",
+      "name": "Bounty: No Trade",
+      "description": "Bounty match: AI factions refuse all trade. Win to earn +2 lore tokens.",
+      "cost": 2
+    },
+    {
+      "id": "bounty-double-aggression",
+      "category": "ai-bounties",
+      "name": "Bounty: Double Aggression",
+      "description": "Bounty match: AI military aggression weight doubled. Win to earn +3 lore tokens.",
+      "cost": 3
+    },
+    {
+      "id": "bounty-fog-of-war",
+      "category": "ai-bounties",
+      "name": "Bounty: Permanent Fog",
+      "description": "Bounty match: no permanent zone reveal — fog returns after units leave. Win to earn +3 lore tokens.",
+      "cost": 3
+    },
+    {
+      "id": "bounty-no-walls",
+      "category": "ai-bounties",
+      "name": "Bounty: No Walls",
+      "description": "Bounty match: Wall + Watchtower buildings disabled. Win to earn +4 lore tokens.",
+      "cost": 4
+    },
+    {
+      "id": "bounty-time-attack",
+      "category": "ai-bounties",
+      "name": "Bounty: 5-Minute Time Attack",
+      "description": "Bounty match: hard time limit of 5 minutes. Win to earn +5 lore tokens.",
+      "cost": 5
+    },
+
+    {
+      "id": "lore-chapter-1",
+      "category": "lore-chapters",
+      "name": "Lore Chapter I: The First Strata",
+      "description": "Unlock Chapter I of the Aethelgard lore — readable from the main menu.",
+      "cost": 1
+    },
+    {
+      "id": "lore-chapter-2",
+      "category": "lore-chapters",
+      "name": "Lore Chapter II: The Sundering",
+      "description": "Unlock Chapter II of the Aethelgard lore.",
+      "cost": 2
+    },
+    {
+      "id": "lore-chapter-3",
+      "category": "lore-chapters",
+      "name": "Lore Chapter III: Houses of Stone",
+      "description": "Unlock Chapter III of the Aethelgard lore.",
+      "cost": 3
+    },
+    {
+      "id": "lore-chapter-4",
+      "category": "lore-chapters",
+      "name": "Lore Chapter IV: The Necropolis Rising",
+      "description": "Unlock Chapter IV of the Aethelgard lore.",
+      "cost": 4
+    },
+    {
+      "id": "lore-chapter-5",
+      "category": "lore-chapters",
+      "name": "Lore Chapter V: The Eternal Flame",
+      "description": "Unlock Chapter V of the Aethelgard lore — the final chapter.",
+      "cost": 6
+    }
+  ]
+}
