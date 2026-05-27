@@ -45,10 +45,10 @@ interface Step {
 export const STEPS: Step[] = [
   {
     title: 'Welcome to Aethelgard',
-    body: "You command a kingdom on a hex-tile island. The enemy commands one too. The first to raze the other's base wins. You start with a Town Hall and 80 wood + 60 stone — no peons yet. The pulsing button on your Town Hall is your first move.",
+    body: "You command a kingdom on a hex-tile island. The enemy commands one too. The first to raze the other's base wins. You start with a Palace and 80 wood + 60 stone — no peons yet. The pulsing button on your Palace is your first move.",
   },
   {
-    title: 'Tap your Town Hall — queue two peons',
+    title: 'Tap your Palace — queue two peons',
     body: "Tap the keep at the centre of your realm. The Selection panel shows a glowing 'Train Peon' button — tap it twice (30 wood each). Your peons appear and start harvesting nearby resources autonomously.",
   },
   {
@@ -57,7 +57,7 @@ export const STEPS: Step[] = [
   },
   {
     title: 'Tap to build',
-    body: 'Tap the 🏗 button (bottom-right) to open your Town Hall build menu. Farms raise your supply, Houses raise the peon cap, Barracks train Footmen, Watchtowers shoot intruders, Walls block enemy pathing.',
+    body: 'Tap the 🏗 button (bottom-right) to open your Palace build menu. Farms raise your supply, Houses raise the peon cap, Barracks train Footmen, Watchtowers shoot intruders, Walls block enemy pathing.',
   },
   {
     title: 'Commanding military',
@@ -65,7 +65,7 @@ export const STEPS: Step[] = [
   },
   {
     title: 'Defend the border',
-    body: 'If an enemy steps onto a tile YOU control, it pulses yellow. Send a Footman to defend it before the pulse expires — otherwise the tile flips to the enemy. Lose your Town Hall and you lose.',
+    body: 'If an enemy steps onto a tile YOU control, it pulses yellow. Send a Footman to defend it before the pulse expires — otherwise the tile flips to the enemy. Lose your Palace and you lose.',
   },
   {
     title: 'Camera + zoom',
@@ -77,7 +77,7 @@ export const STEPS: Step[] = [
   },
   {
     title: 'Winning the realm',
-    body: 'Every game mode has its own win condition — shown in the top-centre pill. Border-clash: raze the enemy Town Hall. Strata-wars: control 80% of the realm for 30s. Age-of-Strata: reach Renaissance + build a Wonder. Resign at any time from the ☰ menu.',
+    body: 'Every game mode has its own win condition — shown in the top-centre pill. Border-clash: raze the enemy Palace. Strata-wars: control 80% of the realm for 30s. Age-of-Strata: reach Renaissance + build a Wonder. Resign at any time from the ☰ menu.',
   },
 ];
 

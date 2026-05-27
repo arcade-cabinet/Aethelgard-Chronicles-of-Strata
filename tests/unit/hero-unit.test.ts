@@ -34,7 +34,7 @@ describe('M_EXPANSION.F.96 — Hero unit', () => {
   it('Hero death (player faction) flips game.outcome to loss', () => {
     const game = startGame('hero-permadeath');
     // Spawn a player Hero directly. Use HexPosition adjacent to
-    // the TownHall (any walkable tile is fine for this contract).
+    // the Palace (any walkable tile is fine for this contract).
     const tile = [...game.board.tiles.values()].find((t) => t.walkable);
     if (!tile) throw new Error('no walkable tile');
     game.world.spawn(

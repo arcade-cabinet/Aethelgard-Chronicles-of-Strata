@@ -83,7 +83,7 @@ interface + add ONE consumer in the factory or in a system.
 
 ```typescript
 type UnitType = "Peon" | "Footman" | "Goblin" | "Orc";
-type BuildingType = "TownHall" | "Farm" | "Barracks" | "EnemyBase";
+type BuildingType = "Palace" | "Farm" | "Barracks" | "EnemyBase";
 type ResourceType = "wood" | "stone" | "gold";
 type AnimState = "IDLE" | "MOVING" | "HARVESTING" | "ATTACKING" | "DYING" | "BUILDING";
 type HexKey = string; // format: "${q},${r}"
@@ -100,7 +100,7 @@ each produce exactly one archetype type, parameterized by role.
 | **Footman** | Transform, HexPosition, Unit(Footman), Faction(player), Health(100), Movement(2.5), PathQueue, Combatant(15dmg), AnimationState, Selectable |
 | **Goblin** | Transform, HexPosition, Unit(Goblin), Faction(enemy), Health(60), Movement(2), PathQueue, Combatant(8dmg), AnimationState |
 | **Orc** | Transform, HexPosition, Unit(Orc), Faction(enemy), Health(150), Movement(1.5), PathQueue, Combatant(20dmg), AnimationState |
-| **TownHall** | Transform, HexPosition, Building(TownHall,complete), Faction(player), Health(500), Selectable |
+| **Palace** | Transform, HexPosition, Building(Palace,complete), Faction(player), Health(500), Selectable |
 | **Farm** | Transform, HexPosition, Building(Farm), Faction(player), Health(100) |
 | **Barracks** | Transform, HexPosition, Building(Barracks), Faction(player), Health(150), Selectable |
 | **EnemyBase** | Transform, HexPosition, Building(EnemyBase,complete), Faction(enemy), Health(300) |
@@ -115,15 +115,15 @@ state that later systems read in the same frame.
 |---|---|---|
 | 1 | `weatherSystem` | Advances the weather state machine (sunny → fog → rain → sunny) using the event PRNG. Updates sky color and ambient light. |
 | 2 | `spawnSystem` | Checks spawn timers; creates new Goblin/Orc entities at the EnemyBase when spawn conditions are met. |
-| 3 | `aiSystem` | For each enemy entity: if no PathQueue, pick a target (nearest player unit or TownHall) and compute A* path. |
+| 3 | `aiSystem` | For each enemy entity: if no PathQueue, pick a target (nearest player unit or Palace) and compute A* path. |
 | 4 | `pathFollowSystem` | For all entities with PathQueue: advance position along the path. Pops completed steps. Sets `isMoving`, updates HexPosition when a step completes. |
 | 5 | `movementSystem` | Applies velocity from `Movement` and `PathQueue` to `Transform.position` each frame. |
 | 6 | `harvestSystem` | For peons with Harvester + PathQueue empty + adjacent to a ResourceNode: tick harvestTimer. On completion: fill Carrier, reduce ResourceNode.amount, set AnimationState(HARVESTING). |
 | 7 | `buildSystem` | For peons assigned to build: path to the building site, tick build progress. On completion: set Building.isComplete. |
 | 8 | `combatSystem` | For all Combatant entities: tick attackTimer. When timer fires AND an enemy is in range: apply damage (with event PRNG crit roll), create floating combat text, reduce target Health. |
-| 9 | `depositSystem` | For carriers with full Carrier at or adjacent to TownHall: add resources to global economy state, clear Carrier, return Harvester to idle. |
+| 9 | `depositSystem` | For carriers with full Carrier at or adjacent to Palace: add resources to global economy state, clear Carrier, return Harvester to idle. |
 | 10 | `deathSystem` | For entities with Health.current ≤ 0: set AnimationState(DYING), schedule entity removal after death animation completes. |
-| 11 | `winLossSystem` | Check: if EnemyBase entity gone → trigger win. If TownHall entity gone → trigger loss. |
+| 11 | `winLossSystem` | Check: if EnemyBase entity gone → trigger win. If Palace entity gone → trigger loss. |
 
 ## Serialization
 

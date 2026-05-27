@@ -94,7 +94,7 @@ export function discoveredEnemyTile(
   }
   // Rage-quit fallback: target a walkable neighbour of the opposing base.
   if (matchElapsedSeconds(game) >= rageQuitThreshold) {
-    const oppBaseKey = faction === 'player' ? game.enemyBaseKey : game.townHallKey;
+    const oppBaseKey = faction === 'player' ? game.enemyBaseKey : game.palaceKey;
     const { q: bq, r: br } = parseHexKey(oppBaseKey);
     for (const nKey of hexNeighbors(bq, br)) {
       const tile = game.board.tiles.get(nKey);
@@ -115,7 +115,7 @@ export function freeBuildTile(game: GameState, faction: Faction): string | null 
   const baseKey = baseKeyFor(game, faction);
   const { q: bq, r: br } = parseHexKey(baseKey);
   const blocked = (key: string) =>
-    key === game.townHallKey || key === game.enemyBaseKey || game.buildSites.has(key);
+    key === game.palaceKey || key === game.enemyBaseKey || game.buildSites.has(key);
   for (const nKey of hexNeighbors(bq, br)) {
     if (blocked(nKey)) continue;
     const tile = game.board.tiles.get(nKey);

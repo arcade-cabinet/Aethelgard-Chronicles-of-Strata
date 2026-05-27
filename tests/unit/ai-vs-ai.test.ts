@@ -50,7 +50,9 @@ function probe(game: ReturnType<typeof newAiVsAiGame>) {
       expect(Number.isFinite(tf.x)).toBe(true);
       expect(Number.isFinite(tf.z)).toBe(true);
     }
-    expect(e.get(FactionTrait)?.faction).toMatch(/^(player|enemy)$/);
+    // M_V11.CAMPS.SPAWN — barbarian-camp-N factions are now spawned
+    // in every match (not just N-player), so the regex accepts them.
+    expect(e.get(FactionTrait)?.faction).toMatch(/^(player|enemy|barbarian-camp-\d+)$/);
   }
   void totalHp;
   // meso: factions retain a coherent army roster

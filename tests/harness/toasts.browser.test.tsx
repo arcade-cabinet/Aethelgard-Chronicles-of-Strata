@@ -65,7 +65,7 @@ describe('Toasts (M_HUD.NOTIF.1)', () => {
     const handler = (e: Event) => spy((e as CustomEvent).detail);
     window.addEventListener('aethelgard:focus-tile', handler);
     try {
-      emit({ id: 'engage', title: 'Enemy at Town Hall', focus: { q: 2, r: -1 } });
+      emit({ id: 'engage', title: 'Enemy at Palace', focus: { q: 2, r: -1 } });
       await new Promise((r) => setTimeout(r, 60));
       // Radix Toast.Root with asChild sets data-testid on its child
       // (the motion.div). The motion.div renders a child wrapper too —

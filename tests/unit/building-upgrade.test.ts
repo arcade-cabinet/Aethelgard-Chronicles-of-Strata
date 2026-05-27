@@ -7,7 +7,7 @@ import { startGame } from '@/game/game-state';
  * M_EXPANSION.F.86 — Building upgrade tiers. Tests the upgradeBuilding
  * command (Building.tier 1→2→3), the per-tier delta cost ladder,
  * and the reject paths (not complete / max tier / wrong faction /
- * can't afford / TownHall exempt).
+ * can't afford / Palace exempt).
  */
 describe('M_EXPANSION.F.86 — Building upgrade tiers', () => {
   it('refuses to upgrade an incomplete building', () => {
@@ -75,15 +75,15 @@ describe('M_EXPANSION.F.86 — Building upgrade tiers', () => {
     expect(upgradeBuilding(game, e, 'player')).toBe(false);
   });
 
-  it('refuses to upgrade a TownHall (exempt — it is the FactionBase anchor)', () => {
-    const game = startGame('upgrade-townhall-exempt');
+  it('refuses to upgrade a Palace (exempt — it is the FactionBase anchor)', () => {
+    const game = startGame('upgrade-palace-exempt');
     game.economy.player.wood = 10000;
     game.economy.player.stone = 10000;
     game.economy.player.gold = 10000;
     const tile = [...game.board.tiles.values()].find((t) => t.walkable);
     if (!tile) throw new Error('no walkable tile');
     const e = game.world.spawn(
-      Building({ buildingType: 'TownHall', isComplete: true, progress: 1 }),
+      Building({ buildingType: 'Palace', isComplete: true, progress: 1 }),
       HexPosition({ q: tile.q, r: tile.r, level: tile.level }),
       FactionTrait({ faction: 'player' }),
     );

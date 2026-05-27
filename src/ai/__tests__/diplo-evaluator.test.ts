@@ -14,6 +14,7 @@ import { describe, expect, it } from 'vitest';
 import { AiPlayer } from '@/ai/ai-player';
 import { DiplomaticEvaluator } from '@/ai/evaluators/diplomatic';
 import { buildDefaultFactions } from '@/config/factions';
+import { setRelation } from '@/game/diplomacy';
 import { startGame } from '@/game/game-state';
 import { createZoneState, type ZoneState } from '@/game/zone';
 
@@ -68,6 +69,14 @@ describe('M_V8.AI.DIPLO-EVALUATOR', () => {
     // Ensure zones don't touch so pact isn't the picked action instead.
     game.zones.player = makeZone(['0,0']);
     game.zones.enemy = makeZone(['10,10']);
+
+    // M_V11.EVENTS.RTS-TRIGGERED — tribute now requires prior contact
+    // (lore: you can't demand tribute from a kingdom you haven't met).
+    // Seed an 'ally' relation row to model "they've at least met"; the
+    // tribute logic separately gates on dominance + has-contact + the
+    // ally/neutral-rel pre-check in the evaluator (which still permits
+    // ally as a tribute target).
+    setRelation(game.diplomacy, 'player', 'enemy', 'ally', 0, null);
 
     const evaluator = new DiplomaticEvaluator(1.0);
     const desire = evaluator.calculateDesirability(ai);

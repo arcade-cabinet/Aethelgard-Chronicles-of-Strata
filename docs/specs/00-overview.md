@@ -7,7 +7,7 @@
 A full-featured tactical RTS played on a procedurally generated hex board. One
 seed phrase produces a unique world: terraced terrain, biomes, resources, enemy
 portals, and random events. Players command peons to harvest resources, construct
-buildings, train soldiers, and defeat the enemy base before their Town Hall
+buildings, train soldiers, and defeat the enemy base before their Palace
 falls. The aesthetic is a low-poly diorama — chunky distinct tiles, flat shading,
 vibrant biome colors — bridging the tactile feel of Catan with the terraced
 strata of Monument Valley and the biome identity of Animal Crossing: New Horizons.
@@ -23,10 +23,10 @@ strata of Monument Valley and the biome identity of Animal Crossing: New Horizon
   resources, ramps, spawns) and event seed (combat variance, weather, raids).
 - Tap-to-travel: raycast tile pick, A* pathfinding, ramp-gated elevation traversal,
   path-line preview, destination marker.
-- RTS economy: peons, wood/stone/gold resources, autonomous harvest loop, Town Hall,
+- RTS economy: peons, wood/stone/gold resources, autonomous harvest loop, Palace,
   build mode (Farm, Barracks), supply system.
 - Combat: footmen, goblin/orc enemies, goblin portal, health bars, floating combat
-  text, attack state machine, win (destroy portal) / loss (Town Hall destroyed).
+  text, attack state machine, win (destroy portal) / loss (Palace destroyed).
 - Systems: seeded weather (sunny/fog/rain), research/tech upgrades (Forged Blades,
   Steel Plows), barracks rally points, real-time 2D minimap, day/night cycle.
 - Polish: branded launcher, Radix + framer-motion HUD, howler audio (music, ambient,
@@ -49,7 +49,7 @@ strata of Monument Valley and the biome identity of Animal Crossing: New Horizon
 | M0 | Repo, toolchain, CI, asset-ingest pipeline, pillar docs | Vite/TS/r3f boots; GLB+audio load; APK + Pages builds green; docs written |
 | M1 | Hex board: terraced terrain, biomes, dual-PRNG, tap-to-travel, A*+ramps | The board exists and is navigable |
 | M2 | Characters: KayKit rigged GLBs, shared-rig animation, koota ECS units | Real animated characters move on the board |
-| M3 | Economy: peons, resources, harvest loop, Town Hall, build mode | The Warcraft economic loop runs autonomously |
+| M3 | Economy: peons, resources, harvest loop, Palace, build mode | The Warcraft economic loop runs autonomously |
 | M4 | Combat: footmen, enemies, portal, health, win/loss | The full RTS loop closes |
 | M5 | Systems: weather, research, rally points, minimap, day/night | The full "production" feature set |
 | M6 | Polish: HUD (Radix+framer-motion), audio (howler), persistence, branding | Shippable: APK + Pages, one PR |
@@ -68,7 +68,7 @@ OCEAN, LAKE, BEACH, DESERT, GRASS, FOREST, HIGHLAND, MOUNTAIN. Each biome has a
 canonical hex color and controls which assets are placed on it.
 
 **peon** — The player's basic worker unit. Peons autonomously harvest nearby resources
-and carry loads back to the Town Hall. They can also be assigned to construct buildings.
+and carry loads back to the Palace. They can also be assigned to construct buildings.
 
 **ramp** — A diagonal transition geometry placed between two hex tiles that differ by
 exactly one elevation level. Ramps are the only legal path for A* traversal across

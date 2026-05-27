@@ -10,7 +10,7 @@ describe('placeRoad (M_FEATURE.1)', () => {
   function freeWalkableTile(game: ReturnType<typeof startGame>): string {
     for (const [key, tile] of game.board.tiles) {
       if (!tile.walkable) continue;
-      if (key === game.townHallKey || key === game.enemyBaseKey) continue;
+      if (key === game.palaceKey || key === game.enemyBaseKey) continue;
       if (game.buildSites.has(key)) continue;
       return key;
     }
@@ -37,10 +37,10 @@ describe('placeRoad (M_FEATURE.1)', () => {
     expect(foundOnKey).toBe(true);
   });
 
-  it('rejects placement on the player Town Hall', () => {
+  it('rejects placement on the player Palace', () => {
     const game = startGame('road-test-2');
     const before = game.economy.player.stone;
-    expect(placeRoad(game, game.townHallKey, 'stone')).toBe(false);
+    expect(placeRoad(game, game.palaceKey, 'stone')).toBe(false);
     expect(game.economy.player.stone).toBe(before); // no spend
   });
 

@@ -137,55 +137,12 @@ export type StaticAssetPath =
   'assets/nature/tree/small-a.glb' |
   'assets/sql-wasm.wasm' |
   'assets/structures/banner-faction.glb' |
-  'assets/structures/barracks.glb' |
   'assets/structures/crypt.glb' |
-  'assets/structures/farm.glb' |
   'assets/structures/fountain.glb' |
-  'assets/structures/gate-stone.glb' |
-  'assets/structures/granary.glb' |
-  'assets/structures/house.glb' |
   'assets/structures/iron-fence-column.glb' |
   'assets/structures/iron-fence.glb' |
-  'assets/structures/library.glb' |
   'assets/structures/portal-crypt.glb' |
   'assets/structures/portal-fence.glb' |
-  'assets/structures/rts/archery/first-age/l1.glb' |
-  'assets/structures/rts/archery/second-age/l1.glb' |
-  'assets/structures/rts/barracks/first-age/l1.glb' |
-  'assets/structures/rts/barracks/first-age/l2.glb' |
-  'assets/structures/rts/barracks/first-age/l3.glb' |
-  'assets/structures/rts/barracks/second-age/l1.glb' |
-  'assets/structures/rts/barracks/second-age/l2.glb' |
-  'assets/structures/rts/barracks/second-age/l3.glb' |
-  'assets/structures/rts/farm/first-age/l1.glb' |
-  'assets/structures/rts/farm/second-age/l1.glb' |
-  'assets/structures/rts/house/second-age.glb' |
-  'assets/structures/rts/market/first-age/l1.glb' |
-  'assets/structures/rts/market/second-age/l1.glb' |
-  'assets/structures/rts/storage/first-age/l1.glb' |
-  'assets/structures/rts/storage/second-age/l1.glb' |
-  'assets/structures/rts/temple/first-age/l1.glb' |
-  'assets/structures/rts/temple/second-age/l1.glb' |
-  'assets/structures/rts/tower-house/first-age.glb' |
-  'assets/structures/rts/tower-house/second-age.glb' |
-  'assets/structures/rts/town-center/first-age/l1.glb' |
-  'assets/structures/rts/town-center/first-age/l2.glb' |
-  'assets/structures/rts/town-center/first-age/l3.glb' |
-  'assets/structures/rts/town-center/second-age/l1.glb' |
-  'assets/structures/rts/town-center/second-age/l2.glb' |
-  'assets/structures/rts/town-center/second-age/l3.glb' |
-  'assets/structures/rts/wall-gate/first-age.glb' |
-  'assets/structures/rts/wall-gate/second-age.glb' |
-  'assets/structures/rts/wall-tower/first-age.glb' |
-  'assets/structures/rts/wall-tower/second-age.glb' |
-  'assets/structures/rts/wall/first-age.glb' |
-  'assets/structures/rts/wall/second-age.glb' |
-  'assets/structures/town-hall.glb' |
-  'assets/structures/wall-stone-corner.glb' |
-  'assets/structures/wall-stone.glb' |
-  'assets/structures/watchtower-stone.glb' |
-  'assets/structures/wonder-cannon.glb' |
-  'assets/structures/wonder-keep.glb' |
   'favicon.svg' |
   'privacy.html' |
   'privacy.md' |
@@ -222,34 +179,7 @@ export type StaticAssetDirectory =
   'assets/nature/rts/rock/' |
   'assets/nature/rts/tree/' |
   'assets/nature/tree/' |
-  'assets/structures/' |
-  'assets/structures/rts/' |
-  'assets/structures/rts/archery/' |
-  'assets/structures/rts/archery/first-age/' |
-  'assets/structures/rts/archery/second-age/' |
-  'assets/structures/rts/barracks/' |
-  'assets/structures/rts/barracks/first-age/' |
-  'assets/structures/rts/barracks/second-age/' |
-  'assets/structures/rts/farm/' |
-  'assets/structures/rts/farm/first-age/' |
-  'assets/structures/rts/farm/second-age/' |
-  'assets/structures/rts/house/' |
-  'assets/structures/rts/market/' |
-  'assets/structures/rts/market/first-age/' |
-  'assets/structures/rts/market/second-age/' |
-  'assets/structures/rts/storage/' |
-  'assets/structures/rts/storage/first-age/' |
-  'assets/structures/rts/storage/second-age/' |
-  'assets/structures/rts/temple/' |
-  'assets/structures/rts/temple/first-age/' |
-  'assets/structures/rts/temple/second-age/' |
-  'assets/structures/rts/tower-house/' |
-  'assets/structures/rts/town-center/' |
-  'assets/structures/rts/town-center/first-age/' |
-  'assets/structures/rts/town-center/second-age/' |
-  'assets/structures/rts/wall-gate/' |
-  'assets/structures/rts/wall-tower/' |
-  'assets/structures/rts/wall/';
+  'assets/structures/';
 
 /**
  * Represents the relative paths of files located *directly* within a specific directory.
@@ -405,55 +335,12 @@ const assets = new Set<string>([
   'assets/nature/tree/small-a.glb',
   'assets/sql-wasm.wasm',
   'assets/structures/banner-faction.glb',
-  'assets/structures/barracks.glb',
   'assets/structures/crypt.glb',
-  'assets/structures/farm.glb',
   'assets/structures/fountain.glb',
-  'assets/structures/gate-stone.glb',
-  'assets/structures/granary.glb',
-  'assets/structures/house.glb',
   'assets/structures/iron-fence-column.glb',
   'assets/structures/iron-fence.glb',
-  'assets/structures/library.glb',
   'assets/structures/portal-crypt.glb',
   'assets/structures/portal-fence.glb',
-  'assets/structures/rts/archery/first-age/l1.glb',
-  'assets/structures/rts/archery/second-age/l1.glb',
-  'assets/structures/rts/barracks/first-age/l1.glb',
-  'assets/structures/rts/barracks/first-age/l2.glb',
-  'assets/structures/rts/barracks/first-age/l3.glb',
-  'assets/structures/rts/barracks/second-age/l1.glb',
-  'assets/structures/rts/barracks/second-age/l2.glb',
-  'assets/structures/rts/barracks/second-age/l3.glb',
-  'assets/structures/rts/farm/first-age/l1.glb',
-  'assets/structures/rts/farm/second-age/l1.glb',
-  'assets/structures/rts/house/second-age.glb',
-  'assets/structures/rts/market/first-age/l1.glb',
-  'assets/structures/rts/market/second-age/l1.glb',
-  'assets/structures/rts/storage/first-age/l1.glb',
-  'assets/structures/rts/storage/second-age/l1.glb',
-  'assets/structures/rts/temple/first-age/l1.glb',
-  'assets/structures/rts/temple/second-age/l1.glb',
-  'assets/structures/rts/tower-house/first-age.glb',
-  'assets/structures/rts/tower-house/second-age.glb',
-  'assets/structures/rts/town-center/first-age/l1.glb',
-  'assets/structures/rts/town-center/first-age/l2.glb',
-  'assets/structures/rts/town-center/first-age/l3.glb',
-  'assets/structures/rts/town-center/second-age/l1.glb',
-  'assets/structures/rts/town-center/second-age/l2.glb',
-  'assets/structures/rts/town-center/second-age/l3.glb',
-  'assets/structures/rts/wall-gate/first-age.glb',
-  'assets/structures/rts/wall-gate/second-age.glb',
-  'assets/structures/rts/wall-tower/first-age.glb',
-  'assets/structures/rts/wall-tower/second-age.glb',
-  'assets/structures/rts/wall/first-age.glb',
-  'assets/structures/rts/wall/second-age.glb',
-  'assets/structures/town-hall.glb',
-  'assets/structures/wall-stone-corner.glb',
-  'assets/structures/wall-stone.glb',
-  'assets/structures/watchtower-stone.glb',
-  'assets/structures/wonder-cannon.glb',
-  'assets/structures/wonder-keep.glb',
   'favicon.svg',
   'privacy.html',
   'privacy.md',

@@ -3,13 +3,13 @@
  *
  * Before this file, `HomeBase.tsx` (player) and `EnemyBase.tsx` (enemy)
  * were sibling components that diverged on hardcoded values: HomeBase
- * loaded the TownHall mesh + iterated `game.buildSites` for placed
+ * loaded the Palace mesh + iterated `game.buildSites` for placed
  * structures; EnemyBase loaded the portal-crypt mesh + a hardcoded
  * tuple of (gravestone × 3, fence × 3) at fixed local-space offsets.
  * Per-faction divergence was 100% code.
  *
  * After M_REGISTRY.4: per-faction divergence is 100% **data**, owned by
- * the Skin slot (`SKINS[faction].structure.TownHall` + `.baseProps`).
+ * the Skin slot (`SKINS[faction].structure.Palace` + `.baseProps`).
  * `FactionBase` is the single component; the player and enemy roots
  * mount it twice with different `faction` props. A third tribe drops in
  * by adding a Skin row — no new component.
@@ -39,6 +39,7 @@ import { cyclePhase, lightIntensityAt } from '@/game/clock';
 import type { GameState } from '@/game/game-state';
 import { SKINS } from '@/rules/skins';
 import { ConstructionRing } from './ConstructionRing';
+import { FactionMaterialsProvider } from './procedural/FactionMaterialsContext';
 import { structureModel } from './structure-models';
 
 // M_MICRO.2.2 — local parseKey replaced by shared parseHexKey.
@@ -71,15 +72,74 @@ function StructureMesh({
   isCorner?: boolean;
 }) {
   const model = structureModel(faction, type);
-  const logicalId = hasGate
-    ? 'structures.gate-stone'
-    : isCorner && type === 'Wall' && faction === 'player'
-      ? 'structures.wall-stone-corner'
-      : model.logicalId;
-  const glb = useGLTF(assets.url(logicalId));
   const effectiveScale = model.scale * (0.5 + 0.5 * Math.min(progress, 1));
+  // M_V11.PROCMESH.SKINS-PIVOT — when the Skin slot supplies a
+  // procedural component, render it instead of loading a GLB. The
+  // FactionMaterialsProvider wrapping the FactionBase tree pipes the
+  // per-faction palette through; primitives consume via context.
+  if (model.proceduralComponent) {
+    const Component = model.proceduralComponent;
+    // M_V11.POLISH.PROCMESH.WALL-VARIANTS — Wall variants accept
+    // hasGate + isCorner. Other proc components ignore these
+    // (their type signature only declares `position` but JS
+    // ignores extra props).
+    const extraProps = type === 'Wall' ? { hasGate, isCorner } : {};
+    return (
+      <group position={[x, y + model.yOffset, z]} scale={effectiveScale}>
+        <Component position={[0, 0, 0]} {...extraProps} />
+      </group>
+    );
+  }
   return (
-    <group position={[x, y + model.yOffset, z]} scale={effectiveScale}>
+    <GlbStructureMesh
+      faction={faction}
+      type={type}
+      x={x}
+      y={y + model.yOffset}
+      z={z}
+      scale={effectiveScale}
+      hasGate={hasGate}
+      isCorner={isCorner}
+      defaultLogicalId={model.logicalId}
+    />
+  );
+}
+
+/** GLB-path fallback for Skin entries that still reference a logicalId
+ *  (e.g. future graveyard-kit horde camps or temporary asset rows). */
+function GlbStructureMesh({
+  faction,
+  type,
+  x,
+  y,
+  z,
+  scale,
+  hasGate,
+  isCorner,
+  defaultLogicalId,
+}: {
+  faction: Faction;
+  type: BuildingType;
+  x: number;
+  y: number;
+  z: number;
+  scale: number;
+  hasGate: boolean;
+  isCorner: boolean;
+  defaultLogicalId: string;
+}) {
+  // M_V11.POLISH.PROCMESH.WALL-VARIANTS — gate + corner variants
+  // are now driven by procedural Wall (hasGate/isCorner props
+  // threaded through the proc path). Reference parameters retained
+  // for signature compatibility with any remaining GLB-path
+  // building entries (Graveyard Kit / horde camps).
+  void hasGate;
+  void isCorner;
+  void type;
+  void faction;
+  const glb = useGLTF(assets.url(defaultLogicalId));
+  return (
+    <group position={[x, y, z]} scale={scale}>
       <Clone object={glb.scene} />
     </group>
   );
@@ -118,7 +178,7 @@ function BasePropMesh({
  * up at night. Reads game.clock each frame; intensity is the inverse
  * of the directional-light intensity (peaks at midnight, off at noon).
  * Local-space child of the faction base group, so it sits at the base
- * regardless of where the player has placed their Town Hall.
+ * regardless of where the player has placed their Palace.
  */
 function BaseNightLight({ game, faction }: { game: GameState; faction: Faction }) {
   const ref = useRef<PointLight | null>(null);
@@ -151,12 +211,12 @@ function BaseNightLight({ game, faction }: { game: GameState; faction: Faction }
  * AI player builds too — M_MODES enemy economy).
  */
 export function FactionBase({ game, faction }: { game: GameState; faction: Faction }) {
-  // Base-tile world position (TownHall for player, crypt for enemy).
+  // Base-tile world position (Palace for player, crypt for enemy).
   const basePos = useMemo(() => {
     if (faction === 'player') {
-      const { q, r } = parseHexKey(game.townHallKey);
+      const { q, r } = parseHexKey(game.palaceKey);
       const { x, z } = axialToWorld(q, r);
-      const tile = game.board.tiles.get(game.townHallKey);
+      const tile = game.board.tiles.get(game.palaceKey);
       return { x, y: (tile?.level ?? 0) * TILE_HEIGHT, z };
     }
     // enemy — derive from the enemyBaseEntity's live HexPosition trait.
@@ -164,9 +224,9 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
     if (!hexPos) return null;
     const { x, z } = axialToWorld(hexPos.q, hexPos.r);
     return { x, y: hexPos.level * TILE_HEIGHT, z };
-  }, [faction, game.townHallKey, game.board, game.enemyBaseEntity]);
+  }, [faction, game.palaceKey, game.board, game.enemyBaseEntity]);
 
-  // Per-faction placed structures (excluding the central TownHall mesh,
+  // Per-faction placed structures (excluding the central Palace mesh,
   // which is rendered directly below). The buildSites map is shared,
   // so filter by the entity's FactionTrait via Building component (the
   // ECS entity already carries faction; we read from the Building
@@ -241,74 +301,76 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
   const skin = SKINS[faction];
 
   return (
-    <group name={`${faction}-base`}>
-      {/* M_GAME.BUG.1 — faction-color halo ring under the Town Hall
+    <FactionMaterialsProvider faction={faction}>
+      <group name={`${faction}-base`}>
+        {/* M_GAME.BUG.1 — faction-color halo ring under the Palace
           so the player can LOCATE their capital at a glance from any
           camera distance, regardless of mesh silhouette + map
           biome. The ring is rendered just above ground level (y+0.02)
           to avoid z-fighting with terrain. Pulses gently by reading
           the day/night phase indirectly (no extra subscriptions —
           the constant radius + faction tint is enough at this scale). */}
-      <mesh
-        position={[basePos.x, basePos.y + 0.02, basePos.z]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        renderOrder={1}
-      >
-        <ringGeometry args={[1.0, 1.35, 36]} />
-        <meshBasicMaterial color={skin.zoneBorderColor} transparent opacity={0.6} />
-      </mesh>
-      {/* Central base mesh — TownHall (player) / crypt (enemy). */}
-      <StructureMesh
-        faction={faction}
-        type="TownHall"
-        x={basePos.x}
-        y={basePos.y}
-        z={basePos.z}
-        progress={1}
-      />
-      {/* Decorative props (Skin slot — empty for player, necropolis for enemy). */}
-      <group position={[basePos.x, basePos.y, basePos.z]}>
-        {skin.baseProps.map((p) => (
-          <BasePropMesh
-            // CodeRabbit MAJOR — composite key from stable data fields
-            // only (logicalId + x + y + z + scale + rotationY uniquely
-            // identifies a prop within a skin); idx removed.
-            key={`prop-${p.logicalId}-${p.x}-${p.y}-${p.z}-${p.scale}-${p.rotationY}`}
-            logicalId={p.logicalId}
-            x={p.x}
-            y={p.y}
-            z={p.z}
-            scale={p.scale}
-            rotationY={p.rotationY}
-          />
-        ))}
-        {/* M_EXPANSION.A.11 — warm point light at the base, auto-fades
+        <mesh
+          position={[basePos.x, basePos.y + 0.02, basePos.z]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          renderOrder={1}
+        >
+          <ringGeometry args={[1.0, 1.35, 36]} />
+          <meshBasicMaterial color={skin.zoneBorderColor} transparent opacity={0.6} />
+        </mesh>
+        {/* Central base mesh — Palace (player) / crypt (enemy). */}
+        <StructureMesh
+          faction={faction}
+          type="Palace"
+          x={basePos.x}
+          y={basePos.y}
+          z={basePos.z}
+          progress={1}
+        />
+        {/* Decorative props (Skin slot — empty for player, necropolis for enemy). */}
+        <group position={[basePos.x, basePos.y, basePos.z]}>
+          {skin.baseProps.map((p) => (
+            <BasePropMesh
+              // CodeRabbit MAJOR — composite key from stable data fields
+              // only (logicalId + x + y + z + scale + rotationY uniquely
+              // identifies a prop within a skin); idx removed.
+              key={`prop-${p.logicalId}-${p.x}-${p.y}-${p.z}-${p.scale}-${p.rotationY}`}
+              logicalId={p.logicalId}
+              x={p.x}
+              y={p.y}
+              z={p.z}
+              scale={p.scale}
+              rotationY={p.rotationY}
+            />
+          ))}
+          {/* M_EXPANSION.A.11 — warm point light at the base, auto-fades
             up at night. Placeholder for a future lamp-post asset; for
             now the banner-faction baseProp serves as the visual anchor
             (the light origin coincides with it). */}
-        <BaseNightLight game={game} faction={faction} />
-      </group>
-      {/* Placed structures this faction has constructed mid-game. */}
-      {placed.map((b) => (
-        <group key={b.key}>
-          <StructureMesh
-            faction={faction}
-            type={b.type}
-            x={b.x}
-            y={b.y}
-            z={b.z}
-            progress={b.progress}
-            hasGate={b.hasGate}
-            isCorner={b.isCorner ?? false}
-          />
-          <ConstructionRing x={b.x} y={b.y} z={b.z} progress={b.progress} />
+          <BaseNightLight game={game} faction={faction} />
         </group>
-      ))}
-    </group>
+        {/* Placed structures this faction has constructed mid-game. */}
+        {placed.map((b) => (
+          <group key={b.key}>
+            <StructureMesh
+              faction={faction}
+              type={b.type}
+              x={b.x}
+              y={b.y}
+              z={b.z}
+              progress={b.progress}
+              hasGate={b.hasGate}
+              isCorner={b.isCorner ?? false}
+            />
+            <ConstructionRing x={b.x} y={b.y} z={b.z} progress={b.progress} />
+          </group>
+        ))}
+      </group>
+    </FactionMaterialsProvider>
   );
 }
 
-// Preload every GLB any Skin references — central base mesh (TownHall),
+// Preload every GLB any Skin references — central base mesh (Palace),
 // every structure type the faction may place (Farm/House/Granary/
 // Barracks/Watchtower/Wall/Wonder/Library — pre-warmed so placement
 // doesn't stutter), AND decorative baseProps. The Skin registry is
@@ -317,7 +379,13 @@ export function FactionBase({ game, faction }: { game: GameState; faction: Facti
 // SKINS automatically preloads its GLB.
 const SEEN_PRELOAD = new Set<string>();
 for (const skin of Object.values(SKINS)) {
-  for (const model of Object.values(skin.structure)) SEEN_PRELOAD.add(model.logicalId);
+  for (const model of Object.values(skin.structure)) {
+    // M_V11.PROCMESH.SKINS-PIVOT — procedural entries carry a
+    // sentinel logicalId ('procedural'); skip them in the GLB
+    // preload pass since they have no asset.
+    if (model.proceduralComponent || model.logicalId === 'procedural') continue;
+    SEEN_PRELOAD.add(model.logicalId);
+  }
   for (const p of skin.baseProps) SEEN_PRELOAD.add(p.logicalId);
 }
 for (const id of SEEN_PRELOAD) useGLTF.preload(assets.url(id));

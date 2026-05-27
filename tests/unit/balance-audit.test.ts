@@ -41,7 +41,7 @@ describe('balance audit (M_MAPGEN.10)', () => {
         difficulty: 'normal',
         eventSeed: `${seed}-events`,
       });
-      const [pq, pr] = game.townHallKey.split(',').map(Number);
+      const [pq, pr] = game.palaceKey.split(',').map(Number);
       const [eq, er] = game.enemyBaseKey.split(',').map(Number);
       if (
         pq !== undefined &&

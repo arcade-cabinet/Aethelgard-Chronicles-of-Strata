@@ -14,7 +14,7 @@ import type { GameMode } from '@/game/game-state';
  *   different paint passes when their items land).
  * - guidedMapGen: master switch — when false, paint passes are skipped
  *   (skirmish mode preserves the v0.3 pure-noise behavior).
- * - invulnerableBases: M_MODES.4 endless mode — TownHalls take 0 damage.
+ * - invulnerableBases: M_MODES.4 endless mode — Palaces take 0 damage.
  */
 export type MatchLength = 'short' | 'medium' | 'long' | 'endless';
 export type TurnsMode = 'real-time' | 'turn-based';
@@ -121,6 +121,59 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     mapType: 'archipelago',
     guidedMapGen: true,
     invulnerableBases: true,
+    maxTurns: null,
+    defaultPlayerCount: 2,
+  },
+  // M_V11.TUTORIAL (#77f) — guided 5-min first-time-player run.
+  // Small balanced map, fast onset, invulnerable bases so the AI
+  // can't end the tutorial early. The TutorialOverlay drives the
+  // objective queue; AI is gated to passive (no military aggression)
+  // via the difficulty='easy' default + ai-profiles tutorial entry.
+  tutorial: {
+    mapSize: 'small',
+    matchLength: 'short',
+    turnsMode: 'real-time',
+    mapType: 'balanced',
+    guidedMapGen: true,
+    invulnerableBases: true,
+    maxTurns: null,
+    defaultPlayerCount: 2,
+  },
+  // M_V11.CAMPAIGN (#77g) — narrative chapter scenarios. Medium map,
+  // short-ish match, invulnerable bases so the chapter ends by
+  // objective completion / failure, not by the AI rolling the player.
+  campaign: {
+    mapSize: 'medium',
+    matchLength: 'short',
+    turnsMode: 'real-time',
+    mapType: 'balanced',
+    guidedMapGen: true,
+    invulnerableBases: true,
+    maxTurns: null,
+    defaultPlayerCount: 2,
+  },
+  // M_V11.WAVE-DEFENSE (#77h) — survival mode. Tight perimeter
+  // (small map), invulnerableBases FALSE so Palace death is the
+  // real lose condition; medium match-length holds all waves.
+  'wave-defense': {
+    mapSize: 'small',
+    matchLength: 'medium',
+    turnsMode: 'real-time',
+    mapType: 'balanced',
+    guidedMapGen: true,
+    invulnerableBases: false,
+    maxTurns: null,
+    defaultPlayerCount: 2,
+  },
+  // M_V11.DAILY-CHALLENGE (#77i) — same map for every player today.
+  // Medium / short for uniform scoring window.
+  'daily-challenge': {
+    mapSize: 'medium',
+    matchLength: 'short',
+    turnsMode: 'real-time',
+    mapType: 'balanced',
+    guidedMapGen: true,
+    invulnerableBases: false,
     maxTurns: null,
     defaultPlayerCount: 2,
   },

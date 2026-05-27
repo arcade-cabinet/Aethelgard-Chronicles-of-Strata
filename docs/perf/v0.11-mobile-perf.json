@@ -1,0 +1,11 @@
+{
+  "capturedAt": "2026-05-26T19:49:57.000Z",
+  "viewport": "pixel-7 (412×915)",
+  "mode": "border-clash",
+  "seed": "perf-mobile",
+  "frameCount": 660,
+  "mean": 13.99,
+  "p50": 14.5,
+  "p95": 37,
+  "max": 61.4
+}

@@ -102,6 +102,39 @@ export const AI_PROFILES: Record<GameMode, AiProfile> = {
     militaryWeight: 0,
     defensiveBuildWeight: 0,
   },
+  // M_V11.TUTORIAL (#77f) — passive AI. The tutorial is a
+  // teaching environment, not a combat encounter; the AI does
+  // basic economy buildup so the player sees a normal AI scaling,
+  // but never trains military or attacks.
+  tutorial: {
+    ...DEFAULT_PROFILE,
+    buildWeight: 0.6,
+    militaryWeight: 0,
+    defensiveBuildWeight: 0,
+  },
+  // M_V11.CAMPAIGN (#77g) — narrative chapter scenarios. Mid-weight
+  // AI; pre-placed chapter buildings + scripted enemy waves are the
+  // pacing pressure, not the AI's emergent build queue.
+  campaign: {
+    ...DEFAULT_PROFILE,
+    buildWeight: 0.8,
+    militaryWeight: 0.7,
+    defensiveBuildWeight: 0.4,
+  },
+  // M_V11.WAVE-DEFENSE (#77h) — survival mode. The "AI faction" is
+  // a stand-in for the barbarian-camp threat; it doesn't really
+  // brain — the scripted wave-spawn system is the pressure. Keep
+  // the AI weights low so it doesn't compete with the wave logic
+  // for the player's attention.
+  'wave-defense': {
+    ...DEFAULT_PROFILE,
+    buildWeight: 0,
+    militaryWeight: 0,
+    defensiveBuildWeight: 0,
+  },
+  // M_V11.DAILY-CHALLENGE (#77i) — same AI weights as border-clash
+  // so every daily-challenge player faces the same competitive AI.
+  'daily-challenge': { ...DEFAULT_PROFILE },
 };
 
 /** Lookup helper; defaults to border-clash. */

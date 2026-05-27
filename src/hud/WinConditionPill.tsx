@@ -27,6 +27,14 @@ const COPY_FOR_MODE = {
   'strata-wars': '🛡 Control the realm',
   'age-of-strata': '📜 Reach the final era',
   coexistence: '☮ Sandbox',
+  // M_V11.TUTORIAL (#77f) — guided 5-min teaching scenario.
+  tutorial: '📖 Tutorial — follow the objectives',
+  // M_V11.CAMPAIGN (#77g) — narrative chapter scenarios.
+  campaign: '📜 Chapter — complete the objectives',
+  // M_V11.WAVE-DEFENSE (#77h) — survival mode.
+  'wave-defense': '🛡 Hold the Palace — survive all waves',
+  // M_V11.DAILY-CHALLENGE (#77i) — same seed every player today.
+  'daily-challenge': '🏆 Daily Challenge — race the leaderboard',
 } as const;
 
 export function WinConditionPill({ game }: { game: GameState }) {
@@ -39,7 +47,12 @@ export function WinConditionPill({ game }: { game: GameState }) {
       aria-label={`Win condition: ${copy}`}
       style={{
         position: 'fixed',
-        top: 'calc(env(safe-area-inset-top, 0px) + 8px)',
+        // M_V11.POLISH.HUD-CROWDING — sit below the resource bar on
+        // mobile-portrait (top:48 keeps clear of the top-right
+        // diplomacy banner + the top-left resource strip). On wider
+        // viewports the centred top:8 is fine (resource bar + speed
+        // pill don't reach the centre).
+        top: 'calc(env(safe-area-inset-top, 0px) + clamp(8px, 48px - 8vw, 48px))',
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 90,

@@ -18,7 +18,7 @@ describe('SelectionPanel', () => {
     // M_V11.OPEN.SPAWN — startGame no longer pre-spawns peons.
     // Spawn one explicitly so the selection panel has an entity
     // to display.
-    const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+    const [tq, tr] = game.palaceKey.split(',').map(Number) as [number, number];
     const tile = game.board.tiles.get(`${tq + 1},${tr}`);
     if (tile?.walkable) {
       createCharacter({

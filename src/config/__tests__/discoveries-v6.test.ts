@@ -26,13 +26,23 @@ describe('M_V7.DISCOVERY-TREE.V6 — new tech entries', () => {
     }
   });
 
-  it('registry contains 13 total Discoveries (v0.4 2 + v0.7 5 + v0.10 6 formations)', () => {
-    expect(DISCOVERIES.length).toBe(13);
+  it('registry contains 30+ Discoveries across 6 themed chains + formations', () => {
+    // M_V11.DISCOVERY-EXPANSION (GAME-DESIGN-AUDIT task #77b): expanded
+    // 13 → 36 across Economy/Military/Diplomacy/Magic/Engineering/Lore
+    // chains + 6 formations. Threshold pinned at ≥30 so future
+    // additions don't trip the test, but a regression (mass deletion)
+    // does.
+    expect(DISCOVERIES.length).toBeGreaterThanOrEqual(30);
   });
 
   it('siege-engineering + monumental-architecture have prereqs (deeper-tier)', () => {
+    // siege-engineering still chains off forgedBlades (now Military I).
+    // monumental-architecture now chains off the Engineering root (was
+    // previously chained off steelPlows when there was no separate
+    // Engineering line). Engineering is currently a flat root in the
+    // expanded tree; monumental-architecture is the root of its own chain.
     expect(discoveryById('siege-engineering')?.prereqs).toEqual(['forgedBlades']);
-    expect(discoveryById('monumental-architecture')?.prereqs).toEqual(['steelPlows']);
+    expect(discoveryById('monumental-architecture')?.prereqs).toEqual([]);
   });
 
   it('iron-tools is a multiply-harvest tech with 1.25× factor', () => {

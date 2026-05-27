@@ -58,6 +58,19 @@ const JOURNEY_SPECS = [
   'e2e/modal-journey.spec.ts',
   'e2e/selection-journey.spec.ts',
   'e2e/viewport-matrix-journey.spec.ts',
+  // M_V11.E2E.PERF-MOBILE — perf trace is an on-demand artefact
+  // capture (rAF frame-interval sampling on a Pixel-7 viewport).
+  // p95 has run-to-run variance under headless WebGL load that
+  // makes it unsafe as a tier-1 gate. Opt-in via JOURNEY=1.
+  'e2e/perf-mobile-trace.spec.ts',
+  // M_V11.CI.FLAKE — n-player-camp-clear runs a 24000-frame burst
+  // in a single page.evaluate that times out under CI's WebGL load
+  // (~240s wall on GitHub-hosted runners, intermittent). The
+  // deterministic version of the same contract lives in
+  // tests/browser/barbarian-camp-clear.browser.test.ts; this
+  // playwright spec was the artifact capture for the multi-faction
+  // tick stability. Opt-in via JOURNEY=1 for on-demand runs.
+  'e2e/n-player-camp-clear.spec.ts',
 ];
 const baseE2eGlob = 'e2e/**/*.spec.ts';
 const testMatch = includeVisual ? [baseE2eGlob, 'visual/**/*.spec.ts'] : [baseE2eGlob];

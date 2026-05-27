@@ -48,7 +48,7 @@ A mystic AI tends to:
 
 | Unit / Building | Lore role |
 |---|---|
-| **Town Hall** | An **observatory** — a hex-domed scholar's tower. No brazier; the centre is a strata-resonance plate that reads the Mythic Stratum's pulse. |
+| **Palace** | An **observatory** — a hex-domed scholar's tower. No brazier; the centre is a strata-resonance plate that reads the Mythic Stratum's pulse. |
 | **Footman (warden variant)** | A robed sanctuary-guardian armed with a quarterstaff. Slow, durable, refuses to attack a faction that hasn't broken a sanctuary. |
 | **Watchtower** | A second observatory — sees by reading the strata's pulse change, not by line of sight. Effective in fog. |
 | **Wall** | Rare. Mystic walls are *meditation walls* — they slow movement but don't block. |

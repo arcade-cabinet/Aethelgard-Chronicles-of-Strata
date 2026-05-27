@@ -3,9 +3,9 @@ import { HUD_THEME } from './hud-theme';
 /**
  * M_POLISH2.B.1 — touch-reachable affordance for opening the build
  * menu. The build flow lives on the SelectionPanel that appears
- * after selecting the TownHall; this button dispatches the
+ * after selecting the Palace; this button dispatches the
  * `aethelgard:open-build-menu` event that App.tsx now listens for
- * (and which selects the player's TownHall, surfacing the panel).
+ * (and which selects the player's Palace, surfacing the panel).
  *
  * On desktop the keyboard `B` already dispatches the same event, so
  * this is mobile-first BUT not mobile-only — desktop users get a
@@ -13,7 +13,7 @@ import { HUD_THEME } from './hud-theme';
  *
  * Positioned bottom-right of the screen (above the home-bar inset
  * + above the minimap on mobile). Hidden when the SelectionPanel is
- * already open AND the selected entity is the player's TownHall (no
+ * already open AND the selected entity is the player's Palace (no
  * need for the chip when the build buttons are already on-screen).
  */
 export function BuildMenuButton() {

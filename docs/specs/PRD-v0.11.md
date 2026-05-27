@@ -41,7 +41,7 @@ the WAIT-FOCUS items deferred from v0.10 — the multi-file refactors
 that the v0.10 substrate makes straightforward:
 
 1. **Strip 4X scaffolding** — there is one game shape (RTS).
-2. **Classic-RTS opening** — Town Hall + small stockpile, no
+2. **Classic-RTS opening** — Palace + small stockpile, no
    pre-spawned units. Player and AI symmetric.
 3. **Stack runtime** — movement, rendering, combat, peon Work Crew
    auto-form, mob auto-stack.
@@ -85,20 +85,20 @@ the commitment is RTS-only.
 ## §2 — Classic-RTS opening (M_V11.RTS-OPEN)
 
 Per `docs/specs/200-genre-commitment.md` §"The classic RTS opening":
-spawn ONLY the Town Hall + a small stockpile. Player and AI
+spawn ONLY the Palace + a small stockpile. Player and AI
 symmetric. No pre-spawned peons or military.
 
 ### Deliverables
 
 - **§2.1 OPEN.SPAWN** — `src/game/game-state.ts` faction spawn:
   wipe the 2 pre-spawned peons (lines ~652-670) + the
-  `extra-peons` bonus path. Spawn Town Hall only.
+  `extra-peons` bonus path. Spawn Palace only.
 - **§2.2 OPEN.STOCKPILE** — Add `startingStockpile: { wood: 80,
   stone: 60, gold: 0 }` to faction spawn config. Sized so 2 peons
   (~30 wood each) are queueable on tick 0 and a defensive Wall
   (~20 stone) drops immediately.
-- **§2.3 OPEN.TH-AFFORDANCE** — Town Hall first-action highlight:
-  when Town Hall is selected and stockpile is sufficient, the
+- **§2.3 OPEN.TH-AFFORDANCE** — Palace first-action highlight:
+  when Palace is selected and stockpile is sufficient, the
   "Queue Peon" build button gets a faction-coloured pulsing halo
   until the first peon is queued. Once any peon exists, the halo
   retires.
@@ -107,7 +107,7 @@ symmetric. No pre-spawned peons or military.
   asymmetric advantage — difficulty axis lives in decision
   quality (AI evaluator weights), not starting resources.
 - **§2.5 OPEN.ONBOARDING** — Replace the OnboardingOverlay first
-  step ("Watch your peons auto-harvest") with "Tap your Town Hall,
+  step ("Watch your peons auto-harvest") with "Tap your Palace,
   queue 2 peons." Rewrite the second step accordingly. All 4
   visual baselines for the overlay regenerate.
 - **§2.6 OPEN.INACTIVITY** — Inactivity narrator beats: at 30s
@@ -117,7 +117,7 @@ symmetric. No pre-spawned peons or military.
   dismissable; reset on first peon queue.
 - **§2.7 OPEN.TESTS** — Update the ~6 tests that assert
   starting-peon-count or first-peon-position. Add: spawn-test
-  asserts 0 peons + 0 military + 1 Town Hall + 80 wood + 60 stone
+  asserts 0 peons + 0 military + 1 Palace + 80 wood + 60 stone
   for each faction.
 
 ## §3 — Stack runtime (M_V11.STACK-RUNTIME)
@@ -189,7 +189,7 @@ sidebar actions, peon command-verb split, batch Take command.
   peons get Harvest here / Build here / Repair / Return to Town
   Hall / Take command / Resume automation. Military get
   Attack-move / Patrol / Hold position / Fall back. Mixed
-  selection shows intersection (Return to Town Hall, Hold
+  selection shows intersection (Return to Palace, Hold
   position) + per-type submenus.
 - **§4.4 SEL.BATCH-PEON** — Batch Take command for peon selection.
   Calls `setPeonAutoMode` on every peon in the selection.
@@ -246,8 +246,8 @@ emitters.
 ### Deliverables
 
 - **§6.1 NOTIF.ENEMY-AT-TH** — When an enemy unit enters a tile
-  adjacent to the player's Town Hall, fire a critical toast
-  "Enemy at the gates" with focus={townHall.q, townHall.r}.
+  adjacent to the player's Palace, fire a critical toast
+  "Enemy at the gates" with focus={palace.q, palace.r}.
   Dedup id keyed by 'enemy-at-th'.
 - **§6.2 NOTIF.ZOC-BREACH** — When a tile flips faction (player
   loses or gains a tile), fire an info-tone toast "Your border
@@ -298,6 +298,168 @@ each fixture.
   bump per Conventional Commits scope. Goal: ship v0.11.0 by
   end of cycle.
 
+## §8 — Procedural buildings via composed structural primitives (M_V11.PROCMESH)
+
+User direction 2026-05-26 (refined): "no fallbacks, we're gonna
+make all buildings have a procedural buildout and then skins the
+coloring for the buildings. But we're gonna be smart by
+internalizing the building types and shapes from the reference
+doc as building blocks (e.g. logs, towers, buttresses, etc...) as
+the lowest level for Koota and then make each building from a
+composition of those lower order, versus bespoke for each
+building. That will be a significant improvement over the
+reference." Plus: "we're gonna entirely remove GLB buildings",
+"Props and units we'll keep GLBs for now as that seems to be
+working much better", "we'll also keep the graveyard pieces for
+horde camps", "for now just each human/AI player will be built
+from lower-order structural components > buildings > skins."
+
+### Scope
+
+| Asset class | Source post-§8 |
+|---|---|
+| Player/AI faction buildings (Palace, Barracks, Wall, Watchtower, Farm, House, Granary, Library, Wonder) | **Procedural — composed from structural primitives** |
+| Player/AI units (Peon, Footman, Knight, Wizard, etc.) | **GLB (KayKit Adventurers)** — unchanged |
+| Nature props (trees, rocks, banners, fountains, gravestones) | **GLB** — unchanged |
+| Horde-camp / Graveyard pieces (crypt, gravestones, portal-crypt) | **GLB (KayKit Mystery / Graveyard Kit)** — unchanged |
+
+GLB building files (`public/assets/structures/rts/*`, `crypt.glb`
+when used as a Palace, `town-center/*`, `barracks/*`, etc.) get
+removed from the PLAYER/AI PATH. The Graveyard Kit GLBs (`crypt`,
+`gravestone-*`, `portal-crypt`) STAY because horde camps continue
+to use them.
+
+### Architecture — three-tier composition
+
+```
+src/world/procedural/
+  primitives/        # Tier 1: structural primitives (the koota-low-level)
+    Log.tsx               # horizontal-stacked log row + end caps
+    StonePlinth.tsx       # cylindrical or boxed foundation
+    WoodPost.tsx          # vertical wood beam, configurable height
+    StoneBrick.tsx        # stone-textured brick segment
+    Banner.tsx            # rectangular banner mesh with optional emblem
+    GoldTrim.tsx          # gold band (cylinder or box, configurable)
+    Battlement.tsx        # crenellation block
+    ConeRoof.tsx          # tower-cap cone with optional finial
+    PitchedRoof.tsx       # gabled roof for buildings
+    Column.tsx            # column shaft + capital + fluting
+    Window.tsx            # frame + emissive glass + muntins
+    Door.tsx              # door + frame + panels + handle
+    WeaponRack.tsx        # rack + N weapons
+    Chimney.tsx
+    Spire.tsx             # cone + finial + base
+    Buttress.tsx          # angled support
+    Shield.tsx            # round or kite, faction-coloured
+  buildings/         # Tier 2: building compositions (each = a tree of primitives)
+    Palace.tsx
+    Barracks.tsx
+    Wall.tsx
+    Watchtower.tsx
+    Farm.tsx
+    House.tsx
+    Granary.tsx
+    Library.tsx
+    Wonder.tsx
+  index.ts           # building<-->logical-id map for SKINS lookup
+```
+
+The composition discipline:
+
+1. **A primitive accepts MATERIAL props, not COLOR props**:
+   `<Log color={...}>` is wrong; `<Log material={woodMat}>` is
+   right. The material itself is a `MeshStandardMaterialProps`
+   object the building composer passes through. SKINS swaps
+   materials globally per faction; primitives don't know about
+   factions.
+2. **A building composes primitives**: `Palace.tsx` mounts
+   `<StonePlinth>` + 4× `<Column>` + N× `<Wall>` segments +
+   `<PitchedRoof>` + `<Banner>` + `<Spire>` — that's the whole
+   file, no inline meshes. The reference doc's bespoke building
+   bodies become primitive composition trees.
+3. **SKINS provides the materials**: each Skin has a
+   `factionMaterials` slot returning a typed Record of
+   `MeshStandardMaterialProps` keyed by primitive family
+   (`stone`, `wood`, `banner`, `trim`, `accent`, `glass`).
+   Each faction overrides only the colors / metalness /
+   roughness it cares about; defaults supplied for the rest.
+
+### Why this is a step up from the reference
+
+- **N buildings × M primitives = O(N + M) code** instead of the
+  reference's O(N × inline meshes). Adding a third faction is a
+  new `factionMaterials` row, not a re-implementation of every
+  building.
+- **A new building type = a new composition file**, with all the
+  primitives ready. The reference re-implements adornments per
+  building; here a `<Banner>` mesh is one component shared by
+  every building that wants one.
+- **Visual harnesses pin every primitive** in isolation (a single
+  `<Log>` rendered against a hex baseplate, materials default),
+  so a renderer / material change can't silently rot a Granary's
+  silo band without also reddening the primitive baseline.
+
+### Deliverables (revised)
+
+- **§8.1 PROCMESH.PRIMITIVES** — `src/world/procedural/primitives/`
+  with the tier-1 component set (see tree above). Each accepts
+  `material?: MeshStandardMaterialProps`, `position`, dimensional
+  args, and renders pure r3f primitives. ZERO faction knowledge
+  at this layer.
+- **§8.2 PROCMESH.MATERIALS** — Skin gains a `factionMaterials:
+  Record<PrimitiveFamily, MeshStandardMaterialProps>` slot
+  (defaults provided). Per faction the player/AI banner +
+  stone tone + trim shifts; KayKit-tinted-unit pattern from
+  v0.10 stays for units.
+- **§8.3 PROCMESH.BUILDINGS** — `src/world/procedural/buildings/`
+  with Palace + Barracks + Wall + Watchtower + Farm + House +
+  Granary + Library + Wonder. Each composes primitives + reads
+  `factionMaterials` via a context or prop. NO inline meshes —
+  if a building needs a shape no primitive covers, ADD A
+  PRIMITIVE first.
+- **§8.4 PROCMESH.SKINS-PIVOT** — SKINS.structure[type] no longer
+  carries `logicalId` for the building set; it carries a
+  `proceduralComponent` reference (the buildings/<Type>.tsx
+  export). `FactionBase` + `StructureMesh` switch on that.
+  Existing GLB-path callers for Graveyard horde camps (crypt,
+  gravestone, portal-crypt) keep the `logicalId` slot — that
+  pool is unchanged.
+- **§8.5 PROCMESH.HARNESS** — Vitest browser test per primitive
+  (~16 baselines) + per building composition (~9 baselines) +
+  per faction-skin × representative building (e.g. 2 factions ×
+  Palace = 2 baselines). Lock the adornments + material
+  overrides so future drift is caught at PR time.
+- **§8.6 PROCMESH.GLB-CLEANUP** — delete the player/AI building
+  GLBs from `public/assets/structures/rts/` (town-center,
+  barracks, tower-house, wall — both first-age + second-age
+  variants). Update src/rules/glb-metadata.json + the
+  measure-glbs.mjs categorization to skip the deleted paths.
+  Graveyard Kit + non-building props stay.
+- **§8.7 PROCMESH.PLAYER-SECONDARY-BUILDINGS** — the Farm /
+  House / Granary / Library entries currently using Fantasy
+  Town Kit GLBs (windmill, watermill, house, etc.) flip to
+  procedural so faction identity carries through the whole
+  player base.
+
+### What this does NOT do
+
+- Does NOT touch player/AI UNIT GLBs (KayKit Adventurers stay).
+- Does NOT touch nature-prop GLBs (trees, rocks, banners,
+  fountains stay).
+- Does NOT touch the GRAVEYARD KIT GLBs (crypt, gravestone
+  variants, portal-crypt) — these continue to drive horde camps.
+- Does NOT change game balance. Visual + asset-pipeline only.
+
+### Open question — building footprints
+
+The reference's procedural buildings ship at a known scale
+(WallSegment ~1.3 wide for hex tile fit). Each `buildings/<Type>.tsx`
+documents its source-unit bbox and the hex-fit scale at the top
+of the file. The `pnpm assets:measure` tool (M_GAME.SCALE.GLB-
+MEASURE.1) doesn't apply to procedural — bbox is known at compile
+time. SKINS optionally carries a per-faction scale multiplier for
+buildings (Wonder might be 1.6× normal, etc.).
+
 ## Scope NOT in v0.11
 
 - Single-Squad camera mode (per `docs/specs/200-genre-commitment.md`
@@ -307,6 +469,70 @@ each fixture.
 - Multi-formation switching mid-combat (locked by spec).
 - Per-Stack mesh authoring (member meshes cluster per formation;
   no new GLBs).
+
+## §9 — Lifted deferrals (user direction 2026-05-26)
+
+Per user "EVERYTHING in scope, NOTHING deferred", §9 brings the
+previously-deferred sub-items back as actionable work:
+
+- **STACK.WORK-CREW.BUFF** — harvest +20%/peon cap +80% (4
+  members) (`src/ecs/systems/harvest.ts` workCrewMultiplier).
+- **STACK.PANEL.MULTI-STACK** — `setStackFormation` applies to
+  every selected Stack, not just the primary.
+- **SEL.PEON-VERBS.SUBMENUS** — per-class verb surfaces for
+  mixed selections (Stance — Military (N), Take peons (N)).
+- **SEL.ALL-OF-TYPE.BIOME** — biome-scoped peon selector.
+- **PROCMESH.WALL-VARIANTS** — hasGate + isCorner variants on
+  the procedural Wall; deleted dead gate-stone + wall-stone-
+  corner GLBs.
+
+## §10 — Polish, UI/UX, HUD crowding
+
+The visual + a11y + density gates between PR open and merge:
+
+- **HUD-AUDIT** — multi-viewport screenshot battery (60 captures
+  via `JOURNEY=1 pnpm test:e2e:multiview`).
+- **HUD-CROWDING** — WinConditionPill responsive top offset;
+  SelectionPanel maxHeight clamp + overflow.
+- **SCREENSHOT-BATTERY** — 10-shot journey-capture extended with
+  long-sim (90s mobs visible) + procedural-buildings zoom.
+- **VISUAL-COMPARE** — judgement ledger at
+  `docs/screenshots/v0.11/judgement.md`.
+- **A11Y-SWEEP** — axe-core extended to SelectionPanel.
+- **MOBILE-MAESTRO** — selector-level validation of every
+  `.maestro/*.yaml`; SystemMenu items now have id+aria-label;
+  nplayer-setup.yaml rewritten for v0.11 2-faction setup.
+- **SELECTION-PANEL-DENSITY** + **ACCORDION** — maxHeight
+  + native `<details>` for Build + Research lists.
+- **STACKRENDER-DEDUP** — formation badge y=1.45 sits under
+  HealthBillboard y=2.1.
+- **LOOT-FX** — spinning gem above un-collected LootCache.
+- **CAMP-MOB-VISUAL** — CAMP_COLORS 6-step hue band.
+- **PROCMESH-FACTION-CROSS** — 9 buildings × enemy palette
+  visual baselines.
+- **PEON-CTA-DECAY** + **WAYPOINT-RESPONSIVENESS** + **BUILD-
+  MENU-CTA** + **FOCUS-TILE-CALLERS** — verified.
+- **JOURNEY-CAMERA-EVENTS** — `aethelgard:focus-palace`
+  forward + 3 follow-up items (BUILD-MENU-CTA / JOURNEY-
+  CAPTURE-ZOOM / CAMERA-TWEEN-RACE) tracked + resolved.
+
+## §11 — End-to-end verification gate
+
+Hard merge gates:
+
+- **LOCAL-PLAYTHROUGH** — automated proxy via
+  `tests/e2e/ai-vs-ai-playthrough.spec.ts` (300s sim, both
+  modes, webm + per-5s frames).
+- **AIVAI-200S-BAKE** — `tests/unit/aivai-200s-bake.test.ts`
+  (6 invariants over 400 ticks).
+- **SAVE-LOAD-MID-MATCH** — `tests/unit/save-load-mid-match.test.ts`
+  (90s sim → serialize → deserialize → byte-identical
+  invariants).
+- **CAMERA-SANITY** — `tests/unit/camera-sanity.test.ts`
+  (clamp helper + bound math).
+- **PERF-MOBILE** — `tests/e2e/perf-mobile-trace.spec.ts`
+  (Pixel-7 viewport, 660-frame rAF sample, p95 < 40ms gate;
+  current numbers mean 14ms p95 37ms).
 
 ## Risk register
 

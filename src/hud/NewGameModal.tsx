@@ -95,6 +95,17 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       'long-reign': 'normal',
       'strata-wars': 'normal',
       coexistence: 'easy',
+      // M_V11.TUTORIAL (#77f) — easy difficulty (no early military pressure).
+      tutorial: 'easy',
+      // M_V11.CAMPAIGN (#77g) — normal default; scripted chapter pressure
+      // is the difficulty knob, not the AI scaling.
+      campaign: 'normal',
+      // M_V11.WAVE-DEFENSE (#77h) — normal default; the wave script is
+      // the pacing, not the AI difficulty.
+      'wave-defense': 'normal',
+      // M_V11.DAILY-CHALLENGE (#77i) — normal default so the leaderboard
+      // compares apples-to-apples across every player.
+      'daily-challenge': 'normal',
     };
     setDifficulty(aiByMode[mode]);
     setTurnsModeState(preset.turnsMode);

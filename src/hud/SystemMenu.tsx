@@ -26,8 +26,10 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
   Compass,
   Flag,
+  Handshake,
   Map as MapIcon,
   Menu,
+  Palette,
   Settings as SettingsIcon,
   Volume2,
   VolumeX,
@@ -90,6 +92,24 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
       label: 'Discoveries',
       onSelect: () => {
         window.dispatchEvent(new CustomEvent('aethelgard:open-discoveries'));
+        setOpen(false);
+      },
+    },
+    {
+      id: 'diplomacy',
+      Icon: Handshake,
+      label: 'Diplomacy',
+      onSelect: () => {
+        window.dispatchEvent(new CustomEvent('aethelgard:open-diplomacy'));
+        setOpen(false);
+      },
+    },
+    {
+      id: 'atelier',
+      Icon: Palette,
+      label: 'Atelier',
+      onSelect: () => {
+        window.dispatchEvent(new CustomEvent('aethelgard:open-atelier'));
         setOpen(false);
       },
     },
@@ -201,7 +221,9 @@ export function SystemMenu({ game, onSettings, soundMuted, onToggleSound }: Syst
                       <li key={row.id}>
                         <button
                           type="button"
+                          id={`system-menu-${row.id}`}
                           data-testid={`system-menu-${row.id}`}
+                          aria-label={row.label}
                           onClick={row.onSelect}
                           className={cn(
                             'hud-interactive flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors',

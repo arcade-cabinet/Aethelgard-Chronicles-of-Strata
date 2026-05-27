@@ -59,7 +59,7 @@ export function useAudio(game: GameState): void {
   // Track completed building count to detect new completions each tick.
   const lastCompleteBuildingsRef = useRef<number>(0);
   // M_EXPANSION.AU.42 — pre-victory crescendo. Music ducks to 40%
-  // when imminent victory is detected (enemy TownHall HP <10% OR
+  // when imminent victory is detected (enemy Palace HP <10% OR
   // wonderTimer <3s on EITHER faction). When the trigger releases
   // (e.g. the enemy heals or the wonder is cancelled — both unlikely
   // but cheap to support), music restores. The outcome-transition
@@ -206,7 +206,7 @@ export function useAudio(game: GameState): void {
 
     // M_EXPANSION.AU.42 — pre-victory crescendo detection. Only
     // arm while still playing. Triggers (any one):
-    //   - Enemy TownHall (FactionBase + faction='enemy') HP <10% of max
+    //   - Enemy Palace (FactionBase + faction='enemy') HP <10% of max
     //   - Player wonderTimer between 0.01 and 3.0 seconds
     //   - Enemy wonderTimer between 0.01 and 3.0 seconds (loss-edge —
     //     a defeat crescendo deserves the same musical breath)
@@ -220,7 +220,7 @@ export function useAudio(game: GameState): void {
           break;
         }
       }
-      // Enemy TownHall HP edge.
+      // Enemy Palace HP edge.
       if (!imminent) {
         for (const e of game.world.query(FactionBase, Health)) {
           const f = e.get(FactionBase);

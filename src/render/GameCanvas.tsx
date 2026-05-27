@@ -9,6 +9,7 @@ import { CombatText } from '@/world/CombatText';
 import { ContestedPulse } from '@/world/ContestedPulse';
 import { Crossings } from '@/world/Crossings';
 import { DeathDropLayer } from '@/world/DeathDropLayer';
+import { LootCacheLayer } from '@/world/LootCacheLayer';
 import { Decoration } from '@/world/Decoration';
 import { FactionBase } from '@/world/FactionBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
@@ -31,6 +32,7 @@ import { ResourceNodes } from '@/world/ResourceNodes';
 import { ResourceText } from '@/world/ResourceText';
 import { Roads } from '@/world/Roads';
 import { SelectionRing } from '@/world/SelectionRing';
+import { StackRender } from '@/world/StackRender';
 import { Terrain } from '@/world/Terrain';
 import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
 import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
@@ -111,7 +113,7 @@ function DecorationLive({
       board={game.board}
       occupiedKeys={occupiedKeys}
       enemyBaseKey={game.enemyBaseKey}
-      playerBaseKey={game.townHallKey}
+      playerBaseKey={game.palaceKey}
       buildSites={sites}
     />
   );
@@ -160,15 +162,15 @@ function Scene({
   // whole match.
   //
   // M_GAME.BUG.8 — mobile-first camera start: focus on the PLAYER'S
-  // Town Hall (not the base-pair midpoint, not the land centroid).
+  // Palace (not the base-pair midpoint, not the land centroid).
   // The player should boot looking at "their realm" — a hex-slice
   // around home — and pinch-out to reveal the wider map. This makes
   // the on-boarding "you are HERE" feel correct, especially on
   // portrait phones where the centroid framing left the player
-  // disoriented. Falls back to the centroid only if the Town Hall
+  // disoriented. Falls back to the centroid only if the Palace
   // tile is absent (extremely early init).
   const landCenter = useMemo<{ x: number; z: number }>(() => {
-    const pBase = game.board.tiles.get(game.townHallKey);
+    const pBase = game.board.tiles.get(game.palaceKey);
     if (pBase) {
       const p = axialToWorld(pBase.q, pBase.r);
       return { x: p.x, z: p.z };
@@ -185,7 +187,7 @@ function Scene({
       n++;
     }
     return n > 0 ? { x: sx / n, z: sz / n } : { x: 0, z: 0 };
-  }, [game.board, game.townHallKey]);
+  }, [game.board, game.palaceKey]);
 
   return (
     <>
@@ -239,6 +241,11 @@ function Scene({
           <UnitHexOutline game={game} />
           <BuildingOutlineRing game={game} />
         </group>
+        {/* M_V11.STACK.RENDER — formation badges + bolder outline rings
+            on each Stack's member tiles. Sits inside the Suspense
+            because StackRender uses drei <Billboard> + <Text> (font
+            asset). */}
+        <StackRender game={game} />
       </Suspense>
       <CombatText game={game} />
       <ResourceText game={game} />
@@ -254,6 +261,10 @@ function Scene({
       <FootstepEmitter game={game} />
       {/* M_EXPANSION.A.17 — coffin death-drop for enemy units. */}
       <DeathDropLayer />
+      {/* M_V11.POLISH.LOOT-FX — visible spinning gem above every
+          un-collected LootCache entity so the player can see the
+          drop before walking onto it. */}
+      <LootCacheLayer game={game} />
       <ParticleEmitter game={game} spec={rainConsumer} />
       <RallyMarker game={game} />
       <SelectionRing game={game} />
@@ -349,7 +360,7 @@ export function GameCanvas({ game, buildContext = null, onCameraReady }: GameCan
         canvas.addEventListener('webglcontextlost', onLost as EventListener, false);
         canvas.addEventListener('webglcontextrestored', onRestored, false);
         // Defensive: if gl is a stub from a fallback path, surface.
-        if (!gl || !gl.getContext()) {
+        if (!gl?.getContext()) {
           console.error(
             '[GameCanvas] WebGL CONTEXT FAILED to initialize — board will be blank. ' +
               'Browser refused getContext("webgl"). Check device GPU compat.',

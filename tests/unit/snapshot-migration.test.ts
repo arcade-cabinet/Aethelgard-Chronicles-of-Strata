@@ -24,10 +24,11 @@ describe('snapshot migration framework (M_EXPANSION.S.61)', () => {
     const snap = serializeGame(original);
     // version pinned by serialize at SNAPSHOT_VERSION; migration walks
     // until current.version === SNAPSHOT_VERSION (zero iterations).
-    // SNAPSHOT_VERSION bumped to 3 in M_V7.CARRY.SAVE-V6-STATE — added
-    // diplomacy / mythEvents / cooldowns / victoryRecord blocks to
-    // GameSnapshot. (v1→v2 was M_FUN.DYN.FIX.SAVE-GAP for terrain.)
-    expect(snap.version).toBe(3);
+    // SNAPSHOT_VERSION bumped to 4 in M_V11.RENAME.TOWNHALL-TO-PALACE
+    // (rewrites legacy 'TownHall' buildingType to 'Palace'). Previous
+    // bumps: v3 in M_V7.CARRY.SAVE-V6-STATE (diplomacy/mythEvents/
+    // cooldowns/victoryRecord), v2 in M_FUN.DYN.FIX.SAVE-GAP (terrain).
+    expect(snap.version).toBe(4);
     const restored = deserializeGame(JSON.parse(JSON.stringify(snap)));
     expect(restored.seedPhrase).toBe('autumn-bronze-summit');
   });
@@ -113,5 +114,46 @@ describe('snapshot migration framework (M_EXPANSION.S.61)', () => {
     expect(restored.mythEvents.active).toBeNull();
     // M_V11.PURGE — victoryRecord field gone (was 4X-only).
     expect(restored.portalStoneCooldowns.size).toBe(0);
+  });
+
+  it('v3 → v4 migration rewrites legacy TownHall building type to Palace', () => {
+    // M_V11.RENAME.TOWNHALL-TO-PALACE — a v3 save has the central faction
+    // building serialized with buildingType='TownHall'. Loading it on v4
+    // (current) must rewrite the type to 'Palace'; otherwise rendering
+    // would silently fail (the registry no longer has a TownHall entry).
+    const original = startGame('autumn-bronze-summit');
+    const snap = serializeGame(original);
+    // Force version DOWN to 3 and rewrite each Palace back to TownHall
+    // so the migration sees a legitimate legacy-shape snapshot.
+    snap.version = 3 as never;
+    const synthetic = snap as unknown as Record<string, unknown>;
+    const world = synthetic.world as Record<string, unknown>;
+    const entities = world.entities as Array<Record<string, unknown>>;
+    let palaceCount = 0;
+    for (const e of entities) {
+      const building = e.Building as { buildingType?: string } | undefined;
+      if (building?.buildingType === 'Palace') {
+        building.buildingType = 'TownHall';
+        palaceCount += 1;
+      }
+    }
+    // startGame places at least one Palace (player faction's central
+    // building). Enemy FactionBase is a separate trait, so we expect
+    // exactly 1 Palace here; the migration must rewrite it.
+    expect(palaceCount).toBeGreaterThanOrEqual(1);
+    const restored = deserializeGame(JSON.parse(JSON.stringify(snap)));
+    // Sanity: same total Palace count post-migration; none left as TownHall.
+    let restoredPalaceCount = 0;
+    let restoredLegacyCount = 0;
+    const restoredSnap = serializeGame(restored) as unknown as Record<string, unknown>;
+    const restoredWorld = restoredSnap.world as Record<string, unknown>;
+    const restoredEntities = restoredWorld.entities as Array<Record<string, unknown>>;
+    for (const e of restoredEntities) {
+      const building = e.Building as { buildingType?: string } | undefined;
+      if (building?.buildingType === 'Palace') restoredPalaceCount += 1;
+      if (building?.buildingType === 'TownHall') restoredLegacyCount += 1;
+    }
+    expect(restoredPalaceCount).toBe(palaceCount);
+    expect(restoredLegacyCount).toBe(0);
   });
 });

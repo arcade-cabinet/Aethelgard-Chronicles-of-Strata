@@ -16,6 +16,11 @@ import { BuildMenuButton } from '@/hud/BuildMenuButton';
 import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { CriticalWarning } from '@/hud/CriticalWarning';
+import { AtelierScreen } from '@/hud/AtelierScreen';
+import { CampaignOverlay } from '@/hud/CampaignOverlay';
+import { DiplomacyModal } from '@/hud/DiplomacyModal';
+import { TutorialOverlay } from '@/hud/TutorialOverlay';
+import { WaveDefenseOverlay } from '@/hud/WaveDefenseOverlay';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { FactionChips } from '@/hud/FactionChips';
@@ -174,6 +179,22 @@ function GameSession({
           new CustomEvent('aethelgard:outcome-changed', { detail: { outcome } }),
         );
       };
+      // M_V11.POLISH.BUILD-MENU-CTA — direct selectEntity hook so
+      // Playwright tests can deterministically select an entity
+      // (the open-build-menu CustomEvent + useEffect listener
+      // mount race is hard to win in headless).
+      (
+        window as unknown as DevWindow & {
+          __game_selectEntity?: (entityId: number) => void;
+        }
+      ).__game_selectEntity = (entityId) => {
+        for (const e of g.world.query(FactionTrait)) {
+          if (Number(e) === entityId) {
+            selectEntity(g, e);
+            return;
+          }
+        }
+      };
       (window as unknown as DevWindow).__game_findPlayerEntities = (kind) => {
         const MILITARY_TYPES = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
         const out: number[] = [];
@@ -247,7 +268,7 @@ function GameSession({
     };
     // M_POLISH2.B.1 — open-build-menu was dispatched by the keyboard
     // shortcut + the new mobile build chip but NOTHING was listening.
-    // The listener selects the player's TownHall (which has
+    // The listener selects the player's Palace (which has
     // showsBuildMenu=true) and lets the existing SelectionPanel render
     // the build-button list — re-uses the single source of truth
     // instead of forking a separate build modal.
@@ -255,17 +276,43 @@ function GameSession({
       for (const ent of game.world.query(Building, FactionTrait)) {
         const b = ent.get(Building);
         const f = ent.get(FactionTrait);
-        if (b?.buildingType === 'TownHall' && f?.faction === 'player') {
+        if (b?.buildingType === 'Palace' && f?.faction === 'player') {
           selectEntity(game, ent);
           break;
         }
       }
     };
+    // M_V11.POLISH.JOURNEY-CAMERA-EVENTS — focus-palace pans
+    // the camera onto the player Palace + zooms in tight.
+    // Forwards to aethelgard:focus-tile (CameraRig already listens)
+    // with parsed q/r + a tight distance so journey-capture shots
+    // can frame the procedural Palace composition.
+    const onFocusPalace = () => {
+      const key = game.palaceKey;
+      if (!key) return;
+      // CodeRabbit (PR #89): guard malformed keys instead of falling
+      // back to (0,0). Parsing "garbled" with parseInt('garbled', 10)
+      // returns NaN; the old code's `?? '0'` only handled an undefined
+      // SEGMENT, not a non-numeric one — so a malformed key would yank
+      // the camera to tile (0,0) silently. Bail out cleanly instead.
+      const parts = key.split(',');
+      if (parts.length !== 2) return;
+      const q = Number.parseInt(parts[0] ?? '', 10);
+      const r = Number.parseInt(parts[1] ?? '', 10);
+      if (!Number.isFinite(q) || !Number.isFinite(r)) return;
+      window.dispatchEvent(
+        new CustomEvent('aethelgard:focus-tile', {
+          detail: { q, r, distance: 6 },
+        }),
+      );
+    };
     window.addEventListener('aethelgard:trigger-build', onTriggerBuild);
     window.addEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
+    window.addEventListener('aethelgard:focus-palace', onFocusPalace);
     return () => {
       window.removeEventListener('aethelgard:trigger-build', onTriggerBuild);
       window.removeEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
+      window.removeEventListener('aethelgard:focus-palace', onFocusPalace);
     };
   }, [game]);
   // r3f camera ref retained even though SelectionRect no longer
@@ -344,6 +391,26 @@ function GameSession({
         </>
       )}
       <DiscoveriesPanel game={game} />
+      {/* M_V11.HUD.DIPLOMACY-MODAL — player-facing diplomacy. Opens on
+          the 'aethelgard:open-diplomacy' window event, fired by the
+          SystemMenu (top-right hamburger) — same pattern as the
+          DiscoveriesPanel. */}
+      <DiplomacyModal game={game} />
+      {/* M_V11.META-PROGRESSION — AtelierScreen reads lore-token
+          balance + meta-unlocks from the persistence facade. Opens
+          on the 'aethelgard:open-atelier' event (SystemMenu entry +
+          auto-fired from match-end). */}
+      <AtelierScreen persistence={persistence} />
+      {/* M_V11.TUTORIAL (#77f) — guided overlay; renders only when
+          game.mode === 'tutorial' (the component guards internally). */}
+      <TutorialOverlay game={game} />
+      {/* M_V11.CAMPAIGN (#77g) — chapter overlay; renders only when
+          game.mode === 'campaign'. Reads game.campaignChapter to
+          pick which chapter's objective queue to drive. */}
+      <CampaignOverlay game={game} />
+      {/* M_V11.WAVE-DEFENSE (#77h) — wave-progress pill; renders only
+          when game.mode === 'wave-defense'. */}
+      <WaveDefenseOverlay game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />
@@ -420,6 +487,15 @@ export function App() {
   // appear. Re-runs are harmless — persistence.list is a cheap query.
   useMemo(() => {
     void persistence.list().then((saves) => setHasSave(saves.length > 0));
+  }, []);
+
+  // M_V11.TUTORIAL (#77f) — listen for the tutorial overlay's
+  // "Start a real match" button. Fires window event → opens the
+  // NewGameModal.
+  useEffect(() => {
+    const onOpenNewGame = () => setShowNewGame(true);
+    window.addEventListener('aethelgard:open-new-game', onOpenNewGame);
+    return () => window.removeEventListener('aethelgard:open-new-game', onOpenNewGame);
   }, []);
 
   // M_POLISH3.S.3 — re-detect saves when the auto-save fires AND

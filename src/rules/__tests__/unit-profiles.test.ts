@@ -32,12 +32,23 @@ describe('UNIT_PROFILES + MILITARY_ROLES derivation', () => {
     }
   });
 
-  it('civilians cover Peon + Settler + Scout + Healer + Ferryman (M_FUN.MAP.UTILISATION.FERRYMAN)', () => {
+  it('civilians cover the v0.5 base + v0.11 units expansion civilians', () => {
     const civilians = Object.entries(UNIT_PROFILES)
       .filter(([, p]) => p.combatRole === 'civilian')
       .map(([role]) => role)
       .sort();
-    expect(civilians).toEqual(['Ferryman', 'Healer', 'Peon', 'Scout', 'Settler']);
+    // M_V11.UNITS-EXPANSION (#77d) — Engineer + Diplomat are new
+    // civilian roles (engineer builds/repairs, diplomat establishes
+    // the diplomacy contact gate).
+    expect(civilians).toEqual([
+      'Diplomat',
+      'Engineer',
+      'Ferryman',
+      'Healer',
+      'Peon',
+      'Scout',
+      'Settler',
+    ]);
   });
 
   it('every profile carries the required slot tuple', () => {
@@ -46,7 +57,8 @@ describe('UNIT_PROFILES + MILITARY_ROLES derivation', () => {
       expect(typeof p.harvester).toBe('boolean');
       expect(typeof p.nonCombat).toBe('boolean');
       expect(typeof p.founder).toBe('boolean');
-      expect(['normal', 'siege', 'magic']).toContain(p.damageType);
+      // M_V11.UNITS-EXPANSION (#77d) — Archer adds 'pierce' damageType.
+      expect(['normal', 'siege', 'magic', 'pierce']).toContain(p.damageType);
       expect(['military', 'civilian']).toContain(p.combatRole);
       expect(typeof p.selectionRadius).toBe('number');
       expect(p.selectionRadius).toBeGreaterThan(0);

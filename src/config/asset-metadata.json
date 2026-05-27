@@ -1,27 +1,11 @@
 {
-  "audio.music.ambient": {
-    "id": "audio.music.ambient",
-    "path": "assets/audio/music/ambient.wav",
+  "audio.ambient.coast": {
+    "id": "audio.ambient.coast",
+    "path": "assets/audio/ambient/coast.wav",
     "category": "audio",
     "kind": "wav",
     "animations": [],
-    "pack": "GameLoops Vol.5 Fantasy RPG + PixelLoops Tavern/Menu"
-  },
-  "audio.ambient.forest": {
-    "id": "audio.ambient.forest",
-    "path": "assets/audio/ambient/forest.wav",
-    "category": "audio",
-    "kind": "wav",
-    "animations": [],
-    "pack": "GameLoops Vol.5 — SilverForest LOOP30s"
-  },
-  "audio.ambient.grass": {
-    "id": "audio.ambient.grass",
-    "path": "assets/audio/ambient/grass.wav",
-    "category": "audio",
-    "kind": "wav",
-    "animations": [],
-    "pack": "GameLoops Vol.5 — GoldenVillage LOOP30s"
+    "pack": "PixelLoops SFX + UI + Impact"
   },
   "audio.ambient.desert": {
     "id": "audio.ambient.desert",
@@ -29,7 +13,23 @@
     "category": "audio",
     "kind": "wav",
     "animations": [],
-    "pack": "GameLoops Vol.5 — MysticBazaar LOOP30s"
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.ambient.forest": {
+    "id": "audio.ambient.forest",
+    "path": "assets/audio/ambient/forest.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.ambient.grass": {
+    "id": "audio.ambient.grass",
+    "path": "assets/audio/ambient/grass.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
   },
   "audio.ambient.highland": {
     "id": "audio.ambient.highland",
@@ -37,15 +37,7 @@
     "category": "audio",
     "kind": "wav",
     "animations": [],
-    "pack": "GameLoops Vol.5 — RiverstoneTown LOOP30s"
-  },
-  "audio.ambient.coast": {
-    "id": "audio.ambient.coast",
-    "path": "assets/audio/ambient/coast.wav",
-    "category": "audio",
-    "kind": "wav",
-    "animations": [],
-    "pack": "GameLoops Vol.5 — QuietAdventure LOOP30s"
+    "pack": "PixelLoops SFX + UI + Impact"
   },
   "audio.ambient.swamp": {
     "id": "audio.ambient.swamp",
@@ -53,7 +45,7 @@
     "category": "audio",
     "kind": "wav",
     "animations": [],
-    "pack": "GameLoops Vol.5 — WarmInn LOOP30s"
+    "pack": "PixelLoops SFX + UI + Impact"
   },
   "audio.ambient.volcano": {
     "id": "audio.ambient.volcano",
@@ -61,47 +53,15 @@
     "category": "audio",
     "kind": "wav",
     "animations": [],
-    "pack": "GameLoops Vol.5 — LuteAndLantern LOOP30s"
+    "pack": "PixelLoops SFX + UI + Impact"
   },
-  "audio.sfx.combat.hit-metal": {
-    "id": "audio.sfx.combat.hit-metal",
-    "path": "assets/audio/sfx/combat/hit-metal.ogg",
-    "category": "audio",
-    "kind": "ogg",
-    "animations": [],
-    "pack": "PixelLoops Impact_Hit — pl_impact_metal_01"
-  },
-  "audio.sfx.combat.hit-body": {
-    "id": "audio.sfx.combat.hit-body",
-    "path": "assets/audio/sfx/combat/hit-body.ogg",
-    "category": "audio",
-    "kind": "ogg",
-    "animations": [],
-    "pack": "PixelLoops Impact_Hit — pl_impact_body_01"
-  },
-  "audio.sfx.combat.hit-heavy": {
-    "id": "audio.sfx.combat.hit-heavy",
-    "path": "assets/audio/sfx/combat/hit-heavy.ogg",
-    "category": "audio",
-    "kind": "ogg",
-    "animations": [],
-    "pack": "PixelLoops Impact_Hit — pl_impact_heavy_01"
-  },
-  "audio.sfx.combat.magic-cast": {
-    "id": "audio.sfx.combat.magic-cast",
-    "path": "assets/audio/sfx/combat/magic-cast.wav",
+  "audio.music.ambient": {
+    "id": "audio.music.ambient",
+    "path": "assets/audio/music/ambient.wav",
     "category": "audio",
     "kind": "wav",
     "animations": [],
-    "pack": "Fantasy Magic Spell SFX — pl_magic_cast_02"
-  },
-  "audio.sfx.combat.magic-buff": {
-    "id": "audio.sfx.combat.magic-buff",
-    "path": "assets/audio/sfx/combat/magic-buff.wav",
-    "category": "audio",
-    "kind": "wav",
-    "animations": [],
-    "pack": "Fantasy Magic Spell SFX — pl_magic_buff_01"
+    "pack": "GameLoops Vol.5 Fantasy RPG + PixelLoops Tavern/Menu"
   },
   "audio.music.biome.crafting-hall": {
     "id": "audio.music.biome.crafting-hall",
@@ -156,6 +116,46 @@
     "path": "assets/audio/sfx/chop.ogg",
     "category": "audio",
     "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.combat.hit-body": {
+    "id": "audio.sfx.combat.hit-body",
+    "path": "assets/audio/sfx/combat/hit-body.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.combat.hit-heavy": {
+    "id": "audio.sfx.combat.hit-heavy",
+    "path": "assets/audio/sfx/combat/hit-heavy.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.combat.hit-metal": {
+    "id": "audio.sfx.combat.hit-metal",
+    "path": "assets/audio/sfx/combat/hit-metal.ogg",
+    "category": "audio",
+    "kind": "ogg",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.combat.magic-buff": {
+    "id": "audio.sfx.combat.magic-buff",
+    "path": "assets/audio/sfx/combat/magic-buff.wav",
+    "category": "audio",
+    "kind": "wav",
+    "animations": [],
+    "pack": "PixelLoops SFX + UI + Impact"
+  },
+  "audio.sfx.combat.magic-cast": {
+    "id": "audio.sfx.combat.magic-cast",
+    "path": "assets/audio/sfx/combat/magic-cast.wav",
+    "category": "audio",
+    "kind": "wav",
     "animations": [],
     "pack": "PixelLoops SFX + UI + Impact"
   },
@@ -1103,15 +1103,6 @@
     "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
     "triangles": 68
   },
-  "structures.barracks": {
-    "id": "structures.barracks",
-    "path": "assets/structures/barracks.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 534
-  },
   "structures.crypt": {
     "id": "structures.crypt",
     "path": "assets/structures/crypt.glb",
@@ -1121,15 +1112,6 @@
     "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
     "triangles": 626
   },
-  "structures.farm": {
-    "id": "structures.farm",
-    "path": "assets/structures/farm.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 732
-  },
   "structures.fountain": {
     "id": "structures.fountain",
     "path": "assets/structures/fountain.glb",
@@ -1138,33 +1120,6 @@
     "animations": [],
     "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
     "triangles": 4
-  },
-  "structures.gate-stone": {
-    "id": "structures.gate-stone",
-    "path": "assets/structures/gate-stone.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 146
-  },
-  "structures.granary": {
-    "id": "structures.granary",
-    "path": "assets/structures/granary.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 732
-  },
-  "structures.house": {
-    "id": "structures.house",
-    "path": "assets/structures/house.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 404
   },
   "structures.iron-fence-column": {
     "id": "structures.iron-fence-column",
@@ -1183,15 +1138,6 @@
     "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
     "triangles": 326
   },
-  "structures.library": {
-    "id": "structures.library",
-    "path": "assets/structures/library.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 600
-  },
   "structures.portal-crypt": {
     "id": "structures.portal-crypt",
     "path": "assets/structures/portal-crypt.glb",
@@ -1209,336 +1155,5 @@
     "animations": [],
     "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
     "triangles": 432
-  },
-  "structures.rts.archery.first-age.l1": {
-    "id": "structures.rts.archery.first-age.l1",
-    "path": "assets/structures/rts/archery/first-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 3740
-  },
-  "structures.rts.archery.second-age.l1": {
-    "id": "structures.rts.archery.second-age.l1",
-    "path": "assets/structures/rts/archery/second-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 5984
-  },
-  "structures.rts.barracks.first-age.l1": {
-    "id": "structures.rts.barracks.first-age.l1",
-    "path": "assets/structures/rts/barracks/first-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 1466
-  },
-  "structures.rts.barracks.first-age.l2": {
-    "id": "structures.rts.barracks.first-age.l2",
-    "path": "assets/structures/rts/barracks/first-age/l2.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 2632
-  },
-  "structures.rts.barracks.first-age.l3": {
-    "id": "structures.rts.barracks.first-age.l3",
-    "path": "assets/structures/rts/barracks/first-age/l3.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 3976
-  },
-  "structures.rts.barracks.second-age.l1": {
-    "id": "structures.rts.barracks.second-age.l1",
-    "path": "assets/structures/rts/barracks/second-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 3104
-  },
-  "structures.rts.barracks.second-age.l2": {
-    "id": "structures.rts.barracks.second-age.l2",
-    "path": "assets/structures/rts/barracks/second-age/l2.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 6900
-  },
-  "structures.rts.barracks.second-age.l3": {
-    "id": "structures.rts.barracks.second-age.l3",
-    "path": "assets/structures/rts/barracks/second-age/l3.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 8352
-  },
-  "structures.rts.farm.first-age.l1": {
-    "id": "structures.rts.farm.first-age.l1",
-    "path": "assets/structures/rts/farm/first-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 5174
-  },
-  "structures.rts.farm.second-age.l1": {
-    "id": "structures.rts.farm.second-age.l1",
-    "path": "assets/structures/rts/farm/second-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 5044
-  },
-  "structures.rts.house.second-age": {
-    "id": "structures.rts.house.second-age",
-    "path": "assets/structures/rts/house/second-age.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 2336
-  },
-  "structures.rts.market.first-age.l1": {
-    "id": "structures.rts.market.first-age.l1",
-    "path": "assets/structures/rts/market/first-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 3896
-  },
-  "structures.rts.market.second-age.l1": {
-    "id": "structures.rts.market.second-age.l1",
-    "path": "assets/structures/rts/market/second-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 4864
-  },
-  "structures.rts.storage.first-age.l1": {
-    "id": "structures.rts.storage.first-age.l1",
-    "path": "assets/structures/rts/storage/first-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 4088
-  },
-  "structures.rts.storage.second-age.l1": {
-    "id": "structures.rts.storage.second-age.l1",
-    "path": "assets/structures/rts/storage/second-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 8160
-  },
-  "structures.rts.temple.first-age.l1": {
-    "id": "structures.rts.temple.first-age.l1",
-    "path": "assets/structures/rts/temple/first-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 4828
-  },
-  "structures.rts.temple.second-age.l1": {
-    "id": "structures.rts.temple.second-age.l1",
-    "path": "assets/structures/rts/temple/second-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 443
-  },
-  "structures.rts.tower-house.first-age": {
-    "id": "structures.rts.tower-house.first-age",
-    "path": "assets/structures/rts/tower-house/first-age.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 1848
-  },
-  "structures.rts.tower-house.second-age": {
-    "id": "structures.rts.tower-house.second-age",
-    "path": "assets/structures/rts/tower-house/second-age.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 3824
-  },
-  "structures.rts.town-center.first-age.l1": {
-    "id": "structures.rts.town-center.first-age.l1",
-    "path": "assets/structures/rts/town-center/first-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 772
-  },
-  "structures.rts.town-center.first-age.l2": {
-    "id": "structures.rts.town-center.first-age.l2",
-    "path": "assets/structures/rts/town-center/first-age/l2.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 3334
-  },
-  "structures.rts.town-center.first-age.l3": {
-    "id": "structures.rts.town-center.first-age.l3",
-    "path": "assets/structures/rts/town-center/first-age/l3.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 5408
-  },
-  "structures.rts.town-center.second-age.l1": {
-    "id": "structures.rts.town-center.second-age.l1",
-    "path": "assets/structures/rts/town-center/second-age/l1.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 4604
-  },
-  "structures.rts.town-center.second-age.l2": {
-    "id": "structures.rts.town-center.second-age.l2",
-    "path": "assets/structures/rts/town-center/second-age/l2.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 8050
-  },
-  "structures.rts.town-center.second-age.l3": {
-    "id": "structures.rts.town-center.second-age.l3",
-    "path": "assets/structures/rts/town-center/second-age/l3.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 11832
-  },
-  "structures.rts.wall-gate.first-age": {
-    "id": "structures.rts.wall-gate.first-age",
-    "path": "assets/structures/rts/wall-gate/first-age.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 1420
-  },
-  "structures.rts.wall-gate.second-age": {
-    "id": "structures.rts.wall-gate.second-age",
-    "path": "assets/structures/rts/wall-gate/second-age.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 1920
-  },
-  "structures.rts.wall-tower.first-age": {
-    "id": "structures.rts.wall-tower.first-age",
-    "path": "assets/structures/rts/wall-tower/first-age.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 1380
-  },
-  "structures.rts.wall-tower.second-age": {
-    "id": "structures.rts.wall-tower.second-age",
-    "path": "assets/structures/rts/wall-tower/second-age.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 1792
-  },
-  "structures.rts.wall.first-age": {
-    "id": "structures.rts.wall.first-age",
-    "path": "assets/structures/rts/wall/first-age.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 404
-  },
-  "structures.rts.wall.second-age": {
-    "id": "structures.rts.wall.second-age",
-    "path": "assets/structures/rts/wall/second-age.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 216
-  },
-  "structures.town-hall": {
-    "id": "structures.town-hall",
-    "path": "assets/structures/town-hall.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 176
-  },
-  "structures.wall-stone-corner": {
-    "id": "structures.wall-stone-corner",
-    "path": "assets/structures/wall-stone-corner.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 168
-  },
-  "structures.wall-stone": {
-    "id": "structures.wall-stone",
-    "path": "assets/structures/wall-stone.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town"
-  },
-  "structures.watchtower-stone": {
-    "id": "structures.watchtower-stone",
-    "path": "assets/structures/watchtower-stone.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town"
-  },
-  "structures.wonder-cannon": {
-    "id": "structures.wonder-cannon",
-    "path": "assets/structures/wonder-cannon.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 644
-  },
-  "structures.wonder-keep": {
-    "id": "structures.wonder-keep",
-    "path": "assets/structures/wonder-keep.glb",
-    "category": "structures",
-    "kind": "glb",
-    "animations": [],
-    "pack": "Quaternius Ultimate Fantasy RTS + Kenney Castle/Town",
-    "triangles": 148
   }
 }

@@ -5,7 +5,7 @@ import { runEconomyTick, startGame } from '@/game/game-state';
 // M_V11.OPEN.SPAWN — startGame no longer pre-spawns peons. Tests
 // that need a populated economy spawn peons explicitly first.
 function spawnPlayerPeons(game: ReturnType<typeof startGame>, count: number): void {
-  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+  const [tq, tr] = game.palaceKey.split(',').map(Number) as [number, number];
   const dirs: ReadonlyArray<readonly [number, number]> = [
     [1, 0],
     [0, 1],
@@ -33,11 +33,11 @@ function spawnPlayerPeons(game: ReturnType<typeof startGame>, count: number): vo
 }
 
 describe('economy integration', () => {
-  it('startGame creates an economy, a Town Hall, and resource nodes', () => {
+  it('startGame creates an economy, a Palace, and resource nodes', () => {
     const game = startGame('ancient-silver-forest');
     // M_V11.OPEN.STOCKPILE — starting wood is 80 (was 50 pre-v0.11).
     expect(game.economy.player.wood).toBe(80);
-    expect(game.townHallKey).toMatch(/^-?\d+,-?\d+$/);
+    expect(game.palaceKey).toMatch(/^-?\d+,-?\d+$/);
     expect(game.resourceNodes.length).toBeGreaterThan(0);
   });
 

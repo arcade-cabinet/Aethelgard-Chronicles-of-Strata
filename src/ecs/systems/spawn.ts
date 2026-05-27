@@ -2,7 +2,13 @@ import type { World } from 'koota';
 import { COMBAT } from '@/config/combat';
 import type { BoardData } from '@/core/board';
 import { hexNeighbors } from '@/core/hex';
-import { EnemySpawner, FactionTrait, HexPosition, type UnitType } from '@/ecs/components';
+import {
+  EnemySpawner,
+  FactionTrait,
+  HexPosition,
+  type UnitType,
+  WanderBehavior,
+} from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import type { Difficulty } from '@/game/difficulty';
 
@@ -92,6 +98,11 @@ export function spawnSystem(
   delta: number,
   gameElapsed: number,
   difficulty: Difficulty = 'normal',
+  /** M_V11.CAMPS.MOB-SPAWN — deterministic RNG for re-rolling per-
+   *  fire spawn intervals on capped camps. Optional so legacy 4-arg
+   *  call sites keep working; without it, capped spawners fall back
+   *  to spawnInterval as a deterministic constant cadence. */
+  eventRng?: () => number,
 ): void {
   // M_PIVOT.BARBARIAN-CAMPS — iterate spawner entities; if the spawner
   // also carries FactionTrait, the spawned units inherit that camp's
@@ -103,15 +114,34 @@ export function spawnSystem(
   world.query(EnemySpawner, HexPosition).updateEach(([spawner, hex], entity) => {
     spawner.spawnTimer += delta;
     if (spawner.spawnTimer < spawner.spawnInterval) return;
+    // M_V11.CAMPS.MOB-SPAWN — capped spawner: skip the actual
+    // spawn (but DO reset the timer) once mobCap live mobs are
+    // out. Avoids draining tile candidates on a stuck camp.
+    if (spawner.mobCap > 0 && spawner.liveMobs >= spawner.mobCap) {
+      spawner.spawnTimer = 0;
+      return;
+    }
     spawner.spawnTimer = 0;
     spawner.spawnCount += 1;
+    // M_V11.CAMPS.MOB-SPAWN — re-roll the interval per fire for
+    // capped (barbarian-camp) spawners: 90-180s band. Uncapped
+    // spawners (the legacy enemy base) keep their fixed cadence.
+    if (spawner.mobCap > 0 && eventRng) {
+      // CodeRabbit (PR #89): caller-provided eventRng is unbounded in
+      // type; clamp to [0, 1) before deriving the interval so a buggy
+      // or test PRNG can't push spawnInterval outside 90–180s.
+      const roll = Math.min(0.999999, Math.max(0, eventRng()));
+      spawner.spawnInterval = 90 + Math.floor(roll * 91);
+    }
+    if (spawner.mobCap > 0) spawner.liveMobs += 1;
     const role = pickEnemyRole(spawner.spawnCount, gameElapsed);
     const factionOverride = entity.get(FactionTrait)?.faction;
     const spawnArgs = factionOverride !== undefined ? { factionOverride } : {};
+    let spawned: ReturnType<typeof createCharacter> | null = null;
     for (const nKey of hexNeighbors(hex.q, hex.r)) {
       const tile = board.tiles.get(nKey);
       if (tile?.walkable) {
-        createCharacter({
+        spawned = createCharacter({
           world,
           role,
           q: tile.q,
@@ -120,18 +150,33 @@ export function spawnSystem(
           difficulty,
           ...spawnArgs,
         });
-        return;
+        break;
       }
     }
-    // fallback: spawn on the base tile itself when no walkable neighbour exists
-    createCharacter({
-      world,
-      role,
-      q: hex.q,
-      r: hex.r,
-      level: hex.level,
-      difficulty,
-      ...spawnArgs,
-    });
+    if (spawned === null) {
+      // fallback: spawn on the base tile itself when no walkable neighbour exists
+      spawned = createCharacter({
+        world,
+        role,
+        q: hex.q,
+        r: hex.r,
+        level: hex.level,
+        difficulty,
+        ...spawnArgs,
+      });
+    }
+    // M_V11.CAMPS.WANDER — capped (camp) spawns get a WanderBehavior
+    // anchored at the camp tile with the spec default radius=5 +
+    // pickChance=0.05. Uncapped spawns (legacy enemy base) leave
+    // motion to Stance + spawn-side scripting.
+    if (spawner.mobCap > 0) {
+      spawned.add(WanderBehavior);
+      spawned.set(WanderBehavior, {
+        anchorQ: hex.q,
+        anchorR: hex.r,
+        radius: 5,
+        pickChance: 0.05,
+      });
+    }
   });
 }

@@ -361,7 +361,7 @@ Today: long-reign is the long mode but gets repetitive past
 
 - **Era progression** (M_V11.PURGE: was age-of-strata only;
   now an open RTS-mode idea — tech eras unlock new buildings + units).
-- **Settler / colony** unit: build a 2nd Town Hall on a peripheral
+- **Settler / colony** unit: build a 2nd Palace on a peripheral
   island. Multi-base play.
 - **Diplomatic events** (3+ faction modes, future): temporary
   alliances, betrayal mechanics.

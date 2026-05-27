@@ -46,6 +46,7 @@
     "test:maestro:gameover": "maestro test .maestro/game-over.yaml",
     "assets:manifest": "tsx scripts/build-manifest.ts",
     "assets:measure": "node scripts/measure-glbs.mjs",
+    "perf:profile": "node --expose-gc --import tsx/esm scripts/perf-profile.mjs",
     "cap": "cap",
     "cap:sync": "pnpm build && cap sync",
     "cap:run:android": "cap run android",

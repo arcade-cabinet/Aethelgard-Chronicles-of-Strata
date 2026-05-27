@@ -57,6 +57,41 @@ export function defaultCampCount(playerFactionCount: number): number {
 }
 
 /**
+ * M_V11.CAMPS.SPAWN — camp count scales with map size. Per spec:
+ *   small  = 2  (radius ≤ 10)
+ *   medium = 4  (radius 11..16)
+ *   large  = 6  (radius 17..22)
+ *   huge   = 8  (radius ≥ 23)
+ *
+ * Accepts EITHER a MapSizeKey string ('small'|'medium'|'large'|
+ * 'huge') OR a numeric radius — startGame plumbs the radius
+ * through as a number, so the function buckets by range when given
+ * a number.
+ *
+ * Independent of player-faction count: every match (including
+ * legacy 1v1) gets neutral aggressor camps so the v0.11 PvE
+ * pressure loop is uniform across modes.
+ */
+export function campCountForMapSize(mapSize: string | number): number {
+  if (typeof mapSize === 'number') {
+    if (mapSize <= 10) return 2;
+    if (mapSize <= 16) return 4;
+    if (mapSize <= 22) return 6;
+    return 8;
+  }
+  switch (mapSize) {
+    case 'small':
+      return 2;
+    case 'large':
+      return 6;
+    case 'huge':
+      return 8;
+    default:
+      return 4;
+  }
+}
+
+/**
  * Pick camp tile positions. Centroid-biased — preferring walkable tiles
  * close to the centroid of all walkable LAND tiles, but with a minimum
  * 6-tile separation from every player base. The PRNG ordering is the
@@ -161,7 +196,13 @@ export function factionConfigForCamp(spec: BarbarianCampSpec): FactionConfig {
   // Greys/browns — visually distinct from player palette, signals
   // "neutral aggressor" rather than a player faction. Index off
   // the trailing camp number so cycling through is deterministic.
-  const CAMP_COLORS = ['#78716c', '#5f5b56', '#8b7355', '#6b5f48', '#9b8b6c', '#4b4339'];
+  // M_V11.POLISH.CAMP-MOB-VISUAL — shift each camp into a distinct
+  // grey-tinted hue so the player can tell barbarian-camp-1 mobs
+  // from barbarian-camp-2 mobs in the same frame. Kept dim (chroma
+  // ≤0.2) so they still read as "neutral aggressor" vs the bright
+  // player palette. Hue band: warm-grey → bronze → moss → slate →
+  // muddy-purple → blood-rust, each ≈60° apart.
+  const CAMP_COLORS = ['#a8736c', '#a89366', '#7c8b5c', '#6c8aa8', '#8a6ca8', '#a86c6c'];
   const idx = Number.parseInt(spec.factionId.replace('barbarian-camp-', ''), 10) - 1;
   const color = CAMP_COLORS[idx % CAMP_COLORS.length] ?? CAMP_COLORS[0]!;
   return {
@@ -187,7 +228,16 @@ export function spawnBarbarianCamp(world: World, spec: BarbarianCampSpec): Entit
   return world.spawn(
     HexPosition({ q: spec.q, r: spec.r, level: spec.level }),
     Health({ current: spec.hp, max: spec.hp }),
-    EnemySpawner({ spawnTimer: 0, spawnInterval: 60, spawnCount: 0 }),
+    // M_V11.CAMPS.MOB-SPAWN — cadence 90-180s (the spawn-system
+    // re-rolls on every fire so each tick draws fresh from the
+    // band), capped at 4 live mobs per camp.
+    EnemySpawner({
+      spawnTimer: 0,
+      spawnInterval: 90,
+      spawnCount: 0,
+      mobCap: 4,
+      liveMobs: 0,
+    }),
     // Cast: FactionTrait.faction is typed Faction (literal union) for
     // compile-time narrowing on the legacy 2-faction case; runtime
     // accepts any string. Camp ids live in the registry, not the union.

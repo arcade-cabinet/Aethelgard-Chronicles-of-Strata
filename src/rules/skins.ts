@@ -24,6 +24,13 @@
  * (per-faction decoration choices). Each slot lands on its own commit.
  */
 import type { BuildingType, Faction, UnitType } from '@/ecs/components';
+import { BUILDING_COMPONENTS } from '@/world/procedural/buildings';
+// M_V11.PROCMESH.MATERIALS — FactionMaterials type moved to
+// `src/world/procedural/faction-materials.ts` to break the import
+// cycle (skins → buildings → context → skins). Re-exported here for
+// backwards compatibility with existing callers.
+import type { FactionMaterials } from '@/world/procedural/faction-materials';
+export type { FactionMaterials } from '@/world/procedural/faction-materials';
 import { measuredScale, measuredYOffset } from './asset-scale';
 
 /**
@@ -32,8 +39,13 @@ import { measuredScale, measuredYOffset } from './asset-scale';
  * for the given logical id. Re-running `pnpm assets:measure` after
  * a new asset lands re-tunes every entry automatically — no manual
  * scale-tweak commits.
+ *
+ * Post M_V11.PROCMESH.SKINS-PIVOT, the player/AI building set uses
+ * `procedural(...)` instead. `measured` is retained for non-building
+ * Skin slots that still load GLBs (baseProps, future graveyard-kit
+ * camp entries). Exported so callers outside this file can use it.
  */
-function measured(logicalId: string, yOffsetOverride?: number): StructureModel {
+export function measured(logicalId: string, yOffsetOverride?: number): StructureModel {
   return {
     logicalId,
     scale: measuredScale(logicalId),
@@ -41,20 +53,62 @@ function measured(logicalId: string, yOffsetOverride?: number): StructureModel {
   };
 }
 
-/** How one structure model renders — its GLB logical id, scale, and Y offset. */
+/**
+ * M_V11.PROCMESH.SKINS-PIVOT — DRY helper for procedural building
+ * entries. logicalId is a stable sentinel ('procedural:<type>') so
+ * accidental GLB lookups error loudly; scale/yOffset default to
+ * 1.0 / 0.0 since procedural compositions already place themselves
+ * on the tile.
+ */
+function procedural(
+  component: NonNullable<StructureModel['proceduralComponent']>,
+  scale = 1.0,
+  yOffset = 0.0,
+): StructureModel {
+  return {
+    logicalId: 'procedural',
+    scale,
+    yOffset,
+    proceduralComponent: component,
+  };
+}
+
+/** How one structure model renders.
+ *
+ * **GLB path** (default — still used for horde-camp / Graveyard Kit
+ * entries): logicalId references a GLB asset; scale + yOffset come
+ * from `pnpm assets:measure`.
+ *
+ * **Procedural path** (M_V11.PROCMESH.SKINS-PIVOT): when
+ * `proceduralComponent` is set, the renderer mounts that React
+ * component instead of loading a GLB. logicalId may be left blank
+ * (set to '' or a stable sentinel like 'procedural') for entries
+ * with no asset backing. Scale + yOffset are applied around the
+ * rendered procedural composition just like the GLB path.
+ */
 export interface StructureModel {
-  /** Logical asset id resolved via the typed manifest accessor. */
+  /** Logical asset id resolved via the typed manifest accessor.
+   *  Required for the GLB path; ignored when proceduralComponent is set. */
   logicalId: string;
-  /** Uniform scale factor — kit models are tuned to the hex grid. */
+  /** Uniform scale factor — kit models / procedural compositions are
+   *  tuned to the hex grid. */
   scale: number;
   /** Vertical offset so the model base seats on the tile top. */
   yOffset: number;
+  /** M_V11.PROCMESH.SKINS-PIVOT — when set, render this component
+   *  instead of loading a GLB. The component receives a position
+   *  prop already adjusted for yOffset; scale is applied via a
+   *  parent group transform. Wrap in FactionMaterialsProvider at
+   *  the call site so primitives pick up the faction palette. */
+  proceduralComponent?: (props: {
+    position?: [number, number, number];
+  }) => import('react').ReactElement;
 }
 
 /**
  * One decorative prop placed at a fixed local-space offset around the
  * faction's base tile (M_REGISTRY.4). Player base today has no props
- * (the central TownHall mesh + the placed structures around it provide
+ * (the central Palace mesh + the placed structures around it provide
  * the visual identity); enemy base clusters gravestones + fences
  * around the central crypt for the necropolis silhouette.
  */
@@ -95,7 +149,7 @@ export interface UnitRig {
 /**
  * Minimap visual identity per faction (M_REGISTRY.27) — was a hand-
  * written ternary `faction === 'enemy' ? '#ef4444' : '#22c55e'` in
- * Minimap.tsx:118 plus a literal tuple of (townHallEntity, '#38bdf8') /
+ * Minimap.tsx:118 plus a literal tuple of (palaceEntity, '#38bdf8') /
  * (enemyBaseEntity, '#a855f7') for base markers. After M_REGISTRY.27,
  * these are Skin slot reads.
  */
@@ -189,6 +243,16 @@ export interface Skin {
     aggressiveness?: number;
     economyFocus?: number;
   };
+  /**
+   * M_V11.PROCMESH.MATERIALS — per-primitive-family material overrides
+   * for procedural building compositions. Any family omitted falls
+   * back to DEFAULT_MATERIALS (see `resolveFactionMaterials`).
+   *
+   * Player today: warm stone + warm wood + red banner + gold trim.
+   * Enemy today: cold blue-grey stone + dark wood + violet banner +
+   * silver trim. Adding a third tribe = ONE new entry here.
+   */
+  factionMaterials?: FactionMaterials;
 }
 
 /**
@@ -222,6 +286,15 @@ const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
   // Larger selectionRadius (0.95) in UNIT_PROFILES helps the player
   // pick the Hero out of a melee scrum.
   Hero: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
+  // M_V11.UNITS-EXPANSION (#77d) — 6 new player units reuse existing
+  // KayKit hero meshes until dedicated rigs land. Each is visually
+  // distinguished by faction-tint + selectionRadius in UNIT_PROFILES.
+  Archer: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },
+  Pikeman: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
+  Knight: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
+  Engineer: { tier: 'medium', meshLogicalId: 'characters.heroes.engineer' },
+  Diplomat: { tier: 'medium', meshLogicalId: 'characters.heroes.mage' },
+  MageTowerGarrison: { tier: 'medium', meshLogicalId: 'characters.heroes.mage' },
   // Goblin: no dedicated KayKit goblin; the hooded Rogue is the closest
   // small humanoid. Tinted/scaled distinctly at render time.
   Goblin: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },
@@ -240,42 +313,34 @@ const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
 export const SKINS: Record<Faction, Skin> = {
   player: {
     structure: {
-      // M_GAME.SCALE.GLB-MEASURE.1 — scale + yOffset read from
-      // glb-metadata.json (regenerated by `pnpm assets:measure`).
-      // The category in measure-glbs.mjs is inferred from path:
-      //   - structures/rts/town-center → 'building' (footprint ~1.1 hex)
-      //   - structures/rts/wall, tower-house → 'wall' (footprint ~0.8)
-      //   - structures/*wonder → 'wonder' (footprint ~1.6)
-      //   - structures/farm/house/granary/library → 'building'
-      //   - nature/* + gravestone/banner/fountain → 'prop' (~0.5)
-      // To re-balance a single asset's target footprint, edit the
-      // category targets at the top of scripts/measure-glbs.mjs +
-      // re-run the tool.
-      TownHall: measured('structures.rts.town-center.first-age.l1'),
-      Farm: measured('structures.farm'),
-      // M_EXPANSION.A.9 — distinct House silhouette (Fantasy Town stall)
-      // instead of a down-scaled farm; reads as "civic dwelling" vs barn.
-      House: measured('structures.house'),
-      // M_EXPANSION.A.8 — Granary uses Fantasy Town Kit `windmill.glb`.
-      // Real mill silhouette beats the down-scaled barracks placeholder.
-      Granary: measured('structures.granary'),
-      // M_HARDENING.5 — Quaternius RTS Barracks (FirstAge L1) — proper
-      // weapon-rack + roof silhouette.
-      Barracks: measured('structures.rts.barracks.first-age.l1'),
-      // M_HARDENING.5 — Quaternius RTS TowerHouse (FirstAge).
-      Watchtower: measured('structures.rts.tower-house.first-age'),
-      // M_HARDENING.5 — Quaternius RTS Wall — palisaded fortification
-      // segment.
-      Wall: measured('structures.rts.wall.first-age'),
-      // M_EXPANSION.A.5 — Wonder mounts a Castle Kit keep silhouette
-      // (was the literal town-hall scaled up). Distinct + imposing.
-      Wonder: measured('structures.wonder-keep'),
-      // M_EXPANSION.A.7 — Library uses Fantasy Town Kit `watermill.glb`.
-      // Distinct silhouette from Granary so the player can tell research
-      // buildings from food buildings at a glance.
-      Library: measured('structures.library'),
+      // M_V11.PROCMESH.SKINS-PIVOT — all player buildings are
+      // procedural compositions (src/world/procedural/buildings/*).
+      // FactionMaterialsProvider at the FactionBase level pipes the
+      // player palette (warm stone, crimson banner, gold trim) into
+      // every primitive. Was: GLB pipeline via measured(...).
+      // Removed GLBs: structures.rts.town-center/barracks/tower-house/
+      // wall (M_V11.PROCMESH.GLB-CLEANUP).
+      Palace: procedural(BUILDING_COMPONENTS.Palace),
+      Farm: procedural(BUILDING_COMPONENTS.Farm),
+      House: procedural(BUILDING_COMPONENTS.House),
+      Granary: procedural(BUILDING_COMPONENTS.Granary),
+      Barracks: procedural(BUILDING_COMPONENTS.Barracks),
+      Watchtower: procedural(BUILDING_COMPONENTS.Watchtower),
+      Wall: procedural(BUILDING_COMPONENTS.Wall),
+      Wonder: procedural(BUILDING_COMPONENTS.Wonder, 1.0),
+      Library: procedural(BUILDING_COMPONENTS.Library),
+      // M_V11.BUILDINGS-EXPANSION (#77e) — 5 new buildings reuse the
+      // closest existing procmesh component until dedicated procmeshes
+      // land (Market→Granary shape, Embassy→Library, Lighthouse→
+      // Watchtower, MageTower→Watchtower, Workshop→Barracks).
+      // Per-building procmesh polish lands in follow-up commits.
+      Market: procedural(BUILDING_COMPONENTS.Granary),
+      Embassy: procedural(BUILDING_COMPONENTS.Library),
+      Lighthouse: procedural(BUILDING_COMPONENTS.Watchtower),
+      MageTower: procedural(BUILDING_COMPONENTS.Watchtower),
+      Workshop: procedural(BUILDING_COMPONENTS.Barracks),
     },
-    // M_EXPANSION.A.4 + A.10 — faction banner behind Town Hall + a
+    // M_EXPANSION.A.4 + A.10 — faction banner behind Palace + a
     // small fountain to the side. The fountain anchors the base as a
     // CIVIC space; the banner gives it identity. Both stay close enough
     // to the central tile that player-built structures landing on
@@ -306,28 +371,49 @@ export const SKINS: Record<Faction, Skin> = {
       scaleRange: [0.5, 0.8],
       seedTag: 'player-accretion',
     },
+    // M_V11.PROCMESH.MATERIALS — warm-stone + warm-wood + crimson
+    // banner + gold trim. Reads as 'classical kingdom'.
+    factionMaterials: {
+      stone: { color: '#c7b9a3', roughness: 0.9, metalness: 0.04 },
+      wood: { color: '#8a4a1c', roughness: 0.88, metalness: 0 },
+      roof: { color: '#7a2e1e', roughness: 0.82, metalness: 0 },
+      banner: { color: '#dc2626', roughness: 0.55, metalness: 0 },
+      trim: { color: '#facc15', roughness: 0.28, metalness: 0.82 },
+      accent: { color: '#e2e8f0', roughness: 0.4, metalness: 0.6 },
+      glass: { color: '#fde68a', emissive: '#fbbf24', emissiveIntensity: 0.7, roughness: 0.18 },
+      metal: { color: '#d6d3d1', roughness: 0.34, metalness: 0.85 },
+      dark: { color: '#27272a', roughness: 0.95, metalness: 0.05 },
+    },
   },
   enemy: {
     structure: {
-      // the enemy hub is the graveyard crypt; support structures reuse the
-      // graveyard kit so the enemy base reads as a coherent necropolis.
-      // M_EXPANSION.A.13 — enemy TownHall is the Graveyard Kit crypt
-      // (more imposing than the small portal-crypt). Measured scale.
-      TownHall: measured('structures.crypt'),
-      Farm: measured('nature.gravestone.round'),
-      House: measured('nature.gravestone.round'),
-      Granary: measured('structures.portal-crypt'),
-      // M_HARDENING.5 — enemy Barracks SecondAge (darker stone).
-      Barracks: measured('structures.rts.barracks.second-age.l1'),
-      Watchtower: measured('nature.gravestone.cross'),
-      // M_HARDENING.5 — enemy Wall Quaternius RTS SecondAge.
-      Wall: measured('structures.rts.wall.second-age'),
-      // M_EXPANSION.A.20 — Wonder now mounts the Tower Defense cannon
-      // (literal siege-piece silhouette signals 'final game-changer
-      // building' way better than another reskinned crypt).
-      Wonder: measured('structures.wonder-cannon'),
-      // Library (M_FEATURE.3) — enemy variant; gravestone footprint.
-      Library: measured('nature.gravestone.cross'),
+      // M_V11.PROCMESH.SKINS-PIVOT — enemy is an AI player; like the
+      // human player, its buildings are procedural compositions.
+      // factionMaterials drives the necropolis read: cold blue-grey
+      // stone + violet banner + dark wood — same building shapes,
+      // different palette. The graveyard-kit baseProps (gravestones,
+      // fences) stay GLB so the necropolis biome ambient is preserved.
+      // Barbarian camps (separate from this faction) still use the
+      // Graveyard Kit GLBs (crypt, portal-crypt, gravestones).
+      Palace: procedural(BUILDING_COMPONENTS.Palace),
+      Farm: procedural(BUILDING_COMPONENTS.Farm),
+      House: procedural(BUILDING_COMPONENTS.House),
+      Granary: procedural(BUILDING_COMPONENTS.Granary),
+      Barracks: procedural(BUILDING_COMPONENTS.Barracks),
+      Watchtower: procedural(BUILDING_COMPONENTS.Watchtower),
+      Wall: procedural(BUILDING_COMPONENTS.Wall),
+      Wonder: procedural(BUILDING_COMPONENTS.Wonder, 1.0),
+      Library: procedural(BUILDING_COMPONENTS.Library),
+      // M_V11.BUILDINGS-EXPANSION (#77e) — 5 new buildings reuse the
+      // closest existing procmesh component until dedicated procmeshes
+      // land (Market→Granary shape, Embassy→Library, Lighthouse→
+      // Watchtower, MageTower→Watchtower, Workshop→Barracks).
+      // Per-building procmesh polish lands in follow-up commits.
+      Market: procedural(BUILDING_COMPONENTS.Granary),
+      Embassy: procedural(BUILDING_COMPONENTS.Library),
+      Lighthouse: procedural(BUILDING_COMPONENTS.Watchtower),
+      MageTower: procedural(BUILDING_COMPONENTS.Watchtower),
+      Workshop: procedural(BUILDING_COMPONENTS.Barracks),
     },
     rig: SHARED_RIG_TODAY,
     // Necropolis silhouette — gravestones cluster in front of the
@@ -388,6 +474,19 @@ export const SKINS: Record<Faction, Skin> = {
       density: 0.55,
       scaleRange: [0.8, 1.1],
       seedTag: 'graveyard',
+    },
+    // M_V11.PROCMESH.MATERIALS — cold blue-grey stone + dark wood +
+    // violet banner + silver trim. Reads as 'necropolis'.
+    factionMaterials: {
+      stone: { color: '#6b7280', roughness: 0.92, metalness: 0.08 },
+      wood: { color: '#3f2a1a', roughness: 0.9, metalness: 0 },
+      roof: { color: '#3b0764', roughness: 0.85, metalness: 0.05 },
+      banner: { color: '#7e22ce', roughness: 0.55, metalness: 0 },
+      trim: { color: '#cbd5e1', roughness: 0.32, metalness: 0.78 },
+      accent: { color: '#a78bfa', roughness: 0.4, metalness: 0.55 },
+      glass: { color: '#a5f3fc', emissive: '#22d3ee', emissiveIntensity: 0.85, roughness: 0.2 },
+      metal: { color: '#94a3b8', roughness: 0.32, metalness: 0.88 },
+      dark: { color: '#0f172a', roughness: 0.96, metalness: 0.05 },
     },
   },
 };

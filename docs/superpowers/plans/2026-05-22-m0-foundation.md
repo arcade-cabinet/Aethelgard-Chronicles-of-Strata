@@ -1042,7 +1042,7 @@ dual-stage PRNG (cyrb128 hash → two seeded streams: map + event).
 
 Content: the koota component catalog (Transform, HexPosition, Unit, Faction, Health,
 Movement, PathQueue, Harvester, Carrier, Building, Resource, Combatant, AnimationState,
-Selectable), entity archetypes (Peon, Footman, Goblin, TownHall, Farm, Barracks,
+Selectable), entity archetypes (Peon, Footman, Goblin, Palace, Farm, Barracks,
 Resource node, Portal), the system catalog (movement, pathfollow, harvest, build,
 combat, ai, weather, spawn) and their run order.
 
@@ -1059,11 +1059,11 @@ ATTACKING→Attack, DYING→Death).
 
 Content: each RTS system reconstructed from `references/conversation.md` with explicit
 acceptance criteria — economy (peon harvest loop: path-to-resource → harvest timer →
-carry → deposit at Town Hall → repeat), build mode (ghost placement, scaffold, builder
+carry → deposit at Palace → repeat), build mode (ghost placement, scaffold, builder
 peon, progress ring), supply system, combat (footman/goblin state machine, damage +
 crit via event PRNG, health billboards, floating combat text), weather (sunny/fog/rain
 state machine on event PRNG), research (Forged Blades +5 dmg, Steel Plows +50% gather),
-barracks rally points, win (destroy Goblin Portal) / loss (Town Hall destroyed).
+barracks rally points, win (destroy Goblin Portal) / loss (Palace destroyed).
 
 - [ ] **Step 9: Write `docs/specs/80-audio.md`**
 

@@ -36,10 +36,10 @@ self-contained `references/` asset bundle.
   resources, ramps, spawns) + event seed (combat variance, weather, raids).
 - Tap-to-travel: raycast tile pick, A* pathfinding, ramp-gated elevation traversal,
   path-line preview, destination marker.
-- RTS economy: peons, wood/stone/gold resources, autonomous harvest loop, Town Hall,
+- RTS economy: peons, wood/stone/gold resources, autonomous harvest loop, Palace,
   build mode (Farm, Barracks), supply system.
 - Combat: footmen, goblin/orc enemies, goblin portal, health bars, floating combat
-  text, attack state machine, win (destroy portal) / loss (Town Hall destroyed).
+  text, attack state machine, win (destroy portal) / loss (Palace destroyed).
 - Systems: seeded weather (sunny/fog/rain), research/tech upgrades, barracks rally
   points, real-time 2D minimap, day/night cycle.
 - Polish: branded launcher, Radix + framer-motion HUD, howler audio (music, ambient,
@@ -65,7 +65,7 @@ a milestone spec doc (`docs/milestones/MN-*.md`) and a milestone-level TDD batch
 | M0 | Repo, toolchain, CI, asset-ingest pipeline, pillar docs | Vite/TS/r3f boots; GLB+audio load; APK + Pages builds green; docs written |
 | M1 | Hex board: terraced terrain, biomes, dual-PRNG, tap-to-travel, A*+ramps | The board exists and is navigable — fixes "no game board on new game" |
 | M2 | Characters: KayKit rigged GLBs, shared-rig animation, koota ECS units | Real animated characters move on the board |
-| M3 | Economy: peons, resources, harvest loop, Town Hall, build mode | The Warcraft economic loop runs autonomously |
+| M3 | Economy: peons, resources, harvest loop, Palace, build mode | The Warcraft economic loop runs autonomously |
 | M4 | Combat: footmen, enemies, portal, health, win/loss | The full RTS loop closes |
 | M5 | Systems: weather, research, rally points, minimap, day/night | The full "production" feature set |
 | M6 | Polish: HUD (Radix+framer-motion), audio (howler), persistence, branding | Shippable: APK + Pages, one PR |

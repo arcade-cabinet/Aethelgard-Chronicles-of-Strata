@@ -252,8 +252,9 @@ describe('spawnBarbarianCamp', () => {
       hp: 200,
       archetype: 'orc',
     });
-    // Tick the spawnSystem with enough delta to trigger the 60s spawn.
-    spawnSystem(world, board, 65, 0);
+    // Tick the spawnSystem with enough delta to trigger the
+    // M_V11.CAMPS.MOB-SPAWN 90s baseline interval (was 60s pre-v0.11).
+    spawnSystem(world, board, 95, 0);
     // One barbarian unit should have spawned with the camp's faction id.
     let foundUnit = false;
     for (const e of world.query(Unit, FactionTrait)) {

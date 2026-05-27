@@ -19,15 +19,22 @@ import { trainUnit } from '@/game/commands';
 import { startGame } from '@/game/game-state';
 import { SUPPLY_COST, UNIT_COSTS } from '@/rules';
 
+// M_V11.UNITS-EXPANSION (#77d) — MageTowerGarrison is in PLAYER_UNIT_TYPES
+// for ECS / rendering purposes but is auto-spawned by Mage Tower building
+// (#77e), not directly trainable. UNIT_COSTS therefore intentionally has
+// no entry for it; the cost-row test skips it.
+const NON_TRAINABLE_PLAYER_UNITS = new Set<string>(['MageTowerGarrison']);
+
 describe('M_V7.TRAIN.WIDEN-ROLES — every PLAYER_UNIT_TYPE has a cost row', () => {
-  it('UNIT_COSTS has entries for all 9 player roles', () => {
+  it('UNIT_COSTS has entries for every directly-trainable player role', () => {
     for (const role of PLAYER_UNIT_TYPES) {
+      if (NON_TRAINABLE_PLAYER_UNITS.has(role)) continue;
       const cost = UNIT_COSTS[role as keyof typeof UNIT_COSTS];
       expect(cost, `UNIT_COSTS missing entry for ${role}`).toBeDefined();
     }
   });
 
-  it('SUPPLY_COST has entries for all 9 player roles', () => {
+  it('SUPPLY_COST has entries for every PLAYER_UNIT_TYPE (including the auto-spawned MageTowerGarrison)', () => {
     for (const role of PLAYER_UNIT_TYPES) {
       const sup = SUPPLY_COST[role];
       expect(sup, `SUPPLY_COST missing entry for ${role}`).toBeDefined();
@@ -55,6 +62,7 @@ describe('M_V7.TRAIN.WIDEN-ROLES — trainUnit accepts every player role', () =>
     // Track which roles trained successfully.
     const trained: string[] = [];
     for (const role of PLAYER_UNIT_TYPES) {
+      if (NON_TRAINABLE_PLAYER_UNITS.has(role)) continue;
       // Each call returns true on success; false on cap or insufficient
       // resources. With 999 of every resource + 100 supply cap, the only
       // gate is whether trainUnit's type accepts the role.
@@ -62,7 +70,7 @@ describe('M_V7.TRAIN.WIDEN-ROLES — trainUnit accepts every player role', () =>
       if (ok) trained.push(role);
     }
     // Peon may fail at the peon cap (4); Hero may fail if already alive.
-    // The contract: at least 7 of 9 should succeed in a fresh game.
+    // The contract: at least 7 of the trainable roles should succeed.
     expect(trained.length).toBeGreaterThanOrEqual(7);
     // Trebuchet + Wizard + Healer + Ferryman + Settler MUST be in the
     // trained set — those were the v0.4 unreachable roles.

@@ -10,7 +10,7 @@ describe('selection', () => {
     // M_V11.OPEN.SPAWN — startGame no longer pre-spawns peons.
     // Spawn 2 peons so two Selectable entities exist for the
     // multi-selection clear behavior under test.
-    const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+    const [tq, tr] = game.palaceKey.split(',').map(Number) as [number, number];
     const neighbors: Array<[number, number]> = [
       [1, 0],
       [0, 1],

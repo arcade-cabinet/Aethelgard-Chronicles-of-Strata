@@ -14,8 +14,8 @@ import { createStack } from '@/game/stacking';
 import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
 
 function spawnFootman(game: ReturnType<typeof startGame>, dq: number) {
-  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
-  // Find a walkable tile dq away from the Town Hall.
+  const [tq, tr] = game.palaceKey.split(',').map(Number) as [number, number];
+  // Find a walkable tile dq away from the Palace.
   for (let r = -1; r <= 1; r++) {
     const tile = game.board.tiles.get(`${tq + dq},${tr + r}`);
     if (tile?.walkable) {
@@ -28,7 +28,7 @@ function spawnFootman(game: ReturnType<typeof startGame>, dq: number) {
       });
     }
   }
-  throw new Error(`no walkable tile at +${dq} from Town Hall`);
+  throw new Error(`no walkable tile at +${dq} from Palace`);
 }
 
 describe('Stack save/load round-trip (M_V11.STACK.SAVE)', () => {

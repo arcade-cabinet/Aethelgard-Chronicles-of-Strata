@@ -1,7 +1,7 @@
 # M4 — Combat
 
 **Proves:** The full RTS loop closes. Footmen fight goblins; the goblin portal spawns
-enemies; win (destroy portal) and loss (Town Hall destroyed) conditions fire correctly.
+enemies; win (destroy portal) and loss (Palace destroyed) conditions fire correctly.
 
 **Status: COMPLETE.** All 11 contracts satisfied — 147 unit tests, 9 browser tests,
 3 e2e tests green. The combat loop runs 7200 ticks without error (combat-integration
@@ -37,9 +37,9 @@ test); the win/loss modal renders the correct outcome.
   - `evaluateWinLoss` returns 'win' when the Portal Health hits 0; the
     `GameOverModal` shows the `.modal-title-win` "Victory!" screen.
 
-- [x] **Loss condition — Town Hall destroyed** [`tests/unit/win-loss-system.test.ts`,
+- [x] **Loss condition — Palace destroyed** [`tests/unit/win-loss-system.test.ts`,
   `tests/browser/win-loss-modal.browser.test.tsx`]
-  - `evaluateWinLoss` returns 'loss' when the Town Hall Health hits 0; the
+  - `evaluateWinLoss` returns 'loss' when the Palace Health hits 0; the
     `GameOverModal` shows the `.modal-title-loss` "Defeat!" screen. Loss takes
     precedence over a same-tick win.
 
@@ -58,7 +58,7 @@ test); the win/loss modal renders the correct outcome.
     `runEconomyTick`.
 
 - [x] **Combat integration — 7200 ticks** [`tests/unit/combat-integration.test.ts`]
-  - `startGame` creates the Town Hall + Portal entities with Health; the full
+  - `startGame` creates the Palace + Portal entities with Health; the full
     combat loop runs 7200 ticks (2 game-minutes) without throwing.
 
 ### Test-file naming note

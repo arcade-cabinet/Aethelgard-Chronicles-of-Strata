@@ -1,9 +1,12 @@
 import axe, { type AxeResults, type Result as AxeViolation } from 'axe-core';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
+import { Building, FactionTrait, Selectable } from '@/ecs/components';
 import { startGame } from '@/game/game-state';
+import { selectEntity } from '@/game/selection';
 import { GameOverModal } from '@/hud/GameOverModal';
 import { NewGameModal } from '@/hud/NewGameModal';
+import { SelectionPanel } from '@/hud/SelectionPanel';
 
 /**
  * M_EXPANSION.T.138 — axe-core accessibility scan of every modal.
@@ -97,6 +100,42 @@ describe('M_EXPANSION.T.138 — axe-core a11y scan of modals', () => {
     const dialog = document.querySelector('[role="dialog"]');
     if (!dialog) throw new Error('NewGameModal not open');
     const results = await scan(dialog);
+    if (results.violations.length > 0) {
+      throw new Error(`axe violations:\n${formatViolations(results.violations)}`);
+    }
+    expect(results.violations.length).toBe(0);
+  });
+
+  // M_V11.POLISH.A11Y-SWEEP — SelectionPanel grew the v0.11
+  // multi-summary strip + formation chips + select-all-of-type
+  // buttons + biome-scoped peon selector + per-class submenus.
+  // Every new surface gets axed.
+  it('SelectionPanel with Palace selected has zero axe violations', async () => {
+    const game = startGame('axe-selection');
+    // Find the player Palace (has Selectable trait per
+    // M_V11.POLISH.BUILD-MENU-CTA) and select it.
+    let palace: import('koota').Entity | undefined;
+    for (const e of game.world.query(Selectable, Building, FactionTrait)) {
+      const b = e.get(Building);
+      const f = e.get(FactionTrait);
+      if (b?.buildingType === 'Palace' && f?.faction === 'player') {
+        palace = e;
+        break;
+      }
+    }
+    if (!palace) throw new Error('no player Palace found');
+    selectEntity(game, palace);
+    await render(<SelectionPanel game={game} onBeginBuild={() => {}} />);
+    await vi.waitFor(
+      () => {
+        const panel = document.getElementById('selection-panel');
+        if (!panel) throw new Error('SelectionPanel not open');
+      },
+      { timeout: 4000, interval: 100 },
+    );
+    const panel = document.getElementById('selection-panel');
+    if (!panel) throw new Error('SelectionPanel not open');
+    const results = await scan(panel);
     if (results.violations.length > 0) {
       throw new Error(`axe violations:\n${formatViolations(results.violations)}`);
     }

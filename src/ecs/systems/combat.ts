@@ -84,6 +84,7 @@ function resolveAttacks(
   isRanged: boolean,
   rangedAccuracy: number,
   terrainMultiplier: number,
+  attackerDamageMul = 1,
 ): number {
   combatant.attackTimer += delta;
   let fired = 0;
@@ -100,7 +101,7 @@ function resolveAttacks(
     // fighting unit doesn't recover fatigue.
     combatant.fatigueDecayTimer = 0;
     const fatigueMul = Math.max(0, 1 - combatant.fatigue);
-    const roll = rollDamage(combatant.attackDamage * fatigueMul, rng);
+    const roll = rollDamage(combatant.attackDamage * fatigueMul * attackerDamageMul, rng);
     // M_EXPANSION.AU.46 — parry roll happens BEFORE damage is applied
     // (so a parried hit deals 0 + plays shield-deflect instead of
     // sword-clash + a number). Only meaningful for melee hits — a
@@ -241,8 +242,15 @@ export function combatSystem(
     const isMeleeSword = attackerProfile?.meleeWeapon === 'sword' && combatant.attackRange <= 1;
     // M_EXPANSION.AU.46 — defender's parry chance comes from THEIR
     // unit profile (Footman shields, BlackKnight half-shields).
+    // M_V11.UNITS-EXPANSION (#77d runtime wire-up) — Pikeman's
+    // anti-cavalry parry bonus: +25% parry vs Knight + BlackKnight
+    // attackers (the two heavy-mounted roles). Defender-side check;
+    // works on player + AI pikemen identically.
     const targetUnit = targetEntity.get(Unit)?.unitType;
-    const defenderParryChance = targetUnit ? unitProfileFor(targetUnit).parryChance : 0;
+    let defenderParryChance = targetUnit ? unitProfileFor(targetUnit).parryChance : 0;
+    if (targetUnit === 'Pikeman' && (attackerUnit === 'Knight' || attackerUnit === 'BlackKnight')) {
+      defenderParryChance = Math.min(0.95, defenderParryChance + 0.25);
+    }
     // M_EXPANSION.T.135 — isRanged for the weather accuracy modifier.
     // attackerProfile.meleeWeapon === 'none' AND attackRange > 1 =
     // a true ranged attacker (Wizard, Trebuchet, future archers).
@@ -262,6 +270,14 @@ export function combatSystem(
     // mechanic (defender on the bare side eats the multiplier).
     const ambush = tiles && attackerTile?.type === 'FOREST' ? 1.2 : 1;
     const terrainMultiplier = computeTerrainBonus(hex.level, targetHex.level) * choke * ambush;
+    // M_V11.UNITS-EXPANSION (#77d runtime wire-up) — Knight's heavy-
+    // mounted damage tell: +25% damage on every attack vs non-Pikeman
+    // targets. Pikeman parry already softens the Knight's hit; this
+    // bonus makes the Knight feel HEAVY against everything else.
+    let attackerDamageMul = 1;
+    if (attackerUnit === 'Knight' && targetUnit !== 'Pikeman') {
+      attackerDamageMul = 1.25;
+    }
     const fired = resolveAttacks(
       combatant,
       target,
@@ -276,6 +292,7 @@ export function combatSystem(
       isRanged,
       rangedAccuracy,
       terrainMultiplier,
+      attackerDamageMul,
     );
     if (fired > 0 && e.has(AnimationState)) {
       // M_COMBAT_POLISH.2 — flash the attacker into ATTACKING; animationSystem

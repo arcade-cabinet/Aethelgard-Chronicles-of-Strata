@@ -171,7 +171,7 @@ const pickGeometry = new CylinderGeometry(HEX_RADIUS * 0.95, HEX_RADIUS * 0.95, 
  */
 export interface BuildContext {
   /** Building type selected to place. */
-  type: Exclude<import('@/ecs/components').BuildingType, 'TownHall'>;
+  type: Exclude<import('@/ecs/components').BuildingType, 'Palace'>;
   /** Callback to invoke after placement (clears the build context). */
   onPlaced: () => void;
 }

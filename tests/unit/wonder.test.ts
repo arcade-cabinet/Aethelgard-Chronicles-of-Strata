@@ -14,7 +14,7 @@ describe('Wonder building (M_FEATURE.4)', () => {
     let key: string | null = null;
     for (const [k, t] of game.board.tiles) {
       if (!t.walkable) continue;
-      if (k === game.townHallKey || k === game.enemyBaseKey) continue;
+      if (k === game.palaceKey || k === game.enemyBaseKey) continue;
       if (game.buildSites.has(k)) continue;
       key = k;
       break;

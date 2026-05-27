@@ -1,7 +1,7 @@
 # M3 — Economy
 
 **Proves:** The Warcraft economic loop runs autonomously. Peons harvest resources,
-carry loads back to the Town Hall, and deposit without player intervention. Players
+carry loads back to the Palace, and deposit without player intervention. Players
 can build Farms and Barracks. The supply system gates unit training correctly.
 
 **M3 is complete when all contracts below are checked and CI is green.**
@@ -15,7 +15,7 @@ Detailed test files are written as the first act of M3 (milestone-TDD batch).
   - Assign peon to a wood resource node: state transitions to SEEKING.
   - Run `pathFollowSystem` until peon is adjacent: state transitions to HARVESTING.
   - Run `harvestSystem` until `harvestTimer` completes: Carrier filled, AnimationState HARVESTING.
-  - Run `pathFollowSystem` back to Town Hall: state transitions to CARRYING.
+  - Run `pathFollowSystem` back to Palace: state transitions to CARRYING.
   - Run `depositSystem` on arrival: resources added to game state, Carrier cleared,
     state back to SEEKING.
   - ResourceNode amount decremented by yield amount.
@@ -27,7 +27,7 @@ Detailed test files are written as the first act of M3 (milestone-TDD batch).
   - Ref: `70-rts-systems.md §Peon Harvest Loop`.
 
 - [x] **Supply system gates unit training** [`tests/unit/supply-system.test.ts`]
-  - TownHall provides 5 supply. One Peon costs 1 supply (4 remaining).
+  - Palace provides 5 supply. One Peon costs 1 supply (4 remaining).
   - Training a Footman (cost 2) when only 1 supply remains fails with error.
   - Building a Farm adds 10 to max supply.
   - Ref: `70-rts-systems.md §Supply System`.
@@ -53,7 +53,7 @@ Detailed test files are written as the first act of M3 (milestone-TDD batch).
   - Ref: `90-ui-hud.md §Resource Panel`.
 
 - [x] **HUD supply counter shows current/max** [`tests/browser/hud-supply.test.ts`]
-  - Supply display starts at "1/5" (1 peon, TownHall provides 5).
+  - Supply display starts at "1/5" (1 peon, Palace provides 5).
   - After Farm completes: "1/15".
   - Ref: `90-ui-hud.md §Resource Panel`.
 

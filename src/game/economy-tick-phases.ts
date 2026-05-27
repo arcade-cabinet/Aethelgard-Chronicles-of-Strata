@@ -22,7 +22,6 @@ import {
   FactionBase,
   FactionTrait,
   Health,
-  HexPosition,
   Unit,
 } from '@/ecs/components';
 import { aiSystem } from '@/ecs/systems/ai';
@@ -31,11 +30,17 @@ import { buildSystem } from '@/ecs/systems/build';
 import { buildingDeathSystem } from '@/ecs/systems/building-death';
 import { combatSystem, type DamageEvent } from '@/ecs/systems/combat';
 import { deathSystem } from '@/ecs/systems/death';
+import { diplomatContactSystem } from '@/ecs/systems/diplomat-contact';
+import { engineerRepairSystem } from '@/ecs/systems/engineer-repair';
+import { marketTradeSystem } from '@/ecs/systems/market-trade';
+import { waveDefenseSystem } from '@/ecs/systems/wave-defense';
 import { depositSystem, type ResourceDepositEvent } from '@/ecs/systems/deposit';
 import { encroachmentSystem } from '@/ecs/systems/encroachment';
 import { harvestSystem } from '@/ecs/systems/harvest';
 import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
 import { jobRoutingSystem } from '@/ecs/systems/job-routing';
+import { lootPickupSystem } from '@/ecs/systems/loot-pickup';
+import { mobTargetingSystem } from '@/ecs/systems/mob-targeting';
 import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
 import { pathFollowSystem } from '@/ecs/systems/path-follow';
 import { scienceSystem } from '@/ecs/systems/science';
@@ -43,6 +48,7 @@ import { spawnSystem } from '@/ecs/systems/spawn';
 import { stanceBehaviorSystem } from '@/ecs/systems/stance-behavior';
 import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
 import { volcanoSystem } from '@/ecs/systems/volcano';
+import { wanderSystem } from '@/ecs/systems/wander';
 import { wildfireSystem } from '@/ecs/systems/wildfire';
 import { evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { presetFor, recomputeMaxSupply, SUPPLY_COST } from '@/rules';
@@ -50,13 +56,18 @@ import { chokePointMultiplier } from '@/rules/choke-points';
 import { refreshPortalStoneCooldown, tickPortalStonesTrigger } from '@/world/portal-stones';
 import { tickAutoSave } from './auto-save';
 import { advanceClock, cyclePhase } from './clock';
+import { tickAllianceExpiry } from './diplomacy';
 import { expireProposals } from './diplomacy-border';
 import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
 import type { GameState } from './game-state';
 import { advanceProjectiles } from './projectiles';
+import { tickEnemyAtPalaceToast, tickInactivityBeats } from './narrator-beats';
 import { tickLongReignEscalation, tickRandomEvents } from './random-events';
 import { grantRandomDiscovery } from './research';
+import { autoFormMobRabble, autoFormWorkCrews, dissolveStaleWorkCrews } from './stack-auto-form';
+// createStack + dissolveStack moved with the auto-form helpers
+// to ./stack-auto-form.ts; the imports here are no longer needed.
 import { buildEntityTileIndex } from './tile-index';
 import { advanceWeather, WEATHER_PROFILES, WEATHER_SPEED_MULTIPLIER } from './weather';
 import { BASE_UNIT_VISION_RADIUS, updateObserved } from './zone';
@@ -71,13 +82,28 @@ export function tickClockPhase(game: GameState, delta: number): void {
   tickRandomEvents(game, game.eventRng, delta);
   tickLongReignEscalation(game, game.eventRng, game.clock.elapsed);
   tickInactivityBeats(game);
-  tickEnemyAtTownHallToast(game);
+  tickEnemyAtPalaceToast(game);
   // M_V6.DIPLO.BORDER-ASK — sweep expired non-aggression-pact proposals.
   // Silent: a refused / ignored proposal just drops off the HUD; the
   // BORDER-ASK directive's "wave-of-attack penalty on refusal" is a
   // separate optional escalation that the HUD pill can wire on
   // explicit reject.
   expireProposals(game.diplomacyProposals, game.clock.elapsed);
+  // M_V11.DIPLO.TEMP-ALLIANCE — sweep timed alliances that have passed
+  // their expiresAtSeconds; the relation flips to 'neutral' silently
+  // (the HUD's DiplomacyModal renders the change next time it opens).
+  tickAllianceExpiry(game.diplomacy, game.clock.elapsed);
+  // M_V11.UNITS-EXPANSION (#77d runtime wire-up) — Diplomat units
+  // establish has-had-contact when walking into foreign-faction
+  // zones. Idempotent; cheap O(diplomats × factions).
+  diplomatContactSystem(game);
+  // M_V11.BUILDINGS-EXPANSION (#77e runtime wire-up) — Market
+  // per-60s ally-trade tick. Internal cadence guard; safe to
+  // call every clock-phase tick.
+  marketTradeSystem(game);
+  // M_V11.WAVE-DEFENSE (#77h) — survival mode: scripted enemy waves
+  // every 120s. Internal guard on game.mode + per-tick state.
+  waveDefenseSystem(game);
   // M_V7.PORTAL-STONES.TRIGGER — random-event roll for the rare
   // portal-stones placement (1-in-200 once map clock > 5min,
   // at-most-once-per-match). Mutates board.tiles on a successful
@@ -94,110 +120,6 @@ export function tickClockPhase(game: GameState, delta: number): void {
   if (game.autoSave) tickAutoSave(game.autoSave, delta);
 }
 
-/**
- * M_V11.OPEN.INACTIVITY — narrator beats fired when the player has
- * not queued a peon yet. The clock ticks even before the player
- * acts; without these beats the empty Town Hall could sit silently
- * for minutes and the player wouldn't know what's expected of
- * them. Each beat fires once per match (tracked via the
- * `inactivityBeatsFired` bitfield on GameState).
- *
- *   30s — info-tone: "Aethelgard awaits your first decree."
- *   90s — warning-tone: "Your realm cannot grow without peons."
- *
- * Reset condition: any peon entity exists for the player faction.
- * Skipping subsequent beats when the player has queued at least
- * one peon prevents the toast from harassing a player who simply
- * paused to think.
- */
-function tickInactivityBeats(game: GameState): void {
-  if (typeof window === 'undefined') return;
-  const elapsed = game.clock.elapsed;
-  const fired = game.inactivityBeatsFired ?? 0;
-  // No further work if both beats already fired.
-  if ((fired & 0b11) === 0b11) return;
-  // Has the player queued any peon? If so, no beat ever fires.
-  for (const e of game.world.query(Unit, FactionTrait)) {
-    if (e.get(FactionTrait)?.faction !== 'player') continue;
-    if (e.get(Unit)?.unitType !== 'Peon') continue;
-    // Lock in the 'both beats handled' state so we skip the
-    // query on every tick going forward.
-    game.inactivityBeatsFired = 0b11;
-    return;
-  }
-  // Beat 1 — 30s.
-  if (elapsed >= 30 && (fired & 0b01) === 0) {
-    game.inactivityBeatsFired = fired | 0b01;
-    window.dispatchEvent(
-      new CustomEvent('aethelgard:toast', {
-        detail: {
-          id: 'inactivity-beat-30s',
-          tone: 'info',
-          title: 'Aethelgard awaits your first decree',
-          description: 'Tap your Town Hall and queue a Peon to begin.',
-        },
-      }),
-    );
-  }
-  // Beat 2 — 90s.
-  if (elapsed >= 90 && ((game.inactivityBeatsFired ?? 0) & 0b10) === 0) {
-    game.inactivityBeatsFired = (game.inactivityBeatsFired ?? 0) | 0b10;
-    window.dispatchEvent(
-      new CustomEvent('aethelgard:toast', {
-        detail: {
-          id: 'inactivity-beat-90s',
-          tone: 'warning',
-          title: 'Your realm cannot grow without peons',
-          description: 'A Peon costs 30 wood. Queue one from the Town Hall.',
-        },
-      }),
-    );
-  }
-}
-
-/**
- * M_V11.NOTIF.ENEMY-AT-TH — fire a critical toast when an enemy
- * unit comes within 2 hex of the player's Town Hall. Tap-to-focus
- * goes to the Town Hall tile so the player can re-orient.
- *
- * Dedup: `inactivityBeatsFired` is reused with a higher bit
- * (0b100) to record "ENEMY-AT-TH already toasted this match." A
- * single toast per match keeps the warning meaningful — a player
- * who's been hearing the enemy approach for the past 60s doesn't
- * want a re-fire on every tick of new proximity.
- *
- * Tightened: only fires after the player has had at least 30s of
- * grace (the enemy can't be at the keep on tick 0 in the
- * classic-RTS opening anyway, but defensive).
- */
-function tickEnemyAtTownHallToast(game: GameState): void {
-  if (typeof window === 'undefined') return;
-  if (game.clock.elapsed < 30) return;
-  const fired = game.inactivityBeatsFired ?? 0;
-  if ((fired & 0b100) !== 0) return;
-  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
-  for (const e of game.world.query(Unit, FactionTrait, HexPosition)) {
-    const faction = e.get(FactionTrait)?.faction;
-    if (faction !== 'enemy') continue;
-    const pos = e.get(HexPosition);
-    if (!pos) continue;
-    if (hexDistance(tq, tr, pos.q, pos.r) > 2) continue;
-    game.inactivityBeatsFired = fired | 0b100;
-    window.dispatchEvent(
-      new CustomEvent('aethelgard:toast', {
-        detail: {
-          id: 'enemy-at-th',
-          tone: 'critical',
-          title: 'Enemy at the gates',
-          description: 'An enemy unit is closing on your Town Hall. Defend it now.',
-          focus: { q: tq, r: tr },
-        },
-      }),
-    );
-    return;
-  }
-}
-
 // ---------------------------------------------------------------------------
 // Phase 2 — Command: AI decisions, spawning, stance + pathFollow.
 // AI/spawn/stance are turn-gated; pathFollow always runs.
@@ -205,9 +127,20 @@ function tickEnemyAtTownHallToast(game: GameState): void {
 export function tickCommandPhase(game: GameState, delta: number, turnGateOpen: boolean): void {
   if (turnGateOpen) {
     for (const ai of Object.values(game.aiPlayers)) ai?.tick(game, delta);
-    spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty);
+    spawnSystem(game.world, game.board, delta, game.clock.elapsed, game.difficulty, game.eventRng);
     aiSystem(game.world, game.board, game.navGraph);
     stanceBehaviorSystem(game.world, game.navGraph, makeMoveCostFn(game.board.tiles));
+    // M_V11.CAMPS.HOSTILE-ALL — barbarian-camp mobs pick targets
+    // independently of stance / aiSystem (which are player- or
+    // enemy-faction scoped). Runs BEFORE wander so a mob with a
+    // valid target falls through to stance-set pathing instead of
+    // taking a wander step.
+    mobTargetingSystem(game.world);
+    // M_V11.CAMPS.WANDER — barbarian-camp mobs roam within their
+    // anchor's radius. Runs AFTER stance + mob targeting so a mob
+    // with a combat target keeps its set PathQueue (wanderSystem
+    // skips anything with steps already queued).
+    wanderSystem(game.world, game.board, game.eventRng);
   }
   // M_TURNS.1 — pathFollow ALWAYS ticks so issued move commands resolve.
   // M_V8.PORTAL-STONE.COOLDOWN-HOOK — closure captures game.portalStoneCooldowns
@@ -247,7 +180,7 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
       world: game.world,
       board: game.board,
       graph: game.navGraph,
-      baseKeys: { player: game.townHallKey, enemy: game.enemyBaseKey },
+      baseKeys: { player: game.palaceKey, enemy: game.enemyBaseKey },
       zones: game.zones,
       // M_GAME.BUG.10 — phase-1 distance gate: auto-mode peons can
       // roam at most this far from base. Starts at 14 hex (enough
@@ -262,7 +195,20 @@ export function tickTerrainPhase(game: GameState, delta: number, turnGateOpen: b
       maxRoamRadius: Math.min(60, 14 + Math.floor(game.clock.elapsed / 20)),
     });
     harvestSystem(game.world, delta);
-    buildSystem(game.world, game.buildSites, delta);
+    autoFormWorkCrews(game);
+    // Gemini-code-assist review on PR #89 (work-crew lingers after
+    // members stop HARVESTING) — dissolve stale work-crew stacks
+    // each tick so the auto-form cycle re-fires fresh on the next
+    // tile convergence.
+    dissolveStaleWorkCrews(game);
+    // M_V11.STACK.MOB-RABBLE — barbarian mobs auto-stack into Rabble
+    // on tile convergence (cap 6 per stack). Cheap parallel sweep
+    // mirroring the work-crew form pass.
+    autoFormMobRabble(game);
+    buildSystem(game.world, game.buildSites, delta, game);
+    // M_V11.UNITS-EXPANSION (#77d runtime wire-up) — Engineers heal
+    // friendly buildings within 1 hex at +5 hp/sec.
+    engineerRepairSystem(game, delta);
     // Credit first-House completion per faction (cheap O(buildings) sweep).
     if (
       game.economy.player.peonMetrics.firstHouseAt < 0 ||
@@ -408,7 +354,7 @@ export function tickDepositPhase(game: GameState): void {
   const resourceEvents: ResourceDepositEvent[] = [];
   for (const f of FACTIONS) {
     // Inline baseKeyFor(game, f) to avoid circular import with game-state.ts.
-    const baseKey = f === 'player' ? game.townHallKey : game.enemyBaseKey;
+    const baseKey = f === 'player' ? game.palaceKey : game.enemyBaseKey;
     depositSystem(game.world, game.economy[f], baseKey, f, resourceEvents);
   }
   game.lastResourceEvents = resourceEvents;
@@ -437,7 +383,7 @@ export function tickDepositPhase(game: GameState): void {
               tone: 'info',
               title: `Your peons have begun harvesting ${ev.type}`,
               description: `The realm's ${ev.type} reserves are now growing.`,
-              // No focus — the deposit is at the Town Hall (already
+              // No focus — the deposit is at the Palace (already
               // on screen) and the player's attention should stay
               // wherever they are, not jolt back to the keep.
             },
@@ -463,7 +409,11 @@ export function tickDepositPhase(game: GameState): void {
 //            win-loss evaluation, score integral.
 // ---------------------------------------------------------------------------
 export function tickScoringPhase(game: GameState, delta: number): void {
-  const deathResult = deathSystem(game.world, delta);
+  const deathResult = deathSystem(game.world, delta, game.board);
+  // M_V11.CAMPS.LOOT — pickup MUST run after deathSystem within the
+  // same tick so a player unit standing on the death tile collects
+  // the cache the same tick the mob died.
+  lootPickupSystem(game);
   game.economy.player.kills += deathResult.enemyKills;
   if (deathResult.enemyDeathKeys.length > 0) {
     const enemyBaseKey = game.enemyBaseKey;

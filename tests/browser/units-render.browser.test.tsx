@@ -13,7 +13,7 @@ describe('Units rendering', () => {
     // Spawn 2 peons + 1 Footman explicitly to exercise the
     // Units render path with multiple character types loaded.
     const game = startGame('ancient-silver-forest');
-    const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+    const [tq, tr] = game.palaceKey.split(',').map(Number) as [number, number];
     const tile = game.board.tiles.get(`${tq + 1},${tr}`);
     if (tile?.walkable) {
       createCharacter({

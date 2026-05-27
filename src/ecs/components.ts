@@ -31,6 +31,26 @@ export type UnitType =
   | 'Scout'
   | 'Settler'
   | 'Hero'
+  /** M_V11.UNITS-EXPANSION.ARCHER — ranged anti-air tier-1 (predates
+   *  Wizard's magic ranged). Cheap arrow attack; weak in melee. */
+  | 'Archer'
+  /** M_V11.UNITS-EXPANSION.PIKEMAN — anti-cavalry tier-2 spear.
+   *  Bonus damage vs Knight / BlackKnight; otherwise mid stats. */
+  | 'Pikeman'
+  /** M_V11.UNITS-EXPANSION.KNIGHT — player-side mounted heavy. High
+   *  HP + damage; expensive; slow attack speed. */
+  | 'Knight'
+  /** M_V11.UNITS-EXPANSION.ENGINEER — builds + repairs siege at range.
+   *  Can repair friendly Watchtowers / Walls / Trebuchets for free. */
+  | 'Engineer'
+  /** M_V11.UNITS-EXPANSION.DIPLOMAT — physical "first contact" carrier.
+   *  Walking a Diplomat into a foreign zone establishes the diplomacy
+   *  contact gate (the abstraction added in M_V11.EVENTS.RTS-TRIGGERED). */
+  | 'Diplomat'
+  /** M_V11.UNITS-EXPANSION.MAGE-TOWER-GARRISON — Mage Tower's auto-fire
+   *  spirit. Not trainable directly; spawns when a Mage Tower is
+   *  built (planned for buildings expansion #77e). */
+  | 'MageTowerGarrison'
   | 'Goblin'
   | 'Orc'
   | 'Vampire'
@@ -57,6 +77,13 @@ export const PLAYER_UNIT_TYPES: readonly UnitType[] = [
   'Scout',
   'Settler',
   'Hero',
+  // M_V11.UNITS-EXPANSION (#77d) — 6 new player units.
+  'Archer',
+  'Pikeman',
+  'Knight',
+  'Engineer',
+  'Diplomat',
+  'MageTowerGarrison',
 ] as const;
 
 /**
@@ -97,6 +124,17 @@ export const BARBARIAN_UNIT_TYPES: readonly UnitType[] = [
  * unchanged" — preserved precisely by keeping this union intact.
  */
 export type Faction = 'player' | 'enemy';
+
+/**
+ * M_V11.FACTION.WIDE-ID — the actual string the FactionTrait.faction
+ * field can hold at runtime. The legacy 2-faction code path uses
+ * Faction; v0.6 N-player adds `player-3..N` registry ids; v0.11
+ * barbarian-camp work adds `barbarian-camp-${number}` ids for
+ * camp-owned mobs. Tests that work with non-legacy ids should accept
+ * this widened type to avoid the `as unknown as string | undefined`
+ * cast pattern CodeRabbit (PR #89) called out.
+ */
+export type FactionLike = Faction | `player-${number}` | `barbarian-camp-${number}`;
 
 /**
  * The complete set of factions in the current game. M_REGISTRY.16 —
@@ -186,13 +224,13 @@ export const RESOURCE_TYPES: ReadonlyArray<ResourceType> =
 export type { ResourceType };
 
 /**
- * A building type. `TownHall` is the attractor (start base, not built
+ * A building type. `Palace` is the attractor (start base, not built
  * mid-game); `Farm`/`House`/`Granary` are economy buildings; `Barracks` trains
  * military; `Watchtower`/`Wall` are the offensive/defensive territorial
  * buildings. See `docs/specs/102-zone-of-control.md`.
  */
 export type BuildingType =
-  | 'TownHall'
+  | 'Palace'
   | 'Farm'
   | 'House'
   | 'Granary'
@@ -200,7 +238,27 @@ export type BuildingType =
   | 'Watchtower'
   | 'Wall'
   | 'Wonder'
-  | 'Library';
+  | 'Library'
+  // M_V11.BUILDINGS-EXPANSION (#77e) — 5 new buildings.
+  /** Market — unlocks per-tick trade cession with allied factions
+   *  (1:1 wood/stone/gold swap honored AUTOMATICALLY per minute,
+   *  not via the manual Trade widget). */
+  | 'Market'
+  /** Embassy — required-for-diplomacy gate; building one creates a
+   *  hasHadContact entry with every faction whose zone touches your
+   *  zone (the per-faction physical version of the Diplomat unit). */
+  | 'Embassy'
+  /** Lighthouse — extends Ferryman max-cargo range by +2 and reveals
+   *  every OCEAN / SHALLOWS tile within 5 hex permanently. */
+  | 'Lighthouse'
+  /** Mage Tower — auto-fires magic damage at any enemy in 3-hex
+   *  range (no garrison-unit micro required). Spawns a
+   *  MageTowerGarrison unit on construction for selection / repair. */
+  | 'MageTower'
+  /** Workshop — Engineer + siege production hub. Trebuchets are
+   *  trainable here at tier-1 (instead of needing Barracks tier-2),
+   *  and Engineers built here gain a free Siege-Engineering buff. */
+  | 'Workshop';
 
 /** The peon job state machine. */
 export type JobState = 'IDLE' | 'SEEKING' | 'HARVESTING' | 'CARRYING' | 'DEPOSITING' | 'BUILDING';
@@ -381,7 +439,61 @@ export const FactionBase = trait({ faction: 'player' as Faction });
  * the player builds units instead. The count lives on the entity — not module
  * state — so it survives save/load.
  */
-export const EnemySpawner = trait({ spawnTimer: 0, spawnInterval: 45, spawnCount: 0 });
+/**
+ * M_V11.CAMPS.MOB-SPAWN — `mobCap` (>0) caps the number of live mobs
+ *  this spawner has produced; once hit, the tick skips spawning until
+ *  one of its mobs dies. 0 = uncapped (legacy enemy base behavior).
+ *
+ *  `liveMobs` is the current count, maintained by spawnSystem +
+ *  decremented by deathSystem on barbarian-camp-N mob death.
+ */
+export const EnemySpawner = trait({
+  spawnTimer: 0,
+  spawnInterval: 45,
+  spawnCount: 0,
+  mobCap: 0,
+  liveMobs: 0,
+});
+
+/**
+ * M_V11.CAMPS.WANDER — anchor + radius for a roaming mob's behavior.
+ *
+ * - `anchorQ` / `anchorR`: the camp tile the mob came from.
+ * - `radius`: max hex distance the mob will wander from its anchor.
+ *   Spec default 5.
+ * - `pickChance`: per-tick probability of choosing a new random
+ *   walkable tile within the radius. Spec default 0.05.
+ *
+ * Wander logic stays distinct from Stance (combat-target picking) —
+ * a mob with WanderBehavior + no enemy in stance-range walks aimlessly
+ * within its leash; once an enemy enters stance-range, Stance takes
+ * over and Wander pauses by definition (the stance pathing overrides
+ * the wander destination).
+ */
+export const WanderBehavior = trait({
+  anchorQ: 0,
+  anchorR: 0,
+  radius: 5,
+  pickChance: 0.05,
+});
+
+/**
+ * M_V11.CAMPS.LOOT — resource cache dropped on a tile by a dying mob.
+ *
+ * First non-barbarian unit to occupy the cache's HexPosition tile
+ * collects it and the cache entity is destroyed. The pickup grants
+ * the unit's faction wood/stone/gold per the per-biome weight from
+ * docs/specs/202-camps-and-mobs.md (default: 10 wood, 10 stone,
+ * 5 gold; tundra/desert biomes shift toward stone).
+ *
+ * Caches live as koota entities so they survive save/load — a
+ * partially looted map keeps its un-collected drops.
+ */
+export const LootCache = trait({
+  wood: 0,
+  stone: 0,
+  gold: 0,
+});
 
 /** The entity an enemy is currently hunting. `targetId` is -1 when none. */
 export const EnemyTarget = trait({ targetId: -1 });
@@ -516,63 +628,10 @@ export const Stack = trait(
  */
 export const StackMember = trait({ stackId: -1 });
 
-// ---------------------------------------------------------------------------
-// SERIALIZED_TRAITS (M_REGISTRY.25)
-// ---------------------------------------------------------------------------
-
-/**
- * The single source of truth for which traits survive serialization.
- * The persistence layer reads this list; adding a new trait + putting
- * it in this map is enough to round-trip it across save/load.
- *
- * Per the user's `ONE UNIFIED PRODUCTION CODEBASE` doctrine: a hand-
- * built parallel registry in persistence/serialize.ts (the previous
- * shape) silently DROPPED archetype traits (OffensiveBehavior,
- * DefensiveBehavior, AttractorBehavior, MoverBehavior, ConsumerBehavior,
- * Gate, ScienceProducer) — placed Walls / Watchtowers / Wonders / Roads
- * / Libraries lost their archetype roles after a save/load round-trip.
- * Lifting the registry here makes the inclusion explicit and adds the
- * missing 7 traits in one pass.
- */
-// biome-ignore lint/suspicious/noExplicitAny: registry needs generic trait type
-export const SERIALIZED_TRAITS: ReadonlyArray<{ name: string; traitObj: any }> = [
-  { name: 'Transform', traitObj: Transform },
-  { name: 'HexPosition', traitObj: HexPosition },
-  { name: 'Unit', traitObj: Unit },
-  { name: 'FactionTrait', traitObj: FactionTrait },
-  { name: 'Movement', traitObj: Movement },
-  { name: 'PathQueue', traitObj: PathQueue },
-  { name: 'AnimationState', traitObj: AnimationState },
-  { name: 'Selectable', traitObj: Selectable },
-  { name: 'ResourceTrait', traitObj: ResourceTrait },
-  { name: 'Harvester', traitObj: Harvester },
-  { name: 'Carrier', traitObj: Carrier },
-  { name: 'Building', traitObj: Building },
-  { name: 'AssignedJob', traitObj: AssignedJob },
-  { name: 'Health', traitObj: Health },
-  { name: 'Combatant', traitObj: Combatant },
-  { name: 'EnemySpawner', traitObj: EnemySpawner },
-  { name: 'FactionBase', traitObj: FactionBase },
-  { name: 'EnemyTarget', traitObj: EnemyTarget },
-  { name: 'DeathTimer', traitObj: DeathTimer },
-  // M_REGISTRY.25 — added: ZoC archetype + producer slots that were
-  // previously not round-tripped. Without these a saved game lost
-  // building behaviors on resume.
-  { name: 'OffensiveBehavior', traitObj: OffensiveBehavior },
-  { name: 'DefensiveBehavior', traitObj: DefensiveBehavior },
-  { name: 'AttractorBehavior', traitObj: AttractorBehavior },
-  { name: 'MoverBehavior', traitObj: MoverBehavior },
-  { name: 'ConsumerBehavior', traitObj: ConsumerBehavior },
-  { name: 'Gate', traitObj: Gate },
-  { name: 'ScienceProducer', traitObj: ScienceProducer },
-  // M_POLISH2.RTS.16 — stance system traits round-trip across save/load.
-  { name: 'Stance', traitObj: Stance },
-  { name: 'CommandedTile', traitObj: CommandedTile },
-  // M_GAME.STACK.1 — Stack + StackMember round-trip so a saved game
-  // resumes with all formations and member back-references intact.
-  { name: 'Stack', traitObj: Stack },
-  { name: 'StackMember', traitObj: StackMember },
-  // M_GAME.MODE.PEON.1 — peon autoMode persists across save/load so
-  // a player's commanded peon stays commanded after a reload.
-  { name: 'PeonAutonomy', traitObj: PeonAutonomy },
-];
+// SERIALIZED_TRAITS moved to ./serialized-traits.ts (CodeRabbit
+// PR #89: keep components.ts under the 600-line code-quality
+// threshold). Consumers import it from '@/ecs/serialized-traits'
+// directly (avoiding the circular-dep that re-exporting here would
+// introduce — serialized-traits.ts imports trait objects from
+// components.ts, so components.ts can't re-export from it without
+// the trait values being `undefined` at module-init time).

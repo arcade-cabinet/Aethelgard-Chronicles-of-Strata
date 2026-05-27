@@ -390,8 +390,8 @@ function planDecoration(board: BoardData, occupiedKeys: ReadonlySet<string>): De
 // M_REGISTRY.7 + M_ARCH_UNIFY.9 — per-building accretion moved to the
 // BUILDING_PROFILES `accretion` slot (`src/rules/building-profiles.ts`
 // → AccretionSlot). Decoration reads through profileFor(type).accretion;
-// a missing slot = no accretion (House / Watchtower / Wall / TownHall /
-// Wonder remain minimal; TownHall already gets baseAccretion via the
+// a missing slot = no accretion (House / Watchtower / Wall / Palace /
+// Wonder remain minimal; Palace already gets baseAccretion via the
 // Skin slot).
 
 // M_REGISTRY.7 — BASE_ACCRETION moved to SKINS[faction].baseAccretion.

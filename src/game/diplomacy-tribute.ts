@@ -12,7 +12,7 @@
  * detector AND the per-tick cession mutation.
  */
 import type { FactionId } from '@/config/factions';
-import { type DiplomacyState, setRelation, tributaryDominant } from './diplomacy';
+import { type DiplomacyState, relationKey, setRelation, tributaryDominant } from './diplomacy';
 import { addResource, type GameEconomy } from './economy';
 
 /** Supply ratio threshold for a clearly-stronger faction. */
@@ -21,18 +21,47 @@ export const TRIBUTE_DEMAND_RATIO = 2.0;
 export const TRIBUTE_CESSION_FRACTION = 0.1;
 
 /**
- * Returns true when `dominant` is clearly stronger than `weaker` —
- * supply ratio >= TRIBUTE_DEMAND_RATIO AND dominant has active military
- * (peakSupply > 0 implies any unit was ever trained). Symmetric
- * helper for the UI / AI to decide whether to surface the demand.
+ * Returns true when `dominant` may demand tribute from `weaker`. Two
+ * conditions:
+ *  - Supply ratio >= TRIBUTE_DEMAND_RATIO AND dominant has active
+ *    military (peakSupply > 0 implies any unit was ever trained).
+ *  - HAS-HAD-CONTACT: the two factions must have had at least one
+ *    prior diplomatic interaction (a relation entry in the diplomacy
+ *    map). Lore: you can't demand tribute from a kingdom you've never
+ *    met. The first real interaction (border friction creating a
+ *    relation row, an alliance offer, OR the initial scouting flag
+ *    set by the contact path) must happen first.
  *
  * Both economies are GameEconomy refs; the legacy 2-faction Record-
  * keyed economy is the supported caller today.
+ *
+ * If `contactCheck` is supplied, also gates on it returning true —
+ * callers that have a DiplomacyState use the [[hasHadContact]] helper.
+ * Callers that don't (legacy 2-faction tests) can omit it.
  */
-export function canDemandTribute(dominant: GameEconomy, weaker: GameEconomy): boolean {
+export function canDemandTribute(
+  dominant: GameEconomy,
+  weaker: GameEconomy,
+  contactCheck?: () => boolean,
+): boolean {
   if (dominant.peakSupply <= 0) return false;
+  if (contactCheck && !contactCheck()) return false;
   if (weaker.usedSupply <= 0) return dominant.usedSupply > 0;
   return dominant.usedSupply >= weaker.usedSupply * TRIBUTE_DEMAND_RATIO;
+}
+
+/**
+ * Has-had-contact gate for tribute (and other diplomacy actions). Two
+ * factions are considered to have had contact iff there's a relation
+ * row for the pair in `diplomacy.relations`. The row is created the
+ * first time a real interaction lands (border friction, alliance
+ * proposal, etc.) — its mere presence (even at 'neutral') is the
+ * narrative "they know each other exists" flag.
+ */
+export function hasHadContact(diplomacy: DiplomacyState, a: FactionId, b: FactionId): boolean {
+  // Use the canonical relationKey helper so the sorted-pair convention
+  // stays single-source (was duplicated inline; CodeRabbit PR #89).
+  return diplomacy.relations.has(relationKey(a, b));
 }
 
 /**

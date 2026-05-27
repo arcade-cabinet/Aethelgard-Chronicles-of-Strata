@@ -121,7 +121,7 @@ export function passes4xBalanceGates(board: BoardData, playerCount: number): boo
 
   // Gate (b): count neutral walkable tiles in the central 30% radius band.
   // "Central 30%" = dist <= 0.3 * maxDist.
-  const maxDist = walkable.length > 0 ? walkable[0]!.dist : 0;
+  const maxDist = walkable[0]?.dist ?? 0;
   const threshold = maxDist * 0.3;
   let centralNeutral = 0;
   for (const tile of board.tiles.values()) {

@@ -39,7 +39,7 @@ unchanged; its body is replaced by the `src/ai/` driver. The retarget cap
 not just catalogue:
 
 - **Buildings** — Castle Kit + Fantasy Town Kit replace the blocky Hexagon-Kit
-  building stand-ins. Town Hall, Farm, Barracks become proper fantasy models.
+  building stand-ins. Palace, Farm, Barracks become proper fantasy models.
 - **Enemy bases & monsters** — the Graveyard Kit gives the Goblin Portal a real
   necropolis/graveyard base; KayKit Mystery Series 4 & 5 add monster variety
   beyond the single Orc.

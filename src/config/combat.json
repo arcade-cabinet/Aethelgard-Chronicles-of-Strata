@@ -44,6 +44,54 @@
       "attackRange": 1,
       "attackCooldown": 1.2
     },
+    "Archer": {
+      "speed": 2.6,
+      "faction": "player",
+      "hp": 55,
+      "attackDamage": 14,
+      "attackRange": 3,
+      "attackCooldown": 1.1
+    },
+    "Pikeman": {
+      "speed": 2.2,
+      "faction": "player",
+      "hp": 110,
+      "attackDamage": 14,
+      "attackRange": 1,
+      "attackCooldown": 1.3
+    },
+    "Knight": {
+      "speed": 3.0,
+      "faction": "player",
+      "hp": 170,
+      "attackDamage": 26,
+      "attackRange": 1,
+      "attackCooldown": 1.4
+    },
+    "Engineer": {
+      "speed": 2.4,
+      "faction": "player",
+      "hp": 65,
+      "attackDamage": 0,
+      "attackRange": 0,
+      "attackCooldown": 0
+    },
+    "Diplomat": {
+      "speed": 2.6,
+      "faction": "player",
+      "hp": 55,
+      "attackDamage": 0,
+      "attackRange": 0,
+      "attackCooldown": 0
+    },
+    "MageTowerGarrison": {
+      "speed": 0.01,
+      "faction": "player",
+      "hp": 120,
+      "attackDamage": 16,
+      "attackRange": 3,
+      "attackCooldown": 1.6
+    },
     "Goblin": {
       "speed": 2,
       "faction": "enemy",

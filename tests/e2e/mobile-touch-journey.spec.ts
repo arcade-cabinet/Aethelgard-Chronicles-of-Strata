@@ -43,7 +43,7 @@ test('mobile touch journey — every player action reachable via tap', async ({
 
   // BuildMenuButton FAB is at bottom-right; tap to surface the
   // SelectionPanel build buttons (B.1's open-build-menu listener
-  // selects the player TownHall).
+  // selects the player Palace).
   await expect(page.locator('#hud-build-menu-button')).toBeVisible();
   await page.locator('#hud-build-menu-button').tap();
   await page.waitForTimeout(300);

@@ -254,7 +254,7 @@ own border, drawn in a distinct colour. Three non-overlapping kinds:
 - **Defensive** (e.g. a Wall) — a **hard border**. An enemy unit **cannot path
   past it** — pathfinding treats the wall's border as blocked until the wall is
   destroyed.
-- **Attractor** (the Town Hall) — radiates an *attractor zone* and shapes map
+- **Attractor** (the Palace) — radiates an *attractor zone* and shapes map
   generation (see below). Purely **non-combat** — it anchors the faction, has
   HP, never shoots. The three kinds stay strictly separate so each is a clear
   strategic choice.
@@ -266,17 +266,17 @@ at exploration.
 ## Attractors & the emergent game-start
 
 An **attractor** building tells the map builder: *"guarantee at least N of
-resource-X and M of resource-Y within radius U of me."* The **Town Hall is the
+resource-X and M of resource-Y within radius U of me."* The **Palace is the
 sole attractor** — one per faction, the start base, **not buildable mid-game**.
-Losing the Town Hall ends the game (the existing `FactionBase` win/loss rule).
+Losing the Palace ends the game (the existing `FactionBase` win/loss rule).
 
 The attractor contract resolves **once, at map generation** (deterministic from
-the map seed): each faction's Town Hall reserves its guaranteed resource radius.
+the map seed): each faction's Palace reserves its guaranteed resource radius.
 This makes the game-start **fully emergent — no scripted sequence**:
 
-1. Map generation places the two Town Hall attractors and, by the attractor
+1. Map generation places the two Palace attractors and, by the attractor
    contract, guarantees resources within each one's radius U.
-2. Each Town Hall's attractor zone is that faction's **initial zone of control**
+2. Each Palace's attractor zone is that faction's **initial zone of control**
    (~2 hex tiles out).
 3. One peon spawns per faction. Because resources are guaranteed in-radius by
    construction, the peon immediately finds work — the autonomous exploit loop
@@ -313,14 +313,14 @@ Difficulty scales two perception/response knobs — the AI never cheats:
 - **M8.6c** — peon autonomy also claims tiles on exploitation and flees pulsing
   tiles.
 - **M8.6c** — peon autonomy also claims tiles on exploitation, flees pulsing
-  tiles. The Town Hall attractor seeds the initial zone of control.
+  tiles. The Palace attractor seeds the initial zone of control.
 - **M8.6e (new)** — encroachment + the three territorial-building kinds:
   enemy-military-on-controlled-tile → pulse → flip; Watchtower (offensive
   zone, shoots intruders), Wall (defensive hard border, blocks pathing),
-  Town Hall (attractor — exerts the initial zone, non-combat).
+  Palace (attractor — exerts the initial zone, non-combat).
 - **M8.6-attractor (new)** — `board.ts` honours the attractor contract at map
-  generation: each Town Hall guarantees N×resource within radius U; the
-  game-start becomes fully emergent (no scripted town-hall/resource/peon
+  generation: each Palace guarantees N×resource within radius U; the
+  game-start becomes fully emergent (no scripted palace/resource/peon
   sequence — see "Attractors & the emergent game-start" above).
 - **M8.6d** — the yuka AI player has no `scout` goal; its goals read
   pulse/erosion/wall signals.

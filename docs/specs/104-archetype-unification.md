@@ -39,7 +39,7 @@ flowchart TB
 | 1 — Archetypes | Capability slots; each is a koota trait + optional config shape | `src/ecs/components.ts`, `src/rules/*-profiles.ts` (slot interfaces) | `OffensiveBehavior`, `Movable`, `ParticleArchetype` |
 | 2 — Things | Slot tuples per Type | `src/rules/building-profiles.ts`, `unit-profiles.ts`, `mover-profiles.ts` | `BUILDING_PROFILES.Watchtower = {behaviors: {offensive:...}, ...}` |
 | 3 — Pass handlers | ONE function per pass that iterates slot membership | `src/world/` (gen-time), `src/ecs/systems/` (runtime) | `offensiveBehaviorSystem`, `runGenTimePass` (planned) |
-| 4 — Skins | Per-Faction visual identity | `src/rules/skins.ts` | `SKINS.player.structure.TownHall = {logicalId, scale, yOffset}` |
+| 4 — Skins | Per-Faction visual identity | `src/rules/skins.ts` | `SKINS.player.structure.Palace = {logicalId, scale, yOffset}` |
 
 ## Adding a new Thing — zero code changes
 

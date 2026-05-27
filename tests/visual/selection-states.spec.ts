@@ -9,7 +9,7 @@ import { enterGame } from '../e2e/enter-game';
  * Captures the SelectionPanel layout for each selection class:
  *   - none (default state with no selection)
  *   - peon (worker selected)
- *   - building (TownHall selected — surfaces the build buttons)
+ *   - building (Palace selected — surfaces the build buttons)
  *
  * Uses the dev-console accessor to programmatically select an
  * entity rather than synthesising a tile-tap (the canvas tap
@@ -26,16 +26,16 @@ test.describe('selection-state baselines', () => {
     await snapshot(page, testInfo, 'selection-none');
   });
 
-  test('TownHall building selected', async ({ page }, testInfo) => {
+  test('Palace building selected', async ({ page }, testInfo) => {
     await enterGame(page, 'ancient-silver-forest');
     const skip = page.locator('button', { hasText: 'Skip' });
     if (await skip.count()) await skip.first().click();
     await page.evaluate(() => {
-      // Fire the open-build-menu event — App listens + selects player TownHall.
+      // Fire the open-build-menu event — App listens + selects player Palace.
       window.dispatchEvent(new CustomEvent('aethelgard:open-build-menu'));
     });
     await page.waitForTimeout(500);
-    await snapshot(page, testInfo, 'selection-townhall');
+    await snapshot(page, testInfo, 'selection-palace');
   });
 });
 

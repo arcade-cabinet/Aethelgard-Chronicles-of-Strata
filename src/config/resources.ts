@@ -139,7 +139,7 @@ const ResourceConfigSchema = z.object({
    */
   color: z.string().optional(),
   /**
-   * Per-attractor (TownHall) minimum guarantee: when the map gen
+   * Per-attractor (Palace) minimum guarantee: when the map gen
    * lays the attractor's resource ring, it tops up to this count of
    * this slot's nodes within ATTRACTOR_RADIUS. Defaults to 0 (no
    * guaranteed nodes — extending into the slot is the player's job).

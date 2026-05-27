@@ -61,10 +61,11 @@ export interface DisplaySlot {
   /**
    * Which trainable units (if any) this building produces.
    * Replaces the old single-value `trains` slot so a building can offer
-   * more than one unit button (TownHall: Peon + Scout). The HUD renders
+   * more than one unit button (Palace: Peon + Scout). The HUD renders
    * one HudButton per entry.
    */
-  trainsUnits?: ReadonlyArray<'Peon' | 'Footman' | 'Scout'>;
+  // M_V11.BUILDINGS-EXPANSION (#77e) — Workshop adds Engineer + Trebuchet.
+  trainsUnits?: ReadonlyArray<'Peon' | 'Footman' | 'Scout' | 'Engineer' | 'Trebuchet'>;
   /** Which research IDs may be purchased here. */
   research?: ReadonlyArray<'forgedBlades' | 'steelPlows'>;
   /** Whether the building offers a "set rally point" interaction. */
@@ -83,7 +84,7 @@ export interface BuildingProfile {
   behaviors: BuildingBehaviorProfile;
   /** HUD-facing strings + interaction flags — was BUILDING_DISPLAY. */
   display: DisplaySlot;
-  /** Construction cost in resources. TownHall has none (starts in world). */
+  /** Construction cost in resources. Palace has none (starts in world). */
   cost?: ResourceCost;
   /** Supply cap contributed when complete. */
   supply: number;
@@ -91,7 +92,7 @@ export interface BuildingProfile {
   producer?: ProducerSlot;
   /**
    * Selection-ring scale for this building (M_REGISTRY.19) — was a
-   * branch in SelectionRing.tsx; TownHall + FactionBase get 1.5 (the
+   * branch in SelectionRing.tsx; Palace + FactionBase get 1.5 (the
    * largest ring); regular buildings get 1.25; Wall + similar minor
    * structures could get smaller in future.
    */
@@ -129,16 +130,16 @@ export interface AccretionSlot {
  * economy tick, supply recompute) pick it up automatically.
  */
 export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
-  TownHall: {
+  Palace: {
     behaviors: { attractor: { radius: 2 } },
     display: {
-      name: 'Town Hall',
-      // M_POLISH2.RTS.22 — TownHall now trains both Peon and Scout.
+      name: 'Palace',
+      // M_POLISH2.RTS.22 — Palace now trains both Peon and Scout.
       description: 'Your home base. Anchors the kingdom, trains peons and scouts.',
       trainsUnits: ['Peon', 'Scout'],
       showsBuildMenu: true,
     },
-    // No cost — TownHall is the starting structure, placed by startGame.
+    // No cost — Palace is the starting structure, placed by startGame.
     supply: 5,
     selectionRadius: 1.5,
   },
@@ -255,6 +256,63 @@ export const BUILDING_PROFILES: Record<BuildingType, BuildingProfile> = {
       scaleRange: [0.6, 0.9],
     },
   },
+  // M_V11.BUILDINGS-EXPANSION (#77e) — 5 new buildings.
+  Market: {
+    behaviors: {},
+    display: {
+      name: 'Market',
+      description:
+        'Unlocks auto-trade cession with allied factions (1:1 wood/stone/gold per minute).',
+    },
+    cost: { wood: 80, stone: 60, gold: 40 },
+    supply: 2,
+    selectionRadius: 1.25,
+  },
+  Embassy: {
+    behaviors: {},
+    display: {
+      name: 'Embassy',
+      description: 'Establishes diplomatic contact with every faction bordering your zone.',
+    },
+    cost: { wood: 100, stone: 60, gold: 80 },
+    supply: 0,
+    selectionRadius: 1.25,
+  },
+  Lighthouse: {
+    behaviors: {},
+    display: {
+      name: 'Lighthouse',
+      description:
+        'Extends Ferryman range by +2 hex; permanently reveals ocean/shallows in 5-hex radius.',
+    },
+    cost: { wood: 80, stone: 120, gold: 40 },
+    supply: 0,
+    selectionRadius: 1.25,
+  },
+  MageTower: {
+    behaviors: { offensive: { radius: 3, dps: 8 } },
+    display: {
+      name: 'Mage Tower',
+      description:
+        'Auto-fires magic damage at enemies within 3 hex; spawns a Mage Tower Garrison on completion.',
+    },
+    cost: { wood: 60, stone: 100, gold: 100, science: 40, mana: 30 },
+    supply: 0,
+    selectionRadius: 1.25,
+  },
+  Workshop: {
+    behaviors: {},
+    display: {
+      name: 'Workshop',
+      description:
+        'Trains Engineers and unlocks Trebuchet production at tier-1 (skips Barracks tier-2 gate).',
+      trainsUnits: ['Engineer', 'Trebuchet'],
+      hasRally: true,
+    },
+    cost: { wood: 140, stone: 100, gold: 60 },
+    supply: 0,
+    selectionRadius: 1.25,
+  },
 };
 
 /** Resolve the full profile for a building type. */
@@ -267,8 +325,9 @@ export function profileFor(type: BuildingType): BuildingProfile {
  * `trainsUnits` fields — NOT hardcoded. Adding a trainer building adds its
  * units automatically.
  */
-export function trainableUnits(): ReadonlyArray<'Peon' | 'Footman' | 'Scout'> {
-  const set = new Set<'Peon' | 'Footman' | 'Scout'>();
+type TrainerUnit = 'Peon' | 'Footman' | 'Scout' | 'Engineer' | 'Trebuchet';
+export function trainableUnits(): ReadonlyArray<TrainerUnit> {
+  const set = new Set<TrainerUnit>();
   for (const p of Object.values(BUILDING_PROFILES)) {
     for (const u of p.display.trainsUnits ?? []) set.add(u);
   }
@@ -278,8 +337,7 @@ export function trainableUnits(): ReadonlyArray<'Peon' | 'Footman' | 'Scout'> {
 /** The building type that trains `unit`, or null. */
 export function trainerFor(unit: UnitType): BuildingType | null {
   for (const [type, p] of Object.entries(BUILDING_PROFILES)) {
-    if ((p.display.trainsUnits ?? []).includes(unit as 'Peon' | 'Footman' | 'Scout'))
-      return type as BuildingType;
+    if ((p.display.trainsUnits ?? []).includes(unit as TrainerUnit)) return type as BuildingType;
   }
   return null;
 }

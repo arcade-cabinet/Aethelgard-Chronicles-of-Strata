@@ -4,11 +4,11 @@ import { createCharacter } from '@/entities/character-factory';
 import { issueMoveOrder, moveUnit } from '@/game/commands';
 import { startGame } from '@/game/game-state';
 
-// M_V11.OPEN.SPAWN — playerPawn now points at the Town Hall entity
+// M_V11.OPEN.SPAWN — playerPawn now points at the Palace entity
 // (no PathQueue, no Movement). These tests spawn a Peon explicitly
 // to exercise move-order behavior against a movable unit.
-function spawnPeonAdjacentToTownHall(game: ReturnType<typeof startGame>) {
-  const [tq, tr] = game.townHallKey.split(',').map(Number) as [number, number];
+function spawnPeonAdjacentToPalace(game: ReturnType<typeof startGame>) {
+  const [tq, tr] = game.palaceKey.split(',').map(Number) as [number, number];
   const dirs: ReadonlyArray<readonly [number, number]> = [
     [1, 0],
     [0, 1],
@@ -29,26 +29,26 @@ function spawnPeonAdjacentToTownHall(game: ReturnType<typeof startGame>) {
       });
     }
   }
-  throw new Error('no walkable neighbor of Town Hall');
+  throw new Error('no walkable neighbor of Palace');
 }
 
 describe('issueMoveOrder', () => {
   it('writes an A* path into a Peon PathQueue for a reachable tile', () => {
     const game = startGame('ancient-silver-forest');
-    const pawn = spawnPeonAdjacentToTownHall(game);
+    const pawn = spawnPeonAdjacentToPalace(game);
     const hex = pawn.get(HexPosition);
     const startKey = `${hex?.q},${hex?.r}`;
     const reachable = [...(game.navGraph.get(startKey) ?? [])][0];
     expect(reachable).toBeDefined();
-    // M_V11: issueMoveOrder targets game.playerPawn (Town Hall) which
+    // M_V11: issueMoveOrder targets game.playerPawn (Palace) which
     // has no Movement; use moveUnit directly to test a Peon's move.
     expect(moveUnit(game, pawn, reachable as string, 'player')).not.toBeNull();
     expect(pawn.get(PathQueue)?.steps.length).toBeGreaterThan(0);
   });
 
-  it('issueMoveOrder on the (immovable) Town Hall playerPawn returns false', () => {
+  it('issueMoveOrder on the (immovable) Palace playerPawn returns false', () => {
     const game = startGame('ancient-silver-forest');
-    // The playerPawn anchor (Town Hall) has no Movement / PathQueue.
+    // The playerPawn anchor (Palace) has no Movement / PathQueue.
     // issueMoveOrder is now a no-op-by-design until the player
     // queues actual units.
     expect(issueMoveOrder(game, '999,999')).toBe(false);

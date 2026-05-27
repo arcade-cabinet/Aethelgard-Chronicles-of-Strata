@@ -3,7 +3,7 @@
  *
  *   1. Every faction (player + enemy) can train every PLAYER_UNIT_TYPE
  *      via `trainUnit` (given resources / supply / building prereqs).
- *   2. Every faction can build every BuildingType except TownHall (the
+ *   2. Every faction can build every BuildingType except Palace (the
  *      attractor — never built mid-match) via `placeBuilding`.
  *   3. PLAYER_UNIT_TYPES + BARBARIAN_UNIT_TYPES are a clean partition
  *      of the UnitType union (no overlap, no gaps).
@@ -37,7 +37,7 @@ describe('M_PIVOT.N-PLAYER.SHARED-KIT — type-level pins', () => {
     }
   });
 
-  it('PLAYER_UNIT_TYPES contains the 9 player-kit roles', () => {
+  it('PLAYER_UNIT_TYPES contains the v0.5 base roster + v0.11 units expansion', () => {
     expect(new Set(PLAYER_UNIT_TYPES)).toEqual(
       new Set([
         'Peon',
@@ -49,6 +49,13 @@ describe('M_PIVOT.N-PLAYER.SHARED-KIT — type-level pins', () => {
         'Scout',
         'Settler',
         'Hero',
+        // M_V11.UNITS-EXPANSION (#77d) — 6 new units.
+        'Archer',
+        'Pikeman',
+        'Knight',
+        'Engineer',
+        'Diplomat',
+        'MageTowerGarrison',
       ]),
     );
   });
@@ -86,7 +93,7 @@ describe('M_PIVOT.N-PLAYER.SHARED-KIT — runtime symmetry', () => {
     // Building stores `buildingType`; there is no per-faction building
     // type. Both `player` and `enemy` factions read from the SAME
     // BuildingType union (House/Farm/Barracks/Wall/Watchtower/Wonder/
-    // Library/Granary/TownHall) via the same Building trait. The pin:
+    // Library/Granary/Palace) via the same Building trait. The pin:
     // spawn the SAME barracks entity for both factions and confirm the
     // Building trait carries the same shape.
     const { createWorld } = await import('koota');
