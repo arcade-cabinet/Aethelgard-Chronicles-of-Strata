@@ -24,14 +24,21 @@ export interface DiscoveryApplyCtx {
   economy?: GameEconomy;
   /** Research state — for flag writes (reveal-tier sets `revealTier`). */
   flags?: Map<string, number | string | boolean>;
-  /** Building-profile runtime override map — keyed by buildingType. */
+  /**
+   * Building-profile runtime override map — keyed by buildingType.
+   * Contract: `cost` is a PARTIAL override; consumers (commands.ts
+   * build-system) MUST shallow-merge with the default building
+   * cost rather than replacing the whole object. A modify-cost
+   * effect that touches gold leaves wood/stone defaults intact.
+   */
   buildingOverrides?: Map<
     string,
     {
       hp?: number;
       dps?: number;
       output?: number;
-      cost?: ResourceCost;
+      /** Per-resource delta; merge with default cost — do NOT replace. */
+      cost?: Partial<ResourceCost>;
       trainsUnits?: string[];
       constructible?: boolean;
     }

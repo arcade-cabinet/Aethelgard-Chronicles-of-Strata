@@ -63,6 +63,18 @@ function applyEffect(effect: DiscoveryEffect, world: World, ctx?: DiscoveryApply
         else if (effect.stat === 'output') next.output = (prev.output ?? 0) + effect.delta;
         ctx.buildingOverrides.set(effect.buildingType, next);
       }
+      // CodeRabbit MEDIUM fix: also apply to already-standing buildings
+      // of the named type so the buff is immediate. The 'hp' stat lands
+      // on the Health trait; 'dps' / 'output' are read off the building-
+      // profile registry at tick time, so the override map serves
+      // those (no per-entity mutation needed for dps/output today).
+      if (effect.stat === 'hp') {
+        world.query(Building, Health).updateEach(([b, h]) => {
+          if (b.buildingType !== effect.buildingType) return;
+          h.max += effect.delta;
+          h.current = Math.min(h.current + effect.delta, h.max);
+        });
+      }
       break;
     }
     case 'unlock-unit': {

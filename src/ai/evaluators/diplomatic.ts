@@ -151,7 +151,13 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
       //        (reviewer M5 fix: prevents break/repact flap when an
       //        ally re-offers immediately).
       if (rel === 'ally') {
+        // CodeRabbit MEDIUM fix: defensive guard on economyFor.
+        // Returns undefined for a defeated/invalid faction; skip
+        // BreakPact evaluation cleanly instead of throwing a
+        // TypeError on .usedSupply. personalityFor returns a non-
+        // nullable Personality so it stays safe.
         const theirEco = economyFor(game, fc.id);
+        if (!theirEco) continue;
         const ratio = (myEco.usedSupply + 1) / (theirEco.usedSupply + 1);
         const personality = personalityFor(owner.personalityKey);
         const breakBias = personality.diploBias?.break ?? 0;
@@ -163,8 +169,12 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
         // for the rest of the new match. `now < lastBreak` means
         // we've crossed a match boundary — treat as no prior break.
         const cooledDown = now < lastBreak || now - lastBreak >= BREAK_PACT_COOLDOWN_SECONDS;
+        // CodeRabbit MAJOR fix: do NOT mutate the cooldown here.
+        // _pickDecision is called from BOTH calculateDesirability +
+        // setGoal, so writing the cooldown on each probe would burn
+        // it before activate() runs. The cooldown is stamped in
+        // DiplomaticGoal.activate's BreakPact case (single-fire).
         if (ratio >= 1.5 && breakBias >= 0.5 && cooledDown) {
-          BREAK_PACT_COOLDOWN.set(cooldownKey, now);
           return { action: DiploAction.BreakPact, targetId: fc.id };
         }
       }
@@ -239,6 +249,10 @@ class DiplomaticGoal extends Goal<AiPlayer> {
         // permanently). A future cycle could record a -1 trust
         // score the propose-pact gate consults.
         setRelation(game.diplomacy, myId, targetId, 'neutral', nowSeconds);
+        // CodeRabbit MAJOR fix: stamp the cooldown HERE (in activate)
+        // not in _pickDecision, so the cooldown is set once on actual
+        // commit instead of on every desirability probe.
+        BREAK_PACT_COOLDOWN.set(`${myId}|${targetId}`, nowSeconds);
         break;
       }
     }
