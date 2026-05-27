@@ -20,10 +20,13 @@ jobs:
     # not a legitimate run. The full local suite (verify + browser + e2e
     # smoke) completes in ~3min on dev hardware; the runner adds ~1-2min
     # for setup. Post-v0.10 the e2e step alone can take 8-10min on CI
-    # (per the M_GAME.BUG.10 bump to 12m step timeout). 20min gives
-    # generous headroom while killing infinite loops fast enough to
-    # learn from.
-    timeout-minutes: 20
+    # (per the M_GAME.BUG.10 bump to 12m step timeout).
+    # M_V11.CI bump: the v0.11 substrate growth (36 discoveries + 30
+    # meta-unlocks + 15 units + diplo modal + atelier) lifted the e2e
+    # wall to 11-15m, so the step is now 18m. Job ceiling lifts to
+    # 30m to cover step + unit + browser + setup with comfortable
+    # headroom; an infinite-loop regression would still die fast.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -105,9 +108,14 @@ jobs:
         # M_GAME.BUG.10 CI bump: v0.10 added per-tick walkable-step
         # guard + roam-radius filter + stack-substrate queries. Total
         # e2e battery wall-clock rose from ~6m to ~8.5m on GitHub
-        # runners. 12m is a safe ceiling without masking a real perf
-        # regression (which would 2-3× the e2e runtime).
-        timeout-minutes: 12
+        # runners. 12m was a safe ceiling at v0.10.
+        # M_V11.CI bump: v0.11 added 36 discoveries + 30 meta-unlocks +
+        # 15 units (was 9) + the diplomacy modal + the AtelierScreen.
+        # Each extension grew runEconomyTick + render-tree size; the
+        # e2e battery's wall-clock now sits in the 11-15m band on
+        # GitHub runners. 18m gives clean headroom (a real perf
+        # regression would push past it; transient flake won't).
+        timeout-minutes: 18
         run: pnpm test:e2e
       # M_SEC.16 — skip artifact upload on fork PRs. Fork PRs run
       # against attacker-controlled code; uploading playwright-report/
