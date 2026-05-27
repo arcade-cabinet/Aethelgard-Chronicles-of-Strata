@@ -424,7 +424,10 @@ function rowToLorebookEntry(row: any): LorebookEntry {
   // as missing — the lorebook UI falls back to the v0.11 layout.
   let rich: Partial<LorebookEntry> = {};
   const rj = row.rich_json as string | null | undefined;
-  if (typeof rj === 'string' && rj.length > 0 && rj.length < 2048) {
+  // Security review L2: rj.length is UTF-16 code units; convert to
+  // UTF-8 byte length to match the write-side TextEncoder cap so
+  // the 2 KB budget is symmetric across charset boundaries.
+  if (typeof rj === 'string' && rj.length > 0 && new TextEncoder().encode(rj).length <= 2048) {
     try {
       const parsedRich = JSON.parse(rj);
       if (parsedRich && typeof parsedRich === 'object' && !Array.isArray(parsedRich)) {
@@ -768,25 +771,40 @@ export function createPersistence(): Persistence {
       validateLorebookHighlights(entry.highlights, 'write');
       const serialised = serializeLorebookHighlights(entry.highlights);
       // M_V12.PERSIST.LOREBOOK-EXPAND — pack the rich-card fields
-      // into a single JSON column. Stripped to under 2KB so the
-      // column never bloats; over-budget rows lose their richest
-      // optional fields first (in priority: heroDeaths →
-      // biggestCombatExchange → diplomaticState → realm sizes).
-      const richObj = {
-        ...(entry.startingRealmSize !== undefined
-          ? { startingRealmSize: entry.startingRealmSize }
-          : {}),
-        ...(entry.finalRealmSize !== undefined ? { finalRealmSize: entry.finalRealmSize } : {}),
-        ...(entry.diplomaticState ? { diplomaticState: entry.diplomaticState } : {}),
-        ...(entry.peakMilitaryCount !== undefined
-          ? { peakMilitaryCount: entry.peakMilitaryCount }
-          : {}),
-        ...(entry.biggestCombatExchange !== undefined
-          ? { biggestCombatExchange: entry.biggestCombatExchange }
-          : {}),
-        ...(entry.heroDeaths ? { heroDeaths: entry.heroDeaths } : {}),
-      };
-      const richJson = Object.keys(richObj).length > 0 ? JSON.stringify(richObj) : null;
+      // into a single JSON column. If the packed JSON exceeds the
+      // 2 KB read-side cap we drop the richest fields first (in
+      // priority: heroDeaths → biggestCombatExchange →
+      // diplomaticState → realm sizes) so the write+read sides
+      // stay symmetric. CodeRabbit MINOR fix: previously the
+      // comment promised the drop logic but the code wrote all
+      // fields unconditionally, risking silent truncation on read.
+      const RICH_JSON_BYTE_CAP = 2048;
+      const richObj: Record<string, unknown> = {};
+      if (entry.startingRealmSize !== undefined)
+        richObj.startingRealmSize = entry.startingRealmSize;
+      if (entry.finalRealmSize !== undefined) richObj.finalRealmSize = entry.finalRealmSize;
+      if (entry.diplomaticState) richObj.diplomaticState = entry.diplomaticState;
+      if (entry.peakMilitaryCount !== undefined)
+        richObj.peakMilitaryCount = entry.peakMilitaryCount;
+      if (entry.biggestCombatExchange !== undefined)
+        richObj.biggestCombatExchange = entry.biggestCombatExchange;
+      if (entry.heroDeaths) richObj.heroDeaths = entry.heroDeaths;
+      // Drop in priority order until the JSON fits the cap.
+      const DROP_ORDER = [
+        'heroDeaths',
+        'biggestCombatExchange',
+        'diplomaticState',
+        'peakMilitaryCount',
+        'finalRealmSize',
+        'startingRealmSize',
+      ];
+      let serializedRich = Object.keys(richObj).length > 0 ? JSON.stringify(richObj) : '';
+      for (const field of DROP_ORDER) {
+        if (new TextEncoder().encode(serializedRich).length <= RICH_JSON_BYTE_CAP) break;
+        delete richObj[field];
+        serializedRich = Object.keys(richObj).length > 0 ? JSON.stringify(richObj) : '';
+      }
+      const richJson = serializedRich.length > 0 ? serializedRich : null;
       const db = await openDb();
       if (!db) return;
       await db.run(
