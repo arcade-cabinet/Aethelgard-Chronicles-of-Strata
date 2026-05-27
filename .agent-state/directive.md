@@ -357,10 +357,18 @@ Android + iOS; hotkeys retired; tap+aria as the test surface".
       finding, expand hit area to ≥48×48 dp without changing
       visual size (padding tricks). Document each change with a
       Lighthouse a11y pass.
-- [ ] M_V12.MOBILE.GESTURE-MAP — formalize the gesture map:
-      tap = select / activate, long-press = context menu,
-      drag = pan camera, pinch = zoom, two-finger drag = orbit.
-      Document in `docs/specs/202-mobile-gestures.md`.
+- [x] M_V12.MOBILE.GESTURE-MAP — `docs/specs/202-mobile-gestures.md`
+      authored. Documents the full gesture matrix (tap / long-press
+      500ms / drag / pinch / two-finger drag / swipe-left for
+      toasts), per-surface gesture contracts (renderer, HUD,
+      modal), tap-slop budget (8 px), long-press budget (500 ms),
+      hit-target minimum (48×48 dp), implementation guidance
+      (PointerEvent first, TouchEvent fallback for multi-touch),
+      and the forbidden patterns list (no double-tap as primary,
+      no two-finger tap, no right-click, no cross-surface drag).
+      Sets the contract every future HUD + renderer commit must
+      honor; the upcoming Maestro tap-audit flow validates against
+      this spec.
 - [ ] M_V12.MOBILE.HAPTICS — Capacitor haptic feedback on
       critical events: building complete, unit lost, attack
       command issued, victory / defeat. Respect device haptics-
