@@ -575,6 +575,31 @@ export function App() {
     });
   }, []);
 
+  // M_V12.DEPTH.UPGRADE-PERSISTENCE — cache the meta-unlock list
+  // on App mount so beginGame can read it synchronously. v0.12
+  // (commit 8f96314) made beginGame async to await the read here;
+  // that broke browser tests whose enterGame() helper expected the
+  // session to be live immediately after the Begin click. Hooks
+  // declared BEFORE the early returns below per rules-of-hooks.
+  // Reads default to [] if the fetch hasn't resolved yet (baseline
+  // match w/ no chain-starters, identical to a player who's never
+  // opened the Atelier).
+  const unlockedMetaCacheRef = useRef<string[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const list = await persistence.listMetaUnlocks();
+        if (!cancelled) unlockedMetaCacheRef.current = list;
+      } catch (err) {
+        console.warn('[meta-progression] listMetaUnlocks failed:', err);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (resumedGame !== null) {
     // M_AUDIT2.UX.32 — paint the LoadingScreen for two frames before
     // the GameSession mounts; startGame()'s synchronous terrain gen
@@ -594,17 +619,8 @@ export function App() {
     );
   }
 
-  const beginGame = async (choices: NewGameChoices) => {
-    // M_V12.DEPTH.UPGRADE-PERSISTENCE — fetch the player's meta-
-    // unlock list before startGame so chain-starters land at tick 0.
-    // Falls back to an empty list on persistence error so a single
-    // bad sqlite read doesn't gate the match start.
-    let unlockedMeta: string[] = [];
-    try {
-      unlockedMeta = await persistence.listMetaUnlocks();
-    } catch (err) {
-      console.warn('[meta-progression] listMetaUnlocks failed:', err);
-    }
+  const beginGame = (choices: NewGameChoices) => {
+    const unlockedMeta = unlockedMetaCacheRef.current;
     setConfig({
       seedPhrase: choices.seedPhrase,
       mapSize: MAP_SIZES[choices.mapSize].radius,
