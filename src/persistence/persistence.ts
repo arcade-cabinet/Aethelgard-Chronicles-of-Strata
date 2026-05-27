@@ -587,13 +587,15 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
         ALTER TABLE lorebook ADD COLUMN rich_json TEXT;
       `)
         .catch((err: unknown) => {
-          // Security review L1: only swallow "duplicate column" on
-          // re-runs; surface every other error (disk-full / corrupt
-          // DB / permission) so a degraded persistence state isn't
-          // silently hidden.
+          // Security review L1 + CodeRabbit MAJOR: only swallow
+          // "duplicate column" on re-runs; rethrow every other
+          // error (disk-full / corrupt DB / permission) so openDb
+          // fails fast instead of continuing with partial schema
+          // that would defer the failure into later writes.
           const msg = err instanceof Error ? err.message : String(err);
           if (!/duplicate column|already exists/i.test(msg)) {
             console.warn('[persistence] lorebook rich_json migration failed:', err);
+            throw err;
           }
         });
       // M_V11.META-PROGRESSION — install-wide meta-unlock ledger.
@@ -640,11 +642,14 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
         ALTER TABLE daily_challenge_scores ADD COLUMN fingerprint TEXT;
       `)
         .catch((err: unknown) => {
-          // Security review L1: only swallow "duplicate column" on
-          // re-runs; surface every other migration error.
+          // Security review L1 + CodeRabbit MAJOR: only swallow
+          // "duplicate column"; rethrow every other migration error
+          // so openDb fails fast instead of running with partial
+          // schema that would defer the failure into later writes.
           const msg = err instanceof Error ? err.message : String(err);
           if (!/duplicate column|already exists/i.test(msg)) {
             console.warn('[persistence] daily_challenge_scores fingerprint migration failed:', err);
+            throw err;
           }
         });
 

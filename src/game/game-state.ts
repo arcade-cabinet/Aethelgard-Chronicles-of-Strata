@@ -365,6 +365,37 @@ export interface GameState {
   randomEvents: RandomEventsState;
   /** Which research upgrades have been purchased this session. */
   research: ResearchState;
+  /**
+   * M_V12.DEPTH.EFFECT-KINDS — slot for flag-kind effects written
+   * by chain-starter applies (reveal-tier value, formation-unlock
+   * flags, etc.). Lazy: undefined until first chain-starter writes.
+   * Consumers (reveal logic, formation gate) read via the optional
+   * chain `game.researchFlags?.get(key)`.
+   */
+  researchFlags?: Map<string, number | string | boolean>;
+  /**
+   * M_V12.DEPTH.EFFECT-KINDS — building-profile override map written
+   * by buff-building / unlock-* / modify-cost effects. Consumed at
+   * build time by commands.ts (HP / DPS / output / trainsUnits /
+   * cost / constructible). Lazy: undefined until first write.
+   */
+  buildingOverrides?: Map<
+    string,
+    {
+      hp?: number;
+      dps?: number;
+      output?: number;
+      cost?: import('./economy').ResourceCost;
+      trainsUnits?: string[];
+      constructible?: boolean;
+    }
+  >;
+  /**
+   * M_V12.DEPTH.EFFECT-KINDS — unit-profile override map for
+   * modify-cost effects with `target: 'unit'`. Consumed at train
+   * time. Lazy.
+   */
+  unitOverrides?: Map<string, { cost?: import('./economy').ResourceCost }>;
   /** The barracks rally point — where newly trained footmen are directed. */
   rally: RallyState;
   /** Per-faction zone of control + observed battlefield (spec 102). */
@@ -1105,6 +1136,15 @@ const CHAIN_STARTER_TO_DISCOVERY: Record<string, string> = {
 };
 
 function applyChainStarters(game: GameState, unlocked: ReadonlyArray<string>): void {
+  // CodeRabbit HIGH fix: accumulate flags + buildingOverrides + unitOverrides
+  // across every starter (was: fresh Maps per iteration → mutations
+  // silently discarded). The maps persist on game state slots so
+  // downstream consumers (build system, train system, reveal logic)
+  // can read them.
+  const flags =
+    game.researchFlags ?? (game.researchFlags = new Map<string, number | string | boolean>());
+  const buildingOverrides = game.buildingOverrides ?? (game.buildingOverrides = new Map());
+  const unitOverrides = game.unitOverrides ?? (game.unitOverrides = new Map());
   for (const id of unlocked) {
     const discoveryId = CHAIN_STARTER_TO_DISCOVERY[id];
     if (!discoveryId) continue; // not a chain-starter id; skip.
@@ -1116,15 +1156,11 @@ function applyChainStarters(game: GameState, unlocked: ReadonlyArray<string>): v
     const rid = discoveryId as ResearchId;
     if (game.research.purchased.has(rid)) continue;
     game.research.purchased.add(rid);
-    // Apply with a ctx so v0.12 effect kinds (modify-supply etc.)
-    // can land their mutation against the player economy + a flag
-    // map. building-overrides is per-match transient; not yet
-    // plumbed into commands.ts, so override writes are recorded
-    // for future read by the build system.
     d.apply(game.world, {
       economy: game.economy.player,
-      flags: new Map<string, number | string | boolean>(),
-      buildingOverrides: new Map(),
+      flags,
+      buildingOverrides,
+      unitOverrides,
     });
   }
 }

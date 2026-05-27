@@ -82,7 +82,13 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
   // fires through the system haptics channel. Respects user
   // opt-out via setHapticsEnabled (lib/haptics.ts).
   useEffect(() => {
-    if (outcome === 'playing') return;
+    if (outcome === 'playing') {
+      // CodeRabbit MINOR fix: clear the one-shot guard when
+      // gameplay resumes so later game-over states in the same
+      // mount still vibrate.
+      hapticFiredRef.current = false;
+      return;
+    }
     if (hapticFiredRef.current) return;
     hapticFiredRef.current = true;
     void (async () => {

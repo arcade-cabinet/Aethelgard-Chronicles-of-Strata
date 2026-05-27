@@ -460,7 +460,7 @@
       "description": "Magic / Summon I — Wizard HP +20.",
       "cost": { "wood": 80, "gold": 140 },
       "prereqs": [],
-      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 0, "filter": "Wizard" }
+      "effect": { "kind": "buff-combatant", "stat": "hp", "delta": 20, "filter": "Wizard" }
     },
     {
       "id": "druid-conclave",

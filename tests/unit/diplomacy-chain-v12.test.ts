@@ -36,7 +36,13 @@ describe('M_V12.DEPTH.DIPLOMACY-CHAIN — 12-entry pin', () => {
     }
   });
 
-  it('counts: 3 specs × 4 tiers = 12', () => {
-    expect(Object.values(DIPLO_IDS).flat().length).toBe(12);
+  it('counts: 3 specs × 4 tiers = 12 entries actually present in DISCOVERIES', () => {
+    // CodeRabbit MINOR fix: bind the count to the registry, not
+    // to the local DIPLO_IDS literal, so the test fails when the
+    // registry-backed chain drifts.
+    const ids = Object.values(DIPLO_IDS).flat();
+    const present = ids.filter((id) => DISCOVERIES.some((d) => d.id === id));
+    expect(present).toHaveLength(12);
+    expect(new Set(ids).size).toBe(12);
   });
 });

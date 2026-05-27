@@ -28,7 +28,7 @@ const ResourceCostSchema = z.object(
 const DiscoveryEffectSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('buff-combatant'),
-    stat: z.enum(['attackDamage', 'attackRange']),
+    stat: z.enum(['attackDamage', 'attackRange', 'hp']),
     delta: z.number(),
     // M_V12.DEPTH.EFFECT-KINDS — optional unitType filter so a
     // buff applies to a class subset (e.g. infantry-only).
@@ -112,7 +112,7 @@ const DiscoveriesConfigSchema = z.object({
 export type DiscoveryEffect =
   | {
       kind: 'buff-combatant';
-      stat: 'attackDamage' | 'attackRange';
+      stat: 'attackDamage' | 'attackRange' | 'hp';
       delta: number;
       filter?: string | undefined;
     }

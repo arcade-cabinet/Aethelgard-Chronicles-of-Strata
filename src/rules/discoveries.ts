@@ -36,6 +36,13 @@ export interface DiscoveryApplyCtx {
       constructible?: boolean;
     }
   >;
+  /**
+   * M_V12.DEPTH.EFFECT-KINDS — unit-profile override map for
+   * `modify-cost` effects with `target: 'unit'`. Mirrors
+   * buildingOverrides but for trainable units. Consumed at
+   * train time.
+   */
+  unitOverrides?: Map<string, { cost?: ResourceCost }>;
 }
 
 /**

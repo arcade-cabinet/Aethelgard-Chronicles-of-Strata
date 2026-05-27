@@ -177,6 +177,7 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
                   type="button"
                   key={k}
                   id={`discoveries-tab-${k}`}
+                  aria-label={`Filter discoveries by ${CHAIN_LABELS[k]} chain`}
                   role="tab"
                   aria-selected={active}
                   onClick={() => setChainTab(active ? null : k)}

@@ -1,6 +1,6 @@
 import type { World } from 'koota';
 import { DISCOVERIES_CONFIG, type DiscoveryEffect } from '@/config/discoveries';
-import { Building, Combatant, Harvester, Unit } from '@/ecs/components';
+import { Building, Combatant, Harvester, Health, Unit } from '@/ecs/components';
 import type { Discovery, DiscoveryApplyCtx } from './discoveries';
 
 /**
@@ -29,6 +29,16 @@ function applyEffect(effect: DiscoveryEffect, world: World, ctx?: DiscoveryApply
         }
         if (effect.stat === 'attackDamage') c.attackDamage += effect.delta;
         else if (effect.stat === 'attackRange') c.attackRange += effect.delta;
+        // CodeRabbit MAJOR fix: 'hp' buff lands on the Health trait
+        // (not the Combatant trait — Combatant carries combat stats
+        // only). spirit-binding "Wizard HP +20" needs this branch.
+        else if (effect.stat === 'hp') {
+          const h = entity.get(Health);
+          if (h) {
+            h.max += effect.delta;
+            h.current = Math.min(h.current + effect.delta, h.max);
+          }
+        }
       });
       break;
     case 'multiply-harvest':
@@ -84,8 +94,17 @@ function applyEffect(effect: DiscoveryEffect, world: World, ctx?: DiscoveryApply
         cost[effect.resource] = Math.max(0, (cost[effect.resource] ?? 0) + effect.delta);
         ctx.buildingOverrides.set(effect.targetId, { ...prev, cost });
       }
-      // Unit-cost overrides could mirror this with a unit-overrides map;
-      // not needed by any v0.12 chapter entry today.
+      // CodeRabbit MAJOR fix: v0.12 Engineering/Production II
+      // (guild-conduits) uses target='unit' for Trebuchet cost;
+      // mirror the building branch against unitOverrides so the
+      // discovery actually lands its mutation instead of silently
+      // no-opping.
+      if (ctx?.unitOverrides && effect.target === 'unit') {
+        const prev = ctx.unitOverrides.get(effect.targetId) ?? {};
+        const cost = { ...(prev.cost ?? {}) };
+        cost[effect.resource] = Math.max(0, (cost[effect.resource] ?? 0) + effect.delta);
+        ctx.unitOverrides.set(effect.targetId, { ...prev, cost });
+      }
       break;
     }
     case 'modify-supply': {

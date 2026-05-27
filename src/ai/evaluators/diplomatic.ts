@@ -158,7 +158,11 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
         const cooldownKey = `${myId}|${fc.id}`;
         const now = game.clock.elapsed;
         const lastBreak = BREAK_PACT_COOLDOWN.get(cooldownKey) ?? -Infinity;
-        const cooledDown = now - lastBreak >= BREAK_PACT_COOLDOWN_SECONDS;
+        // CodeRabbit MAJOR fix: a new match resets game.clock.elapsed
+        // near 0; an entry from a prior match could block BreakPact
+        // for the rest of the new match. `now < lastBreak` means
+        // we've crossed a match boundary — treat as no prior break.
+        const cooledDown = now < lastBreak || now - lastBreak >= BREAK_PACT_COOLDOWN_SECONDS;
         if (ratio >= 1.5 && breakBias >= 0.5 && cooledDown) {
           BREAK_PACT_COOLDOWN.set(cooldownKey, now);
           return { action: DiploAction.BreakPact, targetId: fc.id };
