@@ -33,6 +33,8 @@ const COPY_FOR_MODE = {
   campaign: '📜 Chapter — complete the objectives',
   // M_V11.WAVE-DEFENSE (#77h) — survival mode.
   'wave-defense': '🛡 Hold the Palace — survive all waves',
+  // M_V11.DAILY-CHALLENGE (#77i) — same seed every player today.
+  'daily-challenge': '🏆 Daily Challenge — race the leaderboard',
 } as const;
 
 export function WinConditionPill({ game }: { game: GameState }) {

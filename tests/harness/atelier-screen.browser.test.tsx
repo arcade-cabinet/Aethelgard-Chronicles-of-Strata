@@ -35,6 +35,8 @@ function stubPersistence(opts: { tokens: number; unlockedIds?: string[] }): Pers
     getEventSeed: async () => 'stub',
     advanceAndPersistEventSeed: async () => 'stub',
     reset: async () => {},
+    recordDailyChallengeScore: async () => {},
+    listDailyChallengeScores: async () => [],
   };
 }
 

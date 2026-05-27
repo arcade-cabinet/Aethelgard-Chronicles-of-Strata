@@ -107,6 +107,30 @@ export interface Persistence {
   /** Credit `n` lore tokens to the player. Called from the match-end
    *  flow per loreTokenReward(). */
   earnLoreTokens(n: number): Promise<void>;
+  /**
+   * M_V11.DAILY-CHALLENGE (#77i) — append a daily-challenge run
+   * to the install-wide leaderboard. Idempotent on the (dateUTC,
+   * endedAtIso) pair so a repeat write doesn't double-list.
+   */
+  recordDailyChallengeScore(score: {
+    dateUTC: string;
+    seedPhrase: string;
+    outcome: 'win' | 'loss' | 'draw';
+    simSeconds: number;
+    score: number;
+    endedAtIso: string;
+  }): Promise<void>;
+  /** List leaderboard rows for `dateUTC`; newest first. */
+  listDailyChallengeScores(dateUTC: string): Promise<
+    Array<{
+      dateUTC: string;
+      seedPhrase: string;
+      outcome: 'win' | 'loss' | 'draw';
+      simSeconds: number;
+      score: number;
+      endedAtIso: string;
+    }>
+  >;
   /** Read a string setting. Returns `null` if not set. */
   getSetting(key: string): Promise<string | null>;
   /** Write a string setting. */
@@ -506,6 +530,21 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
         );
       `);
       await conn.execute('INSERT OR IGNORE INTO meta_lore_tokens (id, balance) VALUES (1, 0);');
+      // M_V11.DAILY-CHALLENGE (#77i) — leaderboard for the seed-of-
+      // the-day. (date_utc, ended_at_iso) is the natural key; INSERT
+      // OR IGNORE keeps recordDailyChallengeScore idempotent on
+      // re-fire (a save round-trip can replay the event safely).
+      await conn.execute(`
+        CREATE TABLE IF NOT EXISTS daily_challenge_scores (
+          date_utc       TEXT NOT NULL,
+          seed_phrase    TEXT NOT NULL,
+          outcome        TEXT NOT NULL,
+          sim_seconds    REAL NOT NULL,
+          score          REAL NOT NULL,
+          ended_at_iso   TEXT NOT NULL,
+          PRIMARY KEY (date_utc, ended_at_iso)
+        );
+      `);
 
       sqliteDb = conn;
       return conn;
@@ -735,6 +774,88 @@ export function createPersistence(): Persistence {
       await db.run(`UPDATE meta_lore_tokens SET balance = balance + ? WHERE id = 1;`, [safeN]);
     },
 
+    // ----- M_V11.DAILY-CHALLENGE (#77i) ------------------------------
+    async recordDailyChallengeScore(score): Promise<void> {
+      const db = await openDb();
+      if (!db) return;
+      await db.run(
+        `INSERT OR IGNORE INTO daily_challenge_scores
+           (date_utc, seed_phrase, outcome, sim_seconds, score, ended_at_iso)
+         VALUES (?, ?, ?, ?, ?, ?);`,
+        [
+          score.dateUTC,
+          score.seedPhrase,
+          score.outcome,
+          score.simSeconds,
+          score.score,
+          score.endedAtIso,
+        ],
+      );
+    },
+
+    async listDailyChallengeScores(dateUTC: string): Promise<
+      Array<{
+        dateUTC: string;
+        seedPhrase: string;
+        outcome: 'win' | 'loss' | 'draw';
+        simSeconds: number;
+        score: number;
+        endedAtIso: string;
+      }>
+    > {
+      const db = await openDb();
+      if (!db) return [];
+      try {
+        const res = await db.query(
+          `SELECT date_utc, seed_phrase, outcome, sim_seconds, score, ended_at_iso
+             FROM daily_challenge_scores
+             WHERE date_utc = ?
+             ORDER BY ended_at_iso DESC;`,
+          [dateUTC],
+        );
+        const rows = (res?.values ?? []) as Array<{
+          date_utc?: unknown;
+          seed_phrase?: unknown;
+          outcome?: unknown;
+          sim_seconds?: unknown;
+          score?: unknown;
+          ended_at_iso?: unknown;
+        }>;
+        const out: Array<{
+          dateUTC: string;
+          seedPhrase: string;
+          outcome: 'win' | 'loss' | 'draw';
+          simSeconds: number;
+          score: number;
+          endedAtIso: string;
+        }> = [];
+        for (const r of rows) {
+          if (
+            typeof r.date_utc !== 'string' ||
+            typeof r.seed_phrase !== 'string' ||
+            typeof r.outcome !== 'string' ||
+            typeof r.sim_seconds !== 'number' ||
+            typeof r.score !== 'number' ||
+            typeof r.ended_at_iso !== 'string'
+          ) {
+            continue;
+          }
+          out.push({
+            dateUTC: r.date_utc,
+            seedPhrase: r.seed_phrase,
+            outcome: r.outcome as 'win' | 'loss' | 'draw',
+            simSeconds: r.sim_seconds,
+            score: r.score,
+            endedAtIso: r.ended_at_iso,
+          });
+        }
+        return out;
+      } catch (err) {
+        console.warn('[persistence] listDailyChallengeScores failed:', err);
+        return [];
+      }
+    },
+
     async getSetting(key: string): Promise<string | null> {
       const { value } = await Preferences.get({ key });
       return value;
@@ -793,6 +914,8 @@ export function createPersistence(): Persistence {
           // with unlocks bound to a save that no longer exists).
           await db.run(`DELETE FROM meta_unlocks;`);
           await db.run(`UPDATE meta_lore_tokens SET balance = 0 WHERE id = 1;`);
+          // M_V11.DAILY-CHALLENGE — wipe the leaderboard too.
+          await db.run(`DELETE FROM daily_challenge_scores;`);
         } else failures.push('saves (db unavailable)');
       } catch (err) {
         failures.push(`saves: ${err instanceof Error ? err.message : String(err)}`);

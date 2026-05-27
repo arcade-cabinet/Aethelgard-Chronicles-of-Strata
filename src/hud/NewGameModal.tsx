@@ -103,6 +103,9 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       // M_V11.WAVE-DEFENSE (#77h) — normal default; the wave script is
       // the pacing, not the AI difficulty.
       'wave-defense': 'normal',
+      // M_V11.DAILY-CHALLENGE (#77i) — normal default so the leaderboard
+      // compares apples-to-apples across every player.
+      'daily-challenge': 'normal',
     };
     setDifficulty(aiByMode[mode]);
     setTurnsModeState(preset.turnsMode);

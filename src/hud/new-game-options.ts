@@ -25,6 +25,8 @@ export const MODES: ReadonlyArray<{ key: GameMode; label: string }> = [
   { key: 'campaign', label: 'Campaign' },
   // M_V11.WAVE-DEFENSE (#77h) — survival mode (defend Palace vs waves).
   { key: 'wave-defense', label: 'Wave Defense' },
+  // M_V11.DAILY-CHALLENGE (#77i) — seed-of-the-day.
+  { key: 'daily-challenge', label: 'Daily Challenge' },
   { key: 'border-clash', label: 'Border Clash' },
   { key: 'frontier-raid', label: 'Frontier Raid' },
   { key: 'long-reign', label: 'Long Reign' },

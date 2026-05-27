@@ -165,6 +165,18 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     maxTurns: null,
     defaultPlayerCount: 2,
   },
+  // M_V11.DAILY-CHALLENGE (#77i) — same map for every player today.
+  // Medium / short for uniform scoring window.
+  'daily-challenge': {
+    mapSize: 'medium',
+    matchLength: 'short',
+    turnsMode: 'real-time',
+    mapType: 'balanced',
+    guidedMapGen: true,
+    invulnerableBases: false,
+    maxTurns: null,
+    defaultPlayerCount: 2,
+  },
 };
 
 /** Resolve the preset for a mode; defaults to border-clash for unknown input. */

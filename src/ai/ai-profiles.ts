@@ -132,6 +132,9 @@ export const AI_PROFILES: Record<GameMode, AiProfile> = {
     militaryWeight: 0,
     defensiveBuildWeight: 0,
   },
+  // M_V11.DAILY-CHALLENGE (#77i) — same AI weights as border-clash
+  // so every daily-challenge player faces the same competitive AI.
+  'daily-challenge': { ...DEFAULT_PROFILE },
 };
 
 /** Lookup helper; defaults to border-clash. */

@@ -202,7 +202,11 @@ export type GameMode =
    *  the Palace against N scripted enemy waves of increasing
    *  size over 15 minutes. Win = survive all waves; lose = Palace
    *  destroyed. The barbarian-camp substrate spawns the waves. */
-  | 'wave-defense';
+  | 'wave-defense'
+  /** M_V11.DAILY-CHALLENGE (#77i) — deterministic seed-of-the-day.
+   *  Every player gets the same map for today's UTC date; final
+   *  score persists to an install-wide leaderboard. */
+  | 'daily-challenge';
 
 /** The live state of one play session. */
 export interface GameState {
