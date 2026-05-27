@@ -25,7 +25,15 @@ export type TrainableUnit =
   | 'Trebuchet'
   | 'Ferryman'
   | 'Settler'
-  | 'Hero';
+  | 'Hero'
+  // M_V11.UNITS-EXPANSION (#77d) — 5 new trainable units.
+  // (MageTowerGarrison is auto-spawned by Mage Tower building;
+  //  not directly trainable, so it's omitted here.)
+  | 'Archer'
+  | 'Pikeman'
+  | 'Knight'
+  | 'Engineer'
+  | 'Diplomat';
 export const UNIT_COSTS: Record<TrainableUnit, ResourceCost> = ECONOMY.unitCosts as Record<
   TrainableUnit,
   ResourceCost

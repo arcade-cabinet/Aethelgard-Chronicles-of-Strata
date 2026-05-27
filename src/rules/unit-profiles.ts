@@ -23,7 +23,7 @@ import { unitStatFor } from '@/config/combat';
 import type { UnitType } from '@/ecs/components';
 
 /** Damage type for the OffensiveBehavior trait. */
-export type DamageType = 'normal' | 'siege' | 'magic';
+export type DamageType = 'normal' | 'siege' | 'magic' | 'pierce';
 
 /**
  * Combat-role classification — extracted from 3 duplicate MILITARY sets
@@ -86,7 +86,7 @@ export interface UnitProfile {
    * non-combat (no melee SFX swap). Read by audio's combat-hit picker
    * when range ≤ 1 and damageType === 'normal'.
    */
-  meleeWeapon: 'sword' | 'club' | 'none';
+  meleeWeapon: 'sword' | 'club' | 'spear' | 'none';
   /**
    * M_EXPANSION.AU.46 — parry chance 0..1. The combat tick rolls
    * once per incoming melee hit; on success damage→0 and the
@@ -223,6 +223,83 @@ export const UNIT_PROFILES: Record<UnitType, UnitProfile> = {
     selectionRadius: 0.95,
     meleeWeapon: 'sword',
     parryChance: 0.2,
+  },
+  // M_V11.UNITS-EXPANSION (#77d) — 6 new player units.
+  Archer: {
+    // Ranged anti-air tier-1; predates Wizard. Low HP, cheap, fragile
+    // in melee. Pierce damage so Wall HP doesn't dampen the silhouette.
+    harvester: false,
+    nonCombat: false,
+    founder: false,
+    damageType: 'pierce',
+    combatRole: 'military',
+    selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
+  },
+  Pikeman: {
+    // Anti-cavalry tier-2. Higher parry vs charge attackers (Knight,
+    // BlackKnight); standard stats otherwise. Spear keeps the silhouette
+    // distinct from Footman's sword.
+    harvester: false,
+    nonCombat: false,
+    founder: false,
+    damageType: 'normal',
+    combatRole: 'military',
+    selectionRadius: 0.85,
+    meleeWeapon: 'spear',
+    parryChance: 0.15,
+  },
+  Knight: {
+    // Player-side mounted heavy. Highest non-Hero damage; slow attack
+    // speed (combat.json sets attackSpeed). Sword wielder.
+    harvester: false,
+    nonCombat: false,
+    founder: false,
+    damageType: 'normal',
+    combatRole: 'military',
+    selectionRadius: 0.9,
+    meleeWeapon: 'sword',
+    parryChance: 0.12,
+  },
+  Engineer: {
+    // Builds + repairs siege at range. Treated as civilian for combat
+    // (no offensive). Wall / Watchtower / Trebuchet repair is dispatched
+    // by AssignedJob.state === 'BUILDING' targeting a friendly building.
+    harvester: false,
+    nonCombat: true,
+    founder: false,
+    damageType: 'normal',
+    combatRole: 'civilian',
+    selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
+  },
+  Diplomat: {
+    // Physical first-contact carrier. Civilian; entering a foreign
+    // zone tile establishes the diplomacy contact gate (the
+    // hasHadContact abstraction added in M_V11.EVENTS.RTS-TRIGGERED).
+    harvester: false,
+    nonCombat: true,
+    founder: false,
+    damageType: 'normal',
+    combatRole: 'civilian',
+    selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
+  },
+  MageTowerGarrison: {
+    // Auto-spawned spirit unit when a Mage Tower is built (#77e
+    // buildings expansion). Not directly trainable. Magic damage,
+    // ranged, mid HP, parryChance 0 (it doesn't dodge).
+    harvester: false,
+    nonCombat: false,
+    founder: false,
+    damageType: 'magic',
+    combatRole: 'military',
+    selectionRadius: 0.85,
+    meleeWeapon: 'none',
+    parryChance: 0,
   },
   Goblin: {
     harvester: false,

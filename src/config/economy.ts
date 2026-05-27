@@ -133,7 +133,13 @@ export function unitCostFor(
     | 'Trebuchet'
     | 'Ferryman'
     | 'Settler'
-    | 'Hero',
+    | 'Hero'
+    // M_V11.UNITS-EXPANSION (#77d) — 5 new trainable units.
+    | 'Archer'
+    | 'Pikeman'
+    | 'Knight'
+    | 'Engineer'
+    | 'Diplomat',
 ): ResourceCost {
   return (ECONOMY.unitCosts as Record<string, ResourceCost>)[role] as ResourceCost;
 }

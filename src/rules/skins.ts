@@ -286,6 +286,15 @@ const SHARED_RIG_TODAY: Record<UnitType, UnitRig> = {
   // Larger selectionRadius (0.95) in UNIT_PROFILES helps the player
   // pick the Hero out of a melee scrum.
   Hero: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
+  // M_V11.UNITS-EXPANSION (#77d) — 6 new player units reuse existing
+  // KayKit hero meshes until dedicated rigs land. Each is visually
+  // distinguished by faction-tint + selectionRadius in UNIT_PROFILES.
+  Archer: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },
+  Pikeman: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
+  Knight: { tier: 'medium', meshLogicalId: 'characters.heroes.knight' },
+  Engineer: { tier: 'medium', meshLogicalId: 'characters.heroes.engineer' },
+  Diplomat: { tier: 'medium', meshLogicalId: 'characters.heroes.mage' },
+  MageTowerGarrison: { tier: 'medium', meshLogicalId: 'characters.heroes.mage' },
   // Goblin: no dedicated KayKit goblin; the hooded Rogue is the closest
   // small humanoid. Tinted/scaled distinctly at render time.
   Goblin: { tier: 'medium', meshLogicalId: 'characters.heroes.rogue' },

@@ -37,7 +37,7 @@ describe('M_PIVOT.N-PLAYER.SHARED-KIT — type-level pins', () => {
     }
   });
 
-  it('PLAYER_UNIT_TYPES contains the 9 player-kit roles', () => {
+  it('PLAYER_UNIT_TYPES contains the v0.5 base roster + v0.11 units expansion', () => {
     expect(new Set(PLAYER_UNIT_TYPES)).toEqual(
       new Set([
         'Peon',
@@ -49,6 +49,13 @@ describe('M_PIVOT.N-PLAYER.SHARED-KIT — type-level pins', () => {
         'Scout',
         'Settler',
         'Hero',
+        // M_V11.UNITS-EXPANSION (#77d) — 6 new units.
+        'Archer',
+        'Pikeman',
+        'Knight',
+        'Engineer',
+        'Diplomat',
+        'MageTowerGarrison',
       ]),
     );
   });

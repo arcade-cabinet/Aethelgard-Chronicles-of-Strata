@@ -31,6 +31,26 @@ export type UnitType =
   | 'Scout'
   | 'Settler'
   | 'Hero'
+  /** M_V11.UNITS-EXPANSION.ARCHER — ranged anti-air tier-1 (predates
+   *  Wizard's magic ranged). Cheap arrow attack; weak in melee. */
+  | 'Archer'
+  /** M_V11.UNITS-EXPANSION.PIKEMAN — anti-cavalry tier-2 spear.
+   *  Bonus damage vs Knight / BlackKnight; otherwise mid stats. */
+  | 'Pikeman'
+  /** M_V11.UNITS-EXPANSION.KNIGHT — player-side mounted heavy. High
+   *  HP + damage; expensive; slow attack speed. */
+  | 'Knight'
+  /** M_V11.UNITS-EXPANSION.ENGINEER — builds + repairs siege at range.
+   *  Can repair friendly Watchtowers / Walls / Trebuchets for free. */
+  | 'Engineer'
+  /** M_V11.UNITS-EXPANSION.DIPLOMAT — physical "first contact" carrier.
+   *  Walking a Diplomat into a foreign zone establishes the diplomacy
+   *  contact gate (the abstraction added in M_V11.EVENTS.RTS-TRIGGERED). */
+  | 'Diplomat'
+  /** M_V11.UNITS-EXPANSION.MAGE-TOWER-GARRISON — Mage Tower's auto-fire
+   *  spirit. Not trainable directly; spawns when a Mage Tower is
+   *  built (planned for buildings expansion #77e). */
+  | 'MageTowerGarrison'
   | 'Goblin'
   | 'Orc'
   | 'Vampire'
@@ -57,6 +77,13 @@ export const PLAYER_UNIT_TYPES: readonly UnitType[] = [
   'Scout',
   'Settler',
   'Hero',
+  // M_V11.UNITS-EXPANSION (#77d) — 6 new player units.
+  'Archer',
+  'Pikeman',
+  'Knight',
+  'Engineer',
+  'Diplomat',
+  'MageTowerGarrison',
 ] as const;
 
 /**

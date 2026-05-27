@@ -31,6 +31,13 @@ const CombatUnitSchema = z.enum([
   'Scout',
   'Settler',
   'Hero',
+  // M_V11.UNITS-EXPANSION (#77d) — 6 new player units.
+  'Archer',
+  'Pikeman',
+  'Knight',
+  'Engineer',
+  'Diplomat',
+  'MageTowerGarrison',
   'Goblin',
   'Orc',
   'Vampire',
