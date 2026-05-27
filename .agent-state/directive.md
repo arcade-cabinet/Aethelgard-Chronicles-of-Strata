@@ -102,18 +102,23 @@ scenarios"). Order: §1 (substrate) before §2 (depth), §3 (AI) +
 
 ### §1 — Substrate: cycle-open hygiene
 
-- [ ] M_V12.SUBSTRATE.PRD — author `docs/specs/PRD-v0.12.md`
-      capturing the cycle's design pillars: rpg-like meta-progress
-      depth, AI diplomacy + alliance behaviors, 100+ upgrade
-      target across 6 chains, per-chapter narrative scenarios,
-      mobile-first input polish. Each §-block below cross-links
-      a PRD subsection.
-- [ ] M_V12.SUBSTRATE.BRANCH — open `feat/v0.12-cycle` from
-      main at the v0.11 merge commit. All v0.12 commits land
-      on this branch until §6.RELEASE.
-- [ ] M_V12.SUBSTRATE.RELEASE-WATCH — verify release-please
-      cuts v0.1.27 for the v0.11 merge; fold any release-PR
-      review comments before opening v0.12 work.
+- [x] M_V12.SUBSTRATE.PRD — `docs/specs/PRD-v0.12.md` authored
+      with 4 design pillars (depth before breadth, mobile-first
+      input, agent-owned visual judgment, one PR per cycle), per-§
+      goal + implementation order + use-case enumeration for
+      DEPTH (3 distinct upgrade surfaces), AI-DIPLO personality
+      matrix, MOBILE gesture-map table, the §6 release-ladder
+      gates, and the explicit out-of-scope list (multiplayer,
+      map editor, mod API all kicked to §post-horizon v0.13).
+- [x] M_V12.SUBSTRATE.BRANCH — `feat/v0.12-cycle` opened from
+      main at HEAD (post-v0.11-merge, includes the directive
+      flip commit a46d70c). All v0.12 commits land on this
+      branch until §6.RELEASE.
+- [ ] [WAIT] M_V12.SUBSTRATE.RELEASE-WATCH — release-please has
+      not yet cut the v0.1.27 PR for the v0.11 merge (checked at
+      cycle-open, no PR in `gh pr list`). External: waits for
+      release-please's scheduled workflow run. Re-poll daily;
+      merge when CI lands.
 
 ### §2 — Game-design depth (M_V12.DEPTH)
 
@@ -122,14 +127,21 @@ with appropriate logical progression between links in chains".
 The v0.11 Discoveries registry has 36 entries across 6 themed
 chains; v0.12 expands to 100+ via depth + breadth + meta-tiers.
 
-- [ ] M_V12.DEPTH.UPGRADE-AUDIT — paper-design 100+ upgrades across
-      6 chains (Economy / Military / Diplomacy / Magic /
-      Engineering / Lore). Each upgrade: id + chain + tier +
-      cost + prerequisite-graph edges + runtime effect. Ledger
-      lives in `docs/design/v0.12-upgrade-graph.md`. **Step 1 is
-      use-case enumeration** — distinguish in-match Discoveries
-      from meta Atelier unlocks from per-chapter scenario perks;
-      each may need a different mechanic.
+- [x] M_V12.DEPTH.UPGRADE-AUDIT — `docs/design/v0.12-upgrade-graph.md`
+      authored with the full graph: 76 in-match Discoveries
+      (16+16+12+12+12+8 across the 6 chains, 4 tiers × 3-4 specs
+      per chain), 12 Atelier chain-starter meta-unlocks, 12
+      per-chapter perks (4 × 3 chapters), totaling 130 upgrades
+      (overshoots the 100+ target with headroom). 7 new effect
+      kinds (buff-building / unlock-unit / unlock-building /
+      unlock-formation / modify-cost / modify-supply / reveal-tier
+      / grant-resource) on top of the existing 3 kinds; effect
+      resolver extension is M_V12.DEPTH.EFFECT-KINDS below.
+- [ ] M_V12.DEPTH.EFFECT-KINDS — extend the effect resolver in
+      src/game/research.ts (or new sibling) to handle the 7 new
+      effect kinds. Each kind gets a unit test pin. Substrate
+      before content — must land before EFFECT-KINDS chain
+      expansions can validate their entries' runtime effects.
 - [ ] M_V12.DEPTH.CHAIN-EXPANSION — implement the Economy chain
       first (16-row depth × 4 tiers + branches). Each row gets a
       registry entry, an in-game effect (modifier on harvest
