@@ -193,7 +193,11 @@ export type GameMode =
    *  resources are bumped, the TutorialOverlay drives an objective
    *  queue that surfaces the next step (build Farm → House → train
    *  Footman → research → open DiplomacyModal → ...). */
-  | 'tutorial';
+  | 'tutorial'
+  /** M_V11.CAMPAIGN (#77g) — narrative chapter mode. The chapter
+   *  picker lives on the NewGameModal; CampaignOverlay drives a
+   *  scripted objective queue specific to the active chapter id. */
+  | 'campaign';
 
 /** The live state of one play session. */
 export interface GameState {
@@ -207,6 +211,12 @@ export interface GameState {
   eventSeed: string;
   /** The selected game-mode preset (M_MODES). Defaults to border-clash. */
   mode: GameMode;
+  /**
+   * M_V11.CAMPAIGN (#77g) — chapter id when `mode === 'campaign'`.
+   * Optional; the CampaignOverlay defaults to 'first-strata' when
+   * unset so a fresh campaign always starts with Chapter I.
+   */
+  campaignChapter?: import('@/config/campaign-chapters').ChapterId;
   /**
    * M_EXPANSION.F.80 — player faction palette tint. CSS hex string
    * or null = use SKINS default. Read by Units when picking the

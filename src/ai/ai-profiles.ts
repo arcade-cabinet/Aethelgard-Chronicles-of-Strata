@@ -112,6 +112,15 @@ export const AI_PROFILES: Record<GameMode, AiProfile> = {
     militaryWeight: 0,
     defensiveBuildWeight: 0,
   },
+  // M_V11.CAMPAIGN (#77g) — narrative chapter scenarios. Mid-weight
+  // AI; pre-placed chapter buildings + scripted enemy waves are the
+  // pacing pressure, not the AI's emergent build queue.
+  campaign: {
+    ...DEFAULT_PROFILE,
+    buildWeight: 0.8,
+    militaryWeight: 0.7,
+    defensiveBuildWeight: 0.4,
+  },
 };
 
 /** Lookup helper; defaults to border-clash. */

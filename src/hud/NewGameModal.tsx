@@ -97,6 +97,9 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       coexistence: 'easy',
       // M_V11.TUTORIAL (#77f) — easy difficulty (no early military pressure).
       tutorial: 'easy',
+      // M_V11.CAMPAIGN (#77g) — normal default; scripted chapter pressure
+      // is the difficulty knob, not the AI scaling.
+      campaign: 'normal',
     };
     setDifficulty(aiByMode[mode]);
     setTurnsModeState(preset.turnsMode);

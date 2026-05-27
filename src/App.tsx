@@ -17,6 +17,7 @@ import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
 import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { AtelierScreen } from '@/hud/AtelierScreen';
+import { CampaignOverlay } from '@/hud/CampaignOverlay';
 import { DiplomacyModal } from '@/hud/DiplomacyModal';
 import { TutorialOverlay } from '@/hud/TutorialOverlay';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
@@ -402,6 +403,10 @@ function GameSession({
       {/* M_V11.TUTORIAL (#77f) — guided overlay; renders only when
           game.mode === 'tutorial' (the component guards internally). */}
       <TutorialOverlay game={game} />
+      {/* M_V11.CAMPAIGN (#77g) — chapter overlay; renders only when
+          game.mode === 'campaign'. Reads game.campaignChapter to
+          pick which chapter's objective queue to drive. */}
+      <CampaignOverlay game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />

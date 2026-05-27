@@ -20,6 +20,9 @@ export const MODES: ReadonlyArray<{ key: GameMode; label: string }> = [
   // M_V11.TUTORIAL (#77f) — tutorial sits first so it's the
   // most prominent option for first-time players.
   { key: 'tutorial', label: 'Tutorial' },
+  // M_V11.CAMPAIGN (#77g) — campaign sits second; narrative chapters
+  // for players past the tutorial.
+  { key: 'campaign', label: 'Campaign' },
   { key: 'border-clash', label: 'Border Clash' },
   { key: 'frontier-raid', label: 'Frontier Raid' },
   { key: 'long-reign', label: 'Long Reign' },

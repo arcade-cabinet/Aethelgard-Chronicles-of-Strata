@@ -29,6 +29,8 @@ const COPY_FOR_MODE = {
   coexistence: '☮ Sandbox',
   // M_V11.TUTORIAL (#77f) — guided 5-min teaching scenario.
   tutorial: '📖 Tutorial — follow the objectives',
+  // M_V11.CAMPAIGN (#77g) — narrative chapter scenarios.
+  campaign: '📜 Chapter — complete the objectives',
 } as const;
 
 export function WinConditionPill({ game }: { game: GameState }) {

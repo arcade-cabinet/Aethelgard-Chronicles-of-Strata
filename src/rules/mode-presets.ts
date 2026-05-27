@@ -139,6 +139,19 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     maxTurns: null,
     defaultPlayerCount: 2,
   },
+  // M_V11.CAMPAIGN (#77g) — narrative chapter scenarios. Medium map,
+  // short-ish match, invulnerable bases so the chapter ends by
+  // objective completion / failure, not by the AI rolling the player.
+  campaign: {
+    mapSize: 'medium',
+    matchLength: 'short',
+    turnsMode: 'real-time',
+    mapType: 'balanced',
+    guidedMapGen: true,
+    invulnerableBases: true,
+    maxTurns: null,
+    defaultPlayerCount: 2,
+  },
 };
 
 /** Resolve the preset for a mode; defaults to border-clash for unknown input. */
