@@ -32,6 +32,7 @@ import { combatSystem, type DamageEvent } from '@/ecs/systems/combat';
 import { deathSystem } from '@/ecs/systems/death';
 import { diplomatContactSystem } from '@/ecs/systems/diplomat-contact';
 import { engineerRepairSystem } from '@/ecs/systems/engineer-repair';
+import { marketTradeSystem } from '@/ecs/systems/market-trade';
 import { depositSystem, type ResourceDepositEvent } from '@/ecs/systems/deposit';
 import { encroachmentSystem } from '@/ecs/systems/encroachment';
 import { harvestSystem } from '@/ecs/systems/harvest';
@@ -95,6 +96,10 @@ export function tickClockPhase(game: GameState, delta: number): void {
   // establish has-had-contact when walking into foreign-faction
   // zones. Idempotent; cheap O(diplomats × factions).
   diplomatContactSystem(game);
+  // M_V11.BUILDINGS-EXPANSION (#77e runtime wire-up) — Market
+  // per-60s ally-trade tick. Internal cadence guard; safe to
+  // call every clock-phase tick.
+  marketTradeSystem(game);
   // M_V7.PORTAL-STONES.TRIGGER — random-event roll for the rare
   // portal-stones placement (1-in-200 once map clock > 5min,
   // at-most-once-per-match). Mutates board.tiles on a successful
