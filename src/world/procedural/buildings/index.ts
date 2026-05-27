@@ -40,4 +40,19 @@ export const BUILDING_COMPONENTS: Record<BuildingType, ProceduralBuildingCompone
   Granary: Granary as ProceduralBuildingComponent,
   Library: Library as ProceduralBuildingComponent,
   Wonder: Wonder as ProceduralBuildingComponent,
+  // M_V11.BUILDINGS-EXPANSION (#77e) — new buildings reuse existing
+  // closest procmesh until dedicated compositions land (per-building
+  // procmesh polish lands in follow-up commits). The mapping is:
+  //   Market    ≈ Granary  (storage silo shape — Market is a goods
+  //                          hub; reads as "place where things stack")
+  //   Embassy   ≈ Library  (civic temple shape — Embassy is a civic
+  //                          building too)
+  //   Lighthouse ≈ Watchtower (tall tower w/ flag)
+  //   MageTower ≈ Watchtower (tall tower w/ glow)
+  //   Workshop  ≈ Barracks  (wood-frame industrial building)
+  Market: Granary as ProceduralBuildingComponent,
+  Embassy: Library as ProceduralBuildingComponent,
+  Lighthouse: Watchtower as ProceduralBuildingComponent,
+  MageTower: Watchtower as ProceduralBuildingComponent,
+  Workshop: Barracks as ProceduralBuildingComponent,
 };

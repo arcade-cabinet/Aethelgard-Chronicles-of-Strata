@@ -7,7 +7,12 @@
     "Watchtower": { "wood": 80, "stone": 120, "gold": 0 },
     "Wall": { "wood": 0, "stone": 60, "gold": 0 },
     "Wonder": { "wood": 500, "stone": 400, "gold": 300 },
-    "Library": { "wood": 120, "stone": 60, "gold": 80 }
+    "Library": { "wood": 120, "stone": 60, "gold": 80 },
+    "Market": { "wood": 80, "stone": 60, "gold": 40 },
+    "Embassy": { "wood": 100, "stone": 60, "gold": 80 },
+    "Lighthouse": { "wood": 80, "stone": 120, "gold": 40 },
+    "MageTower": { "wood": 60, "stone": 100, "gold": 100, "science": 40, "mana": 30 },
+    "Workshop": { "wood": 140, "stone": 100, "gold": 60 }
   },
   "buildingSupply": {
     "Palace": 5,
@@ -18,7 +23,12 @@
     "Watchtower": 0,
     "Wall": 0,
     "Wonder": 5,
-    "Library": 0
+    "Library": 0,
+    "Market": 2,
+    "Embassy": 0,
+    "Lighthouse": 0,
+    "MageTower": 0,
+    "Workshop": 0
   },
   "buildableBiomes": ["GRASS", "HIGHLAND", "BEACH", "MOUNTAIN_PASS"],
   "supplyCosts": {

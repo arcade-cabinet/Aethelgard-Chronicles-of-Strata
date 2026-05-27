@@ -238,7 +238,27 @@ export type BuildingType =
   | 'Watchtower'
   | 'Wall'
   | 'Wonder'
-  | 'Library';
+  | 'Library'
+  // M_V11.BUILDINGS-EXPANSION (#77e) — 5 new buildings.
+  /** Market — unlocks per-tick trade cession with allied factions
+   *  (1:1 wood/stone/gold swap honored AUTOMATICALLY per minute,
+   *  not via the manual Trade widget). */
+  | 'Market'
+  /** Embassy — required-for-diplomacy gate; building one creates a
+   *  hasHadContact entry with every faction whose zone touches your
+   *  zone (the per-faction physical version of the Diplomat unit). */
+  | 'Embassy'
+  /** Lighthouse — extends Ferryman max-cargo range by +2 and reveals
+   *  every OCEAN / SHALLOWS tile within 5 hex permanently. */
+  | 'Lighthouse'
+  /** Mage Tower — auto-fires magic damage at any enemy in 3-hex
+   *  range (no garrison-unit micro required). Spawns a
+   *  MageTowerGarrison unit on construction for selection / repair. */
+  | 'MageTower'
+  /** Workshop — Engineer + siege production hub. Trebuchets are
+   *  trainable here at tier-1 (instead of needing Barracks tier-2),
+   *  and Engineers built here gain a free Siege-Engineering buff. */
+  | 'Workshop';
 
 /** The peon job state machine. */
 export type JobState = 'IDLE' | 'SEEKING' | 'HARVESTING' | 'CARRYING' | 'DEPOSITING' | 'BUILDING';

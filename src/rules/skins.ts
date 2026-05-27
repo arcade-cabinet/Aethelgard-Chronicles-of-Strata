@@ -329,6 +329,16 @@ export const SKINS: Record<Faction, Skin> = {
       Wall: procedural(BUILDING_COMPONENTS.Wall),
       Wonder: procedural(BUILDING_COMPONENTS.Wonder, 1.0),
       Library: procedural(BUILDING_COMPONENTS.Library),
+      // M_V11.BUILDINGS-EXPANSION (#77e) — 5 new buildings reuse the
+      // closest existing procmesh component until dedicated procmeshes
+      // land (Market→Granary shape, Embassy→Library, Lighthouse→
+      // Watchtower, MageTower→Watchtower, Workshop→Barracks).
+      // Per-building procmesh polish lands in follow-up commits.
+      Market: procedural(BUILDING_COMPONENTS.Granary),
+      Embassy: procedural(BUILDING_COMPONENTS.Library),
+      Lighthouse: procedural(BUILDING_COMPONENTS.Watchtower),
+      MageTower: procedural(BUILDING_COMPONENTS.Watchtower),
+      Workshop: procedural(BUILDING_COMPONENTS.Barracks),
     },
     // M_EXPANSION.A.4 + A.10 — faction banner behind Palace + a
     // small fountain to the side. The fountain anchors the base as a
@@ -394,6 +404,16 @@ export const SKINS: Record<Faction, Skin> = {
       Wall: procedural(BUILDING_COMPONENTS.Wall),
       Wonder: procedural(BUILDING_COMPONENTS.Wonder, 1.0),
       Library: procedural(BUILDING_COMPONENTS.Library),
+      // M_V11.BUILDINGS-EXPANSION (#77e) — 5 new buildings reuse the
+      // closest existing procmesh component until dedicated procmeshes
+      // land (Market→Granary shape, Embassy→Library, Lighthouse→
+      // Watchtower, MageTower→Watchtower, Workshop→Barracks).
+      // Per-building procmesh polish lands in follow-up commits.
+      Market: procedural(BUILDING_COMPONENTS.Granary),
+      Embassy: procedural(BUILDING_COMPONENTS.Library),
+      Lighthouse: procedural(BUILDING_COMPONENTS.Watchtower),
+      MageTower: procedural(BUILDING_COMPONENTS.Watchtower),
+      Workshop: procedural(BUILDING_COMPONENTS.Barracks),
     },
     rig: SHARED_RIG_TODAY,
     // Necropolis silhouette — gravestones cluster in front of the
