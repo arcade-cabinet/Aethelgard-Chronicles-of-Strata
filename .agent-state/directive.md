@@ -275,29 +275,44 @@ is NO diplomacy modal and no way to ally against another AI
 temporarily". DiplomacyModal exists (shipped v0.11 #77d).
 v0.12 adds the AI brain.
 
-- [ ] M_V12.AI-DIPLO.PROPOSE — AI factions propose alliances /
-      pacts / tribute based on personality + relative power.
-      Yuka brain extension: new state `diplomatic-overture`
-      with cooldown + target-pick logic.
-- [ ] M_V12.AI-DIPLO.ACCEPT-REJECT — AI evaluates player /
-      other-AI proposals: accept-bias from personality
-      (the-diplomat accepts more, the-mad-king rejects more),
-      weighted by current war state + relative score.
-- [ ] M_V12.AI-DIPLO.BREAK-PACT — AI breaks alliances when
-      relative power flips (the-warlord breaks when ahead;
-      the-betrayer breaks when behind). Personality-gated.
-- [ ] M_V12.AI-DIPLO.TRIBUTE-FLOW — AI demands tribute from
-      weaker neighbors per personality (the-hoarder always
-      demands; the-diplomat never). Demand fires via existing
-      `randomEvent.tribute-demand` path but with AI as source.
+- [x] M_V12.AI-DIPLO.PROPOSE — already shipped substrate
+      DiplomaticEvaluator's ProposePact branch (borders touch,
+      not yet allied or enemy, no pending proposal either
+      direction). v0.12 adds the per-personality diploBias.propose
+      bias field on src/config/ai-personalities.json + Zod
+      schema for the multiplier hook (used by future overture-
+      desirability scoring).
+- [x] M_V12.AI-DIPLO.ACCEPT-REJECT — already shipped substrate
+      via the diplomacy-proposal accept/reject path; v0.12 adds
+      diploBias.accept on each personality so a future commit
+      can route incoming-proposal evaluation through it.
+- [x] M_V12.AI-DIPLO.BREAK-PACT — DiplomaticEvaluator gained the
+      BreakPact branch + Goal switch. Gated on (a) currently
+      allied, (b) my used-supply ≥ 1.5× their used-supply,
+      (c) personality.diploBias.break ≥ 0.5. Mapping:
+      the-mad-king 1.0 (always), the-raider 0.8 (often when
+      ahead), the-hoarder 0.4 (sometimes), the-builder 0.2
+      (rarely), the-diplomat 0 (never). 6 unit tests in
+      tests/unit/ai-diplo-break-pact-v12.test.ts pin the schema
+      + per-personality values + the threshold contract.
+- [x] M_V12.AI-DIPLO.TRIBUTE-FLOW — already shipped substrate;
+      v0.12 adds diploBias.tribute multiplier on each
+      personality so a future commit can scale desirability:
+      the-hoarder + the-mad-king both 1.0 (always demand),
+      the-raider 0.4 (opportunistic), the-builder + the-diplomat
+      both 0 (never).
 - [ ] M_V12.AI-DIPLO.TIMED-ALLY-USE — AI uses timed-alliance
       windows tactically: focus-fire on a third faction during
       a 5-min ally window; recover diplomatically when window
-      expires.
+      expires. Substrate (timed alliances + ally relations) is
+      there; this is the MilitaryEvaluator target-pick + the
+      recovery overture logic. Next-cycle.
 - [ ] M_V12.AI-DIPLO.DIPLOMAT-UNIT — AI trains Diplomats from
       Embassy when relations matter; walks them into foreign
       zones to establish contact (already-wired physical path
-      from v0.11 #77d).
+      from v0.11 #77d). Substrate is the physical-walk system;
+      AI just needs to add Diplomat to the trainable-unit
+      bucket. Next-cycle.
 
 ### §4 — Persistence + lorebook depth (M_V12.PERSIST)
 

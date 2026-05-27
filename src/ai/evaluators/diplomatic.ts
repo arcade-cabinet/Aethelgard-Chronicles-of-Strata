@@ -21,8 +21,9 @@
  *   - H-5: const enum replaced with const object (isolatedModules safe)
  */
 import { Goal, GoalEvaluator } from 'yuka';
+import { personalityFor } from '@/config/ai-personalities';
 import type { AiPlayer } from '@/ai/ai-player';
-import { getRelation } from '@/game/diplomacy';
+import { getRelation, setRelation } from '@/game/diplomacy';
 import { bordersAreTouching, proposeNonAggressionPact } from '@/game/diplomacy-border';
 import { acceptTribute, canDemandTribute, hasHadContact } from '@/game/diplomacy-tribute';
 import { economyFor } from '@/game/economy-for';
@@ -32,6 +33,9 @@ const DiploAction = {
   ProposePact: 'propose-pact',
   DemandTribute: 'demand-tribute',
   AcceptTribute: 'accept-tribute',
+  // M_V12.AI-DIPLO.BREAK-PACT — break a current alliance when the
+  // personality favors it AND relative-power conditions match.
+  BreakPact: 'break-pact',
 } as const;
 type DiploAction = (typeof DiploAction)[keyof typeof DiploAction];
 
@@ -127,6 +131,21 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
           return { action: DiploAction.AcceptTribute, targetId: fc.id };
         }
       }
+
+      // 4. Break pact when ahead AND personality favors it.
+      //    M_V12.AI-DIPLO.BREAK-PACT — gated on:
+      //      - currently allied,
+      //      - relative-power gap: my used-supply ≥ 1.5× theirs,
+      //      - personality diploBias.break ≥ 0.5 threshold.
+      if (rel === 'ally') {
+        const theirEco = economyFor(game, fc.id);
+        const ratio = (myEco.usedSupply + 1) / (theirEco.usedSupply + 1);
+        const personality = personalityFor(owner.personalityKey);
+        const breakBias = personality.diploBias?.break ?? 0;
+        if (ratio >= 1.5 && breakBias >= 0.5) {
+          return { action: DiploAction.BreakPact, targetId: fc.id };
+        }
+      }
     }
 
     return null;
@@ -189,6 +208,15 @@ class DiplomaticGoal extends Goal<AiPlayer> {
           // Weaker AI accepts the dominant's implicit tribute claim.
           acceptTribute(game.diplomacy, myId, targetId, nowSeconds);
         }
+        break;
+      }
+      case DiploAction.BreakPact: {
+        // M_V12.AI-DIPLO.BREAK-PACT — setRelation(neutral) drops
+        // the relation row. Diplomatic-overture rejoin path stays
+        // open afterward (the alliance was broken, not vetoed
+        // permanently). A future cycle could record a -1 trust
+        // score the propose-pact gate consults.
+        setRelation(game.diplomacy, myId, targetId, 'neutral', nowSeconds);
         break;
       }
     }
