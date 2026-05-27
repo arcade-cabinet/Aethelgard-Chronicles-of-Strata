@@ -404,12 +404,20 @@ Android + iOS; hotkeys retired; tap+aria as the test surface".
 
 ### §6 — v0.12 release ladder
 
-- [ ] [WAIT-USER] M_V12.RELEASE.PR — open ONE pull request from
-      feat/v0.12-cycle to main. Per the autonomy doctrine
-      ("careful with shared-branch actions; never auto-PR
-      without explicit user authorization"), waits for user
-      sign-off to open. All §1-§5 substrate work shipped on
-      feat/v0.12-cycle and is ready for review.
+- [x] M_V12.RELEASE.PR — PR #90 opened at
+      https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/pull/90
+      after user `go` authorization. 14 commits: substrate +
+      6 chain expansions + chain-starter runtime + 8 effect-
+      kinds dispatcher + AI-DIPLO bias matrix + break-pact +
+      timed-ally + Diplomat-train + leaderboard fingerprint +
+      lorebook rich-card schema + gesture-map spec + haptics +
+      v0.11 squash regression re-land + App hooks-ordering fix.
+      1249 unit + 224 browser tests green pre-push.
+- [ ] [WAIT-CI] M_V12.RELEASE.CI-WATCH — watch PR #90 CI
+      (Build + test, Visual battery, Build debug APK,
+      Dependency review, CodeQL ×3, CodeRabbit). Address any
+      red checks; resolve any CodeRabbit threads via the same
+      forward-fix pattern from v0.11.
 - [ ] [WAIT-PR] M_V12.RELEASE.VISUAL-LOCK — re-bake every
       visual baseline against the v0.12 build; runs as part of
       the PR review cycle after PR opens. Gates on RELEASE.PR.
