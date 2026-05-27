@@ -13,7 +13,14 @@
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
-import { FactionTrait, HexPosition, PathQueue, Unit, WanderBehavior } from '@/ecs/components';
+import {
+  type FactionLike,
+  FactionTrait,
+  HexPosition,
+  PathQueue,
+  Unit,
+  WanderBehavior,
+} from '@/ecs/components';
 import { wanderSystem } from '@/ecs/systems/wander';
 
 function makeMob(
@@ -22,7 +29,14 @@ function makeMob(
 ) {
   const e = world.spawn(Unit, FactionTrait, HexPosition, WanderBehavior);
   e.set(Unit, { unitType: 'Goblin' });
-  e.set(FactionTrait, { faction: 'barbarian-camp-1' as 'player' | 'enemy' });
+  // CodeRabbit (PR #89): FactionTrait.faction is typed as the legacy
+  // 2-faction `Faction` for back-compat, but at runtime carries the
+  // wider FactionLike values (player-N / barbarian-camp-N) added by
+  // v0.6 N-player + v0.11 camps. Cast through FactionLike then narrow
+  // for the trait setter — the runtime value is correct; only the
+  // type-system cast is required.
+  const factionId: FactionLike = 'barbarian-camp-1';
+  e.set(FactionTrait, { faction: factionId as 'player' | 'enemy' });
   e.set(HexPosition, { q: anchor.q, r: anchor.r, level: anchor.level });
   e.set(WanderBehavior, {
     anchorQ: anchor.q,

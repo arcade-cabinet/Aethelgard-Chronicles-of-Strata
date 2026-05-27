@@ -10,7 +10,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import * as Components from '@/ecs/components';
-import { SERIALIZED_TRAITS } from '@/ecs/components';
+import { SERIALIZED_TRAITS } from '@/ecs/serialized-traits';
 
 /**
  * Traits intentionally NOT serialised — each name carries a reason.

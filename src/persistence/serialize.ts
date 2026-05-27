@@ -15,7 +15,7 @@
  */
 import type { Entity, World } from 'koota';
 import { createWorld, unpackEntity } from 'koota';
-import { SERIALIZED_TRAITS } from '@/ecs/components';
+import { SERIALIZED_TRAITS } from '@/ecs/serialized-traits';
 
 // ---------------------------------------------------------------------------
 // Registry — every trait that survives serialization.

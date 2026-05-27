@@ -14,7 +14,15 @@
  *     auto-stack into a 'rabble' formation (cap 6).
  */
 import type { Entity } from 'koota';
-import { AssignedJob, FactionTrait, HexPosition, Stack, StackMember, Unit } from '@/ecs/components';
+import {
+  AssignedJob,
+  BARBARIAN_UNIT_TYPES,
+  FactionTrait,
+  HexPosition,
+  Stack,
+  StackMember,
+  Unit,
+} from '@/ecs/components';
 import type { GameState } from './game-state';
 import { createStack, dissolveStack } from './stacking';
 
@@ -102,8 +110,11 @@ export function dissolveStaleWorkCrews(game: GameState): void {
   }
 }
 
-/** Set membership check for barbarian unit roles (vs player roles). */
-const BARBARIAN_ROLES = new Set<string>(['Goblin', 'Orc', 'Vampire', 'BlackKnight', 'Witch']);
+/** Set membership check for barbarian unit roles (vs player roles).
+ *  Derives from the shared BARBARIAN_UNIT_TYPES export so adding /
+ *  removing a barbarian unit in components.ts auto-propagates here
+ *  (CodeRabbit PR #89: was previously hardcoded + risked drift). */
+const BARBARIAN_ROLES = new Set<string>(BARBARIAN_UNIT_TYPES);
 
 /**
  * M_V11.STACK.MOB-RABBLE — auto-form Rabble stacks for barbarian-
