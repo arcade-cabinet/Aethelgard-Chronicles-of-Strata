@@ -152,6 +152,19 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     maxTurns: null,
     defaultPlayerCount: 2,
   },
+  // M_V11.WAVE-DEFENSE (#77h) — survival mode. Tight perimeter
+  // (small map), invulnerableBases FALSE so Palace death is the
+  // real lose condition; medium match-length holds all waves.
+  'wave-defense': {
+    mapSize: 'small',
+    matchLength: 'medium',
+    turnsMode: 'real-time',
+    mapType: 'balanced',
+    guidedMapGen: true,
+    invulnerableBases: false,
+    maxTurns: null,
+    defaultPlayerCount: 2,
+  },
 };
 
 /** Resolve the preset for a mode; defaults to border-clash for unknown input. */

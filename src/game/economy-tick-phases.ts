@@ -33,6 +33,7 @@ import { deathSystem } from '@/ecs/systems/death';
 import { diplomatContactSystem } from '@/ecs/systems/diplomat-contact';
 import { engineerRepairSystem } from '@/ecs/systems/engineer-repair';
 import { marketTradeSystem } from '@/ecs/systems/market-trade';
+import { waveDefenseSystem } from '@/ecs/systems/wave-defense';
 import { depositSystem, type ResourceDepositEvent } from '@/ecs/systems/deposit';
 import { encroachmentSystem } from '@/ecs/systems/encroachment';
 import { harvestSystem } from '@/ecs/systems/harvest';
@@ -100,6 +101,9 @@ export function tickClockPhase(game: GameState, delta: number): void {
   // per-60s ally-trade tick. Internal cadence guard; safe to
   // call every clock-phase tick.
   marketTradeSystem(game);
+  // M_V11.WAVE-DEFENSE (#77h) — survival mode: scripted enemy waves
+  // every 120s. Internal guard on game.mode + per-tick state.
+  waveDefenseSystem(game);
   // M_V7.PORTAL-STONES.TRIGGER — random-event roll for the rare
   // portal-stones placement (1-in-200 once map clock > 5min,
   // at-most-once-per-match). Mutates board.tiles on a successful

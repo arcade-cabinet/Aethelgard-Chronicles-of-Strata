@@ -100,6 +100,9 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       // M_V11.CAMPAIGN (#77g) — normal default; scripted chapter pressure
       // is the difficulty knob, not the AI scaling.
       campaign: 'normal',
+      // M_V11.WAVE-DEFENSE (#77h) — normal default; the wave script is
+      // the pacing, not the AI difficulty.
+      'wave-defense': 'normal',
     };
     setDifficulty(aiByMode[mode]);
     setTurnsModeState(preset.turnsMode);

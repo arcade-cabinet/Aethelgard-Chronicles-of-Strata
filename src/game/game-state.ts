@@ -197,7 +197,12 @@ export type GameMode =
   /** M_V11.CAMPAIGN (#77g) — narrative chapter mode. The chapter
    *  picker lives on the NewGameModal; CampaignOverlay drives a
    *  scripted objective queue specific to the active chapter id. */
-  | 'campaign';
+  | 'campaign'
+  /** M_V11.WAVE-DEFENSE (#77h) — survival mode. The player defends
+   *  the Palace against N scripted enemy waves of increasing
+   *  size over 15 minutes. Win = survive all waves; lose = Palace
+   *  destroyed. The barbarian-camp substrate spawns the waves. */
+  | 'wave-defense';
 
 /** The live state of one play session. */
 export interface GameState {

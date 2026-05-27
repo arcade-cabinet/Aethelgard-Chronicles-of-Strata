@@ -121,6 +121,17 @@ export const AI_PROFILES: Record<GameMode, AiProfile> = {
     militaryWeight: 0.7,
     defensiveBuildWeight: 0.4,
   },
+  // M_V11.WAVE-DEFENSE (#77h) — survival mode. The "AI faction" is
+  // a stand-in for the barbarian-camp threat; it doesn't really
+  // brain — the scripted wave-spawn system is the pressure. Keep
+  // the AI weights low so it doesn't compete with the wave logic
+  // for the player's attention.
+  'wave-defense': {
+    ...DEFAULT_PROFILE,
+    buildWeight: 0,
+    militaryWeight: 0,
+    defensiveBuildWeight: 0,
+  },
 };
 
 /** Lookup helper; defaults to border-clash. */

@@ -20,6 +20,7 @@ import { AtelierScreen } from '@/hud/AtelierScreen';
 import { CampaignOverlay } from '@/hud/CampaignOverlay';
 import { DiplomacyModal } from '@/hud/DiplomacyModal';
 import { TutorialOverlay } from '@/hud/TutorialOverlay';
+import { WaveDefenseOverlay } from '@/hud/WaveDefenseOverlay';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { FactionChips } from '@/hud/FactionChips';
@@ -407,6 +408,9 @@ function GameSession({
           game.mode === 'campaign'. Reads game.campaignChapter to
           pick which chapter's objective queue to drive. */}
       <CampaignOverlay game={game} />
+      {/* M_V11.WAVE-DEFENSE (#77h) — wave-progress pill; renders only
+          when game.mode === 'wave-defense'. */}
+      <WaveDefenseOverlay game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />

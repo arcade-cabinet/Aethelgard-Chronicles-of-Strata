@@ -23,6 +23,8 @@ export const MODES: ReadonlyArray<{ key: GameMode; label: string }> = [
   // M_V11.CAMPAIGN (#77g) — campaign sits second; narrative chapters
   // for players past the tutorial.
   { key: 'campaign', label: 'Campaign' },
+  // M_V11.WAVE-DEFENSE (#77h) — survival mode (defend Palace vs waves).
+  { key: 'wave-defense', label: 'Wave Defense' },
   { key: 'border-clash', label: 'Border Clash' },
   { key: 'frontier-raid', label: 'Frontier Raid' },
   { key: 'long-reign', label: 'Long Reign' },

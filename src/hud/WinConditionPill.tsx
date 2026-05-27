@@ -31,6 +31,8 @@ const COPY_FOR_MODE = {
   tutorial: '📖 Tutorial — follow the objectives',
   // M_V11.CAMPAIGN (#77g) — narrative chapter scenarios.
   campaign: '📜 Chapter — complete the objectives',
+  // M_V11.WAVE-DEFENSE (#77h) — survival mode.
+  'wave-defense': '🛡 Hold the Palace — survive all waves',
 } as const;
 
 export function WinConditionPill({ game }: { game: GameState }) {
