@@ -132,7 +132,7 @@ chains; v0.12 expands to 100+ via depth + breadth + meta-tiers.
       (16+16+12+12+12+8 across the 6 chains, 4 tiers × 3-4 specs
       per chain), 12 Atelier chain-starter meta-unlocks, 12
       per-chapter perks (4 × 3 chapters), totaling 130 upgrades
-      (overshoots the 100+ target with headroom). 7 new effect
+      (overshoots the 100+ target with headroom). 8 new effect
       kinds (buff-building / unlock-unit / unlock-building /
       unlock-formation / modify-cost / modify-supply / reveal-tier
       / grant-resource) on top of the existing 3 kinds; effect
@@ -514,9 +514,9 @@ Picked up after v0.12 ships.
 
 - v0.4 → v0.10 cycle PRDs at `docs/specs/PRD-v0.{4..10}.md`.
 - v0.11 spec discoveries at `docs/specs/200-genre-commitment.md`,
-  `docs/specs/201-stacking-and-formations.md`, and the to-be-
-  written `docs/specs/202-mobile-gestures.md` (M_V12.MOBILE.
-  GESTURE-MAP).
+  `docs/specs/201-stacking-and-formations.md`, and v0.12's new
+  `docs/specs/202-mobile-gestures.md` (landed M_V12.MOBILE.
+  GESTURE-MAP this cycle).
 - v0.11 final state: merged as #89 (squash commit 717ed2f) at
   2026-05-27. The full v0.11 ledger of `[x]` items lives in
   git history under the v0.11 cycle commits 60a..717ed2f.

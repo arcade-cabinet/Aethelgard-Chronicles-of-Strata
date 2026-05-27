@@ -52,6 +52,15 @@ describe('M_V12.AI-DIPLO — personality diploBias', () => {
       expect(typeof b?.accept).toBe('number');
       expect(typeof b?.tribute).toBe('number');
       expect(typeof b?.break).toBe('number');
+      // CodeRabbit MINOR fix: pin the 0..2 schema contract.
+      expect(b?.propose ?? -1).toBeGreaterThanOrEqual(0);
+      expect(b?.propose ?? 99).toBeLessThanOrEqual(2);
+      expect(b?.accept ?? -1).toBeGreaterThanOrEqual(0);
+      expect(b?.accept ?? 99).toBeLessThanOrEqual(2);
+      expect(b?.tribute ?? -1).toBeGreaterThanOrEqual(0);
+      expect(b?.tribute ?? 99).toBeLessThanOrEqual(2);
+      expect(b?.break ?? -1).toBeGreaterThanOrEqual(0);
+      expect(b?.break ?? 99).toBeLessThanOrEqual(2);
     }
   });
 });

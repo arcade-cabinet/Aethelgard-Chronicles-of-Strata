@@ -53,7 +53,7 @@ const PersonalitySchema = z.object({
   starvationThreshold: z.number().positive().optional(),
   /**
    * M_V12.AI-DIPLO — per-personality diplomacy bias multipliers
-   * (all 0..1, multiplied into DiplomaticEvaluator's per-action
+   * (all 0..2, multiplied into DiplomaticEvaluator's per-action
    * desirability). See docs/specs/PRD-v0.12.md §3 personality
    * matrix:
    *   propose : pact-overture frequency
