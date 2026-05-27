@@ -187,7 +187,13 @@ export type GameMode =
   | 'frontier-raid'
   | 'long-reign'
   | 'strata-wars'
-  | 'coexistence';
+  | 'coexistence'
+  /** M_V11.TUTORIAL (#77f) — guided 5-minute first-time-player
+   *  scenario. AI is passive (no military aggression), starting
+   *  resources are bumped, the TutorialOverlay drives an objective
+   *  queue that surfaces the next step (build Farm → House → train
+   *  Footman → research → open DiplomacyModal → ...). */
+  | 'tutorial';
 
 /** The live state of one play session. */
 export interface GameState {

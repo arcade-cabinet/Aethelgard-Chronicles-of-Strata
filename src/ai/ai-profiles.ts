@@ -102,6 +102,16 @@ export const AI_PROFILES: Record<GameMode, AiProfile> = {
     militaryWeight: 0,
     defensiveBuildWeight: 0,
   },
+  // M_V11.TUTORIAL (#77f) — passive AI. The tutorial is a
+  // teaching environment, not a combat encounter; the AI does
+  // basic economy buildup so the player sees a normal AI scaling,
+  // but never trains military or attacks.
+  tutorial: {
+    ...DEFAULT_PROFILE,
+    buildWeight: 0.6,
+    militaryWeight: 0,
+    defensiveBuildWeight: 0,
+  },
 };
 
 /** Lookup helper; defaults to border-clash. */

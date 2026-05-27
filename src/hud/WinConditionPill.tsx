@@ -27,6 +27,8 @@ const COPY_FOR_MODE = {
   'strata-wars': '🛡 Control the realm',
   'age-of-strata': '📜 Reach the final era',
   coexistence: '☮ Sandbox',
+  // M_V11.TUTORIAL (#77f) — guided 5-min teaching scenario.
+  tutorial: '📖 Tutorial — follow the objectives',
 } as const;
 
 export function WinConditionPill({ game }: { game: GameState }) {

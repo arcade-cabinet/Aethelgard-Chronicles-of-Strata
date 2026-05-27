@@ -17,6 +17,9 @@ import type { Difficulty, GameMode } from '@/game/game-state';
  * flips to "Custom Realm" once any control is altered.
  */
 export const MODES: ReadonlyArray<{ key: GameMode; label: string }> = [
+  // M_V11.TUTORIAL (#77f) — tutorial sits first so it's the
+  // most prominent option for first-time players.
+  { key: 'tutorial', label: 'Tutorial' },
   { key: 'border-clash', label: 'Border Clash' },
   { key: 'frontier-raid', label: 'Frontier Raid' },
   { key: 'long-reign', label: 'Long Reign' },

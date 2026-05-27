@@ -124,6 +124,21 @@ export const MODE_PRESETS: Record<GameMode, ModePreset> = {
     maxTurns: null,
     defaultPlayerCount: 2,
   },
+  // M_V11.TUTORIAL (#77f) — guided 5-min first-time-player run.
+  // Small balanced map, fast onset, invulnerable bases so the AI
+  // can't end the tutorial early. The TutorialOverlay drives the
+  // objective queue; AI is gated to passive (no military aggression)
+  // via the difficulty='easy' default + ai-profiles tutorial entry.
+  tutorial: {
+    mapSize: 'small',
+    matchLength: 'short',
+    turnsMode: 'real-time',
+    mapType: 'balanced',
+    guidedMapGen: true,
+    invulnerableBases: true,
+    maxTurns: null,
+    defaultPlayerCount: 2,
+  },
 };
 
 /** Resolve the preset for a mode; defaults to border-clash for unknown input. */

@@ -18,6 +18,7 @@ import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
 import { CriticalWarning } from '@/hud/CriticalWarning';
 import { AtelierScreen } from '@/hud/AtelierScreen';
 import { DiplomacyModal } from '@/hud/DiplomacyModal';
+import { TutorialOverlay } from '@/hud/TutorialOverlay';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { FactionChips } from '@/hud/FactionChips';
@@ -398,6 +399,9 @@ function GameSession({
           on the 'aethelgard:open-atelier' event (SystemMenu entry +
           auto-fired from match-end). */}
       <AtelierScreen persistence={persistence} />
+      {/* M_V11.TUTORIAL (#77f) — guided overlay; renders only when
+          game.mode === 'tutorial' (the component guards internally). */}
+      <TutorialOverlay game={game} />
       <KeyboardShortcuts game={game} />
       <CriticalWarning game={game} />
       <WeatherIndicator game={game} />
@@ -474,6 +478,15 @@ export function App() {
   // appear. Re-runs are harmless — persistence.list is a cheap query.
   useMemo(() => {
     void persistence.list().then((saves) => setHasSave(saves.length > 0));
+  }, []);
+
+  // M_V11.TUTORIAL (#77f) — listen for the tutorial overlay's
+  // "Start a real match" button. Fires window event → opens the
+  // NewGameModal.
+  useEffect(() => {
+    const onOpenNewGame = () => setShowNewGame(true);
+    window.addEventListener('aethelgard:open-new-game', onOpenNewGame);
+    return () => window.removeEventListener('aethelgard:open-new-game', onOpenNewGame);
   }, []);
 
   // M_POLISH3.S.3 — re-detect saves when the auto-save fires AND

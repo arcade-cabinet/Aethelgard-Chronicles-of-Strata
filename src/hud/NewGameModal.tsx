@@ -95,6 +95,8 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
       'long-reign': 'normal',
       'strata-wars': 'normal',
       coexistence: 'easy',
+      // M_V11.TUTORIAL (#77f) — easy difficulty (no early military pressure).
+      tutorial: 'easy',
     };
     setDifficulty(aiByMode[mode]);
     setTurnsModeState(preset.turnsMode);
