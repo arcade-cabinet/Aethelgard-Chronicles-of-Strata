@@ -137,11 +137,19 @@ chains; v0.12 expands to 100+ via depth + breadth + meta-tiers.
       unlock-formation / modify-cost / modify-supply / reveal-tier
       / grant-resource) on top of the existing 3 kinds; effect
       resolver extension is M_V12.DEPTH.EFFECT-KINDS below.
-- [ ] M_V12.DEPTH.EFFECT-KINDS — extend the effect resolver in
-      src/game/research.ts (or new sibling) to handle the 7 new
-      effect kinds. Each kind gets a unit test pin. Substrate
-      before content — must land before EFFECT-KINDS chain
-      expansions can validate their entries' runtime effects.
+- [x] M_V12.DEPTH.EFFECT-KINDS — substrate landed. Extended the
+      Zod schema in src/config/discoveries.ts with 8 new effect
+      kinds (buff-building / unlock-unit / unlock-building /
+      unlock-formation / modify-cost / modify-supply / reveal-tier
+      / grant-resource), gave each its DiscoveryEffect TS variant,
+      added DiscoveryApplyCtx interface to src/rules/discoveries.ts
+      (carries economy + flags + buildingOverrides for the new
+      kinds), extended the dispatcher in src/rules/discovery-
+      registry.ts with the 8 new cases + Unit import for the
+      buff-combatant `filter` arg. apply signature widened to
+      apply(world, ctx?). 8 unit tests in
+      tests/unit/discovery-effect-kinds-v12.test.ts pin each
+      kind's mutation. Test count 1203 → 1211.
 - [ ] M_V12.DEPTH.CHAIN-EXPANSION — implement the Economy chain
       first (16-row depth × 4 tiers + branches). Each row gets a
       registry entry, an in-game effect (modifier on harvest
