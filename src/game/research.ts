@@ -116,6 +116,9 @@ const DEFAULT_DISCOVERY_POOL: readonly string[] = [
   // rewards too. Gates downstream systems the moment the id lands in
   // research.purchased; no apply effect needed at grant time.
   'trade-route',
-  'cartography',
+  // M_V12.DEPTH.DIPLOMACY-CHAIN — cartography moved to Lore I
+  // (added when LORE-CHAIN lands); first-contact is the Diplomacy
+  // / Relations I head that fits the camp-reward shape (flag-only).
+  'first-contact',
   'iron-tools',
 ];

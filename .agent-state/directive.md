@@ -185,10 +185,23 @@ chains; v0.12 expands to 100+ via depth + breadth + meta-tiers.
       tests/unit/military-chain-v12.test.ts (4 pins). Stale id
       refs in discoveries-v6.test.ts + DiscoveriesPanel.tsx +
       Engineering's rampart-line-end prereq edge all fixed.
-- [ ] M_V12.DEPTH.DIPLOMACY-CHAIN — tier upgrades that unlock
-      embassy actions: tribute demands, alliance proposals,
-      trade routes, peace treaties. Each ties into the AI
-      diplomacy work in §3.
+- [x] M_V12.DEPTH.DIPLOMACY-CHAIN — restructured from 5 entries
+      (cartography/envoys/shared-codex/spies/world-charter) to
+      12 (4 tiers × 3 specs: relations / trade / tribute) per
+      the upgrade-graph doc. cartography moves out (Lore I when
+      LORE-CHAIN lands). Relations: first-contact / diplomatic-
+      corps / royal-marriage / universal-amnesty. Trade:
+      exchange-policy / trade-treaty (multiply-harvest 1.10) /
+      shared-codex / trade-monopoly. Tribute: levy-tradition /
+      hostage-keep / extortion-doctrine / iron-fist. Each spec
+      stands alone (no cross-spec prereq edges). research.ts
+      DEFAULT_DISCOVERY_POOL camp-reward pool updated to swap
+      cartography → first-contact (kept the flag-only contract);
+      discoveries-v6.test.ts updated to assert first-contact's
+      flag-only effect. Test count 1219 → 1223 with
+      tests/unit/diplomacy-chain-v12.test.ts (4 pins). The
+      runtime effects of these flags are §3 AI-DIPLO work
+      (Yuka brain consumes the flags + the new modals).
 - [ ] M_V12.DEPTH.MAGIC-CHAIN — Mage Tower-gated upgrades: aura
       radius, dps, secondary damage type, cooldown reduction.
       Plus wizard-unit unlocks (Wizard already exists; add

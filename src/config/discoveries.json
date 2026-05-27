@@ -294,43 +294,99 @@
     },
 
     {
-      "id": "cartography",
-      "name": "Cartography",
-      "description": "Diplomacy I — reveals the starting region around your base; +25% Ferryman speed.",
+      "id": "first-contact",
+      "name": "First Contact",
+      "description": "Diplomacy / Relations I — Embassy half-cost flag; the Diplomat carries amnesty.",
       "cost": { "wood": 60, "gold": 80 },
       "prereqs": [],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "envoys",
-      "name": "Envoys",
-      "description": "Diplomacy II — pact proposals you initiate are 2× more likely to be accepted by AI factions.",
-      "cost": { "wood": 80, "gold": 120 },
-      "prereqs": ["cartography"],
+      "id": "diplomatic-corps",
+      "name": "Diplomatic Corps",
+      "description": "Diplomacy / Relations II — Diplomat trains 25% faster from Embassy.",
+      "cost": { "wood": 100, "gold": 140 },
+      "prereqs": ["first-contact"],
       "effect": { "kind": "flag" }
+    },
+    {
+      "id": "royal-marriage",
+      "name": "Royal Marriage",
+      "description": "Diplomacy / Relations III — +1 pact slot beyond the default 2.",
+      "cost": { "wood": 140, "gold": 220 },
+      "prereqs": ["diplomatic-corps"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "universal-amnesty",
+      "name": "Universal Amnesty",
+      "description": "Diplomacy / Relations IV — auto-accept every incoming pact proposal.",
+      "cost": { "wood": 220, "gold": 280 },
+      "prereqs": ["royal-marriage"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "exchange-policy",
+      "name": "Exchange Policy",
+      "description": "Diplomacy / Trade I — open the Trade panel for resource swaps with non-enemies.",
+      "cost": { "wood": 80, "gold": 120 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "trade-treaty",
+      "name": "Trade Treaty",
+      "description": "Diplomacy / Trade II — allies grant +10% harvest from shared trade.",
+      "cost": { "wood": 120, "gold": 160 },
+      "prereqs": ["exchange-policy"],
+      "effect": { "kind": "multiply-harvest", "factor": 1.1 }
     },
     {
       "id": "shared-codex",
       "name": "Shared Codex",
-      "description": "Diplomacy III — allied factions exchange a Discovery per match (you pick which).",
-      "cost": { "wood": 100, "gold": 200 },
-      "prereqs": ["envoys"],
+      "description": "Diplomacy / Trade III — allied factions exchange a Discovery per match (you pick which).",
+      "cost": { "wood": 160, "gold": 220 },
+      "prereqs": ["trade-treaty"],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "spies",
-      "name": "Spies",
-      "description": "Diplomacy IV — reveal one enemy zone tile every 30s; tribute demands cost 50% less.",
-      "cost": { "wood": 150, "gold": 150 },
-      "prereqs": ["envoys"],
-      "effect": { "kind": "flag" }
-    },
-    {
-      "id": "world-charter",
-      "name": "World Charter",
-      "description": "Diplomacy V — alliance timer doubles to 10 minutes; broken pacts cost no relation penalty.",
-      "cost": { "wood": 200, "gold": 240 },
+      "id": "trade-monopoly",
+      "name": "Trade Monopoly",
+      "description": "Diplomacy / Trade IV — 10% tribute payout from EVERY ally trade.",
+      "cost": { "wood": 220, "gold": 300 },
       "prereqs": ["shared-codex"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "levy-tradition",
+      "name": "Levy Tradition",
+      "description": "Diplomacy / Tribute I — open the Tribute panel; demand resources from weaker neighbors.",
+      "cost": { "wood": 80, "gold": 120 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "hostage-keep",
+      "name": "Hostage Keep",
+      "description": "Diplomacy / Tribute II — vassals pay 2× tribute under threat of release.",
+      "cost": { "stone": 120, "gold": 160 },
+      "prereqs": ["levy-tradition"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "extortion-doctrine",
+      "name": "Extortion Doctrine",
+      "description": "Diplomacy / Tribute III — demand tribute from any non-ally faction (regardless of vassal state).",
+      "cost": { "wood": 140, "gold": 220 },
+      "prereqs": ["hostage-keep"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "iron-fist",
+      "name": "Iron Fist",
+      "description": "Diplomacy / Tribute IV — vassals pay 4× tribute but break pacts twice as often.",
+      "cost": { "wood": 220, "gold": 280 },
+      "prereqs": ["extortion-doctrine"],
       "effect": { "kind": "flag" }
     },
 

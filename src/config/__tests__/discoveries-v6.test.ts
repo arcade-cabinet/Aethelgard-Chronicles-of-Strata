@@ -13,7 +13,7 @@ import { DISCOVERIES, discoveryById } from '@/rules/discovery-registry';
 
 const NEW_IDS = [
   'trade-route',
-  'cartography',
+  'first-contact',
   'iron-tools',
   'sapper-training',
   'monumental-architecture',
@@ -56,7 +56,12 @@ describe('M_V7.DISCOVERY-TREE.V6 — new tech entries', () => {
   });
 
   it('trade-route + cartography + siege-engineering + monumental-architecture are flag-only', () => {
-    for (const id of ['trade-route', 'cartography', 'sapper-training', 'monumental-architecture']) {
+    for (const id of [
+      'trade-route',
+      'first-contact',
+      'sapper-training',
+      'monumental-architecture',
+    ]) {
       const cfg = DISCOVERIES_CONFIG.discoveries.find((c) => c.id === id);
       expect(cfg?.effect.kind, `${id} should be flag-only`).toBe('flag');
     }
