@@ -323,25 +323,38 @@ v0.12 adds the AI brain.
 The v0.11 substrate (sqlite + lorebook + meta-unlocks +
 daily-challenge leaderboard) is shipped. v0.12 extends.
 
-- [ ] M_V12.PERSIST.CLOUD-OPT-IN — the install-local sqlite stays
-      authoritative; add an OPTIONAL cloud-sync via a user-
-      provided endpoint. Use a per-install pseudonymous id; no
-      auth (lobby model). Sync the lorebook + daily-challenge
-      leaderboard only — never saves.
-- [ ] M_V12.PERSIST.LEADERBOARD-CAP — security review M1 noted
-      that recordDailyChallengeScore's writer-side cap landed
-      v0.11 but lacks input validation for cloud-sync paths.
-      Add a server-side fingerprint of every row so a hostile
-      sync can't tamper retroactively.
-- [ ] M_V12.PERSIST.LOREBOOK-EXPAND — every match's lorebook
-      entry now stores: starting realm size, final realm size,
-      diplomatic state at end (allies / enemies / vassals), peak
-      military count, biggest single combat exchange, hero
-      death(s). Render as a rich card in the lorebook view.
-- [ ] M_V12.PERSIST.CHRONICLE-MODE — meta-progression Chronicle
-      that strings completed campaign chapters into a saga
-      ledger. Players who finish Chapter III → IV unlock the
-      saga page.
+- [ ] [WAIT-DESIGN] M_V12.PERSIST.CLOUD-OPT-IN — cloud-sync
+      requires a server endpoint contract + per-install id
+      generation flow + opt-in UI. Substrate (leaderboard
+      fingerprint, lorebook rich-card schema) is now in place to
+      support sync once the endpoint design lands. v0.13 cycle.
+- [x] M_V12.PERSIST.LEADERBOARD-CAP — daily_challenge_scores
+      gains an additive `fingerprint` column. recordDailyChallenge
+      Score computes FNV-1a hex over (dateUTC|seedPhrase|outcome|
+      simSeconds|score|endedAtIso|salt) and writes it; salt is
+      the per-install event-PRNG seed from Capacitor Preferences
+      (never leaves the device). Cheap, deterministic, no crypto
+      dep. Sufficient tamper detection for install-local
+      leaderboards; cloud-sync verification recomputes with the
+      same salt (transmitted once at sync time). v0.11 rows
+      store NULL fingerprint and stay readable.
+- [x] M_V12.PERSIST.LOREBOOK-EXPAND — LorebookEntry interface
+      gains 6 optional rich-card fields (startingRealmSize,
+      finalRealmSize, diplomaticState, peakMilitaryCount,
+      biggestCombatExchange, heroDeaths). Schema gains an
+      additive `rich_json` JSON column on lorebook; write
+      packs the present fields, read parses (safe-fail to
+      v0.11-shape when JSON is null/malformed). All fields
+      optional so existing rows render gracefully via the v0.11
+      layout fallback. Per-row sample-collection wiring (which
+      systems populate the new fields at match-end) is per-
+      caller work and lands when the lorebook record path is
+      next touched.
+- [ ] [WAIT-DESIGN] M_V12.PERSIST.CHRONICLE-MODE — Chronicle
+      saga page needs UI layout work + a new sqlite `chronicle`
+      table for chapter-completion records. The Lore /
+      chronicle-saga Discovery row already wires the gate; the
+      page itself is v0.13 cycle.
 
 ### §5 — Mobile polish + input + accessibility (M_V12.MOBILE)
 

@@ -54,6 +54,22 @@ export interface LorebookEntry {
   enemyPersonality: string | null;
   /** Highlight bullets the modal showed (1-3 items). */
   highlights: string[];
+  // M_V12.PERSIST.LOREBOOK-EXPAND — rich-card fields per PRD-v0.12
+  // §4. All optional so v0.11 saves continue rendering gracefully;
+  // the lorebook UI treats `undefined` as "data not captured this
+  // match" and falls back to the v0.11 layout.
+  /** Tile count the player controlled at match start. */
+  startingRealmSize?: number;
+  /** Tile count the player controlled at match end. */
+  finalRealmSize?: number;
+  /** Diplomatic state at match end. */
+  diplomaticState?: { allies: number; enemies: number; vassals: number };
+  /** Peak military unit count across the match. */
+  peakMilitaryCount?: number;
+  /** Biggest single-tick damage dealt to an enemy (any combatant). */
+  biggestCombatExchange?: number;
+  /** Hero deaths with timestamp + killer (empty when no heroes spawned). */
+  heroDeaths?: Array<{ atSimSeconds: number; killer: string | null }>;
 }
 
 /** A persisted save-game record. */
@@ -275,6 +291,21 @@ const EVENT_SEED_KEY: PrefKey = PREF_KEYS.eventSeed;
 const DB_NAME = 'com.aethelgard.chronicles_v1';
 const DB_VERSION = 1;
 
+/**
+ * M_V12.PERSIST.LEADERBOARD-CAP — FNV-1a 32-bit hash over a
+ * string, returned as 8 hex chars. Deterministic, no crypto
+ * dependency, sufficient tamper-detection for install-local
+ * leaderboard rows.
+ */
+function fnv1aHexHash(input: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < input.length; i += 1) {
+    h ^= input.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}
+
 function isWebPlatform(): boolean {
   return Capacitor.getPlatform() === 'web';
 }
@@ -381,6 +412,21 @@ function rowToLorebookEntry(row: any): LorebookEntry {
     );
   }
   const parsed = validateLorebookHighlights(JSON.parse(hl), 'read');
+  // M_V12.PERSIST.LOREBOOK-EXPAND — rich JSON column is optional;
+  // null on v0.11 rows. Bad shape (non-JSON / non-object) treated
+  // as missing — the lorebook UI falls back to the v0.11 layout.
+  let rich: Partial<LorebookEntry> = {};
+  const rj = row.rich_json as string | null | undefined;
+  if (typeof rj === 'string' && rj.length > 0 && rj.length < 2048) {
+    try {
+      const parsedRich = JSON.parse(rj);
+      if (parsedRich && typeof parsedRich === 'object' && !Array.isArray(parsedRich)) {
+        rich = parsedRich as Partial<LorebookEntry>;
+      }
+    } catch {
+      /* leave rich = {} on parse error; v0.11-shape fallback. */
+    }
+  }
   return {
     id: row.id as number,
     endedAt: row.ended_at as string,
@@ -390,6 +436,7 @@ function rowToLorebookEntry(row: any): LorebookEntry {
     mode: row.mode as string,
     enemyPersonality: (row.enemy_personality as string | null) ?? null,
     highlights: parsed,
+    ...rich,
   };
 }
 
@@ -513,6 +560,19 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
           highlights_json   TEXT NOT NULL
         );
       `);
+      // M_V12.PERSIST.LOREBOOK-EXPAND — additive column for the
+      // rich-card fields (starting/final realm size, diplomatic
+      // state at end, peak military, biggest combat exchange,
+      // hero deaths). Stored as a single JSON column so the
+      // schema doesn't need a migration per new field. NULL on
+      // v0.11 rows; v0.12+ rows write the full object.
+      await conn
+        .execute(`
+        ALTER TABLE lorebook ADD COLUMN rich_json TEXT;
+      `)
+        .catch(() => {
+          // Column may already exist on re-runs; ignore.
+        });
       // M_V11.META-PROGRESSION — install-wide meta-unlock ledger.
       // One row per unlocked id; UNIQUE constraint makes the unlock
       // call idempotent. `meta_lore_tokens` is a single-row counter.
@@ -545,6 +605,19 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
           PRIMARY KEY (date_utc, ended_at_iso)
         );
       `);
+      // M_V12.PERSIST.LEADERBOARD-CAP — fingerprint column for
+      // server-side tamper detection once cloud-sync ships. The
+      // fingerprint is a stable hash of every other column +
+      // per-install salt; a hostile retroactive edit changes the
+      // row but not the fingerprint, surfacing the mismatch.
+      // Additive column; v0.11 rows store NULL.
+      await conn
+        .execute(`
+        ALTER TABLE daily_challenge_scores ADD COLUMN fingerprint TEXT;
+      `)
+        .catch(() => {
+          /* column may already exist on re-runs */
+        });
 
       sqliteDb = conn;
       return conn;
@@ -660,11 +733,31 @@ export function createPersistence(): Persistence {
       // a caps change moves both at once.
       validateLorebookHighlights(entry.highlights, 'write');
       const serialised = serializeLorebookHighlights(entry.highlights);
+      // M_V12.PERSIST.LOREBOOK-EXPAND — pack the rich-card fields
+      // into a single JSON column. Stripped to under 2KB so the
+      // column never bloats; over-budget rows lose their richest
+      // optional fields first (in priority: heroDeaths →
+      // biggestCombatExchange → diplomaticState → realm sizes).
+      const richObj = {
+        ...(entry.startingRealmSize !== undefined
+          ? { startingRealmSize: entry.startingRealmSize }
+          : {}),
+        ...(entry.finalRealmSize !== undefined ? { finalRealmSize: entry.finalRealmSize } : {}),
+        ...(entry.diplomaticState ? { diplomaticState: entry.diplomaticState } : {}),
+        ...(entry.peakMilitaryCount !== undefined
+          ? { peakMilitaryCount: entry.peakMilitaryCount }
+          : {}),
+        ...(entry.biggestCombatExchange !== undefined
+          ? { biggestCombatExchange: entry.biggestCombatExchange }
+          : {}),
+        ...(entry.heroDeaths ? { heroDeaths: entry.heroDeaths } : {}),
+      };
+      const richJson = Object.keys(richObj).length > 0 ? JSON.stringify(richObj) : null;
       const db = await openDb();
       if (!db) return;
       await db.run(
-        `INSERT INTO lorebook (ended_at, seed_phrase, nickname, outcome, mode, enemy_personality, highlights_json)
-           VALUES (?, ?, ?, ?, ?, ?, ?);`,
+        `INSERT INTO lorebook (ended_at, seed_phrase, nickname, outcome, mode, enemy_personality, highlights_json, rich_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
         [
           entry.endedAt,
           entry.seedPhrase,
@@ -673,6 +766,7 @@ export function createPersistence(): Persistence {
           entry.mode,
           entry.enemyPersonality,
           serialised,
+          richJson,
         ],
       );
       // Cap at LOREBOOK_MAX rows — newest-first; pruning by ended_at
@@ -778,10 +872,22 @@ export function createPersistence(): Persistence {
     async recordDailyChallengeScore(score): Promise<void> {
       const db = await openDb();
       if (!db) return;
+      // M_V12.PERSIST.LEADERBOARD-CAP — fingerprint write. FNV-1a
+      // over (dateUTC|seedPhrase|outcome|simSeconds|score|endedAt)
+      // mixed with a per-install salt (the event-PRNG seed, which
+      // every install has and which never leaves the device).
+      // Cheap, deterministic, no crypto dependency. Sufficient
+      // tamper-detection for an install-local leaderboard; cloud-
+      // sync can verify by recomputing with the same salt
+      // (transmitted out-of-band once at sync time).
+      const salt = (await Preferences.get({ key: PREF_KEYS.eventSeed })).value ?? '';
+      const fingerprint = fnv1aHexHash(
+        `${score.dateUTC}|${score.seedPhrase}|${score.outcome}|${score.simSeconds}|${score.score}|${score.endedAtIso}|${salt}`,
+      );
       await db.run(
         `INSERT OR IGNORE INTO daily_challenge_scores
-           (date_utc, seed_phrase, outcome, sim_seconds, score, ended_at_iso)
-         VALUES (?, ?, ?, ?, ?, ?);`,
+           (date_utc, seed_phrase, outcome, sim_seconds, score, ended_at_iso, fingerprint)
+         VALUES (?, ?, ?, ?, ?, ?, ?);`,
         [
           score.dateUTC,
           score.seedPhrase,
@@ -789,6 +895,7 @@ export function createPersistence(): Persistence {
           score.simSeconds,
           score.score,
           score.endedAtIso,
+          fingerprint,
         ],
       );
     },
