@@ -673,6 +673,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                     <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 4 }}>
                       <button
                         type="button"
+                        id={`selection-select-all-${u.unitType.toLowerCase()}`}
                         onClick={() => selectAllOfType(f, u.unitType)}
                         data-testid={`select-all-${u.unitType.toLowerCase()}`}
                         aria-label={`Select all ${u.unitType}s`}
@@ -697,6 +698,7 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                       {isPeon && (
                         <button
                           type="button"
+                          id="selection-select-all-peons-biome"
                           onClick={() => selectAllPeonsOfBiome(f)}
                           data-testid="select-all-peons-biome"
                           aria-label="Select all peons on this biome"
@@ -831,7 +833,15 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                         if (entity && !active) {
                           if (
                             spec.unlockDiscovery !== null &&
-                            !ownedDiscoveries.has(spec.unlockDiscovery as never)
+                            // `ownedDiscoveries` is `Set<ResearchId>` (narrow
+                            // union); `spec.unlockDiscovery` is the broader
+                            // string the formation registry stores. We do a
+                            // string-comparison membership test via Array.from
+                            // to avoid the previous `as never` escape hatch
+                            // (CodeRabbit PR #89).
+                            !Array.from(ownedDiscoveries).some(
+                              (d) => (d as string) === spec.unlockDiscovery,
+                            )
                           ) {
                             disabled = true;
                             reason = `Requires Discovery: ${spec.unlockDiscovery}`;
@@ -841,7 +851,9 @@ export function SelectionPanel({ game, onBeginBuild }: SelectionPanelProps) {
                           <button
                             key={spec.id}
                             type="button"
+                            id={`selection-formation-${spec.id}`}
                             aria-pressed={active}
+                            aria-label={`${spec.name} formation${disabled ? ' (locked)' : ''}`}
                             onClick={() => changeFormation(spec.id)}
                             disabled={disabled}
                             title={reason}

@@ -52,7 +52,18 @@ function findWalkableWithNeighbor(board: ReturnType<typeof generateBoard>) {
   throw new Error('no walkable tile with neighbor');
 }
 
-function spawnCamp(world: World, factionId: string, tile: { q: number; r: number; level: number }) {
+// CodeRabbit (PR #89): widened factionId to the actual barbarian-camp
+// shape so the spawnCamp helper doesn't need a narrowing `as` cast.
+// FactionTrait.faction is a string union at the trait layer (the schema
+// uses a permissive `as Faction` since v0.6 N-player), so any string id
+// is valid at runtime; the type alias just spells out the test's intent.
+type TestFactionId = 'player' | 'enemy' | `barbarian-camp-${number}`;
+
+function spawnCamp(
+  world: World,
+  factionId: TestFactionId,
+  tile: { q: number; r: number; level: number },
+) {
   const e = world.spawn(FactionBase, Health, HexPosition, EnemySpawner, FactionTrait);
   e.set(FactionTrait, { faction: factionId as 'player' | 'enemy' });
   e.set(HexPosition, { q: tile.q, r: tile.r, level: tile.level });
@@ -77,6 +88,18 @@ function mockGame(world: World): GameState {
   } as unknown as GameState;
 }
 
+// CodeRabbit (PR #89): single helper for the faction-id read so the
+// `as unknown as string | undefined` cast lives in exactly one place.
+// FactionTrait.faction is typed as `Faction` ('player' | 'enemy') at
+// the trait layer but holds any string id at runtime (N-player +
+// barbarian-camp-N ids), so a widening read is unavoidable in tests
+// that work with non-legacy ids.
+function getFactionId(e: {
+  get: (t: typeof FactionTrait) => { faction: string } | undefined;
+}): string | undefined {
+  return e.get(FactionTrait)?.faction as unknown as string | undefined;
+}
+
 function countWith<T>(world: World, trait: T): number {
   let n = 0;
   for (const _ of world.query(trait as never)) n++;
@@ -96,7 +119,7 @@ describe('camps integration (M_V11.CAMPS.TESTS)', () => {
     // The camp now has at least one mob.
     let mobs = 0;
     for (const e of world.query(Unit, FactionTrait)) {
-      const f = e.get(FactionTrait)?.faction as unknown as string | undefined;
+      const f = getFactionId(e);
       if (f === 'barbarian-camp-1') mobs++;
     }
     expect(mobs).toBeGreaterThanOrEqual(1);
@@ -105,7 +128,7 @@ describe('camps integration (M_V11.CAMPS.TESTS)', () => {
     //    add it so the death pipeline runs.
     let mob: ReturnType<typeof world.spawn> | null = null;
     for (const e of world.query(Unit, FactionTrait, Health)) {
-      const f = e.get(FactionTrait)?.faction as unknown as string | undefined;
+      const f = getFactionId(e);
       if (f === 'barbarian-camp-1') {
         mob = e;
         break;
@@ -146,7 +169,7 @@ describe('camps integration (M_V11.CAMPS.TESTS)', () => {
     spawnSystem(world, board, 200, 100, 'normal', () => 0.5);
     let aliveCampMobsBefore = 0;
     for (const e of world.query(Unit, FactionTrait, Health)) {
-      const f = e.get(FactionTrait)?.faction as unknown as string | undefined;
+      const f = getFactionId(e);
       if (f !== 'barbarian-camp-1') continue;
       const hp = e.get(Health)?.current ?? 0;
       if (hp > 0) {
@@ -159,7 +182,7 @@ describe('camps integration (M_V11.CAMPS.TESTS)', () => {
 
     // Kill camp.
     for (const c of world.query(FactionBase, Health, FactionTrait)) {
-      const f = c.get(FactionTrait)?.faction as unknown as string | undefined;
+      const f = getFactionId(c);
       if (f === 'barbarian-camp-1') {
         c.set(Health, { current: 0, max: 200 });
         break;
@@ -169,7 +192,7 @@ describe('camps integration (M_V11.CAMPS.TESTS)', () => {
     // Cascade ran: all camp mobs flipped to 0 HP (still alive in ECS
     // until DEATH_DELAY ticks; the trait flip is the cascade trigger).
     for (const e of world.query(Unit, FactionTrait, Health)) {
-      const f = e.get(FactionTrait)?.faction as unknown as string | undefined;
+      const f = getFactionId(e);
       if (f !== 'barbarian-camp-1') continue;
       expect(e.get(Health)?.current ?? -1).toBe(0);
     }

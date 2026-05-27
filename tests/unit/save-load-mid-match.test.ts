@@ -10,16 +10,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { AiPlayer } from '@/ai/ai-player';
-import {
-  Combatant,
-  EnemySpawner,
-  FactionTrait,
-  Health,
-  HexPosition,
-  Stack,
-  Unit,
-  WanderBehavior,
-} from '@/ecs/components';
+import { EnemySpawner, FactionTrait, Stack, Unit, WanderBehavior } from '@/ecs/components';
 import { runEconomyTick, startGame } from '@/game/game-state';
 import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
 
@@ -48,12 +39,9 @@ function snapshot(game: ReturnType<typeof startGame>): InvariantSnapshot {
     const fac = e.get(FactionTrait)?.faction as unknown as string | undefined;
     if (fac?.startsWith('barbarian-camp-')) mobCount++;
   }
-  for (const _ of game.world.query(Combatant, FactionTrait, HexPosition, Health)) {
-    // counted as Combatant; redundant with unitCount but loops the trait.
-  }
-  for (const _ of game.world.query(Stack)) {
-    // count stacks
-  }
+  // CodeRabbit (PR #89): dropped two no-op query loops over Combatant
+  // and Stack that did no counting. The real stack count happens in the
+  // next single loop.
   let stackCount = 0;
   for (const _ of game.world.query(Stack)) stackCount++;
   for (const _ of game.world.query(WanderBehavior)) wandererCount++;

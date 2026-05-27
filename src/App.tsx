@@ -286,9 +286,16 @@ function GameSession({
     const onFocusPalace = () => {
       const key = game.palaceKey;
       if (!key) return;
-      const [qStr, rStr] = key.split(',');
-      const q = Number.parseInt(qStr ?? '0', 10);
-      const r = Number.parseInt(rStr ?? '0', 10);
+      // CodeRabbit (PR #89): guard malformed keys instead of falling
+      // back to (0,0). Parsing "garbled" with parseInt('garbled', 10)
+      // returns NaN; the old code's `?? '0'` only handled an undefined
+      // SEGMENT, not a non-numeric one — so a malformed key would yank
+      // the camera to tile (0,0) silently. Bail out cleanly instead.
+      const parts = key.split(',');
+      if (parts.length !== 2) return;
+      const q = Number.parseInt(parts[0] ?? '', 10);
+      const r = Number.parseInt(parts[1] ?? '', 10);
+      if (!Number.isFinite(q) || !Number.isFinite(r)) return;
       window.dispatchEvent(
         new CustomEvent('aethelgard:focus-tile', {
           detail: { q, r, distance: 6 },

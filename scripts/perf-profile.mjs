@@ -56,7 +56,7 @@ function p(durations, frac) {
   return sorted[i] ?? 0;
 }
 
-// 4 player factions, all AI-driven.
+// 2 factions (player + enemy), both AI-driven for the profile run.
 const game = startGame({
   seedPhrase: 'profile-alpha-bravo',
   mapSize: 12,

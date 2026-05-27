@@ -75,25 +75,25 @@ export function autoFormWorkCrews(game: GameState): void {
  * converge again. Cheap O(work-crew-stacks).
  */
 export function dissolveStaleWorkCrews(game: GameState): void {
+  // CodeRabbit (PR #89): pre-index member-id → AssignedJob.state once
+  // per sweep so the per-member check is O(1) instead of running a
+  // full world.query for each member of each work-crew.
+  const memberJobState = new Map<number, string | undefined>();
+  for (const m of game.world.query(StackMember, AssignedJob)) {
+    memberJobState.set(m.id(), m.get(AssignedJob)?.state);
+  }
+
   const toDissolve: Entity[] = [];
   for (const stackEntity of game.world.query(Stack)) {
     const stack = stackEntity.get(Stack);
     if (!stack || stack.formationId !== 'work-crew') continue;
     let stillHarvesting = true;
     for (const memberId of stack.members) {
-      let found = false;
-      for (const m of game.world.query(StackMember, AssignedJob)) {
-        if (m.id() !== memberId) continue;
-        found = true;
-        if (m.get(AssignedJob)?.state !== 'HARVESTING') {
-          stillHarvesting = false;
-        }
+      const state = memberJobState.get(memberId);
+      if (state === undefined || state !== 'HARVESTING') {
+        stillHarvesting = false;
         break;
       }
-      // A member without AssignedJob (e.g. just finished + cleared
-      // the job) ALSO counts as no-longer-harvesting.
-      if (!found) stillHarvesting = false;
-      if (!stillHarvesting) break;
     }
     if (!stillHarvesting) toDissolve.push(stackEntity);
   }

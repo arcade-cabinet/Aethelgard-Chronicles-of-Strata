@@ -12,7 +12,7 @@
  * detector AND the per-tick cession mutation.
  */
 import type { FactionId } from '@/config/factions';
-import { type DiplomacyState, setRelation, tributaryDominant } from './diplomacy';
+import { type DiplomacyState, relationKey, setRelation, tributaryDominant } from './diplomacy';
 import { addResource, type GameEconomy } from './economy';
 
 /** Supply ratio threshold for a clearly-stronger faction. */
@@ -59,8 +59,9 @@ export function canDemandTribute(
  * narrative "they know each other exists" flag.
  */
 export function hasHadContact(diplomacy: DiplomacyState, a: FactionId, b: FactionId): boolean {
-  const key = a < b ? `${a}|${b}` : `${b}|${a}`;
-  return diplomacy.relations.has(key);
+  // Use the canonical relationKey helper so the sorted-pair convention
+  // stays single-source (was duplicated inline; CodeRabbit PR #89).
+  return diplomacy.relations.has(relationKey(a, b));
 }
 
 /**

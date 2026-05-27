@@ -312,7 +312,7 @@ reference." Plus: "we're gonna entirely remove GLB buildings",
 "Props and units we'll keep GLBs for now as that seems to be
 working much better", "we'll also keep the graveyard pieces for
 horde camps", "for now just each human/AI player will be built
-from lower order structural components > buildings > skins."
+from lower-order structural components > buildings > skins."
 
 ### Scope
 

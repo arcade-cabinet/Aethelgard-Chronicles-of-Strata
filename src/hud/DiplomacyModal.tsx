@@ -144,18 +144,28 @@ const dangerButtonStyle: CSSProperties = {
 
 export function DiplomacyModal({ game }: DiplomacyModalProps) {
   const [open, setOpen] = useState(false);
-  const [, setVersion] = useState(0);
+  // CodeRabbit (PR #89): include version in row memo deps so each
+  // bump() after an action mutates the diplomacy substrate in place,
+  // the next memo recomputation actually re-runs buildRows(game)
+  // against the post-mutation state.
+  const [version, setVersion] = useState(0);
   const bump = () => setVersion((v) => v + 1);
   useEffect(() => {
     const onOpen = () => setOpen(true);
     window.addEventListener('aethelgard:open-diplomacy', onOpen);
     return () => window.removeEventListener('aethelgard:open-diplomacy', onOpen);
   }, []);
-  // biome-ignore lint/correctness/useExhaustiveDependencies: `open` is intentionally a dependency so rows recompute each time the modal is reopened.
-  const rows = useMemo(() => buildRows(game), [game, open]);
-  const now = game.clock.elapsed;
+  // `open` recomputes when the modal opens; `version` is bumped after
+  // each action so the post-mutation state reflects immediately.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: open + version are intentional deps; buildRows reads game in place.
+  const rows = useMemo(() => buildRows(game), [game, open, version]);
 
+  // CodeRabbit (PR #89): read game.clock.elapsed inside each handler so
+  // a modal that has been open for a while uses the LATEST sim time
+  // when the player acts. Capturing `now` at render-time backdates
+  // proposals + alliance expiry by however long the modal sat open.
   const propose = (fc: FactionId) => {
+    const now = game.clock.elapsed;
     proposeNonAggressionPact(game.diplomacyProposals, game.diplomacy, PLAYER, fc, now);
     bump();
   };
@@ -165,6 +175,7 @@ export function DiplomacyModal({ game }: DiplomacyModalProps) {
     // play without locking themselves into a permanent pact. The
     // alliance auto-expires via tickAllianceExpiry; the player can
     // also Break Pact early.
+    const now = game.clock.elapsed;
     acceptProposal(game.diplomacyProposals, game.diplomacy, fc, PLAYER, now);
     // acceptProposal sets relation 'ally' with no expiry — overwrite
     // with the same relation + an expiry stamp.
@@ -176,22 +187,27 @@ export function DiplomacyModal({ game }: DiplomacyModalProps) {
     bump();
   };
   const declareWar = (fc: FactionId) => {
+    const now = game.clock.elapsed;
     setRelation(game.diplomacy, PLAYER, fc, 'enemy', now);
     bump();
   };
   const breakPact = (fc: FactionId) => {
+    const now = game.clock.elapsed;
     setRelation(game.diplomacy, PLAYER, fc, 'neutral', now);
     bump();
   };
   const demandTribute = (fc: FactionId) => {
+    const now = game.clock.elapsed;
     acceptTribute(game.diplomacy, fc, PLAYER, now);
     bump();
   };
   const payTribute = (fc: FactionId) => {
+    const now = game.clock.elapsed;
     acceptTribute(game.diplomacy, PLAYER, fc, now);
     bump();
   };
   const refuse = (fc: FactionId) => {
+    const now = game.clock.elapsed;
     refuseTribute(game.diplomacy, PLAYER, fc, now);
     bump();
   };

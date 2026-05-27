@@ -43,7 +43,8 @@ export function Column({
           const fz = Math.sin(angle) * (radius * 0.95);
           return (
             <mesh
-              key={`flute-${angle.toFixed(3)}`}
+              // biome-ignore lint/suspicious/noArrayIndexKey: flutes are a fixed-length deterministic loop with no reordering; index is the stable key.
+              key={`flute-${i}`}
               position={[fx, baseY + shaftHeight / 2, fz]}
               rotation={[0, -angle, 0]}
               castShadow

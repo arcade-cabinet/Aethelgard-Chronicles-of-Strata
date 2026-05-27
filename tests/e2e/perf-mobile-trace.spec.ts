@@ -3,14 +3,16 @@
  *
  * Drives the game on a Pixel-7 viewport (412×915), runs a 60s sim,
  * records frame timings via the Performance API, asserts the
- * 95th-percentile frame interval is under the 33ms (~30fps) floor.
+ * 95th-percentile frame interval is under the 50ms (~20fps) floor.
  * Writes a JSON snapshot under artifacts/perf/mobile-{mode}.json.
  *
  * Strict-22ms-mean (≥45fps) is the production target; this test
- * gates on the 33ms floor so flake noise + WebGL-on-headless
- * overhead don't fail the suite. The full Pixel-5a emulator run
- * with `pnpm cap:run:android` is the final gate; this is the
- * desktop CI proxy.
+ * gates on the 50ms floor so flake noise + WebGL-on-headless
+ * overhead don't fail the suite. (Was previously documented as a
+ * 33ms gate, but the actual assertion sits at 50ms — title /
+ * comments / assertion all aligned here per CodeRabbit PR #89.)
+ * The full Pixel-5a emulator run with `pnpm cap:run:android` is the
+ * final production gate; this test is the desktop CI proxy.
  *
  * Run via JOURNEY=1 pnpm test:e2e tests/e2e/perf-mobile-trace.spec.ts
  */
@@ -25,7 +27,7 @@ test.beforeAll(() => {
 });
 
 test.describe('M_V11.E2E.PERF-MOBILE', () => {
-  test('60s sim @ Pixel-7 viewport — 95th-percentile frame ≤ 33ms', async ({ page }) => {
+  test('60s sim @ Pixel-7 viewport — 95th-percentile frame ≤ 50ms', async ({ page }) => {
     test.setTimeout(180_000);
     // Pixel-7 viewport.
     await page.setViewportSize({ width: 412, height: 915 });

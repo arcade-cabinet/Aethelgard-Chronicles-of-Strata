@@ -18,7 +18,15 @@
  */
 import { describe, expect, it } from 'vitest';
 import { AiPlayer } from '@/ai/ai-player';
-import { Combatant, EnemySpawner, FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
+import {
+  Combatant,
+  EnemySpawner,
+  type FactionLike,
+  FactionTrait,
+  Health,
+  HexPosition,
+  Unit,
+} from '@/ecs/components';
 import { runEconomyTick, startGame } from '@/game/game-state';
 
 describe('AIVAI 200s bake (M_V11.E2E.AIVAI-200S-BAKE)', () => {
@@ -47,7 +55,7 @@ describe('AIVAI 200s bake (M_V11.E2E.AIVAI-200S-BAKE)', () => {
     for (const e of game.world.query(Unit, FactionTrait, HexPosition, Health)) {
       const hex = e.get(HexPosition);
       const hp = e.get(Health);
-      const fac = e.get(FactionTrait)?.faction as unknown as string | undefined;
+      const fac = e.get(FactionTrait)?.faction as unknown as FactionLike | undefined;
       expect(Number.isFinite(hex?.q ?? Number.NaN)).toBe(true);
       expect(Number.isFinite(hex?.r ?? Number.NaN)).toBe(true);
       expect(hp?.current ?? -1).toBeGreaterThanOrEqual(0);
@@ -72,7 +80,7 @@ describe('AIVAI 200s bake (M_V11.E2E.AIVAI-200S-BAKE)', () => {
     // baseline interval means at minimum 1 mob should have spawned).
     // Allow 0 if the camp had no walkable neighbour to spawn on.
     for (const camp of game.world.query(EnemySpawner, FactionTrait)) {
-      const fac = camp.get(FactionTrait)?.faction as unknown as string | undefined;
+      const fac = camp.get(FactionTrait)?.faction as unknown as FactionLike | undefined;
       const spawner = camp.get(EnemySpawner);
       if (!fac?.startsWith('barbarian-camp-')) continue;
       // mobCap > 0 → it's a camp, not a legacy enemy base. liveMobs

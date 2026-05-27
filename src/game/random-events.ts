@@ -39,9 +39,10 @@
  * shared cooldown the previous implementation used.
  */
 import { QUAKE_TUNING, WILDFIRE_TUNING } from '@/config/mapgen';
+import { hexDistance, parseHexKey } from '@/core/hex';
 import { buildNavGraph } from '@/core/pathfinding';
 import type { Rng } from '@/core/rng';
-import { FactionTrait, Unit } from '@/ecs/components';
+import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import { triggerQuake } from '@/ecs/systems/quake';
 import { igniteWildfire } from '@/ecs/systems/wildfire';
 import { announce } from '@/hud/aria-live-bus';
@@ -142,37 +143,47 @@ function countPlayerPeons(game: GameState): number {
   return n;
 }
 
-/** Count enemy military units within `radius` of any player-controlled tile. */
+/** Count enemy military units within `radius` hex steps of ANY
+ *  player-controlled tile. Iterates enemies, parses each player tile
+ *  key once into (q, r) for an O(enemies × playerTiles) scan with hex
+ *  distance — for typical boards this is well under 1ms/tick. */
 function countEnemyMilitaryNearPlayer(game: GameState, radius: number): number {
   const playerZone = game.zones.player;
   if (!playerZone || playerZone.controlled.size === 0) return 0;
-  // Cheap check: any enemy Unit (non-Peon) whose tile is ≤radius from any
-  // player-controlled tile counts. Linear in enemies × player tiles, which
-  // is fine for typical board sizes.
+  // Pre-parse player tiles once per call.
+  const playerCoords: Array<{ q: number; r: number }> = [];
+  for (const key of playerZone.controlled) {
+    playerCoords.push(parseHexKey(key));
+  }
   let n = 0;
-  for (const e of game.world.query(Unit, FactionTrait)) {
+  for (const e of game.world.query(Unit, FactionTrait, HexPosition)) {
     if (e.get(FactionTrait)?.faction !== 'enemy') continue;
     const u = e.get(Unit);
     if (!u || u.unitType === 'Peon') continue;
-    // Find any player tile within `radius` hex steps.
-    // We don't have per-entity HexPosition imported here cleanly; the
-    // existing zone tracker already approximates by which tiles each
-    // faction holds. For now, count enemy military units globally and
-    // gate on player owning ANY ground (proxy for "the enemy CAN reach
-    // us"). Tighter spatial check is a follow-up.
-    n += 1;
-    void radius;
+    const pos = e.get(HexPosition);
+    if (!pos) continue;
+    for (const pc of playerCoords) {
+      if (hexDistance(pos.q, pos.r, pc.q, pc.r) <= radius) {
+        n += 1;
+        break;
+      }
+    }
   }
   return n;
 }
 
-/** True iff player has no enemy-relation with any other faction. */
+/** True iff the human player faction is at peace with every other
+ *  faction. Iterates relation entries by id (NOT substring) so a war
+ *  between two AI factions named "player-3" / "player-4" doesn't
+ *  spuriously make the human player look at war. */
 function isPlayerAtPeace(game: GameState): boolean {
   const rels = game.diplomacy.relations;
   if (rels.size === 0) return true;
   for (const [key, rel] of rels) {
-    if (!key.includes('player')) continue;
-    if (rel.relation === 'enemy') return false;
+    if (rel.relation !== 'enemy') continue;
+    const parts = key.split('|');
+    if (parts.length !== 2) continue;
+    if (parts[0] === 'player' || parts[1] === 'player') return false;
   }
   return true;
 }

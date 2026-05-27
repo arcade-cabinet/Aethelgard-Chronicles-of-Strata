@@ -84,6 +84,19 @@ async function settle() {
   await new Promise((r) => setTimeout(r, 600));
 }
 
+// CodeRabbit (PR #89) flagged that `expect(page.screenshot(...)).resolves
+// .toBeTruthy()` only verifies the screenshot call resolved; it doesn't
+// fail on a visual regression. The actual regression guard in this repo
+// is the BAKED PNG file committed to git under __screenshots__/ — when a
+// rebake (--update) writes a different byte-stream the git diff surfaces
+// the change in the PR review. `page.screenshot({path})` writes the file;
+// the toBeTruthy() asserts the write succeeded. A proper toHaveScreenshot
+// matcher requires the Playwright test-runner (which gates tests/e2e/);
+// this file runs under vitest-browser-playwright which doesn't expose
+// that matcher. The committed-PNG pattern is the project's established
+// visual contract — see also tests/harness/biome-swatch.browser.test.tsx
+// and the rest of the procmesh-* harness battery.
+
 describe('procmesh buildings — tier-2 visual baselines (player palette)', () => {
   it('Palace', async () => {
     render(

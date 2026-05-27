@@ -219,12 +219,21 @@ export function setStackFormation(
   // current combinedHp ratio so a half-dead stack stays half-dead
   // after the switch (don't free-heal them).
   const stats = spec.combine(agg);
+  // CodeRabbit (PR #89): clamp projected HP so a positive stack can't
+  // round to 0 (Math.round of a fractional ratio*maxHp could land just
+  // under 0.5) and so an upward-drifting ratio doesn't exceed maxHp.
+  // A stack that had any HP keeps at least 1; a zero-max stack dies.
   const ratio = s.combinedMaxHp > 0 ? s.combinedHp / s.combinedMaxHp : 1;
+  const rawProjected = Math.round(stats.combinedMaxHp * ratio);
+  const nextHp =
+    stats.combinedMaxHp <= 0
+      ? 0
+      : Math.min(stats.combinedMaxHp, Math.max(s.combinedHp > 0 ? 1 : 0, rawProjected));
   stack.set(Stack, {
     ...s,
     formationId: targetId,
     combinedMaxHp: stats.combinedMaxHp,
-    combinedHp: Math.round(stats.combinedMaxHp * ratio),
+    combinedHp: nextHp,
     combinedDps: stats.combinedDps,
   });
   return { ok: true, stack };

@@ -10,18 +10,17 @@
  *    bleeds through from `findFaction(game.factions, faction).color`.
  *
  * 2. Thicker hex outline ring: for each stack member tile, render a
- *    second wider line ring beneath the unit so a player scanning the
- *    map can tell stacked units from solo at a glance — the regular
- *    UnitHexOutline draws a thin per-unit ring; this layer adds a
- *    bolder "this tile is part of a stack" ring on top of it.
+ *    small inset hex-shaped band so a player scanning the map can
+ *    tell stacked units from solo at a glance.
  *
- * Throttled to 5 Hz like UnitHexOutline — stack composition changes
- * mid-turn (member-deaths, formation switches) but not so fast that
- * 60 Hz redraws matter.
+ * Updates on every parent render — collectStacks is O(stacks +
+ * members) with the pre-indexed member lookup; the geometry rebuild
+ * is a useMemo so it only re-allocates when the underlying tile set
+ * changes. (Was previously rebuilt on a 5 Hz useFrame loop which
+ * churned Float32Arrays every 200ms even when nothing moved —
+ * CodeRabbit PR #89.)
  */
-import { useFrame } from '@react-three/fiber';
-import { useMemo, useRef } from 'react';
-import { BufferAttribute, type BufferGeometry, type LineSegments } from 'three';
+import { useMemo } from 'react';
 import { findFaction } from '@/config/factions';
 import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexCorner } from '@/core/hex';
@@ -47,6 +46,10 @@ const BADGE_Y_OFFSET = 1.45;
 /** Outline lift above tile surface; matches UnitHexOutline so the
  *  stack ring sits flush with the per-unit ring rather than floating. */
 const STACK_RING_LIFT = 0.025;
+/** Inset multipliers — outer + inner edge of the band. UnitHexOutline
+ *  uses 0.7; we draw a wider band 0.78..0.92 around it. */
+const STACK_RING_OUTER_INSET = 0.92;
+const STACK_RING_INNER_INSET = 0.78;
 
 interface StackVisualData {
   stackId: number;
@@ -58,33 +61,37 @@ interface StackVisualData {
   memberTiles: Array<{ x: number; y: number; z: number }>;
 }
 
-/** Pull stack snapshots out of the ECS each tick. Cheap (a few stacks
- *  per match, max ~20 members each). */
+/** Pull stack snapshots out of the ECS each tick. Pre-indexes member
+ *  entities by id so the per-stack inner loop is O(1) instead of
+ *  scanning the full world.query per member (CodeRabbit PR #89). */
 function collectStacks(game: GameState): StackVisualData[] {
+  // Index every StackMember entity by its koota id once.
+  const memberIndex = new Map<
+    number,
+    { hex: { q: number; r: number; level: number }; faction: string | undefined }
+  >();
+  for (const m of game.world.query(HexPosition, FactionTrait, StackMember)) {
+    const hex = m.get(HexPosition);
+    const fac = m.get(FactionTrait)?.faction;
+    if (!hex) continue;
+    memberIndex.set(m.id(), { hex, faction: fac });
+  }
+
   const out: StackVisualData[] = [];
   for (const stackEntity of game.world.query(Stack)) {
     const stack = stackEntity.get(Stack);
     if (!stack || stack.members.length === 0) continue;
-    // Pick a centroid: the first member with HexPosition. Stacks
-    // pin all members to the same tile in practice (createStack
-    // lerps stragglers in), so any member's tile reads as the
-    // stack centroid.
     let centroid: { x: number; y: number; z: number } | null = null;
     let faction = 'player';
     const memberTiles: StackVisualData['memberTiles'] = [];
     for (const memberId of stack.members) {
-      const member = game.world
-        .query(HexPosition, FactionTrait, StackMember)
-        .find((m) => m.id() === memberId);
-      if (!member) continue;
-      const hex = member.get(HexPosition);
-      const fac = member.get(FactionTrait)?.faction;
-      if (!hex) continue;
-      const w = axialToWorld(hex.q, hex.r);
-      const pt = { x: w.x, y: hex.level * TILE_HEIGHT, z: w.z };
+      const m = memberIndex.get(memberId);
+      if (!m) continue;
+      const w = axialToWorld(m.hex.q, m.hex.r);
+      const pt = { x: w.x, y: m.hex.level * TILE_HEIGHT, z: w.z };
       memberTiles.push(pt);
       if (!centroid) centroid = pt;
-      if (fac) faction = fac;
+      if (m.faction) faction = m.faction;
     }
     if (!centroid) continue;
     out.push({
@@ -98,61 +105,54 @@ function collectStacks(game: GameState): StackVisualData[] {
   return out;
 }
 
-/** Bolder hex outline beneath each stack member tile.
- *  Sits at INSET 0.85 (UnitHexOutline uses 0.7), so it draws a wider
- *  ring outside the per-unit ring rather than overlapping it. */
+/** Stack outline ring drawn as a real triangle band (not a line) so
+ *  width reads consistently across browsers / GPUs — WebGL clamps
+ *  LineBasicMaterial.linewidth to 1px regardless of the value, so
+ *  the previous lineSegments approach silently rendered as a thin
+ *  line on every desktop/mobile target (CodeRabbit PR #89). The
+ *  triangle band approach gives a fixed-thickness ring at any
+ *  zoom level. */
 function StackOutlineRings({
-  game,
   factionColor,
   tiles,
 }: {
-  game: GameState;
   factionColor: string;
   tiles: Array<{ x: number; y: number; z: number }>;
 }) {
-  const ref = useRef<LineSegments>(null);
-  const lastUpdate = useRef(0);
-  // Initial geometry from the tiles snapshot we already have.
-  const initialPositions = useMemo(() => buildPositions(tiles), [tiles]);
-  useFrame(({ clock }) => {
-    if (!ref.current) return;
-    const now = clock.getElapsedTime();
-    if (now - lastUpdate.current < 0.2) return;
-    lastUpdate.current = now;
-    // Re-pull stack tiles for THIS faction-color group. The parent
-    // component re-runs collectStacks every render, but the throttled
-    // refresh here picks up sub-render moves (a member walking onto
-    // the stack centroid mid-frame).
-    const geo = ref.current.geometry as BufferGeometry;
-    geo.setAttribute('position', new BufferAttribute(initialPositions, 3));
-    // Touch `game` so future readers wire in if needed — currently
-    // the parent component drives recomputation by re-mounting.
-    void game;
-  });
+  const positions = useMemo(() => buildBandPositions(tiles), [tiles]);
   return (
-    <lineSegments ref={ref}>
+    <mesh>
       <bufferGeometry attach="geometry">
-        <bufferAttribute attach="attributes-position" args={[initialPositions, 3]} />
+        <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
-      <lineBasicMaterial color={factionColor} linewidth={3} transparent opacity={0.85} />
-    </lineSegments>
+      <meshBasicMaterial color={factionColor} transparent opacity={0.85} side={2} />
+    </mesh>
   );
 }
 
-/** Helper to build a Float32Array of edge positions for the stack
- *  ring (inset 0.85 — slightly outside UnitHexOutline's 0.7 inset). */
-function buildPositions(tiles: Array<{ x: number; y: number; z: number }>): Float32Array {
+/** Build a Float32Array of triangle positions for a hex-shaped band
+ *  per tile (12 triangles × 3 verts × 3 floats = 108 floats/tile).
+ *  Two concentric hexes (insets OUTER and INNER); each segment
+ *  becomes a 2-triangle quad. */
+function buildBandPositions(tiles: Array<{ x: number; y: number; z: number }>): Float32Array {
   const verts: number[] = [];
   for (const t of tiles) {
     const y = t.y + STACK_RING_LIFT;
     for (let i = 0; i < 6; i++) {
-      const c1 = getHexCorner(t.x, t.z, i);
-      const c2 = getHexCorner(t.x, t.z, (i + 1) % 6);
-      const ix1 = t.x + (c1.x - t.x) * 0.85;
-      const iz1 = t.z + (c1.z - t.z) * 0.85;
-      const ix2 = t.x + (c2.x - t.x) * 0.85;
-      const iz2 = t.z + (c2.z - t.z) * 0.85;
-      verts.push(ix1, y, iz1, ix2, y, iz2);
+      const cOut1 = getHexCorner(t.x, t.z, i);
+      const cOut2 = getHexCorner(t.x, t.z, (i + 1) % 6);
+      const ox1 = t.x + (cOut1.x - t.x) * STACK_RING_OUTER_INSET;
+      const oz1 = t.z + (cOut1.z - t.z) * STACK_RING_OUTER_INSET;
+      const ox2 = t.x + (cOut2.x - t.x) * STACK_RING_OUTER_INSET;
+      const oz2 = t.z + (cOut2.z - t.z) * STACK_RING_OUTER_INSET;
+      const ix1 = t.x + (cOut1.x - t.x) * STACK_RING_INNER_INSET;
+      const iz1 = t.z + (cOut1.z - t.z) * STACK_RING_INNER_INSET;
+      const ix2 = t.x + (cOut2.x - t.x) * STACK_RING_INNER_INSET;
+      const iz2 = t.z + (cOut2.z - t.z) * STACK_RING_INNER_INSET;
+      // tri 1: out1, out2, in1
+      verts.push(ox1, y, oz1, ox2, y, oz2, ix1, y, iz1);
+      // tri 2: out2, in2, in1
+      verts.push(ox2, y, oz2, ix2, y, iz2, ix1, y, iz1);
     }
   }
   return new Float32Array(verts);
@@ -164,8 +164,8 @@ function buildPositions(tiles: Array<{ x: number; y: number; z: number }>): Floa
  */
 export function StackRender({ game }: { game: GameState }) {
   // Re-collect each render — Canvas re-renders when game-state mutates
-  // (entities spawn/despawn) so this is cheap. The inner outline ring
-  // throttles its own buffer rebuilds.
+  // (entities spawn/despawn) so this is cheap with the pre-indexed
+  // member lookup.
   const stacks = collectStacks(game);
   return (
     <group name="stack-render">
@@ -182,7 +182,7 @@ export function StackRender({ game }: { game: GameState }) {
               fontSize={0.5}
               outlineWidth={0.05}
             />
-            <StackOutlineRings game={game} factionColor={color} tiles={s.memberTiles} />
+            <StackOutlineRings factionColor={color} tiles={s.memberTiles} />
           </group>
         );
       })}

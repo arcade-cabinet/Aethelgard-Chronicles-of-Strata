@@ -99,6 +99,17 @@ export const BARBARIAN_UNIT_TYPES: readonly UnitType[] = [
 export type Faction = 'player' | 'enemy';
 
 /**
+ * M_V11.FACTION.WIDE-ID — the actual string the FactionTrait.faction
+ * field can hold at runtime. The legacy 2-faction code path uses
+ * Faction; v0.6 N-player adds `player-3..N` registry ids; v0.11
+ * barbarian-camp work adds `barbarian-camp-${number}` ids for
+ * camp-owned mobs. Tests that work with non-legacy ids should accept
+ * this widened type to avoid the `as unknown as string | undefined`
+ * cast pattern CodeRabbit (PR #89) called out.
+ */
+export type FactionLike = Faction | `player-${number}` | `barbarian-camp-${number}`;
+
+/**
  * The complete set of factions in the current game. M_REGISTRY.16 —
  * the single iteration target for any per-faction loop (science
  * trickle, deposit pump, job routing, AI tick). Every literal

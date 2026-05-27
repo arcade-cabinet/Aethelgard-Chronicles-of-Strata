@@ -127,7 +127,11 @@ export function spawnSystem(
     // capped (barbarian-camp) spawners: 90-180s band. Uncapped
     // spawners (the legacy enemy base) keep their fixed cadence.
     if (spawner.mobCap > 0 && eventRng) {
-      spawner.spawnInterval = 90 + Math.floor(eventRng() * 91);
+      // CodeRabbit (PR #89): caller-provided eventRng is unbounded in
+      // type; clamp to [0, 1) before deriving the interval so a buggy
+      // or test PRNG can't push spawnInterval outside 90–180s.
+      const roll = Math.min(0.999999, Math.max(0, eventRng()));
+      spawner.spawnInterval = 90 + Math.floor(roll * 91);
     }
     if (spawner.mobCap > 0) spawner.liveMobs += 1;
     const role = pickEnemyRole(spawner.spawnCount, gameElapsed);

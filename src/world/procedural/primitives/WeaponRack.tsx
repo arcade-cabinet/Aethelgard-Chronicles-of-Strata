@@ -45,7 +45,12 @@ export function WeaponRack({
         const x = -width / 2 + 0.04 + t * (width - 0.08);
         const shaftHeight = height * 0.95;
         return (
-          <group key={`weapon-${t.toFixed(3)}`} position={[x, 0, 0.02]} rotation={[0.05, 0, 0]}>
+          <group
+            // biome-ignore lint/suspicious/noArrayIndexKey: weapons are a fixed-length deterministic loop; index is the stable key.
+            key={`weapon-${i}`}
+            position={[x, 0, 0.02]}
+            rotation={[0.05, 0, 0]}
+          >
             <mesh position={[0, shaftHeight / 2, 0]} castShadow>
               <cylinderGeometry args={[0.008, 0.008, shaftHeight, 5]} />
               <meshStandardMaterial {...shaftMaterial} />
