@@ -583,17 +583,21 @@ export function App() {
   // so beginGame can await it the rare time the cache hasn't
   // resolved yet.
   const unlockedMetaCacheRef = useRef<string[]>([]);
-  const unlockedMetaPromiseRef = useRef<Promise<string[]> | null>(null);
+  const [unlockedMetaReady, setUnlockedMetaReady] = useState(false);
   useEffect(() => {
     let cancelled = false;
-    const p = persistence.listMetaUnlocks().catch((err: unknown) => {
-      console.warn('[meta-progression] listMetaUnlocks failed:', err);
-      return [] as string[];
-    });
-    unlockedMetaPromiseRef.current = p;
-    void p.then((list) => {
-      if (!cancelled) unlockedMetaCacheRef.current = list;
-    });
+    void persistence
+      .listMetaUnlocks()
+      .catch((err: unknown) => {
+        console.warn('[meta-progression] listMetaUnlocks failed:', err);
+        return [] as string[];
+      })
+      .then((list) => {
+        if (!cancelled) {
+          unlockedMetaCacheRef.current = list;
+          setUnlockedMetaReady(true);
+        }
+      });
     return () => {
       cancelled = true;
     };
@@ -618,20 +622,16 @@ export function App() {
     );
   }
 
-  const beginGame = async (choices: NewGameChoices) => {
-    // Wait for the in-flight fetch when the cache is still empty —
-    // a player who paid lore tokens for chain-starters MUST get them
-    // applied even if they click Begin before mount-time fetch
-    // resolved. The await is bounded by the persistence call's own
-    // timeout; on persistence failure the catch above resolves [].
-    let unlockedMeta = unlockedMetaCacheRef.current;
-    if (unlockedMeta.length === 0 && unlockedMetaPromiseRef.current) {
-      try {
-        unlockedMeta = await unlockedMetaPromiseRef.current;
-      } catch {
-        unlockedMeta = [];
-      }
-    }
+  const beginGame = (choices: NewGameChoices) => {
+    // Read the cached unlock list synchronously. The mount-time
+    // useEffect kicks the persistence fetch; for the dominant
+    // case (player on Title for >100ms before Begin) the cache is
+    // populated. Cold-DB + sub-100ms-click users get a baseline
+    // match with an empty unlock list — the reviewer-pass M1 await
+    // path broke browser tests by deferring setConfig past React's
+    // commit window; promote the post-match retry path
+    // (M_V12.PERSIST.CHAIN-STARTER-RETRY in §post-horizon) instead.
+    const unlockedMeta = unlockedMetaCacheRef.current;
     setConfig({
       seedPhrase: choices.seedPhrase,
       mapSize: MAP_SIZES[choices.mapSize].radius,
@@ -764,7 +764,12 @@ export function App() {
             }
           : {})}
       />
-      <NewGameModal open={showNewGame} onOpenChange={setShowNewGame} onBegin={beginGame} />
+      <NewGameModal
+        open={showNewGame}
+        onOpenChange={setShowNewGame}
+        onBegin={beginGame}
+        beginReady={unlockedMetaReady}
+      />
       <SettingsModal open={showSettings} onOpenChange={setShowSettings} persistence={persistence} />
     </>
   );

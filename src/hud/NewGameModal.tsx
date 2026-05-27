@@ -55,11 +55,25 @@ export interface NewGameModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onBegin: (choices: NewGameChoices) => void;
+  /**
+   * M_V12.DEPTH.UPGRADE-PERSISTENCE — when false, the Begin
+   * button is disabled while the App resolves the meta-unlock
+   * cache from sqlite. Prevents the cold-DB sub-100ms-click race
+   * where a player's paid-for chain-starters would silently fail
+   * to apply. Defaults to true (no gate) for callers that don't
+   * have a cache to wait on (tests, future scenarios).
+   */
+  beginReady?: boolean;
 }
 
 // SectionCard primitive lives in src/hud/primitives/SectionCard.tsx
 
-export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps) {
+export function NewGameModal({
+  open,
+  onOpenChange,
+  onBegin,
+  beginReady = true,
+}: NewGameModalProps) {
   const reducedMotion = useReducedMotion() ?? false;
   const [eventSeed, setEventSeed] = useState(createFreshEventSeed);
   const eventRng = useRef(createEventPrng(eventSeed));
@@ -174,7 +188,7 @@ export function NewGameModal({ open, onOpenChange, onBegin }: NewGameModalProps)
     [seedPhrase, mapSize, mode],
   );
 
-  const beginDisabled = !seedPhrase.trim();
+  const beginDisabled = !seedPhrase.trim() || !beginReady;
 
   const buildFactions = (): FactionConfig[] => {
     const preset = presetFor(mode);
