@@ -1141,10 +1141,12 @@ function applyChainStarters(game: GameState, unlocked: ReadonlyArray<string>): v
   // silently discarded). The maps persist on game state slots so
   // downstream consumers (build system, train system, reveal logic)
   // can read them.
-  const flags =
-    game.researchFlags ?? (game.researchFlags = new Map<string, number | string | boolean>());
-  const buildingOverrides = game.buildingOverrides ?? (game.buildingOverrides = new Map());
-  const unitOverrides = game.unitOverrides ?? (game.unitOverrides = new Map());
+  if (!game.researchFlags) game.researchFlags = new Map<string, number | string | boolean>();
+  if (!game.buildingOverrides) game.buildingOverrides = new Map();
+  if (!game.unitOverrides) game.unitOverrides = new Map();
+  const flags = game.researchFlags;
+  const buildingOverrides = game.buildingOverrides;
+  const unitOverrides = game.unitOverrides;
   for (const id of unlocked) {
     const discoveryId = CHAIN_STARTER_TO_DISCOVERY[id];
     if (!discoveryId) continue; // not a chain-starter id; skip.
