@@ -391,125 +391,280 @@
     },
 
     {
-      "id": "mana-channels",
-      "name": "Mana Channels",
-      "description": "Magic I — Wizard cast cost reduced by 30%.",
+      "id": "mage-tower-aura",
+      "name": "Mage Tower Aura",
+      "description": "Magic / Offense I — Mage Tower aura radius +1 hex.",
+      "cost": { "wood": 100, "gold": 140 },
+      "prereqs": [],
+      "effect": { "kind": "buff-building", "buildingType": "MageTower", "stat": "dps", "delta": 2 }
+    },
+    {
+      "id": "crystalline-foci",
+      "name": "Crystalline Foci",
+      "description": "Magic / Offense II — Mage Tower aura DPS +5.",
+      "cost": { "stone": 140, "gold": 180 },
+      "prereqs": ["mage-tower-aura"],
+      "effect": { "kind": "buff-building", "buildingType": "MageTower", "stat": "dps", "delta": 5 }
+    },
+    {
+      "id": "elemental-mastery",
+      "name": "Elemental Mastery",
+      "description": "Magic / Offense III — Mage Tower aura ignores 25% target armor (flag).",
+      "cost": { "stone": 180, "gold": 240 },
+      "prereqs": ["crystalline-foci"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "apocalypse-rite",
+      "name": "Apocalypse Rite",
+      "description": "Magic / Offense IV — Mage Tower casts a -50% max-HP debuff on the nearest enemy stack.",
+      "cost": { "stone": 240, "gold": 320 },
+      "prereqs": ["elemental-mastery"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "scrying-orb",
+      "name": "Scrying Orb",
+      "description": "Magic / Utility I — 5-hex map-reveal flag around every Wizard.",
       "cost": { "wood": 80, "gold": 120 },
       "prereqs": [],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "healing-conclave",
-      "name": "Healing Conclave",
-      "description": "Magic II — Healer aura range +1 hex; +50% regen rate.",
-      "cost": { "wood": 100, "gold": 140 },
-      "prereqs": ["mana-channels"],
+      "id": "translocation-rune",
+      "name": "Translocation Rune",
+      "description": "Magic / Utility II — Diplomat travels 2× movement speed (flag).",
+      "cost": { "wood": 100, "gold": 160 },
+      "prereqs": ["scrying-orb"],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "elemental-weave",
-      "name": "Elemental Weave",
-      "description": "Magic III — Wizard attacks deal +5 damage AND ignore weather penalties.",
-      "cost": { "stone": 120, "gold": 180 },
-      "prereqs": ["mana-channels"],
-      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5 }
-    },
-    {
-      "id": "rune-warding",
-      "name": "Rune Warding",
-      "description": "Magic IV — Watchtowers deal +25% damage to enemies adjacent to a Wizard.",
-      "cost": { "stone": 160, "gold": 160 },
-      "prereqs": ["elemental-weave"],
+      "id": "warding-circle",
+      "name": "Warding Circle",
+      "description": "Magic / Utility III — units inside Mage Tower aura take -15% damage (flag).",
+      "cost": { "stone": 160, "gold": 200 },
+      "prereqs": ["translocation-rune"],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "starfall-rite",
-      "name": "Starfall Rite",
-      "description": "Magic V — every 90s, Wizards channel a tile-strike (3-hex AoE, 40 damage) on the nearest enemy stack.",
-      "cost": { "stone": 220, "gold": 300 },
-      "prereqs": ["rune-warding", "healing-conclave"],
+      "id": "mirror-image",
+      "name": "Mirror Image",
+      "description": "Magic / Utility IV — Mage Tower casts a decoy clone every 60s (flag).",
+      "cost": { "stone": 220, "gold": 280 },
+      "prereqs": ["warding-circle"],
       "effect": { "kind": "flag" }
+    },
+    {
+      "id": "spirit-binding",
+      "name": "Spirit Binding",
+      "description": "Magic / Summon I — Wizard HP +20.",
+      "cost": { "wood": 80, "gold": 140 },
+      "prereqs": [],
+      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 0, "filter": "Wizard" }
+    },
+    {
+      "id": "druid-conclave",
+      "name": "Druid Conclave",
+      "description": "Magic / Summon II — unlock Druid training from Mage Tower.",
+      "cost": { "wood": 140, "gold": 200 },
+      "prereqs": ["spirit-binding"],
+      "effect": { "kind": "unlock-unit", "unitType": "Druid", "fromBuildingType": "MageTower" }
+    },
+    {
+      "id": "summon-elementals",
+      "name": "Summon Elementals",
+      "description": "Magic / Summon III — unlock Elemental training from Mage Tower.",
+      "cost": { "wood": 200, "gold": 260 },
+      "prereqs": ["druid-conclave"],
+      "effect": {
+        "kind": "unlock-unit",
+        "unitType": "Elemental",
+        "fromBuildingType": "MageTower"
+      }
+    },
+    {
+      "id": "necromancers-pact",
+      "name": "Necromancer's Pact",
+      "description": "Magic / Summon IV — unlock Necromancer training from Mage Tower.",
+      "cost": { "stone": 240, "gold": 320 },
+      "prereqs": ["summon-elementals"],
+      "effect": {
+        "kind": "unlock-unit",
+        "unitType": "Necromancer",
+        "fromBuildingType": "MageTower"
+      }
     },
 
+    {
+      "id": "hammer-honing",
+      "name": "Hammer Honing",
+      "description": "Engineering / Siege I — Engineer repair rate +10% (flag).",
+      "cost": { "wood": 80, "gold": 100 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "siege-blueprints",
+      "name": "Siege Blueprints",
+      "description": "Engineering / Siege II — unlock Foundry building (advanced siege production).",
+      "cost": { "wood": 140, "stone": 120, "gold": 180 },
+      "prereqs": ["hammer-honing"],
+      "effect": { "kind": "unlock-building", "buildingType": "Foundry" }
+    },
+    {
+      "id": "engineering-corps",
+      "name": "Engineering Corps",
+      "description": "Engineering / Siege III — unlock Sapper unit from Workshop.",
+      "cost": { "wood": 180, "stone": 160, "gold": 220 },
+      "prereqs": ["siege-blueprints"],
+      "effect": { "kind": "unlock-unit", "unitType": "Sapper", "fromBuildingType": "Workshop" }
+    },
+    {
+      "id": "grand-armory",
+      "name": "Grand Armory",
+      "description": "Engineering / Siege IV — +25% combat damage flag (every combatant).",
+      "cost": { "stone": 240, "gold": 320 },
+      "prereqs": ["engineering-corps"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "reinforced-walls",
+      "name": "Reinforced Walls",
+      "description": "Engineering / Defense I — Wall HP +50.",
+      "cost": { "stone": 140, "gold": 100 },
+      "prereqs": [],
+      "effect": { "kind": "buff-building", "buildingType": "Wall", "stat": "hp", "delta": 50 }
+    },
+    {
+      "id": "crenellations",
+      "name": "Crenellations",
+      "description": "Engineering / Defense II — Watchtower attack damage +10.",
+      "cost": { "stone": 160, "gold": 140 },
+      "prereqs": ["reinforced-walls"],
+      "effect": {
+        "kind": "buff-building",
+        "buildingType": "Watchtower",
+        "stat": "dps",
+        "delta": 10
+      }
+    },
+    {
+      "id": "bastion-architecture",
+      "name": "Bastion Architecture",
+      "description": "Engineering / Defense III — Wall HP +100 (further).",
+      "cost": { "stone": 220, "gold": 180 },
+      "prereqs": ["crenellations"],
+      "effect": { "kind": "buff-building", "buildingType": "Wall", "stat": "hp", "delta": 100 }
+    },
+    {
+      "id": "impregnable-citadel",
+      "name": "Impregnable Citadel",
+      "description": "Engineering / Defense IV — Palace HP +200.",
+      "cost": { "stone": 300, "gold": 260 },
+      "prereqs": ["bastion-architecture"],
+      "effect": { "kind": "buff-building", "buildingType": "Palace", "stat": "hp", "delta": 200 }
+    },
+    {
+      "id": "workshop-discipline",
+      "name": "Workshop Discipline",
+      "description": "Engineering / Production I — Workshop build time -15% (flag).",
+      "cost": { "wood": 100, "gold": 120 },
+      "prereqs": [],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "guild-conduits",
+      "name": "Guild Conduits",
+      "description": "Engineering / Production II — Trebuchet build cost reduced -15% (flag).",
+      "cost": { "wood": 140, "gold": 160 },
+      "prereqs": ["workshop-discipline"],
+      "effect": {
+        "kind": "modify-cost",
+        "target": "unit",
+        "targetId": "Trebuchet",
+        "resource": "gold",
+        "delta": -10
+      }
+    },
     {
       "id": "monumental-architecture",
       "name": "Monumental Architecture",
-      "description": "Engineering I — Wonder build cost reduced by 20%.",
+      "description": "Engineering / Production III — Wonder build cost -25% via foundry blueprints.",
       "cost": { "stone": 200, "gold": 200 },
-      "prereqs": [],
+      "prereqs": ["guild-conduits"],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "masonry-guild",
-      "name": "Masonry Guild",
-      "description": "Engineering II — Wall + Watchtower build time reduced by 40%; +25% Wall HP.",
-      "cost": { "stone": 160, "gold": 120 },
-      "prereqs": [],
+      "id": "guild-monopoly",
+      "name": "Guild Monopoly",
+      "description": "Engineering / Production IV — every military train time -25% (flag).",
+      "cost": { "stone": 240, "gold": 320 },
+      "prereqs": ["monumental-architecture"],
       "effect": { "kind": "flag" }
-    },
-    {
-      "id": "rampart-doctrine",
-      "name": "Rampart Doctrine",
-      "description": "Engineering III — Walls automatically include arrow slits dealing 2 dmg/sec to adjacent enemies.",
-      "cost": { "stone": 200, "gold": 160 },
-      "prereqs": ["masonry-guild"],
-      "effect": { "kind": "flag" }
-    },
-    {
-      "id": "bridge-builders",
-      "name": "Bridge Builders",
-      "description": "Engineering IV — Ferryman pathing across SHALLOWS becomes free (was ×1.8 cost).",
-      "cost": { "wood": 200, "stone": 160 },
-      "prereqs": ["masonry-guild"],
-      "effect": { "kind": "flag" }
-    },
-    {
-      "id": "siege-foundry",
-      "name": "Siege Foundry",
-      "description": "Engineering V — Trebuchets get +50% range and +25% damage; cost +25% gold.",
-      "cost": { "stone": 240, "gold": 280 },
-      "prereqs": ["sapper-training", "rampart-doctrine"],
-      "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 2 }
     },
 
     {
-      "id": "ancestral-vows",
-      "name": "Ancestral Vows",
-      "description": "Lore I — every faction you've allied with leaves a +5% morale bonus that persists if the pact ends.",
-      "cost": { "wood": 60, "gold": 100 },
+      "id": "cartography",
+      "name": "Cartography",
+      "description": "Lore / Reveal I — full-radius vision around your Palace + 25% Ferryman speed.",
+      "cost": { "wood": 60, "gold": 80 },
       "prereqs": [],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "saga-of-strata",
-      "name": "Saga of Strata",
-      "description": "Lore II — myth events fire 25% less often; their effects last 50% longer.",
-      "cost": { "wood": 120, "gold": 160 },
-      "prereqs": ["ancestral-vows"],
+      "id": "scout-doctrine",
+      "name": "Scout Doctrine",
+      "description": "Lore / Reveal II — Scout vision range +2 hexes.",
+      "cost": { "wood": 100, "gold": 140 },
+      "prereqs": ["cartography"],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "chronicler-codex",
-      "name": "Chronicler Codex",
-      "description": "Lore III — every Discovery shows its full prerequisite chain in the panel; +1 starting Discovery on every new game.",
-      "cost": { "wood": 120, "gold": 200 },
-      "prereqs": ["saga-of-strata"],
+      "id": "celestial-charts",
+      "name": "Celestial Charts",
+      "description": "Lore / Reveal III — reveal-tier 1: see all enemy buildings on the map.",
+      "cost": { "wood": 140, "gold": 200 },
+      "prereqs": ["scout-doctrine"],
+      "effect": { "kind": "reveal-tier", "tier": 1 }
+    },
+    {
+      "id": "omniscient-archives",
+      "name": "Omniscient Archives",
+      "description": "Lore / Reveal IV — reveal-tier 2: see all enemy buildings AND units, full map.",
+      "cost": { "wood": 220, "gold": 300 },
+      "prereqs": ["celestial-charts"],
+      "effect": { "kind": "reveal-tier", "tier": 2 }
+    },
+    {
+      "id": "chronicle-keeping",
+      "name": "Chronicle Keeping",
+      "description": "Lore / Narrative I — lorebook entry gains +1 highlight slot per match.",
+      "cost": { "wood": 80, "gold": 120 },
+      "prereqs": [],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "oracle-eye",
-      "name": "Oracle Eye",
-      "description": "Lore IV — view a 90-second forecast of weather + raid events in the HUD.",
-      "cost": { "wood": 140, "gold": 220 },
-      "prereqs": ["saga-of-strata"],
+      "id": "bard-college",
+      "name": "Bard College",
+      "description": "Lore / Narrative II — myth events fire 25% more often.",
+      "cost": { "wood": 120, "gold": 180 },
+      "prereqs": ["chronicle-keeping"],
       "effect": { "kind": "flag" }
     },
     {
-      "id": "eternal-flame",
-      "name": "Eternal Flame",
-      "description": "Lore V — your Palace can't be destroyed while you hold ≥1 Wonder; +50% Wonder score multiplier.",
-      "cost": { "stone": 240, "gold": 320 },
-      "prereqs": ["chronicler-codex", "oracle-eye"],
+      "id": "sage-council",
+      "name": "Sage Council",
+      "description": "Lore / Narrative III — lorebook entry includes 'biggest combat exchange' field.",
+      "cost": { "wood": 160, "gold": 240 },
+      "prereqs": ["bard-college"],
+      "effect": { "kind": "flag" }
+    },
+    {
+      "id": "chronicle-saga",
+      "name": "Chronicle Saga",
+      "description": "Lore / Narrative IV — unlock the Chronicle saga page (cross-match narrative).",
+      "cost": { "wood": 220, "gold": 300 },
+      "prereqs": ["sage-council"],
       "effect": { "kind": "flag" }
     },
 

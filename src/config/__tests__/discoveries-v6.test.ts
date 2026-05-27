@@ -44,7 +44,10 @@ describe('M_V7.DISCOVERY-TREE.V6 — new tech entries', () => {
     // M_V12.DEPTH.MILITARY-CHAIN — Siege spec restructured so every
     // spec head is standalone; sapper-training now has no prereqs.
     expect(discoveryById('sapper-training')?.prereqs).toEqual([]);
-    expect(discoveryById('monumental-architecture')?.prereqs).toEqual([]);
+    // M_V12.DEPTH.ENGINEERING-CHAIN — monumental-architecture demoted
+    // from Engineering root to Production III in the v0.12 chain;
+    // now chains off guild-conduits.
+    expect(discoveryById('monumental-architecture')?.prereqs).toEqual(['guild-conduits']);
   });
 
   it('iron-tools is a multiply-harvest tech with 1.25× factor', () => {

@@ -202,17 +202,37 @@ chains; v0.12 expands to 100+ via depth + breadth + meta-tiers.
       tests/unit/diplomacy-chain-v12.test.ts (4 pins). The
       runtime effects of these flags are §3 AI-DIPLO work
       (Yuka brain consumes the flags + the new modals).
-- [ ] M_V12.DEPTH.MAGIC-CHAIN — Mage Tower-gated upgrades: aura
-      radius, dps, secondary damage type, cooldown reduction.
-      Plus wizard-unit unlocks (Wizard already exists; add
-      Battlemage / Druid / Necromancer variants).
-- [ ] M_V12.DEPTH.ENGINEERING-CHAIN — Workshop-gated: Engineer
-      repair rate, Trebuchet damage / range, Wall HP, Watchtower
-      DPS. Plus building-unlock gates (Foundry, Drydock).
-- [ ] M_V12.DEPTH.LORE-CHAIN — Library-gated: reveal mechanics
-      (full-map vision tier), lorebook discoveries, narrative
-      events, named-hero unlocks (ties to Atelier `hero-*`
-      meta-unlocks).
+- [x] M_V12.DEPTH.MAGIC-CHAIN — expanded from 5 to 12 entries
+      (4 tiers × 3 specs offense/utility/summon). Offense uses
+      buff-building MageTower/dps for I-II and flag for III-IV
+      (elemental-mastery armor ignore, apocalypse-rite debuff).
+      Utility is all flags (scrying-orb, translocation-rune,
+      warding-circle, mirror-image). Summon uses unlock-unit
+      from MageTower for II-IV (Druid, Elemental, Necromancer).
+      Old 5 (mana-channels/healing-conclave/elemental-weave/
+      rune-warding/starfall-rite) retired.
+- [x] M_V12.DEPTH.ENGINEERING-CHAIN — expanded from 5 to 12
+      entries (4 tiers × 3 specs siege/defense/production). Siege:
+      hammer-honing → siege-blueprints (unlock-building Foundry) →
+      engineering-corps (unlock-unit Sapper) → grand-armory.
+      Defense: reinforced-walls (Wall hp +50) → crenellations
+      (Watchtower dps +10) → bastion-architecture (Wall hp +100)
+      → impregnable-citadel (Palace hp +200) — all buff-building.
+      Production: workshop-discipline → guild-conduits
+      (modify-cost Trebuchet/gold -10) → monumental-architecture
+      (demoted from Engineering I head) → guild-monopoly. Old 5
+      (masonry-guild/rampart-doctrine/bridge-builders/siege-foundry
+      and the prev monumental-architecture position) retired.
+- [x] M_V12.DEPTH.LORE-CHAIN — expanded from 5 to 8 entries
+      (4 tiers × 2 specs reveal/narrative — the only chain with
+      3 specs would have left a thin third). Reveal: cartography
+      (kept from Diplomacy I — now Lore I) → scout-doctrine →
+      celestial-charts (reveal-tier 1) → omniscient-archives
+      (reveal-tier 2). Narrative: chronicle-keeping → bard-college
+      → sage-council → chronicle-saga (capstone unlocks the Lore
+      Chronicle saga page from §4 PERSIST). Old 5 (ancestral-vows
+      / saga-of-strata / chronicler-codex / oracle-eye /
+      eternal-flame) retired.
 - [ ] M_V12.DEPTH.UPGRADE-HUD — DiscoveriesPanel rewrite for
       6-chain × 4-tier grid; chain-tab navigation + pre-req
       arrows + locked/unlocked state. Mobile-first layout.
