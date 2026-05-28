@@ -64,9 +64,28 @@ jobs:
       # Chromium; the install step is expensive (CI minutes) and the
       # browser test surface itself could be weaponised. Maintainer
       # PRs (same repo) still run the full browser suite.
+      # M_BACKLOG.CI-TEST-SPEED #3 — cache the Playwright browser binary
+      # (~/.cache/ms-playwright, the bulk of the ~26s install). Keyed on
+      # the lockfile so a playwright version bump busts it. --with-deps
+      # OS packages aren't cacheable, but on a cache hit we skip the
+      # binary download (the slow part) and only refresh apt deps.
+      - name: Cache Playwright browsers (maintainer PRs + push only)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        id: pw-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install Playwright (maintainer PRs + push only)
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        run: pnpm exec playwright install --with-deps chromium
+        # On a cache hit the browser binary is already present; install
+        # only the OS deps (fast). On a miss, full install populates the cache.
+        run: |
+          if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then
+            pnpm exec playwright install-deps chromium
+          else
+            pnpm exec playwright install --with-deps chromium
+          fi
       - name: Browser tests (maintainer PRs + push only)
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
         timeout-minutes: 5
@@ -174,9 +193,21 @@ jobs:
       - name: Install dependencies
         if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         run: pnpm install --frozen-lockfile
+      - name: Cache Playwright browsers
+        if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        id: pw-cache-visual
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
       - name: Install Playwright Chromium
         if: steps.filter.outputs.visual == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
-        run: pnpm exec playwright install --with-deps chromium
+        run: |
+          if [ "${{ steps.pw-cache-visual.outputs.cache-hit }}" = "true" ]; then
+            pnpm exec playwright install-deps chromium
+          else
+            pnpm exec playwright install --with-deps chromium
+          fi
       - name: Visual battery (report drift; non-blocking until v0.9 cross-platform baselines)
         # Cross-platform baseline drift (Mac-locked vs Linux-CI-rendered)
         # is a known issue from v0.8 ship-time — fonts subpixel-rounding,

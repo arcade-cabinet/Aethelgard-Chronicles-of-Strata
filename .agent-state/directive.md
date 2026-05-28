@@ -157,15 +157,21 @@ boundary.
       Playwright-install 26s. Tests are CORRECTLY written (files 1-2s;
       biome-audit 61 sub-tests in 0.9s) — slowness is STRUCTURAL:
       (1) Browser `fileParallelism: false` (vitest.config.ts:89) serializes
-        228 tests through one Chromium to dodge the shared-pool flake — the
-        SAME contention class already fixed deterministically elsewhere.
-        Re-enable + fix the root pool flake → ~134s→~40s. Biggest lever.
+        228 tests through ONE shared Chromium instance. EXPERIMENT (done):
+        flipping to true still flakes (onboarding/zone-legend timeout) —
+        the single `instances: [{browser:'chromium'}]` means parallel files
+        collide on one page/context, so it's NOT a one-line flip. The real
+        fix is a MULTI-INSTANCE browser config (N chromium instances so
+        files run in genuinely isolated contexts) — measure the speedup vs
+        the instance-boot cost first. Biggest lever but needs design.
       (2) Unit default `isolate: true` → per-file worker boot ×240. Pure
-        unit pool can run `isolate: false`.
-      (3) Cache Playwright install in CI → ~26s.
-      Doable on the current branch (it's test-infra, not a feature) — but
-      do it as its OWN small PR after #91 merges, for a reviewable diff,
-      NOT because of any version boundary.
+        unit pool can run `isolate: false` (verify no cross-file global
+        leakage first — the RNG/clock facades are module singletons).
+      (3) Cache Playwright install in CI (actions/cache) → ~26s. Easy win.
+      DONE this pass: stubbed saveToStore in the browser SQLite mock (the
+      flushWebStore change threw 'saveToStore is not a function' in browser
+      tests — surfaced by the parallelism experiment). The 3 speed levers
+      remain.
 
 - [ ] M_BACKLOG.DECOMP-ECS-GAME — decompose src/ecs/ + src/game/ into
       sub-packages. AUDITED (Explore agent) — grounded grouping +
