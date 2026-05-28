@@ -46,8 +46,7 @@ import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/ai
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import type { Faction } from '@/ecs/components';
-import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/ecs/systems/hazards';
-import type { BurnState } from '@/ecs/systems/hazards';
+import { createVolcanoState, placeVolcanoLandmark, type VolcanoState, type BurnState } from '@/ecs/systems/hazards';
 import type { GameOutcome } from '@/ecs/systems/meta';
 import { discoveryById } from '@/rules/discovery-registry';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
@@ -75,10 +74,8 @@ import {
   tickScoringPhase,
   tickTerrainPhase,
 } from './economy-tick-phases';
-import { findBalancedBoard, matchLengthScale } from './utilities';
-import { createMythEventsState, type MythEventsState } from './narrative';
-import { createRally, type RallyState } from './utilities';
-import { createRandomEventsState, type RandomEventsState } from './narrative';
+import { findBalancedBoard, matchLengthScale, createRally, type RallyState } from './utilities';
+import { createMythEventsState, type MythEventsState, createRandomEventsState, type RandomEventsState } from './narrative';
 import { createResearch, type ResearchId, type ResearchState } from './research';
 import { createWeather, type Weather } from './weather';
 import { createZoneState, seedZonesFromAttractors, type ZoneState } from './zone';
