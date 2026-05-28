@@ -36,7 +36,7 @@ import {
   X,
 } from 'lucide-react';
 import { useState } from 'react';
-import { resign } from '@/game/commands';
+import { resign } from '@/game/utilities';
 import type { GameState } from '@/game/game-state';
 import { cn } from '@/lib/cn';
 

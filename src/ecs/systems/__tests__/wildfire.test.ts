@@ -18,7 +18,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { WILDFIRE_TUNING } from '@/config/world';
 import type { Tile } from '@/core/board';
 import { getHexKey } from '@/core/hex';
-import { igniteWildfire, wildfireSystem } from '@/ecs/systems/wildfire';
+import { igniteWildfire, wildfireSystem } from '@/ecs/systems/hazards';
 import type { GameState } from '@/game/game-state';
 
 // Minimal GameState stub. Only what wildfireSystem reads is real.

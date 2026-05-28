@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
-import { pathFollowSystem } from '@/ecs/systems/path-follow';
+import { pathFollowSystem } from '@/ecs/systems/movement';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('path follow system', () => {

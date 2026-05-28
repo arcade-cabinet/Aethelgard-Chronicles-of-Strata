@@ -6,7 +6,7 @@
  */
 import { hexDistance } from '@/core/hex';
 import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
-import type { GameState } from './game-state';
+import type { GameState } from '../game-state';
 
 /**
  * M_V11.OPEN.INACTIVITY — narrator beats fired when the player has

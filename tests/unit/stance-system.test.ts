@@ -28,7 +28,7 @@ import {
   type StanceMode,
   Unit,
 } from '@/ecs/components';
-import { stanceBehaviorSystem } from '@/ecs/systems/stance-behavior';
+import { stanceBehaviorSystem } from '@/ecs/systems/combat';
 
 // ---------------------------------------------------------------------------
 // Helpers

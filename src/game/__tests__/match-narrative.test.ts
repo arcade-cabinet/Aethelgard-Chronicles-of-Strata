@@ -15,7 +15,7 @@
 import { describe, expect, it } from 'vitest';
 import matchNarrativeJson from '@/config/narrative/match-narrative.json';
 import type { GameState } from '@/game/game-state';
-import { detectTranscriptHighlights, matchNickname } from '../match-narrative';
+import { detectTranscriptHighlights, matchNickname } from '../narrative/match-narrative';
 
 // Derive adjective sets from the schema source-of-truth so the tests
 // stay correct when new words are added to match-narrative.json.

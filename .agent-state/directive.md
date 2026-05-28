@@ -18,7 +18,8 @@ Prior context: v0.11 merged as #89 (717ed2f). v0.12 merged as #90
 brain, persistence depth (lorebook rich-card + leaderboard
 fingerprint), mobile gesture-map + haptics. All 20 CodeRabbit threads
 across 7 reviewer-pass rounds addressed; 1251 unit + 224 browser
-tests green at merge. release-please cuts v0.1.28 automatically.
+tests green at merge. (release-please owns version numbers — not the
+agent, ever.)
 
 ## What CONTINUOUS means
 
@@ -75,424 +76,122 @@ One branch per cycle (`feat/decomp-subpackages`). Commit freely;
 push regularly. After each commit, dispatch the review trio in
 parallel + background; fold findings into the NEXT forward commit
 (never amend a reviewed commit, never make a "fix-review" commit).
-ONE PR opens when the §-blocks are shipped + reviews absorbed.
-Squash-merge to main; release-please cuts the version bump.
+Do ALL the work on ONE local branch; only then engage remote feedback
+(CI + CodeRabbit), resolve everything, and squash-merge. release-please
+computes + cuts the version after merge — the agent never names it.
 
 ---
 
-## v0.13 ACTIVE QUEUE — §A Decomposition
+## SHIPPED — §A decomposition + §B HUD polish (PR #91)
 
-Driven by `docs/specs/210-package-decomposition.md`. Scope this
-cycle: `src/hud/`, `src/config/`, `src/world/` (the .tsx-heavy +
-config dirs). `src/ecs/` + `src/game/` decompose in a later pass.
+Full record: `docs/specs/210-package-decomposition.md` (the hud/config/
+world sub-package maps + layer order + cycle fixes + verification
+contract) and `docs/specs/21-hud-layout.md` (the HUD layout contract).
+Decision/why trail: `git log` + `.agent-state/decisions.ndjson`.
 
-### §A1 — hud/ sub-packages (87 files → 8 packages)
+- [x] §A — hud 87→8 sub-packages, config flat→7 bundles, world 44→5
+  sub-packages, App.tsx 776→470 (HudLayer + useGameWindowEvents +
+  dev-harness extracted). Pure git mv + barrels; 2 import cycles broken
+  (emitToast→toast-bus leaf, NewGameChoices→setup).
+- [x] §B — 7 HUD design-review fixes: pill-collision (topCenterSlot),
+  token-scale (space/z/tapTarget/safe-area), tap-targets (48dp),
+  focus-rings (global :focus-visible), axe-widen (pills+overlays),
+  chain-field (typed discoveries.chain), layout-spec.
+- [x] Bonus fixes surfaced enabling 4 skipped e2e: persistence web-flush
+  (saves never survived reload on web), dev-harness render-vs-commit +
+  prod-gate, Vite-HMR mid-test-reload e2e flake, settings-persistence
+  async-write flake, static-assets determinism, sideEffects tree-shaking.
+- [x] Comprehensive full-review (5 findings, all fixed) + all CodeRabbit
+  threads addressed + resolved.
 
-Order leaf-first so later moves import the new barrel paths.
+## §C Release ladder — SHIPPED
 
-- [x] M_V13.DECOMP.HUD-THEME — `src/hud/theme/` created with
-      hud-theme.ts + format.ts + barrel index.ts (HUD_THEME,
-      HUD_CARD_STYLE, costLabel, formatInt, formatTime). 51
-      importers rewritten (@/hud/theme + ./theme). Pure git mv,
-      history preserved, no compat re-exports. 1251 tests green.
-      hud-layout.ts joins this package in §B FIX-PILL-COLLISION.
-- [x] M_V13.DECOMP.HUD-PRIMITIVES — folded ModalShell + HudPill +
-      Segmented into the existing primitives/ package; barrel
-      extended; 13 importers rewritten; theme import → ../theme.
-      1251 tests green.
-- [x] M_V13.DECOMP.HUD-PILLS — `src/hud/pills/` (10 status pills) +
-      barrel; internal imports rewritten one level deeper; importers
-      → @/hud/pills. 1251 tests green.
-
-### §A1b — App.tsx decomposition (776 lines → screens/ + hooks)
-
-User direction 2026-05-28: "no reason App.tsx should be so large.
-That's why we need pieces like screens / components." App.tsx is
-776 lines = GameSession (~350, the ~30-component HUD-mount wall +
-window-event wiring) + App (~300, title/new-game/settings shell +
-URL-param + dev-window hooks).
-
-- [x] M_V13.DECOMP.APP-HUDLAYER — extracted the ~140-line HUD-mount
-      wall (~30 components) into src/hud/HudLayer.tsx. App.tsx
-      776→632 lines; 38 unused imports removed. GameSession keeps
-      canvas + ErrorBoundary + buildContext + cameraRef. Browser
-      test confirms HUD still mounts. 1251 unit green.
-- [x] M_V13.DECOMP.APP-EVENTS — window-event useEffect → src/hud/
-      hooks/useGameWindowEvents.ts. App.tsx 632→577. 1251 green.
-- [x] M_V13.DECOMP.APP-SCREENS — REASSESSED as not-needed after the
-      three prior App extractions (HUDLAYER + EVENTS + URLPARAMS).
-      App.tsx is now 470 lines and its App() return is a thin
-      5-component phase router (ErrorOverlay + NewGameModal +
-      SettingsModal + TitleScreen + save-corrupted toast). The
-      remaining body is the legitimate router responsibilities:
-      resume/save-detect effects + the beginGame handler (41 lines)
-      + the phase early-returns. Forcing a src/screens/ split here
-      would design for a shape the code doesn't demand (meta-rule:
-      build only what the step needs). Re-open only if App() grows
-      a second distinct screen with its own logic. Hooks-ordering
-      is correct (all hooks above the early returns — verified the
-      v0.12 bug class doesn't recur).
-- [x] M_V13.DECOMP.APP-URLPARAMS — window.__game* dev/test harness
-      (~105 lines) → src/game/dev-harness.ts installDevHarness(g).
-      App.tsx 577→470. Unused imports removed. Browser test green
-      (harness path exercised). 1251 unit green.
-- [x] M_V13.DECOMP.HUD-SETUP — `src/hud/setup/`: SeedField,
-      MapPreview, PresetControls, OpponentPicker, FactionColorPicker,
-      new-game-options.ts. Barrel. DONE: 6 git mv + index.ts barrel;
-      NewGameModal + faction-color-picker harness import from setup;
-      check 0, lint clean, browser test green.
-- [x] M_V13.DECOMP.HUD-SELECTION — `src/hud/selection/`:
-      SelectionPanel, MultiSelectActions, IdleUnitIndicator,
-      BuildMenuButton, BuildQueueStrip + selection-panel-reasons
-      helper + 2 css sidecars (idle-peons-indicator, th-affordance).
-      Barrel. SelectionRect was DEAD (only stale comments referenced
-      it; no live mount) → deleted, not moved; its data-hud-panel
-      comments in App + ModalShell de-referenced. 4 browser tests +
-      axe green; check 0, lint clean. NOTE: css sidecars must move
-      with their component (tsc misses CSS import; browser test caught
-      it) — see decomp-move-css-sidecars memory.
-- [x] M_V13.DECOMP.HUD-OVERLAYS — `src/hud/overlays/`: Tutorial,
-      Campaign, WaveDefense, Onboarding, LoadingScreen, TitleScreen,
-      TitleBackground, ErrorOverlay, CaptionsOverlay, CriticalWarning,
-      AriaLiveRegion, Toasts, TributeDemandBanner + critical-warning.css.
-      Barrel. DONE: 13 git mv + css sidecar; captions + aria-live-bus
-      kept at hud root (cross-cut buses imported by audio/ai/game/pills,
-      not overlay-private). All importers (App, main, FixtureApp,
-      HudLayer, selection/MultiSelectActions, DiscoveriesPanel + 6 tests)
-      → @/hud/overlays. 19 browser tests green; check 0, lint clean.
-- [x] M_V13.DECOMP.HUD-SYSTEM — `src/hud/system/`: SystemMenu,
-      MobileSystemMenu, ResourceBar, Minimap, ZoneLegend, PauseControl,
-      SpeedControl, SoundToggle, ResignButton, ScreenshotButton,
-      KeyboardShortcuts, AchievementWatcher, PersistAchievements,
-      TradeSwapWidget. Barrel. DONE: 14 git mv, no css/intra-bucket
-      refs; SoundToggle's local MUTE_PREF_KEY kept private (canonical
-      copy lives in @/audio/useMutedPreference). Importers (FixtureApp,
-      HudLayer + 7 browser tests) → @/hud/system. 15 browser tests
-      green; check 0, lint clean.
-- [x] M_V13.DECOMP.HUD-MODALS — `src/hud/modals/`: NewGameModal,
-      SettingsModal, GameOverModal, DiplomacyModal, DiscoveriesPanel,
-      AtelierScreen, CreditsModal, HotkeyEditor, MatchSummaryCard.
-      Barrel. DONE: 9 git mv (DailyChallengeLeaderboard was a planning
-      over-listing — no such file; daily-challenge leaderboard is a
-      feature inside NewGameModal, not a component). Intra-bucket comps
-      GameOverModal→MatchSummaryCard + SettingsModal→HotkeyEditor kept
-      ./-relative. Cross-bucket refs fixed: overlays/TitleScreen +
-      setup/PresetControls now import @/hud/modals (../modals). All
-      importers (App, FixtureApp, HudLayer + 11 browser tests) →
-      @/hud/modals. 17 browser tests green; check 0, lint clean.
-- [x] M_V13.DECOMP.HUD-BARREL — top `src/hud/index.ts` re-exports all
-      8 sub-package barrels (theme/primitives/pills/setup/selection/
-      overlays/system/modals) + HudLayer + the cross-cut helper
-      modules (aria-live-bus/captions/hotkey-bindings/i18n/minimap-zoom/
-      ui-store/usePinchZoom/useRafLoop). No name collisions. Internal
-      HUD consumers keep GRANULAR sub-package imports (not the god-
-      barrel) — tree-shaking + martian-trail/koota pattern. Consolidated
-      HudLayer's 40 one-per-line imports → 5 grouped (one per bucket)
-      and App's 7 → 3. gameplay-slice + zone-legend integration smoke
-      green (the v0.12 hooks-regression paths); check 0, lint clean.
-
-### §A2 — config/ domain sub-packages (22 files → 7 bundles)
-
-- [x] M_V13.DECOMP.CONFIG-SCHEMA — extracted to src/config/schema.ts
-      (resourceCostSchema + resourceIdSchema builders). economy +
-      discoveries call them. Landed in commit 46f4916.
-- [x] M_V13.DECOMP.CONFIG-ECONOMY — `config/economy/`: economy +
-      resources json+ts. Barrel. DONE: 4 git mv into economy/; barrel
-      re-exports both. economy.ts's @/config/resources → ./resources.
-      LEARNING (applies to all remaining CONFIG-* bundles): config
-      consumers import by bare domain path (@/config/X). When a bundle
-      MERGES a non-eponymous file (resources into economy/), that file's
-      external importers must repoint to the BUNDLE barrel path
-      (@/config/resources → @/config/economy), else the old peer path
-      404s and resource-type inference collapses repo-wide. The
-      eponymous file (economy → economy/) keeps its path free via dir
-      resolution. 72 tests green; check 0.
-- [x] M_V13.DECOMP.CONFIG-COMBAT — `config/combat/`: combat +
-      archetypes json+ts. Barrel. DONE: 4 git mv; barrel re-exports
-      both. archetypes.ts's ./factions → ../factions (factions stays
-      at config root → ai/ bundle later). 1 @/config/archetypes importer
-      → @/config/combat. 31 combat/archetype tests green; check 0.
-- [x] M_V13.DECOMP.CONFIG-PROGRESSION — `config/progression/`:
-      discoveries + meta-unlocks + eras json+ts. Barrel. DONE: 5 git mv
-      (eras.json is data-only — no accessor; its loader is rules/eras.ts
-      via deep import @/config/progression/eras.json). discoveries +
-      meta-unlocks external importers → @/config/progression. 28 tests
-      green; check 0. LEARNING (extends CONFIG-ECONOMY): the repoint
-      grep MUST cover THREE import forms, not just `from '…'`:
-      (1) `from '@/config/X'`, (2) dynamic `await import('@/config/X')`
-      [GameOverModal + persistence used this], (3) deep data import
-      `from '@/config/X.json'` [rules/eras.ts used this]. Static `from`
-      alone misses the latter two and tsc catches them only on full check.
-- [x] M_V13.DECOMP.CONFIG-AI — `config/ai/`: ai-personalities +
-      factions + faction-palette. Barrel. DONE: 4 git mv. LARGEST
-      blast radius (factions imported by ~50 files across world/hud/
-      game/ai/persistence). All forms repointed → @/config/ai (36
-      @/config/factions + 9 ai-personalities + 5 faction-palette + 1
-      ../factions from combat/archetypes). 82 config+ai tests + 3
-      faction-color browser tests green; check 0.
-- [x] M_V13.DECOMP.CONFIG-WORLD — `config/world/`: world + mapgen
-      json+ts. Barrel. DONE: 4 git mv. Only the 15 @/config/mapgen
-      importers needed repointing → @/config/world; the 48
-      @/config/world importers resolved AUTOMATICALLY (world is the
-      eponymous bundle file → @/config/world resolves to world/index.ts
-      via dir resolution — the eponymous-file-free-path principle from
-      CONFIG-ECONOMY, here saving 48 rewrites). 81 tests green; check 0.
-- [x] M_V13.DECOMP.CONFIG-NARRATIVE — `config/narrative/`:
-      match-narrative + myth-events + credits + campaign-chapters +
-      achievements. Barrel. DONE: 7 git mv. myth-events/credits/
-      campaign-chapters have .ts accessors (barrel re-exports);
-      match-narrative.json + achievements.json are data-only (deep
-      import @/config/narrative/X.json). All forms repointed. 30 unit
-      + 3 campaign-overlay browser tests green; check 0.
-- [x] M_V13.DECOMP.CONFIG-ASSETS — `config/assets/`: asset-metadata
-      json+ts. Barrel. DONE: 2 git mv. Bundle dir (assets/) ≠ file name
-      (asset-metadata) so ALL importers repointed → @/config/assets,
-      incl. a relative ../config/asset-metadata in src/assets/assets.ts
-      AND two non-source refs: the asset-manifest test's hardcoded
-      json path + scripts/build-manifest.ts MANIFEST_OUT (the ingest
-      writer — would've regenerated at the old path). 10 asset tests
-      green; check 0. LEARNING: config moves also touch relative
-      ../config/X imports + tooling/test hardcoded fs paths, not just
-      @/config/X module specifiers.
-- [x] M_V13.DECOMP.CONFIG-BARREL — top `config/index.ts` re-exports
-      all 7 domain bundles (economy/combat/progression/ai/world/
-      narrative/assets) + schema. No name collisions on check (consumers
-      use granular @/config/<bundle> paths; barrel is external entry
-      point). config root now: 7 bundle dirs + schema.ts + __tests__.
-      §A2 COMPLETE — former flat config dir → 7 json+ts domain bundles.
-
-### §A3 — world/ feature sub-packages (97 files)
-
-- [x] M_V13.DECOMP.WORLD-AUDIT — enumerate world/ files into feature
-      groups before moving. DONE (Explore-agent audit, 44 top-level
-      files + procedural/ + __tests__). GROUPING:
-      • terrain/ (10): Terrain, terrain-mesh, Roads, Crossings,
-        TileInteraction, HexGridOverlay, Water, PathLine, touch-drag,
-        touch-tap-threshold
-      • biomes/ (4): palette, BiomeSwatch, Mountains, Decoration
-        (palette stays here — BIOME_COLORS is biome-domain, NOT moved
-        to config/render despite agent suggestion = scope creep)
-      • board/ (19): Units, BuilderBadge, HealthBillboard, SelectionRing,
-        UnitHexOutline, BuildingOutlineRing, ConstructionRing,
-        FactionBase, ResourceNodes, ProjectileLayer, RallyMarker,
-        StackRender, ZoneBorder, TrackingRings, barbarian-camps,
-        formations, structure-models, portal-stones, resource-spawn
-      • effects/ (12): ParticleEmitter, particle-consumers,
-        FootstepEmitter, VolcanoLayer, WildfireLayer, DeathDropLayer,
-        LootCacheLayer, ContestedPulse, CombatText, ResourceText,
-        WorldBadge, world-text-font
-      • procedural/ (existing) — barrel in place
-      CROSS-GROUP import edges to handle: Terrain→terrain-mesh→palette
-      (terrain→biomes), FactionBase→procedural (existing), and
-      ResourceText/StackRender→WorldBadge (both effects, intra-group).
-      Move order: biomes first (palette is the leaf dep), then terrain,
-      board, effects, procedural-barrel, world-barrel.
-- [x] M_V13.DECOMP.WORLD-TERRAIN — `world/terrain/`: Terrain,
-      terrain-mesh, Roads, Crossings, TileInteraction, HexGridOverlay,
-      Water, PathLine, touch-drag, touch-tap-threshold. Barrel. DONE:
-      10 git mv. Intra-group edges (Terrain→terrain-mesh, TileInteraction
-      →{HexGridOverlay,PathLine,touch-drag,touch-tap-threshold}) stay ./;
-      cross-group terrain-mesh→biomes bumped to ../biomes. BuildContext
-      type now @/world/terrain (HudLayer/useGameWindowEvents/SelectionPanel
-      auto-repointed). 14 touch unit + 3 gameplay-slice browser green;
-      check 0.
-- [x] M_V13.DECOMP.WORLD-BIOMES — `world/biomes/`: palette, BiomeSwatch,
-      Mountains, Decoration. Barrel. DONE: 4 git mv. terrain-mesh's
-      ./palette → ./biomes; external @/world/{palette,...} → @/world/
-      biomes; __tests__ relative ../palette → ../biomes/palette. 20 unit
-      + 16 biome-swatch browser tests green; check 0.
-- [x] M_V13.DECOMP.WORLD-BOARD — `world/board/`: 19 files (Units +
-      badges/billboards, FactionBase + ConstructionRing + structure-
-      models + portal-stones, ResourceNodes + resource-spawn,
-      ProjectileLayer, RallyMarker, StackRender + formations, ZoneBorder,
-      barbarian-camps, the ring visuals). Barrel. DONE: 19 git mv. Intra-
-      board edges (Units→badges, FactionBase→ConstructionRing/structure-
-      models) stay ./. FactionBase→procedural bumped to ../procedural.
-      Cross-group refs to WorldBadge/world-text-font (effects, not yet
-      moved) point at ../WorldBadge / @/world/world-text-font for now —
-      WILL fix in WORLD-EFFECTS. 60 unit + 1 units-render browser green;
-      check 0.
-- [x] M_V13.DECOMP.WORLD-EFFECTS — `world/effects/`: ParticleEmitter +
-      particle-consumers, FootstepEmitter, Volcano/Wildfire/DeathDrop/
-      LootCache layers, ContestedPulse, CombatText, ResourceText,
-      WorldBadge, world-text-font. Barrel. DONE: 12 git mv. Intra-group
-      edges (particle-consumers→ParticleEmitter, ResourceText/CombatText/
-      WorldBadge→world-text-font) now ./. Fixed the board→effects refs
-      left dangling after WORLD-BOARD (StackRender ../WorldBadge→../effects,
-      BuilderBadge @/world/world-text-font→@/world/effects). 2 particle-
-      perf unit + 2 particle-emitter browser green; check 0.
-      NOTE: Water lives in terrain/ (boundary feature), not effects —
-      directive's parenthetical "(water, ...)" was a planning guess;
-      actual grouping per WORLD-AUDIT.
-- [x] M_V13.DECOMP.WORLD-PROCEDURAL — barrel the existing procedural/
-      sub-tree. DONE: added top procedural/index.ts re-exporting the
-      already-present nested barrels (buildings/, primitives/) + the two
-      top files (faction-materials, FactionMaterialsContext). No file
-      moves (sub-tree was already structured); existing deep imports
-      (@/world/procedural/buildings etc.) kept working. No export
-      collisions. 63 procmesh browser tests green; check 0.
-- [x] M_V13.DECOMP.WORLD-BARREL — top `world/index.ts` re-exports all
-      5 feature sub-packages (biomes/terrain/board/effects/procedural).
-      No name collisions. world/ root now: 5 sub-packages + __tests__,
-      ZERO loose files. §A3 COMPLETE — 44-file flat world dir → 5
-      feature sub-packages. §A COMPLETE (hud 87→8, config flat→7,
-      world 44→5). Full suite 1251 tests green.
-      LEARNING: grep-gate tests that scan source files by HARDCODED fs
-      path (no-hardcoded-faction-colors, color-outline-v3,
-      asset-manifest) break on every move — they're not caught by tsc
-      OR module-specifier greps. After a decomposition pass, grep
-      tests/ + scripts/ for string-literal 'src/<dir>/<File>.tsx' fs
-      paths and update them. Fixed 3 such tests this pass.
-
----
-
-## §B HUD design-review findings (apply AFTER §A)
-
-From `.ui-design/reviews/hud-directory_20260528_100148.md`. Gated on
-the decomposition landing so the fixes apply to clean sub-packages.
-
-- [x] M_V13.HUD.FIX-PILL-COLLISION — FactionChips overlapped ScoreBar
-      at top-center in N-player matches. DONE: added hud/theme/
-      hud-layout.ts with topCenterSlot(row) + TOP_CENTER_SLOT
-      {factionChips:0, scoreBar:1}; both pills now use it (chips row 0,
-      score bar row 1) so they STACK instead of collide. Kept absolute
-      (the HUD wrapper is full-viewport, so absolute==fixed here; true
-      `fixed` would break out of the pointer-events-none container —
-      the review's "fixed" was for viewport-anchoring, which absolute-in-
-      full-viewport-wrapper already gives). FactionChips zIndex now
-      HUD_THEME.z.pills. Added a no-overlap regression test to the
-      faction-chips harness (asserts strip.bottom <= scoreBar.top);
-      eyeballed faction-chips-scorebar-stack.png — clean vertical stack,
-      no overlap. 3 browser tests green; check 0. (review Major #1 +
-      Minor #5)
-- [x] M_V13.HUD.FOCUS-RINGS — DONE: added a global :focus-visible gold
-      outline rule to styles.css covering button / [role=button] /
-      [role=menuitem] / [role=tab] / .hud-interactive — keyboard focus
-      only (the :focus-visible heuristic keeps mouse/touch ring-free).
-      Chose a GLOBAL rule over the directive's "className sweep on every
-      button" (282 inline-styled buttons + Radix-portaled modals render
-      outside any single container — a global stylesheet rule is the
-      correct, lower-risk fix, no per-button edit). Removed the two bare
-      outline:none in MobileSystemMenu (they'd left Radix menu items with
-      NO focus indicator — the actual Major #2 bug). Added focus-rings
-      browser test (recurses @layer to confirm the rule loads). 2 browser
-      tests green; check 0. (review Major #2)
-- [x] M_V13.HUD.TOKEN-SCALE — extend HUD_THEME with `space` (4/8/12/
-      16/24), `z` (board<pills<panels<banners<menu<modal<toast ladder),
-      `tapTarget` (48), `safeTop/Bottom/Left/Right` helpers (non-zero
-      desktop fallback). Barrel-exported. token-scale.test.ts pins all
-      ramps (5 tests). DONE the token DEFINITIONS; per meta-rule, did
-      NOT sweep every magic number repo-wide — adoption happens in the
-      consuming items (FIX-PILL-COLLISION, TAP-TARGETS) as they touch
-      those files. Audited the safe-area `0px`-fallback sites: all add a
-      `+Npx` desktop margin already; SettingsModal sticky-footer's bare
-      env() is intentional (footer has own padding) — NOT the Minor #6
-      bug. (review Major #3 + Minor #6)
-- [x] M_V13.HUD.TAP-TARGETS — DONE: added `.hud-tap-target` utility to
-      styles.css (@layer base) enforcing min 48×48 inline-flex-centered;
-      bumped MobileSpeedPausePill from 36×44 → 48×48 (height + both
-      segment widths now HUD_THEME.tapTarget, radius tapTarget/2). Tightened
-      the pill browser test to assert ALL 4 segments ≥48×48 (was ≥44×36).
-      4 browser tests green; check 0. (review Major #4)
-- [x] M_V13.HUD.AXE-WIDEN — DONE: extended the axe-core sweep past
-      modals to add ScoreBar (pills) + CaptionsOverlay (overlays) scans
-      in a new describe block. Both zero violations. axe-a11y now 6
-      tests (was 4); check 0. (review Minor #7)
-- [x] M_V13.HUD.CHAIN-FIELD — DONE: added a typed `chain` enum
-      (DISCOVERY_CHAINS) to the discoveries.ts Zod schema +
-      DiscoveryConfig + the runtime Discovery type + the registry map;
-      injected `chain` into all 82 discoveries.json entries (derived
-      once from the existing description prefix — all 82 mapped cleanly,
-      zero misc). DiscoveriesPanel now reads `d.chain` directly;
-      deleted the brittle chainForDescription string-prefix parse.
-      Added a chain-coverage test (every entry has a valid chain that
-      matches its description prefix). 6 config + 1 panel browser test
-      green; check 0. (review Minor #8)
-- [x] M_V13.HUD.LAYOUT-SPEC — DONE: wrote docs/specs/21-hud-layout.md
-      capturing the coordinate model, top-center slot table (row 0
-      FactionChips / row 1 ScoreBar), z-ladder, space ramp, safe-area
-      helpers, 48dp tap-target floor, focus-ring rule, and axe gate —
-      each cross-referencing the token/helper + the test that pins it.
-      This is the contract future HUD commits check against. §B COMPLETE.
-      (review Suggestion #3)
-
----
-
-## §C Release ladder
-
-- [ ] M_V13.RELEASE.PR — open ONE PR feat/decomp-subpackages → main.
-      §A + §B landed + reviews absorbed. AGENT ACTION (gh pr create) —
-      NOT a user gate. Do it.
-- [ ] [WAIT-CI] M_V13.RELEASE.CI-WATCH — after PR open, watch 8/8
-      checks + CodeRabbit; address every finding. (Legitimate wait:
-      CI is in flight after the agent triggered it.)
-- [ ] M_V13.RELEASE.SQUASH — squash-merge once CI green + threads
-      resolved (gh pr merge --squash). AGENT ACTION — full automation
-      means the agent merges its own green PR; never --admin past red
-      CI. release-please then cuts the version bump.
+- [x] PR #91 MERGED (squash, 2026-05-28, → main 02dcfed). 8/8 CI green,
+      all CodeRabbit + full-review threads resolved, comprehensive review
+      (5 findings, all fixed). CI-watch + thread-resolution + squash-merge
+      all done autonomously. release-please will compute + cut the next
+      version from the Conventional Commits — the agent does NOT name it.
 
 ---
 
 ## Recurring main-thread hygiene
 
-- [ ] [WAIT] M_MAIN.RELEASE-LADDER — watch release-please PRs
-      (v0.1.27 from #89, v0.1.28 from #90). Merge when CI lands.
+- [ ] [WAIT] M_MAIN.RELEASE-LADDER — when release-please opens its
+      version-bump PR (it computes the number from the merged
+      Conventional Commits — the agent never names it), merge it once CI
+      lands.
 - [x] M_MAIN.DIRECTIVE-EDIT — this overhaul (first commit of the
       decomp PR per user direction). Recurring; carries forward,
       maintained per-commit not in batches.
-- [ ] [WAIT-PR] M_MAIN.CODERABBIT-SWEEP — sweep CodeRabbit threads on
-      open PRs as they post. Zero open PRs right now (the v0.13 PR
-      opens only on user authorization, gated below). Re-arms when a
-      PR exists with a CodeRabbit review.
-- [x] M_MAIN.WORKTREE-CLEANUP — pruned post-#90 merge (only main
-      worktree remains); dropped the agent-state stash.
-- [ ] [WAIT-FLAKE] M_MAIN.GRINDER-WATCH — convert any flake to a
-      deterministic fix, never a retry. IN PROGRESS on save-load-n-player
-      `__game not ready` flake. Round 1 (stuck-loop-debugger): moved
-      installDevHarness from render-phase useMemo → committed useEffect +
-      added atomic `__game_ready` flag (cleared first, set last); all e2e
-      specs gate on it. Regression test: tests/unit/dev-harness-atomic-
-      ready.test.ts. BUT full-suite e2e STILL flaked — wait now gates on
-      __game_ready (succeeds) yet a later evaluate reads __game falsy, so
-      there's a POST-install clear the render-vs-commit fix didn't cover.
-      Round 2 dispatched to the same agent with the sharper contradiction.
-      The pre-push e2e retry (fcb23e9) is the safety net until the real
-      mechanism is found. Do NOT claim resolved until full `pnpm test:e2e`
-      is green twice running.
+- [ ] [WAIT-REVIEW] M_MAIN.CODERABBIT-SWEEP — sweep + resolve CodeRabbit
+      threads on any open PR as they post (recurring). Re-arms whenever a
+      PR is open. CURRENTLY: chore/post-v13 push in flight (pre-push gate
+      running browser+e2e); once on remote the babysit-pr loop opens the PR
+      and services threads here.
+- [ ] [WAIT-REVIEW] M_MAIN.GRINDER-WATCH — convert any flake to a deterministic fix,
+      never a retry (recurring). The save-load-n-player `__game not ready`
+      flake is RESOLVED (root cause: Vite dev-server pushed full page
+      reloads mid-test via the static-assets watcher + HMR; fix: gate them
+      off under VITE_E2E + atomic __game_ready gate + reload-sentinel
+      guard — shipped in #91, full e2e green twice). Re-arms on the next
+      observed flake.
 
 ---
 
-## §post-horizon — v0.14+
+## Backlog — unstarted work
 
-- [ ] [WAIT-PR] M_V14.DECOMP-ECS-GAME — decompose src/ecs/ + src/game/
-      into sub-packages. AUDITED (Explore agent) — grounded grouping +
-      import-edge map below; ready to execute. GATED on the v0.13 PR
-      merging first (one-topic-per-PR — can't open the v0.14 ecs PR while
-      v0.13 is unmerged). Execution starts the moment v0.13 squash-merges.
+The agent NEVER decides version numbers and NEVER version-gates work.
+release-please computes the next version from the Conventional Commits
+after a merge — not the agent's concern. These are just units of work:
+do them on the current ONE local branch as reached, then engage remote
+feedback (CI + CodeRabbit) and squash-merge.
+
+- [x] M_BACKLOG.CI-TEST-SPEED — DONE. Investigated to ground truth:
+      within-suite parallelism is architecturally precluded (browser
+      needs ONE r3f renderer → single Chromium instance mandatory; unit
+      isolate:false breaks koota module-singleton components — both
+      empirically confirmed broken). Shipped on this branch: (a) Playwright
+      browser-binary cache keyed on lockfile (~26s), (b) the structural
+      win — split the monolithic serial build-and-test (unit+browser+
+      builds+e2e ~20min) into a fast-gate job + a PARALLEL browser-and-e2e
+      job, dropping suite wall-clock from ~sum to ~max. (c) fixed the
+      browser SQLite mock's missing saveToStore. CI run on push validates
+      the new job topology.
+
+- [x] M_DECOMP-ECS-GAME — COMPLETE. ecs/systems → 6 sub-packages (phase 1,
+      37e3709), game/ → narrative + utilities leaf groups (phase 2, b2397af),
+      game-root hubs intentionally left flat (phase 3 DECIDED — hub-coupled,
+      barrel-cycle risk > readability gain; see commit 886ae82). All three
+      suites green: unit 1259, browser 228, e2e 12. On branch chore/post-v13.
+      decompose src/ecs/ + src/game/ into
+      sub-packages on the current branch. AUDITED (Explore agent) —
+      grounded grouping + import-edge map below; done.
       Move order by risk:
-      • PHASE 1 (low risk) — ecs/systems/ (28 files, ZERO intra-dir
-        imports, all leaf systems). Groups: combat (combat,
-        offensive-behavior, mob-targeting, wave-defense, stance-behavior),
-        economy (harvest, deposit, hidden-bonus, science, market-trade,
-        loot-pickup), lifecycle (spawn, death, building-death),
-        movement (job-routing, path-follow, engineer-repair, wander,
-        animation), hazards (volcano, quake, wildfire, encroachment),
-        meta (ai, diplomat-contact, status-attributes, win-loss).
-        ONLY economy-tick-phases.ts (game/, the orchestrator) imports
-        all 26 — its 26 paths update to the new barrels. components.ts
-        + world.ts stay at ecs/ root (cross-cut by ALL systems).
-      • PHASE 2 (low risk) — game/ leaf groups: narrative (match-narrative,
-        narrator-beats, myth-events, random-events, daily-challenge,
-        achievements) + utilities (mapgen-helpers, projectiles, rally,
-        auto-save, dev-harness, commands).
-      • PHASE 3 (defer/careful) — game/ economy + diplomacy clusters are
-        hub-coupled (economy.ts 6+5 edges, diplomacy.ts 5+3); game-state.ts
-        stays at root (10+ importers). Decompose only with hub-aware
-        barrels, or leave hubs at root.
-      CROSS-DIR coupling: 10 ecs→game edges (combat→combat-math, deposit/
-        hidden-bonus/science→economy, diplomat-contact→diplomacy, etc.),
-        3 game→ecs (economy-tick-phases→26, game-state→ai, random-events
-        →quake/wildfire). Manageable; ecs-first is independently shippable.
+      • PHASE 1 — DONE (commit 37e3709): ecs/systems/ 28 files → 6 groups
+        (combat/economy/lifecycle/movement/hazards/meta) + barrels. build.ts
+        → lifecycle (the audit missed it). offensive-behavior→combat
+        DamageEvent edge stays intra-group. All 90 importers + the
+        economy-tick-phases orchestrator + __tests__ rewritten to group
+        barrels. tsc 0; no new cycles. components.ts + world.ts stayed at
+        ecs/ root. (Full-suite AI-vs-AI timeout flakes are pre-existing
+        CPU-contention, not this move — pass isolated + grouped.)
+      • PHASE 2 — DONE (commit b2397af): game/ leaf groups narrative/
+        (match-narrative, narrator-beats, myth-events, random-events,
+        daily-challenge, achievements) + utilities/ (mapgen-helpers,
+        projectiles, rally, auto-save, dev-harness, commands). 72 affected
+        tests green; tsc 0.
+      • PHASE 3 — DECIDED: leave the game-root hubs (game-state.ts +
+        economy + diplomacy clusters) AT ROOT. They're hub-coupled
+        (economy 6+5 edges, diplomacy 5+3, game-state 10+ importers) and
+        the architecture review already flagged barrel-cycle risk in that
+        territory. Per the meta-rule (only build what's needed; sunk-cost
+        isn't a tiebreaker) + "refactors not shims", forcing them into
+        sub-packages would manufacture the exact cycles the leaf-group
+        work avoided, for no readability gain on files that are already
+        single-responsibility. The clean win (leaf groups) shipped; the
+        hubs stay flat until a concrete need demands otherwise. M_DECOMP-
+        ECS-GAME COMPLETE (ecs/systems 6 groups + game/ 2 leaf groups;
+        hubs intentionally flat).
 - [ ] [WAIT-DEVICE] M_V14.MOBILE-DEVICE-AUDIT — the M_V12.MOBILE
       tap-audit / safe-area / orientation / offline items that need
       a real Pixel 5a / iPhone 14 (genuine hardware dependency).

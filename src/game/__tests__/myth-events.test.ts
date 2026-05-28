@@ -15,7 +15,7 @@ import {
   createMythEventsState,
   fireMythEvent,
   pickMythEvent,
-} from '@/game/myth-events';
+} from '@/game/narrative';
 
 describe('MYTH_EVENTS registry', () => {
   it('contains the 5 declared events', () => {

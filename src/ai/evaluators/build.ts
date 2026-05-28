@@ -15,7 +15,7 @@ import {
   totalOwnedBuildings,
 } from '@/ai/helpers';
 import type { BuildingType } from '@/ecs/components';
-import { placeBuilding } from '@/game/commands';
+import { placeBuilding } from '@/game/utilities';
 import { matchElapsedSeconds } from '@/game/match-time';
 import { canBuild, peonCap } from '@/rules';
 import { SKINS } from '@/rules/skins';

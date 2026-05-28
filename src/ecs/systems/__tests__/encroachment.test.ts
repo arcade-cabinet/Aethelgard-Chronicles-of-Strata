@@ -10,7 +10,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { type Faction, FactionTrait, HexPosition, Unit } from '@/ecs/components';
-import { encroachmentSystem } from '@/ecs/systems/encroachment';
+import { encroachmentSystem } from '@/ecs/systems/hazards';
 import { startGame } from '@/game/game-state';
 import { claimTile } from '@/game/zone';
 

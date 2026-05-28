@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
 import { EnemySpawner, FactionTrait, HexPosition, Unit } from '@/ecs/components';
-import { spawnSystem } from '@/ecs/systems/spawn';
+import { spawnSystem } from '@/ecs/systems/lifecycle';
 import { createEcsWorld } from '@/ecs/world';
 
 /** Count enemy units of a role. */

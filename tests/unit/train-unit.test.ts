@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FactionTrait, Unit } from '@/ecs/components';
-import { trainUnit } from '@/game/commands';
+import { trainUnit } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 const SEED = 'train-unit-test';

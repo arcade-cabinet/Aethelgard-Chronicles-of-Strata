@@ -12,9 +12,9 @@ import {
   Transform,
   Unit,
 } from '@/ecs/components';
-import type { DamageEvent } from '@/ecs/systems/combat';
+import type { DamageEvent } from './combat';
 import type { GameState } from '@/game/game-state';
-import { type Projectile, spawnProjectile } from '@/game/projectiles';
+import { type Projectile, spawnProjectile } from '@/game/utilities';
 import { damageStack } from '@/game/stacking';
 // M_REGISTRY.17 — MILITARY set unified into UNIT_PROFILES.combatRole.
 // Was a 6-role hand-built set duplicated across 3 modules; corrected

@@ -12,7 +12,7 @@
 import { Goal, GoalEvaluator } from 'yuka';
 import type { AiPlayer } from '@/ai/ai-player';
 import { personalityFor } from '@/config/ai';
-import { resign } from '@/game/commands';
+import { resign } from '@/game/utilities';
 
 export { ResignGoal };
 

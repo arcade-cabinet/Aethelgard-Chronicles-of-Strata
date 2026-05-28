@@ -8,7 +8,7 @@ import {
   hashStringFnv1a,
   todayUTC,
   todaysDailyChallengeSeed,
-} from '@/game/daily-challenge';
+} from '@/game/narrative';
 
 describe('M_V11.DAILY-CHALLENGE — seed-of-the-day determinism', () => {
   it('todayUTC formats as YYYY-MM-DD with leading zeros', () => {

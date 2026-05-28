@@ -16,7 +16,7 @@ import {
   Transform,
   Unit,
 } from '@/ecs/components';
-import { pathFollowSystem } from '@/ecs/systems/path-follow';
+import { pathFollowSystem } from '@/ecs/systems/movement';
 
 // Coderabbit MAJOR PR #10 05:46Z — proper Tile-typed stub so the
 // pathFollowSystem call no longer needs `as never`.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AnimationState, Health, Unit } from '@/ecs/components';
-import { deathSystem } from '@/ecs/systems/death';
+import { deathSystem } from '@/ecs/systems/lifecycle';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('death system', () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Building, FactionTrait, HexPosition } from '@/ecs/components';
-import { upgradeBuilding } from '@/game/commands';
+import { upgradeBuilding } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 /**

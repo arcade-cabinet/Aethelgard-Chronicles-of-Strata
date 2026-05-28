@@ -17,11 +17,11 @@ import {
   Selectable,
   Unit,
 } from '@/ecs/components';
-import { resetAiDirector } from '@/ecs/systems/ai';
+import { resetAiDirector } from '@/ecs/systems/meta';
 import type { DamageEvent } from '@/ecs/systems/combat';
-import type { ResourceDepositEvent } from '@/ecs/systems/deposit';
+import type { ResourceDepositEvent } from '@/ecs/systems/economy';
 import { createEcsWorld } from '@/ecs/world';
-import type { Projectile } from './projectiles';
+import type { Projectile } from './utilities';
 
 /**
  * Monotonic counter for projectile React keys — shared across all games.
@@ -46,9 +46,13 @@ import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/ai
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import type { Faction } from '@/ecs/components';
-import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/ecs/systems/volcano';
-import type { BurnState } from '@/ecs/systems/wildfire';
-import type { GameOutcome } from '@/ecs/systems/win-loss';
+import {
+  createVolcanoState,
+  placeVolcanoLandmark,
+  type VolcanoState,
+  type BurnState,
+} from '@/ecs/systems/hazards';
+import type { GameOutcome } from '@/ecs/systems/meta';
 import { discoveryById } from '@/rules/discovery-registry';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
 import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';
@@ -60,7 +64,7 @@ import {
   spawnBarbarianCamp,
 } from '@/world/board';
 import { type ResourceNodePlan, spawnResourceNodes } from '@/world/board';
-import type { AutoSave } from './auto-save';
+import type { AutoSave } from './utilities';
 import { createClock, type GameClock } from './clock';
 import type { Difficulty } from './difficulty';
 import { createDiplomacyState, type DiplomacyState } from './diplomacy';
@@ -75,10 +79,13 @@ import {
   tickScoringPhase,
   tickTerrainPhase,
 } from './economy-tick-phases';
-import { findBalancedBoard, matchLengthScale } from './mapgen-helpers';
-import { createMythEventsState, type MythEventsState } from './myth-events';
-import { createRally, type RallyState } from './rally';
-import { createRandomEventsState, type RandomEventsState } from './random-events';
+import { findBalancedBoard, matchLengthScale, createRally, type RallyState } from './utilities';
+import {
+  createMythEventsState,
+  type MythEventsState,
+  createRandomEventsState,
+  type RandomEventsState,
+} from './narrative';
 import { createResearch, type ResearchId, type ResearchState } from './research';
 import { createWeather, type Weather } from './weather';
 import { createZoneState, seedZonesFromAttractors, type ZoneState } from './zone';

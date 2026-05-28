@@ -23,9 +23,9 @@ import {
   HexPosition,
   Unit,
 } from '@/ecs/components';
-import { diplomatContactSystem } from '@/ecs/systems/diplomat-contact';
-import { engineerRepairSystem } from '@/ecs/systems/engineer-repair';
-import { buildSystem } from '@/ecs/systems/build';
+import { diplomatContactSystem } from '@/ecs/systems/meta';
+import { engineerRepairSystem } from '@/ecs/systems/movement';
+import { buildSystem } from '@/ecs/systems/lifecycle';
 import { hasHadContact } from '@/game/diplomacy-tribute';
 import { startGame } from '@/game/game-state';
 

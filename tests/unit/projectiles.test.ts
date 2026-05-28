@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { advanceProjectiles, type Projectile, spawnProjectile } from '@/game/projectiles';
+import { advanceProjectiles, type Projectile, spawnProjectile } from '@/game/utilities';
 
 describe('projectile FX (M_COMBAT_POLISH.1)', () => {
   it('spawnProjectile appends with monotonic ids', () => {

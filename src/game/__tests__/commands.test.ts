@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HexPosition, PathQueue } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
-import { issueMoveOrder, moveUnit } from '@/game/commands';
+import { issueMoveOrder, moveUnit } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 // M_V11.OPEN.SPAWN — playerPawn now points at the Palace entity

@@ -11,7 +11,7 @@ import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
 import { EnemySpawner, FactionTrait, HexPosition } from '@/ecs/components';
-import { spawnSystem } from '@/ecs/systems/spawn';
+import { spawnSystem } from '@/ecs/systems/lifecycle';
 
 function findWalkable(board: ReturnType<typeof generateBoard>) {
   for (const t of board.tiles.values()) if (t.walkable) return t;

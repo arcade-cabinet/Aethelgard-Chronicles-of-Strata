@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AttractorBehavior, DefensiveBehavior, OffensiveBehavior } from '@/ecs/components';
-import { placeBuilding } from '@/game/commands';
+import { placeBuilding } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 describe('Wonder building (M_FEATURE.4)', () => {

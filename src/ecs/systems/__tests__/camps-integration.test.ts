@@ -30,9 +30,8 @@ import {
   LootCache,
   Unit,
 } from '@/ecs/components';
-import { deathSystem } from '@/ecs/systems/death';
-import { lootPickupSystem } from '@/ecs/systems/loot-pickup';
-import { spawnSystem } from '@/ecs/systems/spawn';
+import { deathSystem, spawnSystem } from '@/ecs/systems/lifecycle';
+import { lootPickupSystem } from '@/ecs/systems/economy';
 import type { GameState } from '@/game/game-state';
 
 function findWalkableWithNeighbor(board: ReturnType<typeof generateBoard>) {

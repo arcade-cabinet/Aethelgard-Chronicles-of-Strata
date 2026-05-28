@@ -10,7 +10,7 @@ import {
   ResourceTrait,
   Unit,
 } from '@/ecs/components';
-import { jobRoutingSystem } from '@/ecs/systems/job-routing';
+import { jobRoutingSystem } from '@/ecs/systems/movement';
 import { createEcsWorld } from '@/ecs/world';
 import { createZoneState } from '@/game/zone';
 

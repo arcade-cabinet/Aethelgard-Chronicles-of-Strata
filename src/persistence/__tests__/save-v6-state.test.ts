@@ -23,7 +23,7 @@ import { setRelation } from '@/game/diplomacy';
 import { proposeNonAggressionPact } from '@/game/diplomacy-border';
 import { acceptTribute } from '@/game/diplomacy-tribute';
 import { startGame } from '@/game/game-state';
-import { fireMythEvent } from '@/game/myth-events';
+import { fireMythEvent } from '@/game/narrative';
 import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
 
 function fresh(): ReturnType<typeof startGame> {

@@ -5,7 +5,7 @@
  * behaviour + return-changed contract.
  */
 import { describe, expect, it } from 'vitest';
-import { advanceProjectiles, type Projectile, spawnProjectile } from '@/game/projectiles';
+import { advanceProjectiles, type Projectile, spawnProjectile } from '@/game/utilities';
 
 const ORIGIN = { x: 0, y: 0, z: 0 };
 const TARGET = { x: 1, y: 0, z: 1 };

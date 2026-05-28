@@ -18,7 +18,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BoardData, Tile } from '@/core/board';
 import { FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
-import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
+import { statusAttributesSystem } from '@/ecs/systems/meta';
 import { createEcsWorld } from '@/ecs/world';
 
 function swampMap(): BoardData['tiles'] {

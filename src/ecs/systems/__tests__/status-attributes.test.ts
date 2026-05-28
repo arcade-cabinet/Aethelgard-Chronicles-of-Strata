@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BoardData, Tile } from '@/core/board';
 import { Building, FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
-import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
+import { statusAttributesSystem } from '@/ecs/systems/meta';
 import { createEcsWorld } from '@/ecs/world';
 
 function tilesAt(q: number, r: number, type: Tile['type']): BoardData['tiles'] {

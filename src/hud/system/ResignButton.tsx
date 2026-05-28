@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { useState } from 'react';
-import { resign } from '@/game/commands';
+import { resign } from '@/game/utilities';
 import type { GameState } from '@/game/game-state';
 import { HudPill } from '../primitives';
 import { HUD_THEME } from '../theme';

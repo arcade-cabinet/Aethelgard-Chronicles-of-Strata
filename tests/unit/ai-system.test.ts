@@ -9,7 +9,7 @@ import {
   HexPosition,
   PathQueue,
 } from '@/ecs/components';
-import { aiSystem } from '@/ecs/systems/ai';
+import { aiSystem } from '@/ecs/systems/meta';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('AI system', () => {

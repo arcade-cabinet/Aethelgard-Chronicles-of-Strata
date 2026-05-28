@@ -27,7 +27,7 @@
  * this asserts that can never happen.
  */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { installDevHarness } from '@/game/dev-harness';
+import { installDevHarness } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 // The unit project runs in the `node` env (no DOM). installDevHarness

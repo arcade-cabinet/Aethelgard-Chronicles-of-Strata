@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resign } from '@/game/commands';
+import { resign } from '@/game/utilities';
 import { runEconomyTick, startGame } from '@/game/game-state';
 
 describe('Resign command (M_MODES.10)', () => {

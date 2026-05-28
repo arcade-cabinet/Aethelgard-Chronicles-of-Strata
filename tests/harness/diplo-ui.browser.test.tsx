@@ -12,7 +12,7 @@ import { createDiplomacyState } from '@/game/diplomacy';
 import { createDiplomacyProposalState, proposeNonAggressionPact } from '@/game/diplomacy-border';
 import { createTradeCooldownState } from '@/game/diplomacy-trade';
 import { createEconomy } from '@/game/economy';
-import { createMythEventsState } from '@/game/myth-events';
+import { createMythEventsState } from '@/game/narrative';
 import { createResearch } from '@/game/research';
 import { NonAggressionPactPill } from '@/hud/pills';
 import { TradeSwapWidget } from '@/hud/system';

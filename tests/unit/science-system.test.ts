@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Building, ScienceProducer } from '@/ecs/components';
-import { placeBuilding } from '@/game/commands';
+import { placeBuilding } from '@/game/utilities';
 import { runEconomyTick, startGame } from '@/game/game-state';
 
 describe('science accumulation (M_FEATURE.3)', () => {

@@ -11,7 +11,7 @@
 import { describe, expect, it } from 'vitest';
 import type { BoardData } from '@/core/board';
 import { generateBoard } from '@/core/board';
-import { passes4xBalanceGates } from '@/game/mapgen-helpers';
+import { passes4xBalanceGates } from '@/game/utilities';
 
 /** Build a minimal BoardData with manually-specified tiles. */
 function mockBoard(

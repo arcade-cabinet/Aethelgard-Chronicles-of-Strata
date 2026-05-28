@@ -18,7 +18,7 @@ import {
   Transform,
   Unit,
 } from '@/ecs/components';
-import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
+import { offensiveBehaviorSystem } from '@/ecs/systems/combat';
 
 function spawnTower(world: ReturnType<typeof createWorld>, faction: Faction, q: number, r: number) {
   return world.spawn(

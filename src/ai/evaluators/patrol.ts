@@ -13,7 +13,7 @@ import {
   firstPulsingTile,
   randomPerimeterTile,
 } from '@/ai/helpers';
-import { moveUnit } from '@/game/commands';
+import { moveUnit } from '@/game/utilities';
 
 export { PatrolGoal };
 

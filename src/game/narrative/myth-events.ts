@@ -19,7 +19,7 @@ import {
   MYTH_MIN_INTERVAL_SECONDS,
   mythEventFor,
 } from '@/config/narrative';
-import type { GameEconomy } from './economy';
+import type { GameEconomy } from '../economy';
 
 /** The active myth-event state. */
 export interface MythEventsState {

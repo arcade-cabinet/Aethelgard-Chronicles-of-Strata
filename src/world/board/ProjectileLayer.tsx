@@ -2,7 +2,7 @@ import { useFrame } from '@react-three/fiber';
 import { useRef, useState } from 'react';
 import { ConeGeometry, type Mesh } from 'three';
 import type { GameState } from '@/game/game-state';
-import type { Projectile } from '@/game/projectiles';
+import type { Projectile } from '@/game/utilities';
 
 /** Per-kind material color — extensible via a config row when more kinds land. */
 const KIND_COLOR: Record<Projectile['kind'], string> = {

@@ -8,7 +8,7 @@ import {
   PathQueue,
   ResourceTrait,
 } from '@/ecs/components';
-import { harvestSystem } from '@/ecs/systems/harvest';
+import { harvestSystem } from '@/ecs/systems/economy';
 import { createEcsWorld } from '@/ecs/world';
 
 /** Spawn a resource node entity at a tile and return its key. */

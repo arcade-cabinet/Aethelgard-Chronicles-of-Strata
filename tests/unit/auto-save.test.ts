@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createAutoSave, tickAutoSave } from '@/game/auto-save';
+import { createAutoSave, tickAutoSave } from '@/game/utilities';
 
 describe('auto-save', () => {
   it('fires the save callback once per interval', () => {

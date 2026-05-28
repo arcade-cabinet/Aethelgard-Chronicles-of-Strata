@@ -12,7 +12,7 @@
 import { describe, expect, it } from 'vitest';
 import { AssignedJob, HexPosition, PeonAutonomy, Unit } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
-import { findSelectableAtTile, setPeonAutoMode } from '@/game/commands';
+import { findSelectableAtTile, setPeonAutoMode } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 // M_V11.OPEN.SPAWN — startGame no longer pre-spawns peons. The

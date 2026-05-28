@@ -24,46 +24,60 @@ import {
   Health,
   Unit,
 } from '@/ecs/components';
-import { aiSystem } from '@/ecs/systems/ai';
-import { animationSystem } from '@/ecs/systems/animation';
-import { buildSystem } from '@/ecs/systems/build';
-import { buildingDeathSystem } from '@/ecs/systems/building-death';
-import { combatSystem, type DamageEvent } from '@/ecs/systems/combat';
-import { deathSystem } from '@/ecs/systems/death';
-import { diplomatContactSystem } from '@/ecs/systems/diplomat-contact';
-import { engineerRepairSystem } from '@/ecs/systems/engineer-repair';
-import { marketTradeSystem } from '@/ecs/systems/market-trade';
-import { waveDefenseSystem } from '@/ecs/systems/wave-defense';
-import { depositSystem, type ResourceDepositEvent } from '@/ecs/systems/deposit';
-import { encroachmentSystem } from '@/ecs/systems/encroachment';
-import { harvestSystem } from '@/ecs/systems/harvest';
-import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
-import { jobRoutingSystem } from '@/ecs/systems/job-routing';
-import { lootPickupSystem } from '@/ecs/systems/loot-pickup';
-import { mobTargetingSystem } from '@/ecs/systems/mob-targeting';
-import { offensiveBehaviorSystem } from '@/ecs/systems/offensive-behavior';
-import { pathFollowSystem } from '@/ecs/systems/path-follow';
-import { scienceSystem } from '@/ecs/systems/science';
-import { spawnSystem } from '@/ecs/systems/spawn';
-import { stanceBehaviorSystem } from '@/ecs/systems/stance-behavior';
-import { statusAttributesSystem } from '@/ecs/systems/status-attributes';
-import { volcanoSystem } from '@/ecs/systems/volcano';
-import { wanderSystem } from '@/ecs/systems/wander';
-import { wildfireSystem } from '@/ecs/systems/wildfire';
-import { evaluateWinLoss } from '@/ecs/systems/win-loss';
+import {
+  combatSystem,
+  waveDefenseSystem,
+  mobTargetingSystem,
+  offensiveBehaviorSystem,
+  stanceBehaviorSystem,
+  type DamageEvent,
+} from '@/ecs/systems/combat';
+import {
+  marketTradeSystem,
+  depositSystem,
+  harvestSystem,
+  hiddenBonusSystem,
+  lootPickupSystem,
+  scienceSystem,
+  type ResourceDepositEvent,
+} from '@/ecs/systems/economy';
+import { encroachmentSystem, volcanoSystem, wildfireSystem } from '@/ecs/systems/hazards';
+import {
+  buildSystem,
+  buildingDeathSystem,
+  deathSystem,
+  spawnSystem,
+} from '@/ecs/systems/lifecycle';
+import {
+  aiSystem,
+  diplomatContactSystem,
+  statusAttributesSystem,
+  evaluateWinLoss,
+} from '@/ecs/systems/meta';
+import {
+  animationSystem,
+  engineerRepairSystem,
+  jobRoutingSystem,
+  pathFollowSystem,
+  wanderSystem,
+} from '@/ecs/systems/movement';
 import { presetFor, recomputeMaxSupply, SUPPLY_COST } from '@/rules';
 import { chokePointMultiplier } from '@/rules/choke-points';
 import { refreshPortalStoneCooldown, tickPortalStonesTrigger } from '@/world/board';
-import { tickAutoSave } from './auto-save';
+import { tickAutoSave } from './utilities';
 import { advanceClock, cyclePhase } from './clock';
 import { tickAllianceExpiry } from './diplomacy';
 import { expireProposals } from './diplomacy-border';
 import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
 import type { GameState } from './game-state';
-import { advanceProjectiles } from './projectiles';
-import { tickEnemyAtPalaceToast, tickInactivityBeats } from './narrator-beats';
-import { tickLongReignEscalation, tickRandomEvents } from './random-events';
+import { advanceProjectiles } from './utilities';
+import {
+  tickEnemyAtPalaceToast,
+  tickInactivityBeats,
+  tickLongReignEscalation,
+  tickRandomEvents,
+} from './narrative';
 import { grantRandomDiscovery } from './research';
 import { autoFormMobRabble, autoFormWorkCrews, dissolveStaleWorkCrews } from './stack-auto-form';
 // createStack + dissolveStack moved with the auto-form helpers

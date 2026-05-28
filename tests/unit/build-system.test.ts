@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AssignedJob, Building, Harvester } from '@/ecs/components';
-import { buildSystem } from '@/ecs/systems/build';
+import { buildSystem } from '@/ecs/systems/lifecycle';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('build system', () => {
