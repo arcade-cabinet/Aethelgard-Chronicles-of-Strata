@@ -144,7 +144,6 @@ export type StaticAssetPath =
   'assets/structures/portal-crypt.glb' |
   'assets/structures/portal-fence.glb' |
   'favicon.svg' |
-  'manifest.json' |
   'privacy.html' |
   'privacy.md' |
   'sql-wasm.wasm';
@@ -343,7 +342,6 @@ const assets = new Set<string>([
   'assets/structures/portal-crypt.glb',
   'assets/structures/portal-fence.glb',
   'favicon.svg',
-  'manifest.json',
   'privacy.html',
   'privacy.md',
   'sql-wasm.wasm'
