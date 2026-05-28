@@ -167,18 +167,23 @@ feedback (CI + CodeRabbit) and squash-merge.
         barrels. tsc 0; no new cycles. components.ts + world.ts stayed at
         ecs/ root. (Full-suite AI-vs-AI timeout flakes are pre-existing
         CPU-contention, not this move — pass isolated + grouped.)
-      • PHASE 2 (low risk) — game/ leaf groups: narrative (match-narrative,
-        narrator-beats, myth-events, random-events, daily-challenge,
-        achievements) + utilities (mapgen-helpers, projectiles, rally,
-        auto-save, dev-harness, commands).
-      • PHASE 3 (defer/careful) — game/ economy + diplomacy clusters are
-        hub-coupled (economy.ts 6+5 edges, diplomacy.ts 5+3); game-state.ts
-        stays at root (10+ importers). Decompose only with hub-aware
-        barrels, or leave hubs at root.
-      CROSS-DIR coupling: 10 ecs→game edges (combat→combat-math, deposit/
-        hidden-bonus/science→economy, diplomat-contact→diplomacy, etc.),
-        3 game→ecs (economy-tick-phases→26, game-state→ai, random-events
-        →quake/wildfire). Manageable; ecs-first is independently shippable.
+      • PHASE 2 — DONE (commit b2397af): game/ leaf groups narrative/
+        (match-narrative, narrator-beats, myth-events, random-events,
+        daily-challenge, achievements) + utilities/ (mapgen-helpers,
+        projectiles, rally, auto-save, dev-harness, commands). 72 affected
+        tests green; tsc 0.
+      • PHASE 3 — DECIDED: leave the game-root hubs (game-state.ts +
+        economy + diplomacy clusters) AT ROOT. They're hub-coupled
+        (economy 6+5 edges, diplomacy 5+3, game-state 10+ importers) and
+        the architecture review already flagged barrel-cycle risk in that
+        territory. Per the meta-rule (only build what's needed; sunk-cost
+        isn't a tiebreaker) + "refactors not shims", forcing them into
+        sub-packages would manufacture the exact cycles the leaf-group
+        work avoided, for no readability gain on files that are already
+        single-responsibility. The clean win (leaf groups) shipped; the
+        hubs stay flat until a concrete need demands otherwise. M_DECOMP-
+        ECS-GAME COMPLETE (ecs/systems 6 groups + game/ 2 leaf groups;
+        hubs intentionally flat).
 - [ ] [WAIT-DEVICE] M_V14.MOBILE-DEVICE-AUDIT — the M_V12.MOBILE
       tap-audit / safe-area / orientation / offline items that need
       a real Pixel 5a / iPhone 14 (genuine hardware dependency).
