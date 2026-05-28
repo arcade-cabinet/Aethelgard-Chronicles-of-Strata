@@ -115,6 +115,29 @@ export default defineConfig(({ mode }) => ({
       },
     },
   ],
+  // M_V13.HARNESS.NO-RELOAD-UNDER-E2E — under e2e the dev server must
+  // NEVER push a reload to a running test page. Two independent Vite
+  // mechanisms otherwise do exactly that mid-test, both timing-dependent
+  // (hence the passes-in-isolation / fails-under-parallel-load flake):
+  //   1. HMR / full-reload on a source change (file watcher) — and
+  //      Fast-Refresh remounts that discard injected test state.
+  //   2. Dependency RE-OPTIMIZATION: the first time a code path (e.g.
+  //      deserializeGame in the save-load round-trip) pulls in a module
+  //      Vite hadn't pre-bundled, Vite re-optimizes deps and broadcasts
+  //      a full reload to ALL clients.
+  // The decisive lever for BOTH: `server.hmr: false` tears down the HMR
+  // websocket, the sole channel Vite uses to push `full-reload` /
+  // `update` to a client — covering source-change reloads, Fast-Refresh
+  // remounts, AND dependency-re-optimization reloads at once. Disabling
+  // the file watcher removes the trigger for (1) outright.
+  ...(IS_E2E
+    ? {
+        server: {
+          hmr: false as const,
+          watch: null,
+        },
+      }
+    : {}),
   optimizeDeps: {
     include: ['three/examples/jsm/utils/SkeletonUtils.js'],
   },

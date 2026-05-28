@@ -129,10 +129,15 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
       timeout: 60_000,
     });
 
-    await page.evaluate((snapJson: string) => {
-      const snap = JSON.parse(snapJson);
-      (window as { __game_load?: (s: unknown) => void }).__game_load?.(snap);
-    }, snapshotJson);
+    const RELOAD_SENTINEL_2 = `nplayer-post-${Date.now()}`;
+    await page.evaluate(
+      ([snapJson, sentinel]: [string, string]) => {
+        (window as { __reloadSentinel?: string }).__reloadSentinel = sentinel;
+        const snap = JSON.parse(snapJson);
+        (window as { __game_load?: (s: unknown) => void }).__game_load?.(snap);
+      },
+      [snapshotJson, RELOAD_SENTINEL_2] as [string, string],
+    );
 
     await page.waitForTimeout(300);
 
@@ -141,6 +146,16 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
       (window as { __game_advanceFrames?: (n: number) => void }).__game_advanceFrames?.(18_000);
     });
     await page.waitForTimeout(500);
+
+    // Reload sentinel guard for the post-restore window too.
+    const sentinel2Survived = await page.evaluate(
+      (s: string) => (window as { __reloadSentinel?: string }).__reloadSentinel === s,
+      RELOAD_SENTINEL_2,
+    );
+    expect(
+      sentinel2Survived,
+      'Page reloaded during the post-restore window (sentinel lost). See VITE_E2E note above.',
+    ).toBe(true);
 
     // 8. Assert post-restore state.
     type PostRestore = {
