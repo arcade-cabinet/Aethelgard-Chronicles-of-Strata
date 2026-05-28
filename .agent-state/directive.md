@@ -195,8 +195,17 @@ URL-param + dev-window hooks).
 
 - [ ] M_V13.DECOMP.CONFIG-SCHEMA — extract shared Zod helpers to
       `src/config/schema.ts` (ResourceCost etc.).
-- [ ] M_V13.DECOMP.CONFIG-ECONOMY — `config/economy/`: economy +
-      resources json+ts. Barrel.
+- [x] M_V13.DECOMP.CONFIG-ECONOMY — `config/economy/`: economy +
+      resources json+ts. Barrel. DONE: 4 git mv into economy/; barrel
+      re-exports both. economy.ts's @/config/resources → ./resources.
+      LEARNING (applies to all remaining CONFIG-* bundles): config
+      consumers import by bare domain path (@/config/X). When a bundle
+      MERGES a non-eponymous file (resources into economy/), that file's
+      external importers must repoint to the BUNDLE barrel path
+      (@/config/resources → @/config/economy), else the old peer path
+      404s and resource-type inference collapses repo-wide. The
+      eponymous file (economy → economy/) keeps its path free via dir
+      resolution. 72 tests green; check 0.
 - [ ] M_V13.DECOMP.CONFIG-COMBAT — `config/combat/`: combat +
       archetypes json+ts. Barrel.
 - [ ] M_V13.DECOMP.CONFIG-PROGRESSION — `config/progression/`:

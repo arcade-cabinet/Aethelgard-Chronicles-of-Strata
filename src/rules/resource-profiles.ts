@@ -21,7 +21,7 @@
  *   - the prior hand-coded RESOURCE_PROFILES table
  */
 import { harvestYieldFor } from '@/config/economy';
-import { RESOURCES } from '@/config/resources';
+import { RESOURCES } from '@/config/economy';
 import type { ResourceType } from '@/ecs/components';
 
 export interface ResourceProfile {

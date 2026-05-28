@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { RESOURCE_IDS } from '@/config/resources';
 import { resourceCostSchema, resourceIdSchema } from '@/config/schema';
+import { RESOURCE_IDS } from './resources';
 import type { BuildingType, ResourceType, UnitType } from '@/ecs/components';
 import type { ResourceCost } from '@/game/economy';
 import economyJson from './economy.json';

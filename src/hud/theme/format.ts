@@ -1,4 +1,4 @@
-import { RESOURCES } from '@/config/resources';
+import { RESOURCES } from '@/config/economy';
 import { RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import type { ResourceCost } from '@/game/economy';
 
