@@ -180,8 +180,16 @@ URL-param + dev-window hooks).
       setup/PresetControls now import @/hud/modals (../modals). All
       importers (App, FixtureApp, HudLayer + 11 browser tests) →
       @/hud/modals. 17 browser tests green; check 0, lint clean.
-- [ ] M_V13.DECOMP.HUD-BARREL — top `src/hud/index.ts` re-exporting
-      every sub-package barrel; update App.tsx to import from barrels.
+- [x] M_V13.DECOMP.HUD-BARREL — top `src/hud/index.ts` re-exports all
+      8 sub-package barrels (theme/primitives/pills/setup/selection/
+      overlays/system/modals) + HudLayer + the cross-cut helper
+      modules (aria-live-bus/captions/hotkey-bindings/i18n/minimap-zoom/
+      ui-store/usePinchZoom/useRafLoop). No name collisions. Internal
+      HUD consumers keep GRANULAR sub-package imports (not the god-
+      barrel) — tree-shaking + martian-trail/koota pattern. Consolidated
+      HudLayer's 40 one-per-line imports → 5 grouped (one per bucket)
+      and App's 7 → 3. gameplay-slice + zone-legend integration smoke
+      green (the v0.12 hooks-regression paths); check 0, lint clean.
 
 ### §A2 — config/ domain sub-packages (22 files → 7 bundles)
 

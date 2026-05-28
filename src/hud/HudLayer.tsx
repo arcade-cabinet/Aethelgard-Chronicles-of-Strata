@@ -18,24 +18,18 @@ import type { GameState } from '@/game/game-state';
 import type { Persistence } from '@/persistence/persistence';
 import type { ViewportProfile } from '@/render/useViewport';
 import type { BuildContext } from '@/world/TileInteraction';
-import { AchievementWatcher } from '@/hud/system';
-import { AriaLiveRegion } from '@/hud/overlays';
-import { AtelierScreen } from '@/hud/modals';
-import { BuildMenuButton } from '@/hud/selection';
-import { BuildQueueStrip } from '@/hud/selection';
-import { CampaignOverlay } from '@/hud/overlays';
-import { CaptionsOverlay } from '@/hud/overlays';
-import { CriticalWarning } from '@/hud/overlays';
-import { DiplomacyModal } from '@/hud/modals';
-import { DiscoveriesPanel } from '@/hud/modals';
-import { GameOverModal } from '@/hud/modals';
-import { IdleUnitIndicator } from '@/hud/selection';
-import { KeyboardShortcuts } from '@/hud/system';
-import { Minimap } from '@/hud/system';
-import { MultiSelectActions } from '@/hud/selection';
-import { OnboardingOverlay } from '@/hud/overlays';
-import { PauseControl } from '@/hud/system';
-import { PersistAchievements } from '@/hud/system';
+import { AtelierScreen, DiplomacyModal, DiscoveriesPanel, GameOverModal } from '@/hud/modals';
+import {
+  AriaLiveRegion,
+  CampaignOverlay,
+  CaptionsOverlay,
+  CriticalWarning,
+  OnboardingOverlay,
+  Toasts,
+  TributeDemandBanner,
+  TutorialOverlay,
+  WaveDefenseOverlay,
+} from '@/hud/overlays';
 import {
   FactionChips,
   MatchAgePill,
@@ -48,16 +42,25 @@ import {
   ZoneControlPill,
   ZoneFlipPulse,
 } from '@/hud/pills';
-import { ResourceBar } from '@/hud/system';
-import { ScreenshotButton } from '@/hud/system';
-import { SelectionPanel } from '@/hud/selection';
-import { SpeedControl } from '@/hud/system';
-import { SystemMenu } from '@/hud/system';
-import { Toasts } from '@/hud/overlays';
-import { TributeDemandBanner } from '@/hud/overlays';
-import { TutorialOverlay } from '@/hud/overlays';
-import { WaveDefenseOverlay } from '@/hud/overlays';
-import { ZoneLegend } from '@/hud/system';
+import {
+  BuildMenuButton,
+  BuildQueueStrip,
+  IdleUnitIndicator,
+  MultiSelectActions,
+  SelectionPanel,
+} from '@/hud/selection';
+import {
+  AchievementWatcher,
+  KeyboardShortcuts,
+  Minimap,
+  PauseControl,
+  PersistAchievements,
+  ResourceBar,
+  ScreenshotButton,
+  SpeedControl,
+  SystemMenu,
+  ZoneLegend,
+} from '@/hud/system';
 
 export interface HudLayerProps {
   game: GameState;
