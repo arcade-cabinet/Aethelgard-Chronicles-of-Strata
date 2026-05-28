@@ -90,9 +90,12 @@ config dirs). `src/ecs/` + `src/game/` decompose in a later pass.
 
 Order leaf-first so later moves import the new barrel paths.
 
-- [ ] M_V13.DECOMP.HUD-THEME — `src/hud/theme/`: move hud-theme.ts +
-      format.ts + (new) hud-layout.ts. Barrel `index.ts`. Rewrite
-      every importer to `@/hud/theme`. Green + commit.
+- [x] M_V13.DECOMP.HUD-THEME — `src/hud/theme/` created with
+      hud-theme.ts + format.ts + barrel index.ts (HUD_THEME,
+      HUD_CARD_STYLE, costLabel, formatInt, formatTime). 51
+      importers rewritten (@/hud/theme + ./theme). Pure git mv,
+      history preserved, no compat re-exports. 1251 tests green.
+      hud-layout.ts joins this package in §B FIX-PILL-COLLISION.
 - [ ] M_V13.DECOMP.HUD-PRIMITIVES — `src/hud/primitives/`: ModalShell,
       HudPill, Segmented + existing primitives. Barrel. Depends only
       on theme.
