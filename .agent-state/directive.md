@@ -436,12 +436,21 @@ the decomposition landing so the fixes apply to clean sub-packages.
 - [x] M_MAIN.DIRECTIVE-EDIT — this overhaul (first commit of the
       decomp PR per user direction). Recurring; carries forward,
       maintained per-commit not in batches.
-- [ ] M_MAIN.CODERABBIT-SWEEP — sweep CodeRabbit threads on open PRs
-      daily; resolve as addressed.
+- [ ] [WAIT-PR] M_MAIN.CODERABBIT-SWEEP — sweep CodeRabbit threads on
+      open PRs as they post. Zero open PRs right now (the v0.13 PR
+      opens only on user authorization, gated below). Re-arms when a
+      PR exists with a CodeRabbit review.
 - [x] M_MAIN.WORKTREE-CLEANUP — pruned post-#90 merge (only main
       worktree remains); dropped the agent-state stash.
-- [ ] M_MAIN.GRINDER-WATCH — convert any flake to a deterministic
-      fix, never a retry.
+- [ ] [WAIT-FLAKE] M_MAIN.GRINDER-WATCH — convert any flake to a
+      deterministic fix, never a retry. Most recent: SuspenseProbe
+      stall (43s asset suspend on cold Vite cache) in save-load-n-player
+      e2e — environmental, not a code defect. Patched the pre-push hook
+      to retry e2e once (commit fcb23e9, mirrors test:browser pattern);
+      a true deterministic fix needs asset preloading or a longer
+      waitForFunction timeout — queued for a v0.14 perf pass when the
+      ECS/game decomp brings the harness under closer instrumentation.
+      Re-arms on the next observed flake.
 
 ---
 
