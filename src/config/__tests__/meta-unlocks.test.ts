@@ -11,7 +11,7 @@ import {
   META_UNLOCKS,
   META_UNLOCKS_BY_ID,
   metaUnlocksByCategory,
-} from '@/config/meta-unlocks';
+} from '@/config/progression';
 
 describe('M_V11.META-PROGRESSION — meta-unlock registry', () => {
   it('contains at least 30 unlocks (per GAME-DESIGN-AUDIT task #77c)', () => {

@@ -147,7 +147,7 @@ export function GameOverModal({ game, persistence }: GameOverModalProps) {
     if (atelierFiredRef.current) return;
     atelierFiredRef.current = true;
     void (async () => {
-      const { loreTokenReward } = await import('@/config/meta-unlocks');
+      const { loreTokenReward } = await import('@/config/progression');
       const reward = loreTokenReward(
         outcome === 'win' ? 'win' : outcome === 'loss' ? 'loss' : 'draw',
         game.difficulty,

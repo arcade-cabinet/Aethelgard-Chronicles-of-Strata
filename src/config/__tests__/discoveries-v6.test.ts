@@ -8,7 +8,7 @@
  * `discoveriesConfig` export.
  */
 import { describe, expect, it } from 'vitest';
-import { DISCOVERIES_CONFIG } from '@/config/discoveries';
+import { DISCOVERIES_CONFIG } from '@/config/progression';
 import { DISCOVERIES, discoveryById } from '@/rules/discovery-registry';
 
 const NEW_IDS = [

@@ -891,7 +891,7 @@ export function createPersistence(): Persistence {
       // META_UNLOCKS_CONFIG keys before INSERT so a tampered call
       // (rooted device / future cloud-sync) can't seed a fabricated
       // id that later drives applyEffect via chain-starter resolution.
-      const { META_UNLOCKS_BY_ID } = await import('@/config/meta-unlocks');
+      const { META_UNLOCKS_BY_ID } = await import('@/config/progression');
       if (!META_UNLOCKS_BY_ID.has(id)) {
         console.warn('[persistence] unlockMeta rejected unknown id:', id);
         return;

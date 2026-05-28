@@ -211,8 +211,17 @@ URL-param + dev-window hooks).
       both. archetypes.ts's ./factions → ../factions (factions stays
       at config root → ai/ bundle later). 1 @/config/archetypes importer
       → @/config/combat. 31 combat/archetype tests green; check 0.
-- [ ] M_V13.DECOMP.CONFIG-PROGRESSION — `config/progression/`:
-      discoveries + meta-unlocks + eras json+ts. Barrel.
+- [x] M_V13.DECOMP.CONFIG-PROGRESSION — `config/progression/`:
+      discoveries + meta-unlocks + eras json+ts. Barrel. DONE: 5 git mv
+      (eras.json is data-only — no accessor; its loader is rules/eras.ts
+      via deep import @/config/progression/eras.json). discoveries +
+      meta-unlocks external importers → @/config/progression. 28 tests
+      green; check 0. LEARNING (extends CONFIG-ECONOMY): the repoint
+      grep MUST cover THREE import forms, not just `from '…'`:
+      (1) `from '@/config/X'`, (2) dynamic `await import('@/config/X')`
+      [GameOverModal + persistence used this], (3) deep data import
+      `from '@/config/X.json'` [rules/eras.ts used this]. Static `from`
+      alone misses the latter two and tsc catches them only on full check.
 - [ ] M_V13.DECOMP.CONFIG-AI — `config/ai/`: ai-personalities +
       factions + faction-palette. Barrel.
 - [ ] M_V13.DECOMP.CONFIG-WORLD — `config/world/`: world + mapgen

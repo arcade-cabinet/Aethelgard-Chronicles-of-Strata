@@ -15,7 +15,7 @@
  * milestone."
  */
 import { z } from 'zod';
-import erasJson from '@/config/eras.json';
+import erasJson from '@/config/progression/eras.json';
 
 const EraConfigSchema = z.object({
   id: z.string().min(1),

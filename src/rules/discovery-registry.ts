@@ -1,5 +1,5 @@
 import type { World } from 'koota';
-import { DISCOVERIES_CONFIG, type DiscoveryEffect } from '@/config/discoveries';
+import { DISCOVERIES_CONFIG, type DiscoveryEffect } from '@/config/progression';
 import { Building, Combatant, Harvester, Health, Unit } from '@/ecs/components';
 import type { Discovery, DiscoveryApplyCtx } from './discoveries';
 

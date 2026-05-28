@@ -22,7 +22,7 @@ import {
   type MetaUnlock,
   type MetaUnlockCategory,
   metaUnlocksByCategory,
-} from '@/config/meta-unlocks';
+} from '@/config/progression';
 import type { Persistence } from '@/persistence/persistence';
 import { HUD_THEME } from '../theme';
 import { ModalShell } from '../primitives';
