@@ -164,14 +164,40 @@ boundary.
         fix is a MULTI-INSTANCE browser config (N chromium instances so
         files run in genuinely isolated contexts) — measure the speedup vs
         the instance-boot cost first. Biggest lever but needs design.
-      (2) Unit default `isolate: true` → per-file worker boot ×240. Pure
-        unit pool can run `isolate: false` (verify no cross-file global
-        leakage first — the RNG/clock facades are module singletons).
-      (3) Cache Playwright install in CI (actions/cache) → ~26s. Easy win.
-      DONE this pass: stubbed saveToStore in the browser SQLite mock (the
-      flushWebStore change threw 'saveToStore is not a function' in browser
-      tests — surfaced by the parallelism experiment). The 3 speed levers
-      remain.
+      (2) Unit `isolate: false` — EXPERIMENT (done): REJECTED. Breaks
+        deposit-system, shared-kit, force-field, economy-components +
+        more — koota ECS registers components as module singletons; a
+        shared module registry across files double-registers / leaks
+        entity state. Would need per-file ECS-world reset infra (large,
+        risky). Not worth it. Do NOT re-attempt without that infra.
+      (3) Cache Playwright install — DONE (commit 181a313): ~/.cache/
+        ms-playwright cached on lockfile hash in both jobs; cache-hit
+        skips the ~26s binary download. ✓
+      Also DONE: stubbed saveToStore in the browser SQLite mock (7ef976d).
+      (1) Browser parallelism — EXPERIMENT (done): REJECTED both ways.
+        (a) fileParallelism:true on one instance flakes (shared page/
+        context). (b) Multi-NAMED-instance does NOT shard files across
+        instances — vitest runs ALL files in EACH instance (a matrix that
+        MULTIPLIES work ×N, not divides). And the config comment already
+        documents WHY single-instance is mandatory: "React (r3f hooks need
+        one renderer) and three.js" — a single WebGL/renderer context is
+        an architectural requirement, not a tunable. The serial browser
+        config is CORRECT for this codebase. Closed.
+      VERDICT (investigated to ground truth): the within-suite levers are
+      architecturally precluded — (1) browser parallelism needs one r3f
+      renderer (single-instance is mandatory, multi-instance multiplies
+      not divides); (2) unit isolate:false breaks koota module-singleton
+      components. Only the Playwright cache (#3, ~26s) was a safe in-place
+      win — SHIPPED (181a313).
+      THE REAL STRUCTURAL FIX (now the open piece): `build-and-test` is a
+      MONOLITHIC serial job = Unit (164s) + Browser (134s) + builds (33s)
+      + E2E (the 11-15min long pole, timeout 18m) all in ONE job → ~20min
+      worst case. SPLIT into parallel jobs: `unit-and-build`, `browser`,
+      `e2e` run concurrently → wall-clock drops to the longest single job
+      (~e2e). This is safe (job topology, no test-code change) but needs a
+      real CI run to validate (can't fully test job-parallelism locally),
+      so it gets its OWN focused commit + CI watch. The within-suite
+      investigation is CLOSED; the job-split is the next CI action.
 
 - [ ] M_BACKLOG.DECOMP-ECS-GAME — decompose src/ecs/ + src/game/ into
       sub-packages. AUDITED (Explore agent) — grounded grouping +
