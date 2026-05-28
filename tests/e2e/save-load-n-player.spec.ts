@@ -24,14 +24,15 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
     // 1. Boot 4-player AI-vs-AI.
     await page.goto('/?ai-vs-ai=1&nplayer=4&seed=save-load-n42&mode=border-clash');
 
-    // 2. Wait for game hooks.
-    await page.waitForFunction(
-      () =>
-        typeof (window as { __game_advanceFrames?: unknown; __game_save?: unknown })
-          .__game_advanceFrames === 'function' &&
-        typeof (window as { __game_save?: unknown }).__game_save === 'function',
-      { timeout: 60_000 },
-    );
+    // 2. Wait for the harness. Gate on the SINGLE atomic readiness flag
+    // (`__game_ready`, published last by installDevHarness after `__game`
+    // + every hook are in place on the committed document) — never on an
+    // individual hook. Gating on a hook let the suite-load race resolve
+    // against a half-installed / non-committed document while the
+    // follow-up evaluate read `__game` as falsy. See M_V13.HARNESS.ATOMIC-READY.
+    await page.waitForFunction(() => (window as { __game_ready?: boolean }).__game_ready === true, {
+      timeout: 60_000,
+    });
 
     // 3. Advance 5 sim-min (18 000 frames).
     await page.evaluate(() => {
@@ -94,10 +95,12 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
 
     // 6. Reload the page and inject the snapshot.
     await page.goto('/?ai-vs-ai=1&nplayer=4&seed=save-load-n42&mode=border-clash');
-    await page.waitForFunction(
-      () => typeof (window as { __game_load?: unknown }).__game_load === 'function',
-      { timeout: 60_000 },
-    );
+    // Same atomic gate post-reload — `__game_load` is installed in the
+    // same committed pass as `__game_ready`, so the flag implies the
+    // load hook is present too.
+    await page.waitForFunction(() => (window as { __game_ready?: boolean }).__game_ready === true, {
+      timeout: 60_000,
+    });
 
     await page.evaluate((snapJson: string) => {
       const snap = JSON.parse(snapJson);

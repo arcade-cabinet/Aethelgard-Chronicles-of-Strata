@@ -317,6 +317,28 @@ function isWebPlatform(): boolean {
   return Capacitor.getPlatform() === 'web';
 }
 
+/**
+ * M_V13.PERSIST.WEB-FLUSH — flush the in-memory sql.js DB back to
+ * IndexedDB on web. jeep-sqlite holds the database in memory; without
+ * an explicit `saveToStore` after a mutation, the write is lost on the
+ * next page load (the fresh page opens an empty store). On native this
+ * is a no-op — SQLCipher writes straight to disk. Call after EVERY
+ * mutating statement on web so saves/unlocks/lore survive a reload.
+ *
+ * Found by the save-load-round-trip e2e (Continue stayed disabled after
+ * reload because the AutoSave never reached IndexedDB).
+ */
+async function flushWebStore(): Promise<void> {
+  if (!isWebPlatform() || !sqliteManager) return;
+  try {
+    await sqliteManager.saveToStore(DB_NAME);
+  } catch (err) {
+    // saveToStore can throw if the store isn't web-backed (older jeep
+    // versions) — surface but don't crash the save path.
+    console.warn('[persistence] saveToStore (web flush) failed:', err);
+  }
+}
+
 function getBaseAssetPath(): string {
   const base = (import.meta.env.BASE_URL as string | undefined) ?? '/';
   return `${base.endsWith('/') ? base : `${base}/`}assets`;
@@ -719,6 +741,9 @@ export function createPersistence(): Persistence {
          );`,
         [MAX_SAVES],
       );
+      // M_V13.PERSIST.WEB-FLUSH — persist to IndexedDB so the save
+      // survives a page reload (Continue button + Load on web).
+      await flushWebStore();
     },
 
     async load(id: number): Promise<SaveRecord | null> {
@@ -831,6 +856,7 @@ export function createPersistence(): Persistence {
          );`,
         [LOREBOOK_MAX],
       );
+      await flushWebStore();
     },
 
     async listLorebook(limit = 50): Promise<LorebookEntry[]> {
@@ -905,6 +931,7 @@ export function createPersistence(): Persistence {
         `INSERT OR IGNORE INTO meta_unlocks (unlock_id, unlocked_at_iso, cost_spent) VALUES (?, ?, ?);`,
         [safeId, at, safeCost],
       );
+      await flushWebStore();
     },
 
     async getLoreTokens(): Promise<number> {
@@ -927,6 +954,7 @@ export function createPersistence(): Persistence {
       const safeN = Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
       if (safeN === 0) return;
       await db.run(`UPDATE meta_lore_tokens SET balance = balance + ? WHERE id = 1;`, [safeN]);
+      await flushWebStore();
     },
 
     // ----- M_V11.DAILY-CHALLENGE (#77i) ------------------------------
@@ -959,6 +987,7 @@ export function createPersistence(): Persistence {
           fingerprint,
         ],
       );
+      await flushWebStore();
     },
 
     async listDailyChallengeScores(dateUTC: string): Promise<
@@ -1084,6 +1113,10 @@ export function createPersistence(): Persistence {
           await db.run(`UPDATE meta_lore_tokens SET balance = 0 WHERE id = 1;`);
           // M_V11.DAILY-CHALLENGE — wipe the leaderboard too.
           await db.run(`DELETE FROM daily_challenge_scores;`);
+          // M_V13.PERSIST.WEB-FLUSH — persist the wipe to IndexedDB so
+          // the cleared state survives a reload (else the next page
+          // load restores the pre-wipe store).
+          await flushWebStore();
         } else failures.push('saves (db unavailable)');
       } catch (err) {
         failures.push(`saves: ${err instanceof Error ? err.message : String(err)}`);

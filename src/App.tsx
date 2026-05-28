@@ -96,13 +96,21 @@ function GameSession({
   const game = useMemo(() => {
     const g = initialGame ?? (config ? startGame(config) : startGame('default'));
     g.autoSave = createAutoSave(() => persistence.save('AutoSave', g));
-    // M_V13.DECOMP.APP-URLPARAMS — the window.__game* E2E / visual-
-    // test harness moved into src/game/dev-harness.ts. Production-
-    // safe (forward-references on the window namespace; no-op under
-    // SSR / node).
-    installDevHarness(g);
     return g;
   }, [config, initialGame]);
+  // M_V13.HARNESS.ATOMIC-READY — install the window.__game* E2E /
+  // visual-test harness in a COMMITTED effect, not in the render-phase
+  // useMemo. Render-phase install fired on renders React later
+  // discards (StrictMode double-mount, a child <Scene> Suspense
+  // throwaway under slow asset load), publishing `__game` + hooks from
+  // a render that never committed. Under suite load that let a spec's
+  // readiness `waitForFunction` resolve against a half/non-committed
+  // document while the follow-up read saw a stale/absent `__game`.
+  // An effect runs only for the render that actually commits, so the
+  // harness on `window` always corresponds to the live tree.
+  useEffect(() => {
+    installDevHarness(game);
+  }, [game]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const viewport = useViewport();
   // M_HUD.SHELL.1 — universal mute hook; mirrors the persisted setting

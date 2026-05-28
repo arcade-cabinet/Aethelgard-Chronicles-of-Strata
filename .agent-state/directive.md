@@ -443,14 +443,18 @@ the decomposition landing so the fixes apply to clean sub-packages.
 - [x] M_MAIN.WORKTREE-CLEANUP — pruned post-#90 merge (only main
       worktree remains); dropped the agent-state stash.
 - [ ] [WAIT-FLAKE] M_MAIN.GRINDER-WATCH — convert any flake to a
-      deterministic fix, never a retry. Most recent: SuspenseProbe
-      stall (43s asset suspend on cold Vite cache) in save-load-n-player
-      e2e — environmental, not a code defect. Patched the pre-push hook
-      to retry e2e once (commit fcb23e9, mirrors test:browser pattern);
-      a true deterministic fix needs asset preloading or a longer
-      waitForFunction timeout — queued for a v0.14 perf pass when the
-      ECS/game decomp brings the harness under closer instrumentation.
-      Re-arms on the next observed flake.
+      deterministic fix, never a retry. IN PROGRESS on save-load-n-player
+      `__game not ready` flake. Round 1 (stuck-loop-debugger): moved
+      installDevHarness from render-phase useMemo → committed useEffect +
+      added atomic `__game_ready` flag (cleared first, set last); all e2e
+      specs gate on it. Regression test: tests/unit/dev-harness-atomic-
+      ready.test.ts. BUT full-suite e2e STILL flaked — wait now gates on
+      __game_ready (succeeds) yet a later evaluate reads __game falsy, so
+      there's a POST-install clear the render-vs-commit fix didn't cover.
+      Round 2 dispatched to the same agent with the sharper contradiction.
+      The pre-push e2e retry (fcb23e9) is the safety net until the real
+      mechanism is found. Do NOT claim resolved until full `pnpm test:e2e`
+      is green twice running.
 
 ---
 

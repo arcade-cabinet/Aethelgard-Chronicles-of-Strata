@@ -24,12 +24,13 @@ for (const { mode, copy } of MODES) {
     // 90s for the per-mode SMOKE specs.
     test.setTimeout(90_000);
     await page.goto(`/?ai-vs-ai=1&seed=e2e-${mode}&mode=${mode}`);
-    // Wait for the dev-harness install (game mounted).
-    await page.waitForFunction(
-      () =>
-        typeof (window as { __game_advanceFrames?: unknown }).__game_advanceFrames === 'function',
-      { timeout: 60_000 },
-    );
+    // Wait for the atomic dev-harness ready flag (set LAST by
+    // installDevHarness, after __game + every hook, from the COMMITTED
+    // render — see M_V13.HARNESS.ATOMIC-READY). Gating on a single hook
+    // could resolve against a non-committed render's leftover window.
+    await page.waitForFunction(() => (window as { __game_ready?: boolean }).__game_ready === true, {
+      timeout: 60_000,
+    });
     // 600 frames = 10s game-time. Enough for peons to spawn + the
     // mode-specific HUD pills to surface, without a 60s sim run
     // that could blow the CI test budget under load.

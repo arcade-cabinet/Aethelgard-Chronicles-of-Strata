@@ -42,25 +42,31 @@ test('save / load preserves wood total + supply + mode', async ({ page }) => {
     };
   });
   expect(before.wood).toBeGreaterThan(0);
-  // Force an immediate autosave by invoking the autosave's onSave
-  // callback directly (which persists + dispatches the
-  // 'aethelgard:save-committed' window event). AutoSave.elapsed-based
-  // gating means we can't just bump a field — we have to actually
-  // fire the save.
+  // Force an immediate autosave: call onSave() to persist, THEN nudge
+  // the App to re-detect the save. Note onSave() alone does NOT dispatch
+  // 'aethelgard:save-committed' — that event only fires from tickAutoSave
+  // (the timer path). So we call onSave() to write the save, then invoke
+  // the App's __refreshSaveList() test hook (App.tsx M_POLISH3.S.3) to
+  // re-run persistence.list() → setHasSave(true), which is what the
+  // 'aethelgard:save-committed' listener would have done.
   await page.evaluate(async () => {
     const w = window as unknown as {
       __game?: { autoSave?: { onSave: () => Promise<void> | void } };
+      __refreshSaveList?: () => void;
     };
     if (w.__game?.autoSave) await w.__game.autoSave.onSave();
+    w.__refreshSaveList?.();
   });
-  // Wait for the save-committed event to round-trip through the listener
-  // (persistence.list resolves async; the listener then setHasSave's true).
+  // Wait for the refresh to round-trip (persistence.list resolves async;
+  // the listener then setHasSave's true → Continue enables).
   await page.waitForTimeout(500);
   await page.goto('/');
   await expect(page.locator('#menu-continue')).toBeEnabled({ timeout: 8000 });
   await page.locator('#menu-continue').click();
-  // Wait for GameSession to mount + the dev-harness to install __game.
-  await page.waitForFunction(() => typeof (window as { __game?: unknown }).__game === 'object', {
+  // Wait for the atomic dev-harness ready flag (M_V13.HARNESS.ATOMIC-
+  // READY — published last from the committed render, so it implies
+  // __game + every hook are present and self-consistent).
+  await page.waitForFunction(() => (window as { __game_ready?: boolean }).__game_ready === true, {
     timeout: 60_000,
   });
   const after: Snap = await page.evaluate(() => {

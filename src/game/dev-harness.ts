@@ -27,6 +27,16 @@ export function installDevHarness(g: GameState): void {
     __game_advanceFrames?: (n: number) => void;
     __game_findPlayerEntities?: (kind: 'peon' | 'military' | 'building') => number[];
   };
+  // M_V13.HARNESS.ATOMIC-READY — clear the readiness flag FIRST so a
+  // half-installed harness can never be observed as ready. Specs gate
+  // on `window.__game_ready === true`, which is set LAST (below), after
+  // every hook AND `__game` itself are in place. This closes the
+  // suite-load race where `waitForFunction` checked a hook (e.g.
+  // `__game_save`) on one document/render while the follow-up
+  // `page.evaluate` read `__game` against a different one — install
+  // runs in a committed effect now (App.tsx), but the atomic flag is
+  // the contract the tests actually wait on.
+  (window as unknown as DevWindow & { __game_ready?: boolean }).__game_ready = false;
   (window as unknown as DevWindow).__game = g;
   // Advance the sim N 60Hz frames synchronously — e2e specs use this
   // to reach a meaningful playing state before asserting.
@@ -109,4 +119,10 @@ export function installDevHarness(g: GameState): void {
     Object.assign(g, restored);
     (window as unknown as DevWindow).__game = g;
   };
+  // M_V13.HARNESS.ATOMIC-READY — published LAST. Every hook above and
+  // `__game` are now in place on THIS document; flipping the flag is
+  // the single happens-after edge specs synchronize on. Reading any
+  // hook or `__game` after observing `__game_ready === true` is
+  // guaranteed self-consistent on the same document.
+  (window as unknown as DevWindow & { __game_ready?: boolean }).__game_ready = true;
 }
