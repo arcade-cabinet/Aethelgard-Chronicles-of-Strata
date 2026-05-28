@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { resourceCostSchema } from '@/config/schema';
 import { RESOURCE_TYPES } from '@/ecs/components';
 import type { ResourceCost } from '@/game/economy';
 import discoveriesJson from './discoveries.json';
@@ -19,11 +20,7 @@ import discoveriesJson from './discoveries.json';
  * type-mismatch finding because the schema's inferred optionals
  * didn't structurally match `Partial<Record<ResourceType, number>>`.
  */
-const ResourceCostSchema = z.object(
-  Object.fromEntries(
-    RESOURCE_TYPES.map((slot) => [slot, z.number().int().nonnegative().optional()]),
-  ),
-) as z.ZodType<ResourceCost>;
+const ResourceCostSchema = resourceCostSchema(RESOURCE_TYPES);
 
 const DiscoveryEffectSchema = z.discriminatedUnion('kind', [
   z.object({

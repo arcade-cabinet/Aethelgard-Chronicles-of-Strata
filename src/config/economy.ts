@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { RESOURCE_IDS } from '@/config/resources';
+import { resourceCostSchema, resourceIdSchema } from '@/config/schema';
 import type { BuildingType, ResourceType, UnitType } from '@/ecs/components';
 import type { ResourceCost } from '@/game/economy';
 import economyJson from './economy.json';
@@ -20,17 +21,14 @@ import economyJson from './economy.json';
  * conversion remaining".
  */
 
-const ResourceCostSchema = z.object(
-  Object.fromEntries(RESOURCE_IDS.map((id) => [id, z.number().int().nonnegative().optional()])),
-) as z.ZodType<ResourceCost>;
+const ResourceCostSchema = resourceCostSchema(RESOURCE_IDS);
 
 // Coderabbit MAJOR PR #10 05:46Z — enum-keyed resourceType so an
 // unknown / typo'd resource id in economy.json fails parse instead
 // of slipping through as a string (which would then break
 // harvestYieldFor lookups silently). RESOURCE_IDS is the single
-// source from src/config/resources.json — bool-cast the readonly
-// array to a tuple for z.enum's spread requirement.
-const ResourceIdSchema = z.enum(RESOURCE_IDS as readonly [string, ...string[]]);
+// source from src/config/resources.json.
+const ResourceIdSchema = resourceIdSchema(RESOURCE_IDS);
 const ResourceSpawnRuleSchema = z.object({
   resourceType: ResourceIdSchema,
   biomes: z.array(z.string()),
