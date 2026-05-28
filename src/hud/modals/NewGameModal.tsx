@@ -31,27 +31,18 @@ import { SectionCard, TreasureButton } from '../primitives';
 import {
   FactionColorPicker,
   MapPreview,
+  type NewGameChoices,
   OpponentPicker,
   PLAYER_COLORS,
   PresetControls,
   SeedField,
 } from '../setup';
 
-/** The choices a New Game collects. */
-export interface NewGameChoices {
-  seedPhrase: string;
-  mapSize: MapSizeKey;
-  difficulty: Difficulty;
-  eventSeed: string;
-  mode: GameMode;
-  turnsMode: TurnsMode;
-  maxTurns: number | null;
-  playerColor: string | null;
-  startingBonus: 'none' | 'extra-wood' | 'extra-peons' | 'extra-hp';
-  aiVsAi: boolean;
-  enemyPersonality: string;
-  factions?: FactionConfig[];
-}
+// M_V13.HUD.DECYCLE — NewGameChoices moved DOWN to hud/setup (the lower
+// layer that PresetControls lives in), breaking the modals↔setup import
+// cycle. Imported above; re-exported here so `@/hud/modals` consumers
+// (App) keep resolving the type from its historical location.
+export type { NewGameChoices };
 
 export interface NewGameModalProps {
   open: boolean;

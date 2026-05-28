@@ -16,4 +16,5 @@ export {
   PLAYER_COLORS,
   STARTING_BONUSES,
   type StartingBonus,
+  type NewGameChoices,
 } from './new-game-options';

@@ -39,7 +39,7 @@ const DISCOVERY_FLAVOR: Record<string, string> = {
     'And the Chronicler-King saw that the spear was not the answer, and the bow was not the answer, and the wedge was not the answer. The answer was all three, spoken in the same breath.',
 };
 import { costLabel } from '../theme';
-import { emitToast } from '../overlays';
+import { emitToast } from '../toast-bus';
 import { HUD_THEME } from '../theme';
 import { ModalShell } from '../primitives';
 

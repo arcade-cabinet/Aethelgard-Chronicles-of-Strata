@@ -28,22 +28,13 @@ import * as Toast from '@radix-ui/react-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { HUD_THEME } from '../theme';
+import { type ToastSpec, emitToast } from '../toast-bus';
 
-/** One toast in flight. */
-export interface ToastSpec {
-  /** Optional dedup key; same id replaces. */
-  id?: string;
-  /** Short headline. */
-  title: string;
-  /** Optional second line. */
-  description?: string;
-  /** Visual tone. */
-  tone?: 'info' | 'success' | 'warning' | 'danger' | 'critical';
-  /** When present, tap-to-zoom into this hex via auto-focus tween. */
-  focus?: { q: number; r: number; distance?: number };
-  /** Auto-dismiss ms. Default 6000. Critical never auto-dismisses. */
-  durationMs?: number;
-}
+// M_V13.HUD.DECYCLE — ToastSpec + emitToast moved to the hud/toast-bus
+// leaf (broke the modals↔overlays import cycle). Re-exported here so
+// existing `@/hud/overlays` consumers of these symbols keep resolving;
+// new emitters should import from '@/hud/toast-bus' directly.
+export { type ToastSpec, emitToast };
 
 interface InFlight extends ToastSpec {
   /** Unique render key (monotonic). */
@@ -215,12 +206,4 @@ export function Toasts() {
       />
     </Toast.Provider>
   );
-}
-
-/**
- * Imperative helper — small ergonomic wrapper for code that just wants
- * to fire a toast without dispatching the event manually.
- */
-export function emitToast(spec: ToastSpec): void {
-  window.dispatchEvent(new CustomEvent('aethelgard:toast', { detail: spec }));
 }

@@ -20,7 +20,7 @@ import type { GameState } from '@/game/game-state';
 import { selectedEntities } from '@/game/selection';
 import { createStack, dissolveStack } from '@/game/stacking';
 import { HUD_THEME } from '../theme';
-import { emitToast } from '../overlays';
+import { emitToast } from '../toast-bus';
 import { useRafLoopThrottled } from '../useRafLoop';
 
 interface MultiSelectState {

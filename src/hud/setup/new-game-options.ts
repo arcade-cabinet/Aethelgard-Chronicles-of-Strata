@@ -6,7 +6,32 @@
  * cognitive load when reading the component; the modal imports
  * from here and renders.
  */
+import { type FactionConfig } from '@/config/ai';
+import type { MapSizeKey } from '@/core/map-size';
 import type { Difficulty, GameMode } from '@/game/game-state';
+import type { TurnsMode } from '@/rules/mode-presets';
+
+/**
+ * The choices a New Game collects. M_V13.HUD.DECYCLE — moved here from
+ * NewGameModal so the lower `setup` layer owns the type; PresetControls
+ * (setup) consumed it and previously had to reach UP into `modals`,
+ * creating a modals↔setup import cycle. NewGameModal now imports it
+ * down from setup (and re-exports for back-compat).
+ */
+export interface NewGameChoices {
+  seedPhrase: string;
+  mapSize: MapSizeKey;
+  difficulty: Difficulty;
+  eventSeed: string;
+  mode: GameMode;
+  turnsMode: TurnsMode;
+  maxTurns: number | null;
+  playerColor: string | null;
+  startingBonus: 'none' | 'extra-wood' | 'extra-peons' | 'extra-hp';
+  aiVsAi: boolean;
+  enemyPersonality: string;
+  factions?: FactionConfig[];
+}
 
 /**
  * M_BRAND.1 — brand-aligned mode labels. Keys are stable for save
