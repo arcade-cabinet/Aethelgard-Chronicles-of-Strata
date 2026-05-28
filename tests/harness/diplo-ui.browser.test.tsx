@@ -14,7 +14,7 @@ import { createTradeCooldownState } from '@/game/diplomacy-trade';
 import { createEconomy } from '@/game/economy';
 import { createMythEventsState } from '@/game/myth-events';
 import { createResearch } from '@/game/research';
-import { NonAggressionPactPill } from '@/hud/NonAggressionPactPill';
+import { NonAggressionPactPill } from '@/hud/pills';
 import { TradeSwapWidget } from '@/hud/TradeSwapWidget';
 import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
 

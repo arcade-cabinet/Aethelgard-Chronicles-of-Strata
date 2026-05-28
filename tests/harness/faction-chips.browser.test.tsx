@@ -10,7 +10,7 @@ import { page } from '@vitest/browser/context';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import type { FactionConfig } from '@/config/factions';
-import { FactionChips } from '@/hud/FactionChips';
+import { FactionChips } from '@/hud/pills';
 
 function makeStubGame(factions: FactionConfig[]): import('@/game/game-state').GameState {
   // Tiny stub — FactionChips reads game.factions + game.economy only.

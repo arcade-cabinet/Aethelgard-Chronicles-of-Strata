@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
+import { MobileSpeedPausePill } from '@/hud/pills';
 
 /**
  * M_POLISH2.MOBILE.14 — unified Speed + Pause pill contract.

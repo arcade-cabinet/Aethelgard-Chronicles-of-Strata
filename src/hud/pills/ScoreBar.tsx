@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { GameState } from '@/game/game-state';
-import { formatInt } from './theme';
-import { HUD_THEME } from './theme';
-import { useRafLoop } from './useRafLoop';
+import { formatInt } from '../theme';
+import { HUD_THEME } from '../theme';
+import { useRafLoop } from '../useRafLoop';
 
 /**
  * M_EXPANSION.U.105 — top-centre live score bar.

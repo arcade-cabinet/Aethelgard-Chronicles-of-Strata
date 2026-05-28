@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { ZoneFlipPulse } from '@/hud/ZoneFlipPulse';
+import { ZoneFlipPulse } from '@/hud/pills';
 
 /**
  * M_POLISH2.MODES.42b — pulse-on-tile-flip.

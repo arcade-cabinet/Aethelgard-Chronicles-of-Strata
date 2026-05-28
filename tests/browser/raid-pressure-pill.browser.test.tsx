@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { RaidPressurePill } from '@/hud/RaidPressurePill';
+import { RaidPressurePill } from '@/hud/pills';
 
 /**
  * M_POLISH2.MODES.40 — pin the mount-only-in-frontier-raid contract.

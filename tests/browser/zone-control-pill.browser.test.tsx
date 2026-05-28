@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { ZoneControlPill } from '@/hud/ZoneControlPill';
+import { ZoneControlPill } from '@/hud/pills';
 
 describe('M_POLISH2.MODES.42 — ZoneControlPill', () => {
   it('does NOT mount in border-clash mode', async () => {

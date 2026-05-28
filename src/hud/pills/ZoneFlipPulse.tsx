@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import type { GameState } from '@/game/game-state';
-import { useRafLoop } from './useRafLoop';
+import { useRafLoop } from '../useRafLoop';
 
 /**
  * M_POLISH2.MODES.42b — strata-wars tile-flip red-pulse VFX.

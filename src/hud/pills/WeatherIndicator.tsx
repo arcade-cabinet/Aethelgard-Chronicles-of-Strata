@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import type { GameState } from '@/game/game-state';
 import { WEATHER_PROFILES, type WeatherState } from '@/game/weather';
-import { announce } from './aria-live-bus';
-import { HudPill } from './primitives';
-import { useRafLoopThrottled } from './useRafLoop';
+import { announce } from '../aria-live-bus';
+import { HudPill } from '../primitives';
+import { useRafLoopThrottled } from '../useRafLoop';
 
 /**
  * M_AUDIT2.UX.15 — weather indicator pill.

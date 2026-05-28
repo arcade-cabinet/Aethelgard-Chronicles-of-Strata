@@ -20,7 +20,7 @@ import { useEffect, useState } from 'react';
 import { findFaction } from '@/config/factions';
 import { acceptProposal, type PendingProposal, rejectProposal } from '@/game/diplomacy-border';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './theme';
+import { HUD_THEME } from '../theme';
 
 const LOCAL_FACTION = 'player';
 

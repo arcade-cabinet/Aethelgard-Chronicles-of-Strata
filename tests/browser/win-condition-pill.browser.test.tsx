@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { WinConditionPill } from '@/hud/WinConditionPill';
+import { WinConditionPill } from '@/hud/pills';
 
 /**
  * M_POLISH2.MODES.39 — win-condition reminder pill.
