@@ -19,7 +19,7 @@ import { createCharacter } from '@/entities/character-factory';
 import { runEconomyTick, startGame } from '@/game/game-state';
 import { biomeFlagsFor } from '@/rules/biome-flags';
 import { spawnBarbarianCamp } from '@/world/barbarian-camps';
-import { BIOME_COLORS, BIOME_COLORS_EVENING } from '@/world/palette';
+import { BIOME_COLORS, BIOME_COLORS_EVENING } from '@/world/biomes';
 
 describe('M_V6.CARRY.RUINS-BIOME — registry + flag coverage', () => {
   it('RUINS appears in the mapgen registry with walkable + buildable + habitable', () => {
@@ -51,7 +51,7 @@ describe('M_V6.CARRY.RUINS-BIOME — registry + flag coverage', () => {
   it('RUINS decoration palette exists with rock + stump scatter props (M_V8.PARKING-LOT.V06)', async () => {
     // M_V9.TEST.SOURCE-GREP-TO-BEHAVIOR — converted from readFileSync grep to
     // import-based behavior assertion. PALETTES is now exported from Decoration.tsx.
-    const { PALETTES } = await import('@/world/Decoration');
+    const { PALETTES } = await import('@/world/biomes');
     const ruinsPalette = PALETTES.RUINS;
     expect(ruinsPalette).toBeDefined();
     const ids = ruinsPalette!.props.map((p) => p.id);

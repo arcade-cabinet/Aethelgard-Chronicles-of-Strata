@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BIOME_COLORS } from '../palette';
+import { BIOME_COLORS } from '../biomes/palette';
 
 describe('biome palette', () => {
   it('defines the canonical biome colors', () => {

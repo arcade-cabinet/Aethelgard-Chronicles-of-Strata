@@ -16,7 +16,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { ALL_BIOMES, biomeRule } from '@/config/world';
 import type { BiomeType } from '@/core/biome';
-import { BiomeSwatch } from '@/world/BiomeSwatch';
+import { BiomeSwatch } from '@/world/biomes';
 
 function HarnessScene({ biome }: { biome: BiomeType }) {
   const rule = biomeRule(biome);

@@ -10,11 +10,11 @@ import { ContestedPulse } from '@/world/ContestedPulse';
 import { Crossings } from '@/world/Crossings';
 import { DeathDropLayer } from '@/world/DeathDropLayer';
 import { LootCacheLayer } from '@/world/LootCacheLayer';
-import { Decoration } from '@/world/Decoration';
+import { Decoration } from '@/world/biomes';
 import { FactionBase } from '@/world/FactionBase';
 import { FootstepEmitter } from '@/world/FootstepEmitter';
 import { HexGridOverlay } from '@/world/HexGridOverlay';
-import { Mountains } from '@/world/Mountains';
+import { Mountains } from '@/world/biomes';
 import { ParticleEmitter } from '@/world/ParticleEmitter';
 import { ProjectileLayer } from '@/world/ProjectileLayer';
 import {

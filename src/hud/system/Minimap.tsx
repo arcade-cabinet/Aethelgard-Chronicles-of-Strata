@@ -7,7 +7,7 @@ import { getMinimapZoom, setMinimapZoom, subscribeMinimapZoom } from '@/hud/mini
 import { cameraView } from '@/render/camera-view';
 import { useViewport } from '@/render/useViewport';
 import { SKINS } from '@/rules/skins';
-import { BIOME_COLORS } from '@/world/palette';
+import { BIOME_COLORS } from '@/world/biomes';
 
 /** Minimap canvas size in pixels. */
 const SIZE = 140;

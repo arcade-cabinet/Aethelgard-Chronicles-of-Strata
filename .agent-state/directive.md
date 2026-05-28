@@ -287,7 +287,11 @@ URL-param + dev-window hooks).
       Move order: biomes first (palette is the leaf dep), then terrain,
       board, effects, procedural-barrel, world-barrel.
 - [ ] M_V13.DECOMP.WORLD-TERRAIN — `world/terrain/`. Barrel.
-- [ ] M_V13.DECOMP.WORLD-BIOMES — `world/biomes/`. Barrel.
+- [x] M_V13.DECOMP.WORLD-BIOMES — `world/biomes/`: palette, BiomeSwatch,
+      Mountains, Decoration. Barrel. DONE: 4 git mv. terrain-mesh's
+      ./palette → ./biomes; external @/world/{palette,...} → @/world/
+      biomes; __tests__ relative ../palette → ../biomes/palette. 20 unit
+      + 16 biome-swatch browser tests green; check 0.
 - [ ] M_V13.DECOMP.WORLD-BOARD — `world/board/`. Barrel.
 - [ ] M_V13.DECOMP.WORLD-EFFECTS — `world/effects/` (water, particles,
       weather-visual, volcano, wildfire). Barrel.

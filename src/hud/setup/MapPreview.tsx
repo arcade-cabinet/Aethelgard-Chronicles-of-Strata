@@ -12,7 +12,7 @@
  */
 import { useEffect, useRef } from 'react';
 import { generateBoard } from '@/core/board';
-import { BIOME_COLORS } from '@/world/palette';
+import { BIOME_COLORS } from '@/world/biomes';
 
 export interface MapPreviewProps {
   seedPhrase: string;
