@@ -103,23 +103,27 @@ export function AtelierScreen({ persistence }: AtelierScreenProps) {
   const unlock = async (u: MetaUnlock) => {
     if (unlockedIds.has(u.id)) return;
     if (tokens < u.cost) return;
-    // Spend tokens (debit) then write the unlock row. Each is
-    // idempotent at the persistence layer; the debit uses a negative
-    // earn for simplicity. If either fails the other can be reapplied
-    // on next match-end without state corruption.
-    //
-    // M_V13.PERSIST.WEB-FLUSH (review #4) — these now reject if the
-    // IndexedDB flush fails (quota / private-mode). Catch so a failed
-    // purchase doesn't throw an unhandled rejection out of the click
-    // handler; the unlock stays un-applied (idempotent), the player can
-    // retry, and the failure surfaces in the console rather than as a
-    // phantom unlock that vanishes on reload.
+    // CodeRabbit #91 (Major) — UNLOCK FIRST, then debit. No cross-row
+    // transaction is available (two separate persistence calls, each
+    // with its own IndexedDB flush). Ordering picks the safe failure
+    // mode: if unlockMeta succeeds but the debit then fails, the player
+    // keeps the unlock AND the tokens (a benign over-grant — they can't
+    // re-buy because `unlockedIds.has` short-circuits next time). The
+    // reverse order (debit-first) had the HARMFUL failure: tokens gone,
+    // no unlock. unlockMeta is INSERT-OR-IGNORE idempotent, so a retry
+    // after a debit-failure is a no-op on the unlock and re-attempts the
+    // debit. The try/catch keeps a failed IndexedDB flush (quota /
+    // private-mode, which now rejects per review #4) from escaping the
+    // click handler as an unhandled rejection.
     try {
-      await persistence.earnLoreTokens(-u.cost);
       await persistence.unlockMeta(u.id, u.cost);
+      await persistence.earnLoreTokens(-u.cost);
       setVersion((v) => v + 1);
     } catch (err) {
       console.warn('[atelier] unlock failed to persist:', err);
+      // Reflect whatever DID land (unlock may have committed before the
+      // debit threw) so the UI doesn't show a stale locked state.
+      setVersion((v) => v + 1);
     }
   };
 

@@ -43,11 +43,19 @@ describe('M_V13.HUD.FOCUS-RINGS — keyboard focus ring', () => {
     // the rule is present in a loaded stylesheet (selector + gold outline).
     // styles.css wraps rules in `@layer base { … }`, so recurse into
     // grouping rules (CSSLayerBlockRule, CSSMediaRule, …).
+    // CodeRabbit #91 (Minor) — match the SPECIFIC HUD focus rule, not any
+    // generic `:focus-visible { outline }` (a browser-default or a
+    // third-party sheet would false-pass otherwise). Our styles.css rule
+    // is `button:focus-visible, [role='button']:focus-visible, … ,
+    // .hud-interactive:focus-visible { outline: 2px solid
+    // var(--color-treasure,#d4af37); … }` — require the .hud-interactive
+    // selector arm AND the treasure-gold outline value.
     function ruleMatches(rule: CSSRule): boolean {
       if (
         rule instanceof CSSStyleRule &&
-        rule.selectorText.includes(':focus-visible') &&
-        /outline/.test(rule.style.cssText)
+        rule.selectorText.includes('.hud-interactive:focus-visible') &&
+        /outline/.test(rule.style.cssText) &&
+        /color-treasure|#d4af37/.test(rule.style.cssText)
       ) {
         return true;
       }

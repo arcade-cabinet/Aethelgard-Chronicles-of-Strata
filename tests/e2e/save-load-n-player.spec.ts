@@ -134,7 +134,15 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
       ([snapJson, sentinel]: [string, string]) => {
         (window as { __reloadSentinel?: string }).__reloadSentinel = sentinel;
         const snap = JSON.parse(snapJson);
-        (window as { __game_load?: (s: unknown) => void }).__game_load?.(snap);
+        // CodeRabbit #91 (Major) — require the restore hook, don't
+        // optional-chain it. With a deterministic seed the post-restore
+        // assertions could still pass if __game_load were silently
+        // absent (no-op restore → identical state), masking a broken
+        // harness. Throw loudly if the hook is missing.
+        const load = (window as { __game_load?: (s: unknown) => void }).__game_load;
+        if (typeof load !== 'function')
+          throw new Error('__game_load hook missing — restore cannot be verified');
+        load(snap);
       },
       [snapshotJson, RELOAD_SENTINEL_2] as [string, string],
     );
