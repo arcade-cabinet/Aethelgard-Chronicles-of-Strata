@@ -1,5 +1,5 @@
 import { Billboard, Text } from '@react-three/drei';
-import { WORLD_TEXT_FONT } from '@/world/world-text-font';
+import { WORLD_TEXT_FONT } from '@/world/effects';
 
 /**
  * "Building" billboard tag (M_CONSTRUCTION.2) shown above a peon assigned

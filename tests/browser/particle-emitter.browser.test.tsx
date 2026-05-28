@@ -13,8 +13,8 @@ import type { Object3D } from 'three';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { ParticleEmitter } from '@/world/ParticleEmitter';
-import { rainConsumer } from '@/world/particle-consumers';
+import { ParticleEmitter } from '@/world/effects';
+import { rainConsumer } from '@/world/effects';
 
 describe('ParticleEmitter (M_REGISTRY.6) browser rendering', () => {
   it('renders rain drops into the scene when weather=rain', async () => {

@@ -20,7 +20,7 @@ import {
   sawdustConsumer,
   snowConsumer,
   victoryConfettiConsumer,
-} from '@/world/particle-consumers';
+} from '@/world/effects';
 
 let particleId = 0;
 function nextId(): number {

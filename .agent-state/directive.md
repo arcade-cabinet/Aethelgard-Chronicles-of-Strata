@@ -311,8 +311,18 @@ URL-param + dev-window hooks).
       moved) point at ../WorldBadge / @/world/world-text-font for now —
       WILL fix in WORLD-EFFECTS. 60 unit + 1 units-render browser green;
       check 0.
-- [ ] M_V13.DECOMP.WORLD-EFFECTS — `world/effects/` (water, particles,
-      weather-visual, volcano, wildfire). Barrel.
+- [x] M_V13.DECOMP.WORLD-EFFECTS — `world/effects/`: ParticleEmitter +
+      particle-consumers, FootstepEmitter, Volcano/Wildfire/DeathDrop/
+      LootCache layers, ContestedPulse, CombatText, ResourceText,
+      WorldBadge, world-text-font. Barrel. DONE: 12 git mv. Intra-group
+      edges (particle-consumers→ParticleEmitter, ResourceText/CombatText/
+      WorldBadge→world-text-font) now ./. Fixed the board→effects refs
+      left dangling after WORLD-BOARD (StackRender ../WorldBadge→../effects,
+      BuilderBadge @/world/world-text-font→@/world/effects). 2 particle-
+      perf unit + 2 particle-emitter browser green; check 0.
+      NOTE: Water lives in terrain/ (boundary feature), not effects —
+      directive's parenthetical "(water, ...)" was a planning guess;
+      actual grouping per WORLD-AUDIT.
 - [ ] M_V13.DECOMP.WORLD-PROCEDURAL — barrel the existing
       procedural/ sub-tree.
 - [ ] M_V13.DECOMP.WORLD-BARREL — top `world/index.ts`.

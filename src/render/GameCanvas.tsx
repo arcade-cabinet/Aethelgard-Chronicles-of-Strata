@@ -5,17 +5,17 @@ import { axialToWorld } from '@/core/hex';
 import { Building, type BuildingType, HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { BuildingOutlineRing } from '@/world/board';
-import { CombatText } from '@/world/CombatText';
-import { ContestedPulse } from '@/world/ContestedPulse';
+import { CombatText } from '@/world/effects';
+import { ContestedPulse } from '@/world/effects';
 import { Crossings } from '@/world/terrain';
-import { DeathDropLayer } from '@/world/DeathDropLayer';
-import { LootCacheLayer } from '@/world/LootCacheLayer';
+import { DeathDropLayer } from '@/world/effects';
+import { LootCacheLayer } from '@/world/effects';
 import { Decoration } from '@/world/biomes';
 import { FactionBase } from '@/world/board';
-import { FootstepEmitter } from '@/world/FootstepEmitter';
+import { FootstepEmitter } from '@/world/effects';
 import { HexGridOverlay } from '@/world/terrain';
 import { Mountains } from '@/world/biomes';
-import { ParticleEmitter } from '@/world/ParticleEmitter';
+import { ParticleEmitter } from '@/world/effects';
 import { ProjectileLayer } from '@/world/board';
 import {
   bloodSplashConsumer,
@@ -26,10 +26,10 @@ import {
   sawdustConsumer,
   snowConsumer,
   victoryConfettiConsumer,
-} from '@/world/particle-consumers';
+} from '@/world/effects';
 import { RallyMarker } from '@/world/board';
 import { ResourceNodes } from '@/world/board';
-import { ResourceText } from '@/world/ResourceText';
+import { ResourceText } from '@/world/effects';
 import { Roads } from '@/world/terrain';
 import { SelectionRing } from '@/world/board';
 import { StackRender } from '@/world/board';
@@ -38,9 +38,9 @@ import { type BuildContext, TileInteraction } from '@/world/terrain';
 import { TrackingRings, type TrackingRingsHandle } from '@/world/board';
 import { UnitHexOutline } from '@/world/board';
 import { Units } from '@/world/board';
-import { VolcanoLayer } from '@/world/VolcanoLayer';
+import { VolcanoLayer } from '@/world/effects';
 import { Water } from '@/world/terrain';
-import { WildfireLayer } from '@/world/WildfireLayer';
+import { WildfireLayer } from '@/world/effects';
 import { ZoneBorder } from '@/world/board';
 import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createMapPrng } from '@/core/rng';
 import { startGame } from '@/game/game-state';
-import { rainConsumer, snowConsumer } from '@/world/particle-consumers';
+import { rainConsumer, snowConsumer } from '@/world/effects';
 
 /**
  * M_EXPANSION.T.136 — particle archetype spawn/age/cull at 60Hz.
