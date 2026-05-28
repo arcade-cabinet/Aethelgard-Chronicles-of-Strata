@@ -4,7 +4,7 @@ import { type BuildingType, Selectable } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { clearSelection, selectEntities } from '@/game/selection';
 import { cameraView } from '@/render/camera-view';
-import { BUILDING_ACTION, getBinding, type HotkeyAction } from './hotkey-bindings';
+import { BUILDING_ACTION, getBinding, type HotkeyAction } from '../hotkey-bindings';
 
 /**
  * M_EXPANSION.U.115 — build-hotkey lookup is derived from the

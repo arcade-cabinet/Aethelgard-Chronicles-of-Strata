@@ -9,7 +9,7 @@
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { PauseControl } from '@/hud/PauseControl';
+import { PauseControl } from '@/hud/system';
 
 describe('PauseControl (M_AUDIT2.UX.37)', () => {
   it('renders the pause button', async () => {

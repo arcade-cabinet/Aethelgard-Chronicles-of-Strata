@@ -3,9 +3,9 @@ import { useState } from 'react';
 import { RESOURCE_TYPES } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { resourceDisplayFor } from '@/rules';
-import { formatInt } from './theme';
-import { HUD_THEME } from './theme';
-import { useRafLoop } from './useRafLoop';
+import { formatInt } from '../theme';
+import { HUD_THEME } from '../theme';
+import { useRafLoop } from '../useRafLoop';
 
 /** One resource readout. */
 interface Readout {

@@ -160,10 +160,15 @@ URL-param + dev-window hooks).
       not overlay-private). All importers (App, main, FixtureApp,
       HudLayer, selection/MultiSelectActions, DiscoveriesPanel + 6 tests)
       → @/hud/overlays. 19 browser tests green; check 0, lint clean.
-- [ ] M_V13.DECOMP.HUD-SYSTEM — `src/hud/system/`: SystemMenu,
-      MobileSystemMenu, ResourceBar, Minimap, ZoneLegend, Pause,
-      Speed, SoundToggle, Resign, Screenshot, KeyboardShortcuts,
-      AchievementWatcher, PersistAchievements, TradeSwapWidget. Barrel.
+- [x] M_V13.DECOMP.HUD-SYSTEM — `src/hud/system/`: SystemMenu,
+      MobileSystemMenu, ResourceBar, Minimap, ZoneLegend, PauseControl,
+      SpeedControl, SoundToggle, ResignButton, ScreenshotButton,
+      KeyboardShortcuts, AchievementWatcher, PersistAchievements,
+      TradeSwapWidget. Barrel. DONE: 14 git mv, no css/intra-bucket
+      refs; SoundToggle's local MUTE_PREF_KEY kept private (canonical
+      copy lives in @/audio/useMutedPreference). Importers (FixtureApp,
+      HudLayer + 7 browser tests) → @/hud/system. 15 browser tests
+      green; check 0, lint clean.
 - [ ] M_V13.DECOMP.HUD-MODALS — `src/hud/modals/`: NewGameModal,
       SettingsModal, GameOverModal, DiplomacyModal, DiscoveriesPanel,
       AtelierScreen, CreditsModal, HotkeyEditor, MatchSummaryCard,

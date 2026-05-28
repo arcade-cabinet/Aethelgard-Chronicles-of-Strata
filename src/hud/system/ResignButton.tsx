@@ -2,9 +2,9 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { useState } from 'react';
 import { resign } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
-import { HudPill } from './primitives';
-import { HUD_THEME } from './theme';
-import { ModalShell } from './primitives';
+import { HudPill } from '../primitives';
+import { HUD_THEME } from '../theme';
+import { ModalShell } from '../primitives';
 
 /**
  * Resign HUD button (M_MODES.10). Always visible during gameplay; opens a

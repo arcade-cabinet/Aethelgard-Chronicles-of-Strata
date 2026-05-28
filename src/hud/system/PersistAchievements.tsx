@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { unlockAchievement } from '@/game/achievements';
 import type { GameState } from '@/game/game-state';
 import type { Persistence } from '@/persistence/persistence';
-import { useRafLoop } from './useRafLoop';
+import { useRafLoop } from '../useRafLoop';
 
 /**
  * M_EXPANSION.F.77 — persistent-achievement watcher.

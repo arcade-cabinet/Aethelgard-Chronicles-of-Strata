@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { emitUiSound } from '@/audio/ui-sound-emitter';
 import type { GameState } from '@/game/game-state';
-import { announce } from './aria-live-bus';
-import { useRafLoop } from './useRafLoop';
+import { announce } from '../aria-live-bus';
+import { useRafLoop } from '../useRafLoop';
 
 /**
  * M_EXPANSION.AU.33 — achievement watcher.

@@ -18,7 +18,7 @@ import type { GameState } from '@/game/game-state';
 import type { Persistence } from '@/persistence/persistence';
 import type { ViewportProfile } from '@/render/useViewport';
 import type { BuildContext } from '@/world/TileInteraction';
-import { AchievementWatcher } from '@/hud/AchievementWatcher';
+import { AchievementWatcher } from '@/hud/system';
 import { AriaLiveRegion } from '@/hud/overlays';
 import { AtelierScreen } from '@/hud/AtelierScreen';
 import { BuildMenuButton } from '@/hud/selection';
@@ -30,12 +30,12 @@ import { DiplomacyModal } from '@/hud/DiplomacyModal';
 import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { GameOverModal } from '@/hud/GameOverModal';
 import { IdleUnitIndicator } from '@/hud/selection';
-import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
-import { Minimap } from '@/hud/Minimap';
+import { KeyboardShortcuts } from '@/hud/system';
+import { Minimap } from '@/hud/system';
 import { MultiSelectActions } from '@/hud/selection';
 import { OnboardingOverlay } from '@/hud/overlays';
-import { PauseControl } from '@/hud/PauseControl';
-import { PersistAchievements } from '@/hud/PersistAchievements';
+import { PauseControl } from '@/hud/system';
+import { PersistAchievements } from '@/hud/system';
 import {
   FactionChips,
   MatchAgePill,
@@ -48,16 +48,16 @@ import {
   ZoneControlPill,
   ZoneFlipPulse,
 } from '@/hud/pills';
-import { ResourceBar } from '@/hud/ResourceBar';
-import { ScreenshotButton } from '@/hud/ScreenshotButton';
+import { ResourceBar } from '@/hud/system';
+import { ScreenshotButton } from '@/hud/system';
 import { SelectionPanel } from '@/hud/selection';
-import { SpeedControl } from '@/hud/SpeedControl';
-import { SystemMenu } from '@/hud/SystemMenu';
+import { SpeedControl } from '@/hud/system';
+import { SystemMenu } from '@/hud/system';
 import { Toasts } from '@/hud/overlays';
 import { TributeDemandBanner } from '@/hud/overlays';
 import { TutorialOverlay } from '@/hud/overlays';
 import { WaveDefenseOverlay } from '@/hud/overlays';
-import { ZoneLegend } from '@/hud/ZoneLegend';
+import { ZoneLegend } from '@/hud/system';
 
 export interface HudLayerProps {
   game: GameState;

@@ -26,7 +26,7 @@ import { GameOverModal } from '@/hud/GameOverModal';
 import { NewGameModal } from '@/hud/NewGameModal';
 import { OnboardingOverlay } from '@/hud/overlays';
 import { SettingsModal } from '@/hud/SettingsModal';
-import { SystemMenu } from '@/hud/SystemMenu';
+import { SystemMenu } from '@/hud/system';
 import { TitleScreen } from '@/hud/overlays';
 import { createPersistence } from '@/persistence/persistence';
 

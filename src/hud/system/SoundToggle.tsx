@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { setMuted } from '@/audio/buses';
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
-import { HudPill } from './primitives';
+import { HudPill } from '../primitives';
 
 /** The Preferences key the mute state is persisted under. */
 // M_SEC.33 — Preferences keys are namespaced via the PREF_KEYS enum.

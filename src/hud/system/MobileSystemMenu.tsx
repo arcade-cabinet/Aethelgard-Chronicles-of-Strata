@@ -2,7 +2,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useState } from 'react';
 import { resign } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './theme';
+import { HUD_THEME } from '../theme';
 
 /**
  * M_POLISH2.MOBILE.15 — single top-left hamburger that collapses
