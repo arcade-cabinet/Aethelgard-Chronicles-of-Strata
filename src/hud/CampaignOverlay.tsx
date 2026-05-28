@@ -18,7 +18,7 @@ import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
 import { type ChapterId, chapterFor, CHAPTER_IDS } from '@/config/campaign-chapters';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 export interface CampaignOverlayProps {
   game: GameState;

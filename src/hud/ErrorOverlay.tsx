@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 import { useEffect, useState } from 'react';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 /**
  * Global error surface. EVERY unhandled error, console.error, network

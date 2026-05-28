@@ -23,7 +23,7 @@
  */
 import * as Dialog from '@radix-ui/react-dialog';
 import type { CSSProperties, ReactNode } from 'react';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 export interface ModalShellProps {
   /** Modal content (Dialog.Title + body). */

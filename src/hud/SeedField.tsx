@@ -4,7 +4,7 @@
  */
 import type { MutableRefObject } from 'react';
 import { randomSeedPhrase } from '@/core/seed-phrase';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 export interface SeedFieldProps {
   seedPhrase: string;

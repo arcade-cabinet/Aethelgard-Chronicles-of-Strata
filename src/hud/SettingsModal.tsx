@@ -8,7 +8,7 @@ import { isColorblindMode, setColorblindMode } from '@/rules/colorblind';
 import { isCaptionsEnabled, setCaptionsEnabled } from './captions';
 import { HotkeyEditor } from './HotkeyEditor';
 import { loadBindings } from './hotkey-bindings';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 import { ModalShell } from './ModalShell';
 
 // M_EXPANSION.U.112 — bus → (preference key, label) mapping.

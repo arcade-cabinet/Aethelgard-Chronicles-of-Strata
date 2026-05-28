@@ -19,7 +19,7 @@ import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
 import { AssignedJob, Building, FactionTrait, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 export interface TutorialOverlayProps {
   game: GameState;

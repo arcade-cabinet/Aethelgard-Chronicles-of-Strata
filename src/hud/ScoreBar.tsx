@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { GameState } from '@/game/game-state';
-import { formatInt } from './format';
-import { HUD_THEME } from './hud-theme';
+import { formatInt } from './theme';
+import { HUD_THEME } from './theme';
 import { useRafLoop } from './useRafLoop';
 
 /**

@@ -1,6 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog';
 import { CREDITS } from '@/config/credits';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 import { ModalShell } from './ModalShell';
 
 /**

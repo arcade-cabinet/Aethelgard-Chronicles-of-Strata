@@ -25,8 +25,8 @@ import { type FactionConfig, findFaction } from '@/config/factions';
 import type { GameState } from '@/game/game-state';
 import { cn } from '@/lib/cn';
 import { useViewport } from '@/render/useViewport';
-import { formatInt } from './format';
-import { HUD_THEME } from './hud-theme';
+import { formatInt } from './theme';
+import { HUD_THEME } from './theme';
 
 export interface FactionChipsProps {
   game: GameState;

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { resign } from '@/game/commands';
 import type { GameState } from '@/game/game-state';
 import { HudPill } from './HudPill';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 import { ModalShell } from './ModalShell';
 
 /**

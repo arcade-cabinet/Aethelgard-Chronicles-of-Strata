@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 /**
  * M_POLISH2.MODES.42 — strata-wars zone-control percent chip.

@@ -24,8 +24,8 @@ import { setStackFormation } from '@/game/stacking';
 import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
 import { FORMATIONS } from '@/world/formations';
 import type { BuildContext } from '@/world/TileInteraction';
-import { costLabel } from './format';
-import { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
+import { costLabel } from './theme';
+import { HUD_CARD_STYLE, HUD_THEME } from './theme';
 import './th-affordance.css';
 import {
   buildDisabledReason,

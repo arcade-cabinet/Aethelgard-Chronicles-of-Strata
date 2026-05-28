@@ -28,7 +28,7 @@ import type { GameState } from '@/game/game-state';
 import { detectTranscriptHighlights, matchHighlights, matchNickname } from '@/game/match-narrative';
 import { cn } from '@/lib/cn';
 import type { Persistence } from '@/persistence/persistence';
-import { formatInt, formatTime } from './format';
+import { formatInt, formatTime } from './theme';
 import { MatchSummaryCard } from './MatchSummaryCard';
 import { Halo, TreasureButton } from './primitives';
 

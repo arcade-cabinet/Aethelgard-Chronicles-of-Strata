@@ -10,7 +10,7 @@
  * Use `matchNickname()` + `matchHighlights()` from
  * `src/game/match-narrative` to derive them from a live game.
  */
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 export interface MatchSummaryCardProps {
   /** Procedural match nickname (e.g. "The Crushing Banner"). */

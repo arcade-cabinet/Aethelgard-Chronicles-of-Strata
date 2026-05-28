@@ -23,7 +23,7 @@
 import { useRef, useState } from 'react';
 import { AssignedJob, FactionTrait, HexPosition, PeonAutonomy, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 import './idle-peons-indicator.css';
 import { useRafLoopThrottled } from './useRafLoop';
 

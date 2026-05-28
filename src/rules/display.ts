@@ -11,7 +11,7 @@
  */
 import { RESOURCES } from '@/config/resources';
 import { type BuildingType, RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
-import { HUD_THEME } from '@/hud/hud-theme';
+import { HUD_THEME } from '@/hud/theme';
 import { BUILDING_PROFILES, type DisplaySlot } from './building-profiles';
 
 /** Alias kept for back-compat with existing imports. */

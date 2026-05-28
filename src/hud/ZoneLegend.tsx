@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useViewport } from '@/render/useViewport';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 /** One legend entry — a coloured swatch + a one-line meaning. */
 interface LegendRow {

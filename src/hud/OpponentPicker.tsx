@@ -3,7 +3,7 @@
  * named personality card grid. Extracted from NewGameModal.tsx.
  */
 import { ALL_PERSONALITIES, personalityFor } from '@/config/ai-personalities';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 import { Segmented } from './Segmented';
 
 export interface OpponentPickerProps {

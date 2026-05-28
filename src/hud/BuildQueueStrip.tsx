@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 import { useRafLoop } from './useRafLoop';
 
 /**

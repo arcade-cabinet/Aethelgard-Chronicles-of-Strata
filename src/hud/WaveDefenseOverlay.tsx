@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { waveDefenseProgress } from '@/ecs/systems/wave-defense';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 export interface WaveDefenseOverlayProps {
   game: GameState;

@@ -27,7 +27,7 @@
 import * as Toast from '@radix-ui/react-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 /** One toast in flight. */
 export interface ToastSpec {

@@ -16,7 +16,7 @@ import { findFaction } from '@/config/factions';
 import { isTradeAvailable, performTrade, TRADE_ROUTE_DISCOVERY_ID } from '@/game/diplomacy-trade';
 import { economyFor } from '@/game/economy-for';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 const LOCAL_FACTION = 'player';
 

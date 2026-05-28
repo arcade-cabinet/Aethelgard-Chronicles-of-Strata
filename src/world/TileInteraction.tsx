@@ -13,7 +13,7 @@ import {
 import { getCursorMode } from '@/game/cursor-mode';
 import type { GameState } from '@/game/game-state';
 import { selectEntity, selectedEntities } from '@/game/selection';
-import { HUD_THEME } from '@/hud/hud-theme';
+import { HUD_THEME } from '@/hud/theme';
 import { cameraView } from '@/render/camera-view';
 import { hexGridVisibility } from './HexGridOverlay';
 import { PathLine } from './PathLine';

@@ -18,7 +18,7 @@ import { getRelation } from '@/game/diplomacy';
 import { acceptTribute, canDemandTribute, refuseTribute } from '@/game/diplomacy-tribute';
 import { economyFor } from '@/game/economy-for';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 
 const LOCAL_FACTION = 'player';
 

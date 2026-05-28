@@ -24,7 +24,7 @@ import {
   metaUnlocksByCategory,
 } from '@/config/meta-unlocks';
 import type { Persistence } from '@/persistence/persistence';
-import { HUD_THEME } from './hud-theme';
+import { HUD_THEME } from './theme';
 import { ModalShell } from './ModalShell';
 
 export interface AtelierScreenProps {
