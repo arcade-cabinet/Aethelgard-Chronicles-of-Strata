@@ -21,7 +21,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useMemo, useRef } from 'react';
 import type { Mesh } from 'three';
-import { VOLCANO_TUNING } from '@/config/mapgen';
+import { VOLCANO_TUNING } from '@/config/world';
 import { axialToWorld, parseHexKey } from '@/core/hex';
 import type { GameState } from '@/game/game-state';
 

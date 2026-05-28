@@ -27,7 +27,7 @@
  * tile (away from the bases) and converts it to VOLCANO. The mid-
  * game eruption cycle is the dynamic part; placement is static.
  */
-import { VOLCANO_TUNING } from '@/config/mapgen';
+import { VOLCANO_TUNING } from '@/config/world';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey, hexDistance, hexNeighbors } from '@/core/hex';
 import type { Rng } from '@/core/rng';

@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { ASSET_METADATA } from '@/config/asset-metadata';
-import { ALL_BIOMES } from '@/config/mapgen';
+import { ALL_BIOMES } from '@/config/world';
 import { ambientForBiome, BIOME_AMBIENT } from '../biome-ambient';
 
 describe('biome-ambient (M_FUN.AUDIO.BIOME)', () => {

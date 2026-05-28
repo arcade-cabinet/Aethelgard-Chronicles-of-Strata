@@ -12,7 +12,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { BIOME_AMBIENT } from '@/audio/biome-ambient';
-import { biomeRule } from '@/config/mapgen';
+import { biomeRule } from '@/config/world';
 import { moveCostFor } from '@/core/terrain-cost';
 import { Health } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';

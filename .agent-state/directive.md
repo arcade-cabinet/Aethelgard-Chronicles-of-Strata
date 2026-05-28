@@ -229,8 +229,13 @@ URL-param + dev-window hooks).
       @/config/factions + 9 ai-personalities + 5 faction-palette + 1
       ../factions from combat/archetypes). 82 config+ai tests + 3
       faction-color browser tests green; check 0.
-- [ ] M_V13.DECOMP.CONFIG-WORLD — `config/world/`: world + mapgen
-      json+ts. Barrel.
+- [x] M_V13.DECOMP.CONFIG-WORLD — `config/world/`: world + mapgen
+      json+ts. Barrel. DONE: 4 git mv. Only the 15 @/config/mapgen
+      importers needed repointing → @/config/world; the 48
+      @/config/world importers resolved AUTOMATICALLY (world is the
+      eponymous bundle file → @/config/world resolves to world/index.ts
+      via dir resolution — the eponymous-file-free-path principle from
+      CONFIG-ECONOMY, here saving 48 rewrites). 81 tests green; check 0.
 - [ ] M_V13.DECOMP.CONFIG-NARRATIVE — `config/narrative/`:
       match-narrative + myth-events + credits + campaign-chapters +
       achievements. Barrel.

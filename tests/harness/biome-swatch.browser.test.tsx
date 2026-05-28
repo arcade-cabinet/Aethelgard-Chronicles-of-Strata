@@ -14,7 +14,7 @@ import { Canvas } from '@react-three/fiber';
 import { page } from '@vitest/browser/context';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { ALL_BIOMES, biomeRule } from '@/config/mapgen';
+import { ALL_BIOMES, biomeRule } from '@/config/world';
 import type { BiomeType } from '@/core/biome';
 import { BiomeSwatch } from '@/world/BiomeSwatch';
 

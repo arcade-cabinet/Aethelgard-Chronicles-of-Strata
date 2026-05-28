@@ -1,4 +1,4 @@
-import { MOUNTAIN_TUNING, mapTypeRule } from '@/config/mapgen';
+import { MOUNTAIN_TUNING, mapTypeRule } from '@/config/world';
 import { MAP_RADIUS } from '@/config/world';
 import { biomeFlagsFor } from '@/rules/biome-flags';
 import { assignBiome, type Biome } from './biome';

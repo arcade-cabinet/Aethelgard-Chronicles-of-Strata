@@ -38,7 +38,7 @@
  * silent. Cadence-cap unchanged at MYTH_MIN_INTERVAL_SECONDS via the
  * shared cooldown the previous implementation used.
  */
-import { QUAKE_TUNING, WILDFIRE_TUNING } from '@/config/mapgen';
+import { QUAKE_TUNING, WILDFIRE_TUNING } from '@/config/world';
 import { hexDistance, parseHexKey } from '@/core/hex';
 import { buildNavGraph } from '@/core/pathfinding';
 import type { Rng } from '@/core/rng';

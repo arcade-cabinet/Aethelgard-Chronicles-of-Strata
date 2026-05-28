@@ -11,7 +11,7 @@
  *  4. Deterministic for a fixed PRNG sequence.
  */
 import { describe, expect, it } from 'vitest';
-import { QUAKE_TUNING } from '@/config/mapgen';
+import { QUAKE_TUNING } from '@/config/world';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey } from '@/core/hex';
 import { triggerQuake } from '@/ecs/systems/quake';
