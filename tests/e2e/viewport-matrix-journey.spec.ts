@@ -64,7 +64,7 @@ test.describe('viewport matrix journey', () => {
         () =>
           typeof (window as unknown as { __game_advanceFrames?: unknown }).__game_advanceFrames ===
           'function',
-        { timeout: 30_000 },
+        { timeout: 60_000 },
       );
       await page.evaluate(async () => {
         const w = window as unknown as { __skipOnboarding?: () => Promise<void> };

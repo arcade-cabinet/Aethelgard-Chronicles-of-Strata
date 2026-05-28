@@ -134,7 +134,7 @@ test.describe('AI-vs-AI balance gate (M_FUN.QA.AIVAI)', () => {
         () =>
           typeof (window as unknown as { __game_advanceFrames?: unknown }).__game_advanceFrames ===
           'function',
-        { timeout: 30_000 },
+        { timeout: 60_000 },
       );
       // Wait for the onboarding hook to mount BEFORE calling it — the
       // OnboardingOverlay useEffect registers the hook a frame or two

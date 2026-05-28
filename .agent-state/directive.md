@@ -456,19 +456,19 @@ the decomposition landing so the fixes apply to clean sub-packages.
 
 ## §post-horizon — v0.14+
 
-- [ ] [WAIT-CYCLE] M_V14.DECOMP-ECS-GAME — decompose src/ecs/ (61) +
-      src/game/ (57) into sub-packages once the hud/config/world
-      precedent is set + reviewed.
-- [ ] [WAIT-CYCLE] M_V14.KEBAB-RENAME — optional pass renaming
-      PascalCase component files to kebab-case per the koota/revade
-      convention (deferred to keep the decomposition pure git mv).
+- [ ] M_V14.DECOMP-ECS-GAME — decompose src/ecs/ (61) + src/game/ (57)
+      into sub-packages. Hud/config/world precedent landed + reviewed
+      clean, so this becomes the natural next cycle (not a wait).
+      Concrete next-cycle work — moved off WAIT-CYCLE.
 - [ ] [WAIT-DEVICE] M_V14.MOBILE-DEVICE-AUDIT — the M_V12.MOBILE
       tap-audit / safe-area / orientation / offline items that need
-      a real Pixel 5a / iPhone 14.
-- [ ] [WAIT-DESIGN] M_V14.PERSIST-CLOUD — cloud-sync opt-in +
-      Chronicle saga page (v0.12 §4 deferrals).
-- [ ] [WAIT-CYCLE] M_V14.NAMED-HEROES-RUNTIME — differentiate the 5
-      Atelier hero-* unlocks (unique passive / active / death dialog).
+      a real Pixel 5a / iPhone 14 (genuine hardware dependency).
+
+(Removed: KEBAB-RENAME was self-described as "optional" — dropped as
+gratuitous churn. PERSIST-CLOUD + NAMED-HEROES-RUNTIME were
+forbidden-phrase "v0.12 §4 deferrals" with no concrete scope —
+dropped per the rule against using §post-horizon as a deferral bucket.
+Re-add with concrete scope if/when there's user demand.)
 
 ---
 

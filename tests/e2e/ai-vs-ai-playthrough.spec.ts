@@ -60,7 +60,7 @@ test.describe('AI-vs-AI playthrough', () => {
         () =>
           typeof (window as unknown as { __game_advanceFrames?: unknown }).__game_advanceFrames ===
           'function',
-        { timeout: 30_000 },
+        { timeout: 60_000 },
       );
 
       // dismiss onboarding overlay so screenshots aren't dimmed

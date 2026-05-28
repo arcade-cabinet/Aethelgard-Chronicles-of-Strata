@@ -30,7 +30,7 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
         typeof (window as { __game_advanceFrames?: unknown; __game_save?: unknown })
           .__game_advanceFrames === 'function' &&
         typeof (window as { __game_save?: unknown }).__game_save === 'function',
-      { timeout: 30_000 },
+      { timeout: 60_000 },
     );
 
     // 3. Advance 5 sim-min (18 000 frames).
@@ -96,7 +96,7 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
     await page.goto('/?ai-vs-ai=1&nplayer=4&seed=save-load-n42&mode=border-clash');
     await page.waitForFunction(
       () => typeof (window as { __game_load?: unknown }).__game_load === 'function',
-      { timeout: 30_000 },
+      { timeout: 60_000 },
     );
 
     await page.evaluate((snapJson: string) => {

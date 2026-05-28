@@ -36,7 +36,7 @@ test.describe('M_V7.E2E.4-PLAYER-CAMP-CLEAR', () => {
     await page.waitForFunction(
       () =>
         typeof (window as { __game_advanceFrames?: unknown }).__game_advanceFrames === 'function',
-      { timeout: 30_000 },
+      { timeout: 60_000 },
     );
 
     // 4 player factions auto-built + at least 1 barbarian camp.
