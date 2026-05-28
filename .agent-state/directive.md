@@ -323,8 +323,13 @@ URL-param + dev-window hooks).
       NOTE: Water lives in terrain/ (boundary feature), not effects —
       directive's parenthetical "(water, ...)" was a planning guess;
       actual grouping per WORLD-AUDIT.
-- [ ] M_V13.DECOMP.WORLD-PROCEDURAL — barrel the existing
-      procedural/ sub-tree.
+- [x] M_V13.DECOMP.WORLD-PROCEDURAL — barrel the existing procedural/
+      sub-tree. DONE: added top procedural/index.ts re-exporting the
+      already-present nested barrels (buildings/, primitives/) + the two
+      top files (faction-materials, FactionMaterialsContext). No file
+      moves (sub-tree was already structured); existing deep imports
+      (@/world/procedural/buildings etc.) kept working. No export
+      collisions. 63 procmesh browser tests green; check 0.
 - [ ] M_V13.DECOMP.WORLD-BARREL — top `world/index.ts`.
 
 ---
