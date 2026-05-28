@@ -117,10 +117,8 @@ URL-param + dev-window hooks).
       776→632 lines; 38 unused imports removed. GameSession keeps
       canvas + ErrorBoundary + buildContext + cameraRef. Browser
       test confirms HUD still mounts. 1251 unit green.
-- [ ] M_V13.DECOMP.APP-EVENTS — extract GameSession's window-event
-      wiring useEffect (trigger-build / open-build-menu /
-      focus-palace) into a `useGameWindowEvents(game)` hook in
-      `src/hud/hooks/`.
+- [x] M_V13.DECOMP.APP-EVENTS — window-event useEffect → src/hud/
+      hooks/useGameWindowEvents.ts. App.tsx 632→577. 1251 green.
 - [ ] M_V13.DECOMP.APP-SCREENS — extract the App-level phase shell
       (title / new-game / settings / resumed / config) into
       `src/screens/` components so App.tsx is a thin router. Verify

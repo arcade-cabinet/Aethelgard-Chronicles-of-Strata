@@ -6,10 +6,9 @@ import { defaultFactionColors } from '@/config/faction-palette';
 import { buildDefaultFactions } from '@/config/factions';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
-import { AssignedJob, Building, FactionTrait, Health, Unit } from '@/ecs/components';
 import { createAutoSave } from '@/game/auto-save';
-import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
-import { selectEntity } from '@/game/selection';
+import { installDevHarness } from '@/game/dev-harness';
+import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { HudLayer } from '@/hud/HudLayer';
 import { useGameWindowEvents } from '@/hud/hooks/useGameWindowEvents';
@@ -18,7 +17,7 @@ import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
 import { SettingsModal } from '@/hud/SettingsModal';
 import { TitleScreen } from '@/hud/TitleScreen';
 import { createPersistence, PREF_KEYS } from '@/persistence/persistence';
-import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
+import { deserializeGame } from '@/persistence/serialize-game';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
 import { useViewport } from '@/render/useViewport';
@@ -100,117 +99,11 @@ function GameSession({
   const game = useMemo(() => {
     const g = initialGame ?? (config ? startGame(config) : startGame('default'));
     g.autoSave = createAutoSave(() => persistence.save('AutoSave', g));
-    // E2E + visual-baseline test hook. Exposes the live GameState on
-    // window.__game so Playwright tests can force outcome / read
-    // economy / advanceFrames deterministically. Production-safe —
-    // window.__game is a forward-reference; nothing in the bundle
-    // imports it, so tree-shaking + 'use strict' isolate it to the
-    // window namespace only.
-    if (typeof window !== 'undefined') {
-      type DevWindow = Window & {
-        __game?: typeof g;
-        __game_advanceFrames?: (n: number) => void;
-        __game_findPlayerEntities?: (kind: 'peon' | 'military' | 'building') => number[];
-      };
-      (window as unknown as DevWindow).__game = g;
-      // Helper: advance the sim N 60Hz frames synchronously. Used
-      // by e2e specs to get the game into a meaningful playing state
-      // before screenshotting / asserting.
-      (window as unknown as DevWindow).__game_advanceFrames = (n: number) => {
-        for (let i = 0; i < n; i++) runEconomyTick(g, 1 / 60);
-      };
-      // M_POLISH3.J.4 — query helper for selection-state e2e tests.
-      // Returns up to 4 player-faction entity ids by category;
-      // ids match what `selectEntity` accepts.
-      // M_POLISH3.SCENE.4 — force a game-over outcome. The
-      // GameOverModal polls game.outcome via rAF + setState, so
-      // direct mutation reaches it eventually — but in headless
-      // Playwright the rAF cadence is throttled. This helper
-      // mutates outcome AND advances a few sim frames so the
-      // poller's next read picks it up before the next
-      // screenshot.
-      type GameOutcomeT = 'win' | 'loss' | 'draw';
-      (
-        window as unknown as DevWindow & {
-          __triggerGameOver?: (o: GameOutcomeT) => void;
-        }
-      ).__triggerGameOver = (outcome) => {
-        g.outcome = outcome;
-        // M_POLISH3.SCENE.4 — dispatch a CustomEvent so the
-        // GameOverModal can react immediately (without waiting on
-        // rAF, which Chromium throttles in headless / hidden tabs).
-        window.dispatchEvent(
-          new CustomEvent('aethelgard:outcome-changed', { detail: { outcome } }),
-        );
-      };
-      // M_V11.POLISH.BUILD-MENU-CTA — direct selectEntity hook so
-      // Playwright tests can deterministically select an entity
-      // (the open-build-menu CustomEvent + useEffect listener
-      // mount race is hard to win in headless).
-      (
-        window as unknown as DevWindow & {
-          __game_selectEntity?: (entityId: number) => void;
-        }
-      ).__game_selectEntity = (entityId) => {
-        for (const e of g.world.query(FactionTrait)) {
-          if (Number(e) === entityId) {
-            selectEntity(g, e);
-            return;
-          }
-        }
-      };
-      (window as unknown as DevWindow).__game_findPlayerEntities = (kind) => {
-        const MILITARY_TYPES = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
-        const out: number[] = [];
-        for (const e of g.world.query(FactionTrait)) {
-          if (out.length >= 4) break;
-          if (e.get(FactionTrait)?.faction !== 'player') continue;
-          const unit = e.get(Unit);
-          const building = e.get(Building);
-          if (kind === 'peon' && unit?.unitType === 'Peon') out.push(Number(e));
-          else if (kind === 'military' && unit && MILITARY_TYPES.has(unit.unitType))
-            out.push(Number(e));
-          else if (kind === 'building' && building) out.push(Number(e));
-        }
-        return out;
-      };
-      // M_FUN.QA.AIVAI — expose trait references so the AI-vs-AI
-      // balance e2e can query Building+FactionTrait directly from
-      // page.evaluate. Without this, a test would need to import
-      // src/ which Playwright doesn't bundle.
-      (
-        window as unknown as DevWindow & {
-          __game_traits?: {
-            Building: unknown;
-            FactionTrait: unknown;
-            Unit: unknown;
-            AssignedJob: unknown;
-            Health: unknown;
-          };
-        }
-      ).__game_traits = { Building, FactionTrait, Unit, AssignedJob, Health };
-      // M_V9.E2E.SAVE-LOAD-N-PLAYER — expose serialize/deserialize helpers for
-      // Playwright e2e round-trip tests. Production-safe (same isolation as
-      // other __game_* helpers).
-      (
-        window as unknown as DevWindow & {
-          __game_save?: () => ReturnType<typeof serializeGame>;
-          __game_load?: (snap: ReturnType<typeof serializeGame>) => void;
-        }
-      ).__game_save = () => serializeGame(g);
-      (
-        window as unknown as DevWindow & {
-          __game_load?: (snap: ReturnType<typeof serializeGame>) => void;
-        }
-      ).__game_load = (snap) => {
-        const restored = deserializeGame(snap);
-        for (const key of Object.keys(g) as (keyof typeof g)[]) {
-          delete g[key];
-        }
-        Object.assign(g, restored);
-        (window as unknown as DevWindow).__game = g;
-      };
-    }
+    // M_V13.DECOMP.APP-URLPARAMS — the window.__game* E2E / visual-
+    // test harness moved into src/game/dev-harness.ts. Production-
+    // safe (forward-references on the window namespace; no-op under
+    // SSR / node).
+    installDevHarness(g);
     return g;
   }, [config, initialGame]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
