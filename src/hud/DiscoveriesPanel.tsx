@@ -16,7 +16,9 @@ const DISCOVERY_FLAVOR: Record<string, string> = {
   'trade-route': 'The strata held the road through the winter; the wagons did not stray.',
   cartography: 'The Mythic showed us the realm whole, for one cold afternoon.',
   'iron-tools': 'The seam yielded; we shod our chisels in iron, and the mountain was kinder.',
-  'siege-engineering':
+  // M_V12.DEPTH.MILITARY-CHAIN — siege-engineering renamed
+  // sapper-training (Siege I) when the chain expanded to 4 specs.
+  'sapper-training':
     'We asked the wall its name; it answered; we wrote the answer on a stone, and the stone broke the wall.',
   'monumental-architecture':
     'The strata answered as one — yes, remember this. We laid the cornerstone before sunset.',
@@ -51,11 +53,53 @@ import { ModalShell } from './ModalShell';
  * Driven entirely from the typed registry — adding a Discovery JSON row
  * adds a panel row, no JSX change.
  */
+/**
+ * M_V12.DEPTH.UPGRADE-HUD — derive a Discovery's chain from the
+ * description prefix the v0.12 chain expansion writes ("Economy /
+ * Harvest I — ..." → chain='economy'). Formations are their own
+ * pseudo-chain. Anything that doesn't match a known prefix falls
+ * into 'misc' so a stale row stays visible while we migrate.
+ */
+type ChainKey =
+  | 'economy'
+  | 'military'
+  | 'diplomacy'
+  | 'magic'
+  | 'engineering'
+  | 'lore'
+  | 'formations'
+  | 'misc';
+
+const CHAIN_LABELS: Record<ChainKey, string> = {
+  economy: 'Economy',
+  military: 'Military',
+  diplomacy: 'Diplomacy',
+  magic: 'Magic',
+  engineering: 'Engineering',
+  lore: 'Lore',
+  formations: 'Formations',
+  misc: 'Other',
+};
+
+function chainForDescription(desc: string): ChainKey {
+  const head = desc.split('—')[0]?.trim().toLowerCase() ?? '';
+  if (head.startsWith('economy')) return 'economy';
+  if (head.startsWith('military')) return 'military';
+  if (head.startsWith('diplomacy')) return 'diplomacy';
+  if (head.startsWith('magic')) return 'magic';
+  if (head.startsWith('engineering')) return 'engineering';
+  if (head.startsWith('lore')) return 'lore';
+  if (head.startsWith('formation')) return 'formations';
+  return 'misc';
+}
+
 export function DiscoveriesPanel({ game }: { game: GameState }) {
   const [open, setOpen] = useState(false);
   // M_EXPANSION.U.124 — search filter (case-insensitive substring on
   // name OR description; empty = show all).
   const [filter, setFilter] = useState('');
+  // M_V12.DEPTH.UPGRADE-HUD — active chain tab; null = show all chains.
+  const [chainTab, setChainTab] = useState<ChainKey | null>(null);
   const eco = game.economy.player;
   // M_HUD.SHELL.1 — replace the inline HudPill trigger with a CustomEvent
   // listener so SystemMenu (the universal top-right hamburger) owns the
@@ -101,6 +145,79 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
         >
           Discoveries
         </Dialog.Title>
+        {/* M_V12.DEPTH.UPGRADE-HUD — chain-tab navigator. 6 chains
+            + Formations + "All" = 8 tabs. Hidden when the registry
+            is small (<12 rows). */}
+        {DISCOVERIES.length >= 12 && (
+          <div
+            id="discoveries-chain-tabs"
+            role="tablist"
+            aria-label="Discovery chains"
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 6,
+              margin: '0 0 12px',
+            }}
+          >
+            {(
+              [
+                'economy',
+                'military',
+                'diplomacy',
+                'magic',
+                'engineering',
+                'lore',
+                'formations',
+              ] as const
+            ).map((k) => {
+              const active = chainTab === k;
+              return (
+                <button
+                  type="button"
+                  key={k}
+                  id={`discoveries-tab-${k}`}
+                  aria-label={`Filter discoveries by ${CHAIN_LABELS[k]} chain`}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setChainTab(active ? null : k)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 999,
+                    border: `1px solid ${active ? HUD_THEME.color.gold : HUD_THEME.color.border}`,
+                    background: active ? 'rgba(212, 175, 55, 0.18)' : 'rgba(9, 13, 22, 0.5)',
+                    color: active ? HUD_THEME.color.gold : HUD_THEME.color.text,
+                    fontFamily: HUD_THEME.font.body,
+                    fontWeight: active ? 700 : 500,
+                    fontSize: '0.74rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {CHAIN_LABELS[k]}
+                </button>
+              );
+            })}
+            {chainTab !== null && (
+              <button
+                type="button"
+                id="discoveries-tab-clear"
+                aria-label="Clear chain filter (show all)"
+                onClick={() => setChainTab(null)}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 999,
+                  border: `1px solid ${HUD_THEME.color.border}`,
+                  background: 'transparent',
+                  color: HUD_THEME.color.muted,
+                  fontSize: '0.74rem',
+                  cursor: 'pointer',
+                }}
+              >
+                Show all
+              </button>
+            )}
+          </div>
+        )}
         {/* M_EXPANSION.U.124 — search filter. Hidden until the
             registry grows past 6 rows so a small library doesn't
             need the chrome. */}
@@ -127,6 +244,8 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
           />
         )}
         {DISCOVERIES.filter((d) => {
+          // M_V12.DEPTH.UPGRADE-HUD — chain-tab gate.
+          if (chainTab && chainForDescription(d.description) !== chainTab) return false;
           const q = filter.trim().toLowerCase();
           if (!q) return true;
           return d.name.toLowerCase().includes(q) || d.description.toLowerCase().includes(q);

@@ -13,9 +13,9 @@ import { DISCOVERIES, discoveryById } from '@/rules/discovery-registry';
 
 const NEW_IDS = [
   'trade-route',
-  'cartography',
+  'first-contact',
   'iron-tools',
-  'siege-engineering',
+  'sapper-training',
   'monumental-architecture',
 ] as const;
 
@@ -41,8 +41,13 @@ describe('M_V7.DISCOVERY-TREE.V6 — new tech entries', () => {
     // previously chained off steelPlows when there was no separate
     // Engineering line). Engineering is currently a flat root in the
     // expanded tree; monumental-architecture is the root of its own chain.
-    expect(discoveryById('siege-engineering')?.prereqs).toEqual(['forgedBlades']);
-    expect(discoveryById('monumental-architecture')?.prereqs).toEqual([]);
+    // M_V12.DEPTH.MILITARY-CHAIN — Siege spec restructured so every
+    // spec head is standalone; sapper-training now has no prereqs.
+    expect(discoveryById('sapper-training')?.prereqs).toEqual([]);
+    // M_V12.DEPTH.ENGINEERING-CHAIN — monumental-architecture demoted
+    // from Engineering root to Production III in the v0.12 chain;
+    // now chains off guild-conduits.
+    expect(discoveryById('monumental-architecture')?.prereqs).toEqual(['guild-conduits']);
   });
 
   it('iron-tools is a multiply-harvest tech with 1.25× factor', () => {
@@ -56,8 +61,8 @@ describe('M_V7.DISCOVERY-TREE.V6 — new tech entries', () => {
   it('trade-route + cartography + siege-engineering + monumental-architecture are flag-only', () => {
     for (const id of [
       'trade-route',
-      'cartography',
-      'siege-engineering',
+      'first-contact',
+      'sapper-training',
       'monumental-architecture',
     ]) {
       const cfg = DISCOVERIES_CONFIG.discoveries.find((c) => c.id === id);

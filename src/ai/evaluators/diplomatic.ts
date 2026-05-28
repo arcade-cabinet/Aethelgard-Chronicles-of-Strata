@@ -21,17 +21,31 @@
  *   - H-5: const enum replaced with const object (isolatedModules safe)
  */
 import { Goal, GoalEvaluator } from 'yuka';
+import { personalityFor } from '@/config/ai-personalities';
 import type { AiPlayer } from '@/ai/ai-player';
-import { getRelation } from '@/game/diplomacy';
+import { getRelation, setRelation } from '@/game/diplomacy';
 import { bordersAreTouching, proposeNonAggressionPact } from '@/game/diplomacy-border';
 import { acceptTribute, canDemandTribute, hasHadContact } from '@/game/diplomacy-tribute';
 import { economyFor } from '@/game/economy-for';
+
+/**
+ * M_V12.AI-DIPLO.BREAK-PACT — per-pair cooldown to prevent
+ * break/repact flap. Keyed by `${myId}|${targetId}` so each
+ * directional break has its own clock. Cleared on game reset is
+ * not necessary — entries are bounded by faction-pair count and
+ * the cooldown window naturally ages out.
+ */
+const BREAK_PACT_COOLDOWN = new Map<string, number>();
+const BREAK_PACT_COOLDOWN_SECONDS = 60;
 
 /** Diplomacy action identifier. */
 const DiploAction = {
   ProposePact: 'propose-pact',
   DemandTribute: 'demand-tribute',
   AcceptTribute: 'accept-tribute',
+  // M_V12.AI-DIPLO.BREAK-PACT — break a current alliance when the
+  // personality favors it AND relative-power conditions match.
+  BreakPact: 'break-pact',
 } as const;
 type DiploAction = (typeof DiploAction)[keyof typeof DiploAction];
 
@@ -127,6 +141,43 @@ export class DiplomaticEvaluator extends GoalEvaluator<AiPlayer> {
           return { action: DiploAction.AcceptTribute, targetId: fc.id };
         }
       }
+
+      // 4. Break pact when ahead AND personality favors it.
+      //    M_V12.AI-DIPLO.BREAK-PACT — gated on:
+      //      - currently allied,
+      //      - relative-power gap: my used-supply ≥ 1.5× theirs,
+      //      - personality diploBias.break ≥ 0.5 threshold,
+      //      - per-pair cooldown ≥ 60 sim-seconds since last break
+      //        (reviewer M5 fix: prevents break/repact flap when an
+      //        ally re-offers immediately).
+      if (rel === 'ally') {
+        // CodeRabbit MEDIUM fix: defensive guard on economyFor.
+        // Returns undefined for a defeated/invalid faction; skip
+        // BreakPact evaluation cleanly instead of throwing a
+        // TypeError on .usedSupply. personalityFor returns a non-
+        // nullable Personality so it stays safe.
+        const theirEco = economyFor(game, fc.id);
+        if (!theirEco) continue;
+        const ratio = (myEco.usedSupply + 1) / (theirEco.usedSupply + 1);
+        const personality = personalityFor(owner.personalityKey);
+        const breakBias = personality.diploBias?.break ?? 0;
+        const cooldownKey = `${myId}|${fc.id}`;
+        const now = game.clock.elapsed;
+        const lastBreak = BREAK_PACT_COOLDOWN.get(cooldownKey) ?? -Infinity;
+        // CodeRabbit MAJOR fix: a new match resets game.clock.elapsed
+        // near 0; an entry from a prior match could block BreakPact
+        // for the rest of the new match. `now < lastBreak` means
+        // we've crossed a match boundary — treat as no prior break.
+        const cooledDown = now < lastBreak || now - lastBreak >= BREAK_PACT_COOLDOWN_SECONDS;
+        // CodeRabbit MAJOR fix: do NOT mutate the cooldown here.
+        // _pickDecision is called from BOTH calculateDesirability +
+        // setGoal, so writing the cooldown on each probe would burn
+        // it before activate() runs. The cooldown is stamped in
+        // DiplomaticGoal.activate's BreakPact case (single-fire).
+        if (ratio >= 1.5 && breakBias >= 0.5 && cooledDown) {
+          return { action: DiploAction.BreakPact, targetId: fc.id };
+        }
+      }
     }
 
     return null;
@@ -189,6 +240,19 @@ class DiplomaticGoal extends Goal<AiPlayer> {
           // Weaker AI accepts the dominant's implicit tribute claim.
           acceptTribute(game.diplomacy, myId, targetId, nowSeconds);
         }
+        break;
+      }
+      case DiploAction.BreakPact: {
+        // M_V12.AI-DIPLO.BREAK-PACT — setRelation(neutral) drops
+        // the relation row. Diplomatic-overture rejoin path stays
+        // open afterward (the alliance was broken, not vetoed
+        // permanently). A future cycle could record a -1 trust
+        // score the propose-pact gate consults.
+        setRelation(game.diplomacy, myId, targetId, 'neutral', nowSeconds);
+        // CodeRabbit MAJOR fix: stamp the cooldown HERE (in activate)
+        // not in _pickDecision, so the cooldown is set once on actual
+        // commit instead of on every desirability probe.
+        BREAK_PACT_COOLDOWN.set(`${myId}|${targetId}`, nowSeconds);
         break;
       }
     }

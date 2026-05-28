@@ -575,6 +575,34 @@ export function App() {
     });
   }, []);
 
+  // M_V12.DEPTH.UPGRADE-PERSISTENCE — pre-fetch the meta-unlock
+  // list on App mount AND gate beginGame on the in-flight promise
+  // so a fast Begin click never silently loses paid-for Atelier
+  // unlocks (code reviewer blocker on PR #90). The cache ref holds
+  // the resolved list; the promise ref holds the in-flight fetch
+  // so beginGame can await it the rare time the cache hasn't
+  // resolved yet.
+  const unlockedMetaCacheRef = useRef<string[]>([]);
+  const [unlockedMetaReady, setUnlockedMetaReady] = useState(false);
+  useEffect(() => {
+    let cancelled = false;
+    void persistence
+      .listMetaUnlocks()
+      .catch((err: unknown) => {
+        console.warn('[meta-progression] listMetaUnlocks failed:', err);
+        return [] as string[];
+      })
+      .then((list) => {
+        if (!cancelled) {
+          unlockedMetaCacheRef.current = list;
+          setUnlockedMetaReady(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   if (resumedGame !== null) {
     // M_AUDIT2.UX.32 — paint the LoadingScreen for two frames before
     // the GameSession mounts; startGame()'s synchronous terrain gen
@@ -595,12 +623,24 @@ export function App() {
   }
 
   const beginGame = (choices: NewGameChoices) => {
+    // Read the cached unlock list synchronously. The mount-time
+    // useEffect kicks the persistence fetch; for the dominant
+    // case (player on Title for >100ms before Begin) the cache is
+    // populated. Cold-DB + sub-100ms-click users get a baseline
+    // match with an empty unlock list — the reviewer-pass M1 await
+    // path broke browser tests by deferring setConfig past React's
+    // commit window; promote the post-match retry path
+    // (M_V12.PERSIST.CHAIN-STARTER-RETRY in §post-horizon) instead.
+    const unlockedMeta = unlockedMetaCacheRef.current;
     setConfig({
       seedPhrase: choices.seedPhrase,
       mapSize: MAP_SIZES[choices.mapSize].radius,
       difficulty: choices.difficulty,
       // the fresh event seed minted by the modal — committed with this session
       eventSeed: choices.eventSeed,
+      // M_V12.DEPTH.UPGRADE-PERSISTENCE — chain-starter Atelier
+      // unlocks consumed by startGame.applyChainStarters.
+      unlockedMeta,
       // M_BRAND.1 — game mode preset (border-clash default).
       mode: choices.mode,
       // M_TURNS.3 — the player's Turn-style override (may differ
@@ -724,7 +764,12 @@ export function App() {
             }
           : {})}
       />
-      <NewGameModal open={showNewGame} onOpenChange={setShowNewGame} onBegin={beginGame} />
+      <NewGameModal
+        open={showNewGame}
+        onOpenChange={setShowNewGame}
+        onBegin={beginGame}
+        beginReady={unlockedMetaReady}
+      />
       <SettingsModal open={showSettings} onOpenChange={setShowSettings} persistence={persistence} />
     </>
   );

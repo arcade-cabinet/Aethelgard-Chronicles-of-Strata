@@ -26,7 +26,11 @@ export type MetaUnlockCategory =
   | 'palette-skins'
   | 'named-heroes'
   | 'ai-bounties'
-  | 'lore-chapters';
+  | 'lore-chapters'
+  // M_V12.DEPTH.UPGRADE-PERSISTENCE — 12 starter unlocks that
+  // pre-purchase the tier-I head of one Discovery chain at the
+  // next match's start. See docs/design/v0.12-upgrade-graph.md.
+  | 'chain-starters';
 
 const MetaUnlockSchema = z.object({
   id: z.string().min(1),
@@ -37,6 +41,7 @@ const MetaUnlockSchema = z.object({
     'named-heroes',
     'ai-bounties',
     'lore-chapters',
+    'chain-starters',
   ]),
   name: z.string().min(1),
   description: z.string().min(1),

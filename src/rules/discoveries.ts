@@ -1,5 +1,56 @@
 import type { World } from 'koota';
-import type { ResourceCost } from '@/game/economy';
+import type { ResourceCost, GameEconomy } from '@/game/economy';
+
+/**
+ * M_V12.DEPTH.EFFECT-KINDS — extended apply context.
+ *
+ * v0.11 effect kinds (buff-combatant, multiply-harvest, flag) only
+ * needed the ECS world. The v0.12 effect kinds (buff-building,
+ * unlock-unit, unlock-building, unlock-formation, modify-cost,
+ * modify-supply, reveal-tier, grant-resource) need wider state:
+ * the player's GameEconomy (for grant-resource / modify-supply),
+ * the ResearchState's flag map (for unlock-formation / reveal-tier),
+ * a mutable building-profile override map (for buff-building +
+ * unlock-unit + unlock-building cost edits).
+ *
+ * Apply receives this OPTIONAL context. v0.11 kinds ignore ctx;
+ * v0.12 kinds read it. Callers that don't have the wider state
+ * (e.g. the camp-reward grant pre-game world) pass undefined and
+ * v0.12-kind effects silently no-op there — they'd need the game
+ * loop to be live anyway.
+ */
+export interface DiscoveryApplyCtx {
+  /** The player's economy — for grant-resource, modify-supply. */
+  economy?: GameEconomy;
+  /** Research state — for flag writes (reveal-tier sets `revealTier`). */
+  flags?: Map<string, number | string | boolean>;
+  /**
+   * Building-profile runtime override map — keyed by buildingType.
+   * Contract: `cost` is a PARTIAL override; consumers (commands.ts
+   * build-system) MUST shallow-merge with the default building
+   * cost rather than replacing the whole object. A modify-cost
+   * effect that touches gold leaves wood/stone defaults intact.
+   */
+  buildingOverrides?: Map<
+    string,
+    {
+      hp?: number;
+      dps?: number;
+      output?: number;
+      /** Per-resource delta; merge with default cost — do NOT replace. */
+      cost?: Partial<ResourceCost>;
+      trainsUnits?: string[];
+      constructible?: boolean;
+    }
+  >;
+  /**
+   * M_V12.DEPTH.EFFECT-KINDS — unit-profile override map for
+   * `modify-cost` effects with `target: 'unit'`. Mirrors
+   * buildingOverrides but for trainable units. Consumed at
+   * train time.
+   */
+  unitOverrides?: Map<string, { cost?: ResourceCost }>;
+}
 
 /**
  * Discoveries (M_DATA.7 / spec 102) — the tech-tree archetype. Each Discovery
@@ -26,6 +77,9 @@ export interface Discovery {
   cost: ResourceCost;
   /** Other Discovery ids that must be purchased first; empty = no prereqs. */
   prereqs?: ReadonlyArray<string>;
-  /** Effect — invoked once when the Discovery is purchased. */
-  apply: (world: World) => void;
+  /** Effect — invoked once when the Discovery is purchased. ctx
+   *  is optional; v0.11 effect kinds (buff-combatant, multiply-
+   *  harvest, flag) ignore it. v0.12 effect kinds (see
+   *  DiscoveryApplyCtx docstring) read it for wider game state. */
+  apply: (world: World, ctx?: DiscoveryApplyCtx) => void;
 }

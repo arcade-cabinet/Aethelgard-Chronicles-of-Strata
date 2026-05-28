@@ -51,6 +51,24 @@ const PersonalitySchema = z.object({
    * survives long droughts; the-mad-king (180s) folds quickly.
    */
   starvationThreshold: z.number().positive().optional(),
+  /**
+   * M_V12.AI-DIPLO — per-personality diplomacy bias multipliers
+   * (all 0..2, multiplied into DiplomaticEvaluator's per-action
+   * desirability). See docs/specs/PRD-v0.12.md §3 personality
+   * matrix:
+   *   propose : pact-overture frequency
+   *   accept  : incoming-proposal acceptance probability
+   *   tribute : tribute-demand assertiveness
+   *   break   : break-pact when-ahead probability
+   */
+  diploBias: z
+    .object({
+      propose: z.number().min(0).max(2),
+      accept: z.number().min(0).max(2),
+      tribute: z.number().min(0).max(2),
+      break: z.number().min(0).max(2),
+    })
+    .optional(),
 });
 export type Personality = z.infer<typeof PersonalitySchema>;
 

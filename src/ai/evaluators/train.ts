@@ -45,7 +45,7 @@ export class TrainEvaluator extends GoalEvaluator<AiPlayer> {
     owner.brain.addSubgoal(new TrainGoal(owner, choice));
   }
 
-  pickTrainable(owner: AiPlayer): 'Peon' | 'Footman' | null {
+  pickTrainable(owner: AiPlayer): 'Peon' | 'Footman' | 'Diplomat' | null {
     const { game, faction } = owner;
     if (!game) return null;
     const eco = game.economy[faction];
@@ -64,6 +64,20 @@ export class TrainEvaluator extends GoalEvaluator<AiPlayer> {
       canTrain(eco, 'Footman')
     )
       return 'Footman';
+    // M_V12.AI-DIPLO.DIPLOMAT-UNIT — train a Diplomat from Embassy
+    // when one exists and the AI doesn't already have a Diplomat in
+    // play. The Diplomat walks into foreign zones via
+    // diplomat-contact.ts to establish first-contact for the
+    // diplomacy substrate. Gated on UNIT_COSTS.Diplomat existing
+    // (skipped if v0.11 unit registry doesn't define one yet).
+    if (
+      UNIT_COSTS.Diplomat &&
+      ownedBuildingCount(game, faction, 'Embassy') > 0 &&
+      canAfford(eco, UNIT_COSTS.Diplomat) &&
+      canTrain(eco, 'Diplomat')
+    ) {
+      return 'Diplomat';
+    }
     return null;
   }
 }
@@ -72,7 +86,7 @@ export class TrainEvaluator extends GoalEvaluator<AiPlayer> {
 class TrainGoal extends Goal<AiPlayer> {
   constructor(
     owner: AiPlayer,
-    private readonly role: 'Peon' | 'Footman',
+    private readonly role: 'Peon' | 'Footman' | 'Diplomat',
   ) {
     super(owner);
   }

@@ -9,7 +9,8 @@
       "flaw": "slow-to-attack",
       "wonderWeight": 0.8,
       "rageQuitThreshold": 240,
-      "starvationThreshold": 360
+      "starvationThreshold": 360,
+      "diploBias": { "propose": 0.7, "accept": 0.7, "tribute": 0.0, "break": 0.2 }
     },
     "the-raider": {
       "displayName": "The Raider",
@@ -18,7 +19,8 @@
       "flaw": "over-extends-economy",
       "wonderWeight": 0.2,
       "rageQuitThreshold": 120,
-      "starvationThreshold": 240
+      "starvationThreshold": 240,
+      "diploBias": { "propose": 0.2, "accept": 0.3, "tribute": 0.4, "break": 0.8 }
     },
     "the-hoarder": {
       "displayName": "The Hoarder",
@@ -27,7 +29,8 @@
       "flaw": "vulnerable-to-rush",
       "wonderWeight": 0.7,
       "rageQuitThreshold": 300,
-      "starvationThreshold": 480
+      "starvationThreshold": 480,
+      "diploBias": { "propose": 0.5, "accept": 0.5, "tribute": 1.0, "break": 0.4 }
     },
     "the-diplomat": {
       "displayName": "The Diplomat",
@@ -36,7 +39,8 @@
       "flaw": "predictable",
       "wonderWeight": 0.5,
       "rageQuitThreshold": 180,
-      "starvationThreshold": 300
+      "starvationThreshold": 300,
+      "diploBias": { "propose": 1.0, "accept": 0.9, "tribute": 0.0, "break": 0.0 }
     },
     "the-mad-king": {
       "displayName": "The Mad King",
@@ -45,7 +49,8 @@
       "flaw": "no-defensive-structures",
       "wonderWeight": 0.3,
       "rageQuitThreshold": 90,
-      "starvationThreshold": 180
+      "starvationThreshold": 180,
+      "diploBias": { "propose": 0.0, "accept": 0.1, "tribute": 1.0, "break": 1.0 }
     }
   },
   "default": "the-diplomat"

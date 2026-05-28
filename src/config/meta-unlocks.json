@@ -214,6 +214,91 @@
       "name": "Lore Chapter V: The Eternal Flame",
       "description": "Unlock Chapter V of the Aethelgard lore — the final chapter.",
       "cost": 6
+    },
+
+    {
+      "id": "starter-economy-harvest",
+      "category": "chain-starters",
+      "name": "Chain Starter: Economy / Harvest",
+      "description": "Start the match with `steel-plows` already purchased (×1.5 harvest).",
+      "cost": 5
+    },
+    {
+      "id": "starter-economy-trade",
+      "category": "chain-starters",
+      "name": "Chain Starter: Economy / Trade",
+      "description": "Start the match with `trade-route` already purchased (Trade panel open).",
+      "cost": 4
+    },
+    {
+      "id": "starter-economy-cap",
+      "category": "chain-starters",
+      "name": "Chain Starter: Economy / Cap",
+      "description": "Start the match with `bulk-baskets` already purchased (+25 supply cap).",
+      "cost": 4
+    },
+    {
+      "id": "starter-military-infantry",
+      "category": "chain-starters",
+      "name": "Chain Starter: Military / Infantry",
+      "description": "Start the match with `forgedBlades` already purchased (+5 attack damage).",
+      "cost": 5
+    },
+    {
+      "id": "starter-military-archer",
+      "category": "chain-starters",
+      "name": "Chain Starter: Military / Archer",
+      "description": "Start the match with `iron-tipped-arrows` already purchased (+1 attack range).",
+      "cost": 5
+    },
+    {
+      "id": "starter-military-siege",
+      "category": "chain-starters",
+      "name": "Chain Starter: Military / Siege",
+      "description": "Start the match with `sapper-training` already purchased (-15% siege build time).",
+      "cost": 5
+    },
+    {
+      "id": "starter-diplomacy-relations",
+      "category": "chain-starters",
+      "name": "Chain Starter: Diplomacy / Relations",
+      "description": "Start the match with `first-contact` already purchased (Embassy half-cost).",
+      "cost": 4
+    },
+    {
+      "id": "starter-diplomacy-trade",
+      "category": "chain-starters",
+      "name": "Chain Starter: Diplomacy / Trade",
+      "description": "Start the match with `exchange-policy` already purchased (Trade panel open).",
+      "cost": 4
+    },
+    {
+      "id": "starter-magic-offense",
+      "category": "chain-starters",
+      "name": "Chain Starter: Magic / Offense",
+      "description": "Start the match with `mage-tower-aura` already purchased (Mage Tower aura +1).",
+      "cost": 6
+    },
+    {
+      "id": "starter-magic-utility",
+      "category": "chain-starters",
+      "name": "Chain Starter: Magic / Utility",
+      "description": "Start the match with `scrying-orb` already purchased (5-hex Wizard map-reveal).",
+      "cost": 5
+    },
+    {
+      "id": "starter-engineering-defense",
+      "category": "chain-starters",
+      "name": "Chain Starter: Engineering / Defense",
+      "description": "Start the match with `reinforced-walls` already purchased (Wall HP +50).",
+      "cost": 5
+    },
+    {
+      "id": "starter-lore-reveal",
+      "category": "chain-starters",
+      "name": "Chain Starter: Lore / Reveal",
+      "description": "Start the match with `cartography` already purchased (full-radius vision).",
+      "cost": 4
     }
   ]
 }

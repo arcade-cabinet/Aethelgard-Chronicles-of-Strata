@@ -15,12 +15,15 @@ export async function enterGame(): Promise<void> {
     },
     { timeout: 5000, interval: 100 },
   );
-  // New Game modal → Begin
+  // New Game modal → Begin. Wait for the button to be ENABLED
+  // (M_V12.DEPTH.UPGRADE-PERSISTENCE gates Begin on the meta-
+  // unlock cache resolving so chain-starters apply at tick 0).
   await vi.waitFor(
     () => {
-      const begin = document.getElementById('begin-game');
+      const begin = document.getElementById('begin-game') as HTMLButtonElement | null;
       if (!begin) throw new Error('new-game modal not ready');
-      (begin as HTMLButtonElement).click();
+      if (begin.disabled) throw new Error('begin-game button still disabled (cache resolving?)');
+      begin.click();
     },
     { timeout: 5000, interval: 100 },
   );

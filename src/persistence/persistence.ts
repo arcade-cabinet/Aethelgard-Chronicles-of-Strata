@@ -54,6 +54,22 @@ export interface LorebookEntry {
   enemyPersonality: string | null;
   /** Highlight bullets the modal showed (1-3 items). */
   highlights: string[];
+  // M_V12.PERSIST.LOREBOOK-EXPAND — rich-card fields per PRD-v0.12
+  // §4. All optional so v0.11 saves continue rendering gracefully;
+  // the lorebook UI treats `undefined` as "data not captured this
+  // match" and falls back to the v0.11 layout.
+  /** Tile count the player controlled at match start. */
+  startingRealmSize?: number;
+  /** Tile count the player controlled at match end. */
+  finalRealmSize?: number;
+  /** Diplomatic state at match end. */
+  diplomaticState?: { allies: number; enemies: number; vassals: number };
+  /** Peak military unit count across the match. */
+  peakMilitaryCount?: number;
+  /** Biggest single-tick damage dealt to an enemy (any combatant). */
+  biggestCombatExchange?: number;
+  /** Hero deaths with timestamp + killer (empty when no heroes spawned). */
+  heroDeaths?: Array<{ atSimSeconds: number; killer: string | null }>;
 }
 
 /** A persisted save-game record. */
@@ -275,6 +291,28 @@ const EVENT_SEED_KEY: PrefKey = PREF_KEYS.eventSeed;
 const DB_NAME = 'com.aethelgard.chronicles_v1';
 const DB_VERSION = 1;
 
+/**
+ * M_V12.PERSIST.LEADERBOARD-CAP — FNV-1a 32-bit hash over a
+ * string, returned as 8 hex chars. NOT cryptographic integrity
+ * (32-bit space is offline-brute-forceable); used as
+ * obfuscation only. Cloud-sync MUST replace this with
+ * HMAC-SHA256 + server-bound key before treating as integrity.
+ *
+ * Reviewer M4 fix: TextEncoder().encode() iterates UTF-8 bytes
+ * rather than UTF-16 code units so non-BMP characters (emoji,
+ * future localized strings) hash deterministically across
+ * platforms instead of as surrogate pairs.
+ */
+function fnv1aHexHash(input: string): string {
+  let h = 0x811c9dc5;
+  const bytes = new TextEncoder().encode(input);
+  for (let i = 0; i < bytes.length; i += 1) {
+    h ^= bytes[i] ?? 0;
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}
+
 function isWebPlatform(): boolean {
   return Capacitor.getPlatform() === 'web';
 }
@@ -381,6 +419,33 @@ function rowToLorebookEntry(row: any): LorebookEntry {
     );
   }
   const parsed = validateLorebookHighlights(JSON.parse(hl), 'read');
+  // M_V12.PERSIST.LOREBOOK-EXPAND — rich JSON column is optional;
+  // null on v0.11 rows. Bad shape (non-JSON / non-object) treated
+  // as missing — the lorebook UI falls back to the v0.11 layout.
+  let rich: Partial<LorebookEntry> = {};
+  const rj = row.rich_json as string | null | undefined;
+  // Security review L2: rj.length is UTF-16 code units; convert to
+  // UTF-8 byte length to match the write-side TextEncoder cap so
+  // the 2 KB budget is symmetric across charset boundaries.
+  if (typeof rj === 'string' && rj.length > 0 && new TextEncoder().encode(rj).length <= 2048) {
+    try {
+      const parsedRich = JSON.parse(rj);
+      if (parsedRich && typeof parsedRich === 'object' && !Array.isArray(parsedRich)) {
+        // Security review M1: filter prototype-pollution keys
+        // before the spread-into-return below. JSON.parse can
+        // yield `__proto__` / `constructor` / `prototype` keys
+        // from a hostile sqlite write (rooted device / future
+        // cloud-sync); deleting them keeps the spread safe.
+        const safeRich = parsedRich as Record<string, unknown>;
+        delete safeRich['__proto__'];
+        delete safeRich['constructor'];
+        delete safeRich['prototype'];
+        rich = safeRich as Partial<LorebookEntry>;
+      }
+    } catch {
+      /* leave rich = {} on parse error; v0.11-shape fallback. */
+    }
+  }
   return {
     id: row.id as number,
     endedAt: row.ended_at as string,
@@ -390,6 +455,7 @@ function rowToLorebookEntry(row: any): LorebookEntry {
     mode: row.mode as string,
     enemyPersonality: (row.enemy_personality as string | null) ?? null,
     highlights: parsed,
+    ...rich,
   };
 }
 
@@ -513,6 +579,28 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
           highlights_json   TEXT NOT NULL
         );
       `);
+      // M_V12.PERSIST.LOREBOOK-EXPAND — additive column for the
+      // rich-card fields (starting/final realm size, diplomatic
+      // state at end, peak military, biggest combat exchange,
+      // hero deaths). Stored as a single JSON column so the
+      // schema doesn't need a migration per new field. NULL on
+      // v0.11 rows; v0.12+ rows write the full object.
+      await conn
+        .execute(`
+        ALTER TABLE lorebook ADD COLUMN rich_json TEXT;
+      `)
+        .catch((err: unknown) => {
+          // Security review L1 + CodeRabbit MAJOR: only swallow
+          // "duplicate column" on re-runs; rethrow every other
+          // error (disk-full / corrupt DB / permission) so openDb
+          // fails fast instead of continuing with partial schema
+          // that would defer the failure into later writes.
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!/duplicate column|already exists/i.test(msg)) {
+            console.warn('[persistence] lorebook rich_json migration failed:', err);
+            throw err;
+          }
+        });
       // M_V11.META-PROGRESSION — install-wide meta-unlock ledger.
       // One row per unlocked id; UNIQUE constraint makes the unlock
       // call idempotent. `meta_lore_tokens` is a single-row counter.
@@ -545,6 +633,28 @@ async function openDb(): Promise<SQLiteDBConnection | null> {
           PRIMARY KEY (date_utc, ended_at_iso)
         );
       `);
+      // M_V12.PERSIST.LEADERBOARD-CAP — fingerprint column for
+      // tamper obfuscation. NOT cryptographic integrity: the FNV-1a
+      // 32-bit space (~4.3B) is offline-brute-forceable and the salt
+      // is a per-install PRNG seed (NOT a server-issued key). Cloud-
+      // sync MUST replace this with HMAC-SHA256 using a server-bound
+      // key before treating fingerprints as integrity proofs.
+      // Additive column; v0.11 rows store NULL.
+      await conn
+        .execute(`
+        ALTER TABLE daily_challenge_scores ADD COLUMN fingerprint TEXT;
+      `)
+        .catch((err: unknown) => {
+          // Security review L1 + CodeRabbit MAJOR: only swallow
+          // "duplicate column"; rethrow every other migration error
+          // so openDb fails fast instead of running with partial
+          // schema that would defer the failure into later writes.
+          const msg = err instanceof Error ? err.message : String(err);
+          if (!/duplicate column|already exists/i.test(msg)) {
+            console.warn('[persistence] daily_challenge_scores fingerprint migration failed:', err);
+            throw err;
+          }
+        });
 
       sqliteDb = conn;
       return conn;
@@ -660,11 +770,46 @@ export function createPersistence(): Persistence {
       // a caps change moves both at once.
       validateLorebookHighlights(entry.highlights, 'write');
       const serialised = serializeLorebookHighlights(entry.highlights);
+      // M_V12.PERSIST.LOREBOOK-EXPAND — pack the rich-card fields
+      // into a single JSON column. If the packed JSON exceeds the
+      // 2 KB read-side cap we drop the richest fields first (in
+      // priority: heroDeaths → biggestCombatExchange →
+      // diplomaticState → realm sizes) so the write+read sides
+      // stay symmetric. CodeRabbit MINOR fix: previously the
+      // comment promised the drop logic but the code wrote all
+      // fields unconditionally, risking silent truncation on read.
+      const RICH_JSON_BYTE_CAP = 2048;
+      const richObj: Record<string, unknown> = {};
+      if (entry.startingRealmSize !== undefined)
+        richObj.startingRealmSize = entry.startingRealmSize;
+      if (entry.finalRealmSize !== undefined) richObj.finalRealmSize = entry.finalRealmSize;
+      if (entry.diplomaticState) richObj.diplomaticState = entry.diplomaticState;
+      if (entry.peakMilitaryCount !== undefined)
+        richObj.peakMilitaryCount = entry.peakMilitaryCount;
+      if (entry.biggestCombatExchange !== undefined)
+        richObj.biggestCombatExchange = entry.biggestCombatExchange;
+      if (entry.heroDeaths) richObj.heroDeaths = entry.heroDeaths;
+      // Drop in priority order until the JSON fits the cap.
+      const DROP_ORDER = [
+        'heroDeaths',
+        'biggestCombatExchange',
+        'diplomaticState',
+        'peakMilitaryCount',
+        'finalRealmSize',
+        'startingRealmSize',
+      ];
+      let serializedRich = Object.keys(richObj).length > 0 ? JSON.stringify(richObj) : '';
+      for (const field of DROP_ORDER) {
+        if (new TextEncoder().encode(serializedRich).length <= RICH_JSON_BYTE_CAP) break;
+        delete richObj[field];
+        serializedRich = Object.keys(richObj).length > 0 ? JSON.stringify(richObj) : '';
+      }
+      const richJson = serializedRich.length > 0 ? serializedRich : null;
       const db = await openDb();
       if (!db) return;
       await db.run(
-        `INSERT INTO lorebook (ended_at, seed_phrase, nickname, outcome, mode, enemy_personality, highlights_json)
-           VALUES (?, ?, ?, ?, ?, ?, ?);`,
+        `INSERT INTO lorebook (ended_at, seed_phrase, nickname, outcome, mode, enemy_personality, highlights_json, rich_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?);`,
         [
           entry.endedAt,
           entry.seedPhrase,
@@ -673,6 +818,7 @@ export function createPersistence(): Persistence {
           entry.mode,
           entry.enemyPersonality,
           serialised,
+          richJson,
         ],
       );
       // Cap at LOREBOOK_MAX rows — newest-first; pruning by ended_at
@@ -741,6 +887,15 @@ export function createPersistence(): Persistence {
     async unlockMeta(id: string, costSpent: number): Promise<void> {
       const db = await openDb();
       if (!db) return;
+      // Security review M3: validate id against the registered
+      // META_UNLOCKS_CONFIG keys before INSERT so a tampered call
+      // (rooted device / future cloud-sync) can't seed a fabricated
+      // id that later drives applyEffect via chain-starter resolution.
+      const { META_UNLOCKS_BY_ID } = await import('@/config/meta-unlocks');
+      if (!META_UNLOCKS_BY_ID.has(id)) {
+        console.warn('[persistence] unlockMeta rejected unknown id:', id);
+        return;
+      }
       const safeId = id.length > 128 ? id.slice(0, 128) : id;
       const safeCost = Number.isFinite(costSpent) && costSpent > 0 ? Math.floor(costSpent) : 0;
       const at = new Date().toISOString();
@@ -778,10 +933,22 @@ export function createPersistence(): Persistence {
     async recordDailyChallengeScore(score): Promise<void> {
       const db = await openDb();
       if (!db) return;
+      // M_V12.PERSIST.LEADERBOARD-CAP — fingerprint write. FNV-1a
+      // over (dateUTC|seedPhrase|outcome|simSeconds|score|endedAt)
+      // mixed with a per-install salt (the event-PRNG seed, which
+      // every install has and which never leaves the device).
+      // Cheap, deterministic, no crypto dependency. Sufficient
+      // tamper-detection for an install-local leaderboard; cloud-
+      // sync can verify by recomputing with the same salt
+      // (transmitted out-of-band once at sync time).
+      const salt = (await Preferences.get({ key: PREF_KEYS.eventSeed })).value ?? '';
+      const fingerprint = fnv1aHexHash(
+        `${score.dateUTC}|${score.seedPhrase}|${score.outcome}|${score.simSeconds}|${score.score}|${score.endedAtIso}|${salt}`,
+      );
       await db.run(
         `INSERT OR IGNORE INTO daily_challenge_scores
-           (date_utc, seed_phrase, outcome, sim_seconds, score, ended_at_iso)
-         VALUES (?, ?, ?, ?, ?, ?);`,
+           (date_utc, seed_phrase, outcome, sim_seconds, score, ended_at_iso, fingerprint)
+         VALUES (?, ?, ?, ?, ?, ?, ?);`,
         [
           score.dateUTC,
           score.seedPhrase,
@@ -789,6 +956,7 @@ export function createPersistence(): Persistence {
           score.simSeconds,
           score.score,
           score.endedAtIso,
+          fingerprint,
         ],
       );
     },

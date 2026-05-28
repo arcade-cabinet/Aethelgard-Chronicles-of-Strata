@@ -28,8 +28,11 @@ const ResourceCostSchema = z.object(
 const DiscoveryEffectSchema = z.discriminatedUnion('kind', [
   z.object({
     kind: z.literal('buff-combatant'),
-    stat: z.enum(['attackDamage', 'attackRange']),
+    stat: z.enum(['attackDamage', 'attackRange', 'hp']),
     delta: z.number(),
+    // M_V12.DEPTH.EFFECT-KINDS — optional unitType filter so a
+    // buff applies to a class subset (e.g. infantry-only).
+    filter: z.string().optional(),
   }),
   z.object({
     kind: z.literal('multiply-harvest'),
@@ -41,6 +44,47 @@ const DiscoveryEffectSchema = z.discriminatedUnion('kind', [
   // consumers check research.purchased.has(id) at their own call site.
   z.object({
     kind: z.literal('flag'),
+  }),
+  // M_V12.DEPTH.EFFECT-KINDS — v0.12 effect kinds (see
+  // docs/design/v0.12-upgrade-graph.md "Effect kinds").
+  z.object({
+    kind: z.literal('buff-building'),
+    buildingType: z.string(),
+    stat: z.enum(['hp', 'dps', 'output']),
+    delta: z.number(),
+  }),
+  z.object({
+    kind: z.literal('unlock-unit'),
+    unitType: z.string(),
+    fromBuildingType: z.string().optional(),
+  }),
+  z.object({
+    kind: z.literal('unlock-building'),
+    buildingType: z.string(),
+  }),
+  z.object({
+    kind: z.literal('unlock-formation'),
+    formationId: z.string(),
+  }),
+  z.object({
+    kind: z.literal('modify-cost'),
+    target: z.enum(['unit', 'building']),
+    targetId: z.string(),
+    resource: z.enum(['wood', 'stone', 'gold', 'food']),
+    delta: z.number(),
+  }),
+  z.object({
+    kind: z.literal('modify-supply'),
+    delta: z.number(),
+  }),
+  z.object({
+    kind: z.literal('reveal-tier'),
+    tier: z.number().int().nonnegative(),
+  }),
+  z.object({
+    kind: z.literal('grant-resource'),
+    resource: z.enum(['wood', 'stone', 'gold', 'food']),
+    amount: z.number().int(),
   }),
 ]);
 
@@ -66,9 +110,29 @@ const DiscoveriesConfigSchema = z.object({
  * TSX = rendering.
  */
 export type DiscoveryEffect =
-  | { kind: 'buff-combatant'; stat: 'attackDamage' | 'attackRange'; delta: number }
+  | {
+      kind: 'buff-combatant';
+      stat: 'attackDamage' | 'attackRange' | 'hp';
+      delta: number;
+      filter?: string | undefined;
+    }
   | { kind: 'multiply-harvest'; factor: number }
-  | { kind: 'flag' };
+  | { kind: 'flag' }
+  // M_V12.DEPTH.EFFECT-KINDS — v0.12 additions.
+  | { kind: 'buff-building'; buildingType: string; stat: 'hp' | 'dps' | 'output'; delta: number }
+  | { kind: 'unlock-unit'; unitType: string; fromBuildingType?: string | undefined }
+  | { kind: 'unlock-building'; buildingType: string }
+  | { kind: 'unlock-formation'; formationId: string }
+  | {
+      kind: 'modify-cost';
+      target: 'unit' | 'building';
+      targetId: string;
+      resource: 'wood' | 'stone' | 'gold' | 'food';
+      delta: number;
+    }
+  | { kind: 'modify-supply'; delta: number }
+  | { kind: 'reveal-tier'; tier: number }
+  | { kind: 'grant-resource'; resource: 'wood' | 'stone' | 'gold' | 'food'; amount: number };
 
 /** A Discovery configuration row — pure data, no behavior. */
 export interface DiscoveryConfig {
