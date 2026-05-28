@@ -460,10 +460,11 @@ the decomposition landing so the fixes apply to clean sub-packages.
 
 ## §post-horizon — v0.14+
 
-- [ ] M_V14.DECOMP-ECS-GAME — decompose src/ecs/ + src/game/ into
-      sub-packages. AUDITED (Explore agent) — grounded grouping +
-      import-edge map below. Opens as the v0.14 PR (NOT part of the
-      v0.13 decomp PR, which is complete + pending user PR-open).
+- [ ] [WAIT-PR] M_V14.DECOMP-ECS-GAME — decompose src/ecs/ + src/game/
+      into sub-packages. AUDITED (Explore agent) — grounded grouping +
+      import-edge map below; ready to execute. GATED on the v0.13 PR
+      merging first (one-topic-per-PR — can't open the v0.14 ecs PR while
+      v0.13 is unmerged). Execution starts the moment v0.13 squash-merges.
       Move order by risk:
       • PHASE 1 (low risk) — ecs/systems/ (28 files, ZERO intra-dir
         imports, all leaf systems). Groups: combat (combat,
