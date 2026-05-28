@@ -16,7 +16,7 @@ import { createMythEventsState } from '@/game/myth-events';
 import { createResearch } from '@/game/research';
 import { NonAggressionPactPill } from '@/hud/pills';
 import { TradeSwapWidget } from '@/hud/TradeSwapWidget';
-import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
+import { TributeDemandBanner } from '@/hud/overlays';
 
 // Minimal GameState stub — only the fields the pills read.
 function makeStubGame(opts?: {

@@ -1,6 +1,6 @@
 import * as Progress from '@radix-ui/react-progress';
 import { useEffect, useState } from 'react';
-import { HUD_THEME } from './theme';
+import { HUD_THEME } from '../theme';
 
 /**
  * M_AUDIT2.UX.32 — generic loading overlay shown during the

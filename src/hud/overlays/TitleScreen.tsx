@@ -19,9 +19,9 @@ import { cn } from '@/lib/cn';
 import { useTheme } from '@/lib/theme';
 import type { Persistence } from '@/persistence/persistence';
 import { useViewport } from '@/render/useViewport';
-import { CreditsModal } from './CreditsModal';
-import { useDesktopShortcuts } from './desktop-keyboard';
-import { IconButton, TreasureButton } from './primitives';
+import { CreditsModal } from '../CreditsModal';
+import { useDesktopShortcuts } from '../desktop-keyboard';
+import { IconButton, TreasureButton } from '../primitives';
 import { TitleBackground } from './TitleBackground';
 
 export interface TitleScreenProps {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { subscribeAnnouncements } from './aria-live-bus';
+import { subscribeAnnouncements } from '../aria-live-bus';
 
 /**
  * M_AUDIT2.UX.12 — single offscreen aria-live region that pipes

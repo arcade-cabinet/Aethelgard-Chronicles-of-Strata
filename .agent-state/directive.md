@@ -151,10 +151,15 @@ URL-param + dev-window hooks).
       axe green; check 0, lint clean. NOTE: css sidecars must move
       with their component (tsc misses CSS import; browser test caught
       it) — see decomp-move-css-sidecars memory.
-- [ ] M_V13.DECOMP.HUD-OVERLAYS — `src/hud/overlays/`: Tutorial,
+- [x] M_V13.DECOMP.HUD-OVERLAYS — `src/hud/overlays/`: Tutorial,
       Campaign, WaveDefense, Onboarding, LoadingScreen, TitleScreen,
       TitleBackground, ErrorOverlay, CaptionsOverlay, CriticalWarning,
-      AriaLiveRegion, Toasts, TributeDemandBanner. Barrel.
+      AriaLiveRegion, Toasts, TributeDemandBanner + critical-warning.css.
+      Barrel. DONE: 13 git mv + css sidecar; captions + aria-live-bus
+      kept at hud root (cross-cut buses imported by audio/ai/game/pills,
+      not overlay-private). All importers (App, main, FixtureApp,
+      HudLayer, selection/MultiSelectActions, DiscoveriesPanel + 6 tests)
+      → @/hud/overlays. 19 browser tests green; check 0, lint clean.
 - [ ] M_V13.DECOMP.HUD-SYSTEM — `src/hud/system/`: SystemMenu,
       MobileSystemMenu, ResourceBar, Minimap, ZoneLegend, Pause,
       Speed, SoundToggle, Resign, Screenshot, KeyboardShortcuts,

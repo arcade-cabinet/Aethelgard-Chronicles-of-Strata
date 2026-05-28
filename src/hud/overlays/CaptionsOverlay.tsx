@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { type Caption, getLiveCaptions, subscribeCaptions } from './captions';
-import { HUD_THEME } from './theme';
+import { type Caption, getLiveCaptions, subscribeCaptions } from '../captions';
+import { HUD_THEME } from '../theme';
 
 /**
  * M_EXPANSION.U.114 — visible captions band at the bottom of the

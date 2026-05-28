@@ -9,7 +9,7 @@ import { page } from '@vitest/browser/context';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { TutorialOverlay } from '@/hud/TutorialOverlay';
+import { TutorialOverlay } from '@/hud/overlays';
 
 function Stage({ children }: { children: React.ReactNode }) {
   return (

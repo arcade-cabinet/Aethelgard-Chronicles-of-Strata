@@ -6,7 +6,7 @@ import type { GameState } from '@/game/game-state';
 // M_AUDIT2.UX.33 — keyframes loaded once via CSS import; previously
 // re-mounted as inline <style> on every render of this component.
 import './critical-warning.css';
-import { useRafLoop } from './useRafLoop';
+import { useRafLoop } from '../useRafLoop';
 
 /** Threshold below which the screen edges pulse red — base in critical danger. */
 const CRITICAL_FRACTION = 0.3;

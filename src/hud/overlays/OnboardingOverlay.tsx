@@ -31,7 +31,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { cn } from '@/lib/cn';
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
-import { HeroBanner, StepProgressDots, TreasureButton } from './primitives';
+import { HeroBanner, StepProgressDots, TreasureButton } from '../primitives';
 
 const ONBOARDING_KEY = PREF_KEYS.onboarding;
 

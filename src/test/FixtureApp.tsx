@@ -24,10 +24,10 @@ import { startGame } from '@/game/game-state';
 import { CreditsModal } from '@/hud/CreditsModal';
 import { GameOverModal } from '@/hud/GameOverModal';
 import { NewGameModal } from '@/hud/NewGameModal';
-import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
+import { OnboardingOverlay } from '@/hud/overlays';
 import { SettingsModal } from '@/hud/SettingsModal';
 import { SystemMenu } from '@/hud/SystemMenu';
-import { TitleScreen } from '@/hud/TitleScreen';
+import { TitleScreen } from '@/hud/overlays';
 import { createPersistence } from '@/persistence/persistence';
 
 const persistence = createPersistence();
