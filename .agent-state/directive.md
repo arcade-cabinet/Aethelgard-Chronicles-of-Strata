@@ -206,8 +206,11 @@ URL-param + dev-window hooks).
       404s and resource-type inference collapses repo-wide. The
       eponymous file (economy → economy/) keeps its path free via dir
       resolution. 72 tests green; check 0.
-- [ ] M_V13.DECOMP.CONFIG-COMBAT — `config/combat/`: combat +
-      archetypes json+ts. Barrel.
+- [x] M_V13.DECOMP.CONFIG-COMBAT — `config/combat/`: combat +
+      archetypes json+ts. Barrel. DONE: 4 git mv; barrel re-exports
+      both. archetypes.ts's ./factions → ../factions (factions stays
+      at config root → ai/ bundle later). 1 @/config/archetypes importer
+      → @/config/combat. 31 combat/archetype tests green; check 0.
 - [ ] M_V13.DECOMP.CONFIG-PROGRESSION — `config/progression/`:
       discoveries + meta-unlocks + eras json+ts. Barrel.
 - [ ] M_V13.DECOMP.CONFIG-AI — `config/ai/`: ai-personalities +
