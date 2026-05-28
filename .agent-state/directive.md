@@ -420,12 +420,16 @@ the decomposition landing so the fixes apply to clean sub-packages.
 
 ## §C Release ladder
 
-- [ ] [WAIT-USER] M_V13.RELEASE.PR — open ONE PR feat/decomp-
-      subpackages → main when §A + §B land + reviews absorbed.
-- [ ] [WAIT-CI] M_V13.RELEASE.CI-WATCH — 8/8 checks + CodeRabbit
-      sweep.
-- [ ] [WAIT-USER] M_V13.RELEASE.SQUASH — squash-merge on user
-      authorization; release-please cuts the version bump.
+- [ ] M_V13.RELEASE.PR — open ONE PR feat/decomp-subpackages → main.
+      §A + §B landed + reviews absorbed. AGENT ACTION (gh pr create) —
+      NOT a user gate. Do it.
+- [ ] [WAIT-CI] M_V13.RELEASE.CI-WATCH — after PR open, watch 8/8
+      checks + CodeRabbit; address every finding. (Legitimate wait:
+      CI is in flight after the agent triggered it.)
+- [ ] M_V13.RELEASE.SQUASH — squash-merge once CI green + threads
+      resolved (gh pr merge --squash). AGENT ACTION — full automation
+      means the agent merges its own green PR; never --admin past red
+      CI. release-please then cuts the version bump.
 
 ---
 
