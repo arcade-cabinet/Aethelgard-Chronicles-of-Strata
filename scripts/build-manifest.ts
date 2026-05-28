@@ -27,7 +27,7 @@ import { NodeIO } from '@gltf-transform/core';
 
 const REPO = process.cwd();
 const ASSETS_DIR = join(REPO, 'public/assets');
-const MANIFEST_OUT = join(REPO, 'src/config/asset-metadata.json');
+const MANIFEST_OUT = join(REPO, 'src/config/assets/asset-metadata.json');
 
 const io = new NodeIO();
 

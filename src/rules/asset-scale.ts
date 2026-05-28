@@ -16,7 +16,7 @@
  *
  * Memory: scale-by-measurement-not-guess.
  */
-import { ASSET_METADATA } from '@/config/asset-metadata';
+import { ASSET_METADATA } from '@/config/assets';
 import glbMetadata from './glb-metadata.json';
 
 type MeasuredEntry = {

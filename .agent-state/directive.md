@@ -243,8 +243,16 @@ URL-param + dev-window hooks).
       match-narrative.json + achievements.json are data-only (deep
       import @/config/narrative/X.json). All forms repointed. 30 unit
       + 3 campaign-overlay browser tests green; check 0.
-- [ ] M_V13.DECOMP.CONFIG-ASSETS — `config/assets/`: asset-metadata
-      json+ts. Barrel.
+- [x] M_V13.DECOMP.CONFIG-ASSETS — `config/assets/`: asset-metadata
+      json+ts. Barrel. DONE: 2 git mv. Bundle dir (assets/) ≠ file name
+      (asset-metadata) so ALL importers repointed → @/config/assets,
+      incl. a relative ../config/asset-metadata in src/assets/assets.ts
+      AND two non-source refs: the asset-manifest test's hardcoded
+      json path + scripts/build-manifest.ts MANIFEST_OUT (the ingest
+      writer — would've regenerated at the old path). 10 asset tests
+      green; check 0. LEARNING: config moves also touch relative
+      ../config/X imports + tooling/test hardcoded fs paths, not just
+      @/config/X module specifiers.
 - [ ] M_V13.DECOMP.CONFIG-BARREL — top `config/index.ts`.
 
 ### §A3 — world/ feature sub-packages (97 files)

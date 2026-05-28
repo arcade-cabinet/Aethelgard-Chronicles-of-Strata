@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { AssetEntry } from '@/assets/manifest-types';
 
 // The importable metadata lives in src/config/ (public/ import is forbidden by Vite).
-const metadataPath = join(process.cwd(), 'src', 'config', 'asset-metadata.json');
+const metadataPath = join(process.cwd(), 'src', 'config', 'assets', 'asset-metadata.json');
 
 describe('asset-metadata.json', () => {
   it('exists (run `pnpm assets:ingest` first)', () => {
