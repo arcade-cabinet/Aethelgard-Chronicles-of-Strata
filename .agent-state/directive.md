@@ -96,9 +96,10 @@ Order leaf-first so later moves import the new barrel paths.
       importers rewritten (@/hud/theme + ./theme). Pure git mv,
       history preserved, no compat re-exports. 1251 tests green.
       hud-layout.ts joins this package in §B FIX-PILL-COLLISION.
-- [ ] M_V13.DECOMP.HUD-PRIMITIVES — `src/hud/primitives/`: ModalShell,
-      HudPill, Segmented + existing primitives. Barrel. Depends only
-      on theme.
+- [x] M_V13.DECOMP.HUD-PRIMITIVES — folded ModalShell + HudPill +
+      Segmented into the existing primitives/ package; barrel
+      extended; 13 importers rewritten; theme import → ../theme.
+      1251 tests green.
 - [ ] M_V13.DECOMP.HUD-PILLS — `src/hud/pills/`: ScoreBar,
       FactionChips, WinConditionPill, MatchAgePill, RaidPressurePill,
       ZoneControlPill, NonAggressionPactPill, MobileSpeedPausePill,
