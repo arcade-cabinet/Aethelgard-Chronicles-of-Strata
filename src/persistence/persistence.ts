@@ -330,13 +330,15 @@ function isWebPlatform(): boolean {
  */
 async function flushWebStore(): Promise<void> {
   if (!isWebPlatform() || !sqliteManager) return;
-  try {
-    await sqliteManager.saveToStore(DB_NAME);
-  } catch (err) {
-    // saveToStore can throw if the store isn't web-backed (older jeep
-    // versions) — surface but don't crash the save path.
-    console.warn('[persistence] saveToStore (web flush) failed:', err);
-  }
+  // M_V13.PERSIST.WEB-FLUSH (review #4) — do NOT swallow a flush failure.
+  // The store IS web-backed here (initWebStore ran in openDb, and the
+  // early-return above already excludes native), so a throw means a REAL
+  // failure-to-persist (IndexedDB quota exceeded, private-mode block, etc.)
+  // — exactly the silent-data-loss class this fix exists to kill. Let it
+  // propagate so the caller (save()/unlockMeta()/…) rejects and the UI can
+  // surface "save failed" instead of lighting Continue on a save that never
+  // reached disk.
+  await sqliteManager.saveToStore(DB_NAME);
 }
 
 function getBaseAssetPath(): string {

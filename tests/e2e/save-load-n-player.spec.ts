@@ -34,11 +34,38 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
       timeout: 60_000,
     });
 
-    // 3. Advance 5 sim-min (18 000 frames).
+    // M_V13.HARNESS.NO-RELOAD-UNDER-E2E — stamp a reload sentinel on the
+    // live document. A full page reload (the real root cause of the
+    // suite-load flake: the static-assets `public/` watcher broadcasting
+    // `page reload` mid-test) wipes `window`, so this nonce vanishing is
+    // a deterministic, self-describing signal — far better than the
+    // downstream "__game not ready" that the reload otherwise produced.
+    // With VITE_E2E=1 the watcher is disabled, so this must always hold.
+    const RELOAD_SENTINEL = `nplayer-${Date.now()}`;
+    await page.evaluate((s: string) => {
+      (window as { __reloadSentinel?: string }).__reloadSentinel = s;
+    }, RELOAD_SENTINEL);
+
+    // 3. Advance 5 sim-min (18 000 frames). This crosses AUTO_SAVE_INTERVAL
+    // (300 game-sec = 18 000 ticks), firing persistence.save once.
     await page.evaluate(() => {
       (window as { __game_advanceFrames?: (n: number) => void }).__game_advanceFrames?.(18_000);
     });
     await page.waitForTimeout(500);
+
+    // Fail loudly + specifically if the page reloaded out from under the
+    // test (sentinel gone) rather than letting it surface as the opaque
+    // "__game not ready" further down.
+    const sentinelSurvived = await page.evaluate(
+      (s: string) => (window as { __reloadSentinel?: string }).__reloadSentinel === s,
+      RELOAD_SENTINEL,
+    );
+    expect(
+      sentinelSurvived,
+      'Page reloaded mid-test (reload sentinel lost) — the dev server broadcast a full ' +
+        'reload during the deterministic test window. Check VITE_E2E=1 is set on the ' +
+        'Playwright webServer (disables the static-assets public/ watcher).',
+    ).toBe(true);
 
     // 4. Capture pre-save state.
     type PreSave = {

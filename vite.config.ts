@@ -13,6 +13,22 @@ const pkgVersion = (
   JSON.parse(readFileSync(path.resolve('package.json'), 'utf8')) as { version: string }
 ).version;
 
+// M_V13.HARNESS.NO-RELOAD-UNDER-E2E — the static-assets plugin watches
+// `public/` and rewrites `src/static-assets.ts` on any change, which Vite
+// cannot HMR-accept → it broadcasts a FULL `page reload` to every
+// connected client. Under `pnpm test:e2e` many specs share one dev
+// server; filesystem churn from parallel workers (screenshot writes,
+// asset access, the plugin re-stating `public/`) fires that watcher and
+// reloads a spec's page MID-TEST. The reloaded page re-suspends on asset
+// load for ~5s, during which installDevHarness (a committed effect) has
+// not run, so the next `page.evaluate` reads `window.__game` as falsy
+// and throws "__game not ready". This is the exact passes-in-isolation /
+// fails-~50%-under-suite-load signature. The generated `src/static-
+// assets.ts` is committed and current, so during e2e we skip the plugin
+// entirely: no watcher, no mid-test reload, fully deterministic. Set by
+// the Playwright webServer command (VITE_E2E=1).
+const IS_E2E = process.env.VITE_E2E === '1';
+
 export default defineConfig(({ mode }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(pkgVersion),
@@ -50,11 +66,18 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     tailwindcss(),
     react(),
-    staticAssetsPlugin({
-      directory: 'public',
-      outputFile: 'src/static-assets.ts',
-      ignore: ['.DS_Store'],
-    }),
+    // Skipped under e2e — see M_V13.HARNESS.NO-RELOAD-UNDER-E2E above.
+    // The watcher's `public/` → `src/static-assets.ts` rewrite is the
+    // only thing that issues a full page reload to running test pages.
+    ...(IS_E2E
+      ? []
+      : [
+          staticAssetsPlugin({
+            directory: 'public',
+            outputFile: 'src/static-assets.ts',
+            ignore: ['.DS_Store'],
+          }),
+        ]),
     // M_FUN.FOUNDATION.BUNDLE-VIZ — rollup-plugin-visualizer.
     // Writes a treemap to dist/bundle-stats.html on every prod
     // build. Agent + user can see where bundle weight lives

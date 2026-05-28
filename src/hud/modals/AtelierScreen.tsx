@@ -107,9 +107,20 @@ export function AtelierScreen({ persistence }: AtelierScreenProps) {
     // idempotent at the persistence layer; the debit uses a negative
     // earn for simplicity. If either fails the other can be reapplied
     // on next match-end without state corruption.
-    await persistence.earnLoreTokens(-u.cost);
-    await persistence.unlockMeta(u.id, u.cost);
-    setVersion((v) => v + 1);
+    //
+    // M_V13.PERSIST.WEB-FLUSH (review #4) — these now reject if the
+    // IndexedDB flush fails (quota / private-mode). Catch so a failed
+    // purchase doesn't throw an unhandled rejection out of the click
+    // handler; the unlock stays un-applied (idempotent), the player can
+    // retry, and the failure surfaces in the console rather than as a
+    // phantom unlock that vanishes on reload.
+    try {
+      await persistence.earnLoreTokens(-u.cost);
+      await persistence.unlockMeta(u.id, u.cost);
+      setVersion((v) => v + 1);
+    } catch (err) {
+      console.warn('[atelier] unlock failed to persist:', err);
+    }
   };
 
   const grouped = metaUnlocksByCategory();

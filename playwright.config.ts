@@ -158,7 +158,13 @@ export default defineConfig({
     // vite dev (not build + preview) — dev server is ~2-3s warmup vs
     // ~30s for build + preview. The dev HMR + asset path semantics
     // match what tests + screenshots verify in real-life dev use.
+    //
+    // VITE_E2E=1 disables the static-assets `public/` watcher (see
+    // vite.config.ts M_V13.HARNESS.NO-RELOAD-UNDER-E2E). Without it, a
+    // parallel-worker filesystem event regenerates src/static-assets.ts
+    // and Vite full-reloads a spec's page mid-test → "__game not ready".
     command: `pnpm exec vite --host 127.0.0.1 --port ${PORT}`,
+    env: { VITE_E2E: '1' },
     url: BASE_URL,
     reuseExistingServer: REUSE_SERVER,
     timeout: 60_000,
