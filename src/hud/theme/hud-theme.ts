@@ -56,7 +56,68 @@ export const HUD_THEME = {
   blueGradient: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
   /** Standard panel radius. */
   radius: 12,
+  /**
+   * Spacing scale (px). M_V13.HUD.TOKEN-SCALE — replaces the scattered
+   * padding/gap/inset magic numbers across the HUD with one 4-based
+   * ramp. xs=4 sm=8 md=12 lg=16 xl=24. Reach for HUD_THEME.space.md
+   * instead of a bare `12`.
+   */
+  space: {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    xl: 24,
+  },
+  /**
+   * z-index ladder. M_V13.HUD.TOKEN-SCALE — names the stacking order so
+   * HUD surfaces don't fight with ad-hoc z values. board < pills <
+   * panels < banners < menu < modal < toast (toast always on top so
+   * notifications are never occluded).
+   */
+  z: {
+    board: 0,
+    pills: 10,
+    panels: 20,
+    banners: 30,
+    menu: 40,
+    modal: 50,
+    toast: 60,
+  },
+  /**
+   * Minimum interactive tap target (px). M_V13.HUD.TAP-TARGETS — the
+   * 48dp Material / WCAG 2.5.5 floor; every HUD button's min-width +
+   * min-height should be at least this.
+   */
+  tapTarget: 48,
 } as const;
+
+/**
+ * Safe-area inset helpers. M_V13.HUD.TOKEN-SCALE — wrap the
+ * `env(safe-area-inset-*)` CSS with a non-zero `base` fallback so HUD
+ * surfaces clear the notch/home-indicator on device AND keep a sane
+ * margin on desktop (where the env() resolves to 0). Pass extra px to
+ * stack a token-space gap on top of the inset.
+ *
+ * Was scattered as `env(safe-area-inset-top, 0px)` (the `0` fallback
+ * meant desktop surfaces sat flush against the viewport edge — review
+ * Minor #6).
+ */
+export function safeTop(extra: number = HUD_THEME.space.md): string {
+  return `calc(env(safe-area-inset-top, 0px) + ${extra}px)`;
+}
+
+export function safeBottom(extra: number = HUD_THEME.space.md): string {
+  return `calc(env(safe-area-inset-bottom, 0px) + ${extra}px)`;
+}
+
+export function safeLeft(extra: number = HUD_THEME.space.md): string {
+  return `calc(env(safe-area-inset-left, 0px) + ${extra}px)`;
+}
+
+export function safeRight(extra: number = HUD_THEME.space.md): string {
+  return `calc(env(safe-area-inset-right, 0px) + ${extra}px)`;
+}
 
 /**
  * Shared "card" style — panel background + accent border + standard

@@ -7,5 +7,12 @@
  * formatTime). External code imports from here, never the deep
  * file paths.
  */
-export { HUD_CARD_STYLE, HUD_THEME } from './hud-theme';
+export {
+  HUD_CARD_STYLE,
+  HUD_THEME,
+  safeTop,
+  safeBottom,
+  safeLeft,
+  safeRight,
+} from './hud-theme';
 export { costLabel, formatInt, formatTime } from './format';

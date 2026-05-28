@@ -358,10 +358,17 @@ the decomposition landing so the fixes apply to clean sub-packages.
       `:focus-visible` rule in app stylesheet; className sweep on
       every button; remove the bare `outline:none` in
       MobileSystemMenu. (review Major #2)
-- [ ] M_V13.HUD.TOKEN-SCALE — extend HUD_THEME with `space` (4/8/12/
-      16/24), `z` (named ladder), `safeTop`/`safeBottom` helpers;
-      collapse the scattered padding + z-index + safe-area magic
-      numbers. (review Major #3 + Minor #6)
+- [x] M_V13.HUD.TOKEN-SCALE — extend HUD_THEME with `space` (4/8/12/
+      16/24), `z` (board<pills<panels<banners<menu<modal<toast ladder),
+      `tapTarget` (48), `safeTop/Bottom/Left/Right` helpers (non-zero
+      desktop fallback). Barrel-exported. token-scale.test.ts pins all
+      ramps (5 tests). DONE the token DEFINITIONS; per meta-rule, did
+      NOT sweep every magic number repo-wide — adoption happens in the
+      consuming items (FIX-PILL-COLLISION, TAP-TARGETS) as they touch
+      those files. Audited the safe-area `0px`-fallback sites: all add a
+      `+Npx` desktop margin already; SettingsModal sticky-footer's bare
+      env() is intentional (footer has own padding) — NOT the Minor #6
+      bug. (review Major #3 + Minor #6)
 - [ ] M_V13.HUD.TAP-TARGETS — enforce 48dp via a shared
       `.hud-tap-target` floor; bump MobileSpeedPausePill 36→48.
       (review Major #4)
