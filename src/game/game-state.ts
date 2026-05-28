@@ -236,7 +236,7 @@ export interface GameState {
    * Optional; the CampaignOverlay defaults to 'first-strata' when
    * unset so a fresh campaign always starts with Chapter I.
    */
-  campaignChapter?: import('@/config/campaign-chapters').ChapterId;
+  campaignChapter?: import('@/config/narrative').ChapterId;
   /**
    * M_EXPANSION.F.80 — player faction palette tint. CSS hex string
    * or null = use SKINS default. Read by Units when picking the

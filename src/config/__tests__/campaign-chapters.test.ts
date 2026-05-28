@@ -5,7 +5,7 @@
  * objectives, valid seed phrase, and a stable id ↔ definition map.
  */
 import { describe, expect, it } from 'vitest';
-import { CAMPAIGN_CHAPTERS, CHAPTER_IDS, chapterFor } from '@/config/campaign-chapters';
+import { CAMPAIGN_CHAPTERS, CHAPTER_IDS, chapterFor } from '@/config/narrative';
 
 describe('M_V11.CAMPAIGN — chapter registry', () => {
   it('exposes exactly 3 chapters', () => {

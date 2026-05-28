@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { CREDITS } from '@/config/credits';
+import { CREDITS } from '@/config/narrative';
 import { HUD_THEME } from '../theme';
 import { ModalShell } from '../primitives';
 

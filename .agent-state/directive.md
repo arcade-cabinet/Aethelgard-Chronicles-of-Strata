@@ -236,9 +236,13 @@ URL-param + dev-window hooks).
       eponymous bundle file → @/config/world resolves to world/index.ts
       via dir resolution — the eponymous-file-free-path principle from
       CONFIG-ECONOMY, here saving 48 rewrites). 81 tests green; check 0.
-- [ ] M_V13.DECOMP.CONFIG-NARRATIVE — `config/narrative/`:
+- [x] M_V13.DECOMP.CONFIG-NARRATIVE — `config/narrative/`:
       match-narrative + myth-events + credits + campaign-chapters +
-      achievements. Barrel.
+      achievements. Barrel. DONE: 7 git mv. myth-events/credits/
+      campaign-chapters have .ts accessors (barrel re-exports);
+      match-narrative.json + achievements.json are data-only (deep
+      import @/config/narrative/X.json). All forms repointed. 30 unit
+      + 3 campaign-overlay browser tests green; check 0.
 - [ ] M_V13.DECOMP.CONFIG-ASSETS — `config/assets/`: asset-metadata
       json+ts. Barrel.
 - [ ] M_V13.DECOMP.CONFIG-BARREL — top `config/index.ts`.

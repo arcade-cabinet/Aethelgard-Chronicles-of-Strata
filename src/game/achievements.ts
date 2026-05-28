@@ -22,7 +22,7 @@ import { z } from 'zod';
 // `src/config/achievements.json` via Zod. Adding a new
 // achievement = one JSON entry; the persistence layer + HUD
 // toast picks it up automatically.
-import achievementsJson from '@/config/achievements.json';
+import achievementsJson from '@/config/narrative/achievements.json';
 
 const AchievementDefSchema = z.object({
   id: z.string().min(1),
