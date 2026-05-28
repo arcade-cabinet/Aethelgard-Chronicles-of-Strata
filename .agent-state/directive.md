@@ -18,7 +18,8 @@ Prior context: v0.11 merged as #89 (717ed2f). v0.12 merged as #90
 brain, persistence depth (lorebook rich-card + leaderboard
 fingerprint), mobile gesture-map + haptics. All 20 CodeRabbit threads
 across 7 reviewer-pass rounds addressed; 1251 unit + 224 browser
-tests green at merge. release-please cuts v0.1.28 automatically.
+tests green at merge. (release-please owns version numbers — not the
+agent, ever.)
 
 ## What CONTINUOUS means
 
@@ -75,8 +76,9 @@ One branch per cycle (`feat/decomp-subpackages`). Commit freely;
 push regularly. After each commit, dispatch the review trio in
 parallel + background; fold findings into the NEXT forward commit
 (never amend a reviewed commit, never make a "fix-review" commit).
-ONE PR opens when the §-blocks are shipped + reviews absorbed.
-Squash-merge to main; release-please cuts the version bump.
+Do ALL the work on ONE local branch; only then engage remote feedback
+(CI + CodeRabbit), resolve everything, and squash-merge. release-please
+computes + cuts the version after merge — the agent never names it.
 
 ---
 
@@ -121,90 +123,41 @@ Decision/why trail: `git log` + `.agent-state/decisions.ndjson`.
 - [x] M_MAIN.DIRECTIVE-EDIT — this overhaul (first commit of the
       decomp PR per user direction). Recurring; carries forward,
       maintained per-commit not in batches.
-- [ ] [WAIT-PR] M_MAIN.CODERABBIT-SWEEP — sweep CodeRabbit threads on
-      open PRs as they post. Zero open PRs right now (the v0.13 PR
-      opens only on user authorization, gated below). Re-arms when a
-      PR exists with a CodeRabbit review.
-- [x] M_MAIN.WORKTREE-CLEANUP — pruned post-#90 merge (only main
-      worktree remains); dropped the agent-state stash.
-- [ ] [WAIT-FLAKE] M_MAIN.GRINDER-WATCH — convert any flake to a
-      deterministic fix, never a retry. IN PROGRESS on save-load-n-player
-      `__game not ready` flake. Round 1 (stuck-loop-debugger): moved
-      installDevHarness from render-phase useMemo → committed useEffect +
-      added atomic `__game_ready` flag (cleared first, set last); all e2e
-      specs gate on it. Regression test: tests/unit/dev-harness-atomic-
-      ready.test.ts. BUT full-suite e2e STILL flaked — wait now gates on
-      __game_ready (succeeds) yet a later evaluate reads __game falsy, so
-      there's a POST-install clear the render-vs-commit fix didn't cover.
-      Round 2 dispatched to the same agent with the sharper contradiction.
-      The pre-push e2e retry (fcb23e9) is the safety net until the real
-      mechanism is found. Do NOT claim resolved until full `pnpm test:e2e`
-      is green twice running.
+- [ ] M_MAIN.CODERABBIT-SWEEP — sweep + resolve CodeRabbit threads on
+      any open PR as they post (recurring). Re-arms whenever a PR is open.
+- [ ] M_MAIN.GRINDER-WATCH — convert any flake to a deterministic fix,
+      never a retry (recurring). The save-load-n-player `__game not ready`
+      flake is RESOLVED (root cause: Vite dev-server pushed full page
+      reloads mid-test via the static-assets watcher + HMR; fix: gate them
+      off under VITE_E2E + atomic __game_ready gate + reload-sentinel
+      guard — shipped in #91, full e2e green twice). Re-arms on the next
+      observed flake.
 
 ---
 
-## Backlog — unstarted work (release-please versions it when shipped)
+## Backlog — unstarted work
 
-NOTE (per user): the agent does NOT decide version numbers or partition
-work into "v0.X PRs". release-please computes the next version from the
-Conventional Commits AFTER a merge. These are just unstarted units; ship
-them when reached. The only reason to split into a separate PR is
-REVIEWABILITY (keeping a diff small enough to review), never a version
-boundary.
+The agent NEVER decides version numbers and NEVER version-gates work.
+release-please computes the next version from the Conventional Commits
+after a merge — not the agent's concern. These are just units of work:
+do them on the current ONE local branch as reached, then engage remote
+feedback (CI + CodeRabbit) and squash-merge.
 
-- [ ] M_BACKLOG.CI-TEST-SPEED — cut the ~8min "Build and test" CI job.
-      MEASURED (real run): Unit 164s + Browser 134s + builds 33s +
-      Playwright-install 26s. Tests are CORRECTLY written (files 1-2s;
-      biome-audit 61 sub-tests in 0.9s) — slowness is STRUCTURAL:
-      (1) Browser `fileParallelism: false` (vitest.config.ts:89) serializes
-        228 tests through ONE shared Chromium instance. EXPERIMENT (done):
-        flipping to true still flakes (onboarding/zone-legend timeout) —
-        the single `instances: [{browser:'chromium'}]` means parallel files
-        collide on one page/context, so it's NOT a one-line flip. The real
-        fix is a MULTI-INSTANCE browser config (N chromium instances so
-        files run in genuinely isolated contexts) — measure the speedup vs
-        the instance-boot cost first. Biggest lever but needs design.
-      (2) Unit `isolate: false` — EXPERIMENT (done): REJECTED. Breaks
-        deposit-system, shared-kit, force-field, economy-components +
-        more — koota ECS registers components as module singletons; a
-        shared module registry across files double-registers / leaks
-        entity state. Would need per-file ECS-world reset infra (large,
-        risky). Not worth it. Do NOT re-attempt without that infra.
-      (3) Cache Playwright install — DONE (commit 181a313): ~/.cache/
-        ms-playwright cached on lockfile hash in both jobs; cache-hit
-        skips the ~26s binary download. ✓
-      Also DONE: stubbed saveToStore in the browser SQLite mock (7ef976d).
-      (1) Browser parallelism — EXPERIMENT (done): REJECTED both ways.
-        (a) fileParallelism:true on one instance flakes (shared page/
-        context). (b) Multi-NAMED-instance does NOT shard files across
-        instances — vitest runs ALL files in EACH instance (a matrix that
-        MULTIPLIES work ×N, not divides). And the config comment already
-        documents WHY single-instance is mandatory: "React (r3f hooks need
-        one renderer) and three.js" — a single WebGL/renderer context is
-        an architectural requirement, not a tunable. The serial browser
-        config is CORRECT for this codebase. Closed.
-      VERDICT (investigated to ground truth): the within-suite levers are
-      architecturally precluded — (1) browser parallelism needs one r3f
-      renderer (single-instance is mandatory, multi-instance multiplies
-      not divides); (2) unit isolate:false breaks koota module-singleton
-      components. Only the Playwright cache (#3, ~26s) was a safe in-place
-      win — SHIPPED (181a313).
-      THE REAL STRUCTURAL FIX (now the open piece): `build-and-test` is a
-      MONOLITHIC serial job = Unit (164s) + Browser (134s) + builds (33s)
-      + E2E (the 11-15min long pole, timeout 18m) all in ONE job → ~20min
-      worst case. SPLIT into parallel jobs: `unit-and-build`, `browser`,
-      `e2e` run concurrently → wall-clock drops to the longest single job
-      (~e2e). This is safe (job topology, no test-code change) but needs a
-      real CI run to validate (can't fully test job-parallelism locally),
-      so it gets its OWN focused commit + CI watch. The within-suite
-      investigation is CLOSED; the job-split is the next CI action.
+- [x] M_BACKLOG.CI-TEST-SPEED — DONE. Investigated to ground truth:
+      within-suite parallelism is architecturally precluded (browser
+      needs ONE r3f renderer → single Chromium instance mandatory; unit
+      isolate:false breaks koota module-singleton components — both
+      empirically confirmed broken). Shipped on this branch: (a) Playwright
+      browser-binary cache keyed on lockfile (~26s), (b) the structural
+      win — split the monolithic serial build-and-test (unit+browser+
+      builds+e2e ~20min) into a fast-gate job + a PARALLEL browser-and-e2e
+      job, dropping suite wall-clock from ~sum to ~max. (c) fixed the
+      browser SQLite mock's missing saveToStore. CI run on push validates
+      the new job topology.
 
-- [ ] M_BACKLOG.DECOMP-ECS-GAME — decompose src/ecs/ + src/game/ into
-      sub-packages. AUDITED (Explore agent) — grounded grouping +
-      import-edge map below; ready to execute. Held as a SEPARATE PR
-      purely for reviewability (118 files would bloat #91's already-large
-      diff) — not a version gate. Start once #91 merges so the diff is
-      reviewable on its own.
+- [ ] M_DECOMP-ECS-GAME — decompose src/ecs/ + src/game/ into
+      sub-packages on the current branch. AUDITED (Explore agent) —
+      grounded grouping + import-edge map below; ready to execute.
       Move order by risk:
       • PHASE 1 (low risk) — ecs/systems/ (28 files, ZERO intra-dir
         imports, all leaf systems). Groups: combat (combat,
