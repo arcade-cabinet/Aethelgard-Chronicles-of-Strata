@@ -364,10 +364,18 @@ the decomposition landing so the fixes apply to clean sub-packages.
       eyeballed faction-chips-scorebar-stack.png — clean vertical stack,
       no overlap. 3 browser tests green; check 0. (review Major #1 +
       Minor #5)
-- [ ] M_V13.HUD.FOCUS-RINGS — global `.hud-interactive` +
-      `:focus-visible` rule in app stylesheet; className sweep on
-      every button; remove the bare `outline:none` in
-      MobileSystemMenu. (review Major #2)
+- [x] M_V13.HUD.FOCUS-RINGS — DONE: added a global :focus-visible gold
+      outline rule to styles.css covering button / [role=button] /
+      [role=menuitem] / [role=tab] / .hud-interactive — keyboard focus
+      only (the :focus-visible heuristic keeps mouse/touch ring-free).
+      Chose a GLOBAL rule over the directive's "className sweep on every
+      button" (282 inline-styled buttons + Radix-portaled modals render
+      outside any single container — a global stylesheet rule is the
+      correct, lower-risk fix, no per-button edit). Removed the two bare
+      outline:none in MobileSystemMenu (they'd left Radix menu items with
+      NO focus indicator — the actual Major #2 bug). Added focus-rings
+      browser test (recurses @layer to confirm the rule loads). 2 browser
+      tests green; check 0. (review Major #2)
 - [x] M_V13.HUD.TOKEN-SCALE — extend HUD_THEME with `space` (4/8/12/
       16/24), `z` (board<pills<panels<banners<menu<modal<toast ladder),
       `tapTarget` (48), `safeTop/Bottom/Left/Right` helpers (non-zero

@@ -90,7 +90,6 @@ export function MobileSystemMenu({ game, onSettings }: MobileSystemMenuProps) {
               color: HUD_THEME.color.text,
               cursor: 'pointer',
               borderRadius: 8,
-              outline: 'none',
             }}
           >
             ⚙ Settings
@@ -119,7 +118,6 @@ export function MobileSystemMenu({ game, onSettings }: MobileSystemMenuProps) {
               fontWeight: confirmingResign ? 700 : 400,
               cursor: 'pointer',
               borderRadius: 8,
-              outline: 'none',
             }}
           >
             {confirmingResign ? '⚠ Tap again to surrender' : '🏳 Resign'}
