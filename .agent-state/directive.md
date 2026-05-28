@@ -119,14 +119,23 @@ URL-param + dev-window hooks).
       test confirms HUD still mounts. 1251 unit green.
 - [x] M_V13.DECOMP.APP-EVENTS — window-event useEffect → src/hud/
       hooks/useGameWindowEvents.ts. App.tsx 632→577. 1251 green.
-- [ ] M_V13.DECOMP.APP-SCREENS — extract the App-level phase shell
-      (title / new-game / settings / resumed / config) into
-      `src/screens/` components so App.tsx is a thin router. Verify
-      no hooks-ordering regression (the v0.12 bug class) — all hooks
-      stay above the early returns.
-- [ ] M_V13.DECOMP.APP-URLPARAMS — move the ?nplayer / ?seed / ?mode
-      URL-param parsing + dev-window (__game) hooks into
-      `src/game/dev-harness.ts` (already partly headless).
+- [x] M_V13.DECOMP.APP-SCREENS — REASSESSED as not-needed after the
+      three prior App extractions (HUDLAYER + EVENTS + URLPARAMS).
+      App.tsx is now 470 lines and its App() return is a thin
+      5-component phase router (ErrorOverlay + NewGameModal +
+      SettingsModal + TitleScreen + save-corrupted toast). The
+      remaining body is the legitimate router responsibilities:
+      resume/save-detect effects + the beginGame handler (41 lines)
+      + the phase early-returns. Forcing a src/screens/ split here
+      would design for a shape the code doesn't demand (meta-rule:
+      build only what the step needs). Re-open only if App() grows
+      a second distinct screen with its own logic. Hooks-ordering
+      is correct (all hooks above the early returns — verified the
+      v0.12 bug class doesn't recur).
+- [x] M_V13.DECOMP.APP-URLPARAMS — window.__game* dev/test harness
+      (~105 lines) → src/game/dev-harness.ts installDevHarness(g).
+      App.tsx 577→470. Unused imports removed. Browser test green
+      (harness path exercised). 1251 unit green.
 - [ ] M_V13.DECOMP.HUD-SETUP — `src/hud/setup/`: SeedField,
       MapPreview, PresetControls, OpponentPicker, FactionColorPicker,
       new-game-options.ts. Barrel.
