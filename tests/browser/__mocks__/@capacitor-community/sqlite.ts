@@ -13,6 +13,11 @@
 
 export class SQLiteConnection {
   async initWebStore() {}
+  // M_V13.PERSIST.WEB-FLUSH — flushWebStore() calls saveToStore after
+  // every mutation. The mock must stub it (no-op) or every persistence
+  // write throws 'saveToStore is not a function' in browser tests
+  // (the lorebook probe surfaced it: "probe threw: TypeError ...").
+  async saveToStore(_db: string) {}
   async isConnection(_db: string, _readonly: boolean) {
     return { result: false };
   }
