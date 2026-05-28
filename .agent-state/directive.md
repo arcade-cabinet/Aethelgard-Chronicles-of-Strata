@@ -253,7 +253,12 @@ URL-param + dev-window hooks).
       green; check 0. LEARNING: config moves also touch relative
       ../config/X imports + tooling/test hardcoded fs paths, not just
       @/config/X module specifiers.
-- [ ] M_V13.DECOMP.CONFIG-BARREL — top `config/index.ts`.
+- [x] M_V13.DECOMP.CONFIG-BARREL — top `config/index.ts` re-exports
+      all 7 domain bundles (economy/combat/progression/ai/world/
+      narrative/assets) + schema. No name collisions on check (consumers
+      use granular @/config/<bundle> paths; barrel is external entry
+      point). config root now: 7 bundle dirs + schema.ts + __tests__.
+      §A2 COMPLETE — former flat config dir → 7 json+ts domain bundles.
 
 ### §A3 — world/ feature sub-packages (97 files)
 
