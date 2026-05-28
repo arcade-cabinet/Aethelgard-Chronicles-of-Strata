@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AnimationState, FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 import { deathSystem } from '@/ecs/systems/lifecycle';
-import { trainUnit } from '@/game/commands';
+import { trainUnit } from '@/game/utilities';
 import { runEconomyTick, startGame } from '@/game/game-state';
 import { unitProfileFor } from '@/rules/unit-profiles';
 

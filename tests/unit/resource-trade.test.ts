@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { tradeResource } from '@/game/commands';
+import { tradeResource } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 /**

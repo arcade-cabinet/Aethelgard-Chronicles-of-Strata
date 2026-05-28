@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getHexKey } from '@/core/hex';
 import { DefensiveBehavior, Gate, HexPosition, MoverBehavior } from '@/ecs/components';
-import { placeBuilding, placeRoad } from '@/game/commands';
+import { placeBuilding, placeRoad } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 import { buildGateMap } from '@/rules';
 

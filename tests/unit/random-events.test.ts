@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createEventPrng } from '@/core/rng';
 import { startGame } from '@/game/game-state';
-import { tickRandomEvents } from '@/game/random-events';
+import { tickRandomEvents } from '@/game/narrative';
 
 /**
  * M_V11.EVENTS.RTS-TRIGGERED — random-events scheduler is now

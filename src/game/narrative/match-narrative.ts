@@ -11,7 +11,7 @@
  * GameOverModal calls them once the outcome lands.
  */
 import { Building, FactionTrait } from '@/ecs/components';
-import type { GameState } from './game-state';
+import type { GameState } from '../game-state';
 
 /**
  * M_FUN.NAR.HIGHLIGHTS — derive "story moments" from the running

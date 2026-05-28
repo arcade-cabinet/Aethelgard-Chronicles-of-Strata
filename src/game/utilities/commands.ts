@@ -37,10 +37,10 @@ import {
   type TrainableUnit,
   UNIT_COSTS,
 } from '@/rules';
-import { type ResourceCost, spend } from './economy';
-import { baseKeyFor, type GameState } from './game-state';
+import { type ResourceCost, spend } from '../economy';
+import { baseKeyFor, type GameState } from '../game-state';
 import { setRallyPoint } from './rally';
-import { applyResearch, type ResearchId } from './research';
+import { applyResearch, type ResearchId } from '../research';
 
 /**
  * The command API is the **single action channel** — every change a faction

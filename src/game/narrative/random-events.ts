@@ -46,8 +46,8 @@ import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import { triggerQuake } from '@/ecs/systems/hazards';
 import { igniteWildfire } from '@/ecs/systems/hazards';
 import { announce } from '@/hud/aria-live-bus';
-import type { GameState } from './game-state';
-import { WEATHER_PROFILES, type WeatherState } from './weather';
+import type { GameState } from '../game-state';
+import { WEATHER_PROFILES, type WeatherState } from '../weather';
 
 /** One concrete event kind. */
 export type RandomEventKind =

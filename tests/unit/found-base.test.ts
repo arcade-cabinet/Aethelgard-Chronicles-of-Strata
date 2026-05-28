@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { AttractorBehavior, Building, FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
-import { foundBase } from '@/game/commands';
+import { foundBase } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 describe('foundBase (M_MODES.6 — 4X expansion)', () => {

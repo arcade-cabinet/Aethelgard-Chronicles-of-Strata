@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { startGame } from '@/game/game-state';
-import { tickLongReignEscalation } from '@/game/random-events';
+import { tickLongReignEscalation } from '@/game/narrative';
 
 describe('M_POLISH2.MODES.41a — long-reign escalation timer', () => {
   function setup() {

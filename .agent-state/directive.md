@@ -159,17 +159,14 @@ feedback (CI + CodeRabbit) and squash-merge.
       sub-packages on the current branch. AUDITED (Explore agent) —
       grounded grouping + import-edge map below; ready to execute.
       Move order by risk:
-      • PHASE 1 (low risk) — ecs/systems/ (28 files, ZERO intra-dir
-        imports, all leaf systems). Groups: combat (combat,
-        offensive-behavior, mob-targeting, wave-defense, stance-behavior),
-        economy (harvest, deposit, hidden-bonus, science, market-trade,
-        loot-pickup), lifecycle (spawn, death, building-death),
-        movement (job-routing, path-follow, engineer-repair, wander,
-        animation), hazards (volcano, quake, wildfire, encroachment),
-        meta (ai, diplomat-contact, status-attributes, win-loss).
-        ONLY economy-tick-phases.ts (game/, the orchestrator) imports
-        all 26 — its 26 paths update to the new barrels. components.ts
-        + world.ts stay at ecs/ root (cross-cut by ALL systems).
+      • PHASE 1 — DONE (commit 37e3709): ecs/systems/ 28 files → 6 groups
+        (combat/economy/lifecycle/movement/hazards/meta) + barrels. build.ts
+        → lifecycle (the audit missed it). offensive-behavior→combat
+        DamageEvent edge stays intra-group. All 90 importers + the
+        economy-tick-phases orchestrator + __tests__ rewritten to group
+        barrels. tsc 0; no new cycles. components.ts + world.ts stayed at
+        ecs/ root. (Full-suite AI-vs-AI timeout flakes are pre-existing
+        CPU-contention, not this move — pass isolated + grouped.)
       • PHASE 2 (low risk) — game/ leaf groups: narrative (match-narrative,
         narrator-beats, myth-events, random-events, daily-challenge,
         achievements) + utilities (mapgen-helpers, projectiles, rally,

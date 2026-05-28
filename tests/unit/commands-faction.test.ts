@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { FactionTrait, HexPosition, PathQueue } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
-import { moveUnit, placeBuilding } from '@/game/commands';
+import { moveUnit, placeBuilding } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 const SEED = 'ancient-silver-forest';

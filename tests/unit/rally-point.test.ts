@@ -4,7 +4,7 @@ import { buildNavGraph } from '@/core/pathfinding';
 import { HexPosition, PathQueue } from '@/ecs/components';
 import { createEcsWorld } from '@/ecs/world';
 import { createCharacter } from '@/entities/character-factory';
-import { applyRallyPoint, createRally, setRallyPoint } from '@/game/rally';
+import { applyRallyPoint, createRally, setRallyPoint } from '@/game/utilities';
 
 describe('rally points', () => {
   it('records the rally target tile', () => {

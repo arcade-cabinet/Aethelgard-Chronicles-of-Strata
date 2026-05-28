@@ -15,7 +15,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { PLAYER_UNIT_TYPES, Unit } from '@/ecs/components';
-import { trainUnit } from '@/game/commands';
+import { trainUnit } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 import { SUPPLY_COST, UNIT_COSTS } from '@/rules';
 

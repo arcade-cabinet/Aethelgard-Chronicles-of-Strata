@@ -5,7 +5,7 @@
  * setRallyPoint assigns, and writes are stable.
  */
 import { describe, expect, it } from 'vitest';
-import { createRally, setRallyPoint } from '@/game/rally';
+import { createRally, setRallyPoint } from '@/game/utilities';
 
 describe('rally state', () => {
   it('starts with empty targetKey', () => {

@@ -15,7 +15,7 @@
 import { describe, expect, it } from 'vitest';
 import { createMapPrng } from '@/core/rng';
 import { spawnResourceNodes } from '@/world/board';
-import { findBalancedBoard } from '../mapgen-helpers';
+import { findBalancedBoard } from '../utilities/mapgen-helpers';
 
 const MAP_TYPES = ['balanced', 'continent', 'archipelago', 'dry-land'] as const;
 const MAP_SIZES: Record<string, number> = { small: 18, medium: 28, large: 36 };

@@ -20,7 +20,7 @@ import {
   fireMythEvent,
   pickMigrationTile,
   pickOracleVision,
-} from '@/game/myth-events';
+} from '@/game/narrative';
 
 describe('fireMythEvent — unknown id guard (LOW-3)', () => {
   it('returns null on unknown id without throwing', () => {
