@@ -7,11 +7,16 @@
  * Playwright + vitest-browser specs can drive the sim
  * deterministically (advance frames, force outcome, select
  * entities, save/load round-trip, query player entities, reach the
- * trait constructors). Production-safe: every property is a
- * forward-reference on the window namespace; nothing in the bundle
- * imports them, so tree-shaking + 'use strict' isolate them.
+ * trait constructors).
  *
- * Call once per fresh GameState (from GameSession's useMemo).
+ * NOT production-safe on its own — App.tsx imports + CALLS this, so it
+ * is NOT tree-shaken away by mere non-reference. The CALL SITE
+ * (GameSession effect) gates it behind `import.meta.env.DEV ||
+ * VITE_E2E` (M_V13.SEC.HARNESS-GATE), so a prod build's dead-code
+ * elimination drops the gated branch and tree-shakes this module out.
+ * Never call installDevHarness unconditionally.
+ *
+ * Call once per fresh GameState, gated, from the GameSession effect.
  * No-op when `window` is undefined (SSR / node test env).
  */
 import { AssignedJob, Building, FactionTrait, Health, Unit } from '@/ecs/components';

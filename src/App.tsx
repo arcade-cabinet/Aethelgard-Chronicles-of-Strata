@@ -109,7 +109,15 @@ function GameSession({
   // An effect runs only for the render that actually commits, so the
   // harness on `window` always corresponds to the live tree.
   useEffect(() => {
-    installDevHarness(game);
+    // M_V13.SEC.HARNESS-GATE (full-review Phase 2, CWE-489) — only
+    // install the window.__game* test hooks in dev / E2E, never in the
+    // production GitHub-Pages / Capacitor bundle. e2e runs the Vite dev
+    // server (import.meta.env.DEV === true); VITE_E2E covers a future
+    // e2e-against-preview. A prod build strips this branch + tree-shakes
+    // dev-harness out entirely (making its "prod-safe" claim actually true).
+    if (import.meta.env.DEV || import.meta.env.VITE_E2E === '1') {
+      installDevHarness(game);
+    }
   }, [game]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const viewport = useViewport();

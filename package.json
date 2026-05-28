@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.1.26",
   "type": "module",
+  "sideEffects": [
+    "**/*.css",
+    "src/main.tsx"
+  ],
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "copywasm": "node scripts/copy-wasm.mjs",
