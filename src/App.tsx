@@ -18,7 +18,7 @@ import { deserializeGame } from '@/persistence/serialize-game';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
 import { useViewport } from '@/render/useViewport';
-import type { BuildContext } from '@/world/TileInteraction';
+import type { BuildContext } from '@/world/terrain';
 
 /** Shown if the 3D scene fails to load (e.g. a missing asset). */
 /**

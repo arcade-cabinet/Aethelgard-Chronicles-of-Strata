@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
 import { createMapPrng } from '@/core/rng';
-import { spawnResourceNodes } from '@/world/resource-spawn';
+import { spawnResourceNodes } from '@/world/board';
 
 describe('resource node spawning', () => {
   it('is deterministic for a given seed', () => {

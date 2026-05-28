@@ -39,7 +39,7 @@ import { cyclePhase, lightIntensityAt } from '@/game/clock';
 import type { GameState } from '@/game/game-state';
 import { SKINS } from '@/rules/skins';
 import { ConstructionRing } from './ConstructionRing';
-import { FactionMaterialsProvider } from './procedural/FactionMaterialsContext';
+import { FactionMaterialsProvider } from '../procedural/FactionMaterialsContext';
 import { structureModel } from './structure-models';
 
 // M_MICRO.2.2 — local parseKey replaced by shared parseHexKey.

@@ -14,7 +14,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { createMapPrng } from '@/core/rng';
-import { spawnResourceNodes } from '@/world/resource-spawn';
+import { spawnResourceNodes } from '@/world/board';
 import { findBalancedBoard } from '../mapgen-helpers';
 
 const MAP_TYPES = ['balanced', 'continent', 'archipelago', 'dry-land'] as const;

@@ -21,7 +21,7 @@ import { Health } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import { economyFor } from '@/game/economy-for';
 import { runEconomyTick, startGame } from '@/game/game-state';
-import { spawnBarbarianCamp } from '@/world/barbarian-camps';
+import { spawnBarbarianCamp } from '@/world/board';
 
 describe('economyFor lookup', () => {
   it("returns the legacy slot for 'player' / 'enemy'", () => {

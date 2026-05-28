@@ -286,13 +286,31 @@ URL-param + dev-window hooks).
       ResourceText/StackRender→WorldBadge (both effects, intra-group).
       Move order: biomes first (palette is the leaf dep), then terrain,
       board, effects, procedural-barrel, world-barrel.
-- [ ] M_V13.DECOMP.WORLD-TERRAIN — `world/terrain/`. Barrel.
+- [x] M_V13.DECOMP.WORLD-TERRAIN — `world/terrain/`: Terrain,
+      terrain-mesh, Roads, Crossings, TileInteraction, HexGridOverlay,
+      Water, PathLine, touch-drag, touch-tap-threshold. Barrel. DONE:
+      10 git mv. Intra-group edges (Terrain→terrain-mesh, TileInteraction
+      →{HexGridOverlay,PathLine,touch-drag,touch-tap-threshold}) stay ./;
+      cross-group terrain-mesh→biomes bumped to ../biomes. BuildContext
+      type now @/world/terrain (HudLayer/useGameWindowEvents/SelectionPanel
+      auto-repointed). 14 touch unit + 3 gameplay-slice browser green;
+      check 0.
 - [x] M_V13.DECOMP.WORLD-BIOMES — `world/biomes/`: palette, BiomeSwatch,
       Mountains, Decoration. Barrel. DONE: 4 git mv. terrain-mesh's
       ./palette → ./biomes; external @/world/{palette,...} → @/world/
       biomes; __tests__ relative ../palette → ../biomes/palette. 20 unit
       + 16 biome-swatch browser tests green; check 0.
-- [ ] M_V13.DECOMP.WORLD-BOARD — `world/board/`. Barrel.
+- [x] M_V13.DECOMP.WORLD-BOARD — `world/board/`: 19 files (Units +
+      badges/billboards, FactionBase + ConstructionRing + structure-
+      models + portal-stones, ResourceNodes + resource-spawn,
+      ProjectileLayer, RallyMarker, StackRender + formations, ZoneBorder,
+      barbarian-camps, the ring visuals). Barrel. DONE: 19 git mv. Intra-
+      board edges (Units→badges, FactionBase→ConstructionRing/structure-
+      models) stay ./. FactionBase→procedural bumped to ../procedural.
+      Cross-group refs to WorldBadge/world-text-font (effects, not yet
+      moved) point at ../WorldBadge / @/world/world-text-font for now —
+      WILL fix in WORLD-EFFECTS. 60 unit + 1 units-render browser green;
+      check 0.
 - [ ] M_V13.DECOMP.WORLD-EFFECTS — `world/effects/` (water, particles,
       weather-visual, volcano, wildfire). Barrel.
 - [ ] M_V13.DECOMP.WORLD-PROCEDURAL — barrel the existing

@@ -26,7 +26,7 @@ import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexCorner } from '@/core/hex';
 import { FactionTrait, type FormationId, HexPosition, Stack, StackMember } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { WorldBadge } from './WorldBadge';
+import { WorldBadge } from '../WorldBadge';
 
 /** Unicode glyph per formation. Picked so each is unmistakable at
  *  a glance over any biome — bias toward bold-stroke characters. */

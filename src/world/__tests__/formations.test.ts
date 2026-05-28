@@ -14,7 +14,7 @@ import {
   defaultFormationFor,
   dominantUnitTypeOf,
   type MemberAggregate,
-} from '../formations';
+} from '../board';
 
 const agg = (unitTypes: UnitType[], hp: number, damage: number, cd: number): MemberAggregate => ({
   unitTypes,

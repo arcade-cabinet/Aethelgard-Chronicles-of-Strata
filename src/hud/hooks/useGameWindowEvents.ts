@@ -19,7 +19,7 @@ import { useEffect } from 'react';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
-import type { BuildContext } from '@/world/TileInteraction';
+import type { BuildContext } from '@/world/terrain';
 
 export function useGameWindowEvents(
   game: GameState,

@@ -13,8 +13,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BuildingOutlineRing } from '@/world/BuildingOutlineRing';
-import { UnitHexOutline } from '@/world/UnitHexOutline';
+import { BuildingOutlineRing } from '@/world/board';
+import { UnitHexOutline } from '@/world/board';
 
 describe('M_V7.RENDER.COLOR-OUTLINE-V3 — registry color flow', () => {
   it('UnitHexOutline is exported as a function (React component)', () => {
@@ -42,8 +42,8 @@ describe('M_V8.OUTLINE.CANVAS-MOUNT — wired into GameCanvas', () => {
     // canvas. The r3f render path is exercised by visual baselines + e2e.
     const path = resolve(__dirname, '../../..', 'src/render/GameCanvas.tsx');
     const source = readFileSync(path, 'utf-8');
-    expect(source).toContain("from '@/world/UnitHexOutline'");
-    expect(source).toContain("from '@/world/BuildingOutlineRing'");
+    expect(source).toContain("from '@/world/board'");
+    expect(source).toContain("from '@/world/board'");
     expect(source).toContain('<UnitHexOutline');
     expect(source).toContain('<BuildingOutlineRing');
   });

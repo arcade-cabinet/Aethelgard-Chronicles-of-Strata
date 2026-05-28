@@ -3,7 +3,7 @@ import { TILE_HEIGHT } from '@/config/world';
 import type { BoardData, Tile } from '@/core/board';
 import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
 import { biomeFlagsFor } from '@/rules/biome-flags';
-import { BIOME_COLORS } from './biomes';
+import { BIOME_COLORS } from '../biomes';
 
 /** The raw vertex arrays for the merged terrain mesh. */
 export interface TerrainGeometryData {

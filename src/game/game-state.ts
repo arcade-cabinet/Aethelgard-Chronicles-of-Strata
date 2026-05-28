@@ -58,8 +58,8 @@ import {
   factionConfigForCamp,
   placeBarbarianCamps,
   spawnBarbarianCamp,
-} from '@/world/barbarian-camps';
-import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
+} from '@/world/board';
+import { type ResourceNodePlan, spawnResourceNodes } from '@/world/board';
 import type { AutoSave } from './auto-save';
 import { createClock, type GameClock } from './clock';
 import type { Difficulty } from './difficulty';

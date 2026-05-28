@@ -15,7 +15,7 @@ import { describe, expect, it } from 'vitest';
 import { FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import { runEconomyTick, startGame } from '@/game/game-state';
-import { spawnBarbarianCamp } from '@/world/barbarian-camps';
+import { spawnBarbarianCamp } from '@/world/board';
 
 describe('M_PIVOT.BARBARIAN-CAMPS — clearing reward', () => {
   it('+50 wood + +50 stone credited to clearing faction when camp HP -> 0', () => {

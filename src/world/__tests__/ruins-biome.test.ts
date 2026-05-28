@@ -18,7 +18,7 @@ import { Health } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import { runEconomyTick, startGame } from '@/game/game-state';
 import { biomeFlagsFor } from '@/rules/biome-flags';
-import { spawnBarbarianCamp } from '@/world/barbarian-camps';
+import { spawnBarbarianCamp } from '@/world/board';
 import { BIOME_COLORS, BIOME_COLORS_EVENING } from '@/world/biomes';
 
 describe('M_V6.CARRY.RUINS-BIOME — registry + flag coverage', () => {

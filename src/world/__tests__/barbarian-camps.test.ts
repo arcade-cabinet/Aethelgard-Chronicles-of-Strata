@@ -34,7 +34,7 @@ import {
   factionConfigForCamp,
   placeBarbarianCamps,
   spawnBarbarianCamp,
-} from '@/world/barbarian-camps';
+} from '@/world/board';
 
 describe('defaultCampCount', () => {
   it('returns 2 for a 1-player game', () => {

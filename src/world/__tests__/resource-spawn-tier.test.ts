@@ -10,7 +10,7 @@
  *      tiles at contrasting distances on a minimal real board.
  */
 import { describe, expect, it } from 'vitest';
-import { tierMultipliers } from '@/world/resource-spawn';
+import { tierMultipliers } from '@/world/board';
 
 describe('tierMultipliers', () => {
   const radius = 10;

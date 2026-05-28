@@ -17,7 +17,7 @@ import { App } from '@/App';
 import { assets } from '@/assets/assets';
 import { generateBoard } from '@/core/board';
 import { createMapPrng } from '@/core/rng';
-import { spawnResourceNodes } from '@/world/resource-spawn';
+import { spawnResourceNodes } from '@/world/board';
 import { enterGame } from './enter-game';
 
 describe('Decoration scatter', () => {

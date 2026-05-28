@@ -17,7 +17,7 @@
 import type { GameState } from '@/game/game-state';
 import type { Persistence } from '@/persistence/persistence';
 import type { ViewportProfile } from '@/render/useViewport';
-import type { BuildContext } from '@/world/TileInteraction';
+import type { BuildContext } from '@/world/terrain';
 import { AtelierScreen, DiplomacyModal, DiscoveriesPanel, GameOverModal } from '@/hud/modals';
 import {
   AriaLiveRegion,
