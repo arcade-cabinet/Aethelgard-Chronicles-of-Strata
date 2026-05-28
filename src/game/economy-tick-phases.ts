@@ -24,12 +24,43 @@ import {
   Health,
   Unit,
 } from '@/ecs/components';
-import { combatSystem, waveDefenseSystem, mobTargetingSystem, offensiveBehaviorSystem, stanceBehaviorSystem, type DamageEvent } from '@/ecs/systems/combat';
-import { marketTradeSystem, depositSystem, harvestSystem, hiddenBonusSystem, lootPickupSystem, scienceSystem, type ResourceDepositEvent } from '@/ecs/systems/economy';
+import {
+  combatSystem,
+  waveDefenseSystem,
+  mobTargetingSystem,
+  offensiveBehaviorSystem,
+  stanceBehaviorSystem,
+  type DamageEvent,
+} from '@/ecs/systems/combat';
+import {
+  marketTradeSystem,
+  depositSystem,
+  harvestSystem,
+  hiddenBonusSystem,
+  lootPickupSystem,
+  scienceSystem,
+  type ResourceDepositEvent,
+} from '@/ecs/systems/economy';
 import { encroachmentSystem, volcanoSystem, wildfireSystem } from '@/ecs/systems/hazards';
-import { buildSystem, buildingDeathSystem, deathSystem, spawnSystem } from '@/ecs/systems/lifecycle';
-import { aiSystem, diplomatContactSystem, statusAttributesSystem, evaluateWinLoss } from '@/ecs/systems/meta';
-import { animationSystem, engineerRepairSystem, jobRoutingSystem, pathFollowSystem, wanderSystem } from '@/ecs/systems/movement';
+import {
+  buildSystem,
+  buildingDeathSystem,
+  deathSystem,
+  spawnSystem,
+} from '@/ecs/systems/lifecycle';
+import {
+  aiSystem,
+  diplomatContactSystem,
+  statusAttributesSystem,
+  evaluateWinLoss,
+} from '@/ecs/systems/meta';
+import {
+  animationSystem,
+  engineerRepairSystem,
+  jobRoutingSystem,
+  pathFollowSystem,
+  wanderSystem,
+} from '@/ecs/systems/movement';
 import { presetFor, recomputeMaxSupply, SUPPLY_COST } from '@/rules';
 import { chokePointMultiplier } from '@/rules/choke-points';
 import { refreshPortalStoneCooldown, tickPortalStonesTrigger } from '@/world/board';
@@ -41,7 +72,12 @@ import { tickTributeCession } from './diplomacy-tribute';
 import { economyFor } from './economy-for';
 import type { GameState } from './game-state';
 import { advanceProjectiles } from './utilities';
-import { tickEnemyAtPalaceToast, tickInactivityBeats, tickLongReignEscalation, tickRandomEvents } from './narrative';
+import {
+  tickEnemyAtPalaceToast,
+  tickInactivityBeats,
+  tickLongReignEscalation,
+  tickRandomEvents,
+} from './narrative';
 import { grantRandomDiscovery } from './research';
 import { autoFormMobRabble, autoFormWorkCrews, dissolveStaleWorkCrews } from './stack-auto-form';
 // createStack + dissolveStack moved with the auto-form helpers
