@@ -12,8 +12,9 @@ import { HUD_THEME } from '../theme';
  * sets that speed (and unpauses if paused). Visible-but-pressed
  * state via aria-pressed.
  *
- * Compact: 36px tall, 44px per segment to meet the 44×44 minimum
- * touch target. Inset-bottom-aware so it sits above the home-bar.
+ * Compact: 48px tall, 48px per segment to meet the 48dp Material /
+ * WCAG 2.5.5 minimum touch target (M_V13.HUD.TAP-TARGETS — was 36×44).
+ * Inset-bottom-aware so it sits above the home-bar.
  *
  * Desktop keeps the original SpeedControl + PauseControl pair.
  */
@@ -63,8 +64,8 @@ export function MobileSpeedPausePill({ game }: { game: GameState }) {
         right: 'calc(env(safe-area-inset-right, 0px) + 8px)',
         zIndex: 100,
         display: 'flex',
-        height: 36,
-        borderRadius: 18,
+        height: HUD_THEME.tapTarget,
+        borderRadius: HUD_THEME.tapTarget / 2,
         background: HUD_THEME.color.panel,
         border: `1px solid ${HUD_THEME.color.border}`,
         overflow: 'hidden',
@@ -81,7 +82,7 @@ export function MobileSpeedPausePill({ game }: { game: GameState }) {
         aria-label={paused ? 'Resume game' : 'Pause game'}
         onClick={togglePause}
         style={{
-          width: 44,
+          width: HUD_THEME.tapTarget,
           border: 'none',
           background: paused ? HUD_THEME.color.accent : 'transparent',
           color: paused ? HUD_THEME.color.obsidian : HUD_THEME.color.text,
@@ -103,7 +104,7 @@ export function MobileSpeedPausePill({ game }: { game: GameState }) {
             aria-label={`Set game speed ${s} times`}
             onClick={() => setSpeedNow(s)}
             style={{
-              width: 44,
+              width: HUD_THEME.tapTarget,
               border: 'none',
               borderLeft: `1px solid ${HUD_THEME.color.border}`,
               background: active ? HUD_THEME.color.accent : 'transparent',

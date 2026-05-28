@@ -379,9 +379,12 @@ the decomposition landing so the fixes apply to clean sub-packages.
       `+Npx` desktop margin already; SettingsModal sticky-footer's bare
       env() is intentional (footer has own padding) — NOT the Minor #6
       bug. (review Major #3 + Minor #6)
-- [ ] M_V13.HUD.TAP-TARGETS — enforce 48dp via a shared
-      `.hud-tap-target` floor; bump MobileSpeedPausePill 36→48.
-      (review Major #4)
+- [x] M_V13.HUD.TAP-TARGETS — DONE: added `.hud-tap-target` utility to
+      styles.css (@layer base) enforcing min 48×48 inline-flex-centered;
+      bumped MobileSpeedPausePill from 36×44 → 48×48 (height + both
+      segment widths now HUD_THEME.tapTarget, radius tapTarget/2). Tightened
+      the pill browser test to assert ALL 4 segments ≥48×48 (was ≥44×36).
+      4 browser tests green; check 0. (review Major #4)
 - [ ] M_V13.HUD.AXE-WIDEN — extend the axe-core sweep past modals to
       pills + overlays. (review Minor #7)
 - [ ] M_V13.HUD.CHAIN-FIELD — add a typed `chain` field to

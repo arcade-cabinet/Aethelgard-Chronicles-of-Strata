@@ -243,6 +243,18 @@
   .hud-interactive {
     pointer-events: auto;
   }
+  /* M_V13.HUD.TAP-TARGETS — the 48dp Material / WCAG 2.5.5 minimum
+   * interactive size. Any HUD button/control that could be the sole
+   * way to trigger an action carries this so touch users always have a
+   * 48×48 hit area, even when the visual chrome is smaller (centered
+   * content + min-size means a compact pill still has a full tap box). */
+  .hud-tap-target {
+    min-inline-size: 48px;
+    min-block-size: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────

@@ -58,7 +58,7 @@ describe('M_POLISH2.MOBILE.14 — MobileSpeedPausePill', () => {
     expect(game.paused).toBe(false);
   });
 
-  it('each segment is at least 44px wide (touch target minimum)', async () => {
+  it('each segment meets the 48dp touch-target floor (M_V13.HUD.TAP-TARGETS)', async () => {
     const game = startGame('mobile-pill-touch-target');
     await render(<MobileSpeedPausePill game={game} />);
     await vi.waitFor(
@@ -67,9 +67,13 @@ describe('M_POLISH2.MOBILE.14 — MobileSpeedPausePill', () => {
       },
       { timeout: 4000, interval: 100 },
     );
-    const btn = document.getElementById('mobile-pause') as HTMLButtonElement;
-    const rect = btn.getBoundingClientRect();
-    expect(rect.width).toBeGreaterThanOrEqual(44);
-    expect(rect.height).toBeGreaterThanOrEqual(36);
+    // Every segment (pause + each speed) must be ≥48×48 — the Material /
+    // WCAG 2.5.5 minimum (was 44×36 before TAP-TARGETS bumped it).
+    for (const id of ['mobile-pause', 'mobile-speed-1x', 'mobile-speed-2x', 'mobile-speed-3x']) {
+      const btn = document.getElementById(id) as HTMLButtonElement;
+      const rect = btn.getBoundingClientRect();
+      expect(rect.width, `${id} width`).toBeGreaterThanOrEqual(48);
+      expect(rect.height, `${id} height`).toBeGreaterThanOrEqual(48);
+    }
   });
 });
