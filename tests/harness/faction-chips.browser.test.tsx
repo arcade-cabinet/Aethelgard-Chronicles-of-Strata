@@ -133,8 +133,9 @@ describe('FactionChips harness', () => {
       { id: 'player-4', displayName: 'Amber', kind: 'ai', color: '#f59e0b', archetype: 'medieval' },
     ];
     const game = makeStubGame(factions);
-    // ScoreBar reads game.scores; provide a minimal shape.
-    (game as unknown as { scores: Record<string, number> }).scores = {
+    // ScoreBar reads game.score.{player,enemy} per rAF tick — provide
+    // it so the rAF loop doesn't throw post-assertion.
+    (game as unknown as { score: { player: number; enemy: number } }).score = {
       player: 120,
       enemy: 80,
     };
