@@ -27,7 +27,7 @@ import type { Difficulty, GameMode } from '@/game/game-state';
 import { cn } from '@/lib/cn';
 import { presetFor } from '@/rules';
 import type { TurnsMode } from '@/rules/mode-presets';
-import { SectionCard, TreasureButton } from './primitives';
+import { SectionCard, TreasureButton } from '../primitives';
 import {
   FactionColorPicker,
   MapPreview,
@@ -35,7 +35,7 @@ import {
   PLAYER_COLORS,
   PresetControls,
   SeedField,
-} from './setup';
+} from '../setup';
 
 /** The choices a New Game collects. */
 export interface NewGameChoices {

@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
+import { DiscoveriesPanel } from '@/hud/modals';
 
 function Stage({ children }: { children: React.ReactNode }) {
   useEffect(() => {

@@ -4,8 +4,8 @@ import { render } from 'vitest-browser-react';
 import { Building, FactionTrait, Selectable } from '@/ecs/components';
 import { startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
-import { GameOverModal } from '@/hud/GameOverModal';
-import { NewGameModal } from '@/hud/NewGameModal';
+import { GameOverModal } from '@/hud/modals';
+import { NewGameModal } from '@/hud/modals';
 import { SelectionPanel } from '@/hud/selection';
 
 /**

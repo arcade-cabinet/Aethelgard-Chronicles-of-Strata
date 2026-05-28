@@ -17,7 +17,7 @@
 import { userEvent } from '@vitest/browser/context';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { NewGameModal } from '@/hud/NewGameModal';
+import { NewGameModal } from '@/hud/modals';
 
 describe('M_V8.NEWGAMEMODAL.N-PLAYER-PICKER', () => {
   it('N-player picker is hidden in non-4X modes and shown in age-of-strata', async () => {

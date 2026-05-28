@@ -5,11 +5,11 @@ import { MUTE_PREF_KEY } from '@/audio/useMutedPreference';
 import { type Persistence, PREF_KEYS, safePersistenceRead } from '@/persistence/persistence';
 import { useViewport } from '@/render/useViewport';
 import { isColorblindMode, setColorblindMode } from '@/rules/colorblind';
-import { isCaptionsEnabled, setCaptionsEnabled } from './captions';
+import { isCaptionsEnabled, setCaptionsEnabled } from '../captions';
 import { HotkeyEditor } from './HotkeyEditor';
-import { loadBindings } from './hotkey-bindings';
-import { HUD_THEME } from './theme';
-import { ModalShell } from './primitives';
+import { loadBindings } from '../hotkey-bindings';
+import { HUD_THEME } from '../theme';
+import { ModalShell } from '../primitives';
 
 // M_EXPANSION.U.112 — bus → (preference key, label) mapping.
 const BUS_ROWS: ReadonlyArray<{

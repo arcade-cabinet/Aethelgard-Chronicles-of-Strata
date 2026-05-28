@@ -50,8 +50,8 @@ import {
 } from '@/game/diplomacy-tribute';
 import type { GameEconomy } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './theme';
-import { ModalShell } from './primitives';
+import { HUD_THEME } from '../theme';
+import { ModalShell } from '../primitives';
 
 const PLAYER: FactionId = 'player';
 

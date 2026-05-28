@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { setRelation } from '@/game/diplomacy';
 import { startGame } from '@/game/game-state';
-import { DiplomacyModal } from '@/hud/DiplomacyModal';
+import { DiplomacyModal } from '@/hud/modals';
 
 function Stage({
   children,

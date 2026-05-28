@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { GameOverModal } from '@/hud/GameOverModal';
+import { GameOverModal } from '@/hud/modals';
 
 describe('M_POLISH2.MODES.41b — long-reign GameOverModal narrative', () => {
   it('shows the long-reign narrative card when mode is long-reign', async () => {

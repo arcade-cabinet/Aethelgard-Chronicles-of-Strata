@@ -18,7 +18,7 @@ import { render } from 'vitest-browser-react';
 import { buildDefaultFactions } from '@/config/factions';
 import { setRelation } from '@/game/diplomacy';
 import { startGame } from '@/game/game-state';
-import { GameOverModal } from '@/hud/GameOverModal';
+import { GameOverModal } from '@/hud/modals';
 
 /**
  * Poll for a selector under document (Radix Portal mounts outside the

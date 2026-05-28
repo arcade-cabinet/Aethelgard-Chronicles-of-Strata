@@ -21,11 +21,11 @@
  */
 import { useEffect, useState } from 'react';
 import { startGame } from '@/game/game-state';
-import { CreditsModal } from '@/hud/CreditsModal';
-import { GameOverModal } from '@/hud/GameOverModal';
-import { NewGameModal } from '@/hud/NewGameModal';
+import { CreditsModal } from '@/hud/modals';
+import { GameOverModal } from '@/hud/modals';
+import { NewGameModal } from '@/hud/modals';
 import { OnboardingOverlay } from '@/hud/overlays';
-import { SettingsModal } from '@/hud/SettingsModal';
+import { SettingsModal } from '@/hud/modals';
 import { SystemMenu } from '@/hud/system';
 import { TitleScreen } from '@/hud/overlays';
 import { createPersistence } from '@/persistence/persistence';

@@ -169,10 +169,17 @@ URL-param + dev-window hooks).
       copy lives in @/audio/useMutedPreference). Importers (FixtureApp,
       HudLayer + 7 browser tests) → @/hud/system. 15 browser tests
       green; check 0, lint clean.
-- [ ] M_V13.DECOMP.HUD-MODALS — `src/hud/modals/`: NewGameModal,
+- [x] M_V13.DECOMP.HUD-MODALS — `src/hud/modals/`: NewGameModal,
       SettingsModal, GameOverModal, DiplomacyModal, DiscoveriesPanel,
-      AtelierScreen, CreditsModal, HotkeyEditor, MatchSummaryCard,
-      DailyChallengeLeaderboard. Barrel.
+      AtelierScreen, CreditsModal, HotkeyEditor, MatchSummaryCard.
+      Barrel. DONE: 9 git mv (DailyChallengeLeaderboard was a planning
+      over-listing — no such file; daily-challenge leaderboard is a
+      feature inside NewGameModal, not a component). Intra-bucket comps
+      GameOverModal→MatchSummaryCard + SettingsModal→HotkeyEditor kept
+      ./-relative. Cross-bucket refs fixed: overlays/TitleScreen +
+      setup/PresetControls now import @/hud/modals (../modals). All
+      importers (App, FixtureApp, HudLayer + 11 browser tests) →
+      @/hud/modals. 17 browser tests green; check 0, lint clean.
 - [ ] M_V13.DECOMP.HUD-BARREL — top `src/hud/index.ts` re-exporting
       every sub-package barrel; update App.tsx to import from barrels.
 

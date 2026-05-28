@@ -10,7 +10,7 @@ import { page } from '@vitest/browser/context';
 import { useEffect } from 'react';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { AtelierScreen } from '@/hud/AtelierScreen';
+import { AtelierScreen } from '@/hud/modals';
 import type { Persistence } from '@/persistence/persistence';
 
 function stubPersistence(opts: { tokens: number; unlockedIds?: string[] }): Persistence {

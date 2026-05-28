@@ -8,7 +8,7 @@ import { MAP_SIZES } from '@/core/map-size';
 import type { Difficulty, GameMode } from '@/game/game-state';
 import type { TurnsMode } from '@/rules/mode-presets';
 import { HUD_THEME } from '../theme';
-import type { NewGameChoices } from '../NewGameModal';
+import type { NewGameChoices } from '../modals';
 import { DIFFICULTIES, MODES, PLAYER_COLORS, STARTING_BONUSES } from './new-game-options';
 import { Segmented } from '../primitives';
 

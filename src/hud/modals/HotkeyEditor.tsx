@@ -7,8 +7,8 @@ import {
   serializeBindings,
   setBinding,
   subscribeBindings,
-} from './hotkey-bindings';
-import { HUD_THEME } from './theme';
+} from '../hotkey-bindings';
+import { HUD_THEME } from '../theme';
 
 /** Display labels for each action. Order matches the rendered list. */
 const ACTION_ROWS: ReadonlyArray<{ action: HotkeyAction; label: string }> = [
