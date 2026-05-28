@@ -59,37 +59,11 @@ jobs:
       # (tests/unit/asset-manifest.test.ts).
       - name: Unit tests
         run: pnpm test
-      # M_AUDIT2.SEC2.21 — skip Playwright deps install on fork PRs.
-      # Browser tests run an attacker-controlled bundle inside a real
-      # Chromium; the install step is expensive (CI minutes) and the
-      # browser test surface itself could be weaponised. Maintainer
-      # PRs (same repo) still run the full browser suite.
-      # M_BACKLOG.CI-TEST-SPEED #3 — cache the Playwright browser binary
-      # (~/.cache/ms-playwright, the bulk of the ~26s install). Keyed on
-      # the lockfile so a playwright version bump busts it. --with-deps
-      # OS packages aren't cacheable, but on a cache hit we skip the
-      # binary download (the slow part) and only refresh apt deps.
-      - name: Cache Playwright browsers (maintainer PRs + push only)
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        id: pw-cache
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/.cache/ms-playwright
-          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
-      - name: Install Playwright (maintainer PRs + push only)
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        # On a cache hit the browser binary is already present; install
-        # only the OS deps (fast). On a miss, full install populates the cache.
-        run: |
-          if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then
-            pnpm exec playwright install-deps chromium
-          else
-            pnpm exec playwright install --with-deps chromium
-          fi
-      - name: Browser tests (maintainer PRs + push only)
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-        timeout-minutes: 5
-        run: pnpm test:browser
+      # M_BACKLOG.CI-TEST-SPEED — browser + e2e moved to the parallel
+      # `browser-and-e2e` job below so this fast gate (lint/typecheck/
+      # unit/build/static-checks, ~4min) and the slow browser+e2e battery
+      # (~the long pole) run CONCURRENTLY instead of serially. Wall-clock
+      # of the whole CI drops from ~sum to ~max(the two jobs).
       - name: Build GitHub Pages
         run: pnpm build:pages
       # Reordered: build:pages first (verifies the pages-base path
@@ -123,24 +97,59 @@ jobs:
             echo "::error::index.html contains a cross-origin URL — CSP forbids this. Self-host the asset."
             exit 1
           fi
+
+  # M_BACKLOG.CI-TEST-SPEED — browser + e2e run as their OWN job, in
+  # parallel with build-and-test. Both need Playwright/Chromium, so
+  # grouping them shares one cached browser install. This is the
+  # structural CI-speed win: the suite wall-clock is now max(fast-gate,
+  # browser+e2e) instead of their sum.
+  browser-and-e2e:
+    name: Browser + E2E
+    runs-on: ubuntu-latest
+    # browser ~2-3m + e2e 11-15m + setup; 30m ceiling matches the old
+    # monolithic job's headroom for the e2e long pole.
+    timeout-minutes: 30
+    # Fork PRs run an attacker-controlled bundle in a real Chromium; skip
+    # the whole job on forks (the install is expensive + the browser
+    # surface is weaponisable). Maintainer PRs + push run it.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with: { node-version: 22 }
+      - run: corepack enable
+      - run: corepack prepare pnpm@9.15.0 --activate
+      - run: pnpm install --frozen-lockfile
+      # M_BACKLOG.CI-TEST-SPEED #3 — cache the Playwright browser binary
+      # (the bulk of the install). Keyed on the lockfile so a playwright
+      # bump busts it. On a cache hit, install only the apt OS deps.
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Install Playwright
+        run: |
+          if [ "${{ steps.pw-cache.outputs.cache-hit }}" = "true" ]; then
+            pnpm exec playwright install-deps chromium
+          else
+            pnpm exec playwright install --with-deps chromium
+          fi
+      - name: Browser tests
+        timeout-minutes: 5
+        run: pnpm test:browser
       - name: E2E tests
-        # M_GAME.BUG.10 CI bump: v0.10 added per-tick walkable-step
-        # guard + roam-radius filter + stack-substrate queries. Total
-        # e2e battery wall-clock rose from ~6m to ~8.5m on GitHub
-        # runners. 12m was a safe ceiling at v0.10.
-        # M_V11.CI bump: v0.11 added 36 discoveries + 30 meta-unlocks +
-        # 15 units (was 9) + the diplomacy modal + the AtelierScreen.
-        # Each extension grew runEconomyTick + render-tree size; the
-        # e2e battery's wall-clock now sits in the 11-15m band on
-        # GitHub runners. 18m gives clean headroom (a real perf
-        # regression would push past it; transient flake won't).
+        # e2e battery sits in the 11-15m band on GitHub runners; 18m
+        # gives headroom (a real perf regression pushes past it; a
+        # transient flake won't, and the pre-push + retry catch those).
         timeout-minutes: 18
         run: pnpm test:e2e
-      # M_SEC.16 — skip artifact upload on fork PRs. Fork PRs run
-      # against attacker-controlled code; uploading playwright-report/
-      # or test-results/ could exfiltrate secrets injected into the
-      # report (e.g. env-leaking screenshots). Maintainer PRs (same
-      # repo) still upload on failure.
+      # M_SEC.16 — skip artifact upload on fork PRs (exfil risk via
+      # report screenshots). The job already gates forks out, but keep
+      # the guard for defense-in-depth.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4
         if: failure() && github.event.pull_request.head.repo.full_name == github.repository
         with:
