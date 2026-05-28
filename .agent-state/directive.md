@@ -193,8 +193,9 @@ URL-param + dev-window hooks).
 
 ### §A2 — config/ domain sub-packages (22 files → 7 bundles)
 
-- [ ] M_V13.DECOMP.CONFIG-SCHEMA — extract shared Zod helpers to
-      `src/config/schema.ts` (ResourceCost etc.).
+- [x] M_V13.DECOMP.CONFIG-SCHEMA — extracted to src/config/schema.ts
+      (resourceCostSchema + resourceIdSchema builders). economy +
+      discoveries call them. Landed in commit 46f4916.
 - [x] M_V13.DECOMP.CONFIG-ECONOMY — `config/economy/`: economy +
       resources json+ts. Barrel. DONE: 4 git mv into economy/; barrel
       re-exports both. economy.ts's @/config/resources → ./resources.
