@@ -460,10 +460,34 @@ the decomposition landing so the fixes apply to clean sub-packages.
 
 ## §post-horizon — v0.14+
 
-- [ ] M_V14.DECOMP-ECS-GAME — decompose src/ecs/ (61) + src/game/ (57)
-      into sub-packages. Hud/config/world precedent landed + reviewed
-      clean, so this becomes the natural next cycle (not a wait).
-      Concrete next-cycle work — moved off WAIT-CYCLE.
+- [ ] M_V14.DECOMP-ECS-GAME — decompose src/ecs/ + src/game/ into
+      sub-packages. AUDITED (Explore agent) — grounded grouping +
+      import-edge map below. Opens as the v0.14 PR (NOT part of the
+      v0.13 decomp PR, which is complete + pending user PR-open).
+      Move order by risk:
+      • PHASE 1 (low risk) — ecs/systems/ (28 files, ZERO intra-dir
+        imports, all leaf systems). Groups: combat (combat,
+        offensive-behavior, mob-targeting, wave-defense, stance-behavior),
+        economy (harvest, deposit, hidden-bonus, science, market-trade,
+        loot-pickup), lifecycle (spawn, death, building-death),
+        movement (job-routing, path-follow, engineer-repair, wander,
+        animation), hazards (volcano, quake, wildfire, encroachment),
+        meta (ai, diplomat-contact, status-attributes, win-loss).
+        ONLY economy-tick-phases.ts (game/, the orchestrator) imports
+        all 26 — its 26 paths update to the new barrels. components.ts
+        + world.ts stay at ecs/ root (cross-cut by ALL systems).
+      • PHASE 2 (low risk) — game/ leaf groups: narrative (match-narrative,
+        narrator-beats, myth-events, random-events, daily-challenge,
+        achievements) + utilities (mapgen-helpers, projectiles, rally,
+        auto-save, dev-harness, commands).
+      • PHASE 3 (defer/careful) — game/ economy + diplomacy clusters are
+        hub-coupled (economy.ts 6+5 edges, diplomacy.ts 5+3); game-state.ts
+        stays at root (10+ importers). Decompose only with hub-aware
+        barrels, or leave hubs at root.
+      CROSS-DIR coupling: 10 ecs→game edges (combat→combat-math, deposit/
+        hidden-bonus/science→economy, diplomat-contact→diplomacy, etc.),
+        3 game→ecs (economy-tick-phases→26, game-state→ai, random-events
+        →quake/wildfire). Manageable; ecs-first is independently shippable.
 - [ ] [WAIT-DEVICE] M_V14.MOBILE-DEVICE-AUDIT — the M_V12.MOBILE
       tap-audit / safe-area / orientation / offline items that need
       a real Pixel 5a / iPhone 14 (genuine hardware dependency).
