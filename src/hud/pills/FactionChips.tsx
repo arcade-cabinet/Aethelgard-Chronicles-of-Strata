@@ -25,8 +25,7 @@ import { type FactionConfig, findFaction } from '@/config/ai';
 import type { GameState } from '@/game/game-state';
 import { cn } from '@/lib/cn';
 import { useViewport } from '@/render/useViewport';
-import { formatInt } from '../theme';
-import { HUD_THEME } from '../theme';
+import { formatInt, HUD_THEME, TOP_CENTER_SLOT, topCenterSlot } from '../theme';
 
 export interface FactionChipsProps {
   game: GameState;
@@ -102,14 +101,11 @@ export function FactionChips({ game }: FactionChipsProps) {
       <div
         data-testid="faction-chips-strip"
         style={{
-          position: 'absolute',
-          top: 'calc(env(safe-area-inset-top, 0) + 8px)',
-          left: '50%',
-          transform: 'translateX(-50%)',
+          ...topCenterSlot(TOP_CENTER_SLOT.factionChips),
           display: 'flex',
           gap: 8,
           pointerEvents: 'none',
-          zIndex: 50,
+          zIndex: HUD_THEME.z.pills,
         }}
       >
         {/* Wide viewports: render the chip strip inline (visible).

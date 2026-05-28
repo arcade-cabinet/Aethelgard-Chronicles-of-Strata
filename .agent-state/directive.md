@@ -350,10 +350,20 @@ URL-param + dev-window hooks).
 From `.ui-design/reviews/hud-directory_20260528_100148.md`. Gated on
 the decomposition landing so the fixes apply to clean sub-packages.
 
-- [ ] M_V13.HUD.FIX-PILL-COLLISION — FactionChips overlaps ScoreBar
-      at top-center in N-player matches. Stagger via a shared
-      `hud/theme/hud-layout.ts` TOP_CENTER_SLOT helper; make ScoreBar
-      `position: fixed`. (review Major #1 + Minor #5)
+- [x] M_V13.HUD.FIX-PILL-COLLISION — FactionChips overlapped ScoreBar
+      at top-center in N-player matches. DONE: added hud/theme/
+      hud-layout.ts with topCenterSlot(row) + TOP_CENTER_SLOT
+      {factionChips:0, scoreBar:1}; both pills now use it (chips row 0,
+      score bar row 1) so they STACK instead of collide. Kept absolute
+      (the HUD wrapper is full-viewport, so absolute==fixed here; true
+      `fixed` would break out of the pointer-events-none container —
+      the review's "fixed" was for viewport-anchoring, which absolute-in-
+      full-viewport-wrapper already gives). FactionChips zIndex now
+      HUD_THEME.z.pills. Added a no-overlap regression test to the
+      faction-chips harness (asserts strip.bottom <= scoreBar.top);
+      eyeballed faction-chips-scorebar-stack.png — clean vertical stack,
+      no overlap. 3 browser tests green; check 0. (review Major #1 +
+      Minor #5)
 - [ ] M_V13.HUD.FOCUS-RINGS — global `.hud-interactive` +
       `:focus-visible` rule in app stylesheet; className sweep on
       every button; remove the bare `outline:none` in

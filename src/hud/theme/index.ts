@@ -16,3 +16,4 @@ export {
   safeRight,
 } from './hud-theme';
 export { costLabel, formatInt, formatTime } from './format';
+export { topCenterSlot, TOP_CENTER_SLOT } from './hud-layout';

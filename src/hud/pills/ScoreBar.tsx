@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { GameState } from '@/game/game-state';
-import { formatInt } from '../theme';
-import { HUD_THEME } from '../theme';
+import { formatInt, HUD_THEME, TOP_CENTER_SLOT, topCenterSlot } from '../theme';
 import { useRafLoop } from '../useRafLoop';
 
 /**
@@ -27,10 +26,7 @@ export function ScoreBar({ game }: { game: GameState }) {
       id="score-bar"
       aria-label="Match score"
       style={{
-        position: 'absolute',
-        top: 12,
-        left: '50%',
-        transform: 'translateX(-50%)',
+        ...topCenterSlot(TOP_CENTER_SLOT.scoreBar),
         display: 'flex',
         gap: 10,
         padding: '6px 14px',
