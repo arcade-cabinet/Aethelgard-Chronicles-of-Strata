@@ -10,49 +10,12 @@ import { AssignedJob, Building, FactionTrait, Health, Unit } from '@/ecs/compone
 import { createAutoSave } from '@/game/auto-save';
 import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
-import { AchievementWatcher } from '@/hud/AchievementWatcher';
-import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
-import { BuildMenuButton } from '@/hud/BuildMenuButton';
-import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
-import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
-import { CriticalWarning } from '@/hud/CriticalWarning';
-import { AtelierScreen } from '@/hud/AtelierScreen';
-import { CampaignOverlay } from '@/hud/CampaignOverlay';
-import { DiplomacyModal } from '@/hud/DiplomacyModal';
-import { TutorialOverlay } from '@/hud/TutorialOverlay';
-import { WaveDefenseOverlay } from '@/hud/WaveDefenseOverlay';
-import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
-import { FactionChips } from '@/hud/pills';
-import { GameOverModal } from '@/hud/GameOverModal';
-import { IdleUnitIndicator } from '@/hud/IdleUnitIndicator';
-import { MultiSelectActions } from '@/hud/MultiSelectActions';
-import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
+import { HudLayer } from '@/hud/HudLayer';
 import { LoadingScreen } from '@/hud/LoadingScreen';
-import { MatchAgePill } from '@/hud/pills';
-import { Minimap } from '@/hud/Minimap';
-import { MobileSpeedPausePill } from '@/hud/pills';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
-import { NonAggressionPactPill } from '@/hud/pills';
-import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
-import { PauseControl } from '@/hud/PauseControl';
-import { PersistAchievements } from '@/hud/PersistAchievements';
-import { RaidPressurePill } from '@/hud/pills';
-import { ResourceBar } from '@/hud/ResourceBar';
-import { ScoreBar } from '@/hud/pills';
-import { ScreenshotButton } from '@/hud/ScreenshotButton';
-import { SelectionPanel } from '@/hud/SelectionPanel';
 import { SettingsModal } from '@/hud/SettingsModal';
-import { Toasts } from '@/hud/Toasts';
-import { SpeedControl } from '@/hud/SpeedControl';
-import { SystemMenu } from '@/hud/SystemMenu';
 import { TitleScreen } from '@/hud/TitleScreen';
-import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
-import { WeatherIndicator } from '@/hud/pills';
-import { WinConditionPill } from '@/hud/pills';
-import { ZoneControlPill } from '@/hud/pills';
-import { ZoneFlipPulse } from '@/hud/pills';
-import { ZoneLegend } from '@/hud/ZoneLegend';
 import { createPersistence, PREF_KEYS } from '@/persistence/persistence';
 import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
@@ -338,129 +301,22 @@ function GameSession({
           }}
         />
       </ErrorBoundary>
-      <ResourceBar game={game} compact={viewport.isPortrait} />
-      <Minimap game={game} compact={viewport.isPortrait} />
-      <SelectionPanel
+      {/* M_V13.DECOMP.APP-HUDLAYER — the ~30-component HUD-overlay
+          mount wall extracted into HudLayer so App.tsx stays a thin
+          shell. GameSession keeps ownership of buildContext + camera;
+          HudLayer receives game + viewport + persistence + the
+          sound + settings + begin-build callbacks. */}
+      <HudLayer
         game={game}
+        viewport={viewport}
+        persistence={persistence}
+        soundMuted={soundMuted}
+        setSoundMuted={setSoundMuted}
+        onOpenSettings={onOpenSettings}
         onBeginBuild={(ctx) =>
           setBuildContext({ type: ctx.type, onPlaced: () => setBuildContext(null) })
         }
       />
-      {/* M_GAME.STACK.2b — multi-select Stack/Unstack actions. Floats
-          next to the SelectionPanel; visible only when 2+ units are
-          selected (or any selected unit is already in a Stack). */}
-      <MultiSelectActions game={game} />
-      {/* M_GAME.BUG.3 — desktop blue drag-select rectangle retired.
-          Selection is tap-only now. Multi-select via tap-and-hold-then-
-          drag (per OnboardingOverlay's "Commanding military" step) is
-          handled inside TileInteraction. SelectionRect.tsx remains in
-          the tree as a subpackage for desktop opt-in (decompose, don't
-          strip) but no longer mounts in the main App. */}
-      {/* <SelectionRect game={game} getCamera={getCamera} /> */}
-      {/* M_HUD.SHELL.1 — universal SystemMenu (top-right hamburger
-            + slide-in drawer). Replaces the per-viewport scatter of
-            ResignButton + MobileSystemMenu + SoundToggle pills that
-            on N-player viewports (foldable, tablet) collided with the
-            resource bar + faction chips into an overcrowded top bar.
-            Mounts on every viewport class. Owns Settings, Discoveries,
-            Legend, Sound, Resign — each forwarded to the respective
-            owner via prop/callback or CustomEvent. */}
-      <SystemMenu
-        game={game}
-        onSettings={() => onOpenSettings?.()}
-        soundMuted={soundMuted}
-        onToggleSound={setSoundMuted}
-      />
-      {/* M_POLISH2.B.1 — visible touch-reachable build button.
-            Dispatches the open-build-menu event the App listener now
-            handles. Mobile-first but useful on desktop too. */}
-      <BuildMenuButton />
-      {/* M_POLISH2.MOBILE.14 — portrait/phone viewports get the unified
-            Speed+Pause pill; everywhere else keeps the two original
-            independent controls. PauseControl still mounts on mobile so
-            its keyboard P shortcut + the visibilitychange auto-pause
-            wiring stay live — but its HudPill is suppressed via the
-            viewport check inside HudPill (slot collision avoided by
-            simply NOT mounting PauseControl on portrait). */}
-      {viewport.class === 'phonePortrait' ? (
-        <MobileSpeedPausePill game={game} />
-      ) : (
-        <>
-          <PauseControl game={game} />
-          <SpeedControl game={game} />
-        </>
-      )}
-      <DiscoveriesPanel game={game} />
-      {/* M_V11.HUD.DIPLOMACY-MODAL — player-facing diplomacy. Opens on
-          the 'aethelgard:open-diplomacy' window event, fired by the
-          SystemMenu (top-right hamburger) — same pattern as the
-          DiscoveriesPanel. */}
-      <DiplomacyModal game={game} />
-      {/* M_V11.META-PROGRESSION — AtelierScreen reads lore-token
-          balance + meta-unlocks from the persistence facade. Opens
-          on the 'aethelgard:open-atelier' event (SystemMenu entry +
-          auto-fired from match-end). */}
-      <AtelierScreen persistence={persistence} />
-      {/* M_V11.TUTORIAL (#77f) — guided overlay; renders only when
-          game.mode === 'tutorial' (the component guards internally). */}
-      <TutorialOverlay game={game} />
-      {/* M_V11.CAMPAIGN (#77g) — chapter overlay; renders only when
-          game.mode === 'campaign'. Reads game.campaignChapter to
-          pick which chapter's objective queue to drive. */}
-      <CampaignOverlay game={game} />
-      {/* M_V11.WAVE-DEFENSE (#77h) — wave-progress pill; renders only
-          when game.mode === 'wave-defense'. */}
-      <WaveDefenseOverlay game={game} />
-      <KeyboardShortcuts game={game} />
-      <CriticalWarning game={game} />
-      <WeatherIndicator game={game} />
-      <ScoreBar game={game} />
-      {/* M_POLISH2.MODES.39 — per-mode win-condition reminder pill,
-            top-centre. Hidden when the game is over (GameOverModal
-            takes over the messaging). */}
-      <WinConditionPill game={game} />
-      {/* M_POLISH2.MODES.40 — frontier-raid only: raid-pressure pill. */}
-      <RaidPressurePill game={game} />
-      {/* M_POLISH2.MODES.41 — long-reign only: match-age chip. */}
-      <MatchAgePill game={game} />
-      {/* M_V6.CARRY.HUD-N-BANNERS — 3+ player faction strip (4X / FFA).
-          Hidden on legacy 2-faction matches; appears top-center when
-          game.factions has 3+ non-barbarian slots. */}
-      <FactionChips game={game} />
-      {/* M_V7.DIPLO.UI — non-aggression-pact resolution pills + tribute
-          demand banner. Both poll the diplomacy substrate; hidden when
-          nothing pending. */}
-      <NonAggressionPactPill game={game} />
-      <TributeDemandBanner game={game} />
-      {/* M_POLISH2.MODES.42 — strata-wars only: zone-control % chip. */}
-      <ZoneControlPill game={game} />
-      {/* M_POLISH2.MODES.42b — strata-wars only: tile-flip red-pulse. */}
-      <ZoneFlipPulse game={game} />
-      {/* M_POLISH2.MODES.44b — coexistence only: screenshot the realm. */}
-      <ScreenshotButton game={game} />
-      <IdleUnitIndicator game={game} />
-      <BuildQueueStrip game={game} />
-      <AchievementWatcher game={game} />
-      <PersistAchievements game={game} persistence={persistence} />
-      <ZoneLegend />
-      {/* M_V8.TUTORIAL.N-PLAYER-MODE — pass faction count so the overlay
-          appends the N-player slide when 3+ factions are in the match. */}
-      <OnboardingOverlay persistence={persistence} factionCount={game.factions.length} />
-      <GameOverModal game={game} persistence={persistence} />
-      {/* M_V11.PURGE — ScoringScreen was 4X-only (age-of-strata
-          named-victory panel). RTS modes use GameOverModal. */}
-      {/* M_AUDIT2.UX.12 — single hidden aria-live region; the bus
-          (src/hud/aria-live-bus.ts) lets any sim event announce
-          accessibly without lifting state. */}
-      <AriaLiveRegion />
-      {/* M_HUD.NOTIF.1 — Aethelgard toast bus. Mounted once at the
-          App root; any code can dispatch `aethelgard:toast` to surface
-          a tap-to-focus toast in the top-center stack. */}
-      <Toasts />
-      {/* M_EXPANSION.U.114 — visible captions band for deaf accessibility.
-          Renders nothing when captions are off OR when no live captions
-          are queued, so the overlay is zero-cost for hearing players. */}
-      <CaptionsOverlay />
     </div>
   );
 }

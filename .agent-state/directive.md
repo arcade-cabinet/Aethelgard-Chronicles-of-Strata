@@ -100,10 +100,35 @@ Order leaf-first so later moves import the new barrel paths.
       Segmented into the existing primitives/ package; barrel
       extended; 13 importers rewritten; theme import → ../theme.
       1251 tests green.
-- [ ] M_V13.DECOMP.HUD-PILLS — `src/hud/pills/`: ScoreBar,
-      FactionChips, WinConditionPill, MatchAgePill, RaidPressurePill,
-      ZoneControlPill, NonAggressionPactPill, MobileSpeedPausePill,
-      ZoneFlipPulse, WeatherIndicator. Barrel.
+- [x] M_V13.DECOMP.HUD-PILLS — `src/hud/pills/` (10 status pills) +
+      barrel; internal imports rewritten one level deeper; importers
+      → @/hud/pills. 1251 tests green.
+
+### §A1b — App.tsx decomposition (776 lines → screens/ + hooks)
+
+User direction 2026-05-28: "no reason App.tsx should be so large.
+That's why we need pieces like screens / components." App.tsx is
+776 lines = GameSession (~350, the ~30-component HUD-mount wall +
+window-event wiring) + App (~300, title/new-game/settings shell +
+URL-param + dev-window hooks).
+
+- [ ] M_V13.DECOMP.APP-HUDLAYER — extract GameSession's HUD-mount
+      JSX (the ~30 <Pill/Modal/Overlay/System> mounts) into
+      `src/hud/HudLayer.tsx` (single `<HudLayer game={...}
+      onOpenSettings={...} />`). GameSession shrinks to canvas +
+      HudLayer + the build-context state it owns.
+- [ ] M_V13.DECOMP.APP-EVENTS — extract GameSession's window-event
+      wiring useEffect (trigger-build / open-build-menu /
+      focus-palace) into a `useGameWindowEvents(game)` hook in
+      `src/hud/hooks/`.
+- [ ] M_V13.DECOMP.APP-SCREENS — extract the App-level phase shell
+      (title / new-game / settings / resumed / config) into
+      `src/screens/` components so App.tsx is a thin router. Verify
+      no hooks-ordering regression (the v0.12 bug class) — all hooks
+      stay above the early returns.
+- [ ] M_V13.DECOMP.APP-URLPARAMS — move the ?nplayer / ?seed / ?mode
+      URL-param parsing + dev-window (__game) hooks into
+      `src/game/dev-harness.ts` (already partly headless).
 - [ ] M_V13.DECOMP.HUD-SETUP — `src/hud/setup/`: SeedField,
       MapPreview, PresetControls, OpponentPicker, FactionColorPicker,
       new-game-options.ts. Barrel.
