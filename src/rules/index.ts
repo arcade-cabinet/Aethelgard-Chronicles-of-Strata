@@ -30,6 +30,7 @@ export {
 } from './building-profiles';
 export { applyArmor, armorMultiplier } from './damage';
 export type { Discovery } from './discoveries';
+export type { DiscoveryChain } from '@/config/progression';
 export { depthOf, scaledCostFor, scaleForDepth } from './discovery-cost';
 export { DISCOVERIES, discoveryById } from './discovery-registry';
 export {

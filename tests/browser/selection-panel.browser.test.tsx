@@ -4,7 +4,7 @@ import { Selectable } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import { startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
-import { SelectionPanel } from '@/hud/SelectionPanel';
+import { SelectionPanel } from '@/hud/selection';
 
 describe('SelectionPanel', () => {
   it('renders nothing when no entity is selected', () => {

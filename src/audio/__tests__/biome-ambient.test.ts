@@ -2,8 +2,8 @@
  * M_FUN.AUDIO.BIOME — pin every biome maps to a registered asset id.
  */
 import { describe, expect, it } from 'vitest';
-import { ASSET_METADATA } from '@/config/asset-metadata';
-import { ALL_BIOMES } from '@/config/mapgen';
+import { ASSET_METADATA } from '@/config/assets';
+import { ALL_BIOMES } from '@/config/world';
 import { ambientForBiome, BIOME_AMBIENT } from '../biome-ambient';
 
 describe('biome-ambient (M_FUN.AUDIO.BIOME)', () => {

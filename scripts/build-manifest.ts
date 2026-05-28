@@ -2,7 +2,9 @@
  * scripts/build-manifest.ts
  *
  * Walk the actual files in public/assets/ and emit
- * src/config/asset-metadata.json. The filesystem IS the source of
+ * src/config/assets/asset-metadata.json (relocated into the assets/
+ * config bundle in v0.13 — MANIFEST_OUT below is the authority). The
+ * filesystem IS the source of
  * truth — no asset-map indirection, no ingest pipeline, no
  * references/ → public/ copy step. To add an asset: drop the .glb /
  * .wav / .ogg into the right directory under public/assets/, re-run
@@ -27,7 +29,7 @@ import { NodeIO } from '@gltf-transform/core';
 
 const REPO = process.cwd();
 const ASSETS_DIR = join(REPO, 'public/assets');
-const MANIFEST_OUT = join(REPO, 'src/config/asset-metadata.json');
+const MANIFEST_OUT = join(REPO, 'src/config/assets/asset-metadata.json');
 
 const io = new NodeIO();
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { Building, FactionTrait, HexPosition, Selectable } from '@/ecs/components';
 import { startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
-import { resolveBarracksPos } from '@/world/RallyMarker';
+import { resolveBarracksPos } from '@/world/board';
 
 /**
  * M_EXPANSION.U.120 — rally preview resolver. Pins:

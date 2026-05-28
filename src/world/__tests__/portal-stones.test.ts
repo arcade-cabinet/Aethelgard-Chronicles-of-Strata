@@ -20,7 +20,7 @@ import {
   PORTAL_STONE_COOLDOWN_SECONDS,
   placePortalStones,
   refreshPortalStoneCooldown,
-} from '@/world/portal-stones';
+} from '@/world/board';
 
 describe('findPortalStoneCandidates', () => {
   it('returns null on a near-empty board', () => {

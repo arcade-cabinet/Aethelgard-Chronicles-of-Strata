@@ -21,7 +21,7 @@
  * Determinism: every roll uses `game.eventRng`. Pure mutation of
  * the existing tile records; no entity work.
  */
-import { biomeRule, QUAKE_TUNING } from '@/config/mapgen';
+import { biomeRule, QUAKE_TUNING } from '@/config/world';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey } from '@/core/hex';
 import type { GameState } from '@/game/game-state';

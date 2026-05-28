@@ -9,7 +9,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { MultiSelectActions } from '@/hud/MultiSelectActions';
+import { MultiSelectActions } from '@/hud/selection';
 import { startGame } from '@/game/game-state';
 
 describe('MultiSelectActions (M_GAME.STACK.2b)', () => {

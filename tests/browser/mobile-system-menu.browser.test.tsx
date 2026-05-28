@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { MobileSystemMenu } from '@/hud/MobileSystemMenu';
+import { MobileSystemMenu } from '@/hud/system';
 
 /**
  * M_POLISH2.MOBILE.15 — top-left hamburger that collapses Resign

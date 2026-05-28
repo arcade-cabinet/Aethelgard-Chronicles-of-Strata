@@ -10,7 +10,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { IdleUnitIndicator } from '@/hud/IdleUnitIndicator';
+import { IdleUnitIndicator } from '@/hud/selection';
 import { startGame } from '@/game/game-state';
 
 describe('IdleUnitIndicator (M_HUD.SHELL.16c)', () => {

@@ -25,7 +25,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { getHexKey } from '@/core/hex';
 import type { GameState } from '@/game/game-state';
-import { VolcanoLayer } from '@/world/VolcanoLayer';
+import { VolcanoLayer } from '@/world/effects';
 
 function makeStubGame(): GameState {
   const lavaTiles = new Map<string, number>();

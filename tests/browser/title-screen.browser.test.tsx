@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { TitleScreen } from '@/hud/TitleScreen';
+import { TitleScreen } from '@/hud/overlays';
 import { createPersistence } from '@/persistence/persistence';
 
 const persistence = createPersistence();

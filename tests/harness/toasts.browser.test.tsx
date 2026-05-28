@@ -14,7 +14,7 @@
  */
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { Toasts } from '@/hud/Toasts';
+import { Toasts } from '@/hud/overlays';
 
 function emit(detail: Record<string, unknown>) {
   window.dispatchEvent(new CustomEvent('aethelgard:toast', { detail }));

@@ -1,5 +1,5 @@
 import type { World } from 'koota';
-import { DISCOVERIES_CONFIG, type DiscoveryEffect } from '@/config/discoveries';
+import { DISCOVERIES_CONFIG, type DiscoveryEffect } from '@/config/progression';
 import { Building, Combatant, Harvester, Health, Unit } from '@/ecs/components';
 import type { Discovery, DiscoveryApplyCtx } from './discoveries';
 
@@ -164,6 +164,7 @@ export const DISCOVERIES: ReadonlyArray<Discovery> = DISCOVERIES_CONFIG.discover
   (config) => ({
     id: config.id,
     name: config.name,
+    chain: config.chain,
     description: config.description,
     cost: config.cost,
     prereqs: config.prereqs,

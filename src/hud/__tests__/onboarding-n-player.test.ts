@@ -10,7 +10,7 @@
  * OnboardingOverlay.tsx and asserting on the exported values directly.
  */
 import { describe, expect, it } from 'vitest';
-import { N_PLAYER_STEP, STEPS } from '@/hud/OnboardingOverlay';
+import { N_PLAYER_STEP, STEPS } from '@/hud/overlays';
 
 describe('M_V8.TUTORIAL.N-PLAYER-MODE — N-player slide logic', () => {
   it('base tutorial has 9 steps for 2-faction matches', () => {

@@ -8,9 +8,9 @@
  *   4. Chip color + name come from the registry.
  */
 import { describe, expect, it } from 'vitest';
-import { buildDefaultFactions } from '@/config/factions';
+import { buildDefaultFactions } from '@/config/ai';
 import { startGame } from '@/game/game-state';
-import { describeFactionChips } from '@/hud/FactionChips';
+import { describeFactionChips } from '@/hud/pills';
 
 describe('describeFactionChips', () => {
   it('legacy 2-faction game returns 2 entries (player + enemy)', () => {

@@ -11,7 +11,7 @@
  * primitives below are the substrate for both the demand-issuance
  * detector AND the per-tick cession mutation.
  */
-import type { FactionId } from '@/config/factions';
+import type { FactionId } from '@/config/ai';
 import { type DiplomacyState, relationKey, setRelation, tributaryDominant } from './diplomacy';
 import { addResource, type GameEconomy } from './economy';
 

@@ -20,11 +20,11 @@
  *   4. A Discovery is granted to the global research pool.
  */
 import { describe, expect, it } from 'vitest';
-import { buildDefaultFactions } from '@/config/factions';
+import { buildDefaultFactions } from '@/config/ai';
 import { Health } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import { runEconomyTick, startGame } from '@/game/game-state';
-import { spawnBarbarianCamp } from '@/world/barbarian-camps';
+import { spawnBarbarianCamp } from '@/world/board';
 
 describe('M_V6.CARRY.E2E-CAMP-CLEAR — real-Chromium acceptance', () => {
   it('4-faction setup → camp clear credits reward + flips tile + grants Discovery', () => {

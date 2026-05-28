@@ -12,7 +12,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { generateBoard } from '@/core/board';
-import { tickPortalStonesTrigger } from '@/world/portal-stones';
+import { tickPortalStonesTrigger } from '@/world/board';
 
 describe('tickPortalStonesTrigger', () => {
   it('returns null when clock <= 300s (5-min warmup)', () => {

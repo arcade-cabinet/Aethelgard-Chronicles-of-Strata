@@ -1,9 +1,9 @@
-import { RESOURCES } from '@/config/resources';
+import { RESOURCES } from '@/config/economy';
 import type { BoardData } from '@/core/board';
 import { getHexKey, hexDistance } from '@/core/hex';
 import type { Rng } from '@/core/rng';
 import type { ResourceType } from '@/ecs/components';
-import type { ResourceNodePlan } from '@/world/resource-spawn';
+import type { ResourceNodePlan } from '@/world/board';
 import { RESOURCE_PROFILES } from './resource-profiles';
 
 /**

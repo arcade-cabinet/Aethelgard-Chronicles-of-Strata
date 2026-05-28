@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { MatchAgePill } from '@/hud/MatchAgePill';
+import { MatchAgePill } from '@/hud/pills';
 
 /**
  * M_POLISH2.MODES.41 — long-reign match-age chip.

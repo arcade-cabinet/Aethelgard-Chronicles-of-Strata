@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { createCharacter } from '@/entities/character-factory';
 import { startGame } from '@/game/game-state';
-import { Units } from '@/world/Units';
+import { Units } from '@/world/board';
 
 describe('Units rendering', () => {
   it('renders a skinned mesh for every spawned unit', async () => {

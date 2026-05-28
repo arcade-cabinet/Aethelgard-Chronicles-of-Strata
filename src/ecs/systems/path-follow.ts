@@ -11,7 +11,7 @@ import { HexPosition, Movement, PathQueue, Transform } from '@/ecs/components';
 // M_MICRO.2.2 — local parseStep replaced by shared parseHexLevelKey.
 const parseStep = parseHexLevelKey;
 
-import { biomeRule } from '@/config/mapgen';
+import { biomeRule } from '@/config/world';
 /**
  * Advance every entity with a PathQueue toward its next tile. When an entity
  * reaches the next step it snaps to that tile, updates HexPosition (including

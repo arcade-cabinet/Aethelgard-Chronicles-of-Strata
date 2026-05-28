@@ -28,7 +28,7 @@
  * Burning tiles are iterated in sorted key order so the same seed
  * yields the same burn pattern.
  */
-import { WILDFIRE_TUNING } from '@/config/mapgen';
+import { WILDFIRE_TUNING } from '@/config/world';
 import type { Tile } from '@/core/board';
 import { getHexKey, hexNeighbors } from '@/core/hex';
 import { Health, HexPosition } from '@/ecs/components';

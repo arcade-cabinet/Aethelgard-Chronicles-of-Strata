@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { GameOverModal } from '@/hud/GameOverModal';
+import { GameOverModal } from '@/hud/modals';
 
 describe('GameOverModal accessibility', () => {
   it('the win modal renders as an accessible dialog', async () => {

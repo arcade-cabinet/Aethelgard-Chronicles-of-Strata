@@ -2,14 +2,20 @@ import { expect, test } from '@playwright/test';
 import { enterGame } from './enter-game';
 
 /**
- * M_POLISH2.E2E.58 — save / load round-trip e2e.
+ * M_POLISH2.E2E.58 — save / load round-trip e2e via the Continue button.
+ *
+ * Companion to save-load-n-player.spec.ts (which round-trips via
+ * window.__game_save/__game_load directly). This one exercises the
+ * REAL user flow: play a bit → autosave commits → reload page →
+ * title-screen Continue button enables → click Continue → restored
+ * game shows the same economy state.
+ *
+ * Originally skipped because the title screen's hasSave flag updated
+ * only on cold mount (cached). M_POLISH3.S.3 added the
+ * `aethelgard:save-committed` window event + a `__refreshSaveList()`
+ * test hook, so the test no longer depends on cache-bust timing.
  */
-test.skip('save / load preserves wood total + supply + mode', async ({ page }) => {
-  // SKIPPED — Continue button enabled-after-save depends on the
-  // persistence.list() refresh after auto-save fires, which
-  // currently completes async + the title screen reads the cached
-  // list. Re-enable when persistence exposes a save-notification
-  // stream OR the test forces the refresh. Tracked as M_POLISH2.E2E.58a.
+test('save / load preserves wood total + supply + mode', async ({ page }) => {
   await enterGame(page, 'ancient-silver-forest');
   const skip = page.locator('button', { hasText: 'Skip' });
   if (await skip.count()) await skip.first().click();
@@ -36,15 +42,33 @@ test.skip('save / load preserves wood total + supply + mode', async ({ page }) =
     };
   });
   expect(before.wood).toBeGreaterThan(0);
-  await page.evaluate(() => {
-    const w = window as unknown as { __game?: { autoSave?: { lastSaveMs?: number } } };
-    if (w.__game?.autoSave) w.__game.autoSave.lastSaveMs = -Infinity;
+  // Force an immediate autosave: call onSave() to persist, THEN nudge
+  // the App to re-detect the save. Note onSave() alone does NOT dispatch
+  // 'aethelgard:save-committed' — that event only fires from tickAutoSave
+  // (the timer path). So we call onSave() to write the save, then invoke
+  // the App's __refreshSaveList() test hook (App.tsx M_POLISH3.S.3) to
+  // re-run persistence.list() → setHasSave(true), which is what the
+  // 'aethelgard:save-committed' listener would have done.
+  await page.evaluate(async () => {
+    const w = window as unknown as {
+      __game?: { autoSave?: { onSave: () => Promise<void> | void } };
+      __refreshSaveList?: () => void;
+    };
+    if (w.__game?.autoSave) await w.__game.autoSave.onSave();
+    w.__refreshSaveList?.();
   });
+  // Wait for the refresh to round-trip (persistence.list resolves async;
+  // the listener then setHasSave's true → Continue enables).
   await page.waitForTimeout(500);
   await page.goto('/');
   await expect(page.locator('#menu-continue')).toBeEnabled({ timeout: 8000 });
   await page.locator('#menu-continue').click();
-  await page.waitForTimeout(1500);
+  // Wait for the atomic dev-harness ready flag (M_V13.HARNESS.ATOMIC-
+  // READY — published last from the committed render, so it implies
+  // __game + every hook are present and self-consistent).
+  await page.waitForFunction(() => (window as { __game_ready?: boolean }).__game_ready === true, {
+    timeout: 60_000,
+  });
   const after: Snap = await page.evaluate(() => {
     const w = window as unknown as {
       __game?: {

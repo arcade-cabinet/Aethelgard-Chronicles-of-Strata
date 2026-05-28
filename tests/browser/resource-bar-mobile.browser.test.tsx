@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { ResourceBar } from '@/hud/ResourceBar';
+import { ResourceBar } from '@/hud/system';
 
 /**
  * M_POLISH2.MOBILE.2 — ResourceBar portrait overflow fix.

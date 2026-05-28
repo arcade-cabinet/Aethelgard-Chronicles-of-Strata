@@ -4,9 +4,10 @@ import { render } from 'vitest-browser-react';
 import { Building, FactionTrait, Selectable } from '@/ecs/components';
 import { startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
-import { GameOverModal } from '@/hud/GameOverModal';
-import { NewGameModal } from '@/hud/NewGameModal';
-import { SelectionPanel } from '@/hud/SelectionPanel';
+import { GameOverModal, NewGameModal } from '@/hud/modals';
+import { CaptionsOverlay } from '@/hud/overlays';
+import { ScoreBar } from '@/hud/pills';
+import { SelectionPanel } from '@/hud/selection';
 
 /**
  * M_EXPANSION.T.138 — axe-core accessibility scan of every modal.
@@ -136,6 +137,31 @@ describe('M_EXPANSION.T.138 — axe-core a11y scan of modals', () => {
     const panel = document.getElementById('selection-panel');
     if (!panel) throw new Error('SelectionPanel not open');
     const results = await scan(panel);
+    if (results.violations.length > 0) {
+      throw new Error(`axe violations:\n${formatViolations(results.violations)}`);
+    }
+    expect(results.violations.length).toBe(0);
+  });
+});
+
+// M_V13.HUD.AXE-WIDEN — extend the sweep past modals to the always-on
+// HUD surfaces (pills + overlays). Review Minor #7: the a11y gate only
+// covered modals, so a label/role regression on a status pill or an
+// overlay band would slip through.
+describe('M_V13.HUD.AXE-WIDEN — a11y scan of pills + overlays', () => {
+  it('ScoreBar has zero axe violations', async () => {
+    const game = startGame('axe-scorebar');
+    const { container } = await render(<ScoreBar game={game} />);
+    const results = await scan(container);
+    if (results.violations.length > 0) {
+      throw new Error(`axe violations:\n${formatViolations(results.violations)}`);
+    }
+    expect(results.violations.length).toBe(0);
+  });
+
+  it('CaptionsOverlay has zero axe violations', async () => {
+    const { container } = await render(<CaptionsOverlay />);
+    const results = await scan(container);
     if (results.violations.length > 0) {
       throw new Error(`axe violations:\n${formatViolations(results.violations)}`);
     }

@@ -24,20 +24,48 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
     // 1. Boot 4-player AI-vs-AI.
     await page.goto('/?ai-vs-ai=1&nplayer=4&seed=save-load-n42&mode=border-clash');
 
-    // 2. Wait for game hooks.
-    await page.waitForFunction(
-      () =>
-        typeof (window as { __game_advanceFrames?: unknown; __game_save?: unknown })
-          .__game_advanceFrames === 'function' &&
-        typeof (window as { __game_save?: unknown }).__game_save === 'function',
-      { timeout: 30_000 },
-    );
+    // 2. Wait for the harness. Gate on the SINGLE atomic readiness flag
+    // (`__game_ready`, published last by installDevHarness after `__game`
+    // + every hook are in place on the committed document) — never on an
+    // individual hook. Gating on a hook let the suite-load race resolve
+    // against a half-installed / non-committed document while the
+    // follow-up evaluate read `__game` as falsy. See M_V13.HARNESS.ATOMIC-READY.
+    await page.waitForFunction(() => (window as { __game_ready?: boolean }).__game_ready === true, {
+      timeout: 60_000,
+    });
 
-    // 3. Advance 5 sim-min (18 000 frames).
+    // M_V13.HARNESS.NO-RELOAD-UNDER-E2E — stamp a reload sentinel on the
+    // live document. A full page reload (the real root cause of the
+    // suite-load flake: the static-assets `public/` watcher broadcasting
+    // `page reload` mid-test) wipes `window`, so this nonce vanishing is
+    // a deterministic, self-describing signal — far better than the
+    // downstream "__game not ready" that the reload otherwise produced.
+    // With VITE_E2E=1 the watcher is disabled, so this must always hold.
+    const RELOAD_SENTINEL = `nplayer-${Date.now()}`;
+    await page.evaluate((s: string) => {
+      (window as { __reloadSentinel?: string }).__reloadSentinel = s;
+    }, RELOAD_SENTINEL);
+
+    // 3. Advance 5 sim-min (18 000 frames). This crosses AUTO_SAVE_INTERVAL
+    // (300 game-sec = 18 000 ticks), firing persistence.save once.
     await page.evaluate(() => {
       (window as { __game_advanceFrames?: (n: number) => void }).__game_advanceFrames?.(18_000);
     });
     await page.waitForTimeout(500);
+
+    // Fail loudly + specifically if the page reloaded out from under the
+    // test (sentinel gone) rather than letting it surface as the opaque
+    // "__game not ready" further down.
+    const sentinelSurvived = await page.evaluate(
+      (s: string) => (window as { __reloadSentinel?: string }).__reloadSentinel === s,
+      RELOAD_SENTINEL,
+    );
+    expect(
+      sentinelSurvived,
+      'Page reloaded mid-test (reload sentinel lost) — the dev server broadcast a full ' +
+        'reload during the deterministic test window. Check VITE_E2E=1 is set on the ' +
+        'Playwright webServer (disables the static-assets public/ watcher).',
+    ).toBe(true);
 
     // 4. Capture pre-save state.
     type PreSave = {
@@ -94,15 +122,30 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
 
     // 6. Reload the page and inject the snapshot.
     await page.goto('/?ai-vs-ai=1&nplayer=4&seed=save-load-n42&mode=border-clash');
-    await page.waitForFunction(
-      () => typeof (window as { __game_load?: unknown }).__game_load === 'function',
-      { timeout: 30_000 },
-    );
+    // Same atomic gate post-reload — `__game_load` is installed in the
+    // same committed pass as `__game_ready`, so the flag implies the
+    // load hook is present too.
+    await page.waitForFunction(() => (window as { __game_ready?: boolean }).__game_ready === true, {
+      timeout: 60_000,
+    });
 
-    await page.evaluate((snapJson: string) => {
-      const snap = JSON.parse(snapJson);
-      (window as { __game_load?: (s: unknown) => void }).__game_load?.(snap);
-    }, snapshotJson);
+    const RELOAD_SENTINEL_2 = `nplayer-post-${Date.now()}`;
+    await page.evaluate(
+      ([snapJson, sentinel]: [string, string]) => {
+        (window as { __reloadSentinel?: string }).__reloadSentinel = sentinel;
+        const snap = JSON.parse(snapJson);
+        // CodeRabbit #91 (Major) — require the restore hook, don't
+        // optional-chain it. With a deterministic seed the post-restore
+        // assertions could still pass if __game_load were silently
+        // absent (no-op restore → identical state), masking a broken
+        // harness. Throw loudly if the hook is missing.
+        const load = (window as { __game_load?: (s: unknown) => void }).__game_load;
+        if (typeof load !== 'function')
+          throw new Error('__game_load hook missing — restore cannot be verified');
+        load(snap);
+      },
+      [snapshotJson, RELOAD_SENTINEL_2] as [string, string],
+    );
 
     await page.waitForTimeout(300);
 
@@ -111,6 +154,16 @@ test.describe('M_V9.E2E.SAVE-LOAD-N-PLAYER', () => {
       (window as { __game_advanceFrames?: (n: number) => void }).__game_advanceFrames?.(18_000);
     });
     await page.waitForTimeout(500);
+
+    // Reload sentinel guard for the post-restore window too.
+    const sentinel2Survived = await page.evaluate(
+      (s: string) => (window as { __reloadSentinel?: string }).__reloadSentinel === s,
+      RELOAD_SENTINEL_2,
+    );
+    expect(
+      sentinel2Survived,
+      'Page reloaded during the post-restore window (sentinel lost). See VITE_E2E note above.',
+    ).toBe(true);
 
     // 8. Assert post-restore state.
     type PostRestore = {

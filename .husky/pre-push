@@ -40,6 +40,13 @@ pnpm test:browser || {
 }
 
 echo "[pre-push] running pnpm test:e2e..."
-PW_REUSE_SERVER=1 pnpm test:e2e
+# M_V13.PROC.E2E-RETRY — mirror the test:browser retry pattern. The
+# save-load-n-player + AI-vs-AI specs occasionally hit SuspenseProbe
+# stalls (43s+ asset suspend on cold Vite cache); a clean retry succeeds.
+# Both passes failing = a genuine regression.
+PW_REUSE_SERVER=1 pnpm test:e2e || {
+  echo "[pre-push] test:e2e flaked — retrying once..."
+  PW_REUSE_SERVER=1 pnpm test:e2e
+}
 
 echo "[pre-push] all gates green — push proceeding."

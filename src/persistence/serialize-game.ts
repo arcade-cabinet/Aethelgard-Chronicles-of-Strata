@@ -9,7 +9,7 @@
 
 import { z } from 'zod';
 import { ECONOMY } from '@/config/economy';
-import type { FactionConfig } from '@/config/factions';
+import type { FactionConfig } from '@/config/ai';
 import { type Faction, RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
 import type { GameClock } from '@/game/clock';
 import type { GameEconomy } from '@/game/economy';

@@ -18,7 +18,7 @@
  */
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
-import type { DiscoveryEffect } from '@/config/discoveries';
+import type { DiscoveryEffect } from '@/config/progression';
 import { createEconomy, type GameEconomy } from '@/game/economy';
 import type { DiscoveryApplyCtx } from '@/rules/discoveries';
 import { applyEffect } from '@/rules/discovery-registry';

@@ -13,7 +13,7 @@
 import { describe, expect, it } from 'vitest';
 import { AiPlayer } from '@/ai/ai-player';
 import { DiplomaticEvaluator } from '@/ai/evaluators/diplomatic';
-import { buildDefaultFactions } from '@/config/factions';
+import { buildDefaultFactions } from '@/config/ai';
 import { setRelation } from '@/game/diplomacy';
 import { startGame } from '@/game/game-state';
 import { createZoneState, type ZoneState } from '@/game/zone';

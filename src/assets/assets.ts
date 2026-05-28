@@ -1,4 +1,4 @@
-import { ASSET_METADATA } from '../config/asset-metadata';
+import { ASSET_METADATA } from '../config/assets';
 import type { StaticAssetPath } from '../static-assets';
 import { staticAssets } from '../static-assets';
 import type { AssetAccessor } from './manifest';

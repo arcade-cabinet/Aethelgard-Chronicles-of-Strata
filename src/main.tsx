@@ -19,9 +19,9 @@ import '@fontsource/inter/900.css';
 // Tailwind v4 + Aethelgard design tokens. After @fontsource imports so
 // font tokens reference the @font-face rules already registered.
 import './styles.css';
-import { installErrorOverlayHooks } from '@/hud/ErrorOverlay';
+import { installErrorOverlayHooks } from '@/hud/overlays';
 import { reportError } from '@/lib/telemetry';
-import { validateWorldFonts } from '@/world/world-text-font';
+import { validateWorldFonts } from '@/world/effects';
 import { App } from './App';
 
 // M_POLISH3.SCENE.2 — install the global error-capture hooks BEFORE

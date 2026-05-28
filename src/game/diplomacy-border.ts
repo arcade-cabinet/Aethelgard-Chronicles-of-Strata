@@ -18,7 +18,7 @@
  * follow-up commit if not landed within the same work-unit.
  */
 
-import type { FactionId } from '@/config/factions';
+import type { FactionId } from '@/config/ai';
 import { getHexKey, hexNeighbors } from '@/core/hex';
 import type { ZoneState } from '@/game/zone';
 import { type DiplomacyState, getRelation, setRelation } from './diplomacy';

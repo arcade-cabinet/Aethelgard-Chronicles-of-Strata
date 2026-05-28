@@ -9,7 +9,7 @@
  * v0.6 substrate ships the helper + cooldown state. The Radix popover
  * UI that wires the helper to a chip-click is a follow-up polish item.
  */
-import type { FactionId } from '@/config/factions';
+import type { FactionId } from '@/config/ai';
 import type { Faction } from '@/ecs/components';
 import { type DiplomacyState, getRelation, relationKey } from './diplomacy';
 import { addResource, type GameEconomy, spend } from './economy';

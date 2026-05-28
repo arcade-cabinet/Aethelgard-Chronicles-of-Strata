@@ -22,7 +22,7 @@
 import { page } from '@vitest/browser/context';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { MatchSummaryCard } from '@/hud/MatchSummaryCard';
+import { MatchSummaryCard } from '@/hud/modals';
 
 describe('match summary card harness', () => {
   it('renders nickname + highlights', async () => {

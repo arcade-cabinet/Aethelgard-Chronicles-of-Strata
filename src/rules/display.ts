@@ -9,9 +9,9 @@
  * for the same reason — they're derived from the registry, not a separate
  * table.
  */
-import { RESOURCES } from '@/config/resources';
+import { RESOURCES } from '@/config/economy';
 import { type BuildingType, RESOURCE_TYPES, type ResourceType } from '@/ecs/components';
-import { HUD_THEME } from '@/hud/hud-theme';
+import { HUD_THEME } from '@/hud/theme';
 import { BUILDING_PROFILES, type DisplaySlot } from './building-profiles';
 
 /** Alias kept for back-compat with existing imports. */

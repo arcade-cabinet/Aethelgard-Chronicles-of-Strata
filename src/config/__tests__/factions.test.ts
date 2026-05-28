@@ -22,7 +22,7 @@ import {
   findFaction,
   getFaction,
   LEGACY_FACTIONS,
-} from '@/config/factions';
+} from '@/config/ai';
 import { startGame } from '@/game/game-state';
 
 describe('factions registry — substrate', () => {

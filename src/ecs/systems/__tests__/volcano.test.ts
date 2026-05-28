@@ -12,7 +12,7 @@
  *  6. volcanoSystem is a no-op when no volcano is placed.
  */
 import { describe, expect, it } from 'vitest';
-import { VOLCANO_TUNING } from '@/config/mapgen';
+import { VOLCANO_TUNING } from '@/config/world';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey } from '@/core/hex';
 import { createVolcanoState, placeVolcanoLandmark, volcanoSystem } from '@/ecs/systems/volcano';

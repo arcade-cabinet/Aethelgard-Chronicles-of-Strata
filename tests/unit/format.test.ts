@@ -3,7 +3,7 @@
  * formatTime regression coverage.
  */
 import { describe, expect, it } from 'vitest';
-import { costLabel, formatInt, formatTime } from '@/hud/format';
+import { costLabel, formatInt, formatTime } from '@/hud/theme';
 
 describe('costLabel', () => {
   // M_AUDIT2.UX.25 — costLabel migrated from single-letter abbrevs

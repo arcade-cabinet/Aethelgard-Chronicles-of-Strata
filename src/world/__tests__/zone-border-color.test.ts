@@ -8,7 +8,7 @@
  * tests; this pin asserts the COLOR-resolution logic.
  */
 import { describe, expect, it } from 'vitest';
-import { findFaction, LEGACY_FACTIONS } from '@/config/factions';
+import { findFaction, LEGACY_FACTIONS } from '@/config/ai';
 import { startGame } from '@/game/game-state';
 
 describe('M_PIVOT.RENDER.COLOR-OUTLINE — registry color flow', () => {

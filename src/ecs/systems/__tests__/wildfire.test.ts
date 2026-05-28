@@ -15,7 +15,7 @@
  *     seed → same burn pattern.
  */
 import { describe, expect, it, vi } from 'vitest';
-import { WILDFIRE_TUNING } from '@/config/mapgen';
+import { WILDFIRE_TUNING } from '@/config/world';
 import type { Tile } from '@/core/board';
 import { getHexKey } from '@/core/hex';
 import { igniteWildfire, wildfireSystem } from '@/ecs/systems/wildfire';

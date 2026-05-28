@@ -15,7 +15,7 @@ import { Health } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import { runEconomyTick, startGame } from '@/game/game-state';
 import { createResearch, grantRandomDiscovery, type ResearchId } from '@/game/research';
-import { spawnBarbarianCamp } from '@/world/barbarian-camps';
+import { spawnBarbarianCamp } from '@/world/board';
 
 describe('grantRandomDiscovery', () => {
   it('returns null when the pool is empty', () => {

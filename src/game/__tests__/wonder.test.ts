@@ -9,7 +9,7 @@
  * save round-trip preserves all faction ids.
  */
 import { describe, expect, it } from 'vitest';
-import type { FactionId } from '@/config/factions';
+import type { FactionId } from '@/config/ai';
 import {
   Building,
   type BuildingType,

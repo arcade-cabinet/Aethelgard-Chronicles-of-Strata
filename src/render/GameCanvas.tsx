@@ -4,19 +4,19 @@ import { type Camera, PCFSoftShadowMap } from 'three';
 import { axialToWorld } from '@/core/hex';
 import { Building, type BuildingType, HexPosition } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { BuildingOutlineRing } from '@/world/BuildingOutlineRing';
-import { CombatText } from '@/world/CombatText';
-import { ContestedPulse } from '@/world/ContestedPulse';
-import { Crossings } from '@/world/Crossings';
-import { DeathDropLayer } from '@/world/DeathDropLayer';
-import { LootCacheLayer } from '@/world/LootCacheLayer';
-import { Decoration } from '@/world/Decoration';
-import { FactionBase } from '@/world/FactionBase';
-import { FootstepEmitter } from '@/world/FootstepEmitter';
-import { HexGridOverlay } from '@/world/HexGridOverlay';
-import { Mountains } from '@/world/Mountains';
-import { ParticleEmitter } from '@/world/ParticleEmitter';
-import { ProjectileLayer } from '@/world/ProjectileLayer';
+import { BuildingOutlineRing } from '@/world/board';
+import { CombatText } from '@/world/effects';
+import { ContestedPulse } from '@/world/effects';
+import { Crossings } from '@/world/terrain';
+import { DeathDropLayer } from '@/world/effects';
+import { LootCacheLayer } from '@/world/effects';
+import { Decoration } from '@/world/biomes';
+import { FactionBase } from '@/world/board';
+import { FootstepEmitter } from '@/world/effects';
+import { HexGridOverlay } from '@/world/terrain';
+import { Mountains } from '@/world/biomes';
+import { ParticleEmitter } from '@/world/effects';
+import { ProjectileLayer } from '@/world/board';
 import {
   bloodSplashConsumer,
   buildCompleteConsumer,
@@ -26,22 +26,22 @@ import {
   sawdustConsumer,
   snowConsumer,
   victoryConfettiConsumer,
-} from '@/world/particle-consumers';
-import { RallyMarker } from '@/world/RallyMarker';
-import { ResourceNodes } from '@/world/ResourceNodes';
-import { ResourceText } from '@/world/ResourceText';
-import { Roads } from '@/world/Roads';
-import { SelectionRing } from '@/world/SelectionRing';
-import { StackRender } from '@/world/StackRender';
-import { Terrain } from '@/world/Terrain';
-import { type BuildContext, TileInteraction } from '@/world/TileInteraction';
-import { TrackingRings, type TrackingRingsHandle } from '@/world/TrackingRings';
-import { UnitHexOutline } from '@/world/UnitHexOutline';
-import { Units } from '@/world/Units';
-import { VolcanoLayer } from '@/world/VolcanoLayer';
-import { Water } from '@/world/Water';
-import { WildfireLayer } from '@/world/WildfireLayer';
-import { ZoneBorder } from '@/world/ZoneBorder';
+} from '@/world/effects';
+import { RallyMarker } from '@/world/board';
+import { ResourceNodes } from '@/world/board';
+import { ResourceText } from '@/world/effects';
+import { Roads } from '@/world/terrain';
+import { SelectionRing } from '@/world/board';
+import { StackRender } from '@/world/board';
+import { Terrain } from '@/world/terrain';
+import { type BuildContext, TileInteraction } from '@/world/terrain';
+import { TrackingRings, type TrackingRingsHandle } from '@/world/board';
+import { UnitHexOutline } from '@/world/board';
+import { Units } from '@/world/board';
+import { VolcanoLayer } from '@/world/effects';
+import { Water } from '@/world/terrain';
+import { WildfireLayer } from '@/world/effects';
+import { ZoneBorder } from '@/world/board';
 import { CameraRig } from './CameraRig';
 import { DayNightCycle } from './DayNightCycle';
 import { QuakeShake } from './QuakeShake';

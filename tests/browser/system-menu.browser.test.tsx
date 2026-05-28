@@ -17,7 +17,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { SystemMenu } from '@/hud/SystemMenu';
+import { SystemMenu } from '@/hud/system';
 
 async function waitFor<T>(probe: () => T | null, timeoutMs = 2000): Promise<T> {
   const start = Date.now();

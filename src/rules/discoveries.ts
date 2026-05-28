@@ -1,4 +1,5 @@
 import type { World } from 'koota';
+import type { DiscoveryChain } from '@/config/progression';
 import type { ResourceCost, GameEconomy } from '@/game/economy';
 
 /**
@@ -71,6 +72,8 @@ export interface Discovery {
   id: string;
   /** Player-facing name. */
   name: string;
+  /** Upgrade chain (HUD grouping/filtering) — from the config `chain` field. */
+  chain: DiscoveryChain;
   /** One-line description of what the Discovery does in-game. */
   description: string;
   /** Resource cost — typically a science component. */

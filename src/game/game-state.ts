@@ -42,7 +42,7 @@ export const PROJECTILE_ID_REF = { current: 0 };
 // every difficulty-tuning knob in one tunable file.
 
 import { spawnIntervalFor } from '@/config/combat';
-import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/factions';
+import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/ai';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import type { Faction } from '@/ecs/components';
@@ -58,8 +58,8 @@ import {
   factionConfigForCamp,
   placeBarbarianCamps,
   spawnBarbarianCamp,
-} from '@/world/barbarian-camps';
-import { type ResourceNodePlan, spawnResourceNodes } from '@/world/resource-spawn';
+} from '@/world/board';
+import { type ResourceNodePlan, spawnResourceNodes } from '@/world/board';
 import type { AutoSave } from './auto-save';
 import { createClock, type GameClock } from './clock';
 import type { Difficulty } from './difficulty';
@@ -236,7 +236,7 @@ export interface GameState {
    * Optional; the CampaignOverlay defaults to 'first-strata' when
    * unset so a fresh campaign always starts with Chapter I.
    */
-  campaignChapter?: import('@/config/campaign-chapters').ChapterId;
+  campaignChapter?: import('@/config/narrative').ChapterId;
   /**
    * M_EXPANSION.F.80 — player faction palette tint. CSS hex string
    * or null = use SKINS default. Read by Units when picking the

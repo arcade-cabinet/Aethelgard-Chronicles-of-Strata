@@ -8,7 +8,7 @@ import { expect, test } from '@playwright/test';
  *
  * Runs in every project (desktop + mobile + tablet).
  */
-test.skip('settings persistence: colourblind + captions survive a reload', async ({ page }) => {
+test('settings persistence: colourblind + captions survive a reload', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('#title-heading')).toHaveText('Aethelgard');
 
@@ -25,6 +25,25 @@ test.skip('settings persistence: colourblind + captions survive a reload', async
   if (cbPressedBefore === 'false') await cb.click();
   const capPressedBefore = await cap.getAttribute('aria-pressed');
   if (capPressedBefore === 'false') await cap.click();
+
+  // Deterministic-fix (parallel-load flake): the click handler's
+  // persistence.setSetting is ASYNC (Capacitor Preferences). Wait for
+  // BOTH toggles to reflect aria-pressed='true' before reloading —
+  // that confirms the click handler ran + the async persist was
+  // dispatched. Reloading immediately after the click raced the write
+  // (lost ~1/12 under fullyParallel event-loop pressure).
+  await expect(cb).toHaveAttribute('aria-pressed', 'true');
+  await expect(cap).toHaveAttribute('aria-pressed', 'true');
+  // Belt-and-suspenders: poll until the persisted value is actually in
+  // storage, so the reload can't beat the async write. Capacitor
+  // Preferences (web) stores under the 'CapacitorStorage.' group prefix
+  // with the literal 'true'/'false' string (SettingsModal reads
+  // raw === 'true').
+  await expect
+    .poll(async () =>
+      page.evaluate(() => window.localStorage.getItem('CapacitorStorage.aethelgard.colorblind')),
+    )
+    .toBe('true');
 
   // Reload — values should rehydrate from Preferences.
   await page.reload();

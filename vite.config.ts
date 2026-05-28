@@ -13,6 +13,22 @@ const pkgVersion = (
   JSON.parse(readFileSync(path.resolve('package.json'), 'utf8')) as { version: string }
 ).version;
 
+// M_V13.HARNESS.NO-RELOAD-UNDER-E2E — the static-assets plugin watches
+// `public/` and rewrites `src/static-assets.ts` on any change, which Vite
+// cannot HMR-accept → it broadcasts a FULL `page reload` to every
+// connected client. Under `pnpm test:e2e` many specs share one dev
+// server; filesystem churn from parallel workers (screenshot writes,
+// asset access, the plugin re-stating `public/`) fires that watcher and
+// reloads a spec's page MID-TEST. The reloaded page re-suspends on asset
+// load for ~5s, during which installDevHarness (a committed effect) has
+// not run, so the next `page.evaluate` reads `window.__game` as falsy
+// and throws "__game not ready". This is the exact passes-in-isolation /
+// fails-~50%-under-suite-load signature. The generated `src/static-
+// assets.ts` is committed and current, so during e2e we skip the plugin
+// entirely: no watcher, no mid-test reload, fully deterministic. Set by
+// the Playwright webServer command (VITE_E2E=1).
+const IS_E2E = process.env.VITE_E2E === '1';
+
 export default defineConfig(({ mode }) => ({
   define: {
     __APP_VERSION__: JSON.stringify(pkgVersion),
@@ -50,11 +66,18 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     tailwindcss(),
     react(),
-    staticAssetsPlugin({
-      directory: 'public',
-      outputFile: 'src/static-assets.ts',
-      ignore: ['.DS_Store'],
-    }),
+    // Skipped under e2e — see M_V13.HARNESS.NO-RELOAD-UNDER-E2E above.
+    // The watcher's `public/` → `src/static-assets.ts` rewrite is the
+    // only thing that issues a full page reload to running test pages.
+    ...(IS_E2E
+      ? []
+      : [
+          staticAssetsPlugin({
+            directory: 'public',
+            outputFile: 'src/static-assets.ts',
+            ignore: ['.DS_Store'],
+          }),
+        ]),
     // M_FUN.FOUNDATION.BUNDLE-VIZ — rollup-plugin-visualizer.
     // Writes a treemap to dist/bundle-stats.html on every prod
     // build. Agent + user can see where bundle weight lives
@@ -92,6 +115,29 @@ export default defineConfig(({ mode }) => ({
       },
     },
   ],
+  // M_V13.HARNESS.NO-RELOAD-UNDER-E2E — under e2e the dev server must
+  // NEVER push a reload to a running test page. Two independent Vite
+  // mechanisms otherwise do exactly that mid-test, both timing-dependent
+  // (hence the passes-in-isolation / fails-under-parallel-load flake):
+  //   1. HMR / full-reload on a source change (file watcher) — and
+  //      Fast-Refresh remounts that discard injected test state.
+  //   2. Dependency RE-OPTIMIZATION: the first time a code path (e.g.
+  //      deserializeGame in the save-load round-trip) pulls in a module
+  //      Vite hadn't pre-bundled, Vite re-optimizes deps and broadcasts
+  //      a full reload to ALL clients.
+  // The decisive lever for BOTH: `server.hmr: false` tears down the HMR
+  // websocket, the sole channel Vite uses to push `full-reload` /
+  // `update` to a client — covering source-change reloads, Fast-Refresh
+  // remounts, AND dependency-re-optimization reloads at once. Disabling
+  // the file watcher removes the trigger for (1) outright.
+  ...(IS_E2E
+    ? {
+        server: {
+          hmr: false as const,
+          watch: null,
+        },
+      }
+    : {}),
   optimizeDeps: {
     include: ['three/examples/jsm/utils/SkeletonUtils.js'],
   },

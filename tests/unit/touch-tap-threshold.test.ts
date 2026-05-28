@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isTap, TAP_THRESHOLD_PX } from '@/world/touch-tap-threshold';
+import { isTap, TAP_THRESHOLD_PX } from '@/world/terrain';
 
 /**
  * M_POLISH2.MOBILE.6 — tap-vs-pan disambiguation contract. Pins:

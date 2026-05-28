@@ -196,3 +196,4 @@ docs/api/
 .agent-state/.indexed-sha
 .agent-state/.last-stop-sha
 .agent-state/.last-compaction
+.claude/scheduled_tasks.lock

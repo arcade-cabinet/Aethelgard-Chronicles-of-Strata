@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { SettingsModal } from '@/hud/SettingsModal';
+import { SettingsModal } from '@/hud/modals';
 import { createPersistence } from '@/persistence/persistence';
 
 /**

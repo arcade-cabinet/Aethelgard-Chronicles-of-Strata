@@ -100,7 +100,7 @@ import { z } from 'zod';
 // The hand-typed pools were inlined in this file pre-v0.5 (see git
 // blame); the JSON-first sweep lifted them into config alongside
 // resources/eras/world.
-import matchNarrativeJson from '@/config/match-narrative.json';
+import matchNarrativeJson from '@/config/narrative/match-narrative.json';
 
 const MatchNarrativeSchema = z.object({
   adjectives: z.object({

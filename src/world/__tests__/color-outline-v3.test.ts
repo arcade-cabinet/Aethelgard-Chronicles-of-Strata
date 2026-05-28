@@ -13,8 +13,8 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { BuildingOutlineRing } from '@/world/BuildingOutlineRing';
-import { UnitHexOutline } from '@/world/UnitHexOutline';
+import { BuildingOutlineRing } from '@/world/board';
+import { UnitHexOutline } from '@/world/board';
 
 describe('M_V7.RENDER.COLOR-OUTLINE-V3 — registry color flow', () => {
   it('UnitHexOutline is exported as a function (React component)', () => {
@@ -28,7 +28,10 @@ describe('M_V7.RENDER.COLOR-OUTLINE-V3 — registry color flow', () => {
   it('neither component hardcodes the legacy banner ternary', () => {
     const BANNER_TERN_RE =
       /faction\s*===\s*['"](player|enemy)['"][^?]*\?\s*['"]#(3b82f6|ef4444)['"]\s*:\s*['"]#(3b82f6|ef4444)['"]/i;
-    for (const rel of ['src/world/UnitHexOutline.tsx', 'src/world/BuildingOutlineRing.tsx']) {
+    for (const rel of [
+      'src/world/board/UnitHexOutline.tsx',
+      'src/world/board/BuildingOutlineRing.tsx',
+    ]) {
       const path = resolve(__dirname, '../../..', rel);
       const source = readFileSync(path, 'utf-8');
       expect(source.match(BANNER_TERN_RE), `${rel} hardcodes legacy banner ternary`).toBeNull();
@@ -42,8 +45,8 @@ describe('M_V8.OUTLINE.CANVAS-MOUNT — wired into GameCanvas', () => {
     // canvas. The r3f render path is exercised by visual baselines + e2e.
     const path = resolve(__dirname, '../../..', 'src/render/GameCanvas.tsx');
     const source = readFileSync(path, 'utf-8');
-    expect(source).toContain("from '@/world/UnitHexOutline'");
-    expect(source).toContain("from '@/world/BuildingOutlineRing'");
+    expect(source).toContain("from '@/world/board'");
+    expect(source).toContain("from '@/world/board'");
     expect(source).toContain('<UnitHexOutline');
     expect(source).toContain('<BuildingOutlineRing');
   });

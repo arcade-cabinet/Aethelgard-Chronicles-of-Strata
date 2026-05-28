@@ -18,8 +18,8 @@ import { page, userEvent } from '@vitest/browser/context';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { FACTION_PALETTE } from '@/config/faction-palette';
-import { FactionColorPicker } from '@/hud/FactionColorPicker';
+import { FACTION_PALETTE } from '@/config/ai';
+import { FactionColorPicker } from '@/hud/setup';
 
 function PickerHarness({ initial }: { initial: string }) {
   const [color, setColor] = useState(initial);

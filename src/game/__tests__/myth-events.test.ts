@@ -7,7 +7,7 @@ import {
   MYTH_EVENTS,
   MYTH_MIN_INTERVAL_SECONDS,
   mythEventFor,
-} from '@/config/myth-events';
+} from '@/config/narrative';
 import { createEconomy, type GameEconomy } from '@/game/economy';
 import {
   applyHarvestFestival,

@@ -13,7 +13,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import matchNarrativeJson from '@/config/match-narrative.json';
+import matchNarrativeJson from '@/config/narrative/match-narrative.json';
 import type { GameState } from '@/game/game-state';
 import { detectTranscriptHighlights, matchNickname } from '../match-narrative';
 

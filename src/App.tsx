@@ -1,64 +1,24 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { useMutedPreference } from '@/audio/useMutedPreference';
-import { ALL_PERSONALITIES } from '@/config/ai-personalities';
-import { defaultFactionColors } from '@/config/faction-palette';
-import { buildDefaultFactions } from '@/config/factions';
+import { ALL_PERSONALITIES } from '@/config/ai';
+import { defaultFactionColors } from '@/config/ai';
+import { buildDefaultFactions } from '@/config/ai';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
-import { AssignedJob, Building, FactionTrait, Health, Unit } from '@/ecs/components';
 import { createAutoSave } from '@/game/auto-save';
-import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@/game/game-state';
-import { selectEntity } from '@/game/selection';
-import { AchievementWatcher } from '@/hud/AchievementWatcher';
-import { AriaLiveRegion } from '@/hud/AriaLiveRegion';
-import { BuildMenuButton } from '@/hud/BuildMenuButton';
-import { BuildQueueStrip } from '@/hud/BuildQueueStrip';
-import { CaptionsOverlay } from '@/hud/CaptionsOverlay';
-import { CriticalWarning } from '@/hud/CriticalWarning';
-import { AtelierScreen } from '@/hud/AtelierScreen';
-import { CampaignOverlay } from '@/hud/CampaignOverlay';
-import { DiplomacyModal } from '@/hud/DiplomacyModal';
-import { TutorialOverlay } from '@/hud/TutorialOverlay';
-import { WaveDefenseOverlay } from '@/hud/WaveDefenseOverlay';
-import { DiscoveriesPanel } from '@/hud/DiscoveriesPanel';
-import { ErrorOverlay } from '@/hud/ErrorOverlay';
-import { FactionChips } from '@/hud/FactionChips';
-import { GameOverModal } from '@/hud/GameOverModal';
-import { IdleUnitIndicator } from '@/hud/IdleUnitIndicator';
-import { MultiSelectActions } from '@/hud/MultiSelectActions';
-import { KeyboardShortcuts } from '@/hud/KeyboardShortcuts';
-import { LoadingScreen } from '@/hud/LoadingScreen';
-import { MatchAgePill } from '@/hud/MatchAgePill';
-import { Minimap } from '@/hud/Minimap';
-import { MobileSpeedPausePill } from '@/hud/MobileSpeedPausePill';
-import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
-import { NonAggressionPactPill } from '@/hud/NonAggressionPactPill';
-import { OnboardingOverlay } from '@/hud/OnboardingOverlay';
-import { PauseControl } from '@/hud/PauseControl';
-import { PersistAchievements } from '@/hud/PersistAchievements';
-import { RaidPressurePill } from '@/hud/RaidPressurePill';
-import { ResourceBar } from '@/hud/ResourceBar';
-import { ScoreBar } from '@/hud/ScoreBar';
-import { ScreenshotButton } from '@/hud/ScreenshotButton';
-import { SelectionPanel } from '@/hud/SelectionPanel';
-import { SettingsModal } from '@/hud/SettingsModal';
-import { Toasts } from '@/hud/Toasts';
-import { SpeedControl } from '@/hud/SpeedControl';
-import { SystemMenu } from '@/hud/SystemMenu';
-import { TitleScreen } from '@/hud/TitleScreen';
-import { TributeDemandBanner } from '@/hud/TributeDemandBanner';
-import { WeatherIndicator } from '@/hud/WeatherIndicator';
-import { WinConditionPill } from '@/hud/WinConditionPill';
-import { ZoneControlPill } from '@/hud/ZoneControlPill';
-import { ZoneFlipPulse } from '@/hud/ZoneFlipPulse';
-import { ZoneLegend } from '@/hud/ZoneLegend';
+import { installDevHarness } from '@/game/dev-harness';
+import { type GameState, type NewGameConfig, startGame } from '@/game/game-state';
+import { HudLayer } from '@/hud/HudLayer';
+import { useGameWindowEvents } from '@/hud/hooks/useGameWindowEvents';
+import { type NewGameChoices, NewGameModal, SettingsModal } from '@/hud/modals';
+import { ErrorOverlay, LoadingScreen, TitleScreen } from '@/hud/overlays';
 import { createPersistence, PREF_KEYS } from '@/persistence/persistence';
-import { deserializeGame, serializeGame } from '@/persistence/serialize-game';
+import { deserializeGame } from '@/persistence/serialize-game';
 import { ErrorBoundary } from '@/render/ErrorBoundary';
 import { GameCanvas } from '@/render/GameCanvas';
 import { useViewport } from '@/render/useViewport';
-import type { BuildContext } from '@/world/TileInteraction';
+import type { BuildContext } from '@/world/terrain';
 
 /** Shown if the 3D scene fails to load (e.g. a missing asset). */
 /**
@@ -136,119 +96,29 @@ function GameSession({
   const game = useMemo(() => {
     const g = initialGame ?? (config ? startGame(config) : startGame('default'));
     g.autoSave = createAutoSave(() => persistence.save('AutoSave', g));
-    // E2E + visual-baseline test hook. Exposes the live GameState on
-    // window.__game so Playwright tests can force outcome / read
-    // economy / advanceFrames deterministically. Production-safe —
-    // window.__game is a forward-reference; nothing in the bundle
-    // imports it, so tree-shaking + 'use strict' isolate it to the
-    // window namespace only.
-    if (typeof window !== 'undefined') {
-      type DevWindow = Window & {
-        __game?: typeof g;
-        __game_advanceFrames?: (n: number) => void;
-        __game_findPlayerEntities?: (kind: 'peon' | 'military' | 'building') => number[];
-      };
-      (window as unknown as DevWindow).__game = g;
-      // Helper: advance the sim N 60Hz frames synchronously. Used
-      // by e2e specs to get the game into a meaningful playing state
-      // before screenshotting / asserting.
-      (window as unknown as DevWindow).__game_advanceFrames = (n: number) => {
-        for (let i = 0; i < n; i++) runEconomyTick(g, 1 / 60);
-      };
-      // M_POLISH3.J.4 — query helper for selection-state e2e tests.
-      // Returns up to 4 player-faction entity ids by category;
-      // ids match what `selectEntity` accepts.
-      // M_POLISH3.SCENE.4 — force a game-over outcome. The
-      // GameOverModal polls game.outcome via rAF + setState, so
-      // direct mutation reaches it eventually — but in headless
-      // Playwright the rAF cadence is throttled. This helper
-      // mutates outcome AND advances a few sim frames so the
-      // poller's next read picks it up before the next
-      // screenshot.
-      type GameOutcomeT = 'win' | 'loss' | 'draw';
-      (
-        window as unknown as DevWindow & {
-          __triggerGameOver?: (o: GameOutcomeT) => void;
-        }
-      ).__triggerGameOver = (outcome) => {
-        g.outcome = outcome;
-        // M_POLISH3.SCENE.4 — dispatch a CustomEvent so the
-        // GameOverModal can react immediately (without waiting on
-        // rAF, which Chromium throttles in headless / hidden tabs).
-        window.dispatchEvent(
-          new CustomEvent('aethelgard:outcome-changed', { detail: { outcome } }),
-        );
-      };
-      // M_V11.POLISH.BUILD-MENU-CTA — direct selectEntity hook so
-      // Playwright tests can deterministically select an entity
-      // (the open-build-menu CustomEvent + useEffect listener
-      // mount race is hard to win in headless).
-      (
-        window as unknown as DevWindow & {
-          __game_selectEntity?: (entityId: number) => void;
-        }
-      ).__game_selectEntity = (entityId) => {
-        for (const e of g.world.query(FactionTrait)) {
-          if (Number(e) === entityId) {
-            selectEntity(g, e);
-            return;
-          }
-        }
-      };
-      (window as unknown as DevWindow).__game_findPlayerEntities = (kind) => {
-        const MILITARY_TYPES = new Set(['Footman', 'Archer', 'Knight', 'Wizard', 'Trebuchet']);
-        const out: number[] = [];
-        for (const e of g.world.query(FactionTrait)) {
-          if (out.length >= 4) break;
-          if (e.get(FactionTrait)?.faction !== 'player') continue;
-          const unit = e.get(Unit);
-          const building = e.get(Building);
-          if (kind === 'peon' && unit?.unitType === 'Peon') out.push(Number(e));
-          else if (kind === 'military' && unit && MILITARY_TYPES.has(unit.unitType))
-            out.push(Number(e));
-          else if (kind === 'building' && building) out.push(Number(e));
-        }
-        return out;
-      };
-      // M_FUN.QA.AIVAI — expose trait references so the AI-vs-AI
-      // balance e2e can query Building+FactionTrait directly from
-      // page.evaluate. Without this, a test would need to import
-      // src/ which Playwright doesn't bundle.
-      (
-        window as unknown as DevWindow & {
-          __game_traits?: {
-            Building: unknown;
-            FactionTrait: unknown;
-            Unit: unknown;
-            AssignedJob: unknown;
-            Health: unknown;
-          };
-        }
-      ).__game_traits = { Building, FactionTrait, Unit, AssignedJob, Health };
-      // M_V9.E2E.SAVE-LOAD-N-PLAYER — expose serialize/deserialize helpers for
-      // Playwright e2e round-trip tests. Production-safe (same isolation as
-      // other __game_* helpers).
-      (
-        window as unknown as DevWindow & {
-          __game_save?: () => ReturnType<typeof serializeGame>;
-          __game_load?: (snap: ReturnType<typeof serializeGame>) => void;
-        }
-      ).__game_save = () => serializeGame(g);
-      (
-        window as unknown as DevWindow & {
-          __game_load?: (snap: ReturnType<typeof serializeGame>) => void;
-        }
-      ).__game_load = (snap) => {
-        const restored = deserializeGame(snap);
-        for (const key of Object.keys(g) as (keyof typeof g)[]) {
-          delete g[key];
-        }
-        Object.assign(g, restored);
-        (window as unknown as DevWindow).__game = g;
-      };
-    }
     return g;
   }, [config, initialGame]);
+  // M_V13.HARNESS.ATOMIC-READY — install the window.__game* E2E /
+  // visual-test harness in a COMMITTED effect, not in the render-phase
+  // useMemo. Render-phase install fired on renders React later
+  // discards (StrictMode double-mount, a child <Scene> Suspense
+  // throwaway under slow asset load), publishing `__game` + hooks from
+  // a render that never committed. Under suite load that let a spec's
+  // readiness `waitForFunction` resolve against a half/non-committed
+  // document while the follow-up read saw a stale/absent `__game`.
+  // An effect runs only for the render that actually commits, so the
+  // harness on `window` always corresponds to the live tree.
+  useEffect(() => {
+    // M_V13.SEC.HARNESS-GATE (full-review Phase 2, CWE-489) — only
+    // install the window.__game* test hooks in dev / E2E, never in the
+    // production GitHub-Pages / Capacitor bundle. e2e runs the Vite dev
+    // server (import.meta.env.DEV === true); VITE_E2E covers a future
+    // e2e-against-preview. A prod build strips this branch + tree-shakes
+    // dev-harness out entirely (making its "prod-safe" claim actually true).
+    if (import.meta.env.DEV || import.meta.env.VITE_E2E === '1') {
+      installDevHarness(game);
+    }
+  }, [game]);
   const [buildContext, setBuildContext] = useState<BuildContext | null>(null);
   const viewport = useViewport();
   // M_HUD.SHELL.1 — universal mute hook; mirrors the persisted setting
@@ -256,68 +126,11 @@ function GameSession({
   // that wants to display or flip it.
   const [soundMuted, setSoundMuted] = useMutedPreference(persistence);
 
-  // M_EXPANSION.U.118 — keyboard shortcut bridge. KeyboardShortcuts
-  // dispatches a 'aethelgard:trigger-build' CustomEvent for direct
-  // building-type pickers (F/H/G/R/T/W keys); App pipes it into the
-  // existing buildContext flow.
-  useEffect(() => {
-    const onTriggerBuild = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { type?: BuildContext['type'] } | undefined;
-      if (!detail?.type) return;
-      setBuildContext({ type: detail.type, onPlaced: () => setBuildContext(null) });
-    };
-    // M_POLISH2.B.1 — open-build-menu was dispatched by the keyboard
-    // shortcut + the new mobile build chip but NOTHING was listening.
-    // The listener selects the player's Palace (which has
-    // showsBuildMenu=true) and lets the existing SelectionPanel render
-    // the build-button list — re-uses the single source of truth
-    // instead of forking a separate build modal.
-    const onOpenBuildMenu = () => {
-      for (const ent of game.world.query(Building, FactionTrait)) {
-        const b = ent.get(Building);
-        const f = ent.get(FactionTrait);
-        if (b?.buildingType === 'Palace' && f?.faction === 'player') {
-          selectEntity(game, ent);
-          break;
-        }
-      }
-    };
-    // M_V11.POLISH.JOURNEY-CAMERA-EVENTS — focus-palace pans
-    // the camera onto the player Palace + zooms in tight.
-    // Forwards to aethelgard:focus-tile (CameraRig already listens)
-    // with parsed q/r + a tight distance so journey-capture shots
-    // can frame the procedural Palace composition.
-    const onFocusPalace = () => {
-      const key = game.palaceKey;
-      if (!key) return;
-      // CodeRabbit (PR #89): guard malformed keys instead of falling
-      // back to (0,0). Parsing "garbled" with parseInt('garbled', 10)
-      // returns NaN; the old code's `?? '0'` only handled an undefined
-      // SEGMENT, not a non-numeric one — so a malformed key would yank
-      // the camera to tile (0,0) silently. Bail out cleanly instead.
-      const parts = key.split(',');
-      if (parts.length !== 2) return;
-      const q = Number.parseInt(parts[0] ?? '', 10);
-      const r = Number.parseInt(parts[1] ?? '', 10);
-      if (!Number.isFinite(q) || !Number.isFinite(r)) return;
-      window.dispatchEvent(
-        new CustomEvent('aethelgard:focus-tile', {
-          detail: { q, r, distance: 6 },
-        }),
-      );
-    };
-    window.addEventListener('aethelgard:trigger-build', onTriggerBuild);
-    window.addEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
-    window.addEventListener('aethelgard:focus-palace', onFocusPalace);
-    return () => {
-      window.removeEventListener('aethelgard:trigger-build', onTriggerBuild);
-      window.removeEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
-      window.removeEventListener('aethelgard:focus-palace', onFocusPalace);
-    };
-  }, [game]);
-  // r3f camera ref retained even though SelectionRect no longer
-  // consumes it (M_GAME.BUG.3) — future HUD overlays that project
-  // world→screen will plug back into the ref.
+  // M_V13.DECOMP.APP-EVENTS — the trigger-build / open-build-menu /
+  // focus-palace window-event wiring now lives in a dedicated hook.
+  useGameWindowEvents(game, setBuildContext);
+  // r3f camera ref retained for future HUD overlays that project
+  // world→screen coordinates; no current consumer.
   const cameraRef = useRef<Camera | null>(null);
 
   return (
@@ -338,129 +151,22 @@ function GameSession({
           }}
         />
       </ErrorBoundary>
-      <ResourceBar game={game} compact={viewport.isPortrait} />
-      <Minimap game={game} compact={viewport.isPortrait} />
-      <SelectionPanel
+      {/* M_V13.DECOMP.APP-HUDLAYER — the ~30-component HUD-overlay
+          mount wall extracted into HudLayer so App.tsx stays a thin
+          shell. GameSession keeps ownership of buildContext + camera;
+          HudLayer receives game + viewport + persistence + the
+          sound + settings + begin-build callbacks. */}
+      <HudLayer
         game={game}
+        viewport={viewport}
+        persistence={persistence}
+        soundMuted={soundMuted}
+        setSoundMuted={setSoundMuted}
+        onOpenSettings={onOpenSettings}
         onBeginBuild={(ctx) =>
           setBuildContext({ type: ctx.type, onPlaced: () => setBuildContext(null) })
         }
       />
-      {/* M_GAME.STACK.2b — multi-select Stack/Unstack actions. Floats
-          next to the SelectionPanel; visible only when 2+ units are
-          selected (or any selected unit is already in a Stack). */}
-      <MultiSelectActions game={game} />
-      {/* M_GAME.BUG.3 — desktop blue drag-select rectangle retired.
-          Selection is tap-only now. Multi-select via tap-and-hold-then-
-          drag (per OnboardingOverlay's "Commanding military" step) is
-          handled inside TileInteraction. SelectionRect.tsx remains in
-          the tree as a subpackage for desktop opt-in (decompose, don't
-          strip) but no longer mounts in the main App. */}
-      {/* <SelectionRect game={game} getCamera={getCamera} /> */}
-      {/* M_HUD.SHELL.1 — universal SystemMenu (top-right hamburger
-            + slide-in drawer). Replaces the per-viewport scatter of
-            ResignButton + MobileSystemMenu + SoundToggle pills that
-            on N-player viewports (foldable, tablet) collided with the
-            resource bar + faction chips into an overcrowded top bar.
-            Mounts on every viewport class. Owns Settings, Discoveries,
-            Legend, Sound, Resign — each forwarded to the respective
-            owner via prop/callback or CustomEvent. */}
-      <SystemMenu
-        game={game}
-        onSettings={() => onOpenSettings?.()}
-        soundMuted={soundMuted}
-        onToggleSound={setSoundMuted}
-      />
-      {/* M_POLISH2.B.1 — visible touch-reachable build button.
-            Dispatches the open-build-menu event the App listener now
-            handles. Mobile-first but useful on desktop too. */}
-      <BuildMenuButton />
-      {/* M_POLISH2.MOBILE.14 — portrait/phone viewports get the unified
-            Speed+Pause pill; everywhere else keeps the two original
-            independent controls. PauseControl still mounts on mobile so
-            its keyboard P shortcut + the visibilitychange auto-pause
-            wiring stay live — but its HudPill is suppressed via the
-            viewport check inside HudPill (slot collision avoided by
-            simply NOT mounting PauseControl on portrait). */}
-      {viewport.class === 'phonePortrait' ? (
-        <MobileSpeedPausePill game={game} />
-      ) : (
-        <>
-          <PauseControl game={game} />
-          <SpeedControl game={game} />
-        </>
-      )}
-      <DiscoveriesPanel game={game} />
-      {/* M_V11.HUD.DIPLOMACY-MODAL — player-facing diplomacy. Opens on
-          the 'aethelgard:open-diplomacy' window event, fired by the
-          SystemMenu (top-right hamburger) — same pattern as the
-          DiscoveriesPanel. */}
-      <DiplomacyModal game={game} />
-      {/* M_V11.META-PROGRESSION — AtelierScreen reads lore-token
-          balance + meta-unlocks from the persistence facade. Opens
-          on the 'aethelgard:open-atelier' event (SystemMenu entry +
-          auto-fired from match-end). */}
-      <AtelierScreen persistence={persistence} />
-      {/* M_V11.TUTORIAL (#77f) — guided overlay; renders only when
-          game.mode === 'tutorial' (the component guards internally). */}
-      <TutorialOverlay game={game} />
-      {/* M_V11.CAMPAIGN (#77g) — chapter overlay; renders only when
-          game.mode === 'campaign'. Reads game.campaignChapter to
-          pick which chapter's objective queue to drive. */}
-      <CampaignOverlay game={game} />
-      {/* M_V11.WAVE-DEFENSE (#77h) — wave-progress pill; renders only
-          when game.mode === 'wave-defense'. */}
-      <WaveDefenseOverlay game={game} />
-      <KeyboardShortcuts game={game} />
-      <CriticalWarning game={game} />
-      <WeatherIndicator game={game} />
-      <ScoreBar game={game} />
-      {/* M_POLISH2.MODES.39 — per-mode win-condition reminder pill,
-            top-centre. Hidden when the game is over (GameOverModal
-            takes over the messaging). */}
-      <WinConditionPill game={game} />
-      {/* M_POLISH2.MODES.40 — frontier-raid only: raid-pressure pill. */}
-      <RaidPressurePill game={game} />
-      {/* M_POLISH2.MODES.41 — long-reign only: match-age chip. */}
-      <MatchAgePill game={game} />
-      {/* M_V6.CARRY.HUD-N-BANNERS — 3+ player faction strip (4X / FFA).
-          Hidden on legacy 2-faction matches; appears top-center when
-          game.factions has 3+ non-barbarian slots. */}
-      <FactionChips game={game} />
-      {/* M_V7.DIPLO.UI — non-aggression-pact resolution pills + tribute
-          demand banner. Both poll the diplomacy substrate; hidden when
-          nothing pending. */}
-      <NonAggressionPactPill game={game} />
-      <TributeDemandBanner game={game} />
-      {/* M_POLISH2.MODES.42 — strata-wars only: zone-control % chip. */}
-      <ZoneControlPill game={game} />
-      {/* M_POLISH2.MODES.42b — strata-wars only: tile-flip red-pulse. */}
-      <ZoneFlipPulse game={game} />
-      {/* M_POLISH2.MODES.44b — coexistence only: screenshot the realm. */}
-      <ScreenshotButton game={game} />
-      <IdleUnitIndicator game={game} />
-      <BuildQueueStrip game={game} />
-      <AchievementWatcher game={game} />
-      <PersistAchievements game={game} persistence={persistence} />
-      <ZoneLegend />
-      {/* M_V8.TUTORIAL.N-PLAYER-MODE — pass faction count so the overlay
-          appends the N-player slide when 3+ factions are in the match. */}
-      <OnboardingOverlay persistence={persistence} factionCount={game.factions.length} />
-      <GameOverModal game={game} persistence={persistence} />
-      {/* M_V11.PURGE — ScoringScreen was 4X-only (age-of-strata
-          named-victory panel). RTS modes use GameOverModal. */}
-      {/* M_AUDIT2.UX.12 — single hidden aria-live region; the bus
-          (src/hud/aria-live-bus.ts) lets any sim event announce
-          accessibly without lifting state. */}
-      <AriaLiveRegion />
-      {/* M_HUD.NOTIF.1 — Aethelgard toast bus. Mounted once at the
-          App root; any code can dispatch `aethelgard:toast` to surface
-          a tap-to-focus toast in the top-center stack. */}
-      <Toasts />
-      {/* M_EXPANSION.U.114 — visible captions band for deaf accessibility.
-          Renders nothing when captions are off OR when no live captions
-          are queued, so the overlay is zero-cost for hearing players. */}
-      <CaptionsOverlay />
     </div>
   );
 }

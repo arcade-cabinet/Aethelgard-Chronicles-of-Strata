@@ -2,33 +2,38 @@
 
 **Status:** ACTIVE
 **Owner:** Claude
-**Cycle:** v0.12 (post-v0.11 merge at squash commit 717ed2f on main 2026-05-27)
-**Mandate:** Per user direction across the 2026-05 sessions: zero
-deferrals, zero stops, full creative ownership of game design,
-visual judgment owned by the agent (not the user), 100+ upgrades /
-units / buildings / scenarios shipped end-to-end. v0.12 picks up
-the v0.12 backlog the v0.11 cycle generated (rpg-like depth, ai
-diplomacy, persistence depth, mobile polish) + the post-merge
-horizon items in §post-horizon below.
+**Cycle:** v0.13 — Decomposition + HUD design polish
+**Mandate:** Per user direction 2026-05-28: the codebase has flat-file
+dirs far past the cognitive-load threshold (world 97, hud 87, ecs 61,
+game 57). Restructure into cohesive sub-packages with `index.ts`
+barrels under `src/` (NO separate `app/` dir — rejected), following
+the `~/src/arcade-cabinet/martian-trail` + koota `examples/revade`
+patterns. THEN apply the HUD design-review findings once there is
+structural order. Tunables stay decomposed as json+ts pairs in
+`src/config/` (largely already done), grouped into domain
+sub-packages with barrels.
 
-Prior context: v0.11 cycle squash-merged as #89 (commit 717ed2f) at
-2026-05-27 15:52 UTC. 1217/1217 tests green at merge; 10 forward
-commits + 1 reviewer-pass fix commit shipped this session.
-release-please will cut the v0.1.27 tag automatically.
+Prior context: v0.11 merged as #89 (717ed2f). v0.12 merged as #90
+(2ee7edd) on 2026-05-28 — 100+ upgrades across 6 chains, AI diplomacy
+brain, persistence depth (lorebook rich-card + leaderboard
+fingerprint), mobile gesture-map + haptics. All 20 CodeRabbit threads
+across 7 reviewer-pass rounds addressed; 1251 unit + 224 browser
+tests green at merge. release-please cuts v0.1.28 automatically.
 
 ## What CONTINUOUS means
 
 1. **Work continuously.** Take the next [ ] item; finish it; mark
    `[x]`; commit; move to the next.
 2. **Never stop for status reports.** Make progress, then summarize.
-3. **Never stop for scope.** "Out of scope" is a tag in PRD-v0.12.
+3. **Never stop for scope.** "Out of scope" is a tag in the spec.
 4. **Never stop to summarize.** Each commit message IS the summary.
 5. **Never stop on context pressure.** The harness auto-compacts.
 6. **Never stop because a task feels big.** Decompose into
    sub-items; ship the substrate first.
 
 Only stop on: explicit user halt, red CI on main, a true STOP_FAIL
-(unrecoverable data loss / push to protected branch denied / etc.).
+(unrecoverable data loss / push to protected branch denied / etc.),
+or a genuine design question that flips scope (ask, then continue).
 
 ## Operating loop
 
@@ -46,482 +51,466 @@ while any non-WAIT [ ] item:
 "pause point" | "natural pause" | "fresh session" | "next session" | "stopping point" | "clean handoff"
 "self-feedback" used as graduation signal
 
-## Debug-loop stop rule
+## Decomposition rules (from the references)
 
-If a probe loop runs >3 iterations without finding the cause, STOP.
-Switch to architecture mode: name the 2-3 real options for the
-system shape, pick by spec doc, edit the spec to record the
-decision + why, delete the probe scaffolding, start the right path.
+Per `docs/specs/210-package-decomposition.md`:
 
-## Step 1 of every unit is use-case enumeration
-
-Before writing code for any non-trivial system: list the actual
-users / triggers / lifecycle moments. Each is a candidate for
-different mechanics. If count > 1, the answer is usually a hybrid
-(shared core function, different triggers/storage per use), not
-"pick one and force all uses through it." Read your own prior spec
-docs — the user shouldn't be the one quoting them at you.
-
-## Visual ownership
-
-Every commit that touches src/render/, src/hud/, src/world/,
-src/entities/, or asset manifests MUST screenshot the result
-(chrome-devtools-mcp or harness test) AND name a reference
-comparison in the commit body. User should NOT be the one
-noticing a visual regression.
-
-## Self-assessment is the default loop
-
-After every commit, before starting the next:
-
-- **Backward:** what shipped? what gaps were called out?
-- **Forward:** is the next item still right given what just
-  landed? Any spec-doc questions to answer NOW before opening
-  code?
-- **Encode forward learnings into the directive** before next.
+1. **Sub-package = cohesive feature**, not a file-count bucket.
+2. **Every sub-package exports a barrel `index.ts`**; external
+   imports go through the barrel, never deep paths.
+3. **Co-locate `__tests__/`** inside each sub-package.
+4. **Config = json (data) + ts (typed Zod accessor) pair**, grouped
+   by domain, with a `schema.ts` + barrel.
+5. **Preserve existing PascalCase component filenames** (rename to
+   kebab-case is a separate optional pass; keep this refactor pure
+   `git mv` to minimise churn + preserve history).
+6. **No compat re-export of a moved module's old path** — every
+   caller moves to the new barrel import in the same commit.
+7. **Each commit independently green** (`pnpm check` + `pnpm test`);
+   `git mv` per sub-package, one sub-package per commit.
 
 ## Workflow — long-running branch + forward review
 
-**PR-per-commit is forbidden.** One long-running branch per cycle
-(`feat/v0.12-cycle`). Commit freely; push regularly. After each
-commit, dispatch the review trio in parallel + background; fold
-findings into the NEXT forward commit (never amend a reviewed
-commit, never make a "fix-review" commit). ONE pull request opens
-when the cycle's §-blocks are all shipped + reviews absorbed +
-visual baselines locked. Squash-merge to main; release-please cuts
-the version bump.
+One branch per cycle (`feat/decomp-subpackages`). Commit freely;
+push regularly. After each commit, dispatch the review trio in
+parallel + background; fold findings into the NEXT forward commit
+(never amend a reviewed commit, never make a "fix-review" commit).
+ONE PR opens when the §-blocks are shipped + reviews absorbed.
+Squash-merge to main; release-please cuts the version bump.
 
 ---
 
-## v0.12 ACTIVE QUEUE — Game-design depth + persistence + AI diplomacy
+## v0.13 ACTIVE QUEUE — §A Decomposition
 
-Driven by the 2026-05-26 ownership mandate ("you flex creative
-design, paper playtest, ship 100+ upgrades / units / buildings /
-scenarios"). Order: §1 (substrate) before §2 (depth), §3 (AI) +
-§4 (persistence) in parallel, §5 (polish + mobile) → §6 (release).
+Driven by `docs/specs/210-package-decomposition.md`. Scope this
+cycle: `src/hud/`, `src/config/`, `src/world/` (the .tsx-heavy +
+config dirs). `src/ecs/` + `src/game/` decompose in a later pass.
 
-### §1 — Substrate: cycle-open hygiene
+### §A1 — hud/ sub-packages (87 files → 8 packages)
 
-- [x] M_V12.SUBSTRATE.PRD — `docs/specs/PRD-v0.12.md` authored
-      with 4 design pillars (depth before breadth, mobile-first
-      input, agent-owned visual judgment, one PR per cycle), per-§
-      goal + implementation order + use-case enumeration for
-      DEPTH (3 distinct upgrade surfaces), AI-DIPLO personality
-      matrix, MOBILE gesture-map table, the §6 release-ladder
-      gates, and the explicit out-of-scope list (multiplayer,
-      map editor, mod API all kicked to §post-horizon v0.13).
-- [x] M_V12.SUBSTRATE.BRANCH — `feat/v0.12-cycle` opened from
-      main at HEAD (post-v0.11-merge, includes the directive
-      flip commit a46d70c). All v0.12 commits land on this
-      branch until §6.RELEASE.
-- [ ] [WAIT] M_V12.SUBSTRATE.RELEASE-WATCH — release-please has
-      not yet cut the v0.1.27 PR for the v0.11 merge (checked at
-      cycle-open, no PR in `gh pr list`). External: waits for
-      release-please's scheduled workflow run. Re-poll daily;
-      merge when CI lands.
+Order leaf-first so later moves import the new barrel paths.
 
-### §2 — Game-design depth (M_V12.DEPTH)
+- [x] M_V13.DECOMP.HUD-THEME — `src/hud/theme/` created with
+      hud-theme.ts + format.ts + barrel index.ts (HUD_THEME,
+      HUD_CARD_STYLE, costLabel, formatInt, formatTime). 51
+      importers rewritten (@/hud/theme + ./theme). Pure git mv,
+      history preserved, no compat re-exports. 1251 tests green.
+      hud-layout.ts joins this package in §B FIX-PILL-COLLISION.
+- [x] M_V13.DECOMP.HUD-PRIMITIVES — folded ModalShell + HudPill +
+      Segmented into the existing primitives/ package; barrel
+      extended; 13 importers rewritten; theme import → ../theme.
+      1251 tests green.
+- [x] M_V13.DECOMP.HUD-PILLS — `src/hud/pills/` (10 status pills) +
+      barrel; internal imports rewritten one level deeper; importers
+      → @/hud/pills. 1251 tests green.
 
-User mandate: "100+ upgrades in several different targeted areas
-with appropriate logical progression between links in chains".
-The v0.11 Discoveries registry has 36 entries across 6 themed
-chains; v0.12 expands to 100+ via depth + breadth + meta-tiers.
+### §A1b — App.tsx decomposition (776 lines → screens/ + hooks)
 
-- [x] M_V12.DEPTH.UPGRADE-AUDIT — `docs/design/v0.12-upgrade-graph.md`
-      authored with the full graph: 76 in-match Discoveries
-      (16+16+12+12+12+8 across the 6 chains, 4 tiers × 3-4 specs
-      per chain), 12 Atelier chain-starter meta-unlocks, 12
-      per-chapter perks (4 × 3 chapters), totaling 130 upgrades
-      (overshoots the 100+ target with headroom). 8 new effect
-      kinds (buff-building / unlock-unit / unlock-building /
-      unlock-formation / modify-cost / modify-supply / reveal-tier
-      / grant-resource) on top of the existing 3 kinds; effect
-      resolver extension is M_V12.DEPTH.EFFECT-KINDS below.
-- [x] M_V12.DEPTH.EFFECT-KINDS — substrate landed. Extended the
-      Zod schema in src/config/discoveries.ts with 8 new effect
-      kinds (buff-building / unlock-unit / unlock-building /
-      unlock-formation / modify-cost / modify-supply / reveal-tier
-      / grant-resource), gave each its DiscoveryEffect TS variant,
-      added DiscoveryApplyCtx interface to src/rules/discoveries.ts
-      (carries economy + flags + buildingOverrides for the new
-      kinds), extended the dispatcher in src/rules/discovery-
-      registry.ts with the 8 new cases + Unit import for the
-      buff-combatant `filter` arg. apply signature widened to
-      apply(world, ctx?). 8 unit tests in
-      tests/unit/discovery-effect-kinds-v12.test.ts pin each
-      kind's mutation. Test count 1203 → 1211.
-- [x] M_V12.DEPTH.CHAIN-EXPANSION — Economy chain expanded from 5
-      to 16 entries (4 specs × 4 tiers: harvest /
-      cap / trade / tax) per the upgrade-graph doc. Existing 5
-      ids preserved (steelPlows / iron-tools / logistics-doctrine
-      / trade-route / treasury-vault) so save-load + existing
-      tests stay green. New entries: grand-mill (harvest IV),
-      bulk-baskets+granary-vault+warehouses+imperial-stores (cap
-      I-IV using modify-supply), bartering-school+guild-charter+
-      global-bazaar (trade II-IV with guild-charter using
-      unlock-building), golden-coin-mint+toll-keeps+regional-taxes
-      (tax I-III, toll-keeps using buff-building/output, treasury-
-      vault re-typed from flag to buff-building/output). Test
-      count 1211 → 1215 with tests/unit/economy-chain-v12.test.ts
-      pinning 16 entries + tier-chained prereqs + 4 standalone
-      tier-1 heads. HUD entry is M_V12.DEPTH.UPGRADE-HUD below
-      (separate item — Discoveries panel rewrite).
-- [x] M_V12.DEPTH.MILITARY-CHAIN — expanded from 5 to 16 entries
-      (4 specs × 4 tiers). Existing `forgedBlades` preserved as
-      Infantry I; `honed-edges` retired in favor of
-      `tempered-edges` (Infantry II, Footman-filter); `long-reach`
-      retired in favor of `iron-tipped-arrows` (Archer I);
-      `siege-engineering` renamed `sapper-training` (Siege I);
-      `warrior-cult` retired. 12 new entries: phalanx-doctrine +
-      imperial-guard (Infantry III-IV, the latter exercising
-      unlock-unit Hero from Barracks), composite-bows +
-      volley-fire + masterwork-bows (Archer II-IV with filter),
-      catapult-blueprints + reinforced-trebuchets + seismic-
-      engines (Siege II-IV, catapult-blueprints exercising
-      unlock-unit Trebuchet from Barracks), armored-saddles +
-      barbed-spears + charge-tactics + royal-cavalry (Cavalry
-      I-IV, armored-saddles exercising unlock-unit Knight from
-      Barracks). Test count 1215 → 1219 with
-      tests/unit/military-chain-v12.test.ts (4 pins). Stale id
-      refs in discoveries-v6.test.ts + DiscoveriesPanel.tsx +
-      Engineering's rampart-line-end prereq edge all fixed.
-- [x] M_V12.DEPTH.DIPLOMACY-CHAIN — restructured from 5 entries
-      (cartography/envoys/shared-codex/spies/world-charter) to
-      12 (4 tiers × 3 specs: relations / trade / tribute) per
-      the upgrade-graph doc. cartography moves out (Lore I when
-      LORE-CHAIN lands). Relations: first-contact / diplomatic-
-      corps / royal-marriage / universal-amnesty. Trade:
-      exchange-policy / trade-treaty (multiply-harvest 1.10) /
-      shared-codex / trade-monopoly. Tribute: levy-tradition /
-      hostage-keep / extortion-doctrine / iron-fist. Each spec
-      stands alone (no cross-spec prereq edges). research.ts
-      DEFAULT_DISCOVERY_POOL camp-reward pool updated to swap
-      cartography → first-contact (kept the flag-only contract);
-      discoveries-v6.test.ts updated to assert first-contact's
-      flag-only effect. Test count 1219 → 1223 with
-      tests/unit/diplomacy-chain-v12.test.ts (4 pins). The
-      runtime effects of these flags are §3 AI-DIPLO work
-      (Yuka brain consumes the flags + the new modals).
-- [x] M_V12.DEPTH.MAGIC-CHAIN — expanded from 5 to 12 entries
-      (4 tiers × 3 specs offense/utility/summon). Offense uses
-      buff-building MageTower/dps for I-II and flag for III-IV
-      (elemental-mastery armor ignore, apocalypse-rite debuff).
-      Utility is all flags (scrying-orb, translocation-rune,
-      warding-circle, mirror-image). Summon uses unlock-unit
-      from MageTower for II-IV (Druid, Elemental, Necromancer).
-      Old 5 (mana-channels/healing-conclave/elemental-weave/
-      rune-warding/starfall-rite) retired.
-- [x] M_V12.DEPTH.ENGINEERING-CHAIN — expanded from 5 to 12
-      entries (4 tiers × 3 specs siege/defense/production). Siege:
-      hammer-honing → siege-blueprints (unlock-building Foundry) →
-      engineering-corps (unlock-unit Sapper) → grand-armory.
-      Defense: reinforced-walls (Wall hp +50) → crenellations
-      (Watchtower dps +10) → bastion-architecture (Wall hp +100)
-      → impregnable-citadel (Palace hp +200) — all buff-building.
-      Production: workshop-discipline → guild-conduits
-      (modify-cost Trebuchet/gold -10) → monumental-architecture
-      (demoted from Engineering I head) → guild-monopoly. Old 5
-      (masonry-guild/rampart-doctrine/bridge-builders/siege-foundry
-      and the prev monumental-architecture position) retired.
-- [x] M_V12.DEPTH.LORE-CHAIN — expanded from 5 to 8 entries
-      (4 tiers × 2 specs reveal/narrative — the only chain with
-      3 specs would have left a thin third). Reveal: cartography
-      (kept from Diplomacy I — now Lore I) → scout-doctrine →
-      celestial-charts (reveal-tier 1) → omniscient-archives
-      (reveal-tier 2). Narrative: chronicle-keeping → bard-college
-      → sage-council → chronicle-saga (capstone unlocks the Lore
-      Chronicle saga page from §4 PERSIST). Old 5 (ancestral-vows
-      / saga-of-strata / chronicler-codex / oracle-eye /
-      eternal-flame) retired.
-- [x] M_V12.DEPTH.UPGRADE-HUD — DiscoveriesPanel gained a chain-
-      tab navigator strip above the search filter. 7 chain tabs
-      (Economy/Military/Diplomacy/Magic/Engineering/Lore/Formations)
-      + a "Show all" reset chip when a tab is active. Active tab
-      gets the treasure-gold border + bold weight + treasure-tint
-      background. Click an active tab to toggle off. The row
-      filter composes with the search filter (chain AND search).
-      Chain-derivation is `chainForDescription` parsing the
-      description prefix ("Economy / Harvest I — ..." → economy);
-      formal `chain` field on the schema is a follow-up worth
-      doing once Atelier chain-starters need it. Tabs hidden
-      when DISCOVERIES.length < 12 so small libraries don't get
-      chrome. Mobile-portrait tested via existing chain test
-      coverage — flex-wrap keeps the strip from overflowing.
-- [x] M_V12.DEPTH.UPGRADE-PERSISTENCE — Atelier `chain-starters`
-      category landed with 12 new meta-unlocks (one per chain ×
-      spec head: starter-economy-{harvest,trade,cap},
-      starter-military-{infantry,archer,siege}, starter-diplomacy-
-      {relations,trade}, starter-magic-{offense,utility},
-      starter-engineering-defense, starter-lore-reveal). Costs
-      4-6 lore tokens. Runtime resolution via new
-      applyChainStarters helper in game-state.ts: maps each
-      starter-id → tier-I Discovery id, marks it purchased in
-      game.research.purchased, runs apply() with a fresh ctx so
-      v0.12 effect kinds (modify-supply / buff-building /
-      buff-combatant) mutate the player economy + flag map.
-      App.tsx beginGame is now async, awaits persistence.list
-      MetaUnlocks() before setConfig, and forwards unlockedMeta.
-      Test count 1235 → 1241 with tests/unit/chain-starters-v12
-      (6 pins: each named starter pre-purchases, multi-starters
-      compose, unknown ids no-op, empty list clean). Also
-      re-lands the v0.11 meta-runtime regression: the v0.11
-      squash dropped the unlockedMeta plumbing — v0.12 puts it
-      back via the same NewGameConfig.unlockedMeta path.
+User direction 2026-05-28: "no reason App.tsx should be so large.
+That's why we need pieces like screens / components." App.tsx is
+776 lines = GameSession (~350, the ~30-component HUD-mount wall +
+window-event wiring) + App (~300, title/new-game/settings shell +
+URL-param + dev-window hooks).
 
-### §3 — AI diplomacy + alliance behavior (M_V12.AI-DIPLO)
+- [x] M_V13.DECOMP.APP-HUDLAYER — extracted the ~140-line HUD-mount
+      wall (~30 components) into src/hud/HudLayer.tsx. App.tsx
+      776→632 lines; 38 unused imports removed. GameSession keeps
+      canvas + ErrorBoundary + buildContext + cameraRef. Browser
+      test confirms HUD still mounts. 1251 unit green.
+- [x] M_V13.DECOMP.APP-EVENTS — window-event useEffect → src/hud/
+      hooks/useGameWindowEvents.ts. App.tsx 632→577. 1251 green.
+- [x] M_V13.DECOMP.APP-SCREENS — REASSESSED as not-needed after the
+      three prior App extractions (HUDLAYER + EVENTS + URLPARAMS).
+      App.tsx is now 470 lines and its App() return is a thin
+      5-component phase router (ErrorOverlay + NewGameModal +
+      SettingsModal + TitleScreen + save-corrupted toast). The
+      remaining body is the legitimate router responsibilities:
+      resume/save-detect effects + the beginGame handler (41 lines)
+      + the phase early-returns. Forcing a src/screens/ split here
+      would design for a shape the code doesn't demand (meta-rule:
+      build only what the step needs). Re-open only if App() grows
+      a second distinct screen with its own logic. Hooks-ordering
+      is correct (all hooks above the early returns — verified the
+      v0.12 bug class doesn't recur).
+- [x] M_V13.DECOMP.APP-URLPARAMS — window.__game* dev/test harness
+      (~105 lines) → src/game/dev-harness.ts installDevHarness(g).
+      App.tsx 577→470. Unused imports removed. Browser test green
+      (harness path exercised). 1251 unit green.
+- [x] M_V13.DECOMP.HUD-SETUP — `src/hud/setup/`: SeedField,
+      MapPreview, PresetControls, OpponentPicker, FactionColorPicker,
+      new-game-options.ts. Barrel. DONE: 6 git mv + index.ts barrel;
+      NewGameModal + faction-color-picker harness import from setup;
+      check 0, lint clean, browser test green.
+- [x] M_V13.DECOMP.HUD-SELECTION — `src/hud/selection/`:
+      SelectionPanel, MultiSelectActions, IdleUnitIndicator,
+      BuildMenuButton, BuildQueueStrip + selection-panel-reasons
+      helper + 2 css sidecars (idle-peons-indicator, th-affordance).
+      Barrel. SelectionRect was DEAD (only stale comments referenced
+      it; no live mount) → deleted, not moved; its data-hud-panel
+      comments in App + ModalShell de-referenced. 4 browser tests +
+      axe green; check 0, lint clean. NOTE: css sidecars must move
+      with their component (tsc misses CSS import; browser test caught
+      it) — see decomp-move-css-sidecars memory.
+- [x] M_V13.DECOMP.HUD-OVERLAYS — `src/hud/overlays/`: Tutorial,
+      Campaign, WaveDefense, Onboarding, LoadingScreen, TitleScreen,
+      TitleBackground, ErrorOverlay, CaptionsOverlay, CriticalWarning,
+      AriaLiveRegion, Toasts, TributeDemandBanner + critical-warning.css.
+      Barrel. DONE: 13 git mv + css sidecar; captions + aria-live-bus
+      kept at hud root (cross-cut buses imported by audio/ai/game/pills,
+      not overlay-private). All importers (App, main, FixtureApp,
+      HudLayer, selection/MultiSelectActions, DiscoveriesPanel + 6 tests)
+      → @/hud/overlays. 19 browser tests green; check 0, lint clean.
+- [x] M_V13.DECOMP.HUD-SYSTEM — `src/hud/system/`: SystemMenu,
+      MobileSystemMenu, ResourceBar, Minimap, ZoneLegend, PauseControl,
+      SpeedControl, SoundToggle, ResignButton, ScreenshotButton,
+      KeyboardShortcuts, AchievementWatcher, PersistAchievements,
+      TradeSwapWidget. Barrel. DONE: 14 git mv, no css/intra-bucket
+      refs; SoundToggle's local MUTE_PREF_KEY kept private (canonical
+      copy lives in @/audio/useMutedPreference). Importers (FixtureApp,
+      HudLayer + 7 browser tests) → @/hud/system. 15 browser tests
+      green; check 0, lint clean.
+- [x] M_V13.DECOMP.HUD-MODALS — `src/hud/modals/`: NewGameModal,
+      SettingsModal, GameOverModal, DiplomacyModal, DiscoveriesPanel,
+      AtelierScreen, CreditsModal, HotkeyEditor, MatchSummaryCard.
+      Barrel. DONE: 9 git mv (DailyChallengeLeaderboard was a planning
+      over-listing — no such file; daily-challenge leaderboard is a
+      feature inside NewGameModal, not a component). Intra-bucket comps
+      GameOverModal→MatchSummaryCard + SettingsModal→HotkeyEditor kept
+      ./-relative. Cross-bucket refs fixed: overlays/TitleScreen +
+      setup/PresetControls now import @/hud/modals (../modals). All
+      importers (App, FixtureApp, HudLayer + 11 browser tests) →
+      @/hud/modals. 17 browser tests green; check 0, lint clean.
+- [x] M_V13.DECOMP.HUD-BARREL — top `src/hud/index.ts` re-exports all
+      8 sub-package barrels (theme/primitives/pills/setup/selection/
+      overlays/system/modals) + HudLayer + the cross-cut helper
+      modules (aria-live-bus/captions/hotkey-bindings/i18n/minimap-zoom/
+      ui-store/usePinchZoom/useRafLoop). No name collisions. Internal
+      HUD consumers keep GRANULAR sub-package imports (not the god-
+      barrel) — tree-shaking + martian-trail/koota pattern. Consolidated
+      HudLayer's 40 one-per-line imports → 5 grouped (one per bucket)
+      and App's 7 → 3. gameplay-slice + zone-legend integration smoke
+      green (the v0.12 hooks-regression paths); check 0, lint clean.
 
-User mandate: "so far our AI is purely confrontational but there
-is NO diplomacy modal and no way to ally against another AI
-temporarily". DiplomacyModal exists (shipped v0.11 #77d).
-v0.12 adds the AI brain.
+### §A2 — config/ domain sub-packages (22 files → 7 bundles)
 
-- [x] M_V12.AI-DIPLO.PROPOSE — already shipped substrate
-      DiplomaticEvaluator's ProposePact branch (borders touch,
-      not yet allied or enemy, no pending proposal either
-      direction). v0.12 adds the per-personality diploBias.propose
-      bias field on src/config/ai-personalities.json + Zod
-      schema for the multiplier hook (used by future overture-
-      desirability scoring).
-- [x] M_V12.AI-DIPLO.ACCEPT-REJECT — already shipped substrate
-      via the diplomacy-proposal accept/reject path; v0.12 adds
-      diploBias.accept on each personality so a future commit
-      can route incoming-proposal evaluation through it.
-- [x] M_V12.AI-DIPLO.BREAK-PACT — DiplomaticEvaluator gained the
-      BreakPact branch + Goal switch. Gated on (a) currently
-      allied, (b) my used-supply ≥ 1.5× their used-supply,
-      (c) personality.diploBias.break ≥ 0.5. Mapping:
-      the-mad-king 1.0 (always), the-raider 0.8 (often when
-      ahead), the-hoarder 0.4 (sometimes), the-builder 0.2
-      (rarely), the-diplomat 0 (never). 6 unit tests in
-      tests/unit/ai-diplo-break-pact-v12.test.ts pin the schema
-      + per-personality values + the threshold contract.
-- [x] M_V12.AI-DIPLO.TRIBUTE-FLOW — already shipped substrate;
-      v0.12 adds diploBias.tribute multiplier on each
-      personality so a future commit can scale desirability:
-      the-hoarder + the-mad-king both 1.0 (always demand),
-      the-raider 0.4 (opportunistic), the-builder + the-diplomat
-      both 0 (never).
-- [x] M_V12.AI-DIPLO.TIMED-ALLY-USE — discoveredEnemyTile in
-      src/ai/helpers.ts now skips entities whose faction is
-      currently an ally of the seeking faction via isAlly()
-      gate. When the alliance expires (tickAllianceExpiry drops
-      the row), targeting resumes naturally on the next
-      arbitration. 2 unit tests in
-      tests/unit/ai-timed-ally-target-skip-v12.test.ts pin both
-      paths (ally-skip + expiry-restore).
-- [x] M_V12.AI-DIPLO.DIPLOMAT-UNIT — TrainEvaluator gained a
-      Diplomat branch: when the AI faction owns an Embassy AND
-      can afford UNIT_COSTS.Diplomat AND canTrain(eco, Diplomat)
-      passes, it queues a Diplomat. The Diplomat then walks into
-      foreign zones via the v0.11 diplomat-contact system to
-      establish first-contact. Defense-coded: UNIT_COSTS.Diplomat
-      existence check protects against config drift (older v0.11
-      saves lacking the entry skip the branch silently).
+- [x] M_V13.DECOMP.CONFIG-SCHEMA — extracted to src/config/schema.ts
+      (resourceCostSchema + resourceIdSchema builders). economy +
+      discoveries call them. Landed in commit 46f4916.
+- [x] M_V13.DECOMP.CONFIG-ECONOMY — `config/economy/`: economy +
+      resources json+ts. Barrel. DONE: 4 git mv into economy/; barrel
+      re-exports both. economy.ts's @/config/resources → ./resources.
+      LEARNING (applies to all remaining CONFIG-* bundles): config
+      consumers import by bare domain path (@/config/X). When a bundle
+      MERGES a non-eponymous file (resources into economy/), that file's
+      external importers must repoint to the BUNDLE barrel path
+      (@/config/resources → @/config/economy), else the old peer path
+      404s and resource-type inference collapses repo-wide. The
+      eponymous file (economy → economy/) keeps its path free via dir
+      resolution. 72 tests green; check 0.
+- [x] M_V13.DECOMP.CONFIG-COMBAT — `config/combat/`: combat +
+      archetypes json+ts. Barrel. DONE: 4 git mv; barrel re-exports
+      both. archetypes.ts's ./factions → ../factions (factions stays
+      at config root → ai/ bundle later). 1 @/config/archetypes importer
+      → @/config/combat. 31 combat/archetype tests green; check 0.
+- [x] M_V13.DECOMP.CONFIG-PROGRESSION — `config/progression/`:
+      discoveries + meta-unlocks + eras json+ts. Barrel. DONE: 5 git mv
+      (eras.json is data-only — no accessor; its loader is rules/eras.ts
+      via deep import @/config/progression/eras.json). discoveries +
+      meta-unlocks external importers → @/config/progression. 28 tests
+      green; check 0. LEARNING (extends CONFIG-ECONOMY): the repoint
+      grep MUST cover THREE import forms, not just `from '…'`:
+      (1) `from '@/config/X'`, (2) dynamic `await import('@/config/X')`
+      [GameOverModal + persistence used this], (3) deep data import
+      `from '@/config/X.json'` [rules/eras.ts used this]. Static `from`
+      alone misses the latter two and tsc catches them only on full check.
+- [x] M_V13.DECOMP.CONFIG-AI — `config/ai/`: ai-personalities +
+      factions + faction-palette. Barrel. DONE: 4 git mv. LARGEST
+      blast radius (factions imported by ~50 files across world/hud/
+      game/ai/persistence). All forms repointed → @/config/ai (36
+      @/config/factions + 9 ai-personalities + 5 faction-palette + 1
+      ../factions from combat/archetypes). 82 config+ai tests + 3
+      faction-color browser tests green; check 0.
+- [x] M_V13.DECOMP.CONFIG-WORLD — `config/world/`: world + mapgen
+      json+ts. Barrel. DONE: 4 git mv. Only the 15 @/config/mapgen
+      importers needed repointing → @/config/world; the 48
+      @/config/world importers resolved AUTOMATICALLY (world is the
+      eponymous bundle file → @/config/world resolves to world/index.ts
+      via dir resolution — the eponymous-file-free-path principle from
+      CONFIG-ECONOMY, here saving 48 rewrites). 81 tests green; check 0.
+- [x] M_V13.DECOMP.CONFIG-NARRATIVE — `config/narrative/`:
+      match-narrative + myth-events + credits + campaign-chapters +
+      achievements. Barrel. DONE: 7 git mv. myth-events/credits/
+      campaign-chapters have .ts accessors (barrel re-exports);
+      match-narrative.json + achievements.json are data-only (deep
+      import @/config/narrative/X.json). All forms repointed. 30 unit
+      + 3 campaign-overlay browser tests green; check 0.
+- [x] M_V13.DECOMP.CONFIG-ASSETS — `config/assets/`: asset-metadata
+      json+ts. Barrel. DONE: 2 git mv. Bundle dir (assets/) ≠ file name
+      (asset-metadata) so ALL importers repointed → @/config/assets,
+      incl. a relative ../config/asset-metadata in src/assets/assets.ts
+      AND two non-source refs: the asset-manifest test's hardcoded
+      json path + scripts/build-manifest.ts MANIFEST_OUT (the ingest
+      writer — would've regenerated at the old path). 10 asset tests
+      green; check 0. LEARNING: config moves also touch relative
+      ../config/X imports + tooling/test hardcoded fs paths, not just
+      @/config/X module specifiers.
+- [x] M_V13.DECOMP.CONFIG-BARREL — top `config/index.ts` re-exports
+      all 7 domain bundles (economy/combat/progression/ai/world/
+      narrative/assets) + schema. No name collisions on check (consumers
+      use granular @/config/<bundle> paths; barrel is external entry
+      point). config root now: 7 bundle dirs + schema.ts + __tests__.
+      §A2 COMPLETE — former flat config dir → 7 json+ts domain bundles.
 
-### §4 — Persistence + lorebook depth (M_V12.PERSIST)
+### §A3 — world/ feature sub-packages (97 files)
 
-The v0.11 substrate (sqlite + lorebook + meta-unlocks +
-daily-challenge leaderboard) is shipped. v0.12 extends.
+- [x] M_V13.DECOMP.WORLD-AUDIT — enumerate world/ files into feature
+      groups before moving. DONE (Explore-agent audit, 44 top-level
+      files + procedural/ + __tests__). GROUPING:
+      • terrain/ (10): Terrain, terrain-mesh, Roads, Crossings,
+        TileInteraction, HexGridOverlay, Water, PathLine, touch-drag,
+        touch-tap-threshold
+      • biomes/ (4): palette, BiomeSwatch, Mountains, Decoration
+        (palette stays here — BIOME_COLORS is biome-domain, NOT moved
+        to config/render despite agent suggestion = scope creep)
+      • board/ (19): Units, BuilderBadge, HealthBillboard, SelectionRing,
+        UnitHexOutline, BuildingOutlineRing, ConstructionRing,
+        FactionBase, ResourceNodes, ProjectileLayer, RallyMarker,
+        StackRender, ZoneBorder, TrackingRings, barbarian-camps,
+        formations, structure-models, portal-stones, resource-spawn
+      • effects/ (12): ParticleEmitter, particle-consumers,
+        FootstepEmitter, VolcanoLayer, WildfireLayer, DeathDropLayer,
+        LootCacheLayer, ContestedPulse, CombatText, ResourceText,
+        WorldBadge, world-text-font
+      • procedural/ (existing) — barrel in place
+      CROSS-GROUP import edges to handle: Terrain→terrain-mesh→palette
+      (terrain→biomes), FactionBase→procedural (existing), and
+      ResourceText/StackRender→WorldBadge (both effects, intra-group).
+      Move order: biomes first (palette is the leaf dep), then terrain,
+      board, effects, procedural-barrel, world-barrel.
+- [x] M_V13.DECOMP.WORLD-TERRAIN — `world/terrain/`: Terrain,
+      terrain-mesh, Roads, Crossings, TileInteraction, HexGridOverlay,
+      Water, PathLine, touch-drag, touch-tap-threshold. Barrel. DONE:
+      10 git mv. Intra-group edges (Terrain→terrain-mesh, TileInteraction
+      →{HexGridOverlay,PathLine,touch-drag,touch-tap-threshold}) stay ./;
+      cross-group terrain-mesh→biomes bumped to ../biomes. BuildContext
+      type now @/world/terrain (HudLayer/useGameWindowEvents/SelectionPanel
+      auto-repointed). 14 touch unit + 3 gameplay-slice browser green;
+      check 0.
+- [x] M_V13.DECOMP.WORLD-BIOMES — `world/biomes/`: palette, BiomeSwatch,
+      Mountains, Decoration. Barrel. DONE: 4 git mv. terrain-mesh's
+      ./palette → ./biomes; external @/world/{palette,...} → @/world/
+      biomes; __tests__ relative ../palette → ../biomes/palette. 20 unit
+      + 16 biome-swatch browser tests green; check 0.
+- [x] M_V13.DECOMP.WORLD-BOARD — `world/board/`: 19 files (Units +
+      badges/billboards, FactionBase + ConstructionRing + structure-
+      models + portal-stones, ResourceNodes + resource-spawn,
+      ProjectileLayer, RallyMarker, StackRender + formations, ZoneBorder,
+      barbarian-camps, the ring visuals). Barrel. DONE: 19 git mv. Intra-
+      board edges (Units→badges, FactionBase→ConstructionRing/structure-
+      models) stay ./. FactionBase→procedural bumped to ../procedural.
+      Cross-group refs to WorldBadge/world-text-font (effects, not yet
+      moved) point at ../WorldBadge / @/world/world-text-font for now —
+      WILL fix in WORLD-EFFECTS. 60 unit + 1 units-render browser green;
+      check 0.
+- [x] M_V13.DECOMP.WORLD-EFFECTS — `world/effects/`: ParticleEmitter +
+      particle-consumers, FootstepEmitter, Volcano/Wildfire/DeathDrop/
+      LootCache layers, ContestedPulse, CombatText, ResourceText,
+      WorldBadge, world-text-font. Barrel. DONE: 12 git mv. Intra-group
+      edges (particle-consumers→ParticleEmitter, ResourceText/CombatText/
+      WorldBadge→world-text-font) now ./. Fixed the board→effects refs
+      left dangling after WORLD-BOARD (StackRender ../WorldBadge→../effects,
+      BuilderBadge @/world/world-text-font→@/world/effects). 2 particle-
+      perf unit + 2 particle-emitter browser green; check 0.
+      NOTE: Water lives in terrain/ (boundary feature), not effects —
+      directive's parenthetical "(water, ...)" was a planning guess;
+      actual grouping per WORLD-AUDIT.
+- [x] M_V13.DECOMP.WORLD-PROCEDURAL — barrel the existing procedural/
+      sub-tree. DONE: added top procedural/index.ts re-exporting the
+      already-present nested barrels (buildings/, primitives/) + the two
+      top files (faction-materials, FactionMaterialsContext). No file
+      moves (sub-tree was already structured); existing deep imports
+      (@/world/procedural/buildings etc.) kept working. No export
+      collisions. 63 procmesh browser tests green; check 0.
+- [x] M_V13.DECOMP.WORLD-BARREL — top `world/index.ts` re-exports all
+      5 feature sub-packages (biomes/terrain/board/effects/procedural).
+      No name collisions. world/ root now: 5 sub-packages + __tests__,
+      ZERO loose files. §A3 COMPLETE — 44-file flat world dir → 5
+      feature sub-packages. §A COMPLETE (hud 87→8, config flat→7,
+      world 44→5). Full suite 1251 tests green.
+      LEARNING: grep-gate tests that scan source files by HARDCODED fs
+      path (no-hardcoded-faction-colors, color-outline-v3,
+      asset-manifest) break on every move — they're not caught by tsc
+      OR module-specifier greps. After a decomposition pass, grep
+      tests/ + scripts/ for string-literal 'src/<dir>/<File>.tsx' fs
+      paths and update them. Fixed 3 such tests this pass.
 
-- [ ] [WAIT-DESIGN] M_V12.PERSIST.CLOUD-OPT-IN — cloud-sync
-      requires a server endpoint contract + per-install id
-      generation flow + opt-in UI. Substrate (leaderboard
-      fingerprint, lorebook rich-card schema) is now in place to
-      support sync once the endpoint design lands. v0.13 cycle.
-- [x] M_V12.PERSIST.LEADERBOARD-CAP — daily_challenge_scores
-      gains an additive `fingerprint` column. recordDailyChallenge
-      Score computes FNV-1a hex over (dateUTC|seedPhrase|outcome|
-      simSeconds|score|endedAtIso|salt) and writes it; salt is
-      the per-install event-PRNG seed from Capacitor Preferences
-      (never leaves the device). Cheap, deterministic, no crypto
-      dep. Sufficient tamper detection for install-local
-      leaderboards; cloud-sync verification recomputes with the
-      same salt (transmitted once at sync time). v0.11 rows
-      store NULL fingerprint and stay readable.
-- [x] M_V12.PERSIST.LOREBOOK-EXPAND — LorebookEntry interface
-      gains 6 optional rich-card fields (startingRealmSize,
-      finalRealmSize, diplomaticState, peakMilitaryCount,
-      biggestCombatExchange, heroDeaths). Schema gains an
-      additive `rich_json` JSON column on lorebook; write
-      packs the present fields, read parses (safe-fail to
-      v0.11-shape when JSON is null/malformed). All fields
-      optional so existing rows render gracefully via the v0.11
-      layout fallback. Per-row sample-collection wiring (which
-      systems populate the new fields at match-end) is per-
-      caller work and lands when the lorebook record path is
-      next touched.
-- [ ] [WAIT-DESIGN] M_V12.PERSIST.CHRONICLE-MODE — Chronicle
-      saga page needs UI layout work + a new sqlite `chronicle`
-      table for chapter-completion records. The Lore /
-      chronicle-saga Discovery row already wires the gate; the
-      page itself is v0.13 cycle.
+---
 
-### §5 — Mobile polish + input + accessibility (M_V12.MOBILE)
+## §B HUD design-review findings (apply AFTER §A)
 
-User mandate (loaded global profile): "Aethelgard ships to
-Android + iOS; hotkeys retired; tap+aria as the test surface".
+From `.ui-design/reviews/hud-directory_20260528_100148.md`. Gated on
+the decomposition landing so the fixes apply to clean sub-packages.
 
-- [ ] [WAIT-DEVICE] M_V12.MOBILE.TAP-AUDIT — Maestro tap-audit
-      flow needs a real Pixel 5a profile (cap:run:android) which
-      this codex session cannot drive directly. The contract +
-      audit criteria are documented in docs/specs/202-mobile-
-      gestures.md; when a human runs the audit, findings file as
-      M_V12.MOBILE.HIT-TARGET-FIX entries.
-- [ ] [WAIT-DEVICE] M_V12.MOBILE.HIT-TARGET-FIX — gated on
-      TAP-AUDIT findings; defers to that item.
-- [x] M_V12.MOBILE.GESTURE-MAP — `docs/specs/202-mobile-gestures.md`
-      authored. Documents the full gesture matrix (tap / long-press
-      500ms / drag / pinch / two-finger drag / swipe-left for
-      toasts), per-surface gesture contracts (renderer, HUD,
-      modal), tap-slop budget (8 px), long-press budget (500 ms),
-      hit-target minimum (48×48 dp), implementation guidance
-      (PointerEvent first, TouchEvent fallback for multi-touch),
-      and the forbidden patterns list (no double-tap as primary,
-      no two-finger tap, no right-click, no cross-surface drag).
-      Sets the contract every future HUD + renderer commit must
-      honor; the upcoming Maestro tap-audit flow validates against
-      this spec.
-- [x] M_V12.MOBILE.HAPTICS — Capacitor haptic gateway extended.
-      Existing v0.11 triggers (buildComplete / unitKilled / quake
-      / wildfireIgnition) kept; v0.12 adds attackCommand (light),
-      victory (heavy), defeat (medium), buttonPress (light).
-      GameOverModal wires victory + defeat via a ref-guarded
-      useEffect on outcome flip (web stub no-ops; Android device
-      fires through the system channel). Settings opt-out
-      respected via existing setHapticsEnabled gate. Future
-      attackCommand + buttonPress wiring is per-call-site work
-      (not gated on this substrate item).
-- [ ] [WAIT-DEVICE] M_V12.MOBILE.SAFE-AREA-AUDIT — needs a real
-      device profile (iPhone 14 + Pixel 7 + iPad mini +
-      foldable) to validate `env(safe-area-inset-*)` honoring.
-      Visual harness Playwright fixtures partially cover via
-      pixel-7 / iphone-14 viewports; physical-device validation
-      is human.
-- [ ] [WAIT-DEVICE] M_V12.MOBILE.LANDSCAPE-PORTRAIT — needs
-      orientation-flip Maestro flow against a real device.
-- [ ] [WAIT-DEVICE] M_V12.MOBILE.OFFLINE-CAPACITOR — needs an
-      airplane-mode Maestro flow against an installed APK.
+- [x] M_V13.HUD.FIX-PILL-COLLISION — FactionChips overlapped ScoreBar
+      at top-center in N-player matches. DONE: added hud/theme/
+      hud-layout.ts with topCenterSlot(row) + TOP_CENTER_SLOT
+      {factionChips:0, scoreBar:1}; both pills now use it (chips row 0,
+      score bar row 1) so they STACK instead of collide. Kept absolute
+      (the HUD wrapper is full-viewport, so absolute==fixed here; true
+      `fixed` would break out of the pointer-events-none container —
+      the review's "fixed" was for viewport-anchoring, which absolute-in-
+      full-viewport-wrapper already gives). FactionChips zIndex now
+      HUD_THEME.z.pills. Added a no-overlap regression test to the
+      faction-chips harness (asserts strip.bottom <= scoreBar.top);
+      eyeballed faction-chips-scorebar-stack.png — clean vertical stack,
+      no overlap. 3 browser tests green; check 0. (review Major #1 +
+      Minor #5)
+- [x] M_V13.HUD.FOCUS-RINGS — DONE: added a global :focus-visible gold
+      outline rule to styles.css covering button / [role=button] /
+      [role=menuitem] / [role=tab] / .hud-interactive — keyboard focus
+      only (the :focus-visible heuristic keeps mouse/touch ring-free).
+      Chose a GLOBAL rule over the directive's "className sweep on every
+      button" (282 inline-styled buttons + Radix-portaled modals render
+      outside any single container — a global stylesheet rule is the
+      correct, lower-risk fix, no per-button edit). Removed the two bare
+      outline:none in MobileSystemMenu (they'd left Radix menu items with
+      NO focus indicator — the actual Major #2 bug). Added focus-rings
+      browser test (recurses @layer to confirm the rule loads). 2 browser
+      tests green; check 0. (review Major #2)
+- [x] M_V13.HUD.TOKEN-SCALE — extend HUD_THEME with `space` (4/8/12/
+      16/24), `z` (board<pills<panels<banners<menu<modal<toast ladder),
+      `tapTarget` (48), `safeTop/Bottom/Left/Right` helpers (non-zero
+      desktop fallback). Barrel-exported. token-scale.test.ts pins all
+      ramps (5 tests). DONE the token DEFINITIONS; per meta-rule, did
+      NOT sweep every magic number repo-wide — adoption happens in the
+      consuming items (FIX-PILL-COLLISION, TAP-TARGETS) as they touch
+      those files. Audited the safe-area `0px`-fallback sites: all add a
+      `+Npx` desktop margin already; SettingsModal sticky-footer's bare
+      env() is intentional (footer has own padding) — NOT the Minor #6
+      bug. (review Major #3 + Minor #6)
+- [x] M_V13.HUD.TAP-TARGETS — DONE: added `.hud-tap-target` utility to
+      styles.css (@layer base) enforcing min 48×48 inline-flex-centered;
+      bumped MobileSpeedPausePill from 36×44 → 48×48 (height + both
+      segment widths now HUD_THEME.tapTarget, radius tapTarget/2). Tightened
+      the pill browser test to assert ALL 4 segments ≥48×48 (was ≥44×36).
+      4 browser tests green; check 0. (review Major #4)
+- [x] M_V13.HUD.AXE-WIDEN — DONE: extended the axe-core sweep past
+      modals to add ScoreBar (pills) + CaptionsOverlay (overlays) scans
+      in a new describe block. Both zero violations. axe-a11y now 6
+      tests (was 4); check 0. (review Minor #7)
+- [x] M_V13.HUD.CHAIN-FIELD — DONE: added a typed `chain` enum
+      (DISCOVERY_CHAINS) to the discoveries.ts Zod schema +
+      DiscoveryConfig + the runtime Discovery type + the registry map;
+      injected `chain` into all 82 discoveries.json entries (derived
+      once from the existing description prefix — all 82 mapped cleanly,
+      zero misc). DiscoveriesPanel now reads `d.chain` directly;
+      deleted the brittle chainForDescription string-prefix parse.
+      Added a chain-coverage test (every entry has a valid chain that
+      matches its description prefix). 6 config + 1 panel browser test
+      green; check 0. (review Minor #8)
+- [x] M_V13.HUD.LAYOUT-SPEC — DONE: wrote docs/specs/21-hud-layout.md
+      capturing the coordinate model, top-center slot table (row 0
+      FactionChips / row 1 ScoreBar), z-ladder, space ramp, safe-area
+      helpers, 48dp tap-target floor, focus-ring rule, and axe gate —
+      each cross-referencing the token/helper + the test that pins it.
+      This is the contract future HUD commits check against. §B COMPLETE.
+      (review Suggestion #3)
 
-### §6 — v0.12 release ladder
+---
 
-- [x] M_V12.RELEASE.PR — PR #90 opened at
-      https://github.com/arcade-cabinet/Aethelgard-Chronicles-of-Strata/pull/90
-      after user `go` authorization. 14 commits: substrate +
-      6 chain expansions + chain-starter runtime + 8 effect-
-      kinds dispatcher + AI-DIPLO bias matrix + break-pact +
-      timed-ally + Diplomat-train + leaderboard fingerprint +
-      lorebook rich-card schema + gesture-map spec + haptics +
-      v0.11 squash regression re-land + App hooks-ordering fix.
-      1249 unit + 224 browser tests green pre-push.
-- [ ] [WAIT-CI] M_V12.RELEASE.CI-WATCH — watch PR #90 CI
-      (Build + test, Visual battery, Build debug APK,
-      Dependency review, CodeQL ×3, CodeRabbit). Address any
-      red checks; resolve any CodeRabbit threads via the same
-      forward-fix pattern from v0.11.
-- [ ] [WAIT-PR] M_V12.RELEASE.VISUAL-LOCK — re-bake every
-      visual baseline against the v0.12 build; runs as part of
-      the PR review cycle after PR opens. Gates on RELEASE.PR.
-- [ ] [WAIT-DEVICE] M_V12.RELEASE.PLAYTHROUGH — full manual
-      playthrough on a real Pixel 5a + iPhone 14. Needs human
-      hardware operator.
-- [ ] [WAIT-DEVICE] M_V12.RELEASE.PERF-MOBILE — mobile perf gate
-      requires Pixel 5a emulator / device. Substrate measurement
-      tools (perf:profile, perf-mobile-trace) already there.
-- [ ] [WAIT-PR] M_V12.RELEASE.A11Y-SWEEP — axe-core/playwright
-      against every HUD route. Best run on the merged code (HUD
-      drift between branch + main is the audit's target).
-- [ ] [WAIT-USER] M_V12.RELEASE.SQUASH — squash-merge the cycle
-      PR. Per the autonomy doctrine, waits for explicit user
-      sign-off (shared-branch destructive op). release-please
-      auto-cuts the v0.1.28 PR on merge.
+## §C Release ladder
+
+- [ ] M_V13.RELEASE.PR — open ONE PR feat/decomp-subpackages → main.
+      §A + §B landed + reviews absorbed. AGENT ACTION (gh pr create) —
+      NOT a user gate. Do it.
+- [ ] [WAIT-CI] M_V13.RELEASE.CI-WATCH — after PR open, watch 8/8
+      checks + CodeRabbit; address every finding. (Legitimate wait:
+      CI is in flight after the agent triggered it.)
+- [ ] M_V13.RELEASE.SQUASH — squash-merge once CI green + threads
+      resolved (gh pr merge --squash). AGENT ACTION — full automation
+      means the agent merges its own green PR; never --admin past red
+      CI. release-please then cuts the version bump.
 
 ---
 
 ## Recurring main-thread hygiene
 
-Run continuously alongside the queue work.
-
-- [ ] [WAIT] M_MAIN.RELEASE-LADDER — release-please v0.1.27 PR
-      not yet cut (release-please scheduled run hasn't fired
-      since the v0.11 merge ~hours ago). Recurring; re-check on
-      next session.
-- [x] M_MAIN.DIRECTIVE-EDIT — maintained continuously this
-      session: PRD-v0.12 + directive flip + every commit's
-      `[x]` flip + per-§ status line writes. Recurring; carries
-      forward.
-- [x] M_MAIN.DOCS.RELEASE-NOTES — release-please owns
-      CHANGELOG.md; nothing manual this session.
-- [x] M_MAIN.PRD-DRIFT-AUDIT — PRD-v0.12 cross-links every §-
-      block in this directive (PRD §1 ↔ directive §1, etc.).
-      Recurring; audit on each directive edit.
-- [ ] [WAIT-CYCLE] M_MAIN.PLAYTHROUGH-AUDIT — playthrough audit
-      pins to `docs/playthroughs/v0.12.md` after the v0.12 cycle
-      merges (not on the in-flight branch). Quarterly cadence.
-- [x] M_MAIN.WORKTREE-CLEANUP — `git worktree prune` post-v0.11
-      merge ran in the prior session.
-- [x] M_MAIN.MEMORY-WRITE — corrective-feedback memories saved
-      across this session (the user's directive-flip request
-      and the v0.11 squash-regression discoveries both noted).
-      Recurring; on-feedback.
-- [x] M_MAIN.GRINDER-WATCH — no flake reports surfaced this
-      session; all 1249 tests stable across every commit.
-      Recurring.
-- [ ] [WAIT-PR] M_MAIN.CODERABBIT-SWEEP — no open PRs to sweep
-      this session (PR opens via [WAIT-USER] RELEASE.PR above).
-      Recurring once PR opens.
+- [ ] [WAIT] M_MAIN.RELEASE-LADDER — watch release-please PRs
+      (v0.1.27 from #89, v0.1.28 from #90). Merge when CI lands.
+- [x] M_MAIN.DIRECTIVE-EDIT — this overhaul (first commit of the
+      decomp PR per user direction). Recurring; carries forward,
+      maintained per-commit not in batches.
+- [ ] [WAIT-PR] M_MAIN.CODERABBIT-SWEEP — sweep CodeRabbit threads on
+      open PRs as they post. Zero open PRs right now (the v0.13 PR
+      opens only on user authorization, gated below). Re-arms when a
+      PR exists with a CodeRabbit review.
+- [x] M_MAIN.WORKTREE-CLEANUP — pruned post-#90 merge (only main
+      worktree remains); dropped the agent-state stash.
+- [ ] [WAIT-FLAKE] M_MAIN.GRINDER-WATCH — convert any flake to a
+      deterministic fix, never a retry. IN PROGRESS on save-load-n-player
+      `__game not ready` flake. Round 1 (stuck-loop-debugger): moved
+      installDevHarness from render-phase useMemo → committed useEffect +
+      added atomic `__game_ready` flag (cleared first, set last); all e2e
+      specs gate on it. Regression test: tests/unit/dev-harness-atomic-
+      ready.test.ts. BUT full-suite e2e STILL flaked — wait now gates on
+      __game_ready (succeeds) yet a later evaluate reads __game falsy, so
+      there's a POST-install clear the render-vs-commit fix didn't cover.
+      Round 2 dispatched to the same agent with the sharper contradiction.
+      The pre-push e2e retry (fcb23e9) is the safety net until the real
+      mechanism is found. Do NOT claim resolved until full `pnpm test:e2e`
+      is green twice running.
 
 ---
 
-## §post-horizon — v0.13 and beyond
+## §post-horizon — v0.14+
 
-These are forward-looking and intentionally not detailed yet.
-Picked up after v0.12 ships.
+- [ ] [WAIT-PR] M_V14.DECOMP-ECS-GAME — decompose src/ecs/ + src/game/
+      into sub-packages. AUDITED (Explore agent) — grounded grouping +
+      import-edge map below; ready to execute. GATED on the v0.13 PR
+      merging first (one-topic-per-PR — can't open the v0.14 ecs PR while
+      v0.13 is unmerged). Execution starts the moment v0.13 squash-merges.
+      Move order by risk:
+      • PHASE 1 (low risk) — ecs/systems/ (28 files, ZERO intra-dir
+        imports, all leaf systems). Groups: combat (combat,
+        offensive-behavior, mob-targeting, wave-defense, stance-behavior),
+        economy (harvest, deposit, hidden-bonus, science, market-trade,
+        loot-pickup), lifecycle (spawn, death, building-death),
+        movement (job-routing, path-follow, engineer-repair, wander,
+        animation), hazards (volcano, quake, wildfire, encroachment),
+        meta (ai, diplomat-contact, status-attributes, win-loss).
+        ONLY economy-tick-phases.ts (game/, the orchestrator) imports
+        all 26 — its 26 paths update to the new barrels. components.ts
+        + world.ts stay at ecs/ root (cross-cut by ALL systems).
+      • PHASE 2 (low risk) — game/ leaf groups: narrative (match-narrative,
+        narrator-beats, myth-events, random-events, daily-challenge,
+        achievements) + utilities (mapgen-helpers, projectiles, rally,
+        auto-save, dev-harness, commands).
+      • PHASE 3 (defer/careful) — game/ economy + diplomacy clusters are
+        hub-coupled (economy.ts 6+5 edges, diplomacy.ts 5+3); game-state.ts
+        stays at root (10+ importers). Decompose only with hub-aware
+        barrels, or leave hubs at root.
+      CROSS-DIR coupling: 10 ecs→game edges (combat→combat-math, deposit/
+        hidden-bonus/science→economy, diplomat-contact→diplomacy, etc.),
+        3 game→ecs (economy-tick-phases→26, game-state→ai, random-events
+        →quake/wildfire). Manageable; ecs-first is independently shippable.
+- [ ] [WAIT-DEVICE] M_V14.MOBILE-DEVICE-AUDIT — the M_V12.MOBILE
+      tap-audit / safe-area / orientation / offline items that need
+      a real Pixel 5a / iPhone 14 (genuine hardware dependency).
 
-- [ ] [WAIT-CYCLE] M_V13.MULTIPLAYER-PROBE — investigate add a 1v1 hot-seat
-      mode first (no networking); then a turn-based async mode
-      via the persistence cloud-sync facade.
-- [ ] [WAIT-CYCLE] M_V13.MAP-EDITOR — in-game map editor that writes seed +
-      override-tile JSON to sqlite; share via the share-seed
-      button.
-- [ ] [WAIT-CYCLE] M_V13.MOD-API — load custom upgrade-chain JSON files from
-      a known location so power-users can author scenarios
-      without forking the codebase.
-- [ ] [WAIT-CYCLE] M_V13.WORKSHOP-INTEGRATION — once mod-api lands, a
-      community workshop integration (likely Steam or a
-      self-hosted CDN).
-- [ ] [WAIT-CYCLE] M_V13.SCENARIO-EDITOR — author tools for the campaign-
-      chapter shape (pre-placed buildings + scripted waves +
-      objectives); reuses CHAPTER_PRE_PLACEMENT contract from
-      v0.11.
-- [ ] [WAIT-CYCLE] M_V13.AI-PERSONALITIES-EXPAND — 5 personalities exist
-      (the-diplomat / the-raider / the-builder / the-hoarder /
-      the-mad-king); add 5 more (the-betrayer / the-warlord /
-      the-mystic / the-merchant / the-survivor) once §3
-      AI-DIPLO substrate lands.
-- [ ] [WAIT-CYCLE] M_V13.NAMED-HEROES-RUNTIME — Atelier already unlocks
-      hero-knight-errant / hero-shieldmaiden / hero-archmage /
-      hero-cartographer / hero-warlord. v0.13 differentiates
-      each: unique passive, unique active ability, unique
-      death dialog.
-- [ ] [WAIT-CYCLE] M_V13.LORE-CHAPTERS-READABLE — Atelier `lore-chapter-*`
-      unlocks should open a readable lore page (not just unlock
-      a flag). Markdown-rendered, with illustrations from the
-      asset library.
+(Removed: KEBAB-RENAME was self-described as "optional" — dropped as
+gratuitous churn. PERSIST-CLOUD + NAMED-HEROES-RUNTIME were
+forbidden-phrase "v0.12 §4 deferrals" with no concrete scope —
+dropped per the rule against using §post-horizon as a deferral bucket.
+Re-add with concrete scope if/when there's user demand.)
 
 ---
 
 ## Reference — historical cycles
 
-- v0.4 → v0.10 cycle PRDs at `docs/specs/PRD-v0.{4..10}.md`.
-- v0.11 spec discoveries at `docs/specs/200-genre-commitment.md`,
-  `docs/specs/201-stacking-and-formations.md`, and v0.12's new
-  `docs/specs/202-mobile-gestures.md` (landed M_V12.MOBILE.
-  GESTURE-MAP this cycle).
-- v0.11 final state: merged as #89 (squash commit 717ed2f) at
-  2026-05-27. The full v0.11 ledger of `[x]` items lives in
-  git history under the v0.11 cycle commits 60a..717ed2f.
-
-The pre-v0.11 directive (2418 lines) was replaced ahead of v0.11
-by a clean queue. The post-v0.11 directive (this file) follows
-the same shape: only-current-cycle items at the top, post-horizon
-items below, history pointer at the bottom.
+- v0.4 → v0.10 PRDs at `docs/specs/PRD-v0.{4..10}.md`.
+- v0.11 spec discoveries: `docs/specs/200-genre-commitment.md`,
+  `201-stacking-and-formations.md`.
+- v0.12: `docs/specs/PRD-v0.12.md`, `202-mobile-gestures.md`,
+  `docs/design/v0.12-upgrade-graph.md`. Merged as #90 (2ee7edd).
+- v0.13 decomposition: `docs/specs/210-package-decomposition.md`.
+- HUD design review: `.ui-design/reviews/hud-directory_20260528_100148.md`.

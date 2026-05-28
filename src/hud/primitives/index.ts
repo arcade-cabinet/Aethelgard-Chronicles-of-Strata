@@ -13,3 +13,8 @@ export { IconButton, type IconButtonProps } from './IconButton';
 export { SectionCard, type SectionCardProps } from './SectionCard';
 export { StepProgressDots, type StepProgressDotsProps } from './StepProgressDots';
 export { TreasureButton, type TreasureButtonProps } from './TreasureButton';
+// M_V13.DECOMP.HUD-PRIMITIVES — folded the top-level shared shells
+// (ModalShell, HudPill, Segmented) into this package.
+export { ModalShell, type ModalShellProps } from './ModalShell';
+export { HudPill, type HudPillProps, type HudPillSlot } from './HudPill';
+export { Segmented } from './Segmented';

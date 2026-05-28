@@ -10,7 +10,7 @@
  * registry was not used, the custom color test would fail.
  */
 import { describe, expect, it } from 'vitest';
-import { findFaction, LEGACY_FACTIONS } from '@/config/factions';
+import { findFaction, LEGACY_FACTIONS } from '@/config/ai';
 import { startGame } from '@/game/game-state';
 
 describe('M_V6.CARRY.COLOR-OUTLINE-V2 — Minimap reads from registry', () => {

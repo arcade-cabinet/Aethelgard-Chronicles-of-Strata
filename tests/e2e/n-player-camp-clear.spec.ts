@@ -32,12 +32,12 @@ test.describe('M_V7.E2E.4-PLAYER-CAMP-CLEAR', () => {
   test('4-player setup auto-spawns camps; clearing one credits reward', async ({ page }) => {
     await page.goto('/?ai-vs-ai=1&seed=n-player-camp-clear-e2e&mode=border-clash&nplayer=4');
 
-    // Wait for the game test hooks to mount.
-    await page.waitForFunction(
-      () =>
-        typeof (window as { __game_advanceFrames?: unknown }).__game_advanceFrames === 'function',
-      { timeout: 30_000 },
-    );
+    // Wait for the atomic dev-harness ready flag (M_V13.HARNESS.ATOMIC-
+    // READY — set last, from the committed render; gating on a single
+    // hook can resolve against a non-committed render's window).
+    await page.waitForFunction(() => (window as { __game_ready?: boolean }).__game_ready === true, {
+      timeout: 60_000,
+    });
 
     // 4 player factions auto-built + at least 1 barbarian camp.
     const factionCounts = await page.evaluate(() => {

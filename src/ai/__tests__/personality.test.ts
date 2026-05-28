@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { AiPlayer } from '@/ai/ai-player';
-import { ALL_PERSONALITIES, personalityFor } from '@/config/ai-personalities';
+import { ALL_PERSONALITIES, personalityFor } from '@/config/ai';
 import { Building, FactionTrait } from '@/ecs/components';
 import { runEconomyTick, startGame } from '@/game/game-state';
 

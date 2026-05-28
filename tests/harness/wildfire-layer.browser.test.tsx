@@ -21,10 +21,10 @@ import { Canvas } from '@react-three/fiber';
 import { page } from '@vitest/browser/context';
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { WILDFIRE_TUNING } from '@/config/mapgen';
+import { WILDFIRE_TUNING } from '@/config/world';
 import { getHexKey } from '@/core/hex';
 import type { GameState } from '@/game/game-state';
-import { WildfireLayer } from '@/world/WildfireLayer';
+import { WildfireLayer } from '@/world/effects';
 
 function makeStubGame(): GameState {
   const wildfires = new Map<string, { burnTicksRemaining: number; secondsSinceTick: number }>();

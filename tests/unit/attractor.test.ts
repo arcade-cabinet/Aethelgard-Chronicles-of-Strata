@@ -3,7 +3,7 @@ import { generateBoard } from '@/core/board';
 import { hexDistance } from '@/core/hex';
 import { createMapPrng } from '@/core/rng';
 import { ATTRACTOR_GUARANTEE, ATTRACTOR_RADIUS, ensureAttractorResources } from '@/rules';
-import { spawnResourceNodes } from '@/world/resource-spawn';
+import { spawnResourceNodes } from '@/world/board';
 
 describe('attractor map-gen contract (M8.6e, spec 102)', () => {
   it('guarantees resources up to what the biome pool allows', () => {

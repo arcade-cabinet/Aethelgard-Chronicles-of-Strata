@@ -13,7 +13,7 @@
  *   5. Barbarian-camp slots round-trip too (auto-spawned in startGame).
  */
 import { describe, expect, it } from 'vitest';
-import { buildDefaultFactions, type FactionConfig, LEGACY_FACTIONS } from '@/config/factions';
+import { buildDefaultFactions, type FactionConfig, LEGACY_FACTIONS } from '@/config/ai';
 import { startGame } from '@/game/game-state';
 import { deserializeGame, type GameSnapshot, serializeGame } from '@/persistence/serialize-game';
 

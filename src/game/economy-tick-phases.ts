@@ -10,7 +10,7 @@
  */
 
 import { aiVisionRadiusFor } from '@/config/combat';
-import { factionIds } from '@/config/factions';
+import { factionIds } from '@/config/ai';
 import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { buildNavGraph } from '@/core/pathfinding';
 import { makeMoveCostFn } from '@/core/terrain-cost';
@@ -53,7 +53,7 @@ import { wildfireSystem } from '@/ecs/systems/wildfire';
 import { evaluateWinLoss } from '@/ecs/systems/win-loss';
 import { presetFor, recomputeMaxSupply, SUPPLY_COST } from '@/rules';
 import { chokePointMultiplier } from '@/rules/choke-points';
-import { refreshPortalStoneCooldown, tickPortalStonesTrigger } from '@/world/portal-stones';
+import { refreshPortalStoneCooldown, tickPortalStonesTrigger } from '@/world/board';
 import { tickAutoSave } from './auto-save';
 import { advanceClock, cyclePhase } from './clock';
 import { tickAllianceExpiry } from './diplomacy';

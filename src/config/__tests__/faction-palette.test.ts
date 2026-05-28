@@ -10,7 +10,7 @@
  *   (6) normalizeHexColor rejects junk + over-length input.
  */
 import { describe, expect, it } from 'vitest';
-import { defaultFactionColors, FACTION_PALETTE, normalizeHexColor } from '@/config/faction-palette';
+import { defaultFactionColors, FACTION_PALETTE, normalizeHexColor } from '@/config/ai';
 
 describe('FACTION_PALETTE', () => {
   it('has 12 chips with unique colors', () => {

@@ -207,7 +207,7 @@ export const Selectable = trait({ isSelected: false });
  * `@/ecs/components` (the historic location), the symbols are
  * re-exported here as a thin pass-through.
  */
-import { RESOURCE_IDS, type ResourceType } from '@/config/resources';
+import { RESOURCE_IDS, type ResourceType } from '@/config/economy';
 
 // `ResourceType` is now derived from the Zod enum in `@/config/resources`
 // (see ResourceIdSchema there). Adding a 10th resource slot requires only:

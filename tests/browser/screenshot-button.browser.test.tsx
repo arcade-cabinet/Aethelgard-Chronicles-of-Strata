@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { startGame } from '@/game/game-state';
-import { ScreenshotButton } from '@/hud/ScreenshotButton';
+import { ScreenshotButton } from '@/hud/system';
 
 describe('M_POLISH2.MODES.44b — ScreenshotButton', () => {
   it('does NOT render in border-clash mode', async () => {

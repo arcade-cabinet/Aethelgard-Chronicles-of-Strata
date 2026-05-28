@@ -12,7 +12,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
 import { Building, FactionTrait, HexPosition } from '@/ecs/components';
 import { startGame } from '@/game/game-state';
-import { FactionBase } from '@/world/FactionBase';
+import { FactionBase } from '@/world/board';
 
 describe('FactionBase rendering (M_REGISTRY.4 unified)', () => {
   it('renders player base (Palace — Castle Kit tower-square)', async () => {

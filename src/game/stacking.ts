@@ -24,7 +24,7 @@ import {
   dominantUnitTypeOf,
   FORMATIONS,
   type MemberAggregate,
-} from '@/world/formations';
+} from '@/world/board';
 import type { GameState } from './game-state';
 
 /** Max members per stack (per docs/specs/201-stacking-and-formations.md). */
