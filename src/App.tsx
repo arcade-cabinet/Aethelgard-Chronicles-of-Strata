@@ -12,6 +12,7 @@ import { type GameState, type NewGameConfig, runEconomyTick, startGame } from '@
 import { selectEntity } from '@/game/selection';
 import { ErrorOverlay } from '@/hud/ErrorOverlay';
 import { HudLayer } from '@/hud/HudLayer';
+import { useGameWindowEvents } from '@/hud/hooks/useGameWindowEvents';
 import { LoadingScreen } from '@/hud/LoadingScreen';
 import { type NewGameChoices, NewGameModal } from '@/hud/NewGameModal';
 import { SettingsModal } from '@/hud/SettingsModal';
@@ -219,65 +220,9 @@ function GameSession({
   // that wants to display or flip it.
   const [soundMuted, setSoundMuted] = useMutedPreference(persistence);
 
-  // M_EXPANSION.U.118 — keyboard shortcut bridge. KeyboardShortcuts
-  // dispatches a 'aethelgard:trigger-build' CustomEvent for direct
-  // building-type pickers (F/H/G/R/T/W keys); App pipes it into the
-  // existing buildContext flow.
-  useEffect(() => {
-    const onTriggerBuild = (e: Event) => {
-      const detail = (e as CustomEvent).detail as { type?: BuildContext['type'] } | undefined;
-      if (!detail?.type) return;
-      setBuildContext({ type: detail.type, onPlaced: () => setBuildContext(null) });
-    };
-    // M_POLISH2.B.1 — open-build-menu was dispatched by the keyboard
-    // shortcut + the new mobile build chip but NOTHING was listening.
-    // The listener selects the player's Palace (which has
-    // showsBuildMenu=true) and lets the existing SelectionPanel render
-    // the build-button list — re-uses the single source of truth
-    // instead of forking a separate build modal.
-    const onOpenBuildMenu = () => {
-      for (const ent of game.world.query(Building, FactionTrait)) {
-        const b = ent.get(Building);
-        const f = ent.get(FactionTrait);
-        if (b?.buildingType === 'Palace' && f?.faction === 'player') {
-          selectEntity(game, ent);
-          break;
-        }
-      }
-    };
-    // M_V11.POLISH.JOURNEY-CAMERA-EVENTS — focus-palace pans
-    // the camera onto the player Palace + zooms in tight.
-    // Forwards to aethelgard:focus-tile (CameraRig already listens)
-    // with parsed q/r + a tight distance so journey-capture shots
-    // can frame the procedural Palace composition.
-    const onFocusPalace = () => {
-      const key = game.palaceKey;
-      if (!key) return;
-      // CodeRabbit (PR #89): guard malformed keys instead of falling
-      // back to (0,0). Parsing "garbled" with parseInt('garbled', 10)
-      // returns NaN; the old code's `?? '0'` only handled an undefined
-      // SEGMENT, not a non-numeric one — so a malformed key would yank
-      // the camera to tile (0,0) silently. Bail out cleanly instead.
-      const parts = key.split(',');
-      if (parts.length !== 2) return;
-      const q = Number.parseInt(parts[0] ?? '', 10);
-      const r = Number.parseInt(parts[1] ?? '', 10);
-      if (!Number.isFinite(q) || !Number.isFinite(r)) return;
-      window.dispatchEvent(
-        new CustomEvent('aethelgard:focus-tile', {
-          detail: { q, r, distance: 6 },
-        }),
-      );
-    };
-    window.addEventListener('aethelgard:trigger-build', onTriggerBuild);
-    window.addEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
-    window.addEventListener('aethelgard:focus-palace', onFocusPalace);
-    return () => {
-      window.removeEventListener('aethelgard:trigger-build', onTriggerBuild);
-      window.removeEventListener('aethelgard:open-build-menu', onOpenBuildMenu);
-      window.removeEventListener('aethelgard:focus-palace', onFocusPalace);
-    };
-  }, [game]);
+  // M_V13.DECOMP.APP-EVENTS — the trigger-build / open-build-menu /
+  // focus-palace window-event wiring now lives in a dedicated hook.
+  useGameWindowEvents(game, setBuildContext);
   // r3f camera ref retained even though SelectionRect no longer
   // consumes it (M_GAME.BUG.3) — future HUD overlays that project
   // world→screen will plug back into the ref.
