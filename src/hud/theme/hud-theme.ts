@@ -71,9 +71,17 @@ export const HUD_THEME = {
   },
   /**
    * z-index ladder. M_V13.HUD.TOKEN-SCALE — names the stacking order so
-   * HUD surfaces don't fight with ad-hoc z values. board < pills <
+   * NEW HUD surfaces don't fight with ad-hoc z values. board < pills <
    * panels < banners < menu < modal < toast (toast always on top so
    * notifications are never occluded).
+   *
+   * NOTE: the legacy Tailwind/CSS layers use a separate `--z-hud-*`
+   * lane set in styles.css (pill=50 … modal-content=1001). This TS
+   * ladder is the GO-FORWARD scale for new r3f-side HUD components; new
+   * surfaces use HUD_THEME.z, and components migrate off the CSS lanes
+   * opportunistically when touched. Both currently coexist without
+   * collision (the CSS lanes are higher integers, so a TS-laddered pill
+   * never out-stacks a CSS-laddered modal). See docs/specs/21-hud-layout.md.
    */
   z: {
     board: 0,

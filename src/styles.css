@@ -243,16 +243,18 @@
   .hud-interactive {
     pointer-events: auto;
   }
-  /* M_V13.HUD.FOCUS-RINGS — keyboard-visible focus ring for every HUD
-   * control. The 282 inline-styled HUD buttons can't express
+  /* M_V13.HUD.FOCUS-RINGS — keyboard-visible focus ring for every
+   * control app-wide. The 282 inline-styled HUD buttons can't express
    * :focus-visible inline, so rather than sweep a className onto each,
-   * scope a global rule to the gameplay shell (#app-shell) + any
-   * .hud-interactive surface: every focusable button / [role=button] /
-   * [role=menuitem] gets a high-contrast gold ring on KEYBOARD focus
-   * only — mouse/touch focus stays ring-free (the :focus-visible
-   * heuristic). This is what replaced MobileSystemMenu's bare
-   * outline:none, which had left its Radix items with no focus
-   * indicator at all (review Major #2). */
+   * this is a GLOBAL rule (intentionally unscoped — Radix modals portal
+   * to document.body, outside #app-shell, so a shell-scoped rule would
+   * miss them): every focusable button / [role=button] / [role=menuitem]
+   * / [role=tab] / .hud-interactive gets a high-contrast gold ring on
+   * KEYBOARD focus only — mouse/touch stays ring-free (the
+   * :focus-visible heuristic). Specificity (0,1,1) won't clobber
+   * inline or higher-specificity component styles. This replaced
+   * MobileSystemMenu's bare outline:none, which had left its Radix
+   * items with no focus indicator at all (review Major #2). */
   button:focus-visible,
   [role='button']:focus-visible,
   [role='menuitem']:focus-visible,
