@@ -112,11 +112,11 @@ That's why we need pieces like screens / components." App.tsx is
 window-event wiring) + App (~300, title/new-game/settings shell +
 URL-param + dev-window hooks).
 
-- [ ] M_V13.DECOMP.APP-HUDLAYER — extract GameSession's HUD-mount
-      JSX (the ~30 <Pill/Modal/Overlay/System> mounts) into
-      `src/hud/HudLayer.tsx` (single `<HudLayer game={...}
-      onOpenSettings={...} />`). GameSession shrinks to canvas +
-      HudLayer + the build-context state it owns.
+- [x] M_V13.DECOMP.APP-HUDLAYER — extracted the ~140-line HUD-mount
+      wall (~30 components) into src/hud/HudLayer.tsx. App.tsx
+      776→632 lines; 38 unused imports removed. GameSession keeps
+      canvas + ErrorBoundary + buildContext + cameraRef. Browser
+      test confirms HUD still mounts. 1251 unit green.
 - [ ] M_V13.DECOMP.APP-EVENTS — extract GameSession's window-event
       wiring useEffect (trigger-build / open-build-menu /
       focus-palace) into a `useGameWindowEvents(game)` hook in
