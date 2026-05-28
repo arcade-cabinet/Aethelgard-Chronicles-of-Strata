@@ -7,7 +7,7 @@
  * is read the same way.
  */
 import { describe, expect, it } from 'vitest';
-import { ALL_PERSONALITIES, DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
+import { ALL_PERSONALITIES, DEFAULT_PERSONALITY, personalityFor } from '@/config/ai';
 
 describe('M_PIVOT.AI.JSON-PERSONALITIES — per-personality thresholds', () => {
   it('every personality declares both rageQuitThreshold + starvationThreshold', () => {

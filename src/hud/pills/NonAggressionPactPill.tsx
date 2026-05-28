@@ -17,7 +17,7 @@
  * widen to a faction-picker.
  */
 import { useEffect, useState } from 'react';
-import { findFaction } from '@/config/factions';
+import { findFaction } from '@/config/ai';
 import { acceptProposal, type PendingProposal, rejectProposal } from '@/game/diplomacy-border';
 import type { GameState } from '@/game/game-state';
 import { HUD_THEME } from '../theme';

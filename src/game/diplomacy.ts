@@ -17,7 +17,7 @@
  * three diplomacy mechanics (BORDER-ASK / TRADE / TRIBUTE) wires its
  * own transitions on top of this substrate.
  */
-import type { FactionId } from '@/config/factions';
+import type { FactionId } from '@/config/ai';
 
 /** The four valid relation states between any two factions. */
 export type Relation = 'neutral' | 'ally' | 'enemy' | 'tributary';

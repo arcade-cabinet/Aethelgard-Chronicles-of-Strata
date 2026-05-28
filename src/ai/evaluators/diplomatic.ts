@@ -21,7 +21,7 @@
  *   - H-5: const enum replaced with const object (isolatedModules safe)
  */
 import { Goal, GoalEvaluator } from 'yuka';
-import { personalityFor } from '@/config/ai-personalities';
+import { personalityFor } from '@/config/ai';
 import type { AiPlayer } from '@/ai/ai-player';
 import { getRelation, setRelation } from '@/game/diplomacy';
 import { bordersAreTouching, proposeNonAggressionPact } from '@/game/diplomacy-border';

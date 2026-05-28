@@ -16,7 +16,7 @@
  *   5. Tribute cession routes through all faction ids, not just FACTIONS.
  */
 import { describe, expect, it } from 'vitest';
-import { buildDefaultFactions } from '@/config/factions';
+import { buildDefaultFactions } from '@/config/ai';
 import { Health } from '@/ecs/components';
 import { createCharacter } from '@/entities/character-factory';
 import { economyFor } from '@/game/economy-for';

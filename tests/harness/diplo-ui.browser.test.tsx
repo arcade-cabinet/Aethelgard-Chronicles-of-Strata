@@ -7,7 +7,7 @@
 import { page, userEvent } from '@vitest/browser/context';
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { LEGACY_FACTIONS } from '@/config/factions';
+import { LEGACY_FACTIONS } from '@/config/ai';
 import { createDiplomacyState } from '@/game/diplomacy';
 import { createDiplomacyProposalState, proposeNonAggressionPact } from '@/game/diplomacy-border';
 import { createTradeCooldownState } from '@/game/diplomacy-trade';

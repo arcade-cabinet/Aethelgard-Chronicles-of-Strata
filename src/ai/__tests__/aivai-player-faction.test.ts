@@ -10,7 +10,7 @@
 import { describe, expect, it } from 'vitest';
 import { AiPlayer } from '@/ai/ai-player';
 import { BuildEvaluator } from '@/ai/evaluators/build';
-import { buildDefaultFactions } from '@/config/factions';
+import { buildDefaultFactions } from '@/config/ai';
 import { startGame } from '@/game/game-state';
 
 describe('M_NEXT.AIVAI.6 — player-faction AI active under N-player zones', () => {

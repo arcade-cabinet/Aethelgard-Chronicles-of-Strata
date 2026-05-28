@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { findFaction } from '@/config/factions';
+import { findFaction } from '@/config/ai';
 import { HEX_RADIUS } from '@/config/world';
 import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';

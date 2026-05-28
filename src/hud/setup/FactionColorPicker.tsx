@@ -14,7 +14,7 @@
  * no focus trap (the picker is short + tabbable through).
  */
 import { useEffect, useRef, useState } from 'react';
-import { FACTION_PALETTE, normalizeHexColor } from '@/config/faction-palette';
+import { FACTION_PALETTE, normalizeHexColor } from '@/config/ai';
 
 export interface FactionColorPickerProps {
   /** Current color (CSS hex, e.g. '#3b82f6'). */

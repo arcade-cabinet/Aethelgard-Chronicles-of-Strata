@@ -2,7 +2,7 @@
  * M_FUN.REFACTOR.NEWGAMEMODAL-SPLIT — Opponent controls: AI-vs-AI toggle +
  * named personality card grid. Extracted from NewGameModal.tsx.
  */
-import { ALL_PERSONALITIES, personalityFor } from '@/config/ai-personalities';
+import { ALL_PERSONALITIES, personalityFor } from '@/config/ai';
 import { HUD_THEME } from '../theme';
 import { Segmented } from '../primitives';
 

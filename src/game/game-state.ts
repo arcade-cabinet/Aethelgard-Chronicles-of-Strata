@@ -42,7 +42,7 @@ export const PROJECTILE_ID_REF = { current: 0 };
 // every difficulty-tuning knob in one tunable file.
 
 import { spawnIntervalFor } from '@/config/combat';
-import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/factions';
+import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/ai';
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import type { Faction } from '@/ecs/components';

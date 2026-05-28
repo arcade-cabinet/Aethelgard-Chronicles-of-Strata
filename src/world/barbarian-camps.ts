@@ -23,7 +23,7 @@
  * to emit the reward instead of the game-over outcome flip.
  */
 import type { Entity, World } from 'koota';
-import type { FactionArchetype, FactionConfig, FactionId } from '@/config/factions';
+import type { FactionArchetype, FactionConfig, FactionId } from '@/config/ai';
 import type { BoardData } from '@/core/board';
 import { getHexKey, hexDistance } from '@/core/hex';
 import { EnemySpawner, FactionBase, FactionTrait, Health, HexPosition } from '@/ecs/components';

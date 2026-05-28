@@ -19,7 +19,7 @@
  */
 import { z } from 'zod';
 import archetypesJson from './archetypes.json';
-import type { FactionArchetype } from '../factions';
+import type { FactionArchetype } from '../ai';
 
 const BuildingMeshSchema = z.object({
   meshLogicalId: z.string().min(1),

@@ -34,7 +34,7 @@
  */
 import * as Dialog from '@radix-ui/react-dialog';
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
-import type { FactionId } from '@/config/factions';
+import type { FactionId } from '@/config/ai';
 import { type DiplomacyState, getRelation, getRelationEntry, setRelation } from '@/game/diplomacy';
 import {
   acceptProposal,

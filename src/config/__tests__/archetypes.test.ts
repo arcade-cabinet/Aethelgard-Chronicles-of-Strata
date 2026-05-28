@@ -12,7 +12,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { ARCHETYPES, archetypeFor, buildingMeshFor } from '@/config/combat';
-import type { FactionArchetype } from '@/config/factions';
+import type { FactionArchetype } from '@/config/ai';
 
 const EXPECTED_ARCHETYPES = ['medieval', 'orc', 'undead', 'mystic'] as const;
 const EXPECTED_BUILDINGS = [

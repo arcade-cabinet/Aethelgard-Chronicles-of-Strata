@@ -222,8 +222,13 @@ URL-param + dev-window hooks).
       [GameOverModal + persistence used this], (3) deep data import
       `from '@/config/X.json'` [rules/eras.ts used this]. Static `from`
       alone misses the latter two and tsc catches them only on full check.
-- [ ] M_V13.DECOMP.CONFIG-AI — `config/ai/`: ai-personalities +
-      factions + faction-palette. Barrel.
+- [x] M_V13.DECOMP.CONFIG-AI — `config/ai/`: ai-personalities +
+      factions + faction-palette. Barrel. DONE: 4 git mv. LARGEST
+      blast radius (factions imported by ~50 files across world/hud/
+      game/ai/persistence). All forms repointed → @/config/ai (36
+      @/config/factions + 9 ai-personalities + 5 faction-palette + 1
+      ../factions from combat/archetypes). 82 config+ai tests + 3
+      faction-color browser tests green; check 0.
 - [ ] M_V13.DECOMP.CONFIG-WORLD — `config/world/`: world + mapgen
       json+ts. Barrel.
 - [ ] M_V13.DECOMP.CONFIG-NARRATIVE — `config/narrative/`:

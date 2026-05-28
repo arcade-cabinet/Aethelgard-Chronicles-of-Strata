@@ -1,7 +1,7 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef } from 'react';
 import { BufferAttribute, type BufferGeometry, type LineSegments } from 'three';
-import { findFaction } from '@/config/factions';
+import { findFaction } from '@/config/ai';
 import { HEX_DIRECTIONS, TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexCorner, getHexKey } from '@/core/hex';
 import type { Faction } from '@/ecs/components';

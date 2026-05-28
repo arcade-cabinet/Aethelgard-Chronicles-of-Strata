@@ -15,7 +15,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { buildDefaultFactions } from '@/config/factions';
+import { buildDefaultFactions } from '@/config/ai';
 import { setRelation } from '@/game/diplomacy';
 import { startGame } from '@/game/game-state';
 import { GameOverModal } from '@/hud/modals';

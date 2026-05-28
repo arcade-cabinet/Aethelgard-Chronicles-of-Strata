@@ -8,7 +8,7 @@
  *   4. Chip color + name come from the registry.
  */
 import { describe, expect, it } from 'vitest';
-import { buildDefaultFactions } from '@/config/factions';
+import { buildDefaultFactions } from '@/config/ai';
 import { startGame } from '@/game/game-state';
 import { describeFactionChips } from '@/hud/pills';
 

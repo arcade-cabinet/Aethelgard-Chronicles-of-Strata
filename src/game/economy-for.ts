@@ -13,7 +13,7 @@
  * cession + camp-clear reward + victory detection all routed through
  * here to fire for player-3..N slots.
  */
-import type { FactionId } from '@/config/factions';
+import type { FactionId } from '@/config/ai';
 import { createEconomy, type GameEconomy } from './economy';
 import type { GameState } from './game-state';
 

@@ -12,7 +12,7 @@
  * when unavailable.
  */
 import { useState } from 'react';
-import { findFaction } from '@/config/factions';
+import { findFaction } from '@/config/ai';
 import { isTradeAvailable, performTrade, TRADE_ROUTE_DISCOVERY_ID } from '@/game/diplomacy-trade';
 import { economyFor } from '@/game/economy-for';
 import type { GameState } from '@/game/game-state';

@@ -21,7 +21,7 @@
 import * as Popover from '@radix-ui/react-popover';
 import { Users } from 'lucide-react';
 import { useState } from 'react';
-import { type FactionConfig, findFaction } from '@/config/factions';
+import { type FactionConfig, findFaction } from '@/config/ai';
 import type { GameState } from '@/game/game-state';
 import { cn } from '@/lib/cn';
 import { useViewport } from '@/render/useViewport';

@@ -14,7 +14,7 @@
  * claim by exploitation (spec 101); exploration is emergent.
  */
 import { GameEntity, Think } from 'yuka';
-import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai-personalities';
+import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai';
 import { FactionTrait, type Faction, Unit } from '@/ecs/components';
 import { trainUnit } from '@/game/commands';
 import type { GameState } from '@/game/game-state';

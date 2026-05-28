@@ -21,7 +21,7 @@
  * CodeRabbit PR #89.)
  */
 import { useMemo } from 'react';
-import { findFaction } from '@/config/factions';
+import { findFaction } from '@/config/ai';
 import { TILE_HEIGHT } from '@/config/world';
 import { axialToWorld, getHexCorner } from '@/core/hex';
 import { FactionTrait, type FormationId, HexPosition, Stack, StackMember } from '@/ecs/components';

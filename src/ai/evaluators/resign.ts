@@ -11,7 +11,7 @@
  */
 import { Goal, GoalEvaluator } from 'yuka';
 import type { AiPlayer } from '@/ai/ai-player';
-import { personalityFor } from '@/config/ai-personalities';
+import { personalityFor } from '@/config/ai';
 import { resign } from '@/game/commands';
 
 export { ResignGoal };

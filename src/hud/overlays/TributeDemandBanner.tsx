@@ -13,7 +13,7 @@
  * v0.8 polish item).
  */
 import { useEffect, useState } from 'react';
-import { findFaction } from '@/config/factions';
+import { findFaction } from '@/config/ai';
 import { getRelation } from '@/game/diplomacy';
 import { acceptTribute, canDemandTribute, refuseTribute } from '@/game/diplomacy-tribute';
 import { economyFor } from '@/game/economy-for';

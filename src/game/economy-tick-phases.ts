@@ -10,7 +10,7 @@
  */
 
 import { aiVisionRadiusFor } from '@/config/combat';
-import { factionIds } from '@/config/factions';
+import { factionIds } from '@/config/ai';
 import { hexDistance, hexNeighbors, parseHexKey } from '@/core/hex';
 import { buildNavGraph } from '@/core/pathfinding';
 import { makeMoveCostFn } from '@/core/terrain-cost';

@@ -19,7 +19,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { RotateCcw, Scale as ScaleIcon, Skull, Trophy } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-import { factionIds } from '@/config/factions';
+import { factionIds } from '@/config/ai';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameOutcome } from '@/ecs/systems/win-loss';
 import { getRelation } from '@/game/diplomacy';

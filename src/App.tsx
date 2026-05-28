@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Camera } from 'three';
 import { useMutedPreference } from '@/audio/useMutedPreference';
-import { ALL_PERSONALITIES } from '@/config/ai-personalities';
-import { defaultFactionColors } from '@/config/faction-palette';
-import { buildDefaultFactions } from '@/config/factions';
+import { ALL_PERSONALITIES } from '@/config/ai';
+import { defaultFactionColors } from '@/config/ai';
+import { buildDefaultFactions } from '@/config/ai';
 import { MAP_SIZES } from '@/core/map-size';
 import { createFreshEventSeed } from '@/core/rng';
 import { createAutoSave } from '@/game/auto-save';

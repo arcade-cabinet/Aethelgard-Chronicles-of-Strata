@@ -6,7 +6,7 @@
  *     (raider/hoarder/mad-king lean break; diplomat never breaks).
  */
 import { describe, expect, it } from 'vitest';
-import { personalityFor } from '@/config/ai-personalities';
+import { personalityFor } from '@/config/ai';
 
 describe('M_V12.AI-DIPLO — personality diploBias', () => {
   it('every named personality has a diploBias block', () => {
