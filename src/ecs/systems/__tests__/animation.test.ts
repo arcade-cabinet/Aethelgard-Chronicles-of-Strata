@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AnimationState, Movement } from '@/ecs/components';
-import { animationSystem, clipForState } from '@/ecs/systems/animation';
+import { animationSystem, clipForState } from '@/ecs/systems/movement';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('animation system', () => {

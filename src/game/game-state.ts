@@ -17,9 +17,9 @@ import {
   Selectable,
   Unit,
 } from '@/ecs/components';
-import { resetAiDirector } from '@/ecs/systems/ai';
+import { resetAiDirector } from '@/ecs/systems/meta';
 import type { DamageEvent } from '@/ecs/systems/combat';
-import type { ResourceDepositEvent } from '@/ecs/systems/deposit';
+import type { ResourceDepositEvent } from '@/ecs/systems/economy';
 import { createEcsWorld } from '@/ecs/world';
 import type { Projectile } from './projectiles';
 
@@ -46,9 +46,9 @@ import { type FactionConfig, type FactionId, LEGACY_FACTIONS } from '@/config/ai
 import { MAP_RADIUS } from '@/config/world';
 import { createEventPrng, createMapPrng } from '@/core/rng';
 import type { Faction } from '@/ecs/components';
-import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/ecs/systems/volcano';
-import type { BurnState } from '@/ecs/systems/wildfire';
-import type { GameOutcome } from '@/ecs/systems/win-loss';
+import { createVolcanoState, placeVolcanoLandmark, type VolcanoState } from '@/ecs/systems/hazards';
+import type { BurnState } from '@/ecs/systems/hazards';
+import type { GameOutcome } from '@/ecs/systems/meta';
 import { discoveryById } from '@/rules/discovery-registry';
 import { behaviorsFor, ensureAttractorResources, presetFor } from '@/rules';
 import { HARVEST_BASE_BIAS, HARVEST_BIAS_RADIUS } from '@/rules/peon-rules';

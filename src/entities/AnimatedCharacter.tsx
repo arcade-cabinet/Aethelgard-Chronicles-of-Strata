@@ -4,7 +4,7 @@ import { type AnimationClip, Color, type Group, type Mesh, type MeshStandardMate
 import { clone as cloneSkeleton } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { assets } from '@/assets/assets';
 import type { UnitType } from '@/ecs/components';
-import type { ClipName } from '@/ecs/systems/animation';
+import type { ClipName } from '@/ecs/systems/movement';
 import { measuredScale } from '@/rules/asset-scale';
 import { characterMeshId, rigAnimationIds, rigForRole } from './rig';
 

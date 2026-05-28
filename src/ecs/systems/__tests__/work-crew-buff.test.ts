@@ -23,7 +23,7 @@ import {
   StackMember,
   Unit,
 } from '@/ecs/components';
-import { harvestSystem } from '@/ecs/systems/harvest';
+import { harvestSystem } from '@/ecs/systems/economy';
 
 function spawnPeon(world: World, q: number, r: number) {
   const e = world.spawn(Unit, FactionTrait, AssignedJob, Harvester, Carrier, HexPosition);

@@ -14,7 +14,7 @@ import { describe, expect, it } from 'vitest';
 import { QUAKE_TUNING } from '@/config/world';
 import type { BoardData, Tile } from '@/core/board';
 import { getHexKey } from '@/core/hex';
-import { triggerQuake } from '@/ecs/systems/quake';
+import { triggerQuake } from '@/ecs/systems/hazards';
 import type { GameState } from '@/game/game-state';
 
 function tile(q: number, r: number, type: Tile['type'], level = 3): Tile {

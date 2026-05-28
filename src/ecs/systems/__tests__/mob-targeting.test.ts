@@ -14,7 +14,7 @@
 import { createWorld, type World } from 'koota';
 import { describe, expect, it } from 'vitest';
 import { Combatant, EnemyTarget, FactionTrait, Health, HexPosition, Unit } from '@/ecs/components';
-import { mobTargetingSystem } from '@/ecs/systems/mob-targeting';
+import { mobTargetingSystem } from '@/ecs/systems/combat';
 
 function spawnMob(world: World, faction: string, q: number, r: number) {
   const e = world.spawn(Combatant, FactionTrait, Health, HexPosition, EnemyTarget, Unit);

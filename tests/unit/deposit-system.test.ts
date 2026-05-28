@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AssignedJob, Carrier, FactionTrait, HexPosition } from '@/ecs/components';
-import { depositSystem } from '@/ecs/systems/deposit';
+import { depositSystem } from '@/ecs/systems/economy';
 import { createEcsWorld } from '@/ecs/world';
 import { createEconomy } from '@/game/economy';
 

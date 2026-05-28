@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pickEnemyRole } from '@/ecs/systems/spawn';
+import { pickEnemyRole } from '@/ecs/systems/lifecycle';
 
 describe('pickEnemyRole escalation', () => {
   it('spawns only Goblins before vampireThreshold', () => {

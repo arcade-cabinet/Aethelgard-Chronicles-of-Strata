@@ -21,7 +21,7 @@ import { RotateCcw, Scale as ScaleIcon, Skull, Trophy } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { factionIds } from '@/config/ai';
 import { Building, FactionTrait } from '@/ecs/components';
-import type { GameOutcome } from '@/ecs/systems/win-loss';
+import type { GameOutcome } from '@/ecs/systems/meta';
 import { getRelation } from '@/game/diplomacy';
 import { economyFor } from '@/game/economy-for';
 import type { GameState } from '@/game/game-state';

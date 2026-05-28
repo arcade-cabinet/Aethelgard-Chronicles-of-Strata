@@ -22,7 +22,7 @@ import {
   PathQueue,
   Transform,
 } from '@/ecs/components';
-import { pathFollowSystem } from '@/ecs/systems/path-follow';
+import { pathFollowSystem } from '@/ecs/systems/movement';
 import { createEcsWorld } from '@/ecs/world';
 
 function tileAt(q: number, r: number, overrides: Partial<Tile> = {}): Tile {

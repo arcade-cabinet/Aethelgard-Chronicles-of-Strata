@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'vitest';
 import { EnemySpawner, FactionTrait } from '@/ecs/components';
-import { waveDefenseProgress, waveDefenseSystem } from '@/ecs/systems/wave-defense';
+import { waveDefenseProgress, waveDefenseSystem } from '@/ecs/systems/combat';
 import { type GameState, startGame } from '@/game/game-state';
 
 function countBarbarianCamps(game: GameState): number {

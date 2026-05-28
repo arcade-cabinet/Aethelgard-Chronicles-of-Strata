@@ -12,7 +12,7 @@ import {
   Transform,
   Unit,
 } from '@/ecs/components';
-import type { DamageEvent } from '@/ecs/systems/combat';
+import type { DamageEvent } from './combat';
 import type { GameState } from '@/game/game-state';
 import { type Projectile, spawnProjectile } from '@/game/projectiles';
 import { damageStack } from '@/game/stacking';

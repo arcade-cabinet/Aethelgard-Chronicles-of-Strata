@@ -21,7 +21,7 @@ import {
   Unit,
   WanderBehavior,
 } from '@/ecs/components';
-import { wanderSystem } from '@/ecs/systems/wander';
+import { wanderSystem } from '@/ecs/systems/movement';
 
 function makeMob(
   world: ReturnType<typeof createWorld>,

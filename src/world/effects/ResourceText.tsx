@@ -1,6 +1,6 @@
 import { useFrame } from '@react-three/fiber';
 import { useRef, useState } from 'react';
-import type { ResourceDepositEvent } from '@/ecs/systems/deposit';
+import type { ResourceDepositEvent } from '@/ecs/systems/economy';
 import type { GameState } from '@/game/game-state';
 import { resourceDisplayFor } from '@/rules';
 import { WorldBadge } from './WorldBadge';

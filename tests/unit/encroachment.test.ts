@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
-import { encroachmentSystem } from '@/ecs/systems/encroachment';
+import { encroachmentSystem } from '@/ecs/systems/hazards';
 import { createEcsWorld } from '@/ecs/world';
 import { claimTile, createZoneState } from '@/game/zone';
 

@@ -12,7 +12,7 @@ import {
   Unit,
   type UnitType,
 } from '@/ecs/components';
-import { type ClipName, clipForState } from '@/ecs/systems/animation';
+import { type ClipName, clipForState } from '@/ecs/systems/movement';
 import { AnimatedCharacter } from '@/entities/AnimatedCharacter';
 import type { GameState } from '@/game/game-state';
 import { SuspenseProbe } from '@/render/SuspenseProbe';

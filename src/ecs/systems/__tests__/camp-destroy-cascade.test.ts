@@ -22,7 +22,7 @@ import {
   HexPosition,
   Unit,
 } from '@/ecs/components';
-import { deathSystem } from '@/ecs/systems/death';
+import { deathSystem } from '@/ecs/systems/lifecycle';
 
 function spawnCamp(world: World, factionId: string, q: number, r: number) {
   const e = world.spawn(FactionBase, Health, HexPosition, EnemySpawner, FactionTrait);

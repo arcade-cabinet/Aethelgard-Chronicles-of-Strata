@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getHexKey } from '@/core/hex';
 import { FactionTrait, HexPosition, Unit } from '@/ecs/components';
-import { hiddenBonusSystem } from '@/ecs/systems/hidden-bonus';
+import { hiddenBonusSystem } from '@/ecs/systems/economy';
 import { startGame } from '@/game/game-state';
 
 /**

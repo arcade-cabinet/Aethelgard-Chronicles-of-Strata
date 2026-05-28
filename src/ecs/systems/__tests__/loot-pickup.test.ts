@@ -16,8 +16,8 @@
 import { createWorld } from 'koota';
 import { describe, expect, it } from 'vitest';
 import { FactionTrait, HexPosition, LootCache, Unit } from '@/ecs/components';
-import { lootForBiome } from '@/ecs/systems/death';
-import { lootPickupSystem } from '@/ecs/systems/loot-pickup';
+import { lootForBiome } from '@/ecs/systems/lifecycle';
+import { lootPickupSystem } from '@/ecs/systems/economy';
 import type { GameState } from '@/game/game-state';
 
 function mockGame(world: ReturnType<typeof createWorld>): GameState {

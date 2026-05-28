@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { FactionBase, Health } from '@/ecs/components';
-import { evaluateWinLoss } from '@/ecs/systems/win-loss';
+import { evaluateWinLoss } from '@/ecs/systems/meta';
 import { createEcsWorld } from '@/ecs/world';
 
 describe('win/loss system', () => {

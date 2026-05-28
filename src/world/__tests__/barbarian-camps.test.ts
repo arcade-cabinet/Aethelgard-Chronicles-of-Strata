@@ -28,7 +28,7 @@ import {
   HexPosition,
   Unit,
 } from '@/ecs/components';
-import { spawnSystem } from '@/ecs/systems/spawn';
+import { spawnSystem } from '@/ecs/systems/lifecycle';
 import {
   defaultCampCount,
   factionConfigForCamp,

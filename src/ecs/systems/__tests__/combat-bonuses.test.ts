@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 import { Building, FactionTrait } from '@/ecs/components';
 import { setRelation } from '@/game/diplomacy';
 import { startGame } from '@/game/game-state';
-import { marketTradeSystem } from '@/ecs/systems/market-trade';
+import { marketTradeSystem } from '@/ecs/systems/economy';
 
 describe('M_V11 combat bonuses — Knight + Pikeman', () => {
   it('Pikeman parry chance increases vs Knight attacker (defender-side)', async () => {
