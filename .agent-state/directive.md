@@ -262,10 +262,30 @@ URL-param + dev-window hooks).
 
 ### §A3 — world/ feature sub-packages (97 files)
 
-- [ ] M_V13.DECOMP.WORLD-AUDIT — enumerate world/ files into feature
-      groups (terrain / biomes / board / effects / procedural /
-      characters) before moving. Some sub-trees (procedural/) already
-      exist; barrel them in place.
+- [x] M_V13.DECOMP.WORLD-AUDIT — enumerate world/ files into feature
+      groups before moving. DONE (Explore-agent audit, 44 top-level
+      files + procedural/ + __tests__). GROUPING:
+      • terrain/ (10): Terrain, terrain-mesh, Roads, Crossings,
+        TileInteraction, HexGridOverlay, Water, PathLine, touch-drag,
+        touch-tap-threshold
+      • biomes/ (4): palette, BiomeSwatch, Mountains, Decoration
+        (palette stays here — BIOME_COLORS is biome-domain, NOT moved
+        to config/render despite agent suggestion = scope creep)
+      • board/ (19): Units, BuilderBadge, HealthBillboard, SelectionRing,
+        UnitHexOutline, BuildingOutlineRing, ConstructionRing,
+        FactionBase, ResourceNodes, ProjectileLayer, RallyMarker,
+        StackRender, ZoneBorder, TrackingRings, barbarian-camps,
+        formations, structure-models, portal-stones, resource-spawn
+      • effects/ (12): ParticleEmitter, particle-consumers,
+        FootstepEmitter, VolcanoLayer, WildfireLayer, DeathDropLayer,
+        LootCacheLayer, ContestedPulse, CombatText, ResourceText,
+        WorldBadge, world-text-font
+      • procedural/ (existing) — barrel in place
+      CROSS-GROUP import edges to handle: Terrain→terrain-mesh→palette
+      (terrain→biomes), FactionBase→procedural (existing), and
+      ResourceText/StackRender→WorldBadge (both effects, intra-group).
+      Move order: biomes first (palette is the leaf dep), then terrain,
+      board, effects, procedural-barrel, world-barrel.
 - [ ] M_V13.DECOMP.WORLD-TERRAIN — `world/terrain/`. Barrel.
 - [ ] M_V13.DECOMP.WORLD-BIOMES — `world/biomes/`. Barrel.
 - [ ] M_V13.DECOMP.WORLD-BOARD — `world/board/`. Barrel.
