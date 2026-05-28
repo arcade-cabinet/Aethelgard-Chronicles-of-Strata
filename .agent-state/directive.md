@@ -136,12 +136,21 @@ URL-param + dev-window hooks).
       (~105 lines) → src/game/dev-harness.ts installDevHarness(g).
       App.tsx 577→470. Unused imports removed. Browser test green
       (harness path exercised). 1251 unit green.
-- [ ] M_V13.DECOMP.HUD-SETUP — `src/hud/setup/`: SeedField,
+- [x] M_V13.DECOMP.HUD-SETUP — `src/hud/setup/`: SeedField,
       MapPreview, PresetControls, OpponentPicker, FactionColorPicker,
-      new-game-options.ts. Barrel.
-- [ ] M_V13.DECOMP.HUD-SELECTION — `src/hud/selection/`:
-      SelectionPanel, SelectionRect, MultiSelectActions,
-      IdleUnitIndicator, BuildMenuButton, BuildQueueStrip. Barrel.
+      new-game-options.ts. Barrel. DONE: 6 git mv + index.ts barrel;
+      NewGameModal + faction-color-picker harness import from setup;
+      check 0, lint clean, browser test green.
+- [x] M_V13.DECOMP.HUD-SELECTION — `src/hud/selection/`:
+      SelectionPanel, MultiSelectActions, IdleUnitIndicator,
+      BuildMenuButton, BuildQueueStrip + selection-panel-reasons
+      helper + 2 css sidecars (idle-peons-indicator, th-affordance).
+      Barrel. SelectionRect was DEAD (only stale comments referenced
+      it; no live mount) → deleted, not moved; its data-hud-panel
+      comments in App + ModalShell de-referenced. 4 browser tests +
+      axe green; check 0, lint clean. NOTE: css sidecars must move
+      with their component (tsc misses CSS import; browser test caught
+      it) — see decomp-move-css-sidecars memory.
 - [ ] M_V13.DECOMP.HUD-OVERLAYS — `src/hud/overlays/`: Tutorial,
       Campaign, WaveDefense, Onboarding, LoadingScreen, TitleScreen,
       TitleBackground, ErrorOverlay, CaptionsOverlay, CriticalWarning,

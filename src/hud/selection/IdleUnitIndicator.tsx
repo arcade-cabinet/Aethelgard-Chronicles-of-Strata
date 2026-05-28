@@ -23,9 +23,9 @@
 import { useRef, useState } from 'react';
 import { AssignedJob, FactionTrait, HexPosition, PeonAutonomy, Unit } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './theme';
+import { HUD_THEME } from '../theme';
 import './idle-peons-indicator.css';
-import { useRafLoopThrottled } from './useRafLoop';
+import { useRafLoopThrottled } from '../useRafLoop';
 
 interface IdleEntry {
   q: number;

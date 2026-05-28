@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Building, FactionTrait } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
-import { HUD_THEME } from './theme';
-import { useRafLoop } from './useRafLoop';
+import { HUD_THEME } from '../theme';
+import { useRafLoop } from '../useRafLoop';
 
 /**
  * M_EXPANSION.S.58 — build queue strip (spec 90 §build queue).

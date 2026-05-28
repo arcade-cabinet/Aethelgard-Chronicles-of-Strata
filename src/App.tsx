@@ -116,9 +116,8 @@ function GameSession({
   // M_V13.DECOMP.APP-EVENTS — the trigger-build / open-build-menu /
   // focus-palace window-event wiring now lives in a dedicated hook.
   useGameWindowEvents(game, setBuildContext);
-  // r3f camera ref retained even though SelectionRect no longer
-  // consumes it (M_GAME.BUG.3) — future HUD overlays that project
-  // world→screen will plug back into the ref.
+  // r3f camera ref retained for future HUD overlays that project
+  // world→screen coordinates; no current consumer.
   const cameraRef = useRef<Camera | null>(null);
 
   return (

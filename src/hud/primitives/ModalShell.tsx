@@ -84,11 +84,9 @@ export function ModalShell({
         id={contentId}
         aria-describedby={undefined}
         {...block}
-        // M_AUDIT2.UX.23 — tag every ModalShell with data-hud-panel
-        // so SelectionRect.onDown's existing `closest('[data-hud-panel]')`
-        // guard sees the modal and skips arming a drag. Without this,
-        // a pointerdown inside a modal could start a phantom selection
-        // rectangle behind the dialog overlay.
+        // M_AUDIT2.UX.23 — tag every ModalShell with data-hud-panel so
+        // pointer-down panel-detection (`closest('[data-hud-panel]')`)
+        // can tell a modal apart from the raycast-pickable canvas.
         data-hud-panel="modal"
         style={{
           position: 'fixed',

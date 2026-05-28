@@ -6,7 +6,7 @@ import { startGame } from '@/game/game-state';
 import { selectEntity } from '@/game/selection';
 import { GameOverModal } from '@/hud/GameOverModal';
 import { NewGameModal } from '@/hud/NewGameModal';
-import { SelectionPanel } from '@/hud/SelectionPanel';
+import { SelectionPanel } from '@/hud/selection';
 
 /**
  * M_EXPANSION.T.138 — axe-core accessibility scan of every modal.

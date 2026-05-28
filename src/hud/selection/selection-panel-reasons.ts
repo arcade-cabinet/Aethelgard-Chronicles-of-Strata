@@ -10,7 +10,7 @@
 import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { discoveryById } from '@/rules';
-import { costLabel } from './theme';
+import { costLabel } from '../theme';
 
 /**
  * Explain why training is disabled. Three real gates: supply cap

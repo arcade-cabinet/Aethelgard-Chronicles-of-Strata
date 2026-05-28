@@ -19,9 +19,9 @@ import { Stack, StackMember } from '@/ecs/components';
 import type { GameState } from '@/game/game-state';
 import { selectedEntities } from '@/game/selection';
 import { createStack, dissolveStack } from '@/game/stacking';
-import { HUD_THEME } from './theme';
-import { emitToast } from './Toasts';
-import { useRafLoopThrottled } from './useRafLoop';
+import { HUD_THEME } from '../theme';
+import { emitToast } from '../Toasts';
+import { useRafLoopThrottled } from '../useRafLoop';
 
 interface MultiSelectState {
   /** Number of currently-selected entities. */

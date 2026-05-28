@@ -24,15 +24,15 @@ import { setStackFormation } from '@/game/stacking';
 import { BUILDING_COSTS, discoveryById, displayFor, UNIT_COSTS } from '@/rules';
 import { FORMATIONS } from '@/world/formations';
 import type { BuildContext } from '@/world/TileInteraction';
-import { costLabel } from './theme';
-import { HUD_CARD_STYLE, HUD_THEME } from './theme';
+import { costLabel } from '../theme';
+import { HUD_CARD_STYLE, HUD_THEME } from '../theme';
 import './th-affordance.css';
 import {
   buildDisabledReason,
   researchDisabledReason,
   trainDisabledReason,
 } from './selection-panel-reasons';
-import { useRafLoop } from './useRafLoop';
+import { useRafLoop } from '../useRafLoop';
 
 /** Buildable types derived from the BUILDING_COSTS table — NOT hardcoded. */
 const BUILDABLE_TYPES = Object.keys(BUILDING_COSTS).sort() as ReadonlyArray<

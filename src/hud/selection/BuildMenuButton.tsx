@@ -1,4 +1,4 @@
-import { HUD_THEME } from './theme';
+import { HUD_THEME } from '../theme';
 
 /**
  * M_POLISH2.B.1 — touch-reachable affordance for opening the build

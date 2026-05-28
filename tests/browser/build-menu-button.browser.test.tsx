@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { render } from 'vitest-browser-react';
-import { BuildMenuButton } from '@/hud/BuildMenuButton';
+import { BuildMenuButton } from '@/hud/selection';
 
 /**
  * M_POLISH2.B.1 — touch-reachable build FAB.
