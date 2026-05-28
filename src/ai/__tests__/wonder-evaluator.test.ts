@@ -11,7 +11,7 @@
 import { describe, expect, it } from 'vitest';
 import { AiPlayer } from '@/ai/ai-player';
 import { WonderEvaluator } from '@/ai/evaluators/wonder';
-import { placeBuilding } from '@/game/commands';
+import { placeBuilding } from '@/game/utilities';
 import { startGame } from '@/game/game-state';
 
 function makeAi(personalityKey?: string): { ai: AiPlayer; game: ReturnType<typeof startGame> } {

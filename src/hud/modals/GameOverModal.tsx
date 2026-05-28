@@ -25,7 +25,7 @@ import type { GameOutcome } from '@/ecs/systems/meta';
 import { getRelation } from '@/game/diplomacy';
 import { economyFor } from '@/game/economy-for';
 import type { GameState } from '@/game/game-state';
-import { detectTranscriptHighlights, matchHighlights, matchNickname } from '@/game/match-narrative';
+import { detectTranscriptHighlights, matchHighlights, matchNickname } from '@/game/narrative';
 import { cn } from '@/lib/cn';
 import type { Persistence } from '@/persistence/persistence';
 import { formatInt, formatTime } from '../theme';

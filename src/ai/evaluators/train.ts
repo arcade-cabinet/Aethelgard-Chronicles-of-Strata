@@ -7,7 +7,7 @@
 import { Goal, GoalEvaluator } from 'yuka';
 import type { AiPlayer } from '@/ai/ai-player';
 import { ownedBuildingCount, ownedMilitaryCount, ownedPeonCount } from '@/ai/helpers';
-import { trainUnit } from '@/game/commands';
+import { trainUnit } from '@/game/utilities';
 import { canAfford } from '@/game/economy';
 import { peonCap, UNIT_COSTS } from '@/rules';
 import { canTrain } from '@/rules/economy-rules';

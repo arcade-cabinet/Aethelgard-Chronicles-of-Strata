@@ -13,7 +13,7 @@
 import { Goal, GoalEvaluator } from 'yuka';
 import type { AiPlayer } from '@/ai/ai-player';
 import { freeBuildTile, ownedBuildingCount } from '@/ai/helpers';
-import { placeBuilding } from '@/game/commands';
+import { placeBuilding } from '@/game/utilities';
 import { canAfford } from '@/game/economy';
 import { economyFor } from '@/game/economy-for';
 import { BUILDING_COSTS } from '@/rules';

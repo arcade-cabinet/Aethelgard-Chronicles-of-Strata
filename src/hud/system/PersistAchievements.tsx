@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { unlockAchievement } from '@/game/achievements';
+import { unlockAchievement } from '@/game/narrative';
 import type { GameState } from '@/game/game-state';
 import type { Persistence } from '@/persistence/persistence';
 import { useRafLoop } from '../useRafLoop';

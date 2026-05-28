@@ -9,7 +9,7 @@ import type { AiPlayer } from '@/ai/ai-player';
 import { aiProfileFor, endgameUrgencyFor } from '@/ai/ai-profiles';
 import { discoveredEnemyTile, firstMilitary, firstPulsingTile } from '@/ai/helpers';
 import { EnemyTarget, FactionTrait, Stance, Unit } from '@/ecs/components';
-import { moveUnit } from '@/game/commands';
+import { moveUnit } from '@/game/utilities';
 import { matchElapsedSeconds } from '@/game/match-time';
 import { SKINS } from '@/rules/skins';
 import { MILITARY_ROLES } from '@/rules/unit-profiles';

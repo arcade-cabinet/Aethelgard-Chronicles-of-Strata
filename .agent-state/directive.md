@@ -123,9 +123,12 @@ Decision/why trail: `git log` + `.agent-state/decisions.ndjson`.
 - [x] M_MAIN.DIRECTIVE-EDIT — this overhaul (first commit of the
       decomp PR per user direction). Recurring; carries forward,
       maintained per-commit not in batches.
-- [ ] M_MAIN.CODERABBIT-SWEEP — sweep + resolve CodeRabbit threads on
-      any open PR as they post (recurring). Re-arms whenever a PR is open.
-- [ ] M_MAIN.GRINDER-WATCH — convert any flake to a deterministic fix,
+- [ ] [WAIT-REVIEW] M_MAIN.CODERABBIT-SWEEP — sweep + resolve CodeRabbit
+      threads on any open PR as they post (recurring). Re-arms whenever a
+      PR is open. CURRENTLY: chore/post-v13 push in flight (pre-push gate
+      running browser+e2e); once on remote the babysit-pr loop opens the PR
+      and services threads here.
+- [ ] [WAIT-REVIEW] M_MAIN.GRINDER-WATCH — convert any flake to a deterministic fix,
       never a retry (recurring). The save-load-n-player `__game not ready`
       flake is RESOLVED (root cause: Vite dev-server pushed full page
       reloads mid-test via the static-assets watcher + HMR; fix: gate them
@@ -155,9 +158,14 @@ feedback (CI + CodeRabbit) and squash-merge.
       browser SQLite mock's missing saveToStore. CI run on push validates
       the new job topology.
 
-- [ ] M_DECOMP-ECS-GAME — decompose src/ecs/ + src/game/ into
+- [x] M_DECOMP-ECS-GAME — COMPLETE. ecs/systems → 6 sub-packages (phase 1,
+      37e3709), game/ → narrative + utilities leaf groups (phase 2, b2397af),
+      game-root hubs intentionally left flat (phase 3 DECIDED — hub-coupled,
+      barrel-cycle risk > readability gain; see commit 886ae82). All three
+      suites green: unit 1259, browser 228, e2e 12. On branch chore/post-v13.
+      decompose src/ecs/ + src/game/ into
       sub-packages on the current branch. AUDITED (Explore agent) —
-      grounded grouping + import-edge map below; ready to execute.
+      grounded grouping + import-edge map below; done.
       Move order by risk:
       • PHASE 1 — DONE (commit 37e3709): ecs/systems/ 28 files → 6 groups
         (combat/economy/lifecycle/movement/hazards/meta) + barrels. build.ts

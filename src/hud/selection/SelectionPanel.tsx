@@ -15,7 +15,7 @@ import {
   type StanceMode,
   Unit,
 } from '@/ecs/components';
-import { doResearch, setPeonAutoMode, setStance, trainUnit } from '@/game/commands';
+import { doResearch, setPeonAutoMode, setStance, trainUnit } from '@/game/utilities';
 import { canAfford, type ResourceCost } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';

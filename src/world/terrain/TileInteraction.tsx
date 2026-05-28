@@ -9,7 +9,7 @@ import {
   placeBuilding,
   planMoveOrder,
   setRally,
-} from '@/game/commands';
+} from '@/game/utilities';
 import { getCursorMode } from '@/game/cursor-mode';
 import type { GameState } from '@/game/game-state';
 import { selectEntity, selectedEntities } from '@/game/selection';

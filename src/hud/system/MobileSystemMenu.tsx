@@ -1,6 +1,6 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { useState } from 'react';
-import { resign } from '@/game/commands';
+import { resign } from '@/game/utilities';
 import type { GameState } from '@/game/game-state';
 import { HUD_THEME } from '../theme';
 

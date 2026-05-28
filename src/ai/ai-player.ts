@@ -16,7 +16,7 @@
 import { GameEntity, Think } from 'yuka';
 import { DEFAULT_PERSONALITY, personalityFor } from '@/config/ai';
 import { FactionTrait, type Faction, Unit } from '@/ecs/components';
-import { trainUnit } from '@/game/commands';
+import { trainUnit } from '@/game/utilities';
 import type { GameState } from '@/game/game-state';
 import { BuildEvaluator } from './evaluators/build';
 import { DiplomaticEvaluator } from './evaluators/diplomatic';

@@ -14,7 +14,7 @@ import { type Faction, RESOURCE_TYPES, type ResourceType } from '@/ecs/component
 import type { GameClock } from '@/game/clock';
 import type { GameEconomy } from '@/game/economy';
 import { type GameState, runEconomyTick, startGame } from '@/game/game-state';
-import type { RallyState } from '@/game/rally';
+import type { RallyState } from '@/game/utilities';
 import type { ResearchId } from '@/game/research';
 import type { Weather, WeatherState } from '@/game/weather';
 import type { ZoneState } from '@/game/zone';
