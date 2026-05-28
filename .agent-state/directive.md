@@ -407,9 +407,12 @@ the decomposition landing so the fixes apply to clean sub-packages.
       Added a chain-coverage test (every entry has a valid chain that
       matches its description prefix). 6 config + 1 panel browser test
       green; check 0. (review Minor #8)
-- [ ] M_V13.HUD.LAYOUT-SPEC — write `docs/specs/21-hud-layout.md`
-      capturing the top-center slot order + z-ladder + safe-area
-      helper as the contract future HUD commits check against.
+- [x] M_V13.HUD.LAYOUT-SPEC — DONE: wrote docs/specs/21-hud-layout.md
+      capturing the coordinate model, top-center slot table (row 0
+      FactionChips / row 1 ScoreBar), z-ladder, space ramp, safe-area
+      helpers, 48dp tap-target floor, focus-ring rule, and axe gate —
+      each cross-referencing the token/helper + the test that pins it.
+      This is the contract future HUD commits check against. §B COMPLETE.
       (review Suggestion #3)
 
 ---
