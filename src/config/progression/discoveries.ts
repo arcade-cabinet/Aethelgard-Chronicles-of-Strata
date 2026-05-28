@@ -85,9 +85,30 @@ const DiscoveryEffectSchema = z.discriminatedUnion('kind', [
   }),
 ]);
 
+/**
+ * M_V13.HUD.CHAIN-FIELD — the upgrade chain a Discovery belongs to.
+ * Was previously parsed at render time from the description prefix
+ * (brittle string-matching in DiscoveriesPanel); now a typed,
+ * Zod-validated field on the data so a typo'd / missing chain fails at
+ * module load instead of silently bucketing into "Other".
+ */
+export const DISCOVERY_CHAINS = [
+  'economy',
+  'military',
+  'diplomacy',
+  'magic',
+  'engineering',
+  'lore',
+  'formations',
+  'misc',
+] as const;
+export type DiscoveryChain = (typeof DISCOVERY_CHAINS)[number];
+const DiscoveryChainSchema = z.enum(DISCOVERY_CHAINS);
+
 const DiscoveryConfigSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
+  chain: DiscoveryChainSchema,
   description: z.string(),
   cost: ResourceCostSchema,
   prereqs: z.array(z.string()),
@@ -137,6 +158,8 @@ export interface DiscoveryConfig {
   id: string;
   /** Player-facing name. */
   name: string;
+  /** Upgrade chain this Discovery belongs to (HUD grouping + filtering). */
+  chain: DiscoveryChain;
   /** One-line description shown in the HUD. */
   description: string;
   /** Resource cost — any slot map (typically gold/stone, future: science). */

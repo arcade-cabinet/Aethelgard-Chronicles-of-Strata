@@ -8,7 +8,7 @@
  * `discoveriesConfig` export.
  */
 import { describe, expect, it } from 'vitest';
-import { DISCOVERIES_CONFIG } from '@/config/progression';
+import { DISCOVERY_CHAINS, DISCOVERIES_CONFIG } from '@/config/progression';
 import { DISCOVERIES, discoveryById } from '@/rules/discovery-registry';
 
 const NEW_IDS = [
@@ -67,6 +67,27 @@ describe('M_V7.DISCOVERY-TREE.V6 — new tech entries', () => {
     ]) {
       const cfg = DISCOVERIES_CONFIG.discoveries.find((c) => c.id === id);
       expect(cfg?.effect.kind, `${id} should be flag-only`).toBe('flag');
+    }
+  });
+
+  it('M_V13.HUD.CHAIN-FIELD — every discovery has a valid typed chain', () => {
+    // The Zod schema already fails the import above if a chain is
+    // missing/typo'd; this makes the contract explicit and asserts the
+    // chain still matches the description prefix (so the typed field and
+    // the human-readable description never silently diverge).
+    const valid = new Set<string>(DISCOVERY_CHAINS);
+    for (const d of DISCOVERIES_CONFIG.discoveries) {
+      expect(valid.has(d.chain), `${d.id} chain "${d.chain}" not in DISCOVERY_CHAINS`).toBe(true);
+      const head = (d.description.split('—')[0] ?? '').trim().toLowerCase();
+      // formations chain's descriptions start "Formation ..."; everything
+      // else leads with the chain name. Skip the misc safety bucket.
+      if (d.chain !== 'misc') {
+        const expectedPrefix = d.chain === 'formations' ? 'formation' : d.chain;
+        expect(
+          head.startsWith(expectedPrefix),
+          `${d.id}: chain "${d.chain}" but description starts "${head}"`,
+        ).toBe(true);
+      }
     }
   });
 });

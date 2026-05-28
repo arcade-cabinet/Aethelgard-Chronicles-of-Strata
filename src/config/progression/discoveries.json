@@ -3,112 +3,208 @@
     {
       "id": "steelPlows",
       "name": "Steel Plows",
+      "chain": "economy",
       "description": "Economy / Harvest I — ×1.5 harvest rate on every peon.",
-      "cost": { "wood": 50, "gold": 100 },
+      "cost": {
+        "wood": 50,
+        "gold": 100
+      },
       "prereqs": [],
-      "effect": { "kind": "multiply-harvest", "factor": 1.5 }
+      "effect": {
+        "kind": "multiply-harvest",
+        "factor": 1.5
+      }
     },
     {
       "id": "iron-tools",
       "name": "Iron Tools",
+      "chain": "economy",
       "description": "Economy / Harvest II — +25% Peon harvest rate (stacks with Steel Plows).",
-      "cost": { "stone": 80, "gold": 100 },
+      "cost": {
+        "stone": 80,
+        "gold": 100
+      },
       "prereqs": ["steelPlows"],
-      "effect": { "kind": "multiply-harvest", "factor": 1.25 }
+      "effect": {
+        "kind": "multiply-harvest",
+        "factor": 1.25
+      }
     },
     {
       "id": "logistics-doctrine",
       "name": "Logistics Doctrine",
+      "chain": "economy",
       "description": "Economy / Harvest III — peons carry 50% more per trip (×1.15 effective harvest).",
-      "cost": { "wood": 120, "stone": 80, "gold": 80 },
+      "cost": {
+        "wood": 120,
+        "stone": 80,
+        "gold": 80
+      },
       "prereqs": ["iron-tools"],
-      "effect": { "kind": "multiply-harvest", "factor": 1.15 }
+      "effect": {
+        "kind": "multiply-harvest",
+        "factor": 1.15
+      }
     },
     {
       "id": "grand-mill",
       "name": "Grand Mill",
+      "chain": "economy",
       "description": "Economy / Harvest IV — additional ×1.10 effective harvest from labor-augmenting watermills.",
-      "cost": { "wood": 200, "stone": 100, "gold": 150 },
+      "cost": {
+        "wood": 200,
+        "stone": 100,
+        "gold": 150
+      },
       "prereqs": ["logistics-doctrine"],
-      "effect": { "kind": "multiply-harvest", "factor": 1.1 }
+      "effect": {
+        "kind": "multiply-harvest",
+        "factor": 1.1
+      }
     },
     {
       "id": "bulk-baskets",
       "name": "Bulk Baskets",
+      "chain": "economy",
       "description": "Economy / Cap I — +25 supply cap from larger storage baskets.",
-      "cost": { "wood": 60, "gold": 80 },
+      "cost": {
+        "wood": 60,
+        "gold": 80
+      },
       "prereqs": [],
-      "effect": { "kind": "modify-supply", "delta": 25 }
+      "effect": {
+        "kind": "modify-supply",
+        "delta": 25
+      }
     },
     {
       "id": "granary-vault",
       "name": "Granary Vault",
+      "chain": "economy",
       "description": "Economy / Cap II — +50 supply cap from sealed granary vaults.",
-      "cost": { "stone": 120, "gold": 90 },
+      "cost": {
+        "stone": 120,
+        "gold": 90
+      },
       "prereqs": ["bulk-baskets"],
-      "effect": { "kind": "modify-supply", "delta": 50 }
+      "effect": {
+        "kind": "modify-supply",
+        "delta": 50
+      }
     },
     {
       "id": "warehouses",
       "name": "Warehouses",
+      "chain": "economy",
       "description": "Economy / Cap III — +100 supply cap from large-block warehouse construction.",
-      "cost": { "wood": 100, "stone": 150, "gold": 120 },
+      "cost": {
+        "wood": 100,
+        "stone": 150,
+        "gold": 120
+      },
       "prereqs": ["granary-vault"],
-      "effect": { "kind": "modify-supply", "delta": 100 }
+      "effect": {
+        "kind": "modify-supply",
+        "delta": 100
+      }
     },
     {
       "id": "imperial-stores",
       "name": "Imperial Stores",
+      "chain": "economy",
       "description": "Economy / Cap IV — +200 supply cap from imperial-grade storage networks.",
-      "cost": { "stone": 250, "gold": 200 },
+      "cost": {
+        "stone": 250,
+        "gold": 200
+      },
       "prereqs": ["warehouses"],
-      "effect": { "kind": "modify-supply", "delta": 200 }
+      "effect": {
+        "kind": "modify-supply",
+        "delta": 200
+      }
     },
     {
       "id": "trade-route",
       "name": "Trade Route",
+      "chain": "economy",
       "description": "Economy / Trade I — unlocks the Trade widget; 1:1 swap of wood/stone/gold with any non-enemy faction.",
-      "cost": { "wood": 80, "gold": 120 },
+      "cost": {
+        "wood": 80,
+        "gold": 120
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "bartering-school",
       "name": "Bartering School",
+      "chain": "economy",
       "description": "Economy / Trade II — -15% trade-cost flag for the Trade widget.",
-      "cost": { "wood": 100, "gold": 140 },
+      "cost": {
+        "wood": 100,
+        "gold": 140
+      },
       "prereqs": ["trade-route"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "guild-charter",
       "name": "Guild Charter",
+      "chain": "economy",
       "description": "Economy / Trade III — Market building becomes constructible for ally-trade automation.",
-      "cost": { "wood": 150, "stone": 100, "gold": 180 },
+      "cost": {
+        "wood": 150,
+        "stone": 100,
+        "gold": 180
+      },
       "prereqs": ["bartering-school"],
-      "effect": { "kind": "unlock-building", "buildingType": "Market" }
+      "effect": {
+        "kind": "unlock-building",
+        "buildingType": "Market"
+      }
     },
     {
       "id": "global-bazaar",
       "name": "Global Bazaar",
+      "chain": "economy",
       "description": "Economy / Trade IV — auto-1:1 swap any resource pair via Markets, no per-trade cost.",
-      "cost": { "wood": 200, "stone": 150, "gold": 250 },
+      "cost": {
+        "wood": 200,
+        "stone": 150,
+        "gold": 250
+      },
       "prereqs": ["guild-charter"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "golden-coin-mint",
       "name": "Golden Coin Mint",
+      "chain": "economy",
       "description": "Economy / Tax I — flag enabling +5% gold from every income source.",
-      "cost": { "stone": 80, "gold": 100 },
+      "cost": {
+        "stone": 80,
+        "gold": 100
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "toll-keeps",
       "name": "Toll Keeps",
+      "chain": "economy",
       "description": "Economy / Tax II — every Watchtower contributes +1 gold/sec from regional tolls.",
-      "cost": { "stone": 120, "gold": 130 },
+      "cost": {
+        "stone": 120,
+        "gold": 130
+      },
       "prereqs": ["golden-coin-mint"],
       "effect": {
         "kind": "buff-building",
@@ -120,33 +216,59 @@
     {
       "id": "regional-taxes",
       "name": "Regional Taxes",
+      "chain": "economy",
       "description": "Economy / Tax III — +1 gold/sec per Palace zone-of-control tile.",
-      "cost": { "stone": 180, "gold": 180 },
+      "cost": {
+        "stone": 180,
+        "gold": 180
+      },
       "prereqs": ["toll-keeps"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "treasury-vault",
       "name": "Treasury Vault",
+      "chain": "economy",
       "description": "Economy / Tax IV — Palace generates +2 gold/sec from treasury vaults.",
-      "cost": { "stone": 250, "gold": 200 },
+      "cost": {
+        "stone": 250,
+        "gold": 200
+      },
       "prereqs": ["regional-taxes"],
-      "effect": { "kind": "buff-building", "buildingType": "Palace", "stat": "output", "delta": 2 }
+      "effect": {
+        "kind": "buff-building",
+        "buildingType": "Palace",
+        "stat": "output",
+        "delta": 2
+      }
     },
-
     {
       "id": "forgedBlades",
       "name": "Forged Blades",
+      "chain": "military",
       "description": "Military / Infantry I — +5 attack damage to every combatant.",
-      "cost": { "stone": 100, "gold": 150 },
+      "cost": {
+        "stone": 100,
+        "gold": 150
+      },
       "prereqs": [],
-      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5 }
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackDamage",
+        "delta": 5
+      }
     },
     {
       "id": "tempered-edges",
       "name": "Tempered Edges",
+      "chain": "military",
       "description": "Military / Infantry II — +3 additional attack damage on Footman / Pikeman.",
-      "cost": { "stone": 120, "gold": 180 },
+      "cost": {
+        "stone": 120,
+        "gold": 180
+      },
       "prereqs": ["forgedBlades"],
       "effect": {
         "kind": "buff-combatant",
@@ -158,8 +280,12 @@
     {
       "id": "phalanx-doctrine",
       "name": "Phalanx Doctrine",
+      "chain": "military",
       "description": "Military / Infantry III — formation discipline; +5 more attack damage to Pikeman.",
-      "cost": { "stone": 180, "gold": 220 },
+      "cost": {
+        "stone": 180,
+        "gold": 220
+      },
       "prereqs": ["tempered-edges"],
       "effect": {
         "kind": "buff-combatant",
@@ -171,64 +297,128 @@
     {
       "id": "imperial-guard",
       "name": "Imperial Guard",
+      "chain": "military",
       "description": "Military / Infantry IV — unlock Hero training from the Barracks.",
-      "cost": { "stone": 250, "gold": 280 },
+      "cost": {
+        "stone": 250,
+        "gold": 280
+      },
       "prereqs": ["phalanx-doctrine"],
-      "effect": { "kind": "unlock-unit", "unitType": "Hero", "fromBuildingType": "Barracks" }
+      "effect": {
+        "kind": "unlock-unit",
+        "unitType": "Hero",
+        "fromBuildingType": "Barracks"
+      }
     },
     {
       "id": "iron-tipped-arrows",
       "name": "Iron-Tipped Arrows",
+      "chain": "military",
       "description": "Military / Archer I — +1 attack range on every ranged combatant.",
-      "cost": { "wood": 120, "gold": 120 },
+      "cost": {
+        "wood": 120,
+        "gold": 120
+      },
       "prereqs": [],
-      "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 1 }
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackRange",
+        "delta": 1
+      }
     },
     {
       "id": "composite-bows",
       "name": "Composite Bows",
+      "chain": "military",
       "description": "Military / Archer II — +1 more attack range, Archer only.",
-      "cost": { "wood": 140, "gold": 160 },
+      "cost": {
+        "wood": 140,
+        "gold": 160
+      },
       "prereqs": ["iron-tipped-arrows"],
-      "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 1, "filter": "Archer" }
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackRange",
+        "delta": 1,
+        "filter": "Archer"
+      }
     },
     {
       "id": "volley-fire",
       "name": "Volley Fire",
+      "chain": "military",
       "description": "Military / Archer III — Archer attack damage +3.",
-      "cost": { "wood": 160, "gold": 200 },
+      "cost": {
+        "wood": 160,
+        "gold": 200
+      },
       "prereqs": ["composite-bows"],
-      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 3, "filter": "Archer" }
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackDamage",
+        "delta": 3,
+        "filter": "Archer"
+      }
     },
     {
       "id": "masterwork-bows",
       "name": "Masterwork Bows",
+      "chain": "military",
       "description": "Military / Archer IV — Archer attack range +2 (capstone).",
-      "cost": { "wood": 220, "gold": 260 },
+      "cost": {
+        "wood": 220,
+        "gold": 260
+      },
       "prereqs": ["volley-fire"],
-      "effect": { "kind": "buff-combatant", "stat": "attackRange", "delta": 2, "filter": "Archer" }
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackRange",
+        "delta": 2,
+        "filter": "Archer"
+      }
     },
     {
       "id": "sapper-training",
       "name": "Sapper Training",
+      "chain": "military",
       "description": "Military / Siege I — siege engineering flag, -15% siege build time.",
-      "cost": { "wood": 120, "stone": 100, "gold": 60 },
+      "cost": {
+        "wood": 120,
+        "stone": 100,
+        "gold": 60
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "catapult-blueprints",
       "name": "Catapult Blueprints",
+      "chain": "military",
       "description": "Military / Siege II — unlock Trebuchet training from the Barracks (in addition to Workshop).",
-      "cost": { "wood": 160, "stone": 140, "gold": 120 },
+      "cost": {
+        "wood": 160,
+        "stone": 140,
+        "gold": 120
+      },
       "prereqs": ["sapper-training"],
-      "effect": { "kind": "unlock-unit", "unitType": "Trebuchet", "fromBuildingType": "Barracks" }
+      "effect": {
+        "kind": "unlock-unit",
+        "unitType": "Trebuchet",
+        "fromBuildingType": "Barracks"
+      }
     },
     {
       "id": "reinforced-trebuchets",
       "name": "Reinforced Trebuchets",
+      "chain": "military",
       "description": "Military / Siege III — Trebuchet attack damage +5.",
-      "cost": { "wood": 180, "stone": 180, "gold": 160 },
+      "cost": {
+        "wood": 180,
+        "stone": 180,
+        "gold": 160
+      },
       "prereqs": ["catapult-blueprints"],
       "effect": {
         "kind": "buff-combatant",
@@ -240,8 +430,13 @@
     {
       "id": "seismic-engines",
       "name": "Seismic Engines",
+      "chain": "military",
       "description": "Military / Siege IV — Trebuchet attack damage +10 (capstone).",
-      "cost": { "wood": 240, "stone": 240, "gold": 220 },
+      "cost": {
+        "wood": 240,
+        "stone": 240,
+        "gold": 220
+      },
       "prereqs": ["reinforced-trebuchets"],
       "effect": {
         "kind": "buff-combatant",
@@ -253,16 +448,30 @@
     {
       "id": "armored-saddles",
       "name": "Armored Saddles",
+      "chain": "military",
       "description": "Military / Cavalry I — Knight unlocked + base profile (when prerequisite met by chapter / starter).",
-      "cost": { "wood": 100, "stone": 100, "gold": 140 },
+      "cost": {
+        "wood": 100,
+        "stone": 100,
+        "gold": 140
+      },
       "prereqs": [],
-      "effect": { "kind": "unlock-unit", "unitType": "Knight", "fromBuildingType": "Barracks" }
+      "effect": {
+        "kind": "unlock-unit",
+        "unitType": "Knight",
+        "fromBuildingType": "Barracks"
+      }
     },
     {
       "id": "barbed-spears",
       "name": "Barbed Spears",
+      "chain": "military",
       "description": "Military / Cavalry II — Pikeman attack damage +3 (anti-cavalry counter).",
-      "cost": { "wood": 120, "stone": 100, "gold": 160 },
+      "cost": {
+        "wood": 120,
+        "stone": 100,
+        "gold": 160
+      },
       "prereqs": ["armored-saddles"],
       "effect": {
         "kind": "buff-combatant",
@@ -274,16 +483,30 @@
     {
       "id": "charge-tactics",
       "name": "Charge Tactics",
+      "chain": "military",
       "description": "Military / Cavalry III — Knight attack damage +5.",
-      "cost": { "wood": 140, "stone": 140, "gold": 200 },
+      "cost": {
+        "wood": 140,
+        "stone": 140,
+        "gold": 200
+      },
       "prereqs": ["barbed-spears"],
-      "effect": { "kind": "buff-combatant", "stat": "attackDamage", "delta": 5, "filter": "Knight" }
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "attackDamage",
+        "delta": 5,
+        "filter": "Knight"
+      }
     },
     {
       "id": "royal-cavalry",
       "name": "Royal Cavalry",
+      "chain": "military",
       "description": "Military / Cavalry IV — Knight attack damage +10 (capstone).",
-      "cost": { "stone": 220, "gold": 280 },
+      "cost": {
+        "stone": 220,
+        "gold": 280
+      },
       "prereqs": ["charge-tactics"],
       "effect": {
         "kind": "buff-combatant",
@@ -292,189 +515,335 @@
         "filter": "Knight"
       }
     },
-
     {
       "id": "first-contact",
       "name": "First Contact",
+      "chain": "diplomacy",
       "description": "Diplomacy / Relations I — Embassy half-cost flag; the Diplomat carries amnesty.",
-      "cost": { "wood": 60, "gold": 80 },
+      "cost": {
+        "wood": 60,
+        "gold": 80
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "diplomatic-corps",
       "name": "Diplomatic Corps",
+      "chain": "diplomacy",
       "description": "Diplomacy / Relations II — Diplomat trains 25% faster from Embassy.",
-      "cost": { "wood": 100, "gold": 140 },
+      "cost": {
+        "wood": 100,
+        "gold": 140
+      },
       "prereqs": ["first-contact"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "royal-marriage",
       "name": "Royal Marriage",
+      "chain": "diplomacy",
       "description": "Diplomacy / Relations III — +1 pact slot beyond the default 2.",
-      "cost": { "wood": 140, "gold": 220 },
+      "cost": {
+        "wood": 140,
+        "gold": 220
+      },
       "prereqs": ["diplomatic-corps"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "universal-amnesty",
       "name": "Universal Amnesty",
+      "chain": "diplomacy",
       "description": "Diplomacy / Relations IV — auto-accept every incoming pact proposal.",
-      "cost": { "wood": 220, "gold": 280 },
+      "cost": {
+        "wood": 220,
+        "gold": 280
+      },
       "prereqs": ["royal-marriage"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "exchange-policy",
       "name": "Exchange Policy",
+      "chain": "diplomacy",
       "description": "Diplomacy / Trade I — open the Trade panel for resource swaps with non-enemies.",
-      "cost": { "wood": 80, "gold": 120 },
+      "cost": {
+        "wood": 80,
+        "gold": 120
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "trade-treaty",
       "name": "Trade Treaty",
+      "chain": "diplomacy",
       "description": "Diplomacy / Trade II — allies grant +10% harvest from shared trade.",
-      "cost": { "wood": 120, "gold": 160 },
+      "cost": {
+        "wood": 120,
+        "gold": 160
+      },
       "prereqs": ["exchange-policy"],
-      "effect": { "kind": "multiply-harvest", "factor": 1.1 }
+      "effect": {
+        "kind": "multiply-harvest",
+        "factor": 1.1
+      }
     },
     {
       "id": "shared-codex",
       "name": "Shared Codex",
+      "chain": "diplomacy",
       "description": "Diplomacy / Trade III — allied factions exchange a Discovery per match (you pick which).",
-      "cost": { "wood": 160, "gold": 220 },
+      "cost": {
+        "wood": 160,
+        "gold": 220
+      },
       "prereqs": ["trade-treaty"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "trade-monopoly",
       "name": "Trade Monopoly",
+      "chain": "diplomacy",
       "description": "Diplomacy / Trade IV — 10% tribute payout from EVERY ally trade.",
-      "cost": { "wood": 220, "gold": 300 },
+      "cost": {
+        "wood": 220,
+        "gold": 300
+      },
       "prereqs": ["shared-codex"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "levy-tradition",
       "name": "Levy Tradition",
+      "chain": "diplomacy",
       "description": "Diplomacy / Tribute I — open the Tribute panel; demand resources from weaker neighbors.",
-      "cost": { "wood": 80, "gold": 120 },
+      "cost": {
+        "wood": 80,
+        "gold": 120
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "hostage-keep",
       "name": "Hostage Keep",
+      "chain": "diplomacy",
       "description": "Diplomacy / Tribute II — vassals pay 2× tribute under threat of release.",
-      "cost": { "stone": 120, "gold": 160 },
+      "cost": {
+        "stone": 120,
+        "gold": 160
+      },
       "prereqs": ["levy-tradition"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "extortion-doctrine",
       "name": "Extortion Doctrine",
+      "chain": "diplomacy",
       "description": "Diplomacy / Tribute III — demand tribute from any non-ally faction (regardless of vassal state).",
-      "cost": { "wood": 140, "gold": 220 },
+      "cost": {
+        "wood": 140,
+        "gold": 220
+      },
       "prereqs": ["hostage-keep"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "iron-fist",
       "name": "Iron Fist",
+      "chain": "diplomacy",
       "description": "Diplomacy / Tribute IV — vassals pay 4× tribute but break pacts twice as often.",
-      "cost": { "wood": 220, "gold": 280 },
+      "cost": {
+        "wood": 220,
+        "gold": 280
+      },
       "prereqs": ["extortion-doctrine"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
-
     {
       "id": "mage-tower-aura",
       "name": "Mage Tower Aura",
+      "chain": "magic",
       "description": "Magic / Offense I — Mage Tower aura radius +1 hex.",
-      "cost": { "wood": 100, "gold": 140 },
+      "cost": {
+        "wood": 100,
+        "gold": 140
+      },
       "prereqs": [],
-      "effect": { "kind": "buff-building", "buildingType": "MageTower", "stat": "dps", "delta": 2 }
+      "effect": {
+        "kind": "buff-building",
+        "buildingType": "MageTower",
+        "stat": "dps",
+        "delta": 2
+      }
     },
     {
       "id": "crystalline-foci",
       "name": "Crystalline Foci",
+      "chain": "magic",
       "description": "Magic / Offense II — Mage Tower aura DPS +5.",
-      "cost": { "stone": 140, "gold": 180 },
+      "cost": {
+        "stone": 140,
+        "gold": 180
+      },
       "prereqs": ["mage-tower-aura"],
-      "effect": { "kind": "buff-building", "buildingType": "MageTower", "stat": "dps", "delta": 5 }
+      "effect": {
+        "kind": "buff-building",
+        "buildingType": "MageTower",
+        "stat": "dps",
+        "delta": 5
+      }
     },
     {
       "id": "elemental-mastery",
       "name": "Elemental Mastery",
+      "chain": "magic",
       "description": "Magic / Offense III — Mage Tower aura ignores 25% target armor (flag).",
-      "cost": { "stone": 180, "gold": 240 },
+      "cost": {
+        "stone": 180,
+        "gold": 240
+      },
       "prereqs": ["crystalline-foci"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "apocalypse-rite",
       "name": "Apocalypse Rite",
+      "chain": "magic",
       "description": "Magic / Offense IV — Mage Tower casts a -50% max-HP debuff on the nearest enemy stack.",
-      "cost": { "stone": 240, "gold": 320 },
+      "cost": {
+        "stone": 240,
+        "gold": 320
+      },
       "prereqs": ["elemental-mastery"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "scrying-orb",
       "name": "Scrying Orb",
+      "chain": "magic",
       "description": "Magic / Utility I — 5-hex map-reveal flag around every Wizard.",
-      "cost": { "wood": 80, "gold": 120 },
+      "cost": {
+        "wood": 80,
+        "gold": 120
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "translocation-rune",
       "name": "Translocation Rune",
+      "chain": "magic",
       "description": "Magic / Utility II — Diplomat travels 2× movement speed (flag).",
-      "cost": { "wood": 100, "gold": 160 },
+      "cost": {
+        "wood": 100,
+        "gold": 160
+      },
       "prereqs": ["scrying-orb"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "warding-circle",
       "name": "Warding Circle",
+      "chain": "magic",
       "description": "Magic / Utility III — units inside Mage Tower aura take -15% damage (flag).",
-      "cost": { "stone": 160, "gold": 200 },
+      "cost": {
+        "stone": 160,
+        "gold": 200
+      },
       "prereqs": ["translocation-rune"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "mirror-image",
       "name": "Mirror Image",
+      "chain": "magic",
       "description": "Magic / Utility IV — Mage Tower casts a decoy clone every 60s (flag).",
-      "cost": { "stone": 220, "gold": 280 },
+      "cost": {
+        "stone": 220,
+        "gold": 280
+      },
       "prereqs": ["warding-circle"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "spirit-binding",
       "name": "Spirit Binding",
+      "chain": "magic",
       "description": "Magic / Summon I — Wizard HP +20.",
-      "cost": { "wood": 80, "gold": 140 },
+      "cost": {
+        "wood": 80,
+        "gold": 140
+      },
       "prereqs": [],
-      "effect": { "kind": "buff-combatant", "stat": "hp", "delta": 20, "filter": "Wizard" }
+      "effect": {
+        "kind": "buff-combatant",
+        "stat": "hp",
+        "delta": 20,
+        "filter": "Wizard"
+      }
     },
     {
       "id": "druid-conclave",
       "name": "Druid Conclave",
+      "chain": "magic",
       "description": "Magic / Summon II — unlock Druid training from Mage Tower.",
-      "cost": { "wood": 140, "gold": 200 },
+      "cost": {
+        "wood": 140,
+        "gold": 200
+      },
       "prereqs": ["spirit-binding"],
-      "effect": { "kind": "unlock-unit", "unitType": "Druid", "fromBuildingType": "MageTower" }
+      "effect": {
+        "kind": "unlock-unit",
+        "unitType": "Druid",
+        "fromBuildingType": "MageTower"
+      }
     },
     {
       "id": "summon-elementals",
       "name": "Summon Elementals",
+      "chain": "magic",
       "description": "Magic / Summon III — unlock Elemental training from Mage Tower.",
-      "cost": { "wood": 200, "gold": 260 },
+      "cost": {
+        "wood": 200,
+        "gold": 260
+      },
       "prereqs": ["druid-conclave"],
       "effect": {
         "kind": "unlock-unit",
@@ -485,8 +854,12 @@
     {
       "id": "necromancers-pact",
       "name": "Necromancer's Pact",
+      "chain": "magic",
       "description": "Magic / Summon IV — unlock Necromancer training from Mage Tower.",
-      "cost": { "stone": 240, "gold": 320 },
+      "cost": {
+        "stone": 240,
+        "gold": 320
+      },
       "prereqs": ["summon-elementals"],
       "effect": {
         "kind": "unlock-unit",
@@ -494,52 +867,93 @@
         "fromBuildingType": "MageTower"
       }
     },
-
     {
       "id": "hammer-honing",
       "name": "Hammer Honing",
+      "chain": "engineering",
       "description": "Engineering / Siege I — Engineer repair rate +10% (flag).",
-      "cost": { "wood": 80, "gold": 100 },
+      "cost": {
+        "wood": 80,
+        "gold": 100
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "siege-blueprints",
       "name": "Siege Blueprints",
+      "chain": "engineering",
       "description": "Engineering / Siege II — unlock Foundry building (advanced siege production).",
-      "cost": { "wood": 140, "stone": 120, "gold": 180 },
+      "cost": {
+        "wood": 140,
+        "stone": 120,
+        "gold": 180
+      },
       "prereqs": ["hammer-honing"],
-      "effect": { "kind": "unlock-building", "buildingType": "Foundry" }
+      "effect": {
+        "kind": "unlock-building",
+        "buildingType": "Foundry"
+      }
     },
     {
       "id": "engineering-corps",
       "name": "Engineering Corps",
+      "chain": "engineering",
       "description": "Engineering / Siege III — unlock Sapper unit from Workshop.",
-      "cost": { "wood": 180, "stone": 160, "gold": 220 },
+      "cost": {
+        "wood": 180,
+        "stone": 160,
+        "gold": 220
+      },
       "prereqs": ["siege-blueprints"],
-      "effect": { "kind": "unlock-unit", "unitType": "Sapper", "fromBuildingType": "Workshop" }
+      "effect": {
+        "kind": "unlock-unit",
+        "unitType": "Sapper",
+        "fromBuildingType": "Workshop"
+      }
     },
     {
       "id": "grand-armory",
       "name": "Grand Armory",
+      "chain": "engineering",
       "description": "Engineering / Siege IV — +25% combat damage flag (every combatant).",
-      "cost": { "stone": 240, "gold": 320 },
+      "cost": {
+        "stone": 240,
+        "gold": 320
+      },
       "prereqs": ["engineering-corps"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "reinforced-walls",
       "name": "Reinforced Walls",
+      "chain": "engineering",
       "description": "Engineering / Defense I — Wall HP +50.",
-      "cost": { "stone": 140, "gold": 100 },
+      "cost": {
+        "stone": 140,
+        "gold": 100
+      },
       "prereqs": [],
-      "effect": { "kind": "buff-building", "buildingType": "Wall", "stat": "hp", "delta": 50 }
+      "effect": {
+        "kind": "buff-building",
+        "buildingType": "Wall",
+        "stat": "hp",
+        "delta": 50
+      }
     },
     {
       "id": "crenellations",
       "name": "Crenellations",
+      "chain": "engineering",
       "description": "Engineering / Defense II — Watchtower attack damage +10.",
-      "cost": { "stone": 160, "gold": 140 },
+      "cost": {
+        "stone": 160,
+        "gold": 140
+      },
       "prereqs": ["reinforced-walls"],
       "effect": {
         "kind": "buff-building",
@@ -551,32 +965,60 @@
     {
       "id": "bastion-architecture",
       "name": "Bastion Architecture",
+      "chain": "engineering",
       "description": "Engineering / Defense III — Wall HP +100 (further).",
-      "cost": { "stone": 220, "gold": 180 },
+      "cost": {
+        "stone": 220,
+        "gold": 180
+      },
       "prereqs": ["crenellations"],
-      "effect": { "kind": "buff-building", "buildingType": "Wall", "stat": "hp", "delta": 100 }
+      "effect": {
+        "kind": "buff-building",
+        "buildingType": "Wall",
+        "stat": "hp",
+        "delta": 100
+      }
     },
     {
       "id": "impregnable-citadel",
       "name": "Impregnable Citadel",
+      "chain": "engineering",
       "description": "Engineering / Defense IV — Palace HP +200.",
-      "cost": { "stone": 300, "gold": 260 },
+      "cost": {
+        "stone": 300,
+        "gold": 260
+      },
       "prereqs": ["bastion-architecture"],
-      "effect": { "kind": "buff-building", "buildingType": "Palace", "stat": "hp", "delta": 200 }
+      "effect": {
+        "kind": "buff-building",
+        "buildingType": "Palace",
+        "stat": "hp",
+        "delta": 200
+      }
     },
     {
       "id": "workshop-discipline",
       "name": "Workshop Discipline",
+      "chain": "engineering",
       "description": "Engineering / Production I — Workshop build time -15% (flag).",
-      "cost": { "wood": 100, "gold": 120 },
+      "cost": {
+        "wood": 100,
+        "gold": 120
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "guild-conduits",
       "name": "Guild Conduits",
+      "chain": "engineering",
       "description": "Engineering / Production II — Trebuchet build cost reduced -15% (flag).",
-      "cost": { "wood": 140, "gold": 160 },
+      "cost": {
+        "wood": 140,
+        "gold": 160
+      },
       "prereqs": ["workshop-discipline"],
       "effect": {
         "kind": "modify-cost",
@@ -589,132 +1031,228 @@
     {
       "id": "monumental-architecture",
       "name": "Monumental Architecture",
+      "chain": "engineering",
       "description": "Engineering / Production III — Wonder build cost -25% via foundry blueprints.",
-      "cost": { "stone": 200, "gold": 200 },
+      "cost": {
+        "stone": 200,
+        "gold": 200
+      },
       "prereqs": ["guild-conduits"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "guild-monopoly",
       "name": "Guild Monopoly",
+      "chain": "engineering",
       "description": "Engineering / Production IV — every military train time -25% (flag).",
-      "cost": { "stone": 240, "gold": 320 },
+      "cost": {
+        "stone": 240,
+        "gold": 320
+      },
       "prereqs": ["monumental-architecture"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
-
     {
       "id": "cartography",
       "name": "Cartography",
+      "chain": "lore",
       "description": "Lore / Reveal I — full-radius vision around your Palace + 25% Ferryman speed.",
-      "cost": { "wood": 60, "gold": 80 },
+      "cost": {
+        "wood": 60,
+        "gold": 80
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "scout-doctrine",
       "name": "Scout Doctrine",
+      "chain": "lore",
       "description": "Lore / Reveal II — Scout vision range +2 hexes.",
-      "cost": { "wood": 100, "gold": 140 },
+      "cost": {
+        "wood": 100,
+        "gold": 140
+      },
       "prereqs": ["cartography"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "celestial-charts",
       "name": "Celestial Charts",
+      "chain": "lore",
       "description": "Lore / Reveal III — reveal-tier 1: see all enemy buildings on the map.",
-      "cost": { "wood": 140, "gold": 200 },
+      "cost": {
+        "wood": 140,
+        "gold": 200
+      },
       "prereqs": ["scout-doctrine"],
-      "effect": { "kind": "reveal-tier", "tier": 1 }
+      "effect": {
+        "kind": "reveal-tier",
+        "tier": 1
+      }
     },
     {
       "id": "omniscient-archives",
       "name": "Omniscient Archives",
+      "chain": "lore",
       "description": "Lore / Reveal IV — reveal-tier 2: see all enemy buildings AND units, full map.",
-      "cost": { "wood": 220, "gold": 300 },
+      "cost": {
+        "wood": 220,
+        "gold": 300
+      },
       "prereqs": ["celestial-charts"],
-      "effect": { "kind": "reveal-tier", "tier": 2 }
+      "effect": {
+        "kind": "reveal-tier",
+        "tier": 2
+      }
     },
     {
       "id": "chronicle-keeping",
       "name": "Chronicle Keeping",
+      "chain": "lore",
       "description": "Lore / Narrative I — lorebook entry gains +1 highlight slot per match.",
-      "cost": { "wood": 80, "gold": 120 },
+      "cost": {
+        "wood": 80,
+        "gold": 120
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "bard-college",
       "name": "Bard College",
+      "chain": "lore",
       "description": "Lore / Narrative II — myth events fire 25% more often.",
-      "cost": { "wood": 120, "gold": 180 },
+      "cost": {
+        "wood": 120,
+        "gold": 180
+      },
       "prereqs": ["chronicle-keeping"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "sage-council",
       "name": "Sage Council",
+      "chain": "lore",
       "description": "Lore / Narrative III — lorebook entry includes 'biggest combat exchange' field.",
-      "cost": { "wood": 160, "gold": 240 },
+      "cost": {
+        "wood": 160,
+        "gold": 240
+      },
       "prereqs": ["bard-college"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "chronicle-saga",
       "name": "Chronicle Saga",
+      "chain": "lore",
       "description": "Lore / Narrative IV — unlock the Chronicle saga page (cross-match narrative).",
-      "cost": { "wood": 220, "gold": 300 },
+      "cost": {
+        "wood": 220,
+        "gold": 300
+      },
       "prereqs": ["sage-council"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
-
     {
       "id": "formation-phalanx",
       "name": "Formation: Phalanx",
+      "chain": "formations",
       "description": "Formations — unlocks Phalanx; spear stacks gain +50% defense.",
-      "cost": { "wood": 120, "gold": 80 },
+      "cost": {
+        "wood": 120,
+        "gold": 80
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "formation-cadre",
       "name": "Formation: Cadre",
+      "chain": "formations",
       "description": "Formations — unlocks Cadre; melee stacks gain +25% damage.",
-      "cost": { "wood": 120, "gold": 80 },
+      "cost": {
+        "wood": 120,
+        "gold": 80
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "formation-wedge",
       "name": "Formation: Wedge",
+      "chain": "formations",
       "description": "Formations — unlocks Wedge; heavy cavalry stacks gain +25% damage on the first attack.",
-      "cost": { "wood": 120, "gold": 80 },
+      "cost": {
+        "wood": 120,
+        "gold": 80
+      },
       "prereqs": ["formation-cadre"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "formation-skirmish-line",
       "name": "Formation: Skirmish Line",
+      "chain": "formations",
       "description": "Formations — unlocks Skirmish Line; ranged stacks gain +15% range.",
-      "cost": { "wood": 120, "gold": 80 },
+      "cost": {
+        "wood": 120,
+        "gold": 80
+      },
       "prereqs": [],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "formation-square",
       "name": "Formation: Square",
+      "chain": "formations",
       "description": "Formations — unlocks Square; defensive stacks gain +30% defense; cannot move while in formation.",
-      "cost": { "wood": 120, "gold": 80 },
+      "cost": {
+        "wood": 120,
+        "gold": 80
+      },
       "prereqs": ["formation-phalanx"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     },
     {
       "id": "formation-combined-arms",
       "name": "Formation: Combined Arms",
+      "chain": "formations",
       "description": "Formations — unlocks Combined Arms; mixed melee+ranged stacks gain +25% HP and +20% damage.",
-      "cost": { "wood": 200, "gold": 160 },
+      "cost": {
+        "wood": 200,
+        "gold": 160
+      },
       "prereqs": ["formation-phalanx", "formation-wedge"],
-      "effect": { "kind": "flag" }
+      "effect": {
+        "kind": "flag"
+      }
     }
   ]
 }

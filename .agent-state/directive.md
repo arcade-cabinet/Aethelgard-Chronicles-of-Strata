@@ -395,9 +395,16 @@ the decomposition landing so the fixes apply to clean sub-packages.
       4 browser tests green; check 0. (review Major #4)
 - [ ] M_V13.HUD.AXE-WIDEN — extend the axe-core sweep past modals to
       pills + overlays. (review Minor #7)
-- [ ] M_V13.HUD.CHAIN-FIELD — add a typed `chain` field to
-      discoveries.json schema; drop DiscoveriesPanel's
-      description-prefix parse. (review Minor #8)
+- [x] M_V13.HUD.CHAIN-FIELD — DONE: added a typed `chain` enum
+      (DISCOVERY_CHAINS) to the discoveries.ts Zod schema +
+      DiscoveryConfig + the runtime Discovery type + the registry map;
+      injected `chain` into all 82 discoveries.json entries (derived
+      once from the existing description prefix — all 82 mapped cleanly,
+      zero misc). DiscoveriesPanel now reads `d.chain` directly;
+      deleted the brittle chainForDescription string-prefix parse.
+      Added a chain-coverage test (every entry has a valid chain that
+      matches its description prefix). 6 config + 1 panel browser test
+      green; check 0. (review Minor #8)
 - [ ] M_V13.HUD.LAYOUT-SPEC — write `docs/specs/21-hud-layout.md`
       capturing the top-center slot order + z-ladder + safe-area
       helper as the contract future HUD commits check against.

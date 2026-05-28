@@ -4,7 +4,7 @@ import { doResearch } from '@/game/commands';
 import { canAfford } from '@/game/economy';
 import type { GameState } from '@/game/game-state';
 import { canResearch, type ResearchId } from '@/game/research';
-import { DISCOVERIES, scaledCostFor } from '@/rules';
+import { DISCOVERIES, type DiscoveryChain, scaledCostFor } from '@/rules';
 
 // M_HUD.SHELL.17 / M_LORE.4 — Chronicler's-voice flavour per Discovery
 // id, sourced from docs/lore/discoveries.md. Shown italic below the
@@ -54,23 +54,12 @@ import { ModalShell } from '../primitives';
  * adds a panel row, no JSX change.
  */
 /**
- * M_V12.DEPTH.UPGRADE-HUD — derive a Discovery's chain from the
- * description prefix the v0.12 chain expansion writes ("Economy /
- * Harvest I — ..." → chain='economy'). Formations are their own
- * pseudo-chain. Anything that doesn't match a known prefix falls
- * into 'misc' so a stale row stays visible while we migrate.
+ * M_V13.HUD.CHAIN-FIELD — a Discovery's chain is now a typed field on
+ * the data (discoveries.json `chain`), Zod-validated at load. The
+ * panel reads `d.chain` directly; the old description-prefix parse
+ * (chainForDescription) is gone — it was brittle (review Minor #8).
  */
-type ChainKey =
-  | 'economy'
-  | 'military'
-  | 'diplomacy'
-  | 'magic'
-  | 'engineering'
-  | 'lore'
-  | 'formations'
-  | 'misc';
-
-const CHAIN_LABELS: Record<ChainKey, string> = {
+const CHAIN_LABELS: Record<DiscoveryChain, string> = {
   economy: 'Economy',
   military: 'Military',
   diplomacy: 'Diplomacy',
@@ -81,25 +70,13 @@ const CHAIN_LABELS: Record<ChainKey, string> = {
   misc: 'Other',
 };
 
-function chainForDescription(desc: string): ChainKey {
-  const head = desc.split('—')[0]?.trim().toLowerCase() ?? '';
-  if (head.startsWith('economy')) return 'economy';
-  if (head.startsWith('military')) return 'military';
-  if (head.startsWith('diplomacy')) return 'diplomacy';
-  if (head.startsWith('magic')) return 'magic';
-  if (head.startsWith('engineering')) return 'engineering';
-  if (head.startsWith('lore')) return 'lore';
-  if (head.startsWith('formation')) return 'formations';
-  return 'misc';
-}
-
 export function DiscoveriesPanel({ game }: { game: GameState }) {
   const [open, setOpen] = useState(false);
   // M_EXPANSION.U.124 — search filter (case-insensitive substring on
   // name OR description; empty = show all).
   const [filter, setFilter] = useState('');
   // M_V12.DEPTH.UPGRADE-HUD — active chain tab; null = show all chains.
-  const [chainTab, setChainTab] = useState<ChainKey | null>(null);
+  const [chainTab, setChainTab] = useState<DiscoveryChain | null>(null);
   const eco = game.economy.player;
   // M_HUD.SHELL.1 — replace the inline HudPill trigger with a CustomEvent
   // listener so SystemMenu (the universal top-right hamburger) owns the
@@ -245,7 +222,7 @@ export function DiscoveriesPanel({ game }: { game: GameState }) {
         )}
         {DISCOVERIES.filter((d) => {
           // M_V12.DEPTH.UPGRADE-HUD — chain-tab gate.
-          if (chainTab && chainForDescription(d.description) !== chainTab) return false;
+          if (chainTab && d.chain !== chainTab) return false;
           const q = filter.trim().toLowerCase();
           if (!q) return true;
           return d.name.toLowerCase().includes(q) || d.description.toLowerCase().includes(q);

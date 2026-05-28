@@ -164,6 +164,7 @@ export const DISCOVERIES: ReadonlyArray<Discovery> = DISCOVERIES_CONFIG.discover
   (config) => ({
     id: config.id,
     name: config.name,
+    chain: config.chain,
     description: config.description,
     cost: config.cost,
     prereqs: config.prereqs,
