@@ -41,7 +41,7 @@ const DISCOVERY_FLAVOR: Record<string, string> = {
 import { costLabel } from './theme';
 import { emitToast } from './Toasts';
 import { HUD_THEME } from './theme';
-import { ModalShell } from './ModalShell';
+import { ModalShell } from './primitives';
 
 /**
  * Discoveries panel (M_DATA.7). A top-right button opens a Radix Dialog

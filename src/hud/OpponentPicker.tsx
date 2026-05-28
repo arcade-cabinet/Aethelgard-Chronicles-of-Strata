@@ -4,7 +4,7 @@
  */
 import { ALL_PERSONALITIES, personalityFor } from '@/config/ai-personalities';
 import { HUD_THEME } from './theme';
-import { Segmented } from './Segmented';
+import { Segmented } from './primitives';
 
 export interface OpponentPickerProps {
   aiVsAi: boolean;

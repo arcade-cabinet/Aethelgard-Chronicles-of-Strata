@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { GameState } from '@/game/game-state';
-import { HudPill } from './HudPill';
+import { HudPill } from './primitives';
 import { HUD_THEME } from './theme';
 
 /**

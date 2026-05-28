@@ -9,7 +9,7 @@ import { isCaptionsEnabled, setCaptionsEnabled } from './captions';
 import { HotkeyEditor } from './HotkeyEditor';
 import { loadBindings } from './hotkey-bindings';
 import { HUD_THEME } from './theme';
-import { ModalShell } from './ModalShell';
+import { ModalShell } from './primitives';
 
 // M_EXPANSION.U.112 — bus → (preference key, label) mapping.
 const BUS_ROWS: ReadonlyArray<{

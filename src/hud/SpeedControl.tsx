@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { GameState } from '@/game/game-state';
-import { HudPill } from './HudPill';
+import { HudPill } from './primitives';
 
 /**
  * M_EXPANSION.U.111 — speed control. Cycles 1× → 2× → 4× → 1×.

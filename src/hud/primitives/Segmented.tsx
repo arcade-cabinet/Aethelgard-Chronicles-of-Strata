@@ -4,7 +4,7 @@
  * import it independently without circular deps.
  */
 
-import { HUD_THEME } from './theme';
+import { HUD_THEME } from '../theme';
 
 /** A segmented-control row of options. */
 export function Segmented<T extends string>({

@@ -14,7 +14,7 @@
  */
 import type { CSSProperties, ReactNode } from 'react';
 import { useViewport } from '@/render/useViewport';
-import { HUD_THEME } from './theme';
+import { HUD_THEME } from '../theme';
 
 export type HudPillSlot = 'pause' | 'sound' | 'discoveries' | 'resign' | 'weather' | 'speed';
 

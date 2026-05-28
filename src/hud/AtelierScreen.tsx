@@ -25,7 +25,7 @@ import {
 } from '@/config/meta-unlocks';
 import type { Persistence } from '@/persistence/persistence';
 import { HUD_THEME } from './theme';
-import { ModalShell } from './ModalShell';
+import { ModalShell } from './primitives';
 
 export interface AtelierScreenProps {
   /** The Persistence facade — modal reads + mutates meta state. */

@@ -10,7 +10,7 @@ import type { TurnsMode } from '@/rules/mode-presets';
 import { HUD_THEME } from './theme';
 import type { NewGameChoices } from './NewGameModal';
 import { DIFFICULTIES, MODES, PLAYER_COLORS, STARTING_BONUSES } from './new-game-options';
-import { Segmented } from './Segmented';
+import { Segmented } from './primitives';
 
 export interface PresetControlsProps {
   mode: GameMode;
