@@ -393,8 +393,10 @@ the decomposition landing so the fixes apply to clean sub-packages.
       segment widths now HUD_THEME.tapTarget, radius tapTarget/2). Tightened
       the pill browser test to assert ALL 4 segments ≥48×48 (was ≥44×36).
       4 browser tests green; check 0. (review Major #4)
-- [ ] M_V13.HUD.AXE-WIDEN — extend the axe-core sweep past modals to
-      pills + overlays. (review Minor #7)
+- [x] M_V13.HUD.AXE-WIDEN — DONE: extended the axe-core sweep past
+      modals to add ScoreBar (pills) + CaptionsOverlay (overlays) scans
+      in a new describe block. Both zero violations. axe-a11y now 6
+      tests (was 4); check 0. (review Minor #7)
 - [x] M_V13.HUD.CHAIN-FIELD — DONE: added a typed `chain` enum
       (DISCOVERY_CHAINS) to the discoveries.ts Zod schema +
       DiscoveryConfig + the runtime Discovery type + the registry map;
