@@ -27,13 +27,15 @@ import type { Difficulty, GameMode } from '@/game/game-state';
 import { cn } from '@/lib/cn';
 import { presetFor } from '@/rules';
 import type { TurnsMode } from '@/rules/mode-presets';
-import { FactionColorPicker } from './FactionColorPicker';
-import { MapPreview } from './MapPreview';
-import { PLAYER_COLORS } from './new-game-options';
-import { OpponentPicker } from './OpponentPicker';
-import { PresetControls } from './PresetControls';
 import { SectionCard, TreasureButton } from './primitives';
-import { SeedField } from './SeedField';
+import {
+  FactionColorPicker,
+  MapPreview,
+  OpponentPicker,
+  PLAYER_COLORS,
+  PresetControls,
+  SeedField,
+} from './setup';
 
 /** The choices a New Game collects. */
 export interface NewGameChoices {
