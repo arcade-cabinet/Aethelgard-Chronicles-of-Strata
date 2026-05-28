@@ -330,7 +330,18 @@ URL-param + dev-window hooks).
       moves (sub-tree was already structured); existing deep imports
       (@/world/procedural/buildings etc.) kept working. No export
       collisions. 63 procmesh browser tests green; check 0.
-- [ ] M_V13.DECOMP.WORLD-BARREL — top `world/index.ts`.
+- [x] M_V13.DECOMP.WORLD-BARREL — top `world/index.ts` re-exports all
+      5 feature sub-packages (biomes/terrain/board/effects/procedural).
+      No name collisions. world/ root now: 5 sub-packages + __tests__,
+      ZERO loose files. §A3 COMPLETE — 44-file flat world dir → 5
+      feature sub-packages. §A COMPLETE (hud 87→8, config flat→7,
+      world 44→5). Full suite 1251 tests green.
+      LEARNING: grep-gate tests that scan source files by HARDCODED fs
+      path (no-hardcoded-faction-colors, color-outline-v3,
+      asset-manifest) break on every move — they're not caught by tsc
+      OR module-specifier greps. After a decomposition pass, grep
+      tests/ + scripts/ for string-literal 'src/<dir>/<File>.tsx' fs
+      paths and update them. Fixed 3 such tests this pass.
 
 ---
 

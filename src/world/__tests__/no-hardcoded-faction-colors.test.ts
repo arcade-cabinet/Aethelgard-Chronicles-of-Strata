@@ -24,19 +24,19 @@ import { describe, expect, it } from 'vitest';
 /** Files that legitimately reference the hex literals — not faction-renderers. */
 const ALLOWLIST = new Set<string>([
   // The registry's source-of-truth: LEGACY_FACTIONS defines these as defaults.
-  'src/config/factions.ts',
+  'src/config/ai/factions.ts',
   // The palette: defines the chips users pick from.
-  'src/config/faction-palette.ts',
+  'src/config/ai/faction-palette.ts',
   // Theme danger color — semantic, not a faction identifier.
-  'src/hud/hud-theme.ts',
+  'src/hud/theme/hud-theme.ts',
   // Discovery panel: red/green for pass/fail semantic indicator.
-  'src/hud/DiscoveriesPanel.tsx',
+  'src/hud/modals/DiscoveriesPanel.tsx',
   // RaidPressurePill: red for war status (semantic risk indicator).
-  'src/hud/RaidPressurePill.tsx',
+  'src/hud/pills/RaidPressurePill.tsx',
   // CombatText: red for damage-number popup (semantic, not faction).
-  'src/world/CombatText.tsx',
+  'src/world/effects/CombatText.tsx',
   // RallyMarker: red rally-point icon (semantic indicator, not faction).
-  'src/world/RallyMarker.tsx',
+  'src/world/board/RallyMarker.tsx',
   // Health-bar stops in display.ts (semantic health color, not faction).
   'src/rules/display.ts',
   // SKINS / colorblind / new-game-options: the legacy palette tables;
@@ -45,22 +45,26 @@ const ALLOWLIST = new Set<string>([
   // owns faction visuals.
   'src/rules/skins.ts',
   'src/rules/colorblind.ts',
-  'src/hud/new-game-options.ts',
+  'src/hud/setup/new-game-options.ts',
   // NewGameModal: imports LEGACY_FACTIONS but the legacy hexes appear
   // as literal fallback defaults — the live picker uses the registry.
-  'src/hud/NewGameModal.tsx',
+  'src/hud/modals/NewGameModal.tsx',
 ]);
 
 function gatherFactionRenderers(): string[] {
   // Files known to render faction-identity colors. Adding a new
   // ZoneBorder-like surface = add it to this list, NOT add a hardcoded
   // hex. The list is short by design.
-  return ['src/world/ZoneBorder.tsx', 'src/world/FactionBase.tsx', 'src/world/Units.tsx'];
+  return [
+    'src/world/board/ZoneBorder.tsx',
+    'src/world/board/FactionBase.tsx',
+    'src/world/board/Units.tsx',
+  ];
 }
 
 describe('M_PIVOT.RENDER.COLOR-OUTLINE — faction renderers go through registry', () => {
   it('ZoneBorder does not hardcode the legacy faction hexes', () => {
-    const path = resolve(__dirname, '../../..', 'src/world/ZoneBorder.tsx');
+    const path = resolve(__dirname, '../../..', 'src/world/board/ZoneBorder.tsx');
     const source = readFileSync(path, 'utf-8');
     // The faction-color flow MUST read from findFaction(game.factions, …).
     expect(source).toContain('findFaction(game.factions');
